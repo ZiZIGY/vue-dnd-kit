@@ -1,0 +1,12 @@
+[submodule "packages/core"]
+	path = packages/core
+	url = https://github.com/zizigy/vue-dnd-kit-core.git
+[submodule "packages/devtools"]
+	path = packages/devtools
+	url = https://github.com/zizigy/vue-dnd-kit-devtools.git
+[submodule "packages/utilities"]
+	path = packages/utilities
+	url = https://github.com/zizigy/vue-dnd-kit-utilities.git
+[submodule "packages/components"]
+	path = packages/components
+	url = https://github.com/zizigy/vue-dnd-kit-components.git
