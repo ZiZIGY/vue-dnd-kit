@@ -1,0 +1,27 @@
+{
+  "name": "vue-dnd-kit",
+  "version": "0.1.0",
+  "description": "Drag and Drop toolkit for Vue 3",
+  "scripts": {
+    "update-submodules": "git submodule update --init --recursive",
+    "build-all": "npm run build --workspaces",
+    "dev": "npm run dev --workspaces",
+    "test": "npm run test --workspaces"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "keywords": [
+    "vue",
+    "vue3",
+    "drag-and-drop",
+    "dnd",
+    "draggable"
+  ],
+  "author": "Ваше имя",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.9.5",
+    "vue": "^3.2.47"
+  }
+}
