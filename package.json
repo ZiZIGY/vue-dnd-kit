@@ -1,6 +1,7 @@
 {
   "name": "vue-dnd-kit",
   "version": "0.1.0",
+  "private": true,
   "description": "Drag and Drop toolkit for Vue 3",
   "scripts": {
     "update-submodules": "git submodule update --init --recursive",
@@ -18,7 +19,7 @@
     "dnd",
     "draggable"
   ],
-  "author": "Ваше имя",
+  "author": "ZiZIGY",
   "license": "MIT",
   "devDependencies": {
     "typescript": "^4.9.5",
