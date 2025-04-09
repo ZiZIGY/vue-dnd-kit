@@ -9,8 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@vue-dnd-kit/core": "workspace:*",
-    "@vue-dnd-kit/components": "workspace:*",
     "vue": "^3.5.13"
   },
   "devDependencies": {
