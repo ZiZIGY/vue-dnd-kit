@@ -1,18 +1,13 @@
 <script setup lang="ts">
   import { useDraggable } from '@vue-dnd-kit/core';
 
-  const { elementRef, handleDragStart, isOvered } = useDraggable({
-    sensor: (store) => {
-      const pointerX = store.pointerPosition.current.value?.x ?? 0;
-      const pointerY = store.pointerPosition.current.value?.y ?? 0;
+  const props = defineProps<{
+    groups?: string[];
+  }>();
 
-      const elementUnderCursor = document.elementFromPoint(
-        pointerX,
-        pointerY
-      ) as HTMLElement;
-
-      return elementUnderCursor;
-    },
+  const { elementRef, handleDragStart, isOvered, isDragging } = useDraggable({
+    throttle: 0,
+    ...props,
   });
 </script>
 
@@ -20,8 +15,12 @@
   <div
     ref="elementRef"
     @pointerdown="handleDragStart"
+    :style="{
+      opacity: isDragging ? 0.5 : 1,
+      backgroundColor: isOvered ? 'red' : 'transparent',
+    }"
   >
-    <slot> draggable {{ isOvered }}</slot>
+    <slot> draggable </slot>
   </div>
 </template>
 
@@ -29,5 +28,6 @@
   div {
     padding: 10px;
     border: 1px solid red;
+    transition: all 0.3s ease;
   }
 </style>

@@ -1,4 +1,5 @@
-import type { Component, ComputedRef, Ref, ShallowRef } from 'vue';
+import { Component, ComputedRef, Ref, ShallowRef } from 'vue';
+
 
 export interface IDnDStore {
   isDragging: Ref<boolean>;

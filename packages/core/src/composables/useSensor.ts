@@ -1,8 +1,6 @@
 import type {
   ICollisionDetectionResult,
-  IDragElement,
   IDraggingElement,
-  IDropZone,
   IUseSensorOptions,
 } from '../types';
 
@@ -65,12 +63,36 @@ export const useSensor = (
     const elements = Array.isArray(htmlElements)
       ? htmlElements
       : [htmlElements];
-    const activeDragNodes = store.draggingElements.value.map((el) => el.node);
+    const activeDragNodes = store.draggingElements.value.map(
+      (element) => element.node
+    );
 
-    let bestElement: IDragElement | null = null;
-    for (const htmlElement of elements) {
-      const element = store.elements.value.find((e) => e.node === htmlElement);
-      if (!element) continue;
+    const [bestElement] = elements
+      .map((htmlElement) =>
+        store.elements.value.find((e) => e.node === htmlElement)
+      )
+      .filter((element) => {
+        if (!element) return false;
+
+        // Проверяем совместимость групп
+        if (element.groups.length) {
+          const isCompatible = !store.draggingElements.value.some(
+            (draggingElement) => {
+              if (!draggingElement.groups.length) return false;
+              return !draggingElement.groups.some((group) =>
+                element.groups.includes(group)
+              );
+            }
+          );
+          return isCompatible;
+        }
+
+        return true;
+      });
+
+    const [bestZone] = elements.map((htmlElement) => {
+      const zone = store.zones.value.find((zone) => zone.node === htmlElement);
+      if (!zone) return null;
 
       if (
         activeDragNodes.some(
@@ -78,58 +100,27 @@ export const useSensor = (
             dragNode && isDescendant(htmlElement, dragNode as HTMLElement)
         )
       )
-        continue;
-
-      if (element.groups.length) {
-        const isCompatible = !store.draggingElements.value.some(
-          (draggingElement) => {
-            if (!draggingElement.groups.length) return false;
-            return !draggingElement.groups.some((group) =>
-              element.groups.includes(group)
-            );
-          }
-        );
-        if (!isCompatible) continue;
-      }
-
-      bestElement = element;
-      break;
-    }
-
-    let bestZone: IDropZone | null = null;
-    for (const htmlElement of elements) {
-      const zone = store.zones.value.find((z) => z.node === htmlElement);
-      if (!zone) continue;
-
-      if (
-        activeDragNodes.some(
-          (dragNode) =>
-            dragNode && isDescendant(htmlElement, dragNode as HTMLElement)
-        )
-      )
-        continue;
+        return null;
 
       if (zone.groups.length) {
         const isCompatible = !store.draggingElements.value.some((element) => {
           if (!element.groups.length) return false;
           return !element.groups.some((group) => zone.groups.includes(group));
         });
-        if (!isCompatible) continue;
+        if (!isCompatible) return null;
       }
 
-      bestZone = zone;
-      break;
-    }
+      return zone;
+    });
 
     return {
-      element: bestElement,
-      zone: bestZone,
+      element: bestElement ?? null,
+      zone: bestZone ?? null,
     };
   };
 
   const detectCollisions = options?.sensor || defaultCollisionDetection;
 
-  // Функция для обработки результатов определения коллизий
   const processCollisionResults = (results: ICollisionDetectionResult) => {
     const previousElement = store.hovered.element.value;
     const previousZone = store.hovered.zone.value;
@@ -144,7 +135,6 @@ export const useSensor = (
         store.hovered.element.value.events.onHover(store);
     }
 
-    // Проверяем изменения для зон
     if (store.hovered.zone.value !== previousZone) {
       if (previousZone?.events?.onLeave) previousZone.events.onLeave(store);
       if (store.hovered.zone.value?.events?.onHover)
@@ -152,22 +142,18 @@ export const useSensor = (
     }
   };
 
-  // Создаем троттлированную версию функции
   const throttledDetectAndProcess = useThrottleFn(() => {
     const htmlElements = detectCollisions(store);
     const processedResults = processUserCollisionResults(htmlElements);
     processCollisionResults(processedResults);
   }, options?.throttle ?? 0);
 
-  // Функция для RAF, которая только запускает следующий кадр
   const animationLoop = () => {
     throttledDetectAndProcess();
     animationFrameId = requestAnimationFrame(animationLoop);
   };
 
-  const startDetection = () => {
-    animationLoop(); // Запускаем цикл анимации
-  };
+  const startDetection = () => animationLoop();
 
   const stopDetection = () => {
     if (animationFrameId !== null) {

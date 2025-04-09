@@ -13,8 +13,7 @@ export const useZoneManager = (options?: IUseDropOptions) => {
   });
 
   const isAllowed = computed<boolean>(() => {
-    if (!elementRef.value) return false;
-    if (!isDragging.value) return false;
+    if (!elementRef.value || !isDragging.value) return false;
 
     const currentZone = zones.value.find(
       (zone) => zone.node === elementRef.value

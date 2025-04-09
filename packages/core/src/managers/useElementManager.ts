@@ -31,8 +31,6 @@ export const useElementManager = (options?: IUseDragOptions) => {
     () => hovered.element.value?.node === elementRef.value
   );
 
-  const isVisible = useElementVisibility(elementRef);
-
   /** Whether the element is currently being dragged */
   const isDragging = computed<boolean>(() =>
     draggingElements.value.some((element) => element.node === elementRef.value)
@@ -67,7 +65,6 @@ export const useElementManager = (options?: IUseDragOptions) => {
       defaultLayer: options?.layer ?? null,
       events: options?.events ?? {},
       data: options?.data ?? undefined,
-      isVisible,
     });
 
     elementRef.value.addEventListener('dragstart', preventEvent);
@@ -102,6 +99,5 @@ export const useElementManager = (options?: IUseDragOptions) => {
     isDragging,
     isOvered,
     isAllowed,
-    isVisible,
   };
 };

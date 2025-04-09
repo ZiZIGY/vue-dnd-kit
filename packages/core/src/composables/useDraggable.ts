@@ -14,7 +14,6 @@ export const useDraggable = (options?: IUseDragOptions) => {
     isDragging,
     isOvered,
     isAllowed,
-    isVisible,
   } = useElementManager(options);
 
   const { disableInteractions, enableInteractions } = useInteractionManager();
@@ -65,6 +64,5 @@ export const useDraggable = (options?: IUseDragOptions) => {
     isOvered,
     isAllowed,
     handleDragStart,
-    isVisible,
   };
 };

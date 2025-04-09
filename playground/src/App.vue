@@ -29,10 +29,11 @@
       />
     </a>
   </div>
-
+  <Draggable :groups="['item']" />
   <Draggable
     v-for="i in 1_000"
     :key="i"
+    :groups="['sex']"
   />
 </template>
 

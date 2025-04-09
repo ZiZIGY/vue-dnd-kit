@@ -9,7 +9,7 @@ import {
 import { IDnDStore } from '../types';
 import { isDescendant } from './dom';
 
-export const defaultCollisionDetection = (store: IDnDStore): HTMLElement[] => {
+export const defaultCollisionDetection = (store: IDnDStore) => {
   const containerRect = getBoundingBox(store.activeContainer.ref.value);
   const containerCenter = getCenter(containerRect);
   const pointerX = store.pointerPosition.current.value?.x ?? 0;
