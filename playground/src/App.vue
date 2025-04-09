@@ -1,9 +1,5 @@
 <script setup lang="ts">
   import Draggable from './components/Draggable.vue';
-
-  import { useDnDStore } from '@vue-dnd-kit/core';
-
-  const store = useDnDStore();
 </script>
 
 <template>
@@ -29,7 +25,7 @@
       />
     </a>
   </div>
-  <Draggable :groups="['item']" />
+
   <Draggable
     v-for="i in 1_000"
     :key="i"

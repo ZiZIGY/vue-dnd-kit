@@ -1,6 +1,6 @@
 {
   "name": "@vue-dnd-kit/core",
-  "version": "0.1.3-beta",
+  "version": "0.3.0-beta",
   "description": "Core functionality for Vue DnD Kit - a lightweight Vue 3 library for building performant and accessible drag and drop interfaces",
   "author": "ZiZIGY",
   "license": "MIT",
@@ -25,7 +25,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zizigy/vue-dnd-kit.git",
-    "directory": "packages/utilities"
+    "directory": "packages/core"
   },
   "scripts": {
     "dev": "yarn build --watch",
@@ -33,7 +33,7 @@
     "build": "vite build",
     "test": "vitest run",
     "lint": "eslint src --ext .ts,.vue",
-    "prepublish": "npm run build"
+    "prepublishOnly": "vite build"
   },
   "main": "dist/vue-dnd-kit-core.cjs.js",
   "module": "dist/vue-dnd-kit-core.es.js",
@@ -68,6 +68,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "tag": "beta"
   }
 }

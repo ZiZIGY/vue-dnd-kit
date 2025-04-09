@@ -4,7 +4,6 @@ import type { IUseDragOptions } from '../types';
 import { draggableDataName } from '../utils/namespaces';
 import { preventEvent } from '../utils/events';
 import { useDnDStore } from '../composables/useDnDStore';
-import { useElementVisibility } from '@vueuse/core';
 
 /**
  * Hook for managing draggable elements and their interactions.
