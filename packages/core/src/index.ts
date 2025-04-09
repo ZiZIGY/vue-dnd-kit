@@ -11,12 +11,7 @@ export { useDraggable, useDroppable, useDnDStore, useSelection };
 export type {
   IDnDStore,
   IActiveContainer,
-  IBoundingBox,
   IDragElement,
   IDraggingElement,
   IDropZone,
-  IPoint,
-  IPointerPosition,
-  IUseDragOptions,
-  IUseDropOptions,
 } from './types';

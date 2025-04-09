@@ -10,7 +10,8 @@
     "test": "npm run test --workspaces"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "playground"
   ],
   "keywords": [
     "vue",

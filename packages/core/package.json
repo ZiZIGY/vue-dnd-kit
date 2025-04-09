@@ -28,6 +28,7 @@
     "directory": "packages/utilities"
   },
   "scripts": {
+    "dev": "yarn build --watch",
     "start": "vite build --watch",
     "build": "vite build",
     "test": "vitest run",

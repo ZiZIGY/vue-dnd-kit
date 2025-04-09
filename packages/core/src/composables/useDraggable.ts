@@ -21,7 +21,10 @@ export const useDraggable = (options?: IUseDragOptions) => {
 
   const { activeContainer, pointerPosition } = useDnDStore();
 
-  const { activate, track, deactivate } = useSensor(elementRef);
+  const { activate, track, deactivate } = useSensor(elementRef, {
+    throttle: options?.throttle,
+    sensor: options?.sensor,
+  });
 
   const handleDragStart = (event: PointerEvent) => {
     if (options?.container)

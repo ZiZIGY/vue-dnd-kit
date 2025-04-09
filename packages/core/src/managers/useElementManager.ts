@@ -74,6 +74,7 @@ export const useElementManager = (options?: IUseDragOptions) => {
     elementRef.value.addEventListener('drag', preventEvent);
     elementRef.value.setAttribute(draggableDataName, 'true');
     elementRef.value.setAttribute('draggable', 'false');
+    elementRef.value.style.touchAction = 'none';
   };
 
   /** Unregister the element from the manager */

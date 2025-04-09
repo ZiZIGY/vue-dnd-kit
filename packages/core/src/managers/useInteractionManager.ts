@@ -1,4 +1,4 @@
-import { preventEvent } from "../utils/events";
+import { preventEvent } from '../utils/events';
 
 export const useInteractionManager = () => {
   let originalUserSelect = '';
@@ -9,12 +9,8 @@ export const useInteractionManager = () => {
     const body = document.body;
 
     originalUserSelect = body.style.userSelect;
-    originalTouchAction = body.style.touchAction;
-    originalOverscrollBehavior = body.style.overscrollBehavior;
 
     body.style.userSelect = 'none';
-    body.style.touchAction = 'none';
-    body.style.overscrollBehavior = 'none';
 
     window.addEventListener('contextmenu', preventEvent);
     window.addEventListener('selectstart', preventEvent);

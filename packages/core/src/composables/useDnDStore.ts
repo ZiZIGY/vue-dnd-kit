@@ -17,14 +17,6 @@ export const useDnDStore = createGlobalState(() => {
   };
 
   const elements = ref<IDragElement[]>([]);
-  const visibleElements = computed<number[]>(() =>
-    elements.value
-      .map((element, index) => {
-        if (element.isVisible?.value || (element.isVisible && index))
-          return index;
-      })
-      .filter((index) => index !== undefined)
-  );
   const selectedElements = ref<IDragElement[]>([]);
   const zones = ref<IDropZone[]>([]);
 
@@ -48,7 +40,6 @@ export const useDnDStore = createGlobalState(() => {
     draggingElements,
     selectedElements,
     zones,
-    visibleElements,
     hovered,
     pointerPosition,
   };
