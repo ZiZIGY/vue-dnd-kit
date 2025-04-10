@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import Draggable from './components/Draggable.vue';
+  import Droppable from './components/Droppable.vue';
 </script>
 
 <template>
@@ -26,6 +27,14 @@
     </a>
   </div>
 
+  <Droppable>
+    <Draggable />
+    <Draggable>
+      <Droppable>
+        <Draggable />
+      </Droppable>
+    </Draggable>
+  </Droppable>
   <Draggable
     v-for="i in 1_000"
     :key="i"

@@ -28,15 +28,7 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
 
   const allCollidingElements = store.elements.value
     .filter((element) => {
-      if (
-        !element.node ||
-        activeDragNodes.some(
-          (dragNode) =>
-            dragNode &&
-            isDescendant(element.node as HTMLElement, dragNode as HTMLElement)
-        )
-      )
-        return false;
+      if (!element.node) return false;
 
       const rect = getBoundingBox(element.node as HTMLElement);
       return rect && containerRect && checkCollision(rect, containerRect);

@@ -7,6 +7,12 @@
 
   const { elementRef, handleDragStart, isOvered, isDragging } = useDraggable({
     throttle: 0,
+    sensor: (store) => {
+      return document.elementsFromPoint(
+        store.pointerPosition.current.value?.x || 0,
+        store.pointerPosition.current.value?.y || 0
+      );
+    },
     ...props,
   });
 </script>

@@ -87,7 +87,9 @@ export interface IUseDragOptions {
   sensor?: ISensor;
 }
 
-export type ISensor = (store: IDnDStore) => HTMLElement | HTMLElement[] | null;
+export type ISensor = (
+  store: IDnDStore
+) => HTMLElement | HTMLElement[] | Element | Element[] | null;
 
 export interface IBoundingBox {
   x: number;
