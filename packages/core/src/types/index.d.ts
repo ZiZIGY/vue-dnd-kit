@@ -71,7 +71,7 @@ export interface IUseDropOptions {
   };
   data?: any;
 }
-export interface IUseDragOptions {
+export interface IUseDragOptions extends IUseSensorOptions {
   groups?: string[];
   events?: {
     onEnd?: (store: IDnDStore) => void;
@@ -84,7 +84,6 @@ export interface IUseDragOptions {
   layer?: Component | null;
   container?: Component;
   throttle?: number;
-  sensor?: ISensor;
 }
 
 export type ISensor = (
@@ -103,8 +102,10 @@ export interface IBoundingBox {
 }
 
 export interface IUseSensorOptions {
-  throttle?: number;
-  sensor?: ISensor;
+  sensor?: {
+    throttle?: number;
+    setup?: ISensor;
+  };
 }
 
 interface ICollisionDetectionResult {

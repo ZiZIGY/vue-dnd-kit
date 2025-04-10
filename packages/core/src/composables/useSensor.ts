@@ -4,9 +4,10 @@ import type {
   IUseSensorOptions,
 } from '../types';
 
-import type { Ref } from 'vue';
+import { nextTick, type Ref } from 'vue';
 import { defaultCollisionDetection } from '../utils/sensor';
 import { isDescendant } from '../utils/dom';
+import { preventEvent } from '../utils/events';
 import { useDnDStore } from './useDnDStore';
 import { usePointer } from './usePointer';
 import { useThrottleFn } from '@vueuse/core';
@@ -67,15 +68,12 @@ export const useSensor = (
       (element) => element.node
     );
 
-    // Обрабатываем элементы
     const filteredElements = elements
       .map((htmlElement) =>
         store.elements.value.find((e) => e.node === htmlElement)
       )
       .filter((element) => {
         if (!element) return false;
-
-        // Проверяем, не является ли элемент перетаскиваемым или его дочерним
         if (
           activeDragNodes.some(
             (dragNode) =>
@@ -105,7 +103,6 @@ export const useSensor = (
         return true;
       });
 
-    // Обрабатываем зоны
     const filteredZones = elements
       .map((htmlElement) =>
         store.zones.value.find((zone) => zone.node === htmlElement)
@@ -113,7 +110,6 @@ export const useSensor = (
       .filter((zone) => {
         if (!zone) return false;
 
-        // Проверяем, не является ли зона дочерним элементом перетаскиваемого
         if (
           activeDragNodes.some(
             (dragNode) =>
@@ -124,7 +120,6 @@ export const useSensor = (
         )
           return false;
 
-        // Проверяем совместимость групп
         if (zone.groups.length) {
           const isCompatible = !store.draggingElements.value.some((element) => {
             if (!element.groups.length) return false;
@@ -142,7 +137,7 @@ export const useSensor = (
     };
   };
 
-  const detectCollisions = options?.sensor || defaultCollisionDetection;
+  const detectCollisions = options?.sensor?.setup || defaultCollisionDetection;
 
   const processCollisionResults = (results: ICollisionDetectionResult) => {
     const previousElement = store.hovered.element.value;
@@ -169,7 +164,7 @@ export const useSensor = (
     const htmlElements = detectCollisions(store);
     const processedResults = processUserCollisionResults(htmlElements);
     processCollisionResults(processedResults);
-  }, options?.throttle ?? 0);
+  }, options?.sensor?.throttle ?? 0);
 
   const animationLoop = () => {
     throttledDetectAndProcess();
@@ -185,8 +180,9 @@ export const useSensor = (
     }
   };
 
-  const activate = (event: PointerEvent) => {
+  const activate = (event: PointerEvent | KeyboardEvent) => {
     store.draggingElements.value = getDraggingElements(elementRef.value);
+
     onPointerStart(event);
 
     startDetection();

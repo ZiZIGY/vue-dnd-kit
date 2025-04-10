@@ -1,6 +1,7 @@
 import { markRaw, onBeforeUnmount, onMounted } from 'vue';
 
 import type { IUseDragOptions } from '../types';
+import { preventEvent } from '../utils/events';
 import { useDnDStore } from './useDnDStore';
 import { useElementManager } from '../managers/useElementManager';
 import { useInteractionManager } from '../managers/useInteractionManager';
@@ -20,18 +21,17 @@ export const useDraggable = (options?: IUseDragOptions) => {
 
   const { activeContainer, pointerPosition } = useDnDStore();
 
-  const { activate, track, deactivate } = useSensor(elementRef, {
-    throttle: options?.throttle,
-    sensor: options?.sensor,
-  });
+  const { activate, track, deactivate } = useSensor(elementRef, options);
 
-  const handleDragStart = (event: PointerEvent) => {
+  const handleDragStart = (event: PointerEvent | KeyboardEvent) => {
     if (options?.container)
       activeContainer.component.value = markRaw(options.container);
 
     disableInteractions();
 
     activate(event);
+
+    console.log(activeContainer.ref);
 
     document.addEventListener('pointermove', handleDragMove);
     document.addEventListener('pointerup', handleDragEnd);

@@ -1,26 +1,25 @@
 <script setup lang="ts">
   import { useDraggable } from '@vue-dnd-kit/core';
 
-  const props = defineProps<{
+  defineProps<{
     groups?: string[];
   }>();
 
   const { elementRef, handleDragStart, isOvered, isDragging } = useDraggable({
-    throttle: 0,
-    sensor: (store) => {
-      return document.elementsFromPoint(
-        store.pointerPosition.current.value?.x || 0,
-        store.pointerPosition.current.value?.y || 0
-      );
+    sensor: {
+      throttle: 0,
     },
-    ...props,
+    groups: ['sex'],
   });
 </script>
 
 <template>
   <div
     ref="elementRef"
+    role="button"
+    tabindex="10"
     @pointerdown="handleDragStart"
+    @keydown.space.self="handleDragStart"
     :style="{
       opacity: isDragging ? 0.5 : 1,
       backgroundColor: isOvered ? 'red' : 'transparent',

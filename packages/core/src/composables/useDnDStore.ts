@@ -5,7 +5,7 @@ import type {
   IPoint,
 } from '../types';
 import { computed, ref, type Component } from 'vue';
-import { createGlobalState } from '@vueuse/core';
+import { createGlobalState, useEventListener } from '@vueuse/core';
 
 export const useDnDStore = createGlobalState(() => {
   const draggingElements = ref<IDraggingElement[]>([]);
@@ -32,6 +32,13 @@ export const useDnDStore = createGlobalState(() => {
       pixel: ref<IPoint | null>(null),
     },
   };
+
+  useEventListener(window, 'keydown', (event) => {
+    if (event.key === 'Escape') {
+      selectedElements.value = [];
+      draggingElements.value = [];
+    }
+  });
 
   return {
     isDragging,

@@ -1,9 +1,13 @@
 <script setup lang="ts">
+  import { useDnDStore } from '@vue-dnd-kit/core';
   import Draggable from './components/Draggable.vue';
   import Droppable from './components/Droppable.vue';
+
+  const store = useDnDStore();
 </script>
 
 <template>
+  <pre>{{ store }}</pre>
   <div>
     <a
       href="https://vite.dev"
