@@ -5,14 +5,6 @@ import { draggableDataName } from '../utils/namespaces';
 import { preventEvent } from '../utils/events';
 import { useDnDStore } from '../composables/useDnDStore';
 
-/**
- * Hook for managing draggable elements and their interactions.
- * Provides methods for registering, unregistering elements,
- * checking if an element is being dragged, and determining if it can be dropped.
- *
- * @param options - Optional configuration object for element management
- * @returns Object containing element management state and methods
- */
 export const useElementManager = (options?: IUseDragOptions) => {
   const {
     elements,
@@ -22,20 +14,14 @@ export const useElementManager = (options?: IUseDragOptions) => {
     isDragging: isDragStarted,
   } = useDnDStore();
 
-  /** Reference to the element being managed */
   const elementRef = ref<HTMLElement | null>(null);
-
-  /** Whether the element is currently hovered over */
   const isOvered = computed<boolean>(
     () => hovered.element.value?.node === elementRef.value
   );
 
-  /** Whether the element is currently being dragged */
   const isDragging = computed<boolean>(() =>
     draggingElements.value.some((element) => element.node === elementRef.value)
   );
-
-  /** Whether element can interact with current drop zone based on group matching */
   const isAllowed = computed<boolean>(() => {
     if (!elementRef.value) return false;
     if (!isDragStarted.value) return false;
@@ -53,7 +39,6 @@ export const useElementManager = (options?: IUseDragOptions) => {
     });
   });
 
-  /** Registers the element with the manager */
   const registerElement = () => {
     if (!elementRef.value) throw new Error('ElementRef is not set');
 
@@ -70,10 +55,11 @@ export const useElementManager = (options?: IUseDragOptions) => {
     elementRef.value.addEventListener('drag', preventEvent);
     elementRef.value.setAttribute(draggableDataName, 'true');
     elementRef.value.setAttribute('draggable', 'false');
+    elementRef.value.setAttribute('role', 'button');
+    elementRef.value.setAttribute('tabindex', '0');
     elementRef.value.style.touchAction = 'none';
   };
 
-  /** Unregister the element from the manager */
   const unregisterElement = () => {
     const index = elements.value.findIndex(
       (element) => element.node === elementRef.value

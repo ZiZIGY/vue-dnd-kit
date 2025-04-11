@@ -1,25 +1,30 @@
 import type {
   ICollisionDetectionResult,
   IDraggingElement,
-  IUseSensorOptions,
+  IUseDragOptions,
 } from '../types';
 
-import { nextTick, type Ref } from 'vue';
+import type { Ref } from 'vue';
 import { defaultCollisionDetection } from '../utils/sensor';
 import { isDescendant } from '../utils/dom';
-import { preventEvent } from '../utils/events';
 import { useDnDStore } from './useDnDStore';
+import { useKeyboard } from './useKeyboard';
 import { usePointer } from './usePointer';
 import { useThrottleFn } from '@vueuse/core';
 
 export const useSensor = (
   elementRef: Ref<HTMLElement | null>,
-  options?: IUseSensorOptions
+  options?: IUseDragOptions
 ) => {
   const store = useDnDStore();
 
   const { onPointerStart, onPointerMove, onPointerEnd } =
     usePointer(elementRef);
+
+  const { onKeyboardStart, onKeyboardMove, onKeyboardEnd } = useKeyboard(
+    elementRef,
+    options?.keyboard
+  );
 
   let animationFrameId: number | null = null;
 
@@ -168,6 +173,7 @@ export const useSensor = (
 
   const animationLoop = () => {
     throttledDetectAndProcess();
+
     animationFrameId = requestAnimationFrame(animationLoop);
   };
 
@@ -183,28 +189,38 @@ export const useSensor = (
   const activate = (event: PointerEvent | KeyboardEvent) => {
     store.draggingElements.value = getDraggingElements(elementRef.value);
 
-    onPointerStart(event);
+    if (event instanceof PointerEvent) {
+      onPointerStart(event);
+    } else {
+      onKeyboardStart(event);
+    }
 
     startDetection();
   };
 
-  const track = (event: PointerEvent | WheelEvent) => {
-    onPointerMove(event);
+  const track = (event: PointerEvent | WheelEvent | KeyboardEvent) => {
+    if (event instanceof KeyboardEvent) {
+      onKeyboardMove();
+    } else {
+      onPointerMove(event);
+    }
   };
 
-  const deactivate = () => {
+  const deactivate = (triggerEvents = true) => {
     onPointerEnd();
+    onKeyboardEnd();
 
-    if (store.hovered.zone.value) {
-      store.hovered.zone.value.events.onDrop?.(store);
-    } else {
-      store.draggingElements.value.forEach((element) =>
-        element.events.onEnd?.(store)
-      );
+    if (triggerEvents) {
+      if (store.hovered.zone.value)
+        store.hovered.zone.value.events.onDrop?.(store);
+      else
+        store.draggingElements.value.forEach((element) =>
+          element.events.onEnd?.(store)
+        );
+
+      store.selectedElements.value = [];
     }
-
     store.draggingElements.value = [];
-    store.selectedElements.value = [];
 
     store.hovered.zone.value = null;
     store.hovered.element.value = null;

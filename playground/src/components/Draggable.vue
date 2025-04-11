@@ -6,24 +6,30 @@
   }>();
 
   const { elementRef, handleDragStart, isOvered, isDragging } = useDraggable({
+    keyboard: {
+      moveStep: 10,
+    },
     sensor: {
       throttle: 0,
+      // setup: (store) => {
+      //   return document.elementsFromPoint(
+      //     store.pointerPosition.current.value?.x || 0,
+      //     store.pointerPosition.current.value?.y|| 0
+      //   );
+      // },
     },
-    groups: ['sex'],
   });
 </script>
 
 <template>
   <div
     ref="elementRef"
-    role="button"
-    tabindex="10"
-    @pointerdown="handleDragStart"
-    @keydown.space.self="handleDragStart"
     :style="{
       opacity: isDragging ? 0.5 : 1,
       backgroundColor: isOvered ? 'red' : 'transparent',
     }"
+    @pointerdown.self="handleDragStart"
+    @keydown.space.self="handleDragStart"
   >
     <slot> draggable </slot>
   </div>

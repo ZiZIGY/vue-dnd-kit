@@ -31,16 +31,9 @@
     </a>
   </div>
 
-  <Droppable>
-    <Draggable />
-    <Draggable>
-      <Droppable>
-        <Draggable />
-      </Droppable>
-    </Draggable>
-  </Droppable>
+  <Droppable> kek </Droppable>
   <Draggable
-    v-for="i in 1_000"
+    v-for="i in 100"
     :key="i"
     :groups="['sex']"
   />

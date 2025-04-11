@@ -17,6 +17,11 @@
     "declarationDir": "./dist",
     "outDir": "./dist"
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.vue",
+    "../core/src/composables/useKeyboard.ts"
+  ],
   "exclude": ["node_modules", "dist", "**/*.test.ts"]
 }

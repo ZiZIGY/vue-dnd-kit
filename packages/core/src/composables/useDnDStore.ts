@@ -4,8 +4,8 @@ import type {
   IDropZone,
   IPoint,
 } from '../types';
-import { computed, ref, type Component } from 'vue';
-import { createGlobalState, useEventListener } from '@vueuse/core';
+import { computed, ref, shallowRef, type Component } from 'vue';
+import { createGlobalState } from '@vueuse/core';
 
 export const useDnDStore = createGlobalState(() => {
   const draggingElements = ref<IDraggingElement[]>([]);
@@ -13,7 +13,7 @@ export const useDnDStore = createGlobalState(() => {
 
   const activeContainer = {
     component: ref<Component | null>(null),
-    ref: ref<HTMLElement | null>(null),
+    ref: shallowRef<HTMLElement | null>(null),
   };
 
   const elements = ref<IDragElement[]>([]);
@@ -25,20 +25,20 @@ export const useDnDStore = createGlobalState(() => {
     element: ref<IDragElement | null>(null),
   };
   const pointerPosition = {
-    current: ref<IPoint | null>(null),
-    start: ref<IPoint | null>(null),
+    current: shallowRef<IPoint | null>(null),
+    start: shallowRef<IPoint | null>(null),
     offset: {
-      percent: ref<IPoint | null>(null),
-      pixel: ref<IPoint | null>(null),
+      percent: shallowRef<IPoint | null>(null),
+      pixel: shallowRef<IPoint | null>(null),
     },
   };
 
-  useEventListener(window, 'keydown', (event) => {
-    if (event.key === 'Escape') {
-      selectedElements.value = [];
-      draggingElements.value = [];
-    }
-  });
+  const keyboard = {
+    w: shallowRef(false),
+    s: shallowRef(false),
+    a: shallowRef(false),
+    d: shallowRef(false),
+  };
 
   return {
     isDragging,
@@ -49,5 +49,6 @@ export const useDnDStore = createGlobalState(() => {
     zones,
     hovered,
     pointerPosition,
+    keyboard,
   };
 });

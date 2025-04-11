@@ -1,7 +1,13 @@
 <script setup lang="ts">
   import { useDroppable } from '@vue-dnd-kit/core';
 
-  const { elementRef, isOvered } = useDroppable();
+  const { elementRef, isOvered } = useDroppable({
+    events: {
+      onDrop: () => {
+        console.log('drop');
+      },
+    },
+  });
 </script>
 
 <template>
