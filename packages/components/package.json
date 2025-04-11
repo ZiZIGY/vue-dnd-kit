@@ -1,7 +1,7 @@
 {
-  "name": "@vue-dnd-kit/core",
+  "name": "@vue-dnd-kit/components",
   "version": "0.5.1",
-  "description": "Core functionality for Vue DnD Kit - a lightweight Vue 3 library for building performant and accessible drag and drop interfaces",
+  "description": "Components for Vue DnD Kit",
   "author": "ZiZIGY",
   "license": "MIT",
   "keywords": [
@@ -15,17 +15,17 @@
     "vue drag and drop",
     "vue drag and drop library",
     "vue dnd kit",
-    "vue dnd kit core",
+    "vue dnd kit components",
     "dnd-kit",
-    "dnd-kit core",
+    "dnd-kit components",
     "vue-dnd-kit",
-    "vue-dnd-kit core",
-    "@vue-dnd-kit/core"
+    "vue-dnd-kit components",
+    "@vue-dnd-kit/components"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zizigy/vue-dnd-kit.git",
-    "directory": "packages/core"
+    "directory": "packages/components"
   },
   "scripts": {
     "dev": "yarn build --watch",
@@ -35,14 +35,14 @@
     "lint": "eslint src --ext .ts,.vue",
     "prepublishOnly": "vite build"
   },
-  "main": "dist/vue-dnd-kit-core.cjs.js",
-  "module": "dist/vue-dnd-kit-core.es.js",
+  "main": "dist/vue-dnd-kit-components.cjs.js",
+  "module": "dist/vue-dnd-kit-components.es.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/vue-dnd-kit-core.es.js",
-      "require": "./dist/vue-dnd-kit-core.cjs.js"
+      "import": "./dist/vue-dnd-kit-components.es.js",
+      "require": "./dist/vue-dnd-kit-components.cjs.js"
     }
   },
   "files": [
@@ -53,6 +53,7 @@
   ],
   "peerDependencies": {
     "@vueuse/core": "^13.1.0",
+    "@vue-dnd-kit/core": "^0.5.1",
     "vue": "^3.5.13"
   },
   "devDependencies": {

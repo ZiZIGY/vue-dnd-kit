@@ -1,5 +1,19 @@
 import type { Component, ComputedRef, Ref, ShallowRef } from 'vue';
 
+export interface IDnDStore {
+  isDragging: Ref<boolean>;
+  activeContainer: IActiveContainer;
+  elements: Ref<IDragElement[]>;
+  selectedElements: Ref<IDragElement[]>;
+  draggingElements: Ref<IDraggingElement[]>;
+  zones: Ref<IDropZone[]>;
+  hovered: {
+    zone: Ref<IDropZone | null>;
+    element: Ref<IDragElement | null>;
+  };
+  pointerPosition: IPointerPosition;
+}
+
 export interface IActiveContainer {
   component: Ref<Component | null>;
   ref: Ref<HTMLElement | null>;

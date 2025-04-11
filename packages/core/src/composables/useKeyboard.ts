@@ -18,6 +18,9 @@ export const useKeyboard = (
     preventEvent(event);
 
     const rect = getBoundingBox(elementRef.value);
+
+    elementRef.value?.blur();
+
     const centerX = rect.x + rect.width / 2;
     const centerY = rect.y + rect.height / 2;
 

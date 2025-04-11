@@ -7,17 +7,13 @@ import { useDnDStore } from '../composables/useDnDStore';
 import { useSensor } from '../composables/useSensor';
 
 enum EKeyboardKey {
-  ESCAPE = 27,
-  SPACE = 32,
-  ENTER = 13,
-  ARROW_UP = 38,
-  ARROW_DOWN = 40,
-  ARROW_LEFT = 37,
-  ARROW_RIGHT = 39,
-  W = 87,
-  A = 65,
-  S = 83,
-  D = 68,
+  ESCAPE = 'Escape',
+  SPACE = 'Space',
+  ENTER = 'Enter',
+  W = 'KeyW',
+  A = 'KeyA',
+  S = 'KeyS',
+  D = 'KeyD',
 }
 
 export const useEventManager = createGlobalState(() => {
@@ -108,8 +104,8 @@ export const useEventManager = createGlobalState(() => {
       if (event.type === 'keypress') keyPressed(event, true);
 
       if (event.type === 'keyup') {
-        if (event.keyCode === EKeyboardKey.ESCAPE) currentEndHandler?.(false);
-        if (event.keyCode === EKeyboardKey.ENTER) currentEndHandler?.();
+        if (event.code === EKeyboardKey.ESCAPE) currentEndHandler?.(false);
+        if (event.code === EKeyboardKey.ENTER) currentEndHandler?.();
         keyPressed(event, false);
       }
 
@@ -128,10 +124,10 @@ export const useEventManager = createGlobalState(() => {
   };
 
   const keyPressed = (event: KeyboardEvent, isKeyDown = true) => {
-    if (event.keyCode === EKeyboardKey.W) keyboard.w.value = isKeyDown;
-    if (event.keyCode === EKeyboardKey.A) keyboard.a.value = isKeyDown;
-    if (event.keyCode === EKeyboardKey.S) keyboard.s.value = isKeyDown;
-    if (event.keyCode === EKeyboardKey.D) keyboard.d.value = isKeyDown;
+    if (event.code === EKeyboardKey.W) keyboard.w.value = isKeyDown;
+    if (event.code === EKeyboardKey.A) keyboard.a.value = isKeyDown;
+    if (event.code === EKeyboardKey.S) keyboard.s.value = isKeyDown;
+    if (event.code === EKeyboardKey.D) keyboard.d.value = isKeyDown;
   };
 
   return {

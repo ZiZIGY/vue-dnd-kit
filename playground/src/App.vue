@@ -1,13 +1,8 @@
 <script setup lang="ts">
-  import { useDnDStore } from '@vue-dnd-kit/core';
-  import Draggable from './components/Draggable.vue';
-  import Droppable from './components/Droppable.vue';
-
-  const store = useDnDStore();
+  import { Draggable } from '@vue-dnd-kit/components';
 </script>
 
 <template>
-  <pre>{{ store }}</pre>
   <div>
     <a
       href="https://vite.dev"
@@ -29,14 +24,10 @@
         alt="Vue logo"
       />
     </a>
+    <Draggable v-slot="{ handleDragStart }" >
+      <button @pointerdown="handleDragStart"> 123123123 </button>
+    </Draggable>
   </div>
-
-  <Droppable> kek </Droppable>
-  <Draggable
-    v-for="i in 100"
-    :key="i"
-    :groups="['sex']"
-  />
 </template>
 
 <style scoped>
