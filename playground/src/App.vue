@@ -4,33 +4,37 @@
 
 <template>
   <div>
-    <a
-      href="https://vite.dev"
-      target="_blank"
+    <Draggable
+      v-slot="{ handleDragStart, handleToggleSelect, isSelected }"
+      tag="div"
+      v-for="i in 10"
+      :key="i"
+      class="draggable"
+      prevent-root-drag
     >
-      <img
-        src="/vite.svg"
-        class="logo"
-        alt="Vite logo"
+      {{ i }}
+      <input
+        type="checkbox"
+        @change="handleToggleSelect"
+        :checked="isSelected"
       />
-    </a>
-    <a
-      href="https://vuejs.org/"
-      target="_blank"
-    >
-      <img
-        src="./assets/vue.svg"
-        class="logo vue"
-        alt="Vue logo"
-      />
-    </a>
-    <Draggable v-slot="{ handleDragStart }" >
-      <button @pointerdown="handleDragStart"> 123123123 </button>
+      <button
+        @pointerdown.self="handleDragStart"
+        @keydown.space.self="handleDragStart"
+      >
+        ||
+      </button>
     </Draggable>
   </div>
 </template>
 
 <style scoped>
+  .draggable {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
   pre {
     position: fixed;
     top: 0;
@@ -39,17 +43,5 @@
     overflow: scroll;
     width: 300px;
     text-align: left;
-  }
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.vue:hover {
-    filter: drop-shadow(0 0 2em #42b883aa);
   }
 </style>

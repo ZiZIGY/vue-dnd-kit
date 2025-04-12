@@ -55,9 +55,6 @@ export const useElementManager = (options?: IUseDragOptions) => {
     elementRef.value.addEventListener('drag', preventEvent);
     elementRef.value.setAttribute(draggableDataName, 'true');
     elementRef.value.setAttribute('draggable', 'false');
-    elementRef.value.setAttribute('role', 'button');
-    elementRef.value.setAttribute('tabindex', '0');
-    elementRef.value.style.touchAction = 'none';
   };
 
   const unregisterElement = () => {

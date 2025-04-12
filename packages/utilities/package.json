@@ -50,7 +50,8 @@
     "dist"
   ],
   "peerDependencies": {
-    "vue": "^3.5.13"
+    "vue": "^3.5.13",
+    "@vue-dnd-kit/core": "workspace:*"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.2.3",

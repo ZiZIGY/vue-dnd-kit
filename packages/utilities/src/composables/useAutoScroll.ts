@@ -33,9 +33,9 @@ import type { Ref } from 'vue';
 export const useAutoScroll = (
   container: Ref<HTMLElement | null>,
   point: Ref<IPoint | null>,
-  options: IAutoScrollOptions = {}
+  options?: IAutoScrollOptions
 ) => {
-  const { threshold = 50, speed = 10, disabled = false } = options;
+  const { threshold = 50, speed = 10, disabled = false } = options ?? {};
   /** Flag indicating if auto-scroll is currently active */
   const isScrolling = ref(false);
   /** Request animation frame ID for scroll animation */

@@ -48,4 +48,19 @@ export default defineConfig({
       localsConvention: 'camelCase',
     },
   },
+  resolve: {
+    alias: {
+      '@vue-dnd-kit/core': resolve(__dirname, '../core/src'),
+    },
+    dedupe: ['vue'],
+  },
+  optimizeDeps: {
+    include: ['vue'],
+    exclude: ['@vue-dnd-kit/core'],
+  },
+  server: {
+    fs: {
+      allow: ['..'],
+    },
+  },
 });

@@ -31,20 +31,38 @@ export default defineConfig({
       fileName: (format) => `vue-dnd-kit-components.${format}.js`,
     },
     rollupOptions: {
-      external: ['vue'],
+      external: ['vue', '@vue-dnd-kit/core'],
       output: {
         globals: {
           vue: 'Vue',
+          '@vue-dnd-kit/core': 'VueDndKitCore',
         },
         exports: 'named',
       },
     },
     cssCodeSplit: false,
     cssMinify: true,
+    sourcemap: true,
   },
   css: {
     modules: {
       localsConvention: 'camelCase',
+    },
+  },
+  resolve: {
+    alias: {
+      '@vue-dnd-kit/core': resolve(__dirname, '../core/src'),
+      '@vue-dnd-kit/components': resolve(__dirname, './src'),
+    },
+    dedupe: ['vue'],
+  },
+  optimizeDeps: {
+    include: ['vue'],
+    exclude: ['@vue-dnd-kit/core'],
+  },
+  server: {
+    fs: {
+      allow: ['..'],
     },
   },
 });

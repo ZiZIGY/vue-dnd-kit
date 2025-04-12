@@ -85,6 +85,8 @@ export const useEventManager = createGlobalState(() => {
   ) => {
     clearAllListeners();
 
+    (event.target as HTMLElement).blur();
+
     if (options?.container)
       activeContainer.component.value = markRaw(options.container);
 
@@ -102,7 +104,6 @@ export const useEventManager = createGlobalState(() => {
     currentKeyHandler = (event: KeyboardEvent) => {
       if (event.type === 'keydown') keyPressed(event, true);
       if (event.type === 'keypress') keyPressed(event, true);
-
       if (event.type === 'keyup') {
         if (event.code === EKeyboardKey.ESCAPE) currentEndHandler?.(false);
         if (event.code === EKeyboardKey.ENTER) currentEndHandler?.();
