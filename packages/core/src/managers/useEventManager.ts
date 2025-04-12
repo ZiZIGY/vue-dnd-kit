@@ -14,6 +14,10 @@ enum EKeyboardKey {
   A = 'KeyA',
   S = 'KeyS',
   D = 'KeyD',
+  CONTROL = 'ControlLeft',
+  ALT = 'AltLeft',
+  SHIFT = 'ShiftLeft',
+  META = 'MetaLeft',
 }
 
 export const useEventManager = createGlobalState(() => {
@@ -26,7 +30,7 @@ export const useEventManager = createGlobalState(() => {
   let currentScrollHandler: ((event: WheelEvent) => void) | null = null;
   let currentKeyHandler: ((event: KeyboardEvent) => void) | null = null;
 
-  const { activeContainer, keyboard } = useDnDStore();
+  const { activeContainer } = useDnDStore();
 
   const disableInteractions = () => {
     const body = document.body;
@@ -102,12 +106,9 @@ export const useEventManager = createGlobalState(() => {
     currentMoveHandler = (event: PointerEvent | KeyboardEvent) => track(event);
     currentScrollHandler = (event: WheelEvent) => track(event);
     currentKeyHandler = (event: KeyboardEvent) => {
-      if (event.type === 'keydown') keyPressed(event, true);
-      if (event.type === 'keypress') keyPressed(event, true);
       if (event.type === 'keyup') {
         if (event.code === EKeyboardKey.ESCAPE) currentEndHandler?.(false);
         if (event.code === EKeyboardKey.ENTER) currentEndHandler?.();
-        keyPressed(event, false);
       }
 
       track(event);
@@ -122,13 +123,6 @@ export const useEventManager = createGlobalState(() => {
     document.addEventListener('keydown', currentKeyHandler);
     document.addEventListener('keypress', currentKeyHandler);
     document.addEventListener('keyup', currentKeyHandler);
-  };
-
-  const keyPressed = (event: KeyboardEvent, isKeyDown = true) => {
-    if (event.code === EKeyboardKey.W) keyboard.w.value = isKeyDown;
-    if (event.code === EKeyboardKey.A) keyboard.a.value = isKeyDown;
-    if (event.code === EKeyboardKey.S) keyboard.s.value = isKeyDown;
-    if (event.code === EKeyboardKey.D) keyboard.d.value = isKeyDown;
   };
 
   return {

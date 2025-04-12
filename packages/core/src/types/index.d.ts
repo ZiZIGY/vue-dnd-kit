@@ -12,6 +12,16 @@ export interface IDnDStore {
     element: Ref<IDragElement | null>;
   };
   pointerPosition: IPointerPosition;
+  keyboard: {
+    w: Ref<boolean>;
+    s: Ref<boolean>;
+    a: Ref<boolean>;
+    d: Ref<boolean>;
+    ctrl: Ref<boolean>;
+    shift: Ref<boolean>;
+    alt: Ref<boolean>;
+    meta: Ref<boolean>;
+  };
 }
 
 export interface IActiveContainer {
@@ -33,13 +43,19 @@ export interface IDragElement {
   groups: string[];
   layer: Component | null;
   defaultLayer: Component | null;
-  data: any;
+  data: {
+    source?: any[];
+    index?: number;
+    [key: string]: any;
+  } | null;
   events: {
     onHover?: (store: IDnDStore) => void;
     onLeave?: (store: IDnDStore) => void;
     onEnd?: (store: IDnDStore) => void;
   };
 }
+
+const test: IDragElement['data'];
 
 export interface IDraggingElement extends IDragElement {
   initialHTML: string;
@@ -83,7 +99,11 @@ export interface IUseDragOptions extends IUseSensorOptions {
   keyboard?: {
     moveStep?: number;
   };
-  data?: any;
+  data?: {
+    source?: any[];
+    index?: number;
+    [key: string]: any;
+  };
   layer?: Component | null;
   container?: Component;
 }

@@ -1,3 +1,4 @@
+import { DnDOperations } from './utils/operations';
 import { VueDndKitPlugin } from './plugin';
 import { getBoundingBox } from './utils/geometry';
 import { useDnDStore } from './composables/useDnDStore';
@@ -13,6 +14,7 @@ export {
   useDnDStore,
   useSelection,
   getBoundingBox,
+  DnDOperations,
 };
 
 export type {

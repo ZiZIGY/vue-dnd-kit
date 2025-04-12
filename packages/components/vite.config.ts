@@ -53,6 +53,7 @@ export default defineConfig({
     alias: {
       '@vue-dnd-kit/core': resolve(__dirname, '../core/src'),
       '@vue-dnd-kit/components': resolve(__dirname, './src'),
+      '@types': resolve(__dirname, './src/types'),
     },
     dedupe: ['vue'],
   },

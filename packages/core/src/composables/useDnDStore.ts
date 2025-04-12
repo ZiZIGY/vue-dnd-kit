@@ -5,7 +5,7 @@ import type {
   IPoint,
 } from '../types';
 import { computed, ref, shallowRef, type Component } from 'vue';
-import { createGlobalState } from '@vueuse/core';
+import { createGlobalState, useMagicKeys } from '@vueuse/core';
 
 export const useDnDStore = createGlobalState(() => {
   const draggingElements = ref<IDraggingElement[]>([]);
@@ -33,12 +33,7 @@ export const useDnDStore = createGlobalState(() => {
     },
   };
 
-  const keyboard = {
-    w: shallowRef(false),
-    s: shallowRef(false),
-    a: shallowRef(false),
-    d: shallowRef(false),
-  };
+  const { w, s, a, d, ctrl, shift, alt, meta } = useMagicKeys();
 
   return {
     isDragging,
@@ -49,6 +44,15 @@ export const useDnDStore = createGlobalState(() => {
     zones,
     hovered,
     pointerPosition,
-    keyboard,
+    keyboard: {
+      w,
+      s,
+      a,
+      d,
+      ctrl,
+      shift,
+      alt,
+      meta,
+    },
   };
 });

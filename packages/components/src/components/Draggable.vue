@@ -1,19 +1,9 @@
-<script setup lang="ts">
-  import { onMounted, type Component } from 'vue';
+<script setup lang="ts" generic="T extends IUseDragOptions['data']">
+  import { onMounted, onUnmounted, type Component } from 'vue';
   import { useDraggable, useSelection } from '@vue-dnd-kit/core';
-  import { IDnDStore, ISensor } from '@vue-dnd-kit/core/types';
+  import { IDnDStore, ISensor, IUseDragOptions } from '@vue-dnd-kit/core/types';
 
-  interface IDraggableProps {
-    tag?: keyof HTMLElementTagNameMap;
-    container?: Component;
-    data?: any;
-    groups?: string[];
-    keyboardMoveStep?: number;
-    layer?: Component;
-    sensorThrottle?: number;
-    sensorSetup?: ISensor;
-    preventRootDrag?: boolean;
-  }
+  import { DraggableClassNames } from '../utils/classNames';
 
   const {
     tag = 'div',
@@ -25,7 +15,17 @@
     sensorThrottle,
     sensorSetup,
     preventRootDrag,
-  } = defineProps<IDraggableProps>();
+  } = defineProps<{
+    tag?: keyof HTMLElementTagNameMap;
+    container?: Component;
+    data?: T;
+    groups?: string[];
+    keyboardMoveStep?: number;
+    layer?: Component;
+    sensorThrottle?: number;
+    sensorSetup?: ISensor;
+    preventRootDrag?: boolean;
+  }>();
 
   const emit = defineEmits<{
     (e: 'start' | 'end' | 'leave' | 'hover' | 'move', store: IDnDStore): void;
@@ -65,30 +65,40 @@
     if (!preventRootDrag)
       elementRef.value?.addEventListener('pointerdown', handleDragStart);
   });
+
+  onUnmounted(() => {
+    if (!preventRootDrag)
+      elementRef.value?.removeEventListener('pointerdown', handleDragStart);
+  });
 </script>
 
 <template>
   <component
     ref="elementRef"
     :is="tag"
-    class="dnd-kit-draggable"
     :class="{
-      'dnd-kit-draggable-disabled': isDragging,
-      'dnd-kit-draggable-active': isDragging,
-      'dnd-kit-draggable-selected': isSelected,
+      [DraggableClassNames.DRAGGABLE]: true,
+      [DraggableClassNames.DRAGGABLE_DISABLED]: isDragging,
+      [DraggableClassNames.DRAGGABLE_ACTIVE]: isDragging,
+      [DraggableClassNames.DRAGGABLE_SELECTED]: isSelected,
+      [DraggableClassNames.DRAGGABLE_ALLOWED]: isAllowed,
+      [DraggableClassNames.DRAGGABLE_OVERED]: isOvered,
     }"
     :disabled="isDragging"
+    @pointerdown.self="preventRootDrag ?? handleDragStart"
+    @keydown.space.self="preventRootDrag ?? handleDragStart"
   >
     <slot
-      :handleDragStart="handleDragStart"
-      :isAllowed="isAllowed"
-      :isDragging="isDragging"
-      :isOvered="isOvered"
-      :isSelected="isSelected"
-      :isParentOfSelected="isParentOfSelected"
-      :handleSelect="handleSelect"
-      :handleToggleSelect="handleToggleSelect"
-      :handleUnselect="handleUnselect"
+      :handle-drag-start="handleDragStart"
+      :data="data"
+      :is-allowed="isAllowed"
+      :is-dragging="isDragging"
+      :is-overed="isOvered"
+      :is-selected="isSelected"
+      :is-parent-of-selected="isParentOfSelected"
+      :handle-select="handleSelect"
+      :handle-toggle-select="handleToggleSelect"
+      :handle-unselect="handleUnselect"
     />
   </component>
 </template>
