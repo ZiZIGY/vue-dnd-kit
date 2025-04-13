@@ -1,13 +1,17 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
-import Draggable from '../Draggable.vue';
+  import Draggable from '../Draggable.vue';
 
-  const { tag = 'li', groups = ['kanban-item'], preventRootDrag = true } = defineProps<{
+  const {
+    tag = 'li',
+    groups = ['kanban-item'],
+    preventRootDrag = true,
+  } = defineProps<{
     tag?: keyof HTMLElementTagNameMap;
     groups?: string[];
     preventRootDrag?: boolean;
     source: any[];
     index: number;
+    data: Record<string, any>;
   }>();
 </script>
 
@@ -28,8 +32,10 @@ import Draggable from '../Draggable.vue';
       isSelected,
       isParentOfSelected,
     }"
-    :data="computed(() => ({ source, index }))"
-    >
+    :data="data"
+    :source="source"
+    :index="index"
+  >
     <slot
       :handle-drag-start="handleDragStart"
       :is-allowed="isAllowed"

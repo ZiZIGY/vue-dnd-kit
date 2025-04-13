@@ -2,7 +2,7 @@
   import { IKanbanColumn } from 'src/types';
   import Draggable from '../Draggable.vue';
   import Droppable from '../Droppable.vue';
-  import { type Component, computed } from 'vue';
+  import { type Component } from 'vue';
   import { IDnDStore } from '@vue-dnd-kit/core';
   import { ISensor } from '@vue-dnd-kit/core/types';
 
@@ -13,8 +13,6 @@
     groups = ['kanban-column'],
     bodyGroups = ['kanban-item'],
     bodyTag = 'ul',
-    source,
-    index,
   } = defineProps<{
     tag?: keyof HTMLElementTagNameMap;
     title?: string;
@@ -25,6 +23,7 @@
     container?: Component;
     keyboardMoveStep?: number;
     layer?: Component;
+    data: Record<string, any>;
     sensorThrottle?: number;
     sensorSetup?: ISensor;
     bodyGroups?: string[];
@@ -63,12 +62,9 @@
       isParentOfSelected,
       isSelected,
     }"
-    :data="
-      computed(() => ({
-        source,
-        index,
-      }))
-    "
+    :data="data"
+    :source="source"
+    :index="index"
     :keyboard-move-step="keyboardMoveStep"
     :layer="layer"
     :sensor-throttle="sensorThrottle"
@@ -96,11 +92,7 @@
       :groups="bodyGroups"
       :tag="bodyTag"
       @drop="emit('drop', $event)"
-      :data="
-        computed(() => ({
-          source: source[index].items,
-        }))
-      "
+      :source="source[index].items"
       class="dnd-kit-kanban-column-body"
     >
       <slot

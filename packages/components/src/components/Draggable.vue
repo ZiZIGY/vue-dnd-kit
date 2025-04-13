@@ -1,30 +1,26 @@
-<script setup lang="ts" generic="T extends IUseDragOptions['data']">
-  import { onMounted, onUnmounted, type Component } from 'vue';
+<script setup lang="ts">
+  import { computed, type Component } from 'vue';
   import { useDraggable, useSelection } from '@vue-dnd-kit/core';
-  import { IDnDStore, ISensor, IUseDragOptions } from '@vue-dnd-kit/core/types';
+  import { IDnDStore, ISensor } from '@vue-dnd-kit/core/types';
 
   import { DraggableClassNames } from '../utils/classNames';
 
   const {
     tag = 'div',
     container,
-    data,
-    groups,
-    keyboardMoveStep,
-    layer,
-    sensorThrottle,
-    sensorSetup,
-    preventRootDrag,
+    ...props
   } = defineProps<{
     tag?: keyof HTMLElementTagNameMap;
     container?: Component;
-    data?: T;
+    data?: Record<string, any>;
     groups?: string[];
     keyboardMoveStep?: number;
     layer?: Component;
     sensorThrottle?: number;
     sensorSetup?: ISensor;
     preventRootDrag?: boolean;
+    index?: number;
+    source?: any[];
   }>();
 
   const emit = defineEmits<{
@@ -34,15 +30,19 @@
   const { elementRef, handleDragStart, isAllowed, isDragging, isOvered } =
     useDraggable({
       container,
-      data,
-      groups,
-      layer,
+      data: computed(() => ({
+        index: props.index,
+        source: props.source,
+        ...props.data,
+      })),
+      groups: props.groups,
+      layer: props.layer,
       keyboard: {
-        moveStep: keyboardMoveStep,
+        moveStep: props.keyboardMoveStep,
       },
       sensor: {
-        throttle: sensorThrottle,
-        setup: sensorSetup,
+        throttle: props.sensorThrottle,
+        setup: props.sensorSetup,
       },
       events: {
         onStart: (store) => emit('start', store),
@@ -60,16 +60,6 @@
     handleUnselect,
     isParentOfSelected,
   } = useSelection(elementRef);
-
-  onMounted(() => {
-    if (!preventRootDrag)
-      elementRef.value?.addEventListener('pointerdown', handleDragStart);
-  });
-
-  onUnmounted(() => {
-    if (!preventRootDrag)
-      elementRef.value?.removeEventListener('pointerdown', handleDragStart);
-  });
 </script>
 
 <template>
@@ -85,8 +75,10 @@
       [DraggableClassNames.DRAGGABLE_OVERED]: isOvered,
     }"
     :disabled="isDragging"
-    @pointerdown.self="preventRootDrag ?? handleDragStart"
-    @keydown.space.self="preventRootDrag ?? handleDragStart"
+    @pointerdown.self="(event: PointerEvent) => !preventRootDrag && handleDragStart(event)"
+    @keydown.space.self="
+      (event: KeyboardEvent) => !preventRootDrag && handleDragStart(event)
+    "
   >
     <slot
       :handle-drag-start="handleDragStart"

@@ -1,4 +1,4 @@
-<script setup lang="ts" generic="T">
+<script setup lang="ts">
   import type { IDnDStore } from '@vue-dnd-kit/core/types';
   import { useDroppable } from '@vue-dnd-kit/core';
   import { DroppableClassNames } from '../utils/classNames';
@@ -7,10 +7,12 @@
     tag = 'div',
     data,
     groups,
+    source,
   } = defineProps<{
     tag?: keyof HTMLElementTagNameMap;
-    data?: T;
+    data?: Record<string, any>;
     groups?: string[];
+    source?: any[];
   }>();
 
   const emit = defineEmits<{
@@ -18,7 +20,10 @@
   }>();
 
   const { elementRef, isAllowed, isOvered } = useDroppable({
-    data,
+    data: {
+      source,
+      ...data,
+    },
     groups,
     events: {
       onDrop: (store) => emit('drop', store),

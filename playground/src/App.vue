@@ -1,54 +1,58 @@
-<script setup lang="ts">
-  import { Kanban, KanbanColumn, KanbanItem } from '@vue-dnd-kit/components';
-  import { DnDOperations } from '@vue-dnd-kit/core';
+<script setup>
   import { ref } from 'vue';
+  import { Table, TableHead, TableBody } from '@vue-dnd-kit/components';
+  import { DnDOperations, useDnDStore } from '@vue-dnd-kit/core';
 
-  const data = ref([
-    {
-      title: 'To Do',
-      items: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
-    },
-    {
-      title: 'In Progress',
-      items: [],
-    },
-    {
-      title: 'Done',
-      items: [],
-    },
+  const columns = ref([
+    { key: 'code', name: 'Код' },
+    { key: 'name', name: 'Название' },
+    { key: 'category', name: 'Категория' },
+    { key: 'price', name: 'Цена' },
   ]);
+
+  const tableData = ref([
+    { code: '1001', name: 'Продукт 1', category: 'Категория A', price: 99 },
+    { code: '1002', name: 'Продукт 2', category: 'Категория B', price: 149 },
+    { code: '1003', name: 'Продукт 3', category: 'Категория A', price: 249 },
+  ]);
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('ru-RU', {
+      style: 'currency',
+      currency: 'RUB',
+    }).format(value);
+  };
+
+  const store = useDnDStore();
 </script>
 
 <template>
-  <div class="kanban-container">
-    <Kanban @drop="DnDOperations.applyTransfer">
-      <KanbanColumn
-        v-for="(column, index) in data"
-        :key="`kanban-column-${column.title}`"
-        :title="column.title"
-        :index="index"
-        :source="data"
-        @drop="DnDOperations.applyTransfer"
-      >
-        <template #header>
-          <h2 class="column-header">{{ column.title }}</h2>
-        </template>
+  <pre>{{ store }}</pre>
+  <Table>
+    <TableHead
+      :columns="columns"
+      @update:columns="columns = $event"
+      @drop="DnDOperations.applyTransfer"
+    />
 
-        <KanbanItem
-          v-for="(item, index) in column.items"
-          :key="item"
-          :index="index"
-          :source="column.items"
-          :prevent-root-drag="false"
-        >
-          {{ item }}
-        </KanbanItem>
-      </KanbanColumn>
-    </Kanban>
-  </div>
+    <TableBody
+      :columns="columns"
+      :data="tableData"
+      @drop="DnDOperations.applyTransfer"
+    >
+      <template #cell="{ row, column, value }">
+        <div v-if="column.key === 'price'">
+          {{ formatCurrency(value) }}
+        </div>
+        <div v-else>
+          {{ value }}
+        </div>
+      </template>
+    </TableBody>
+  </Table>
 </template>
 
-<style scoped>
+<style>
   pre {
     position: fixed;
     top: 0;

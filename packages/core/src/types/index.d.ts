@@ -65,7 +65,10 @@ export interface IDraggingElement extends IDragElement {
 export interface IDropZone {
   node: HTMLElement | Element | null;
   groups: string[];
-  data: any;
+  data?: {
+    source?: any[];
+    [key: string]: any;
+  };
   events: {
     onHover?: (store: IDnDStore) => void;
     onLeave?: (store: IDnDStore) => void;
@@ -85,7 +88,10 @@ export interface IUseDropOptions {
     onHover?: (store: IDnDStore) => void;
     onLeave?: (store: IDnDStore) => void;
   };
-  data?: any;
+  data?: {
+    source?: any[];
+    [key: string]: any;
+  };
 }
 export interface IUseDragOptions extends IUseSensorOptions {
   groups?: string[];
