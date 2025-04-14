@@ -1,6 +1,6 @@
 {
   "name": "@vue-dnd-kit/components",
-  "version": "0.2.21",
+  "version": "0.2.22",
   "description": "Components for Vue DnD Kit",
   "author": "ZiZIGY",
   "license": "MIT",
@@ -58,10 +58,8 @@
     "./sfc": "./src/components/",
     "./styles": "./dist/style.css"
   },
-  "dependencies": {
-    "@vue-dnd-kit/core": "^0.5.0"
-  },
   "peerDependencies": {
+    "@vue-dnd-kit/core": "^0.5.0",
     "@vueuse/core": "^10.0.0 || ^13.0.0",
     "vue": "^3.3.0 || ^3.4.0 || ^3.5.0"
   },

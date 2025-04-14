@@ -8,43 +8,40 @@ export default defineConfig({
     vue(),
     dts({
       include: ['src/**/*.ts', 'src/**/*.vue'],
-      beforeWriteFile: (filePath, content) => {
-        const fixedContent = content.replace(
-          /from ['"]\.\.\/types['"];/g,
-          'from "../types";'
-        );
-        return {
-          filePath: filePath.replace('/src/', '/'),
-          content: fixedContent,
-        };
-      },
-      copyDtsFiles: true,
+      exclude: ['node_modules/**', 'src/**/*.spec.ts'],
+      staticImport: true,
+      rollupTypes: true,
       insertTypesEntry: true,
-      cleanVueFileName: true,
     }),
   ],
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'VueDndKitCore',
-      formats: ['es', 'cjs'],
       fileName: (format) => `vue-dnd-kit-core.${format}.js`,
+      formats: ['es', 'cjs'],
     },
     rollupOptions: {
-      external: ['vue'],
+      external: ['vue', '@vueuse/core'],
       output: {
         globals: {
           vue: 'Vue',
+          '@vueuse/core': 'VueUse',
         },
-        exports: 'named',
       },
     },
-    cssCodeSplit: false,
-    cssMinify: true,
+    sourcemap: true,
+    emptyOutDir: true,
   },
-  css: {
-    modules: {
-      localsConvention: 'camelCase',
+  resolve: {
+    alias: {
+      '@vue-dnd-kit/core': resolve(__dirname, './src'),
+      '@': resolve(__dirname, './src'),
     },
+    dedupe: ['vue'],
+  },
+  optimizeDeps: {
+    include: ['vue'],
+    exclude: ['@vueuse/core'],
   },
 });
