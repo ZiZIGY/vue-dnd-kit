@@ -1,6 +1,6 @@
 {
   "name": "@vue-dnd-kit/components",
-  "version": "0.2.3",
+  "version": "0.2.21",
   "description": "Components for Vue DnD Kit",
   "author": "ZiZIGY",
   "license": "MIT",
@@ -28,33 +28,42 @@
     "directory": "packages/components"
   },
   "scripts": {
-    "dev": "yarn build --watch",
+    "dev": "vite build --watch",
     "start": "vite build --watch",
-    "build": "vite build",
+    "build": "rm -rf dist && vite build",
     "test": "vitest run",
     "lint": "eslint src --ext .ts,.vue",
-    "prepublishOnly": "vite build"
+    "prepublishOnly": "npm run build"
   },
-  "main": "dist/vue-dnd-kit-components.cjs.js",
-  "module": "dist/vue-dnd-kit-components.es.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/vue-dnd-kit-components.es.js",
-      "require": "./dist/vue-dnd-kit-components.cjs.js"
-    }
+  "main": "./dist/vue-dnd-kit-components.umd.js",
+  "module": "./dist/vue-dnd-kit-components.es.js",
+  "unpkg": "./dist/vue-dnd-kit-components.umd.js",
+  "types": "./dist/types/index.d.ts",
+  "browser": {
+    "./sfc": "./src/components/"
   },
   "files": [
     "README.md",
     "CHANGELOG.md",
     "LICENSE",
-    "dist"
+    "dist",
+    "src/components/*.vue"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/vue-dnd-kit-components.es.js",
+      "require": "./dist/vue-dnd-kit-components.umd.js"
+    },
+    "./sfc": "./src/components/",
+    "./styles": "./dist/style.css"
+  },
+  "dependencies": {
+    "@vue-dnd-kit/core": "^0.5.0"
+  },
   "peerDependencies": {
-    "@vueuse/core": "^13.1.0",
-    "@vue-dnd-kit/core": "^0.5.3",
-    "vue": "^3.5.13"
+    "@vueuse/core": "^10.0.0 || ^13.0.0",
+    "vue": "^3.3.0 || ^3.4.0 || ^3.5.0"
   },
   "devDependencies": {
     "@types/node": "^22.13.14",
@@ -65,7 +74,8 @@
     "vite": "^6.0.5",
     "vite-plugin-dts": "^4.5.0",
     "vitepress": "^1.6.3",
-    "vue": "^3.5.13"
+    "vue": "^3.5.13",
+    "vue-tsc": "^1.8.27"
   },
   "publishConfig": {
     "access": "public",

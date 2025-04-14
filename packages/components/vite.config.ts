@@ -8,34 +8,39 @@ export default defineConfig({
     vue(),
     dts({
       include: ['src/**/*.ts', 'src/**/*.vue'],
+      outDir: 'dist/types',
+      cleanVueFileName: true,
+      staticImport: true,
+      insertTypesEntry: true,
+      copyDtsFiles: false,
       beforeWriteFile: (filePath, content) => {
-        const fixedContent = content.replace(
-          /from ['"]\.\.\/types['"];/g,
-          'from "../types";'
-        );
+        let newPath = filePath
+          .replace('/src/components/', '/components/')
+          .replace('/src/', '/');
+
         return {
-          filePath: filePath.replace('/src/', '/'),
-          content: fixedContent,
+          filePath: newPath,
+          content: content,
         };
       },
-      copyDtsFiles: true,
-      insertTypesEntry: true,
-      cleanVueFileName: true,
+      
     }),
   ],
   build: {
+    emptyOutDir: true,
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'VueDndKitComponents',
-      formats: ['es', 'cjs'],
+      formats: ['es', 'umd'],
       fileName: (format) => `vue-dnd-kit-components.${format}.js`,
     },
     rollupOptions: {
-      external: ['vue', '@vue-dnd-kit/core'],
+      external: ['vue', '@vue-dnd-kit/core', '@vueuse/core'],
       output: {
         globals: {
           vue: 'Vue',
           '@vue-dnd-kit/core': 'VueDndKitCore',
+          '@vueuse/core': 'VueUse',
         },
         exports: 'named',
       },
@@ -44,16 +49,11 @@ export default defineConfig({
     cssMinify: true,
     sourcemap: true,
   },
-  css: {
-    modules: {
-      localsConvention: 'camelCase',
-    },
-  },
   resolve: {
     alias: {
       '@vue-dnd-kit/core': resolve(__dirname, '../core/src'),
       '@vue-dnd-kit/components': resolve(__dirname, './src'),
-      '@types': resolve(__dirname, './src/types'),
+      '@': resolve(__dirname, './src'),
     },
     dedupe: ['vue'],
   },
@@ -61,9 +61,24 @@ export default defineConfig({
     include: ['vue'],
     exclude: ['@vue-dnd-kit/core'],
   },
-  server: {
-    fs: {
-      allow: ['..'],
-    },
-  },
 });
+
+// export default defineConfig({
+//   build: {
+//     emptyOutDir: false,
+//     lib: {
+//       entry: path.resolve(__dirname, 'src/main.ts'),
+//       formats: ['es'],
+//       name: 'UiLib',
+//     },
+//     rollupOptions: {
+//       external: ['vue'],
+//       output: {
+//         globals: {
+//           Vue: 'vue',
+//         },
+//       },
+//     },
+//   },
+//   plugins: [vue(), dts()],
+// });

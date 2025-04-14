@@ -1,3 +1,7 @@
+// Экспортируем утилиты
+import * as classNames from './utils/classNames';
+
+// Экспортируем компоненты по отдельности
 import Draggable from './components/Draggable.vue';
 import Droppable from './components/Droppable.vue';
 import Kanban from './components/Kanban/Kanban.vue';
@@ -14,6 +18,7 @@ export {
   KanbanColumn,
   KanbanItem,
   Table,
-  TableHead,
   TableBody,
+  TableHead,
+  classNames,
 };
