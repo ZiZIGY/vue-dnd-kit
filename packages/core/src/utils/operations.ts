@@ -75,7 +75,7 @@ export class DnDOperations {
           element.data?.source,
           element.data?.index,
           hoveredZone?.data?.source,
-          hoveredZone?.data?.source.length
+          hoveredZone?.data?.source?.length
         )
       );
     }
@@ -100,7 +100,7 @@ export class DnDOperations {
           element.data?.source,
           element.data?.index,
           hoveredZone?.data?.source,
-          hoveredZone?.data?.source.length
+          hoveredZone?.data?.source?.length
         )
       );
     }
@@ -122,7 +122,7 @@ export class DnDOperations {
           element.data?.source,
           element.data?.index,
           hoveredZone?.data?.source,
-          hoveredZone?.data?.source.length
+          hoveredZone?.data?.source?.length
         )
       );
     }
@@ -149,7 +149,7 @@ export class DnDOperations {
       items.forEach((item) => {
         DnDOperations.insert(
           hoveredZone?.data?.source,
-          hoveredZone?.data?.source.length,
+          hoveredZone?.data?.source?.length,
           item
         );
       });

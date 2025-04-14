@@ -26,7 +26,8 @@ export const useEventManager = createGlobalState(() => {
   let originalOverscrollBehavior = '';
 
   let currentMoveHandler: ((event: any) => void) | null = null;
-  let currentEndHandler: ((triggerEvents?: boolean) => void) | null = null;
+  let currentEndHandler: (() => void) | null = null;
+  let currentCancelHandler: (() => void) | null = null;
   let currentScrollHandler: ((event: WheelEvent) => void) | null = null;
   let currentKeyHandler: ((event: KeyboardEvent) => void) | null = null;
 
@@ -65,8 +66,12 @@ export const useEventManager = createGlobalState(() => {
     }
 
     if (currentEndHandler) {
-      document.removeEventListener('pointerup', () => currentEndHandler?.());
+      document.removeEventListener('pointerup', currentEndHandler);
       currentEndHandler = null;
+    }
+
+    if (currentCancelHandler) {
+      currentCancelHandler = null;
     }
 
     if (currentScrollHandler) {
@@ -96,10 +101,17 @@ export const useEventManager = createGlobalState(() => {
 
     const { activate, track, deactivate } = useSensor(elementRef, options);
 
-    currentEndHandler = (triggerEvents = true) => {
+    currentEndHandler = () => {
       activeContainer.component.value = null;
       enableInteractions();
-      deactivate(triggerEvents);
+      deactivate(true);
+      clearAllListeners();
+    };
+
+    currentCancelHandler = () => {
+      activeContainer.component.value = null;
+      enableInteractions();
+      deactivate(false);
       clearAllListeners();
     };
 
@@ -107,7 +119,7 @@ export const useEventManager = createGlobalState(() => {
     currentScrollHandler = (event: WheelEvent) => track(event);
     currentKeyHandler = (event: KeyboardEvent) => {
       if (event.type === 'keyup') {
-        if (event.code === EKeyboardKey.ESCAPE) currentEndHandler?.(false);
+        if (event.code === EKeyboardKey.ESCAPE) currentCancelHandler?.();
         if (event.code === EKeyboardKey.ENTER) currentEndHandler?.();
       }
 
@@ -118,7 +130,7 @@ export const useEventManager = createGlobalState(() => {
     activate(event);
 
     document.addEventListener('pointermove', currentMoveHandler);
-    document.addEventListener('pointerup', () => currentEndHandler?.());
+    document.addEventListener('pointerup', currentEndHandler);
     document.addEventListener('wheel', currentScrollHandler);
     document.addEventListener('keydown', currentKeyHandler);
     document.addEventListener('keypress', currentKeyHandler);
