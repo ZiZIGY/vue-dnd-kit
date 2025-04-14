@@ -1,7 +1,8 @@
-# Vue Drag & Drop Library - Core Package
+# Vue Drag & Drop Library - Components Package
 
 [![Beta](https://img.shields.io/badge/status-beta-yellow.svg)](https://github.com/zizigy/vue-dnd-kit)
- > ⚠️ **Warning**: This project is in active development (beta). The API may change between minor versions. Not recommended for production use until version 1.0.0.
+
+> ⚠️ **Warning**: This project is in active development (beta). The API may change between minor versions. Not recommended for production use until version 1.0.0.
 
 <p align="center">
   <a href="https://zizigy.github.io/vue-dnd-hooks/">
@@ -10,7 +11,7 @@
 </p>
 
 <p align="center">
-  Core package of the Vue Drag & Drop library with essential hooks and functionality.
+  Ready-to-use components for the Vue Drag & Drop library with Kanban, Table, and more.
 </p>
 
 <p align="center">
@@ -24,223 +25,249 @@
 </p>
 
 ## Project Status
-   
-   This project is in active development. We're working toward a stable API, but until version 1.0.0, there may be breaking changes.
-   
-   Roadmap:
-   - [x] Basic drag & drop functionality
-   - [x] Complete documentation
-   - [ ] Tests
-   - [ ] Stable API (version 1.0.0)
+
+This project is in active development. We're working toward a stable API, but until version 1.0.0, there may be breaking changes.
+
+Roadmap:
+
+- [x] Basic drag & drop components
+- [x] Table component
+- [x] Kanban board
+- [ ] Tree
+- [ ] SortableList
+- [ ] FormBuilder
+- [ ] Dashboard
+- [ ] Tabs
+- [ ] FileExplorer
+- [ ] Grid
+- [ ] Tests
+- [ ] Stable API (version 1.0.0)
 
 ## Features
 
-### Core Capabilities
+### Component Presets
 
-- 🎯 **Simple Composables API**
+- 📋 **Table Component**
 
-  - Intuitive hooks-based approach
-  - Clean and declarative syntax
-  - Minimal boilerplate code
-- 🎨 **Full Customization**
+  - Customizable structure
+  - Flexible column handling
+  - Minimal styling for easy customization
+  - Full control over drag & drop behavior
 
-  - Custom drag overlays
-  - Flexible styling system
-  - Animation support
-  - Custom drag handles
-- 📱 **Advanced Input Support**
+- 📊 **Kanban Board**
 
-  - Touch devices support
-  - Mouse events
-  - Multi-touch gestures
+  - Simple column and item structure
+  - Unopinionated styling
+  - Flexible data handling
+  - Customizable drag & drop logic
 
-### Performance
+- 🧩 **Base Components**
 
-- ⚡ **Optimized Rendering**
+  - Draggable
+  - Droppable
+  - DragHandle
 
-  - Virtual DOM friendly
-  - Minimal re-renders
-  - Efficient DOM updates
-  - Memory leak prevention
-- 🔄 **Smart Auto-scrolling**
+### Design Philosophy
 
-  - Smooth scroll animations
-  - Configurable thresholds
-  - Performance-optimized
-  - Works with nested scrollable containers
+- 🎨 **Minimal Styling**
 
-### Developer Experience
+  - Components come with minimal styling
+  - Full freedom to implement your own design
+  - No CSS dependencies
+  - Easy to integrate with any UI framework
 
-- 🔍 **TypeScript Ready**
+- 🔧 **Maximum Flexibility**
 
-  - Full type coverage
-  - Type inference
-  - IDE autocompletion
-  - Type-safe events
-- 📐 **Layout Features**
-
-  - Grid system support
-  - Flex layout compatible
-  - Responsive design ready
-  - Dynamic constraints
-
-### Advanced Features
-
-- 🎯 **Smart Grouping**
-
-  - Element groups
-  - Zone filtering
-  - Nested groups
-  - Dynamic group validation
-- 📊 **Rich Events System**
-
-  - Comprehensive lifecycle events
-  - Custom event handlers
-  - Drag state tracking
-  - Position coordinates
-- 🛡️ **Built-in Utilities**
-
-  - Geometry calculations
-  - Bounding box tracking
-  - Position management
-  - Intersection detection
+  - Components don't enforce specific data structures
+  - Custom event handling
+  - Write your own drag & drop logic
+  - Extend components as needed
 
 ### Integration
 
 - 🔌 **Framework Integration**
   - Vue 3 Composition API
-  - Nuxt.js compatible
-  - Works with SSR
-  - Plugin ecosystem ready
+  - TypeScript support
+  - Works with Nuxt.js
+  - Compatible with any styling approach
 
 ## Installation
 
 Choose your preferred package manager:
 
 ```bash
-npm install @vue-dnd-kit/core
+npm install @vue-dnd-kit/components @vue-dnd-kit/core
 ```
 
 ```bash
-yarn add @vue-dnd-kit/core
+yarn add @vue-dnd-kit/components @vue-dnd-kit/core
 ```
 
 ```bash
-pnpm install @vue-dnd-kit/core
+pnpm install @vue-dnd-kit/components @vue-dnd-kit/core
 ```
 
 ## Basic Usage
 
-### App.vue
-
-<sup>📄 Root Application Component</sup>
+### Table Component
 
 ```vue
-<script setup lang="ts">
+<script setup>
   import { ref } from 'vue';
-  import { DragOverlay } from '@vue-dnd-kit/core';
-  import Draggable from './components/Draggable.vue';
-  import Droppable from './components/Droppable.vue';
+  import { Table, TableHead, TableBody } from '@vue-dnd-kit/components';
+  import { DnDOperations } from '@vue-dnd-kit/core';
 
-  const handleDrop = () => (elementInDropZone.value = true);
+  const columns = ref([
+    { key: 'code', name: 'Code' },
+    { key: 'name', name: 'Name' },
+    { key: 'category', name: 'Category' },
+    { key: 'price', name: 'Price' },
+  ]);
 
-  const handleEnd = () => (elementInDropZone.value = false);
+  const tableData = ref([
+    { code: '1001', name: 'Product 1', category: 'Category A', price: 99 },
+    { code: '1002', name: 'Product 2', category: 'Category B', price: 149 },
+    { code: '1003', name: 'Product 3', category: 'Category A', price: 249 },
+  ]);
 
-  const elementInDropZone = ref<boolean>(false);
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(value);
+  };
 </script>
 
 <template>
-  <div>
-    <Draggable v-if="!elementInDropZone"> drag me </Draggable>
-    <Droppable @drop="handleDrop">
-      <Draggable
-        v-if="elementInDropZone"
-        @end="handleEnd"
+  <Table>
+    <TableHead
+      :columns="columns"
+      @update:columns="columns = $event"
+      @drop="DnDOperations.applyTransfer"
+    />
+
+    <TableBody
+      :columns="columns"
+      :data="tableData"
+      @drop="DnDOperations.applyTransfer"
+    >
+      <template #cell="{ row, column, value }">
+        <div v-if="column.key === 'price'">
+          {{ formatCurrency(value) }}
+        </div>
+        <div v-else>
+          {{ value }}
+        </div>
+      </template>
+    </TableBody>
+  </Table>
+</template>
+```
+
+### Kanban Board
+
+```vue
+<script setup>
+  import { Kanban, KanbanColumn, KanbanItem } from '@vue-dnd-kit/components';
+  import { DnDOperations } from '@vue-dnd-kit/core';
+  import { ref } from 'vue';
+
+  const data = ref([
+    {
+      title: 'To Do',
+      items: ['Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5'],
+    },
+    {
+      title: 'In Progress',
+      items: [],
+    },
+    {
+      title: 'Done',
+      items: [],
+    },
+  ]);
+</script>
+
+<template>
+  <div class="kanban-container">
+    <Kanban @drop="DnDOperations.applyTransfer">
+      <KanbanColumn
+        v-for="(column, index) in data"
+        :key="`kanban-column-${column.title}`"
+        :title="column.title"
+        :index="index"
+        :source="data"
+        @drop="DnDOperations.applyTransfer"
       >
-        im in drop zone
-      </Draggable>
-    </Droppable>
+        <template #header>
+          <h2 class="column-header">{{ column.title }}</h2>
+        </template>
 
-    <DragOverlay />
-  </div>
-</template>
-```
-
-### Draggable.vue
-
-<sup>🧩 components/Draggable.vue</sup>
-
-```vue
-<script setup lang="ts">
-  import { useDraggable } from '@vue-dnd-kit/core';
-
-  const emit = defineEmits<{
-    (e: 'end'): void;
-  }>();
-
-  const { elementRef, handleDragStart, isDragging } = useDraggable({
-    events: { onEnd: () => emit('end') },
-  });
-</script>
-
-<template>
-  <div
-    ref="elementRef"
-    @pointerdown="handleDragStart"
-    :class="{ dragging: isDragging }"
-  >
-    <slot />
+        <KanbanItem
+          v-for="(item, index) in column.items"
+          :key="item"
+          :index="index"
+          :source="column.items"
+          :prevent-root-drag="false"
+        >
+          {{ item }}
+        </KanbanItem>
+      </KanbanColumn>
+    </Kanban>
   </div>
 </template>
 
-<style scoped>
-  .dragging {
-    opacity: 0.5;
+<style>
+  .kanban-container {
+    display: flex;
+    width: 100%;
+    padding: 20px;
+  }
+
+  .column-header {
+    font-weight: bold;
+    margin-bottom: 12px;
   }
 </style>
 ```
 
-### Droppable.vue
+### Custom Implementation
 
-<sup>🧩 components/Droppable.vue</sup>
+You can easily implement your own drag & drop logic:
 
 ```vue
-<script setup lang="ts">
-  import { useDroppable } from '@vue-dnd-kit/core';
+<script setup>
+  import { Draggable } from '@vue-dnd-kit/components';
+  import { ref, computed } from 'vue';
 
-  const emit = defineEmits<{
-    (e: 'drop'): void;
-  }>();
+  const items = ref(['Item 1', 'Item 2', 'Item 3']);
 
-  const { elementRef, isOvered } = useDroppable({
-    events: { onDrop: () => emit('drop') },
-  });
+  const handleDrop = (store) => {
+    const { source, sourceIndex, targetIndex } = store;
+
+    // Implement your own reordering logic
+    if (source && sourceIndex !== undefined && targetIndex !== undefined) {
+      const newItems = [...items.value];
+      const [removed] = newItems.splice(sourceIndex, 1);
+      newItems.splice(targetIndex, 0, removed);
+      items.value = newItems;
+    }
+  };
 </script>
 
 <template>
-  <div
-    ref="elementRef"
-    :class="{
-      droppable: true,
-      'is-overed': isOvered,
-    }"
-  >
-    drop here
-    <slot />
+  <div class="custom-list">
+    <Draggable
+      v-for="(item, index) in items"
+      :key="item"
+      :data="computed(() => ({ index, source: items }))"
+      @end="handleDrop"
+      class="custom-item"
+    >
+      {{ item }}
+    </Draggable>
   </div>
 </template>
-
-<style scoped>
-  .droppable {
-    width: 100px;
-    height: 100px;
-    border: 1px solid black;
-  }
-  .is-overed {
-    background-color: #f0f0f0;
-    border: 1px dashed red;
-  }
-</style>
 ```
 
 ## 📄 License
