@@ -69,17 +69,17 @@ export const useSensor = (
     const elements = Array.isArray(htmlElements)
       ? htmlElements
       : [htmlElements];
-    const activeDragNodes = store.draggingElements.value.map(
-      (element) => element.node
-    );
 
-    // Сначала ищем подходящие зоны
     const filteredZones = elements
       .map((htmlElement) =>
         store.zones.value.find((zone) => zone.node === htmlElement)
       )
       .filter((zone) => {
         if (!zone) return false;
+
+        const activeDragNodes = store.draggingElements.value.map(
+          (element) => element.node
+        );
 
         if (
           activeDragNodes.some(
@@ -108,52 +108,22 @@ export const useSensor = (
 
     const currentZone = filteredZones[0];
 
-    const filteredElements = elements
-      .map((htmlElement) =>
-        store.elements.value.find((e) => e.node === htmlElement)
+    store.hovered.zone.value = currentZone ?? null;
+
+    const possibleElement = elements.find((htmlElement) =>
+      store.possibleElements.value.some(
+        (element) => element.node === htmlElement
       )
-      .filter((element) => {
-        if (!element) return false;
+    );
 
-        if (
-          !isDescendant(
-            element.node as HTMLElement,
-            currentZone?.node as HTMLElement
-          )
-        ) {
-          return false;
-        }
-
-        if (
-          activeDragNodes.some(
-            (dragNode) =>
-              dragNode &&
-              (dragNode === element.node ||
-                isDescendant(
-                  element.node as HTMLElement,
-                  dragNode as HTMLElement
-                ))
-          )
+    const matchedElement = possibleElement
+      ? store.possibleElements.value.find(
+          (element) => element.node === possibleElement
         )
-          return false;
-
-        if (element.groups.length) {
-          const isCompatible = !store.draggingElements.value.some(
-            (draggingElement) => {
-              if (!draggingElement.groups.length) return false;
-              return !draggingElement.groups.some((group) =>
-                element.groups.includes(group)
-              );
-            }
-          );
-          return isCompatible;
-        }
-
-        return true;
-      });
+      : null;
 
     return {
-      element: filteredElements[0] ?? null,
+      element: matchedElement ?? null,
       zone: currentZone ?? null,
     };
   };

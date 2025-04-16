@@ -84,7 +84,6 @@
           :key="task.id"
           :index="taskIndex"
           :source="column.items"
-          :prevent-root-drag="false"
           tag="li"
           class="task-card"
           v-slot="{ handleDragStart }"
