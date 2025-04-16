@@ -92,6 +92,7 @@ export const useSensor = (
         )
           return false;
 
+        // Проверяем совместимость групп
         if (element.groups.length) {
           const isCompatible = !store.draggingElements.value.some(
             (draggingElement) => {
@@ -136,7 +137,12 @@ export const useSensor = (
       });
 
     return {
-      element: filteredElements[0] ?? null,
+      element: isDescendant(
+        filteredElements[0]?.node as HTMLElement,
+        filteredZones[0]?.node as HTMLElement
+      )
+        ? filteredElements[0]
+        : null,
       zone: filteredZones[0] ?? null,
     };
   };
