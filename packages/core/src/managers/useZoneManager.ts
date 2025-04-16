@@ -4,7 +4,13 @@ import type { IUseDropOptions } from '../types';
 import { useDnDStore } from '../composables/useDnDStore';
 
 export const useZoneManager = (options?: IUseDropOptions) => {
-  const { zonesMap, hovered, draggingElements, isDragging } = useDnDStore();
+  const {
+    zonesMap,
+    hovered,
+    draggingElements,
+    isDragging,
+    handleDropZoneIntersection,
+  } = useDnDStore();
 
   const elementRef = ref<HTMLElement | null>(null);
 
@@ -29,6 +35,8 @@ export const useZoneManager = (options?: IUseDropOptions) => {
   const registerZone = () => {
     if (!elementRef.value) throw new Error('elementRef is not set');
 
+    handleDropZoneIntersection('add', elementRef.value);
+
     zonesMap.value.set(elementRef.value, {
       node: elementRef.value,
       groups: options?.groups ?? [],
@@ -41,6 +49,8 @@ export const useZoneManager = (options?: IUseDropOptions) => {
 
   const unregisterZone = () => {
     if (!elementRef.value) return;
+
+    handleDropZoneIntersection('remove', elementRef.value);
 
     zonesMap.value.delete(elementRef.value);
   };

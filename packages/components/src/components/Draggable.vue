@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, type Component } from 'vue';
+  import { computed, onUpdated, type Component } from 'vue';
   import { useDraggable, useSelection } from '@vue-dnd-kit/core';
   import { IDnDStore, ISensor } from '@vue-dnd-kit/core/types';
 
@@ -26,6 +26,10 @@
   const emit = defineEmits<{
     (e: 'start' | 'end' | 'leave' | 'hover' | 'move', store: IDnDStore): void;
   }>();
+
+  onUpdated(() => {
+    console.log('updated');
+  });
 
   const { elementRef, handleDragStart, isAllowed, isDragging, isOvered } =
     useDraggable({
@@ -66,14 +70,16 @@
   <component
     ref="elementRef"
     :is="tag"
-    :class="{
-      [DraggableClassNames.DRAGGABLE]: true,
-      [DraggableClassNames.DRAGGABLE_DISABLED]: isDragging,
-      [DraggableClassNames.DRAGGABLE_ACTIVE]: isDragging,
-      [DraggableClassNames.DRAGGABLE_SELECTED]: isSelected,
-      [DraggableClassNames.DRAGGABLE_ALLOWED]: isAllowed,
-      [DraggableClassNames.DRAGGABLE_OVERED]: isOvered,
-    }"
+    :class="
+      computed(() => ({
+        [DraggableClassNames.DRAGGABLE]: true,
+        [DraggableClassNames.DRAGGABLE_DISABLED]: isDragging,
+        [DraggableClassNames.DRAGGABLE_ACTIVE]: isDragging,
+        [DraggableClassNames.DRAGGABLE_SELECTED]: isSelected,
+        [DraggableClassNames.DRAGGABLE_ALLOWED]: isAllowed,
+        [DraggableClassNames.DRAGGABLE_OVERED]: isOvered,
+      }))
+    "
     :disabled="isDragging"
     @pointerdown.self="(event: PointerEvent) => !preventRootDrag && handleDragStart(event)"
     @keydown.space.self="

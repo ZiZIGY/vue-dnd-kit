@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { IKanbanColumn } from 'src/types';
+  import { IKanbanColumn } from '../../types';
   import Draggable from '../Draggable.vue';
   import Droppable from '../Droppable.vue';
   import { type Component } from 'vue';

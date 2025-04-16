@@ -8,9 +8,12 @@
   import { useDnDStore } from '@vue-dnd-kit/core';
 
   const routes = computed(() => router.options.routes);
+
+  const store = useDnDStore();
 </script>
 
 <template>
+  <pre>{{ store }}</pre>
   <div class="playground">
     <header>
       <h1>Vue DnD Kit Playground</h1>

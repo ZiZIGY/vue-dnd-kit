@@ -12,6 +12,7 @@ export default defineConfig({
         __dirname,
         '../packages/components/src'
       ),
+      src: resolve(__dirname, 'src'),
     },
     dedupe: ['vue'],
   },

@@ -12,6 +12,7 @@ export const useElementManager = (options?: IUseDragOptions) => {
     hovered,
     selectedElementsMap,
     isDragging: isDragStarted,
+    handleDragElementIntersection,
   } = useDnDStore();
 
   const elementRef = ref<HTMLElement | null>(null);
@@ -49,6 +50,10 @@ export const useElementManager = (options?: IUseDragOptions) => {
       data: options?.data ?? null,
     });
 
+    // Добавляем элемент в список видимых при регистрации
+    // Позже IntersectionObserver в компоненте DnDProvider обновит это состояние
+    handleDragElementIntersection('add', elementRef.value);
+
     elementRef.value.addEventListener('dragstart', preventEvent);
     elementRef.value.addEventListener('drag', preventEvent);
     elementRef.value.setAttribute(draggableDataName, 'true');
@@ -57,6 +62,9 @@ export const useElementManager = (options?: IUseDragOptions) => {
 
   const unregisterElement = () => {
     if (!elementRef.value) return;
+
+    // Удаляем элемент из списка видимых при отмене регистрации
+    handleDragElementIntersection('remove', elementRef.value);
 
     elementsMap.value.delete(elementRef.value);
     selectedElementsMap.value.delete(elementRef.value);
