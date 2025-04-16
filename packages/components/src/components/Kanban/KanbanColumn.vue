@@ -23,7 +23,7 @@
     container?: Component;
     keyboardMoveStep?: number;
     layer?: Component;
-    data: Record<string, any>;
+    data?: Record<string, any>;
     sensorThrottle?: number;
     sensorSetup?: ISensor;
     bodyGroups?: string[];

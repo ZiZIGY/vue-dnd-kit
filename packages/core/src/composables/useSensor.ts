@@ -92,7 +92,6 @@ export const useSensor = (
         )
           return false;
 
-        // Проверяем совместимость групп
         if (element.groups.length) {
           const isCompatible = !store.draggingElements.value.some(
             (draggingElement) => {

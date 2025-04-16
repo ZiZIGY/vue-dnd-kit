@@ -1,70 +1,111 @@
 <script setup>
-  import { ref } from 'vue';
-  import { Table, TableHead, TableBody } from '@vue-dnd-kit/components';
-  import { DnDOperations, useDnDStore } from '@vue-dnd-kit/core';
-
-  const columns = ref([
-    { key: 'code', name: 'Код' },
-    { key: 'name', name: 'Название' },
-    { key: 'category', name: 'Категория' },
-    { key: 'price', name: 'Цена' },
-  ]);
-
-  const tableData = ref([
-    { code: '1001', name: 'Продукт 1', category: 'Категория A', price: 99 },
-    { code: '1002', name: 'Продукт 2', category: 'Категория B', price: 149 },
-    { code: '1003', name: 'Продукт 3', category: 'Категория A', price: 249 },
-  ]);
-
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-    }).format(value);
-  };
-
-  const store = useDnDStore();
+  // Нет необходимости импортировать компоненты страниц,
+  // так как они будут загружаться через роутер
 </script>
 
 <template>
-  <Table>
-    <TableHead
-      :columns="columns"
-      @update:columns="columns = $event"
-      @drop="DnDOperations.applyTransfer"
-    />
+  <div class="playground">
+    <header>
+      <h1>Vue DnD Kit Playground</h1>
+      <nav>
+        <ul class="nav-links">
+          <li>
+            <router-link to="/table">Таблица</router-link>
+          </li>
+          <li>
+            <router-link to="/kanban">Канбан</router-link>
+          </li>
+        </ul>
+      </nav>
+    </header>
 
-    <TableBody
-      :columns="columns"
-      :data="tableData"
-      @drop="DnDOperations.applyTransfer"
-    >
-      <template #cell="{ row, column, value }">
-        <div v-if="column.key === 'price'">
-          {{ formatCurrency(value) }}
-        </div>
-        <div v-else>
-          {{ value }}
-        </div>
-      </template>
-    </TableBody>
-  </Table>
+    <main>
+      <router-view />
+    </main>
+
+    <footer>
+      <p>Vue DnD Kit - Библиотека для перетаскивания элементов</p>
+    </footer>
+  </div>
 </template>
 
 <style>
-  pre {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100svh;
-    text-align: left;
-    max-width: 300px;
-    overflow: auto;
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+      Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
+      sans-serif;
+    background-color: #f8fafc;
+    color: #334155;
   }
 
-  .column-header {
-    font-weight: bold;
-    margin-bottom: 12px;
-    padding: 8px;
+  .playground {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  header {
+    padding: 24px 0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  h1 {
+    margin: 0 0 16px 0;
+    font-size: 28px;
+    color: #0f172a;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .nav-links a {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 16px;
+    color: #64748b;
+    transition: all 0.2s;
+  }
+
+  .nav-links a:hover {
+    background-color: #f1f5f9;
+    color: #334155;
+  }
+
+  .nav-links a.router-link-active {
+    background-color: #e0f2fe;
+    color: #0284c7;
+    font-weight: 500;
+  }
+
+  main {
+    flex: 1;
+    padding: 24px 0;
+  }
+
+  footer {
+    padding: 16px 0;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+    font-size: 14px;
+    color: #64748b;
+  }
+
+  /* Сбрасываем стили из исходного файла */
+  pre {
+    position: static;
+    height: auto;
+    max-width: none;
   }
 </style>

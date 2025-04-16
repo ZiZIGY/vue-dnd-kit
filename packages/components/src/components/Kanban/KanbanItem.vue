@@ -11,7 +11,7 @@
     preventRootDrag?: boolean;
     source: any[];
     index: number;
-    data: Record<string, any>;
+    data?: Record<string, any>;
   }>();
 </script>
 
