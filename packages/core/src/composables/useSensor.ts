@@ -72,6 +72,7 @@ export const useSensor = (
       : [htmlElements];
 
     const filteredZones = elements
+      .filter((htmlElement) => store.visibleZones.value.has(htmlElement))
       .map((htmlElement) => store.zonesMap.value.get(htmlElement))
       .filter((zone) => {
         if (!zone) return false;
@@ -110,9 +111,7 @@ export const useSensor = (
     store.hovered.zone.value = currentZone ?? null;
 
     const possibleElement = elements.find((htmlElement) =>
-      store.possibleElements.value.some(
-        (element) => element.node === htmlElement
-      )
+      store.visibleElements.value.has(htmlElement)
     );
 
     const matchedElement = possibleElement

@@ -26,14 +26,16 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
 
   const activeDragNodes = store.draggingElements.value.map((el) => el.node);
 
-  const allCollidingElements = Array.from(store.elementsMap.value.entries())
-    .filter(([node, _]) => {
-      if (!node) return false;
+  // Работаем только с видимыми элементами
+  const allCollidingElements = Array.from(store.visibleElements.value)
+    .filter((node) => {
+      if (!node || !store.elementsMap.value.has(node)) return false;
 
       const rect = getBoundingBox(node as HTMLElement);
       return rect && containerRect && checkCollision(rect, containerRect);
     })
-    .map(([node, element]) => {
+    .map((node) => {
+      const element = store.elementsMap.value.get(node);
       const rect = getBoundingBox(node as HTMLElement);
       const elementCenter = getCenter(rect);
 
@@ -48,7 +50,7 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
 
       // Вычисляем глубину вложенности
       let depth = 0;
-      for (const [parentNode, _] of store.elementsMap.value.entries()) {
+      for (const parentNode of store.visibleElements.value) {
         if (
           parentNode !== node &&
           parentNode &&
@@ -80,10 +82,12 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
       return b.overlapPercent - a.overlapPercent;
     });
 
-  const allCollidingZones = Array.from(store.zonesMap.value.entries())
-    .filter(([node, _]) => {
+  // Работаем только с видимыми зонами
+  const allCollidingZones = Array.from(store.visibleZones.value)
+    .filter((node) => {
       if (
         !node ||
+        !store.zonesMap.value.has(node) ||
         activeDragNodes.some(
           (dragNode) =>
             dragNode &&
@@ -95,7 +99,8 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
       const rect = getBoundingBox(node as HTMLElement);
       return rect && containerRect && checkCollision(rect, containerRect);
     })
-    .map(([node, zone]) => {
+    .map((node) => {
+      const zone = store.zonesMap.value.get(node);
       const rect = getBoundingBox(node as HTMLElement);
       const zoneCenter = getCenter(rect);
 
@@ -110,7 +115,7 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
 
       // Вычисляем глубину вложенности
       let depth = 0;
-      for (const [parentNode, _] of store.zonesMap.value.entries()) {
+      for (const parentNode of store.visibleZones.value) {
         if (
           parentNode !== node &&
           parentNode &&
