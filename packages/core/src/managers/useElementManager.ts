@@ -7,10 +7,10 @@ import { useDnDStore } from '../composables/useDnDStore';
 
 export const useElementManager = (options?: IUseDragOptions) => {
   const {
-    elements,
+    elementsMap,
     draggingElements,
     hovered,
-    selectedElements,
+    selectedElementsMap,
     isDragging: isDragStarted,
   } = useDnDStore();
 
@@ -26,9 +26,7 @@ export const useElementManager = (options?: IUseDragOptions) => {
     if (!elementRef.value) return false;
     if (!isDragStarted.value) return false;
 
-    const currentElement = elements.value.find(
-      (element) => element.node === elementRef.value
-    );
+    const currentElement = elementsMap.value.get(elementRef.value);
     if (!currentElement?.groups.length) return true;
 
     return !draggingElements.value.some((element) => {
@@ -42,7 +40,7 @@ export const useElementManager = (options?: IUseDragOptions) => {
   const registerElement = () => {
     if (!elementRef.value) throw new Error('ElementRef is not set');
 
-    elements.value.push({
+    elementsMap.value.set(elementRef.value, {
       node: elementRef.value,
       groups: options?.groups ?? [],
       layer: options?.layer ?? null,
@@ -58,20 +56,15 @@ export const useElementManager = (options?: IUseDragOptions) => {
   };
 
   const unregisterElement = () => {
-    const index = elements.value.findIndex(
-      (element) => element.node === elementRef.value
-    );
-    if (index !== -1) elements.value.splice(index, 1);
+    if (!elementRef.value) return;
 
-    const selectedIndex = selectedElements.value.findIndex(
-      (element) => element.node === elementRef.value
-    );
-    if (selectedIndex !== -1) selectedElements.value.splice(selectedIndex, 1);
+    elementsMap.value.delete(elementRef.value);
+    selectedElementsMap.value.delete(elementRef.value);
 
-    elementRef.value?.removeEventListener('dragstart', preventEvent);
-    elementRef.value?.removeEventListener('drag', preventEvent);
-    elementRef.value?.removeAttribute(draggableDataName);
-    elementRef.value?.removeAttribute('draggable');
+    elementRef.value.removeEventListener('dragstart', preventEvent);
+    elementRef.value.removeEventListener('drag', preventEvent);
+    elementRef.value.removeAttribute(draggableDataName);
+    elementRef.value.removeAttribute('draggable');
   };
 
   return {

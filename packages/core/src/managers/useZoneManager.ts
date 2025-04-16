@@ -4,7 +4,7 @@ import type { IUseDropOptions } from '../types';
 import { useDnDStore } from '../composables/useDnDStore';
 
 export const useZoneManager = (options?: IUseDropOptions) => {
-  const { zones, hovered, draggingElements, isDragging } = useDnDStore();
+  const { zonesMap, hovered, draggingElements, isDragging } = useDnDStore();
 
   const elementRef = ref<HTMLElement | null>(null);
 
@@ -15,9 +15,7 @@ export const useZoneManager = (options?: IUseDropOptions) => {
   const isAllowed = computed<boolean>(() => {
     if (!elementRef.value || !isDragging.value) return false;
 
-    const currentZone = zones.value.find(
-      (zone) => zone.node === elementRef.value
-    );
+    const currentZone = zonesMap.value.get(elementRef.value);
     if (!currentZone?.groups.length) return true;
 
     return !draggingElements.value.some((element) => {
@@ -31,7 +29,7 @@ export const useZoneManager = (options?: IUseDropOptions) => {
   const registerZone = () => {
     if (!elementRef.value) throw new Error('elementRef is not set');
 
-    zones.value.push({
+    zonesMap.value.set(elementRef.value, {
       node: elementRef.value,
       groups: options?.groups ?? [],
       events: options?.events ?? {},
@@ -42,13 +40,9 @@ export const useZoneManager = (options?: IUseDropOptions) => {
   };
 
   const unregisterZone = () => {
-    if (!elementRef.value) throw new Error('elementRef is not set');
+    if (!elementRef.value) return;
 
-    const index = zones.value.findIndex(
-      (zone) => zone.node === elementRef.value
-    );
-
-    if (index !== -1) zones.value.splice(index, 1);
+    zonesMap.value.delete(elementRef.value);
   };
 
   return { elementRef, registerZone, unregisterZone, isOvered, isAllowed };

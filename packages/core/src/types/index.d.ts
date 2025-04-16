@@ -3,15 +3,16 @@ import type { Component, ComputedRef, Ref, ShallowRef } from 'vue';
 export interface IDnDStore {
   isDragging: Ref<boolean>;
   activeContainer: IActiveContainer;
-  elements: Ref<IDragElement[]>;
-  selectedElements: Ref<IDragElement[]>;
+  elementsMap: Ref<Map<HTMLElement | Element, IDragElement>>;
+  selectedElementsMap: Ref<Map<HTMLElement | Element, IDragElement>>;
+  zonesMap: Ref<Map<HTMLElement | Element, IDropZone>>;
   draggingElements: Ref<IDraggingElement[]>;
-  zones: Ref<IDropZone[]>;
   hovered: {
     zone: Ref<IDropZone | null>;
     element: Ref<IDragElement | null>;
   };
   pointerPosition: IPointerPosition;
+  possibleElements: ComputedRef<IDragElement[]>;
   keyboard: {
     w: Ref<boolean>;
     s: Ref<boolean>;

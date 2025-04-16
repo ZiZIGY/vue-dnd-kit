@@ -26,15 +26,15 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
 
   const activeDragNodes = store.draggingElements.value.map((el) => el.node);
 
-  const allCollidingElements = store.elements.value
-    .filter((element) => {
-      if (!element.node) return false;
+  const allCollidingElements = Array.from(store.elementsMap.value.entries())
+    .filter(([node, _]) => {
+      if (!node) return false;
 
-      const rect = getBoundingBox(element.node as HTMLElement);
+      const rect = getBoundingBox(node as HTMLElement);
       return rect && containerRect && checkCollision(rect, containerRect);
     })
-    .map((element) => {
-      const rect = getBoundingBox(element.node as HTMLElement);
+    .map(([node, element]) => {
+      const rect = getBoundingBox(node as HTMLElement);
       const elementCenter = getCenter(rect);
 
       const isPointerInElement =
@@ -46,17 +46,22 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
       const overlapPercent = getOverlapPercent(rect, containerRect);
       const centerDistance = getDistance(containerCenter, elementCenter);
 
-      const depth = store.elements.value.filter(
-        (parent) =>
-          parent !== element &&
-          parent.node &&
-          element.node &&
-          isDescendant(element.node as HTMLElement, parent.node as HTMLElement)
-      ).length;
+      // Вычисляем глубину вложенности
+      let depth = 0;
+      for (const [parentNode, _] of store.elementsMap.value.entries()) {
+        if (
+          parentNode !== node &&
+          parentNode &&
+          node &&
+          isDescendant(node as HTMLElement, parentNode as HTMLElement)
+        ) {
+          depth++;
+        }
+      }
 
       return {
         element,
-        node: element.node as HTMLElement,
+        node: node as HTMLElement,
         isPointerInElement,
         overlapPercent,
         depth,
@@ -75,24 +80,23 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
       return b.overlapPercent - a.overlapPercent;
     });
 
-  const allCollidingZones = store.zones.value
-    .filter((zone) => {
+  const allCollidingZones = Array.from(store.zonesMap.value.entries())
+    .filter(([node, _]) => {
       if (
-        !zone.node ||
+        !node ||
         activeDragNodes.some(
           (dragNode) =>
             dragNode &&
-            isDescendant(zone.node as HTMLElement, dragNode as HTMLElement)
+            isDescendant(node as HTMLElement, dragNode as HTMLElement)
         )
       )
         return false;
 
-      const rect = getBoundingBox(zone.node as HTMLElement);
-
+      const rect = getBoundingBox(node as HTMLElement);
       return rect && containerRect && checkCollision(rect, containerRect);
     })
-    .map((zone) => {
-      const rect = getBoundingBox(zone.node as HTMLElement);
+    .map(([node, zone]) => {
+      const rect = getBoundingBox(node as HTMLElement);
       const zoneCenter = getCenter(rect);
 
       const isPointerInElement =
@@ -104,17 +108,22 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
       const overlapPercent = getOverlapPercent(rect, containerRect);
       const centerDistance = getDistance(containerCenter, zoneCenter);
 
-      const depth = store.zones.value.filter(
-        (parent) =>
-          parent !== zone &&
-          parent.node &&
-          zone.node &&
-          isDescendant(zone.node as HTMLElement, parent.node as HTMLElement)
-      ).length;
+      // Вычисляем глубину вложенности
+      let depth = 0;
+      for (const [parentNode, _] of store.zonesMap.value.entries()) {
+        if (
+          parentNode !== node &&
+          parentNode &&
+          node &&
+          isDescendant(node as HTMLElement, parentNode as HTMLElement)
+        ) {
+          depth++;
+        }
+      }
 
       return {
         zone,
-        node: zone.node as HTMLElement,
+        node: node as HTMLElement,
         isPointerInElement,
         overlapPercent,
         depth,

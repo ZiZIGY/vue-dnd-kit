@@ -31,23 +31,24 @@ export const useSensor = (
   const getDraggingElements = (
     draggableElement: HTMLElement | null
   ): IDraggingElement[] => {
-    const isDraggableInSelection = store.selectedElements.value.some(
-      (element) => element.node === draggableElement
-    );
+    if (!draggableElement) return [];
 
-    if (store.selectedElements.value.length && isDraggableInSelection) {
-      return store.selectedElements.value.map((element) => ({
-        ...element,
-        initialHTML: element.node?.outerHTML ?? '',
-        initialRect: element.node?.getBoundingClientRect(),
-      }));
+    const isDraggableInSelection =
+      store.selectedElementsMap.value.has(draggableElement);
+
+    if (store.selectedElementsMap.value.size > 0 && isDraggableInSelection) {
+      return Array.from(store.selectedElementsMap.value.values()).map(
+        (element) => ({
+          ...element,
+          initialHTML: element.node?.outerHTML ?? '',
+          initialRect: element.node?.getBoundingClientRect(),
+        })
+      );
     }
 
-    store.selectedElements.value = [];
+    store.selectedElementsMap.value.clear();
 
-    const element = store.elements.value.find(
-      (element) => element.node === draggableElement
-    );
+    const element = store.elementsMap.value.get(draggableElement);
     if (!element) return [];
 
     return [
@@ -71,9 +72,7 @@ export const useSensor = (
       : [htmlElements];
 
     const filteredZones = elements
-      .map((htmlElement) =>
-        store.zones.value.find((zone) => zone.node === htmlElement)
-      )
+      .map((htmlElement) => store.zonesMap.value.get(htmlElement))
       .filter((zone) => {
         if (!zone) return false;
 
@@ -204,7 +203,7 @@ export const useSensor = (
           element.events.onEnd?.(store)
         );
 
-      store.selectedElements.value = [];
+      store.selectedElementsMap.value.clear();
     }
     store.draggingElements.value = [];
 

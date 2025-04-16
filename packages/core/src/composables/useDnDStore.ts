@@ -17,14 +17,15 @@ export const useDnDStore = createGlobalState(() => {
     ref: shallowRef<HTMLElement | null>(null),
   };
 
-  const elements = ref<IDragElement[]>([]);
-  const selectedElements = ref<IDragElement[]>([]);
-  const zones = ref<IDropZone[]>([]);
+  const elementsMap = ref<Map<HTMLElement | Element, IDragElement>>(new Map());
+  const selectedElementsMap = ref<Map<HTMLElement | Element, IDragElement>>(new Map());
+  const zonesMap = ref<Map<HTMLElement | Element, IDropZone>>(new Map());
 
   const hovered = {
     zone: ref<IDropZone | null>(null),
     element: ref<IDragElement | null>(null),
   };
+
   const pointerPosition = {
     current: shallowRef<IPoint | null>(null),
     start: shallowRef<IPoint | null>(null),
@@ -43,16 +44,17 @@ export const useDnDStore = createGlobalState(() => {
       (element) => element.node
     );
 
-    return elements.value.filter((element) => {
-      if (!element.node) return false;
+    const result = [];
+    for (const element of elementsMap.value.values()) {
+      if (!element.node) continue;
 
       if (
         !isDescendant(
           element.node as HTMLElement,
-          hovered.zone.value!.node as HTMLElement
+          hovered.zone.value.node as HTMLElement
         )
       ) {
-        return false;
+        continue;
       }
 
       if (
@@ -66,8 +68,9 @@ export const useDnDStore = createGlobalState(() => {
               ))
         )
       ) {
-        return false;
+        continue;
       }
+      
       if (element.groups.length) {
         const isCompatible = !draggingElements.value.some((draggingElement) => {
           if (!draggingElement.groups.length) return false;
@@ -75,11 +78,13 @@ export const useDnDStore = createGlobalState(() => {
             element.groups.includes(group)
           );
         });
-        return isCompatible;
+        if (!isCompatible) continue;
       }
 
-      return true;
-    });
+      result.push(element);
+    }
+
+    return result;
   });
 
   const { w, s, a, d, ctrl, shift, alt, meta } = useMagicKeys();
@@ -87,10 +92,10 @@ export const useDnDStore = createGlobalState(() => {
   return {
     isDragging,
     activeContainer,
-    elements,
+    elementsMap,
+    selectedElementsMap,
+    zonesMap,
     draggingElements,
-    selectedElements,
-    zones,
     hovered,
     pointerPosition,
     possibleElements,

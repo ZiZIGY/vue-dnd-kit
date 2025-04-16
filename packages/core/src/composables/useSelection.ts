@@ -3,80 +3,81 @@ import { useDnDStore } from './useDnDStore';
 import { isDescendant } from '../utils/dom';
 
 export const useSelection = (elementRef: Ref<HTMLElement | null>) => {
-  const { selectedElements, elements } = useDnDStore();
-  const element = computed(() =>
-    elements.value.find((element) => element.node === elementRef.value)
-  );
+  const { selectedElementsMap, elementsMap } = useDnDStore();
 
   const isSelected = computed<boolean>(() =>
-    selectedElements.value.some((element) => element.node === elementRef.value)
+    elementRef.value ? selectedElementsMap.value.has(elementRef.value) : false
   );
 
   const isParentOfSelected = computed(() => {
     if (!elementRef.value) return false;
-    return selectedElements.value.some(
-      (selected) =>
-        selected.node &&
-        isDescendant(
-          selected.node as HTMLElement,
-          elementRef.value as HTMLElement
-        )
-    );
+
+    for (const [node, _] of selectedElementsMap.value.entries()) {
+      if (
+        node &&
+        isDescendant(node as HTMLElement, elementRef.value as HTMLElement)
+      ) {
+        return true;
+      }
+    }
+    return false;
   });
 
   const hasSelectedParent = computed(() => {
     if (!elementRef.value) return false;
-    return selectedElements.value.some(
-      (selected) =>
-        selected.node &&
-        isDescendant(
-          elementRef.value as HTMLElement,
-          selected.node as HTMLElement
-        )
-    );
+
+    for (const [node, _] of selectedElementsMap.value.entries()) {
+      if (
+        node &&
+        isDescendant(elementRef.value as HTMLElement, node as HTMLElement)
+      ) {
+        return true;
+      }
+    }
+    return false;
   });
 
   const handleUnselect = () => {
-    if (!element.value) return;
-
-    selectedElements.value = selectedElements.value.filter(
-      (element) => element.node !== elementRef.value
-    );
+    if (!elementRef.value) return;
+    selectedElementsMap.value.delete(elementRef.value);
   };
 
   const handleSelect = () => {
-    if (!element.value) return;
+    if (!elementRef.value) return;
+    const element = elementsMap.value.get(elementRef.value);
+    if (!element) return;
 
-    // If element contains selected elements, remove them and select the parent
     if (isParentOfSelected.value) {
-      selectedElements.value = selectedElements.value.filter(
-        (selected) =>
-          selected.node &&
-          !isDescendant(
-            selected.node as HTMLElement,
-            elementRef.value as HTMLElement
-          )
-      );
+      // Удаляем все дочерние выбранные элементы
+      for (const [node, _] of [...selectedElementsMap.value.entries()]) {
+        if (
+          node &&
+          isDescendant(node as HTMLElement, elementRef.value as HTMLElement)
+        ) {
+          selectedElementsMap.value.delete(node);
+        }
+      }
     }
 
     if (hasSelectedParent.value) {
-      selectedElements.value = selectedElements.value.filter(
-        (selected) =>
-          selected.node &&
-          !isDescendant(
-            elementRef.value as HTMLElement,
-            selected.node as HTMLElement
-          )
-      );
+      // Удаляем все родительские выбранные элементы
+      for (const [node, _] of [...selectedElementsMap.value.entries()]) {
+        if (
+          node &&
+          isDescendant(elementRef.value as HTMLElement, node as HTMLElement)
+        ) {
+          selectedElementsMap.value.delete(node);
+        }
+      }
     }
 
-    selectedElements.value.push(element.value);
+    selectedElementsMap.value.set(elementRef.value, element);
   };
 
   const handleToggleSelect = () => {
-    if (!element.value) return;
+    if (!elementRef.value) return;
 
-    selectedElements.value.some((element) => element.node === elementRef.value)
+    selectedElementsMap.value.has(elementRef.value)
       ? handleUnselect()
       : handleSelect();
   };
