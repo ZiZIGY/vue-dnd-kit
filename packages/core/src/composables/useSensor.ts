@@ -73,41 +73,7 @@ export const useSensor = (
       (element) => element.node
     );
 
-    const filteredElements = elements
-      .map((htmlElement) =>
-        store.elements.value.find((e) => e.node === htmlElement)
-      )
-      .filter((element) => {
-        if (!element) return false;
-        if (
-          activeDragNodes.some(
-            (dragNode) =>
-              dragNode &&
-              (dragNode === element.node ||
-                isDescendant(
-                  element.node as HTMLElement,
-                  dragNode as HTMLElement
-                ))
-          )
-        )
-          return false;
-
-        // Проверяем совместимость групп
-        if (element.groups.length) {
-          const isCompatible = !store.draggingElements.value.some(
-            (draggingElement) => {
-              if (!draggingElement.groups.length) return false;
-              return !draggingElement.groups.some((group) =>
-                element.groups.includes(group)
-              );
-            }
-          );
-          return isCompatible;
-        }
-
-        return true;
-      });
-
+    // Сначала ищем подходящие зоны
     const filteredZones = elements
       .map((htmlElement) =>
         store.zones.value.find((zone) => zone.node === htmlElement)
@@ -130,20 +96,65 @@ export const useSensor = (
             if (!element.groups.length) return false;
             return !element.groups.some((group) => zone.groups.includes(group));
           });
-          if (!isCompatible) return null;
+          if (!isCompatible) return false;
+        }
+
+        return true;
+      });
+
+    if (filteredZones.length === 0) {
+      return { element: null, zone: null };
+    }
+
+    const currentZone = filteredZones[0];
+
+    const filteredElements = elements
+      .map((htmlElement) =>
+        store.elements.value.find((e) => e.node === htmlElement)
+      )
+      .filter((element) => {
+        if (!element) return false;
+
+        if (
+          !isDescendant(
+            element.node as HTMLElement,
+            currentZone?.node as HTMLElement
+          )
+        ) {
+          return false;
+        }
+
+        if (
+          activeDragNodes.some(
+            (dragNode) =>
+              dragNode &&
+              (dragNode === element.node ||
+                isDescendant(
+                  element.node as HTMLElement,
+                  dragNode as HTMLElement
+                ))
+          )
+        )
+          return false;
+
+        if (element.groups.length) {
+          const isCompatible = !store.draggingElements.value.some(
+            (draggingElement) => {
+              if (!draggingElement.groups.length) return false;
+              return !draggingElement.groups.some((group) =>
+                element.groups.includes(group)
+              );
+            }
+          );
+          return isCompatible;
         }
 
         return true;
       });
 
     return {
-      element: isDescendant(
-        filteredElements[0]?.node as HTMLElement,
-        filteredZones[0]?.node as HTMLElement
-      )
-        ? filteredElements[0]
-        : null,
-      zone: filteredZones[0] ?? null,
+      element: filteredElements[0] ?? null,
+      zone: currentZone ?? null,
     };
   };
 
