@@ -1,6 +1,13 @@
 <script setup>
-  // Нет необходимости импортировать компоненты страниц,
-  // так как они будут загружаться через роутер
+  import { computed } from 'vue';
+  import { Draggable } from '@vue-dnd-kit/components';
+  import Drag from './components/Drag.vue';
+
+  import router from './router';
+
+  import { useDnDStore } from '@vue-dnd-kit/core';
+
+  const routes = computed(() => router.options.routes);
 </script>
 
 <template>
@@ -9,11 +16,11 @@
       <h1>Vue DnD Kit Playground</h1>
       <nav>
         <ul class="nav-links">
-          <li>
-            <router-link to="/table">Таблица</router-link>
-          </li>
-          <li>
-            <router-link to="/kanban">Канбан</router-link>
+          <li
+            v-for="route in routes"
+            :key="route.path"
+          >
+            <router-link :to="route.path">{{ route.name }}</router-link>
           </li>
         </ul>
       </nav>
@@ -30,6 +37,20 @@
 </template>
 
 <style>
+  pre {
+    text-align: left;
+    position: fixed;
+    width: 300px;
+    height: 100svh;
+    overflow: auto;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    background-color: #fff;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
   body {
     margin: 0;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
@@ -104,8 +125,6 @@
 
   /* Сбрасываем стили из исходного файла */
   pre {
-    position: static;
-    height: auto;
     max-width: none;
   }
 </style>
