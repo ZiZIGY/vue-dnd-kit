@@ -60,22 +60,23 @@ export class DnDOperations {
   static applyTransfer = (store: IDnDStore) => {
     const hoveredElement = store.hovered.element.value;
     const hoveredZone = store.hovered.zone.value;
+
     if (hoveredElement) {
       store.draggingElements.value.forEach((element) =>
         DnDOperations.move(
           element.data?.source,
           element.data?.index,
-          hoveredElement.data?.source,
-          hoveredElement.data?.index
+          store.elementsMap.value.get(hoveredElement)?.data?.source,
+          store.elementsMap.value.get(hoveredElement)?.data?.index
         )
       );
-    } else {
+    } else if (hoveredZone) {
       store.draggingElements.value.forEach((element) =>
         DnDOperations.move(
           element.data?.source,
           element.data?.index,
-          hoveredZone?.data?.source,
-          hoveredZone?.data?.source?.length
+          store.zonesMap.value.get(hoveredZone)?.data?.source,
+          store.zonesMap.value.get(hoveredZone)?.data?.source?.length
         )
       );
     }
@@ -90,17 +91,17 @@ export class DnDOperations {
         DnDOperations.copy(
           element.data?.source,
           element.data?.index,
-          hoveredElement.data?.source,
-          hoveredElement.data?.index
+          store.elementsMap.value.get(hoveredElement)?.data?.source,
+          store.elementsMap.value.get(hoveredElement)?.data?.index
         )
       );
-    } else {
+    } else if (hoveredZone) {
       store.draggingElements.value.forEach((element) =>
         DnDOperations.copy(
           element.data?.source,
           element.data?.index,
-          hoveredZone?.data?.source,
-          hoveredZone?.data?.source?.length
+          store.zonesMap.value.get(hoveredZone)?.data?.source,
+          store.zonesMap.value.get(hoveredZone)?.data?.source?.length
         )
       );
     }
@@ -108,21 +109,21 @@ export class DnDOperations {
   static applySwap = (store: IDnDStore) => {
     const hoveredElement = store.hovered.element.value;
     const hoveredZone = store.hovered.zone.value;
-    if (hoveredElement && store.draggingElements.value.length === 1) {
-      const element = store.draggingElements.value[0];
+    if (hoveredElement && store.draggingElements.value.size === 1) {
+      const element = store.draggingElements.value.values().next().value;
       DnDOperations.swap(
-        element.data?.source,
-        element.data?.index,
-        hoveredElement.data?.source,
-        hoveredElement.data?.index
+        element?.data?.source,
+        element?.data?.index,
+        store.elementsMap.value.get(hoveredElement)?.data?.source,
+        store.elementsMap.value.get(hoveredElement)?.data?.index
       );
-    } else {
+    } else if (hoveredZone) {
       store.draggingElements.value.forEach((element) =>
         DnDOperations.move(
           element.data?.source,
           element.data?.index,
-          hoveredZone?.data?.source,
-          hoveredZone?.data?.source?.length
+          store.zonesMap.value.get(hoveredZone)?.data?.source,
+          store.zonesMap.value.get(hoveredZone)?.data?.source?.length
         )
       );
     }
@@ -140,16 +141,16 @@ export class DnDOperations {
     if (hoveredElement && items.length > 0) {
       items.forEach((item) => {
         DnDOperations.insert(
-          hoveredElement.data?.source,
-          hoveredElement.data?.index,
+          store.elementsMap.value.get(hoveredElement)?.data?.source,
+          store.elementsMap.value.get(hoveredElement)?.data?.index,
           item
         );
       });
-    } else {
+    } else if (hoveredZone) {
       items.forEach((item) => {
         DnDOperations.insert(
-          hoveredZone?.data?.source,
-          hoveredZone?.data?.source?.length,
+          store.zonesMap.value.get(hoveredZone)?.data?.source,
+          store.zonesMap.value.get(hoveredZone)?.data?.source?.length,
           item
         );
       });

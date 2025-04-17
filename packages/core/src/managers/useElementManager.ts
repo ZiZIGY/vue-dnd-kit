@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue';
+import { computed, ref, shallowRef, useId } from 'vue';
 
 import type { IUseDragOptions } from '../types';
 import { draggableDataName } from '../utils/namespaces';
@@ -12,30 +12,41 @@ export const useElementManager = (options?: IUseDragOptions) => {
     hovered,
     selectedElementsMap,
     isDragging: isDragStarted,
+    visibleElements,
     handleDragElementIntersection,
   } = useDnDStore();
 
   const elementRef = ref<HTMLElement | null>(null);
   const isOvered = computed<boolean>(
-    () => hovered.element.value?.node === elementRef.value
+    () =>
+      visibleElements.value.has(elementRef.value as HTMLElement) &&
+      hovered.element.value === elementRef.value
   );
 
-  const isDragging = computed<boolean>(() =>
-    draggingElements.value.some((element) => element.node === elementRef.value)
-  );
+  const id = shallowRef(options?.id || useId());
+
+  const isDragging = computed<boolean>(() => {
+    if (!elementRef.value) return false;
+    if (!visibleElements.value.has(elementRef.value)) return false;
+    return draggingElements.value.has(elementRef.value);
+  });
+
   const isAllowed = computed<boolean>(() => {
     if (!elementRef.value) return false;
     if (!isDragStarted.value) return false;
+    if (!visibleElements.value.has(elementRef.value)) return false;
 
     const currentElement = elementsMap.value.get(elementRef.value);
     if (!currentElement?.groups.length) return true;
 
-    return !draggingElements.value.some((element) => {
-      if (!element.groups.length) return false;
-      return !element.groups.some((group) =>
-        currentElement.groups.includes(group)
-      );
-    });
+    return !Array.from(draggingElements.value.entries()).some(
+      ([_, draggingElement]) => {
+        if (!draggingElement.groups.length) return false;
+        return !draggingElement.groups.some((group) =>
+          currentElement.groups.includes(group)
+        );
+      }
+    );
   });
 
   const registerElement = () => {
@@ -48,10 +59,9 @@ export const useElementManager = (options?: IUseDragOptions) => {
       defaultLayer: options?.layer ?? null,
       events: options?.events ?? {},
       data: options?.data ?? null,
+      id: id.value,
     });
 
-    // Добавляем элемент в список видимых при регистрации
-    // Позже IntersectionObserver в компоненте DnDProvider обновит это состояние
     handleDragElementIntersection('add', elementRef.value);
 
     elementRef.value.addEventListener('dragstart', preventEvent);
@@ -63,7 +73,6 @@ export const useElementManager = (options?: IUseDragOptions) => {
   const unregisterElement = () => {
     if (!elementRef.value) return;
 
-    // Удаляем элемент из списка видимых при отмене регистрации
     handleDragElementIntersection('remove', elementRef.value);
 
     elementsMap.value.delete(elementRef.value);
@@ -82,5 +91,6 @@ export const useElementManager = (options?: IUseDragOptions) => {
     isDragging,
     isOvered,
     isAllowed,
+    id,
   };
 };

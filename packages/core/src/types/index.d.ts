@@ -6,13 +6,14 @@ export interface IDnDStore {
   elementsMap: Ref<Map<HTMLElement | Element, IDragElement>>;
   selectedElementsMap: Ref<Map<HTMLElement | Element, IDragElement>>;
   zonesMap: Ref<Map<HTMLElement | Element, IDropZone>>;
-  draggingElements: Ref<IDraggingElement[]>;
+  draggingElements: Ref<Map<HTMLElement | Element, IDraggingElement>>;
   hovered: {
-    zone: Ref<IDropZone | null>;
-    element: Ref<IDragElement | null>;
+    zone: ShallowRef<HTMLElement | Element | null>;
+    element: ShallowRef<HTMLElement | Element | null>;
   };
+  visibleZones: Ref<Set<HTMLElement | Element>>;
+  visibleElements: Ref<Set<HTMLElement | Element>>;
   pointerPosition: IPointerPosition;
-  possibleElements: ComputedRef<IDragElement[]>;
   keyboard: {
     w: Ref<boolean>;
     s: Ref<boolean>;
@@ -40,6 +41,7 @@ export interface IPointerPosition {
 }
 
 export interface IDragElement {
+  id: string | number;
   node: HTMLElement | Element | null;
   groups: string[];
   layer: Component | null;
@@ -95,6 +97,7 @@ export interface IUseDropOptions {
   };
 }
 export interface IUseDragOptions extends IUseSensorOptions {
+  id?: string | number;
   groups?: string[];
   events?: {
     onEnd?: (store: IDnDStore) => void;
@@ -137,7 +140,7 @@ export interface IUseSensorOptions {
   };
 }
 
-interface ICollisionDetectionResult {
-  element: IDragElement | null;
-  zone: IDropZone | null;
+export interface ICollisionDetectionResult {
+  element: HTMLElement | Element | null;
+  zone: HTMLElement | Element | null;
 }

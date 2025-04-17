@@ -8,8 +8,10 @@ import { computed, ref, shallowRef, type Component, onUnmounted } from 'vue';
 import { createGlobalState, useMagicKeys } from '@vueuse/core';
 
 export const useDnDStore = createGlobalState(() => {
-  const draggingElements = ref<IDraggingElement[]>([]);
-  const isDragging = computed<boolean>(() => draggingElements.value.length > 0);
+  const draggingElements = ref<Map<HTMLElement | Element, IDraggingElement>>(
+    new Map()
+  );
+  const isDragging = computed<boolean>(() => draggingElements.value.size > 0);
 
   const activeContainer = {
     component: ref<Component | null>(null),
@@ -79,8 +81,8 @@ export const useDnDStore = createGlobalState(() => {
   const { w, s, a, d, ctrl, shift, alt, meta } = useMagicKeys();
 
   const hovered = {
-    zone: shallowRef<IDropZone | null>(null),
-    element: shallowRef<IDragElement | null>(null),
+    zone: shallowRef<HTMLElement | Element | null>(null),
+    element: shallowRef<HTMLElement | Element | null>(null),
   };
 
   return {

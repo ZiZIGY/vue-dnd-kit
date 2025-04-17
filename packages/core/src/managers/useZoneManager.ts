@@ -15,7 +15,7 @@ export const useZoneManager = (options?: IUseDropOptions) => {
   const elementRef = ref<HTMLElement | null>(null);
 
   const isOvered = computed<boolean>(() => {
-    return hovered.zone.value?.node === elementRef.value;
+    return hovered.zone.value === elementRef.value;
   });
 
   const isAllowed = computed<boolean>(() => {
@@ -24,7 +24,7 @@ export const useZoneManager = (options?: IUseDropOptions) => {
     const currentZone = zonesMap.value.get(elementRef.value);
     if (!currentZone?.groups.length) return true;
 
-    return !draggingElements.value.some((element) => {
+    return !Array.from(draggingElements.value.values()).some((element) => {
       if (!element.groups.length) return false;
       return !element.groups.some((group) =>
         currentZone.groups.includes(group)

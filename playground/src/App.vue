@@ -13,7 +13,7 @@
 </script>
 
 <template>
-  <pre>{{ store }}</pre>
+  <pre>{{ store.hovered }}</pre>
   <div class="playground">
     <header>
       <h1>Vue DnD Kit Playground</h1>

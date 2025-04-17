@@ -7,20 +7,20 @@ import { useEventManager } from '../managers/useEventManager';
 
 export const useDraggable = (options?: IUseDragOptions) => {
   const {
+    id,
     elementRef,
-    registerElement,
-    unregisterElement,
     isDragging,
     isOvered,
     isAllowed,
+    registerElement,
+    unregisterElement,
   } = useElementManager(options);
 
   const { pointerPosition } = useDnDStore();
   const { handleDragStart: start } = useEventManager();
 
-  const handleDragStart = (event: PointerEvent | KeyboardEvent) => 
-    start(event, elementRef, options)
-  
+  const handleDragStart = (event: PointerEvent | KeyboardEvent) =>
+    start(event, elementRef, options);
 
   onMounted(registerElement);
   onBeforeUnmount(unregisterElement);
@@ -32,5 +32,6 @@ export const useDraggable = (options?: IUseDragOptions) => {
     isOvered,
     isAllowed,
     handleDragStart,
+    id,
   };
 };

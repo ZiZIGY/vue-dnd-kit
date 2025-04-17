@@ -28,8 +28,8 @@
     :style="computedStyle"
   >
     <div
-      v-for="(element, index) in draggingElements"
-      :key="index"
+      v-for="[_, element] in draggingElements"
+      :key="element.id"
       v-html="element.initialHTML"
       :style="{
         width: `${element.initialRect?.width}px`,

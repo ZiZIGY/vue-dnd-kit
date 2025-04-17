@@ -24,18 +24,16 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
 
   const shouldUseNormalPriority = !isPointerInActiveContainer;
 
-  const activeDragNodes = store.draggingElements.value.map((el) => el.node);
+  const activeDragNodes = Array.from(store.draggingElements.value.keys());
 
-  // Работаем только с видимыми элементами
-  const allCollidingElements = Array.from(store.visibleElements.value)
-    .filter((node) => {
-      if (!node || !store.elementsMap.value.has(node)) return false;
+  const allCollidingElements = Array.from(store.visibleElements.value.entries())
+    .filter(([node, _]) => {
+      if (!node) return false;
 
       const rect = getBoundingBox(node as HTMLElement);
       return rect && containerRect && checkCollision(rect, containerRect);
     })
-    .map((node) => {
-      const element = store.elementsMap.value.get(node);
+    .map(([node, element]) => {
       const rect = getBoundingBox(node as HTMLElement);
       const elementCenter = getCenter(rect);
 
@@ -50,7 +48,7 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
 
       // Вычисляем глубину вложенности
       let depth = 0;
-      for (const parentNode of store.visibleElements.value) {
+      for (const [parentNode, _] of store.visibleElements.value.entries()) {
         if (
           parentNode !== node &&
           parentNode &&
@@ -82,12 +80,10 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
       return b.overlapPercent - a.overlapPercent;
     });
 
-  // Работаем только с видимыми зонами
-  const allCollidingZones = Array.from(store.visibleZones.value)
-    .filter((node) => {
+  const allCollidingZones = Array.from(store.visibleZones.value.entries())
+    .filter(([node, _]) => {
       if (
         !node ||
-        !store.zonesMap.value.has(node) ||
         activeDragNodes.some(
           (dragNode) =>
             dragNode &&
@@ -99,8 +95,7 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
       const rect = getBoundingBox(node as HTMLElement);
       return rect && containerRect && checkCollision(rect, containerRect);
     })
-    .map((node) => {
-      const zone = store.zonesMap.value.get(node);
+    .map(([node, zone]) => {
       const rect = getBoundingBox(node as HTMLElement);
       const zoneCenter = getCenter(rect);
 
@@ -115,7 +110,7 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
 
       // Вычисляем глубину вложенности
       let depth = 0;
-      for (const parentNode of store.visibleZones.value) {
+      for (const [parentNode, _] of store.visibleZones.value.entries()) {
         if (
           parentNode !== node &&
           parentNode &&
@@ -147,7 +142,6 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
       return b.overlapPercent - a.overlapPercent;
     });
 
-  // Возвращаем все найденные HTML-элементы
   return [
     ...allCollidingElements.map((item) => item.node),
     ...allCollidingZones.map((item) => item.node),

@@ -30,34 +30,41 @@ export const useSensor = (
 
   const getDraggingElements = (
     draggableElement: HTMLElement | null
-  ): IDraggingElement[] => {
-    if (!draggableElement) return [];
+  ): Map<HTMLElement | Element, IDraggingElement> => {
+    if (!draggableElement) return new Map();
 
     const isDraggableInSelection =
       store.selectedElementsMap.value.has(draggableElement);
 
     if (store.selectedElementsMap.value.size > 0 && isDraggableInSelection) {
-      return Array.from(store.selectedElementsMap.value.values()).map(
-        (element) => ({
-          ...element,
-          initialHTML: element.node?.outerHTML ?? '',
-          initialRect: element.node?.getBoundingClientRect(),
-        })
+      const result = new Map<HTMLElement | Element, IDraggingElement>();
+
+      Array.from(store.selectedElementsMap.value.entries()).forEach(
+        ([node, element]) => {
+          result.set(node, {
+            ...element,
+            initialHTML: element.node?.outerHTML ?? '',
+            initialRect: element.node?.getBoundingClientRect(),
+          });
+        }
       );
+
+      return result;
     }
 
     store.selectedElementsMap.value.clear();
 
     const element = store.elementsMap.value.get(draggableElement);
-    if (!element) return [];
+    if (!element) return new Map();
 
-    return [
-      {
-        ...element,
-        initialHTML: element.node?.outerHTML ?? '',
-        initialRect: element.node?.getBoundingClientRect(),
-      },
-    ];
+    const result = new Map<HTMLElement | Element, IDraggingElement>();
+    result.set(draggableElement, {
+      ...element,
+      initialHTML: element.node?.outerHTML ?? '',
+      initialRect: element.node?.getBoundingClientRect(),
+    });
+
+    return result;
   };
 
   const processUserCollisionResults = (
@@ -71,58 +78,55 @@ export const useSensor = (
       ? htmlElements
       : [htmlElements];
 
-    const filteredZones = elements
-      .filter((htmlElement) => store.visibleZones.value.has(htmlElement))
-      .map((htmlElement) => store.zonesMap.value.get(htmlElement))
-      .filter((zone) => {
-        if (!zone) return false;
+    const filteredZoneElement = elements.find((htmlElement) => {
+      if (!store.visibleZones.value.has(htmlElement)) return false;
 
-        const activeDragNodes = store.draggingElements.value.map(
-          (element) => element.node
-        );
+      const zone = store.zonesMap.value.get(htmlElement);
+      if (!zone) return false;
 
-        if (
-          activeDragNodes.some(
-            (dragNode) =>
-              dragNode &&
-              (dragNode === zone.node ||
-                isDescendant(zone.node as HTMLElement, dragNode as HTMLElement))
-          )
+      const activeDragNodes = Array.from(store.draggingElements.value.keys());
+
+      if (
+        activeDragNodes.some(
+          (dragNode) =>
+            dragNode &&
+            (dragNode === zone.node ||
+              isDescendant(zone.node as HTMLElement, dragNode as HTMLElement))
         )
-          return false;
+      )
+        return false;
 
-        if (zone.groups.length) {
-          const isCompatible = !store.draggingElements.value.some((element) => {
-            if (!element.groups.length) return false;
-            return !element.groups.some((group) => zone.groups.includes(group));
-          });
-          if (!isCompatible) return false;
-        }
+      if (zone.groups.length) {
+        const isCompatible = !Array.from(
+          store.draggingElements.value.values()
+        ).some((element) => {
+          if (!element.groups.length) return false;
+          return !element.groups.some((group) => zone.groups.includes(group));
+        });
+        if (!isCompatible) return false;
+      }
 
-        return true;
-      });
+      return true;
+    });
 
-    if (filteredZones.length === 0) {
+    if (!filteredZoneElement) {
       return { element: null, zone: null };
     }
 
-    const currentZone = filteredZones[0];
-
-    store.hovered.zone.value = currentZone ?? null;
-
-    const possibleElement = elements.find((htmlElement) =>
-      store.visibleElements.value.has(htmlElement)
+    const possibleElement = elements.find(
+      (htmlElement) =>
+        store.visibleElements.value.has(htmlElement) &&
+        store.elementsMap.value.has(htmlElement) &&
+        (htmlElement === filteredZoneElement ||
+          isDescendant(
+            htmlElement as HTMLElement,
+            filteredZoneElement as HTMLElement
+          ))
     );
 
-    const matchedElement = possibleElement
-      ? store.possibleElements.value.find(
-          (element) => element.node === possibleElement
-        )
-      : null;
-
     return {
-      element: matchedElement ?? null,
-      zone: currentZone ?? null,
+      element: possibleElement || null,
+      zone: filteredZoneElement,
     };
   };
 
@@ -135,17 +139,26 @@ export const useSensor = (
     store.hovered.element.value = results.element;
     store.hovered.zone.value = results.zone;
 
-    if (store.hovered.element.value !== previousElement) {
-      if (previousElement?.events?.onLeave)
-        previousElement.events.onLeave(store);
-      if (store.hovered.element.value?.events?.onHover)
-        store.hovered.element.value.events.onHover(store);
+    if (previousElement) {
+      if (store.hovered.element.value !== previousElement) {
+        store.elementsMap.value.get(previousElement)?.events?.onLeave?.(store);
+
+        if (store.hovered.element.value)
+          store.elementsMap.value
+            .get(store.hovered.element.value)
+            ?.events?.onHover?.(store);
+      }
     }
 
-    if (store.hovered.zone.value !== previousZone) {
-      if (previousZone?.events?.onLeave) previousZone.events.onLeave(store);
-      if (store.hovered.zone.value?.events?.onHover)
-        store.hovered.zone.value.events.onHover(store);
+    if (previousZone) {
+      if (store.hovered.zone.value !== previousZone) {
+        store.zonesMap.value.get(previousZone)?.events?.onLeave?.(store);
+
+        if (store.hovered.zone.value)
+          store.zonesMap.value
+            .get(store.hovered.zone.value)
+            ?.events?.onHover?.(store);
+      }
     }
   };
 
@@ -195,16 +208,18 @@ export const useSensor = (
     onKeyboardEnd();
 
     if (triggerEvents) {
-      if (store.hovered.zone.value)
-        store.hovered.zone.value.events.onDrop?.(store);
-      else
-        store.draggingElements.value.forEach((element) =>
+      if (store.hovered.zone.value) {
+        const zone = store.zonesMap.value.get(store.hovered.zone.value);
+        zone?.events.onDrop?.(store);
+      } else {
+        Array.from(store.draggingElements.value.values()).forEach((element) =>
           element.events.onEnd?.(store)
         );
+      }
 
       store.selectedElementsMap.value.clear();
     }
-    store.draggingElements.value = [];
+    store.draggingElements.value.clear();
 
     store.hovered.zone.value = null;
     store.hovered.element.value = null;
