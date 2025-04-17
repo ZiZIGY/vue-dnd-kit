@@ -74,6 +74,16 @@
                 <h3>{{ task.title }}</h3>
                 <p>{{ task.description }}</p>
               </button>
+
+              <KanbanColumn
+                :title="task.title"
+                :index="3"
+                :source="column.items"
+                tag="li"
+                class="task-card"
+              >
+
+              </KanbanColumn>
             </KanbanItem>
           </ul>
         </div>

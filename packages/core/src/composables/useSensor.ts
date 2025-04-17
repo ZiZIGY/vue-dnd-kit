@@ -78,13 +78,13 @@ export const useSensor = (
       ? htmlElements
       : [htmlElements];
 
+    const activeDragNodes = Array.from(store.draggingElements.value.keys());
+
     const filteredZoneElement = elements.find((htmlElement) => {
       if (!store.visibleZones.value.has(htmlElement)) return false;
 
       const zone = store.zonesMap.value.get(htmlElement);
       if (!zone) return false;
-
-      const activeDragNodes = Array.from(store.draggingElements.value.keys());
 
       if (
         activeDragNodes.some(
@@ -117,6 +117,16 @@ export const useSensor = (
       (htmlElement) =>
         store.visibleElements.value.has(htmlElement) &&
         store.elementsMap.value.has(htmlElement) &&
+        !activeDragNodes.some(
+          (dragNode) =>
+            dragNode &&
+            (dragNode === htmlElement ||
+              isDescendant(
+                htmlElement as HTMLElement,
+                dragNode as HTMLElement
+              ) ||
+              isDescendant(dragNode as HTMLElement, htmlElement as HTMLElement))
+        ) &&
         (htmlElement === filteredZoneElement ||
           isDescendant(
             htmlElement as HTMLElement,
