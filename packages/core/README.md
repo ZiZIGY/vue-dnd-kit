@@ -1,7 +1,8 @@
 # Vue Drag & Drop Library - Core Package
 
 [![Beta](https://img.shields.io/badge/status-beta-yellow.svg)](https://github.com/zizigy/vue-dnd-kit)
- > ⚠️ **Warning**: This project is in active development (beta). The API may change between minor versions. Not recommended for production use until version 1.0.0.
+
+> ⚠️ **Warning**: This project is in active development (beta). The API may change between minor versions. Not recommended for production use until version 1.0.0.
 
 <p align="center">
   <a href="https://zizigy.github.io/vue-dnd-hooks/">
@@ -24,14 +25,15 @@
 </p>
 
 ## Project Status
-   
-   This project is in active development. We're working toward a stable API, but until version 1.0.0, there may be breaking changes.
-   
-   Roadmap:
-   - [x] Basic drag & drop functionality
-   - [x] Complete documentation
-   - [ ] Tests
-   - [ ] Stable API (version 1.0.0)
+
+This project is in active development. We're working toward a stable API, but until version 1.0.0, there may be breaking changes.
+
+Roadmap:
+
+- [x] Basic drag & drop functionality
+- [x] Complete documentation
+- [ ] Tests
+- [ ] Stable API (version 1.0.0)
 
 ## Features
 
@@ -42,12 +44,14 @@
   - Intuitive hooks-based approach
   - Clean and declarative syntax
   - Minimal boilerplate code
+
 - 🎨 **Full Customization**
 
   - Custom drag overlays
   - Flexible styling system
   - Animation support
   - Custom drag handles
+
 - 📱 **Advanced Input Support**
 
   - Touch devices support
@@ -62,6 +66,7 @@
   - Minimal re-renders
   - Efficient DOM updates
   - Memory leak prevention
+
 - 🔄 **Smart Auto-scrolling**
 
   - Smooth scroll animations
@@ -77,6 +82,7 @@
   - Type inference
   - IDE autocompletion
   - Type-safe events
+
 - 📐 **Layout Features**
 
   - Grid system support
@@ -92,12 +98,14 @@
   - Zone filtering
   - Nested groups
   - Dynamic group validation
+
 - 📊 **Rich Events System**
 
   - Comprehensive lifecycle events
   - Custom event handlers
   - Drag state tracking
   - Position coordinates
+
 - 🛡️ **Built-in Utilities**
 
   - Geometry calculations
@@ -118,7 +126,7 @@
 Choose your preferred package manager:
 
 ```bash
-npm install @vue-dnd-kit/core
+npm install @vue-dnd-kit/core @vueuse/core
 ```
 
 ```bash

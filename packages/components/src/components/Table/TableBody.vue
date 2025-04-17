@@ -1,6 +1,7 @@
 <script setup lang="ts">
+  import Draggable from '../Draggable.vue';
   import Droppable from '../Droppable.vue';
-  import { IDnDStore } from '@vue-dnd-kit/core';
+  import { IDnDStore } from '@vue-dnd-kit/core/';
 
   interface ColumnDefinition {
     key: string;
@@ -26,10 +27,14 @@
     tag="tbody"
     @drop="onDrop"
   >
-    <tr
+    <Draggable
       v-for="(row, rowIndex) in data"
       :key="rowIndex"
       class="dnd-kit-table-row"
+      tag="tr"
+      :prevent-root-drag="false"
+      :source="data"
+      :index="rowIndex"
     >
       <td
         v-for="column in columns"
@@ -45,6 +50,6 @@
           {{ row[column.key] }}
         </slot>
       </td>
-    </tr>
+    </Draggable>
   </Droppable>
 </template>

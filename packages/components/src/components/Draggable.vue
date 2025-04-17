@@ -74,7 +74,7 @@
       [DraggableClassNames.DRAGGABLE_OVERED]: isOvered,
     }"
     :disabled="isDragging"
-    @pointerdown.self="(event: PointerEvent) => !preventRootDrag && handleDragStart(event)"
+    @pointerdown="(event: PointerEvent) => !preventRootDrag && handleDragStart(event)"
     @keydown.space.self="
       (event: KeyboardEvent) => !preventRootDrag && handleDragStart(event)
     "
