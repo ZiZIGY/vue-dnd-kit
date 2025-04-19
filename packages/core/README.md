@@ -1,8 +1,6 @@
 # Vue Drag & Drop Library - Core Package
 
-[![Beta](https://img.shields.io/badge/status-beta-yellow.svg)](https://github.com/zizigy/vue-dnd-kit)
-
-> ⚠️ **Warning**: This project is in active development (beta). The API may change between minor versions. Not recommended for production use until version 1.0.0.
+[![Release](https://img.shields.io/badge/status-release-green.svg)](https://github.com/zizigy/vue-dnd-kit)
 
 <p align="center">
   <a href="https://zizigy.github.io/vue-dnd-hooks/">
@@ -24,16 +22,23 @@
   Inspired by the popular <a href="https://dndkit.com/" target="_blank">React DnD Kit</a> library, adapted for Vue.js
 </p>
 
-## Project Status
+## Lightweight & High Performance
 
-This project is in active development. We're working toward a stable API, but until version 1.0.0, there may be breaking changes.
+Vue DnD Kit is designed to be extremely lightweight while delivering exceptional performance. The library has been optimized for:
 
-Roadmap:
+- 🚀 **Minimal bundle size** - keep your application fast and responsive
+- ⚡ **Efficient DOM operations** - optimized for handling large lists and complex interactions
+- 🔄 **Smart rendering** - prevents unnecessary re-renders during drag operations
+- 📱 **Smooth experience** - even on mobile and low-powered devices
 
-- [x] Basic drag & drop functionality
-- [x] Complete documentation
-- [ ] Tests
-- [ ] Stable API (version 1.0.0)
+## Unlimited Flexibility
+
+The library is built with flexibility as a core principle, allowing you to implement virtually any drag and drop scenario:
+
+- 🎯 **Any UI pattern** - sortable lists, kanban boards, calendars, file uploads, and more
+- 🎨 **Any design system** - works with any UI library or custom components
+- 📐 **Any layout** - grid, flex, or custom positioning systems
+- 🔄 **Any interaction model** - simple drag and drop, multi-select, nested containers
 
 ## Features
 
@@ -57,6 +62,21 @@ Roadmap:
   - Touch devices support
   - Mouse events
   - Multi-touch gestures
+  - **Full keyboard navigation** - complete drag and drop operations using only keyboard
+
+### Accessibility
+
+- ♿ **Keyboard Navigation**
+  - Start and control drag operations with keyboard
+  - Arrow keys for movement
+  - Space/Enter for selection and dropping
+  - Escape to cancel drag operations
+  - Tab navigation between draggable elements
+
+- 🔍 **Screen Reader Support**
+  - ARIA attributes for drag and drop operations
+  - Descriptive announcements during interactions
+  - Semantic HTML structure
 
 ### Performance
 
@@ -130,12 +150,31 @@ npm install @vue-dnd-kit/core @vueuse/core
 ```
 
 ```bash
-yarn add @vue-dnd-kit/core
+yarn add @vue-dnd-kit/core @vueuse/core
 ```
 
 ```bash
-pnpm install @vue-dnd-kit/core
+pnpm install @vue-dnd-kit/core @vueuse/core
 ```
+
+## Setup as a Plugin
+
+You can register the library as a Vue plugin in your main.ts/js file:
+
+```typescript
+import { createApp } from 'vue';
+import App from './App.vue';
+import VueDnDKitPlugin from '@vue-dnd-kit/core';
+
+const app = createApp(App);
+
+// Register the plugin
+app.use(VueDnDKitPlugin);
+
+app.mount('#app');
+```
+
+This will make all the components and composables globally available in your application.
 
 ## Basic Usage
 
@@ -196,6 +235,10 @@ pnpm install @vue-dnd-kit/core
     ref="elementRef"
     @pointerdown="handleDragStart"
     :class="{ dragging: isDragging }"
+    tabindex="0"
+    role="button"
+    aria-grabbed="false"
+    :aria-pressed="isDragging"
   >
     <slot />
   </div>
@@ -232,6 +275,8 @@ pnpm install @vue-dnd-kit/core
       droppable: true,
       'is-overed': isOvered,
     }"
+    role="region"
+    aria-dropeffect="move"
   >
     drop here
     <slot />
@@ -257,4 +302,5 @@ pnpm install @vue-dnd-kit/core
 
 ---
 
+<p align="center">🎉 Congratulations on the official release! 🎉</p>
 <p align="center">Made with ❤️ for the Vue.js community</p>

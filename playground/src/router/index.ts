@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import BigKanban from '../pages/BigKanban.vue';
 import Kanban from '../pages/Kanban.vue';
 import Table from '../pages/Table.vue';
 
@@ -18,11 +17,6 @@ const routes = [
     path: '/kanban',
     name: 'Kanban',
     component: Kanban,
-  },
-  {
-    path: '/big-kanban',
-    name: 'BigKanban',
-    component: BigKanban,
   },
 ];
 
