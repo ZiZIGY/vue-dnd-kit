@@ -73,8 +73,6 @@ export const useElementManager = (options?: IUseDragOptions) => {
   const unregisterElement = () => {
     if (!elementRef.value) return;
 
-    handleDragElementIntersection('remove', elementRef.value);
-
     elementsMap.value.delete(elementRef.value);
     selectedElementsMap.value.delete(elementRef.value);
 

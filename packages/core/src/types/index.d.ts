@@ -55,6 +55,8 @@ export interface IDragElement {
     onHover?: (store: IDnDStore) => void;
     onLeave?: (store: IDnDStore) => void;
     onEnd?: (store: IDnDStore) => void;
+    onStart?: (store: IDnDStore) => void;
+    onMove?: (store: IDnDStore) => void;
   };
 }
 

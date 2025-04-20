@@ -4,7 +4,7 @@ import type {
   IDropZone,
   IPoint,
 } from '../types';
-import { computed, ref, shallowRef, type Component, onUnmounted } from 'vue';
+import { computed, ref, shallowRef, type Component } from 'vue';
 import { createGlobalState, useMagicKeys } from '@vueuse/core';
 
 export const useDnDStore = createGlobalState(() => {
@@ -26,7 +26,6 @@ export const useDnDStore = createGlobalState(() => {
   const visibleZones = ref<Set<HTMLElement | Element>>(new Set());
   const visibleElements = ref<Set<HTMLElement | Element>>(new Set());
 
-  // Создаем IntersectionObserver для отслеживания видимости элементов
   const elementObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) =>
       visibleElements.value[entry.isIntersecting ? 'add' : 'delete'](
@@ -63,11 +62,6 @@ export const useDnDStore = createGlobalState(() => {
       visibleZones.value.delete(element);
     }
   };
-
-  onUnmounted(() => {
-    elementObserver.disconnect();
-    zoneObserver.disconnect();
-  });
 
   const pointerPosition = {
     start: shallowRef<IPoint | null>(null),

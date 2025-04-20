@@ -195,6 +195,9 @@ export const useSensor = (
 
   const activate = (event: PointerEvent | KeyboardEvent) => {
     store.draggingElements.value = getDraggingElements(elementRef.value);
+    store.draggingElements.value.forEach((element) =>
+      element.events.onStart?.(store)
+    );
 
     if (event instanceof PointerEvent) {
       onPointerStart(event);
@@ -206,6 +209,10 @@ export const useSensor = (
   };
 
   const track = (event: PointerEvent | WheelEvent | KeyboardEvent) => {
+    store.draggingElements.value.forEach((element) =>
+      element.events.onMove?.(store)
+    );
+
     if (event instanceof KeyboardEvent) {
       onKeyboardMove();
     } else {
@@ -222,7 +229,7 @@ export const useSensor = (
         const zone = store.zonesMap.value.get(store.hovered.zone.value);
         zone?.events.onDrop?.(store);
       } else {
-        Array.from(store.draggingElements.value.values()).forEach((element) =>
+        store.draggingElements.value.forEach((element) =>
           element.events.onEnd?.(store)
         );
       }
