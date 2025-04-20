@@ -1,16 +1,17 @@
 <script setup lang="ts">
   import { useDraggable } from '@vue-dnd-kit/core';
+  import { computed } from 'vue';
 
-  const { elementRef, handleDragStart } = useDraggable({
-    sensor: {
-      setup(store) {
-        return document.elementsFromPoint(
-          store.pointerPosition.current.value?.x || 0,
-          store.pointerPosition.current.value?.y || 0
-        );
-      },
-      throttle: 1000,
-    },
+  const props = defineProps<{
+    source?: any[];
+    index?: number;
+  }>();
+
+  const { elementRef, handleDragStart, isOvered } = useDraggable({
+    data: computed(() => ({
+      source: props.source,
+      index: props.index,
+    })),
   });
 </script>
 
@@ -20,5 +21,6 @@
     @pointerdown="handleDragStart"
   >
     <slot />
+    <hr v-if="isOvered" />
   </div>
 </template>

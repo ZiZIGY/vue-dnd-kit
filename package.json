@@ -7,7 +7,10 @@
     "update-submodules": "git submodule update --init --recursive",
     "build-all": "npm run build --workspaces",
     "dev": "npm run dev --workspaces",
-    "test": "npm run test --workspaces"
+    "test": "npm run test --workspaces",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "workspaces": [
     "packages/*",

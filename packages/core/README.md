@@ -67,6 +67,7 @@ The library is built with flexibility as a core principle, allowing you to imple
 ### Accessibility
 
 - ♿ **Keyboard Navigation**
+
   - Start and control drag operations with keyboard
   - Arrow keys for movement
   - Space/Enter for selection and dropping
@@ -74,6 +75,7 @@ The library is built with flexibility as a core principle, allowing you to imple
   - Tab navigation between draggable elements
 
 - 🔍 **Screen Reader Support**
+
   - ARIA attributes for drag and drop operations
   - Descriptive announcements during interactions
   - Semantic HTML structure
@@ -185,7 +187,6 @@ This will make all the components and composables globally available in your app
 ```vue
 <script setup lang="ts">
   import { ref } from 'vue';
-  import { DragOverlay } from '@vue-dnd-kit/core';
   import Draggable from './components/Draggable.vue';
   import Droppable from './components/Droppable.vue';
 
@@ -207,8 +208,6 @@ This will make all the components and composables globally available in your app
         im in drop zone
       </Draggable>
     </Droppable>
-
-    <DragOverlay />
   </div>
 </template>
 ```
