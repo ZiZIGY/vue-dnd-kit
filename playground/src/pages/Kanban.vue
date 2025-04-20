@@ -99,6 +99,9 @@
 </template>
 
 <style>
+  body {
+    height: 200svh;
+  }
   .kanban-container {
     width: 100%;
     max-width: 1200px;
