@@ -20,8 +20,6 @@
 
 This repository contains the source code for Vue DnD Kit - a lightweight, high-performance drag and drop toolkit for Vue 3 applications. Inspired by the popular [React DnD Kit](https://dndkit.com/), but specifically designed for the Vue.js ecosystem.
 
-> ⚠️ **Note**: This project is in active development (beta). The API may change between minor versions. Not recommended for production use until version 1.0.0.
-
 ## 🚀 Features
 
 - **Composable API**: Simple composables like `useDraggable` and `useDroppable` for creating drag and drop interfaces
