@@ -1,269 +1,58 @@
-# Vue Drag & Drop Library
+# Vue DnD Kit
 
 <p align="center">
-  <a href="https://zizigy.github.io/vue-dnd-hooks/">
-    <img src="https://raw.githubusercontent.com/ZiZiGY/vue-dnd-hooks/master/public/logo.svg" width="400" alt="Vue Drag & Drop Logo">
-  </a>
+  <img src="https://raw.githubusercontent.com/ZiZIGY/vue-dnd-kit/refs/heads/master/public/logo.svg" width="400" alt="Vue DnD Kit Logo">
 </p>
 
 <p align="center">
-  A powerful and flexible drag & drop library for Vue.js applications with TypeScript support.
+  A modern, lightweight drag and drop library for Vue 3 applications
 </p>
 
 <p align="center">
-  <a href="https://zizigy.github.io/vue-dnd-hooks/" target="_blank">
+  <a href="https://zizigy.github.io/vue-dnd-kit/">
     <img src="https://img.shields.io/badge/Documentation-Visit-blue?style=flat-square" alt="Documentation">
   </a>
+  <img src="https://img.shields.io/badge/Status-ready-green.svg" alt="Status: ready">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT">
 </p>
 
-## Features
+## 📋 About
 
-### Core Capabilities
+This repository contains the source code for Vue DnD Kit - a lightweight, high-performance drag and drop toolkit for Vue 3 applications. Inspired by the popular [React DnD Kit](https://dndkit.com/), but specifically designed for the Vue.js ecosystem.
 
-- 🎯 **Simple Composables API**
+> ⚠️ **Note**: This project is in active development (beta). The API may change between minor versions. Not recommended for production use until version 1.0.0.
 
-  - Intuitive hooks-based approach
-  - Clean and declarative syntax
-  - Minimal boilerplate code
+## 🚀 Features
 
-- 🎨 **Full Customization**
+- **Composable API**: Simple composables like `useDraggable` and `useDroppable` for creating drag and drop interfaces
+- **High Performance**: Built with performance in mind using efficient algorithms and optimizations
+- **TypeScript Support**: Written in TypeScript for better developer experience and code reliability
+- **Accessibility**: Designed with accessibility in mind, supporting keyboard navigation and screen readers
+- **Flexible**: Create custom drag overlays, handles, and complex nested interfaces
 
-  - Custom drag overlays
-  - Flexible styling system
-  - Animation support
-  - Custom drag handles
+## 📦 Repository Structure
 
-- 📱 **Advanced Input Support**
+The repository is organized into several packages:
 
-  - Touch devices support
-  - Mouse events
-  - Multi-touch gestures
+- **packages/core**: The main package with core drag and drop functionality
+- **packages/components**: (Coming soon) Ready-to-use components built on top of the core library
+- **packages/utils**: (Coming soon) Utility functions for advanced customization
+- **packages/devtools**: (Coming soon) Developer tools for debugging and optimizing
+- **docs**: Documentation site built with VitePress
 
-### Performance
+## 📖 Documentation
 
-- ⚡ **Optimized Rendering**
+Visit our [documentation site](https://zizigy.github.io/vue-dnd-kit/) for guides, API references, and examples.
 
-  - Virtual DOM friendly
-  - Minimal re-renders
-  - Efficient DOM updates
-  - Memory leak prevention
+## 🔧 Dependencies
 
-- 🔄 **Smart Auto-scrolling**
+- Vue 3
+- VueUse
 
-  - Smooth scroll animations
-  - Configurable thresholds
-  - Performance-optimized
-  - Works with nested scrollable containers
+## 🤝 Contributing
 
-### Developer Experience
-
-- 🔍 **TypeScript Ready**
-
-  - Full type coverage
-  - Type inference
-  - IDE autocompletion
-  - Type-safe events
-
-- 📐 **Layout Features**
-
-  - Grid system support
-  - Flex layout compatible
-  - Responsive design ready
-  - Dynamic constraints
-
-### Advanced Features
-
-- 🎯 **Smart Grouping**
-
-  - Element groups
-  - Zone filtering
-  - Nested groups
-  - Dynamic group validation
-
-- 📊 **Rich Events System**
-
-  - Comprehensive lifecycle events
-  - Custom event handlers
-  - Drag state tracking
-  - Position coordinates
-
-- 🛡️ **Built-in Utilities**
-
-  - Geometry calculations
-  - Bounding box tracking
-  - Position management
-  - Intersection detection
-
-### Integration
-
-- 🔌 **Framework Integration**
-  - Vue 3 Composition API
-  - Nuxt.js compatible
-  - Works with SSR
-  - Plugin ecosystem ready
-
-## Installation
-
-Choose your preferred package manager:
-
-```bash
-npm install vue-dnd-hooks
-```
-
-```bash
-yarn add vue-dnd-hooks
-```
-
-```bash
-pnpm install vue-dnd-hooks
-```
-
-## Basic Usage
-
-### App.vue
-
-<sup>📄 Root Application Component</sup>
-
-```vue
-<script setup lang="ts">
-  import { ref } from 'vue';
-  import { DragOverlay } from 'vue-dnd-hooks';
-  import Draggable from './components/Draggable.vue';
-  import Droppable from './components/Droppable.vue';
-
-  const handleDrop = () => (elementInDropZone.value = true);
-
-  const handleEnd = () => (elementInDropZone.value = false);
-
-  const elementInDropZone = ref<boolean>(false);
-</script>
-
-<template>
-  <div>
-    <Draggable v-if="!elementInDropZone"> drag me </Draggable>
-    <Droppable @drop="handleDrop">
-      <Draggable
-        v-if="elementInDropZone"
-        @end="handleEnd"
-      >
-        im in drop zone
-      </Draggable>
-    </Droppable>
-
-    <DragOverlay />
-  </div>
-</template>
-```
-
-### Draggable.vue
-
-<sup>🧩 components/Draggable.vue</sup>
-
-```vue
-<script setup lang="ts">
-  import { useDrag } from 'vue-dnd-hooks';
-
-  const emit = defineEmits<{
-    (e: 'end'): void;
-  }>();
-
-  const { elementRef, handleDragStart, isDragging } = useDrag({
-    events: { onEnd: () => emit('end') },
-  });
-</script>
-
-<template>
-  <div
-    ref="elementRef"
-    @pointerdown="handleDragStart"
-    :class="{ dragging: isDragging }"
-  >
-    <slot />
-  </div>
-</template>
-
-<style scoped>
-  .dragging {
-    opacity: 0.5;
-  }
-</style>
-```
-
-### Droppable.vue
-
-<sup>🧩 components/Droppable.vue</sup>
-
-```vue
-<script setup lang="ts">
-  import { useDrop } from 'vue-dnd-hooks';
-
-  const emit = defineEmits<{
-    (e: 'drop'): void;
-  }>();
-
-  const { elementRef, isOvered } = useDrop({
-    events: { onDrop: () => emit('drop') },
-  });
-</script>
-
-<template>
-  <div
-    ref="elementRef"
-    :class="{
-      droppable: true,
-      'is-overed': isOvered,
-    }"
-  >
-    drop here
-    <slot />
-  </div>
-</template>
-
-<style scoped>
-  .droppable {
-    width: 100px;
-    height: 100px;
-    border: 1px solid black;
-  }
-  .is-overed {
-    background-color: #f0f0f0;
-    border: 1px dashed red;
-  }
-</style>
-```
-
-## 📝 Contributing
-
-(Not Ready)
-
-<p align="center">
-  <s>We welcome contributions! Please read our [contributing guidelines](CONTRIBUTING.md) before submitting pull requests.</s>
-</p>
-
-## 🎯 Roadmap
-
-- [ ] File upload with drag & drop
-- [ ] React port (probably not, react have dnd-kit)
-- [ ] Accessibility improvements (ARIA)
-
-## 🌟 Showcase
-
-Projects using Vue Drag & Drop Library:
-
-- [Project Name](link) - Brief description
-- [Your Project Here](link) - Submit your project!
-
-## 💖 Support
-
-If you find this library helpful, please consider:
-
-- Giving it a star on GitHub ⭐
-- Sharing it with others
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
 
-[MIT](LICENSE) © [ZiZiGY](https://github.com/ZiZiGY)
-
----
-
-<p align="center">Made with ❤️ for the Vue.js community</p>
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
