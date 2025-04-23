@@ -46,6 +46,7 @@
     background-color: #3eaf7c;
     color: white;
     width: 100%;
+    touch-action: none;
   }
 
   .is-dragging {
