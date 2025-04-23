@@ -3,8 +3,8 @@
 [![Release](https://img.shields.io/badge/status-release-green.svg)](https://github.com/zizigy/vue-dnd-kit)
 
 <p align="center">
-  <a href="https://zizigy.github.io/vue-dnd-hooks/">
-    <img src="https://raw.githubusercontent.com/ZiZiGY/vue-dnd-hooks/master/public/logo.svg" width="400" alt="Vue Drag & Drop Logo">
+  <a href="https://zizigy.github.io/vue-dnd-kit/">
+    <img src="https://raw.githubusercontent.com/ZiZiGY/vue-dnd-kit/master/public/logo.svg" width="400" alt="Vue Drag & Drop Logo">
   </a>
 </p>
 
@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="https://zizigy.github.io/vue-dnd-hooks/" target="_blank">
+  <a href="https://zizigy.github.io/vue-dnd-kit/" target="_blank">
     <img src="https://img.shields.io/badge/Documentation-Visit-blue?style=flat-square" alt="Documentation">
   </a>
 </p>
