@@ -1,8 +1,10 @@
 name: Deploy Documentation
 
 on:
+  # Запускать при пуше в master
   push:
     branches: [master]
+  # Разрешить запуск workflow вручную
   workflow_dispatch:
 
 jobs:
@@ -16,13 +18,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'npm'
+          cache: 'yarn'
 
       - name: Install dependencies
-        run: npm ci
+        run: yarn install
 
       - name: Build documentation
-        run: npm run docs:build
+        run: yarn docs:build
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
