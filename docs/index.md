@@ -40,11 +40,11 @@ features:
 ---
 
 <script setup>
-import DndDemo from './.vitepress/components/DndDemo.vue'
+import DnDDemo from './.vitepress/components/DnDDemo.vue'
 import DnDList from './.vitepress/components/DnDList.vue'
 </script>
 
-<DndDemo />
+<DnDDemo />
 
 ::: tip Keyboard & Mouse Navigation
 Try interacting with the demo above:
