@@ -1,11 +1,13 @@
 name: Deploy Documentation
 
 on:
-  # Запускать при пуше в master
   push:
     branches: [master]
-  # Разрешить запуск workflow вручную
   workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
 
 jobs:
   build-and-deploy:
