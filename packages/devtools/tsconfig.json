@@ -1,0 +1,29 @@
+{
+  "include": ["src/global.d.ts", "src/**/*.ts", "__tests__/**/*.ts"],
+  "compilerOptions": {
+    "outDir": "dist",
+    "sourceMap": false,
+
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "allowJs": false,
+    "skipLibCheck": true,
+
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": false,
+    "strict": true,
+    "isolatedModules": true,
+
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "removeComments": false,
+    "jsx": "preserve",
+    "lib": ["esnext", "dom"],
+    "types": ["node"]
+  }
+}

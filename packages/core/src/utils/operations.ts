@@ -120,21 +120,9 @@ export class DnDOperations {
       const targetIndex =
         store.elementsMap.value.get(hoveredElement)?.data?.index;
 
-      const firstElement = store.draggingElements.value.values().next().value;
-      const firstIndex = firstElement?.data?.index;
-
-      const sortDirection =
-        firstIndex !== undefined &&
-        targetIndex !== undefined &&
-        firstIndex > targetIndex
-          ? 1
-          : -1;
-
       const sortedElements = Array.from(
         store.draggingElements.value.values()
-      ).sort(
-        (a, b) => sortDirection * ((a.data?.index || 0) - (b.data?.index || 0))
-      );
+      ).sort((a, b) => (b.data?.index || 0) - (a.data?.index || 0));
 
       sortedElements.forEach((element) =>
         DnDOperations.copy(

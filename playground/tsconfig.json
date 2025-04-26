@@ -26,7 +26,8 @@
       "@vue-dnd-kit/core": ["../packages/core/src"],
       "@vue-dnd-kit/core/*": ["../packages/core/src/*"],
       "@vue-dnd-kit/components": ["../packages/components/src"],
-      "@vue-dnd-kit/components/*": ["../packages/components/src/*"]
+      "@vue-dnd-kit/components/*": ["../packages/components/src/*"],
+      "@vue-dnd-kit/devtools": ["../packages/devtools/src"]
     }
   },
   "include": [
