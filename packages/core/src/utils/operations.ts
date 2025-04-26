@@ -62,21 +62,49 @@ export class DnDOperations {
     const hoveredZone = store.hovered.zone.value;
 
     if (hoveredElement) {
-      store.draggingElements.value.forEach((element) =>
+      const targetSource =
+        store.elementsMap.value.get(hoveredElement)?.data?.source;
+      const targetIndex =
+        store.elementsMap.value.get(hoveredElement)?.data?.index;
+
+      const firstElement = store.draggingElements.value.values().next().value;
+      const firstIndex = firstElement?.data?.index;
+
+      const sortDirection =
+        firstIndex !== undefined &&
+        targetIndex !== undefined &&
+        firstIndex > targetIndex
+          ? 1
+          : -1;
+
+      const sortedElements = Array.from(
+        store.draggingElements.value.values()
+      ).sort(
+        (a, b) => sortDirection * ((a.data?.index || 0) - (b.data?.index || 0))
+      );
+
+      sortedElements.forEach((element) =>
         DnDOperations.move(
           element.data?.source,
           element.data?.index,
-          store.elementsMap.value.get(hoveredElement)?.data?.source,
-          store.elementsMap.value.get(hoveredElement)?.data?.index
+          targetSource,
+          targetIndex
         )
       );
     } else if (hoveredZone) {
-      store.draggingElements.value.forEach((element) =>
+      const targetSource = store.zonesMap.value.get(hoveredZone)?.data?.source;
+      const targetIndex = targetSource?.length;
+
+      const sortedElements = Array.from(
+        store.draggingElements.value.values()
+      ).sort((a, b) => (b.data?.index || 0) - (a.data?.index || 0));
+
+      sortedElements.forEach((element) =>
         DnDOperations.move(
           element.data?.source,
           element.data?.index,
-          store.zonesMap.value.get(hoveredZone)?.data?.source,
-          store.zonesMap.value.get(hoveredZone)?.data?.source?.length
+          targetSource,
+          targetIndex
         )
       );
     }
@@ -87,21 +115,49 @@ export class DnDOperations {
     const hoveredZone = store.hovered.zone.value;
 
     if (hoveredElement) {
-      store.draggingElements.value.forEach((element) =>
+      const targetSource =
+        store.elementsMap.value.get(hoveredElement)?.data?.source;
+      const targetIndex =
+        store.elementsMap.value.get(hoveredElement)?.data?.index;
+
+      const firstElement = store.draggingElements.value.values().next().value;
+      const firstIndex = firstElement?.data?.index;
+
+      const sortDirection =
+        firstIndex !== undefined &&
+        targetIndex !== undefined &&
+        firstIndex > targetIndex
+          ? 1
+          : -1;
+
+      const sortedElements = Array.from(
+        store.draggingElements.value.values()
+      ).sort(
+        (a, b) => sortDirection * ((a.data?.index || 0) - (b.data?.index || 0))
+      );
+
+      sortedElements.forEach((element) =>
         DnDOperations.copy(
           element.data?.source,
           element.data?.index,
-          store.elementsMap.value.get(hoveredElement)?.data?.source,
-          store.elementsMap.value.get(hoveredElement)?.data?.index
+          targetSource,
+          targetIndex
         )
       );
     } else if (hoveredZone) {
-      store.draggingElements.value.forEach((element) =>
+      const targetSource = store.zonesMap.value.get(hoveredZone)?.data?.source;
+      const targetIndex = targetSource?.length;
+
+      const sortedElements = Array.from(
+        store.draggingElements.value.values()
+      ).sort((a, b) => (b.data?.index || 0) - (a.data?.index || 0));
+
+      sortedElements.forEach((element) =>
         DnDOperations.copy(
           element.data?.source,
           element.data?.index,
-          store.zonesMap.value.get(hoveredZone)?.data?.source,
-          store.zonesMap.value.get(hoveredZone)?.data?.source?.length
+          targetSource,
+          targetIndex
         )
       );
     }
@@ -109,6 +165,7 @@ export class DnDOperations {
   static applySwap = (store: IDnDStore) => {
     const hoveredElement = store.hovered.element.value;
     const hoveredZone = store.hovered.zone.value;
+
     if (hoveredElement && store.draggingElements.value.size === 1) {
       const element = store.draggingElements.value.values().next().value;
       DnDOperations.swap(
@@ -118,18 +175,29 @@ export class DnDOperations {
         store.elementsMap.value.get(hoveredElement)?.data?.index
       );
     } else if (hoveredZone) {
-      store.draggingElements.value.forEach((element) =>
+      const targetSource = store.zonesMap.value.get(hoveredZone)?.data?.source;
+      const targetIndex = targetSource?.length;
+
+      const sortedElements = Array.from(
+        store.draggingElements.value.values()
+      ).sort((a, b) => (b.data?.index || 0) - (a.data?.index || 0));
+
+      sortedElements.forEach((element) =>
         DnDOperations.move(
           element.data?.source,
           element.data?.index,
-          store.zonesMap.value.get(hoveredZone)?.data?.source,
-          store.zonesMap.value.get(hoveredZone)?.data?.source?.length
+          targetSource,
+          targetIndex
         )
       );
     }
   };
   static applyRemove = (store: IDnDStore) => {
-    store.draggingElements.value.forEach((element) => {
+    const sortedElements = Array.from(
+      store.draggingElements.value.values()
+    ).sort((a, b) => (b.data?.index || 0) - (a.data?.index || 0));
+
+    sortedElements.forEach((element) => {
       if (element.data?.source && element.data?.index !== undefined) {
         DnDOperations.remove(element.data.source, element.data.index);
       }
@@ -138,21 +206,22 @@ export class DnDOperations {
   static applyInsert = (store: IDnDStore, items: any[]) => {
     const hoveredElement = store.hovered.element.value;
     const hoveredZone = store.hovered.zone.value;
+
     if (hoveredElement && items.length > 0) {
+      const targetSource =
+        store.elementsMap.value.get(hoveredElement)?.data?.source;
+      const targetIndex =
+        store.elementsMap.value.get(hoveredElement)?.data?.index;
+
       items.forEach((item) => {
-        DnDOperations.insert(
-          store.elementsMap.value.get(hoveredElement)?.data?.source,
-          store.elementsMap.value.get(hoveredElement)?.data?.index,
-          item
-        );
+        DnDOperations.insert(targetSource, targetIndex, item);
       });
     } else if (hoveredZone) {
+      const targetSource = store.zonesMap.value.get(hoveredZone)?.data?.source;
+      const targetIndex = targetSource?.length;
+
       items.forEach((item) => {
-        DnDOperations.insert(
-          store.zonesMap.value.get(hoveredZone)?.data?.source,
-          store.zonesMap.value.get(hoveredZone)?.data?.source?.length,
-          item
-        );
+        DnDOperations.insert(targetSource, targetIndex, item);
       });
     }
   };

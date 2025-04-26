@@ -53,9 +53,9 @@ Groups define compatibility between draggable elements and drop zones. A draggab
 
 To start using Vue DnD Kit Core, check out these resources:
 
-- [Installation Guide](/packages/core/installation)
+- [Installation Guide](/guide/installation)
 - [Quick Start Guide](/guide/quick-start)
-- [useDraggable Documentation](/packages/core/use-draggable)
-- [useDroppable Documentation](/packages/core/use-droppable)
+- [useDraggable Documentation](/guide/core/use-draggable)
+- [useDroppable Documentation](/guide/core/use-droppable)
 
 For more detailed documentation on specific composables and utilities, explore the sidebar navigation.

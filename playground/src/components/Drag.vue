@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useDraggable } from '@vue-dnd-kit/core';
+  import { useDraggable, useSelection } from '@vue-dnd-kit/core';
   import { computed } from 'vue';
 
   const props = defineProps<{
@@ -13,14 +13,31 @@
       index: props.index,
     })),
   });
+
+  const { handleToggleSelect, isSelected } = useSelection(elementRef);
 </script>
 
 <template>
-  <div
-    ref="elementRef"
-    @pointerdown="handleDragStart"
-  >
-    <slot />
+  <div ref="elementRef">
+    <div>
+      <input
+        type="checkbox"
+        :checked="isSelected"
+        @change="handleToggleSelect"
+      />
+      <span
+        @pointerdown="handleDragStart"
+        class="handle"
+        >::</span
+      >
+      <slot />
+    </div>
     <hr v-if="isOvered" />
   </div>
 </template>
+
+<style>
+  .handle {
+    cursor: move;
+  }
+</style>
