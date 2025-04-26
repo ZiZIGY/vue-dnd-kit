@@ -25,6 +25,4 @@ export type {
   IDragElement,
   IDraggingElement,
   IDropZone,
-  IPoint,
-  IBoundingBox,
 } from './types';

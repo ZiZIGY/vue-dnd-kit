@@ -47,6 +47,10 @@ export default defineConfig({
             { text: 'useDraggable', link: '/guide/core/use-draggable' },
             { text: 'useDroppable', link: '/guide/core/use-droppable' },
             { text: 'useSelection', link: '/guide/core/use-selection' },
+            {
+              text: 'useDragContainer',
+              link: '/guide/core/use-drag-container',
+            },
             { text: 'DnDOperations', link: '/guide/core/dnd-operations' },
           ],
         },

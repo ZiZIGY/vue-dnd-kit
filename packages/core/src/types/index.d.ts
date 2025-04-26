@@ -1,30 +1,7 @@
 import type { Component, ComputedRef, Ref, ShallowRef } from 'vue';
+import { useDnDStore } from '../composables/useDnDStore';
 
-export interface IDnDStore {
-  isDragging: Ref<boolean>;
-  activeContainer: IActiveContainer;
-  elementsMap: Ref<Map<HTMLElement | Element, IDragElement>>;
-  selectedElementsMap: Ref<Map<HTMLElement | Element, IDragElement>>;
-  zonesMap: Ref<Map<HTMLElement | Element, IDropZone>>;
-  draggingElements: Ref<Map<HTMLElement | Element, IDraggingElement>>;
-  hovered: {
-    zone: ShallowRef<HTMLElement | Element | null>;
-    element: ShallowRef<HTMLElement | Element | null>;
-  };
-  visibleZones: Ref<Set<HTMLElement | Element>>;
-  visibleElements: Ref<Set<HTMLElement | Element>>;
-  pointerPosition: IPointerPosition;
-  keyboard: {
-    w: Ref<boolean>;
-    s: Ref<boolean>;
-    a: Ref<boolean>;
-    d: Ref<boolean>;
-    ctrl: Ref<boolean>;
-    shift: Ref<boolean>;
-    alt: Ref<boolean>;
-    meta: Ref<boolean>;
-  };
-}
+export interface IDnDStore extends ReturnType<typeof useDnDStore> {}
 
 export interface IActiveContainer {
   component: Ref<Component | null>;
