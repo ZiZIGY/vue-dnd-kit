@@ -1,4 +1,3 @@
-const path = require('path');
 const typescript = require('rollup-plugin-typescript2');
 const terser = require('@rollup/plugin-terser');
 const resolve = require('@rollup/plugin-node-resolve');

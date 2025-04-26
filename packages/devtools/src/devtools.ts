@@ -7,7 +7,6 @@ const timelineLayerId = 'dnd-kit-timeline';
 export function setupDevtools(app: App) {
   let trackId = 0;
 
-  // Используем тип any для descriptor и api, чтобы избежать ошибок рекурсии типов
   setupDevtoolsPlugin(
     {
       id: 'vue-dnd-kit-devtools',
@@ -19,14 +18,12 @@ export function setupDevtools(app: App) {
       app,
     } as any,
     (api: DevtoolsPluginApi<any>) => {
-      // Создаем инспектор
       api.addInspector({
         id: inspectorId,
         label: 'DnD Kit',
         icon: 'drag_indicator',
       });
 
-      // Добавляем дерево для инспектора
       api.on.getInspectorTree((payload: any) => {
         if (payload.inspectorId === inspectorId) {
           payload.rootNodes = [
@@ -38,7 +35,6 @@ export function setupDevtools(app: App) {
         }
       });
 
-      // Добавляем информацию о состоянии
       api.on.getInspectorState((payload: any) => {
         if (payload.inspectorId === inspectorId && payload.nodeId === 'root') {
           payload.state = {
