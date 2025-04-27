@@ -3,7 +3,6 @@ import { setupDevtools } from './devtools';
 
 function setupDndKitDevtools(app: App) {
   if (process.env.NODE_ENV === 'development' || __VUE_PROD_DEVTOOLS__) {
-    console.log('Инициализация Vue DnD Kit DevTools');
     return setupDevtools(app);
   }
   return {};

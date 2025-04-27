@@ -141,8 +141,6 @@ export function setupDevtools(app: App) {
       //   },
       // };
 
-      // console.log('Vue DnD Kit DevTools успешно инициализированы');
-
       // return devtools;
     }
   );
