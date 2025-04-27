@@ -10,7 +10,7 @@ export const useElementManager = (options?: IUseDragOptions) => {
     elementsMap,
     draggingElements,
     hovered,
-    selectedElementsMap,
+    selectedElements,
     isDragging: isDragStarted,
     visibleElements,
     handleDragElementIntersection,
@@ -74,7 +74,7 @@ export const useElementManager = (options?: IUseDragOptions) => {
     if (!elementRef.value) return;
 
     elementsMap.value.delete(elementRef.value);
-    selectedElementsMap.value.delete(elementRef.value);
+    selectedElements.value.delete(elementRef.value);
 
     elementRef.value.removeEventListener('dragstart', preventEvent);
     elementRef.value.removeEventListener('drag', preventEvent);
