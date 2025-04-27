@@ -1,5 +1,12 @@
 import { App, DevtoolsPluginApi, setupDevtoolsPlugin } from '@vue/devtools-api';
 
+import { createElements } from './utils/elements';
+import { createPointer } from './utils/pointer';
+import { createStore } from './utils/store';
+import { createZones } from './utils/zones';
+import { useDnDStore } from '@vue-dnd-kit/core';
+import { watch } from 'vue';
+
 const stateType = 'DnD Kit State';
 const inspectorId = 'dnd-kit-inspector';
 const timelineLayerId = 'dnd-kit-timeline';
@@ -11,7 +18,7 @@ export function setupDevtools(app: App) {
     {
       id: 'vue-dnd-kit-devtools',
       label: 'Vue DnD Kit',
-      packageName: 'vue-dnd-kit',
+      packageName: '@vue-dnd-kit/devtools',
       homepage: 'https://github.com/zizigy/vue-dnd-kit',
       componentStateTypes: [stateType],
       icon: 'https://raw.githubusercontent.com/zizigy/vue-dnd-kit/main/public/logo.svg',
@@ -22,31 +29,71 @@ export function setupDevtools(app: App) {
         id: inspectorId,
         label: 'DnD Kit',
         icon: 'drag_indicator',
+        actions: [
+          {
+            icon: 'drag_indicator',
+            tooltip: 'Elements',
+            action: () => {
+              console.log(app);
+            },
+          },
+        ],
       });
 
-      api.on.getInspectorTree((payload: any) => {
+      const store: ReturnType<typeof useDnDStore> = app.__VUE_DND_KIT_STORE__;
+
+      api.on.getInspectorTree((payload) => {
         if (payload.inspectorId === inspectorId) {
           payload.rootNodes = [
             {
               id: 'root',
-              label: 'DnD Kit',
+              label: 'DnD Store',
+              children: [
+                {
+                  id: 'pointer',
+                  label: 'Pointer',
+                  children: [],
+                },
+                {
+                  id: 'elements',
+                  label: 'Elements',
+                },
+                {
+                  id: 'zones',
+                  label: 'Zones',
+                },
+              ],
             },
           ];
         }
       });
 
-      api.on.getInspectorState((payload: any) => {
+      api.on.getInspectorState((payload) => {
         if (payload.inspectorId === inspectorId && payload.nodeId === 'root') {
-          payload.state = {
-            Информация: [
-              {
-                key: 'Статус',
-                value: 'Работает',
-              },
-            ],
-          };
+          payload.state = createStore(store);
+        }
+        if (
+          payload.inspectorId === inspectorId &&
+          payload.nodeId === 'pointer'
+        ) {
+          payload.state = createPointer(store);
+        }
+        if (
+          payload.inspectorId === inspectorId &&
+          payload.nodeId === 'elements'
+        ) {
+          payload.state = createElements(store);
+        }
+        if (payload.inspectorId === inspectorId && payload.nodeId === 'zones') {
+          payload.state = createZones(store);
         }
       });
+
+      watch(
+        () => store,
+        () => api.sendInspectorState(inspectorId),
+        { deep: true }
+      );
 
       api.addTimelineLayer({
         id: timelineLayerId,

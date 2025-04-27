@@ -19,9 +19,7 @@ export const useDnDStore = createGlobalState(() => {
   };
 
   const elementsMap = ref<Map<HTMLElement | Element, IDragElement>>(new Map());
-  const selectedElementsMap = ref<Map<HTMLElement | Element, IDragElement>>(
-    new Map()
-  );
+  const selectedElements = ref<Set<HTMLElement | Element>>(new Set());
   const zonesMap = ref<Map<HTMLElement | Element, IDropZone>>(new Map());
   const visibleZones = ref<Set<HTMLElement | Element>>(new Set());
   const visibleElements = ref<Set<HTMLElement | Element>>(new Set());
@@ -84,7 +82,7 @@ export const useDnDStore = createGlobalState(() => {
     isDragging,
     activeContainer,
     elementsMap,
-    selectedElementsMap,
+    selectedElements,
     zonesMap,
     visibleZones,
     visibleElements,

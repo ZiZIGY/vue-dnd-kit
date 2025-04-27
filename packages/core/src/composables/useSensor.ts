@@ -34,25 +34,26 @@ export const useSensor = (
     if (!draggableElement) return new Map();
 
     const isDraggableInSelection =
-      store.selectedElementsMap.value.has(draggableElement);
+      store.selectedElements.value.has(draggableElement);
 
-    if (store.selectedElementsMap.value.size > 0 && isDraggableInSelection) {
+    if (store.selectedElements.value.size > 0 && isDraggableInSelection) {
       const result = new Map<HTMLElement | Element, IDraggingElement>();
 
-      Array.from(store.selectedElementsMap.value.entries()).forEach(
-        ([node, element]) => {
-          result.set(node, {
-            ...element,
-            initialHTML: element.node?.outerHTML ?? '',
-            initialRect: element.node?.getBoundingClientRect(),
-          });
-        }
-      );
+      store.selectedElements.value.forEach((node) => {
+        const element = store.elementsMap.value.get(node);
+        if (!element) return;
+
+        result.set(node, {
+          ...element,
+          initialHTML: element.node?.outerHTML ?? '',
+          initialRect: element.node?.getBoundingClientRect(),
+        });
+      });
 
       return result;
     }
 
-    store.selectedElementsMap.value.clear();
+    store.selectedElements.value.clear();
 
     const element = store.elementsMap.value.get(draggableElement);
     if (!element) return new Map();
@@ -234,7 +235,7 @@ export const useSensor = (
         );
       }
 
-      store.selectedElementsMap.value.clear();
+      store.selectedElements.value.clear();
     }
     store.draggingElements.value.clear();
 

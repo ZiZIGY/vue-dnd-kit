@@ -2,6 +2,7 @@ import { createVNode, render } from 'vue';
 
 import type { App } from 'vue';
 import DragOverlay from './components/DragOverlay.vue';
+import { useDnDStore } from './composables/useDnDStore';
 
 export const VueDndKitPlugin = {
   install(app: App) {
@@ -25,10 +26,14 @@ export const VueDndKitPlugin = {
           rootEl.appendChild(overlayContainer);
           const vnode = createVNode(DragOverlay);
           render(vnode, overlayContainer);
+
           app.__VUE_DND_KIT_OVERLAY__ = {
             container: overlayContainer,
             vnode,
           };
+
+          const store = useDnDStore();
+          app.__VUE_DND_KIT_STORE__ = store;
         }
       }
 
@@ -53,5 +58,6 @@ declare module '@vue/runtime-core' {
       container: HTMLElement;
       vnode: any;
     };
+    __VUE_DND_KIT_STORE__?: ReturnType<typeof useDnDStore>;
   }
 }

@@ -11,10 +11,8 @@ export function setupDndKitDevtools(app: App) {
 
 export default setupDndKitDevtools;
 
-// Для поддержки сборщиков
 export * from './devtools';
 
-// Для типов TypeScript
 declare global {
   var __VUE_PROD_DEVTOOLS__: boolean;
 }
