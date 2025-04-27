@@ -15,5 +15,15 @@ export const createElements = (
       value: store.visibleElements.value,
       objectType: 'ref',
     },
+    {
+      key: 'selectedElements',
+      value: store.selectedElements.value,
+      objectType: 'ref',
+    },
+    {
+      key: 'draggingElements',
+      value: store.draggingElements.value,
+      objectType: 'ref',
+    },
   ],
 });

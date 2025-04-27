@@ -16,19 +16,19 @@ const store = useDnDStore();
 
 ### Store Properties
 
-| Property            | Type                                  | Description                                             |
-| ------------------- | ------------------------------------- | ------------------------------------------------------- |
-| draggingElements    | `Ref<Map<Element, IDraggingElement>>` | Map of currently dragging elements                      |
-| isDragging          | `ComputedRef<boolean>`                | Whether any element is currently being dragged          |
-| elementsMap         | `Ref<Map<Element, IDragElement>>`     | Map of all registered draggable elements                |
-| selectedElementsMap | `Ref<Map<Element, IDragElement>>`     | Map of all selected elements (for multi-drag)           |
-| zonesMap            | `Ref<Map<Element, IDropZone>>`        | Map of all registered drop zones                        |
-| visibleZones        | `Ref<Set<Element>>`                   | Set of drop zones currently visible in viewport         |
-| visibleElements     | `Ref<Set<Element>>`                   | Set of draggable elements currently visible in viewport |
-| pointerPosition     | `Object`                              | Current and initial pointer positions                   |
-| keyboard            | `Object`                              | State of keyboard keys (using VueUse's useMagicKeys)    |
-| hovered             | `Object`                              | Currently hovered zone and element                      |
-| activeContainer     | `Object`                              | Active overlay container component and reference        |
+| Property         | Type                                  | Description                                             |
+| ---------------- | ------------------------------------- | ------------------------------------------------------- |
+| draggingElements | `Ref<Map<Element, IDraggingElement>>` | Map of currently dragging elements                      |
+| isDragging       | `ComputedRef<boolean>`                | Whether any element is currently being dragged          |
+| elementsMap      | `Ref<Map<Element, IDragElement>>`     | Map of all registered draggable elements                |
+| selectedElements | `Ref<Set<Element>`                    | Map of all selected elements (for multi-drag)           |
+| zonesMap         | `Ref<Map<Element, IDropZone>>`        | Map of all registered drop zones                        |
+| visibleZones     | `Ref<Set<Element>>`                   | Set of drop zones currently visible in viewport         |
+| visibleElements  | `Ref<Set<Element>>`                   | Set of draggable elements currently visible in viewport |
+| pointerPosition  | `Object`                              | Current and initial pointer positions                   |
+| keyboard         | `Object`                              | State of keyboard keys (using VueUse's useMagicKeys)    |
+| hovered          | `Object`                              | Currently hovered zone and element                      |
+| activeContainer  | `Object`                              | Active overlay container component and reference        |
 
 ### Pointer Position Object
 

@@ -27,7 +27,10 @@
       />
       <span
         @pointerdown="handleDragStart"
+        @keydown.space.prevent="handleDragStart"
         class="handle"
+        role="button"
+        tabindex="0"
         >::</span
       >
       <slot />

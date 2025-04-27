@@ -1,6 +1,8 @@
 import { App, DevtoolsPluginApi, setupDevtoolsPlugin } from '@vue/devtools-api';
 
+import { createContainer } from './utils/container';
 import { createElements } from './utils/elements';
+import { createHovered } from './utils/hovered';
 import { createPointer } from './utils/pointer';
 import { createStore } from './utils/store';
 import { createZones } from './utils/zones';
@@ -25,6 +27,8 @@ export function setupDevtools(app: App) {
       app,
     } as any,
     (api: DevtoolsPluginApi<any>) => {
+      const store: ReturnType<typeof useDnDStore> = app.__VUE_DND_KIT_STORE__;
+
       api.addInspector({
         id: inspectorId,
         label: 'DnD Kit',
@@ -33,14 +37,10 @@ export function setupDevtools(app: App) {
           {
             icon: 'drag_indicator',
             tooltip: 'Elements',
-            action: () => {
-              console.log(app);
-            },
+            action: () => {},
           },
         ],
       });
-
-      const store: ReturnType<typeof useDnDStore> = app.__VUE_DND_KIT_STORE__;
 
       api.on.getInspectorTree((payload) => {
         if (payload.inspectorId === inspectorId) {
@@ -61,6 +61,14 @@ export function setupDevtools(app: App) {
                 {
                   id: 'zones',
                   label: 'Zones',
+                },
+                {
+                  id: 'container',
+                  label: 'Container',
+                },
+                {
+                  id: 'hovered',
+                  label: 'Hovered',
                 },
               ],
             },
@@ -86,6 +94,18 @@ export function setupDevtools(app: App) {
         }
         if (payload.inspectorId === inspectorId && payload.nodeId === 'zones') {
           payload.state = createZones(store);
+        }
+        if (
+          payload.inspectorId === inspectorId &&
+          payload.nodeId === 'container'
+        ) {
+          payload.state = createContainer(store);
+        }
+        if (
+          payload.inspectorId === inspectorId &&
+          payload.nodeId === 'hovered'
+        ) {
+          payload.state = createHovered(store);
         }
       });
 

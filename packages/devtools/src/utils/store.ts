@@ -54,8 +54,8 @@ export const createStore = (
       },
     },
     {
-      key: 'selectedElementsMap',
-      value: store.selectedElementsMap.value,
+      key: 'selectedElements',
+      value: store.selectedElements.value,
       objectType: 'ref',
     },
     {
