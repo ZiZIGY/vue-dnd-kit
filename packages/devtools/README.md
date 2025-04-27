@@ -76,15 +76,15 @@ The DevTools package extends Vue DevTools with multiple specialized panels:
 Choose your preferred package manager:
 
 ```bash
-npm install @vue-dnd-kit/devtools
+npm install @vue-dnd-kit/devtools @vue-dnd-kit/core @vueuse/core
 ```
 
 ```bash
-yarn add @vue-dnd-kit/devtools
+yarn add @vue-dnd-kit/devtools @vue-dnd-kit/core @vueuse/core
 ```
 
 ```bash
-pnpm install @vue-dnd-kit/devtools
+pnpm install @vue-dnd-kit/devtools @vue-dnd-kit/core @vueuse/core
 ```
 
 ## Setup
