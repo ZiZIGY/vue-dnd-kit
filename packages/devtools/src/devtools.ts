@@ -33,13 +33,6 @@ export function setupDevtools(app: App) {
         id: inspectorId,
         label: 'DnD Kit',
         icon: 'drag_indicator',
-        actions: [
-          {
-            icon: 'drag_indicator',
-            tooltip: 'Elements',
-            action: () => {},
-          },
-        ],
       });
 
       api.on.getInspectorTree((payload) => {
@@ -52,7 +45,6 @@ export function setupDevtools(app: App) {
                 {
                   id: 'pointer',
                   label: 'Pointer',
-                  children: [],
                 },
                 {
                   id: 'elements',
@@ -115,43 +107,43 @@ export function setupDevtools(app: App) {
         { deep: true }
       );
 
-      api.addTimelineLayer({
-        id: timelineLayerId,
-        color: 0x41b86a,
-        label: 'DnD Kit Events',
-      });
+      // api.addTimelineLayer({
+      //   id: timelineLayerId,
+      //   color: 0x41b86a,
+      //   label: 'DnD Kit Events',
+      // });
 
-      const devtools = {
-        trackStart: (label: string) => {
-          const groupId = 'track' + trackId++;
+      // const devtools = {
+      //   trackStart: (label: string) => {
+      //     const groupId = 'track' + trackId++;
 
-          api.addTimelineEvent({
-            layerId: timelineLayerId,
-            event: {
-              time: Date.now(),
-              data: { label },
-              title: label,
-              groupId,
-            },
-          });
+      //     api.addTimelineEvent({
+      //       layerId: timelineLayerId,
+      //       event: {
+      //         time: Date.now(),
+      //         data: { label },
+      //         title: label,
+      //         groupId,
+      //       },
+      //     });
 
-          return () => {
-            api.addTimelineEvent({
-              layerId: timelineLayerId,
-              event: {
-                time: Date.now(),
-                data: { label, done: true },
-                title: label,
-                groupId,
-              },
-            });
-          };
-        },
-      };
+      //     return () => {
+      //       api.addTimelineEvent({
+      //         layerId: timelineLayerId,
+      //         event: {
+      //           time: Date.now(),
+      //           data: { label, done: true },
+      //           title: label,
+      //           groupId,
+      //         },
+      //       });
+      //     };
+      //   },
+      // };
 
-      console.log('Vue DnD Kit DevTools успешно инициализированы');
+      // console.log('Vue DnD Kit DevTools успешно инициализированы');
 
-      return devtools;
+      // return devtools;
     }
   );
 }

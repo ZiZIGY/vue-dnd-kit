@@ -1,7 +1,7 @@
 import { App } from 'vue';
 import { setupDevtools } from './devtools';
 
-export function setupDndKitDevtools(app: App) {
+function setupDndKitDevtools(app: App) {
   if (process.env.NODE_ENV === 'development' || __VUE_PROD_DEVTOOLS__) {
     console.log('Инициализация Vue DnD Kit DevTools');
     return setupDevtools(app);
@@ -10,8 +10,6 @@ export function setupDndKitDevtools(app: App) {
 }
 
 export default setupDndKitDevtools;
-
-export * from './devtools';
 
 declare global {
   var __VUE_PROD_DEVTOOLS__: boolean;
