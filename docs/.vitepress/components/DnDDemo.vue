@@ -2,7 +2,6 @@
   import { ref } from 'vue';
   import Draggable from './Draggable.vue';
   import Droppable from './Droppable.vue';
-  import DragOverlay from '../../../packages/core/src/components/DragOverlay.vue';
 
   const isDropped = ref(false);
 </script>
@@ -31,7 +30,6 @@
         </Draggable>
       </Transition>
     </Droppable>
-    <DragOverlay />
   </div>
 </template>
 

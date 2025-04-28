@@ -7,10 +7,13 @@ Vue DnD Kit includes a DevTools package that helps you monitor your drag and dro
 To use DevTools, first install the package:
 
 ```bash
+#yarn
 yarn add @vue-dnd-kit/devtools
 
+#npm
 npm install @vue-dnd-kit/devtools
 
+#pnpm
 pnpm add @vue-dnd-kit/devtools
 ```
 

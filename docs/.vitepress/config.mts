@@ -20,11 +20,21 @@ export default defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     logo: 'https://raw.githubusercontent.com/ZiZiGY/vue-dnd-kit/master/public/logo.svg',
 
-    // Main navigation
+    // Main navigation with separated example categories
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Guide', link: '/guide/introduction' },
-      // { text: 'Examples', link: '/examples/basic' },
+      {
+        text: 'Examples',
+        items: [
+          { text: 'Basic Examples', link: '/examples/basic/simple-drag' },
+          {
+            text: 'Advanced Examples',
+            link: '/examples/advanced/multiple-containers',
+          },
+          { text: 'Real-World Examples', link: '/examples/real-world/kanban' },
+        ],
+      },
       { text: 'About', link: '/about' },
     ],
 
@@ -59,92 +69,53 @@ export default defineConfig({
           collapsed: false,
           items: [{ text: 'Usage', link: '/guide/devtools/usage' }],
         },
-        // Temporarily hiding incomplete sections
-        // {
-        //   text: 'Components',
-        //   collapsed: false,
-        //   items: [
-        //     { text: 'DragOverlay', link: '/guide/components/drag-overlay' },
-        //     { text: 'Sortable', link: '/guide/components/sortable' },
-        //     { text: 'DragHandle', link: '/guide/components/drag-handle' },
-        //     { text: 'DropIndicator', link: '/guide/components/drop-indicator' },
-        //     { text: 'MultiDrag', link: '/guide/components/multi-drag' },
-        //   ],
-        // },
-        // {
-        //   text: 'Utils',
-        //   collapsed: false,
-        //   items: [
-        //     { text: 'Sensors', link: '/guide/utils/sensors' },
-        //     {
-        //       text: 'Collision Detection',
-        //       link: '/guide/utils/collision-detection',
-        //     },
-        //     { text: 'Geometry', link: '/guide/utils/geometry' },
-        //     { text: 'Auto-Scroll', link: '/guide/utils/auto-scroll' },
-        //     { text: 'Animation', link: '/guide/utils/animation' },
-        //   ],
-        // },
-        // {
-        //   text: 'DevTools',
-        //   collapsed: false,
-        //   items: [
-        //     { text: 'DnDInspector', link: '/guide/devtools/dnd-inspector' },
-        //     {
-        //       text: 'PerformanceMonitor',
-        //       link: '/guide/devtools/performance-monitor',
-        //     },
-        //   ],
-        // },
-        // {
-        //   text: 'Advanced Topics',
-        //   collapsed: false,
-        //   items: [
-        //     {
-        //       text: 'TypeScript Integration',
-        //       link: '/guide/advanced/typescript',
-        //     },
-        //     { text: 'Custom Sensors', link: '/guide/advanced/custom-sensors' },
-        //     {
-        //       text: 'Performance Optimization',
-        //       link: '/guide/advanced/performance',
-        //     },
-        //   ],
-        // },
       ],
       '/examples/': [
         {
           text: 'Basic Examples',
           collapsed: false,
           items: [
-            { text: 'Basic Drag & Drop', link: '/examples/basic' },
-            // Temporarily hiding incomplete examples
-            // { text: 'Sortable List', link: '/examples/sortable' },
-            // {
-            //   text: 'Multiple Containers',
-            //   link: '/examples/multiple-containers',
-            // },
+            { text: 'Simple Drag', link: '/examples/basic/simple-drag' },
+            { text: 'Drag to Zone', link: '/examples/basic/drag-to-zone' },
+            { text: 'Drag Handle', link: '/examples/basic/drag-handle' },
+            {
+              text: 'Adding Keyboard Support',
+              link: '/examples/basic/keyboard-support',
+            },
+            { text: 'Reordering Items', link: '/examples/basic/reorder' },
+            { text: 'Drag Overlay', link: '/examples/basic/drag-overlay' },
+            { text: 'Custom Handle', link: '/examples/basic/custom-handle' },
           ],
         },
-        // {
-        //   text: 'Advanced Examples',
-        //   collapsed: false,
-        //   items: [
-        //     { text: 'Multi-Drag', link: '/examples/multi-drag' },
-        //     { text: 'Keyboard Navigation', link: '/examples/keyboard' },
-        //     { text: 'Custom Animations', link: '/examples/animations' },
-        //     { text: 'Nested Sortable', link: '/examples/nested-sortable' },
-        //   ],
-        // },
-        // {
-        //   text: 'Real-world Examples',
-        //   collapsed: false,
-        //   items: [
-        //     { text: 'Kanban Board', link: '/examples/kanban' },
-        //     { text: 'File Manager', link: '/examples/file-manager' },
-        //     { text: 'Form Builder', link: '/examples/form-builder' },
-        //   ],
-        // },
+        {
+          text: 'Advanced Examples',
+          collapsed: false,
+          items: [
+            {
+              text: 'Multiple Containers',
+              link: '/examples/advanced/multiple-containers',
+            },
+            { text: 'Multi-Select', link: '/examples/advanced/multi-select' },
+            {
+              text: 'Horizontal Sorting',
+              link: '/examples/advanced/horizontal-sort',
+            },
+            {
+              text: 'Nested Sortable',
+              link: '/examples/advanced/nested-sortable',
+            },
+          ],
+        },
+        {
+          text: 'Real-World Examples',
+          collapsed: false,
+          items: [
+            { text: 'Kanban Board', link: '/examples/real-world/kanban' },
+            { text: 'File Manager', link: '/examples/real-world/file-manager' },
+            { text: 'Form Builder', link: '/examples/real-world/form-builder' },
+            { text: 'Event Schedule', link: '/examples/real-world/schedule' },
+          ],
+        },
       ],
     },
 
@@ -204,6 +175,9 @@ export default defineConfig({
           __dirname,
           '../../packages/devtools/src/index.ts'
         ),
+        '@components': resolve(__dirname, './components'),
+        '@examples': resolve(__dirname, './components/Examples'),
+        '@assets': resolve(__dirname, './public'),
       },
     },
   },
