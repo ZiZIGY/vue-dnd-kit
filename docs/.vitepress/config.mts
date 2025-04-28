@@ -54,6 +54,17 @@ export default defineConfig({
             { text: 'DnDOperations', link: '/guide/core/dnd-operations' },
           ],
         },
+        {
+          text: 'DevTools',
+          collapsed: false,
+          items: [
+            { text: 'Usage', link: '/guide/devtools/usage' },
+            {
+              text: 'PerformanceMonitor',
+              link: '/guide/devtools/performance-monitor',
+            },
+          ],
+        },
         // Temporarily hiding incomplete sections
         // {
         //   text: 'Components',

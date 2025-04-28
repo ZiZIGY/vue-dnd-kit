@@ -98,15 +98,8 @@ import VueDnDKitPlugin from '@vue-dnd-kit/core';
 import VueDnDKitDevtools from '@vue-dnd-kit/devtools';
 
 const app = createApp(App);
-
-// Register the core plugin
 app.use(VueDnDKitPlugin);
-
-// Setup DevTools (development only)
-if (process.env.NODE_ENV === 'development') {
-  app.use(VueDnDKitDevtools);
-}
-
+app.use(VueDnDKitDevtools);
 app.mount('#app');
 ```
 

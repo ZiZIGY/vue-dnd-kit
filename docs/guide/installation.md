@@ -46,6 +46,21 @@ For most projects, the core package is all you need to get started with basic dr
 
 Depending on your needs, you may want to install additional packages:
 
+#### DevTools Package
+
+Enhanced debugging with Vue DevTools integration:
+
+```bash
+# npm
+npm install @vue-dnd-kit/devtools
+
+# yarn
+yarn add @vue-dnd-kit/devtools
+
+# pnpm
+pnpm add @vue-dnd-kit/devtools
+```
+
 #### Components Package
 
 Ready-to-use components for common drag and drop patterns:
@@ -82,13 +97,13 @@ If you want to install all packages at once:
 
 ```bash
 # npm
-npm install @vueuse/core @vue-dnd-kit/core @vue-dnd-kit/components @vue-dnd-kit/utilities
+npm install @vueuse/core @vue-dnd-kit/core @vue-dnd-kit/components @vue-dnd-kit/utilities @vue-dnd-kit/devtools
 
 # yarn
-yarn add @vueuse/core @vue-dnd-kit/core @vue-dnd-kit/components @vue-dnd-kit/utilities
+yarn add @vueuse/core @vue-dnd-kit/core @vue-dnd-kit/components @vue-dnd-kit/utilities @vue-dnd-kit/devtools
 
 # pnpm
-pnpm add @vueuse/core @vue-dnd-kit/core @vue-dnd-kit/components @vue-dnd-kit/utilities
+pnpm add @vueuse/core @vue-dnd-kit/core @vue-dnd-kit/components @vue-dnd-kit/utilities @vue-dnd-kit/devtools
 ```
 
 ## Setting Up in Your Project
@@ -102,11 +117,15 @@ After installation, you need to register the Vue DnD Kit plugin in your main app
 import { createApp } from 'vue';
 import App from './App.vue';
 import VueDnDKitPlugin from '@vue-dnd-kit/core';
+import VueDnDKitDevtools from '@vue-dnd-kit/devtools';
 
 const app = createApp(App);
 
 // Register the Vue DnD Kit plugin
 app.use(VueDnDKitPlugin);
+
+// Register the DevTools (automatically only enabled in development)
+app.use(VueDnDKitDevtools);
 
 app.mount('#app');
 ```
@@ -184,10 +203,6 @@ To verify that Vue DnD Kit is correctly installed, you can create a simple compo
 ```
 
 If the element becomes draggable and changes appearance when dragged, your installation is working correctly.
-
-## Coming Soon
-
-Additional packages such as `@vue-dnd-kit/devtools` are planned for future releases to enhance your development experience.
 
 ## Next Steps
 
