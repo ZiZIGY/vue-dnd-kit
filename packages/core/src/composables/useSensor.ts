@@ -238,7 +238,6 @@ export const useSensor = (
       store.selectedElements.value.clear();
     }
 
-    store.activeContainer.component.value = null;
     store.draggingElements.value.clear();
 
     store.hovered.zone.value = null;

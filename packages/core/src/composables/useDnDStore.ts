@@ -4,7 +4,13 @@ import type {
   IDropZone,
   IPoint,
 } from '../types';
-import { computed, ref, shallowRef, type Component } from 'vue';
+import {
+  computed,
+  ref,
+  shallowRef,
+  type Component,
+  type TransitionProps,
+} from 'vue';
 import { createGlobalState, useMagicKeys } from '@vueuse/core';
 
 export const useDnDStore = createGlobalState(() => {
@@ -16,6 +22,7 @@ export const useDnDStore = createGlobalState(() => {
   const activeContainer = {
     component: ref<Component | null>(null),
     ref: shallowRef<HTMLElement | null>(null),
+    options: shallowRef<TransitionProps | null>(null),
   };
 
   const elementsMap = ref<Map<HTMLElement | Element, IDragElement>>(new Map());
