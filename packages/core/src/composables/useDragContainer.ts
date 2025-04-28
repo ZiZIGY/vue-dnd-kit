@@ -2,7 +2,7 @@ import { onUnmounted, onMounted, ref, type TransitionProps } from 'vue';
 
 import { useDnDStore } from './useDnDStore';
 
-export const useDragContainer = (options?: TransitionProps) => {
+export const useDragContainer = (options?: Omit<TransitionProps, 'appear'>) => {
   const elementRef = ref<HTMLElement | null>(null);
 
   const { draggingElements, pointerPosition, isDragging, activeContainer } =

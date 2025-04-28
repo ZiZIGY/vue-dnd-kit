@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, Transition } from 'vue';
+  import { computed } from 'vue';
   import { useDnDStore } from '../composables/useDnDStore';
   import DefaultOverlay from './DefaultOverlay.vue';
 
@@ -24,7 +24,7 @@
     :mode="activeContainer.options.value.mode"
     :type="activeContainer.options.value.type"
     :css="activeContainer.options.value.css"
-    :appear="activeContainer.options.value.appear"
+    :appear="true"
     :appear-active-class="activeContainer.options.value.appearActiveClass"
     :appear-from-class="activeContainer.options.value.appearFromClass"
     :appear-to-class="activeContainer.options.value.appearToClass"

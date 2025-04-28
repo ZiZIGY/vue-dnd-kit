@@ -1,11 +1,5 @@
 <script setup lang="ts">
-  import {
-    computed,
-    CSSProperties,
-    onBeforeUnmount,
-    onMounted,
-    ref,
-  } from 'vue';
+  import { computed, CSSProperties } from 'vue';
   import { useDragContainer } from '@vue-dnd-kit/core';
 
   const { elementRef, pointerPosition, isDragging, draggingElements } =
@@ -18,6 +12,7 @@
     position: 'fixed',
     top: `${pointerPosition.current.value?.y}px`,
     left: `${pointerPosition.current.value?.x}px`,
+    transition: 'all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1)',
   }));
 </script>
 
@@ -34,7 +29,7 @@
 <style>
   .fade-enter-active,
   .fade-leave-active {
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
   }
 
   .fade-enter-from,
