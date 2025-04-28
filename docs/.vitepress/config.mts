@@ -57,13 +57,7 @@ export default defineConfig({
         {
           text: 'DevTools',
           collapsed: false,
-          items: [
-            { text: 'Usage', link: '/guide/devtools/usage' },
-            {
-              text: 'PerformanceMonitor',
-              link: '/guide/devtools/performance-monitor',
-            },
-          ],
+          items: [{ text: 'Usage', link: '/guide/devtools/usage' }],
         },
         // Temporarily hiding incomplete sections
         // {
