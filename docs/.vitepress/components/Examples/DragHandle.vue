@@ -33,7 +33,6 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 16px;
     border-radius: 6px;
     background-color: #3eaf7c;
     color: white;

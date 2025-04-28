@@ -2,6 +2,12 @@
 
 All notable changes to the Vue DnD Kit project are documented in this file.
 
+## 2025-04-28 Added transition support for useDragContainer
+
+### Core Package
+
+- added transition support for usedragcontainer
+
 ## 2025-04-27 - DevTools Package Release
 
 ### DevTools Package

@@ -19,8 +19,6 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: 'https://raw.githubusercontent.com/ZiZiGY/vue-dnd-kit/master/public/logo.svg',
-
-    // Main navigation with separated example categories
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Guide', link: '/guide/introduction' },
@@ -37,8 +35,6 @@ export default defineConfig({
       },
       { text: 'About', link: '/about' },
     ],
-
-    // Simplified sidebar structure
     sidebar: {
       '/guide/': [
         {
@@ -82,9 +78,14 @@ export default defineConfig({
               text: 'Adding Keyboard Support',
               link: '/examples/basic/keyboard-support',
             },
-            { text: 'Reordering Items', link: '/examples/basic/reorder' },
-            { text: 'Drag Overlay', link: '/examples/basic/drag-overlay' },
-            { text: 'Custom Handle', link: '/examples/basic/custom-handle' },
+            {
+              text: 'Reordering Items',
+              link: '/examples/basic/reordering-items',
+            },
+            {
+              text: 'Drag Overlay',
+              link: '/examples/basic/drag-overlay',
+            },
           ],
         },
         {
@@ -118,19 +119,13 @@ export default defineConfig({
         },
       ],
     },
-
-    // Social links
     socialLinks: [
       { icon: 'github', link: 'https://github.com/zizigy/vue-dnd-kit' },
     ],
-
-    // Footer
     footer: {
       message: 'Released under the MIT License.',
       copyright: 'Copyright © 2024 ZIZIGY',
     },
-
-    // Search configuration
     search: {
       provider: 'local',
       options: {
