@@ -25,15 +25,23 @@ The `options` object can include the following properties:
 
 #### Events Object
 
-| Event   | Type                         | Description                             |
-| ------- | ---------------------------- | --------------------------------------- |
-| onStart | `(store: IDnDStore) => void` | Called when drag operation starts       |
-| onMove  | `(store: IDnDStore) => void` | Called when draggable element is moving |
-| onHover | `(store: IDnDStore) => void` | Called when hovering over a target      |
-| onLeave | `(store: IDnDStore) => void` | Called when leaving a target            |
-| onEnd   | `(store: IDnDStore) => void` | Called when drag operation ends         |
+| Event   | Type                                               | Description                             |
+| ------- | -------------------------------------------------- | --------------------------------------- |
+| onStart | `(store: IDnDStore, payload: IDnDPayload) => void` | Called when drag operation starts       |
+| onMove  | `(store: IDnDStore, payload: IDnDPayload) => void` | Called when draggable element is moving |
+| onHover | `(store: IDnDStore, payload: IDnDPayload) => void` | Called when hovering over a target      |
+| onLeave | `(store: IDnDStore, payload: IDnDPayload) => void` | Called when leaving a target            |
+| onEnd   | `(store: IDnDStore, payload: IDnDPayload) => void` | Called when drag operation ends         |
 
-All event handlers receive the entire drag and drop store as a parameter, giving you access to all current drag state.
+All event handlers receive the entire drag and drop store and a payload object as parameters.
+
+#### Payload Object
+
+The `payload` parameter provides access to all dragging elements:
+
+| Property | Type                 | Description                         |
+| -------- | -------------------- | ----------------------------------- |
+| items    | `IDraggingElement[]` | Array of all elements being dragged |
 
 #### Data Object
 
@@ -63,7 +71,28 @@ All event handlers receive the entire drag and drop store as a parameter, giving
 | handleDragStart | `Function`                 | Function to start the drag operation                         |
 | id              | `string \| number`         | Unique identifier for this draggable                         |
 
-## Event Handling
+## Event Handling with Payload
+
+You can use the payload parameter to easily access the dragged elements:
+
+```ts
+const { elementRef } = useDraggable({
+  id: 'my-draggable',
+  data: computed(() => ({
+    task: props.task,
+  })),
+  events: {
+    onStart: (store, payload) => {
+      // Access the first dragged element (most common scenario)
+      const draggedElement = payload.items[0];
+      console.log('Started dragging:', draggedElement.data);
+    },
+    onEnd: (store, payload) => {
+      console.log('Number of items dragged:', payload.items.length);
+    },
+  },
+});
+```
 
 ### Drag Start
 
@@ -146,7 +175,7 @@ const { elementRef } = useDraggable({
 ## Important Notes
 
 1. The `elementRef` must be bound to your draggable element in the template.
-2. All event handlers receive the complete drag and drop store as a parameter.
+2. All event handlers receive the complete drag and drop store and a payload object as parameters.
 3. For more precise control over drag triggers, use Vue's event modifiers (`.self`, `.stop`, etc.).
 4. Always add `tabindex="0"` to draggable elements when implementing keyboard support.
 5. Use the `isDragging` computed value to apply visual feedback during drag operations.

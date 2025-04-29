@@ -1,6 +1,5 @@
 import type {
   ICollisionDetectionResult,
-  IDnDPayload,
   IDraggingElement,
   IUseDragOptions,
 } from '../types';

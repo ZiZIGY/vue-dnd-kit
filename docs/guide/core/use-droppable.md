@@ -21,13 +21,21 @@ The `options` object can include the following properties:
 
 #### Events Object
 
-| Event   | Type                         | Description                                     |
-| ------- | ---------------------------- | ----------------------------------------------- |
-| onHover | `(store: IDnDStore) => void` | Called when a draggable hovers over this zone   |
-| onLeave | `(store: IDnDStore) => void` | Called when a draggable leaves this zone        |
-| onDrop  | `(store: IDnDStore) => void` | Called when a draggable is dropped in this zone |
+| Event   | Type                                               | Description                                     |
+| ------- | -------------------------------------------------- | ----------------------------------------------- |
+| onHover | `(store: IDnDStore, payload: IDnDPayload) => void` | Called when a draggable hovers over this zone   |
+| onLeave | `(store: IDnDStore, payload: IDnDPayload) => void` | Called when a draggable leaves this zone        |
+| onDrop  | `(store: IDnDStore, payload: IDnDPayload) => void` | Called when a draggable is dropped in this zone |
 
-All event handlers receive the entire drag and drop store as a parameter, giving you access to all current drag state.
+All event handlers receive the entire drag and drop store and a payload object as parameters, giving you access to all current drag state.
+
+#### Payload Object
+
+The `payload` parameter provides access to all dragging elements:
+
+| Property | Type                 | Description                         |
+| -------- | -------------------- | ----------------------------------- |
+| items    | `IDraggingElement[]` | Array of all elements being dragged |
 
 #### Data Object
 
@@ -57,9 +65,14 @@ const { elementRef } = useDroppable({
     source: targetArray,
   },
   events: {
-    onDrop: (store) => {
+    onDrop: (store, payload) => {
+      // Access dragged elements from payload
+      const draggedItem = payload.items[0];
+      console.log('Dropped item data:', draggedItem.data);
+
       // Apply the drag operation to update arrays
       DnDOperations.applyMove(store);
+
       // Or use other operations like:
       // DnDOperations.applyTransfer(store);
     },
@@ -100,10 +113,35 @@ You can use the reactive state to apply visual feedback:
 </div>
 ```
 
+## Event Handling with Payload
+
+The payload parameter makes it easier to access the dragged elements:
+
+```ts
+const { elementRef } = useDroppable({
+  groups: ['tasks'],
+  events: {
+    onDrop: (store, payload) => {
+      // Access the first dragged element
+      const draggedTask = payload.items[0].data.task;
+
+      // Apply the transfer and update your state
+      DnDOperations.applyTransfer(store);
+      taskStore.moveTask(draggedTask, targetColumn.id);
+    },
+    onHover: (store, payload) => {
+      // You can also use payload in hover events
+      const hoveredItems = payload.items;
+      console.log(`Hovering ${hoveredItems.length} items`);
+    },
+  },
+});
+```
+
 ## Important Notes
 
 1. The `elementRef` must be bound to your drop zone element in the template.
-2. All event handlers receive the complete drag and drop store as a parameter.
+2. All event handlers receive the complete drag and drop store and a payload object as parameters.
 3. The `isOvered` computed value is true only when a compatible draggable (one that shares at least one group) is over the zone.
 4. If groups don't match, neither `isOvered` nor `isAllowed` will be true, even if a draggable is physically over the zone.
 5. When multiple drop zones overlap, only the topmost one will receive events.

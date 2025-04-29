@@ -9,7 +9,9 @@
       source: items,
     })),
     events: {
-      onDrop: DnDOperations.applyTransfer,
+      onDrop: (store, payload) => {
+        DnDOperations.applyTransfer(store);
+      },
     },
   });
 

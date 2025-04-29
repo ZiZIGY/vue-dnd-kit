@@ -2,6 +2,12 @@
 
 All notable changes to the Vue DnD Kit project are documented in this file.
 
+## 2025-04-30 Added payload to all DnD Events
+
+### Core Package
+
+- now onDrop, onHover, and other events return payload (it's array DraggingItems array)
+
 ## 2025-04-28 Added transition support for useDragContainer
 
 ### Core Package

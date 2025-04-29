@@ -21,6 +21,7 @@
     v-if="isDragging"
     ref="elementRef"
     :style="computedStyle"
+    class="custom-overlay"
   >
     im working with transition under the hood
   </div>
@@ -35,5 +36,13 @@
   .fade-enter-from,
   .fade-leave-to {
     opacity: 0;
+  }
+
+  .custom-overlay {
+    background: #3eaf7c;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
 </style>
