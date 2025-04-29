@@ -29,15 +29,17 @@ export interface IDragElement {
     [key: string]: any;
   } | null;
   events: {
-    onHover?: (store: IDnDStore, payload: IDraggingElement[]) => void;
-    onLeave?: (store: IDnDStore, payload: IDraggingElement[]) => void;
-    onEnd?: (store: IDnDStore, payload: IDraggingElement[]) => void;
-    onStart?: (store: IDnDStore, payload: IDraggingElement[]) => void;
-    onMove?: (store: IDnDStore, payload: IDraggingElement[]) => void;
+    onHover?: (store: IDnDStore, payload: IDnDPayload) => void;
+    onLeave?: (store: IDnDStore, payload: IDnDPayload) => void;
+    onEnd?: (store: IDnDStore, payload: IDnDPayload) => void;
+    onStart?: (store: IDnDStore, payload: IDnDPayload) => void;
+    onMove?: (store: IDnDStore, payload: IDnDPayload) => void;
   };
 }
 
-const test: IDragElement['data'];
+export interface IDnDPayload {
+  items: IDraggingElement[];
+}
 
 export interface IDraggingElement extends IDragElement {
   initialHTML: string;
@@ -52,9 +54,9 @@ export interface IDropZone {
     [key: string]: any;
   };
   events: {
-    onHover?: (store: IDnDStore, payload: IDraggingElement[]) => void;
-    onLeave?: (store: IDnDStore, payload: IDraggingElement[]) => void;
-    onDrop?: (store: IDnDStore, payload: IDraggingElement[]) => void;
+    onHover?: (store: IDnDStore, payload: IDnDPayload) => void;
+    onLeave?: (store: IDnDStore, payload: IDnDPayload) => void;
+    onDrop?: (store: IDnDStore, payload: IDnDPayload) => void;
   };
 }
 
@@ -66,9 +68,9 @@ export interface IPoint {
 export interface IUseDropOptions {
   groups?: string[];
   events?: {
-    onDrop?: (store: IDnDStore, payload: IDraggingElement[]) => void;
-    onHover?: (store: IDnDStore, payload: IDraggingElement[]) => void;
-    onLeave?: (store: IDnDStore, payload: IDraggingElement[]) => void;
+    onDrop?: (store: IDnDStore, payload: IDnDPayload) => void;
+    onHover?: (store: IDnDStore, payload: IDnDPayload) => void;
+    onLeave?: (store: IDnDStore, payload: IDnDPayload) => void;
   };
   data?: {
     source?: any[];
@@ -79,11 +81,11 @@ export interface IUseDragOptions extends IUseSensorOptions {
   id?: string | number;
   groups?: string[];
   events?: {
-    onEnd?: (store: IDnDStore, payload: IDraggingElement[]) => void;
-    onStart?: (store: IDnDStore, payload: IDraggingElement[]) => void;
-    onMove?: (store: IDnDStore, payload: IDraggingElement[]) => void;
-    onHover?: (store: IDnDStore, payload: IDraggingElement[]) => void;
-    onLeave?: (store: IDnDStore, payload: IDraggingElement[]) => void;
+    onEnd?: (store: IDnDStore, payload: IDnDPayload) => void;
+    onStart?: (store: IDnDStore, payload: IDnDPayload) => void;
+    onMove?: (store: IDnDStore, payload: IDnDPayload) => void;
+    onHover?: (store: IDnDStore, payload: IDnDPayload) => void;
+    onLeave?: (store: IDnDStore, payload: IDnDPayload) => void;
   };
   keyboard?: {
     moveStep?: number;

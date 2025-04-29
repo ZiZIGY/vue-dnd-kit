@@ -1,10 +1,12 @@
 import type {
   ICollisionDetectionResult,
+  IDnDPayload,
   IDraggingElement,
   IUseDragOptions,
 } from '../types';
 
 import type { Ref } from 'vue';
+import { createPayload } from '../utils/events';
 import { defaultCollisionDetection } from '../utils/sensor';
 import { isDescendant } from '../utils/dom';
 import { useDnDStore } from './useDnDStore';
@@ -154,18 +156,12 @@ export const useSensor = (
       if (store.hovered.element.value !== previousElement) {
         store.elementsMap.value
           .get(previousElement)
-          ?.events?.onLeave?.(
-            store,
-            Array.from(store.draggingElements.value.values())
-          );
+          ?.events?.onLeave?.(store, createPayload(store));
 
         if (store.hovered.element.value)
           store.elementsMap.value
             .get(store.hovered.element.value)
-            ?.events?.onHover?.(
-              store,
-              Array.from(store.draggingElements.value.values())
-            );
+            ?.events?.onHover?.(store, createPayload(store));
       }
     }
 
@@ -173,18 +169,12 @@ export const useSensor = (
       if (store.hovered.zone.value !== previousZone) {
         store.zonesMap.value
           .get(previousZone)
-          ?.events?.onLeave?.(
-            store,
-            Array.from(store.draggingElements.value.values())
-          );
+          ?.events?.onLeave?.(store, createPayload(store));
 
         if (store.hovered.zone.value)
           store.zonesMap.value
             .get(store.hovered.zone.value)
-            ?.events?.onHover?.(
-              store,
-              Array.from(store.draggingElements.value.values())
-            );
+            ?.events?.onHover?.(store, createPayload(store));
       }
     }
   };
@@ -213,10 +203,7 @@ export const useSensor = (
   const activate = (event: PointerEvent | KeyboardEvent) => {
     store.draggingElements.value = getDraggingElements(elementRef.value);
     store.draggingElements.value.forEach((element) =>
-      element.events.onStart?.(
-        store,
-        Array.from(store.draggingElements.value.values())
-      )
+      element.events.onStart?.(store, createPayload(store))
     );
 
     if (event instanceof PointerEvent) {
@@ -230,10 +217,7 @@ export const useSensor = (
 
   const track = (event: PointerEvent | WheelEvent | KeyboardEvent) => {
     store.draggingElements.value.forEach((element) =>
-      element.events.onMove?.(
-        store,
-        Array.from(store.draggingElements.value.values())
-      )
+      element.events.onMove?.(store, createPayload(store))
     );
 
     if (event instanceof KeyboardEvent) {
@@ -250,16 +234,10 @@ export const useSensor = (
     if (triggerEvents) {
       if (store.hovered.zone.value) {
         const zone = store.zonesMap.value.get(store.hovered.zone.value);
-        zone?.events.onDrop?.(
-          store,
-          Array.from(store.draggingElements.value.values())
-        );
+        zone?.events.onDrop?.(store, createPayload(store));
       } else {
         store.draggingElements.value.forEach((element) =>
-          element.events.onEnd?.(
-            store,
-            Array.from(store.draggingElements.value.values())
-          )
+          element.events.onEnd?.(store, createPayload(store))
         );
       }
 
