@@ -5,9 +5,9 @@
 
   const { activeContainer } = useDnDStore();
 
-  const overlay = computed(() => {
-    return activeContainer.component.value ?? DefaultOverlay;
-  });
+  const overlay = computed(
+    () => activeContainer.component.value ?? DefaultOverlay
+  );
 </script>
 
 <template>
@@ -21,13 +21,13 @@
     :leave-from-class="activeContainer.options.value.leaveFromClass"
     :leave-to-class="activeContainer.options.value.leaveToClass"
     :leave-active-class="activeContainer.options.value.leaveActiveClass"
+    :appear-active-class="activeContainer.options.value.appearActiveClass"
+    :appear-from-class="activeContainer.options.value.appearFromClass"
+    :appear-to-class="activeContainer.options.value.appearToClass"
     :mode="activeContainer.options.value.mode"
     :type="activeContainer.options.value.type"
     :css="activeContainer.options.value.css"
     :appear="true"
-    :appear-active-class="activeContainer.options.value.appearActiveClass"
-    :appear-from-class="activeContainer.options.value.appearFromClass"
-    :appear-to-class="activeContainer.options.value.appearToClass"
     :persisted="activeContainer.options.value.persisted"
     @enter="activeContainer.options.value.onEnter"
     @leave="activeContainer.options.value.onLeave"

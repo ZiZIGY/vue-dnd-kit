@@ -29,11 +29,11 @@ export interface IDragElement {
     [key: string]: any;
   } | null;
   events: {
-    onHover?: (store: IDnDStore) => void;
-    onLeave?: (store: IDnDStore) => void;
-    onEnd?: (store: IDnDStore) => void;
-    onStart?: (store: IDnDStore) => void;
-    onMove?: (store: IDnDStore) => void;
+    onHover?: (store: IDnDStore, payload: IDraggingElement[]) => void;
+    onLeave?: (store: IDnDStore, payload: IDraggingElement[]) => void;
+    onEnd?: (store: IDnDStore, payload: IDraggingElement[]) => void;
+    onStart?: (store: IDnDStore, payload: IDraggingElement[]) => void;
+    onMove?: (store: IDnDStore, payload: IDraggingElement[]) => void;
   };
 }
 
@@ -52,9 +52,9 @@ export interface IDropZone {
     [key: string]: any;
   };
   events: {
-    onHover?: (store: IDnDStore) => void;
-    onLeave?: (store: IDnDStore) => void;
-    onDrop?: (store: IDnDStore) => void;
+    onHover?: (store: IDnDStore, payload: IDraggingElement[]) => void;
+    onLeave?: (store: IDnDStore, payload: IDraggingElement[]) => void;
+    onDrop?: (store: IDnDStore, payload: IDraggingElement[]) => void;
   };
 }
 
@@ -66,9 +66,9 @@ export interface IPoint {
 export interface IUseDropOptions {
   groups?: string[];
   events?: {
-    onDrop?: (store: IDnDStore) => void;
-    onHover?: (store: IDnDStore) => void;
-    onLeave?: (store: IDnDStore) => void;
+    onDrop?: (store: IDnDStore, payload: IDraggingElement[]) => void;
+    onHover?: (store: IDnDStore, payload: IDraggingElement[]) => void;
+    onLeave?: (store: IDnDStore, payload: IDraggingElement[]) => void;
   };
   data?: {
     source?: any[];
@@ -79,11 +79,11 @@ export interface IUseDragOptions extends IUseSensorOptions {
   id?: string | number;
   groups?: string[];
   events?: {
-    onEnd?: (store: IDnDStore) => void;
-    onStart?: (store: IDnDStore) => void;
-    onMove?: (store: IDnDStore) => void;
-    onHover?: (store: IDnDStore) => void;
-    onLeave?: (store: IDnDStore) => void;
+    onEnd?: (store: IDnDStore, payload: IDraggingElement[]) => void;
+    onStart?: (store: IDnDStore, payload: IDraggingElement[]) => void;
+    onMove?: (store: IDnDStore, payload: IDraggingElement[]) => void;
+    onHover?: (store: IDnDStore, payload: IDraggingElement[]) => void;
+    onLeave?: (store: IDnDStore, payload: IDraggingElement[]) => void;
   };
   keyboard?: {
     moveStep?: number;

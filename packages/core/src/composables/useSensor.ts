@@ -152,23 +152,39 @@ export const useSensor = (
 
     if (previousElement) {
       if (store.hovered.element.value !== previousElement) {
-        store.elementsMap.value.get(previousElement)?.events?.onLeave?.(store);
+        store.elementsMap.value
+          .get(previousElement)
+          ?.events?.onLeave?.(
+            store,
+            Array.from(store.draggingElements.value.values())
+          );
 
         if (store.hovered.element.value)
           store.elementsMap.value
             .get(store.hovered.element.value)
-            ?.events?.onHover?.(store);
+            ?.events?.onHover?.(
+              store,
+              Array.from(store.draggingElements.value.values())
+            );
       }
     }
 
     if (previousZone) {
       if (store.hovered.zone.value !== previousZone) {
-        store.zonesMap.value.get(previousZone)?.events?.onLeave?.(store);
+        store.zonesMap.value
+          .get(previousZone)
+          ?.events?.onLeave?.(
+            store,
+            Array.from(store.draggingElements.value.values())
+          );
 
         if (store.hovered.zone.value)
           store.zonesMap.value
             .get(store.hovered.zone.value)
-            ?.events?.onHover?.(store);
+            ?.events?.onHover?.(
+              store,
+              Array.from(store.draggingElements.value.values())
+            );
       }
     }
   };
@@ -197,7 +213,10 @@ export const useSensor = (
   const activate = (event: PointerEvent | KeyboardEvent) => {
     store.draggingElements.value = getDraggingElements(elementRef.value);
     store.draggingElements.value.forEach((element) =>
-      element.events.onStart?.(store)
+      element.events.onStart?.(
+        store,
+        Array.from(store.draggingElements.value.values())
+      )
     );
 
     if (event instanceof PointerEvent) {
@@ -211,7 +230,10 @@ export const useSensor = (
 
   const track = (event: PointerEvent | WheelEvent | KeyboardEvent) => {
     store.draggingElements.value.forEach((element) =>
-      element.events.onMove?.(store)
+      element.events.onMove?.(
+        store,
+        Array.from(store.draggingElements.value.values())
+      )
     );
 
     if (event instanceof KeyboardEvent) {
@@ -228,10 +250,16 @@ export const useSensor = (
     if (triggerEvents) {
       if (store.hovered.zone.value) {
         const zone = store.zonesMap.value.get(store.hovered.zone.value);
-        zone?.events.onDrop?.(store);
+        zone?.events.onDrop?.(
+          store,
+          Array.from(store.draggingElements.value.values())
+        );
       } else {
         store.draggingElements.value.forEach((element) =>
-          element.events.onEnd?.(store)
+          element.events.onEnd?.(
+            store,
+            Array.from(store.draggingElements.value.values())
+          )
         );
       }
 

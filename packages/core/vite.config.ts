@@ -7,11 +7,12 @@ export default defineConfig({
   plugins: [
     vue(),
     dts({
-      include: ['src/**/*.ts', 'src/**/*.vue'],
+      include: ['src/**/*.ts', 'src/**/*.vue', 'src/types/**/*.ts'],
       exclude: ['node_modules/**', 'src/**/*.spec.ts'],
-      staticImport: true,
       rollupTypes: true,
       insertTypesEntry: true,
+      // Оставляем copyDtsFiles: true для копирования .d.ts файлов
+      copyDtsFiles: true,
     }),
   ],
   build: {
@@ -28,6 +29,9 @@ export default defineConfig({
           vue: 'Vue',
           '@vueuse/core': 'VueUse',
         },
+        // Удаляем preserveModules для создания единого бандла
+        // preserveModules: true,
+        // preserveModulesRoot: 'src',
       },
     },
     sourcemap: true,
@@ -37,6 +41,7 @@ export default defineConfig({
     alias: {
       '@vue-dnd-kit/core': resolve(__dirname, './src'),
       '@': resolve(__dirname, './src'),
+      './types': resolve(__dirname, './src/types'),
     },
     dedupe: ['vue'],
   },
