@@ -109,36 +109,14 @@ export default defineConfig({
               link: '/examples/advanced/grouping',
             },
             {
-              text: 'Multiple Containers',
-              link: '/examples/advanced/multiple-containers',
-            },
-            {
-              text: 'Horizontal Sorting',
-              link: '/examples/advanced/horizontal-sort',
-            },
-            {
-              text: 'Nested Sortable',
-              link: '/examples/advanced/nested-sortable',
+              text: 'Custom Sensor',
+              link: '/examples/advanced/custom-sensor',
             },
           ],
         },
         {
           text: 'Real-World Examples',
           collapsed: false,
-          items: [
-            {
-              text: 'Reordering Items',
-              link: '/examples/real-world/reordering-items',
-            },
-            {
-              text: 'Tree View',
-              link: '/examples/real-world/tree-view',
-            },
-            { text: 'Kanban Board', link: '/examples/real-world/kanban' },
-            { text: 'File Manager', link: '/examples/real-world/file-manager' },
-            { text: 'Form Builder', link: '/examples/real-world/form-builder' },
-            { text: 'Event Schedule', link: '/examples/real-world/schedule' },
-          ],
         },
       ],
     },
