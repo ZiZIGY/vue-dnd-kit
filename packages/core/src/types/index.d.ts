@@ -37,6 +37,8 @@ export interface IDragElement {
   };
 }
 
+export type TLayerProps = Pick<IDragElement, 'id' | 'groups' | 'data' | 'node'>;
+
 export interface IDnDPayload {
   items: IDraggingElement[];
 }

@@ -60,6 +60,7 @@ export const useSensor = (
     if (!element) return new Map();
 
     const result = new Map<HTMLElement | Element, IDraggingElement>();
+
     result.set(draggableElement, {
       ...element,
       initialHTML: element.node?.outerHTML ?? '',
@@ -69,7 +70,7 @@ export const useSensor = (
     return result;
   };
 
-  const processUserCollisionResults = (
+  const validateCollisionResults = (
     htmlElements: HTMLElement | HTMLElement[] | Element | Element[] | null
   ) => {
     if (!htmlElements) {
@@ -147,8 +148,12 @@ export const useSensor = (
   const processCollisionResults = (results: ICollisionDetectionResult) => {
     const previousElement = store.hovered.element.value;
     const previousZone = store.hovered.zone.value;
+
     const newElement = results.element;
     const newZone = results.zone;
+
+    store.hovered.element.value = newElement;
+    store.hovered.zone.value = newZone;
 
     if (previousElement !== newElement) {
       if (previousElement) {
@@ -177,14 +182,11 @@ export const useSensor = (
           ?.events?.onHover?.(store, createPayload(store));
       }
     }
-
-    store.hovered.element.value = newElement;
-    store.hovered.zone.value = newZone;
   };
 
   const throttledDetectAndProcess = useThrottleFn(() => {
     const htmlElements = detectCollisions(store);
-    const processedResults = processUserCollisionResults(htmlElements);
+    const processedResults = validateCollisionResults(htmlElements);
     processCollisionResults(processedResults);
   }, options?.sensor?.throttle ?? 0);
 

@@ -24,14 +24,7 @@ export default defineConfig({
       { text: 'Guide', link: '/guide/introduction' },
       {
         text: 'Examples',
-        items: [
-          { text: 'Basic Examples', link: '/examples/basic/simple-drag' },
-          {
-            text: 'Advanced Examples',
-            link: '/examples/advanced/multiple-containers',
-          },
-          { text: 'Real-World Examples', link: '/examples/real-world/kanban' },
-        ],
+        link: '/examples/basic/simple-drag',
       },
       { text: 'About', link: '/about' },
     ],
@@ -58,6 +51,10 @@ export default defineConfig({
               link: '/guide/core/use-drag-container',
             },
             { text: 'DnDOperations', link: '/guide/core/dnd-operations' },
+            {
+              text: 'Collision Detection',
+              link: '/guide/core/collision-detection',
+            },
           ],
         },
         {
@@ -72,15 +69,15 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: 'Simple Drag', link: '/examples/basic/simple-drag' },
+            {
+              text: 'Multi-Selection',
+              link: '/examples/basic/multi-selection',
+            },
             { text: 'Drag to Zone', link: '/examples/basic/drag-to-zone' },
             { text: 'Drag Handle', link: '/examples/basic/drag-handle' },
             {
               text: 'Adding Keyboard Support',
               link: '/examples/basic/keyboard-support',
-            },
-            {
-              text: 'Reordering Items',
-              link: '/examples/basic/reordering-items',
             },
             {
               text: 'Drag Overlay',
@@ -97,10 +94,21 @@ export default defineConfig({
               link: '/examples/advanced/changing-overlay',
             },
             {
+              text: 'Changing Layers',
+              link: '/examples/advanced/changing-layers',
+            },
+            {
+              text: 'Nesting Zones',
+              link: '/examples/advanced/nesting-zones',
+            },
+            {
+              text: 'Grouping',
+              link: '/examples/advanced/grouping',
+            },
+            {
               text: 'Multiple Containers',
               link: '/examples/advanced/multiple-containers',
             },
-            { text: 'Multi-Select', link: '/examples/advanced/multi-select' },
             {
               text: 'Horizontal Sorting',
               link: '/examples/advanced/horizontal-sort',
@@ -115,6 +123,14 @@ export default defineConfig({
           text: 'Real-World Examples',
           collapsed: false,
           items: [
+            {
+              text: 'Reordering Items',
+              link: '/examples/real-world/reordering-items',
+            },
+            {
+              text: 'Tree View',
+              link: '/examples/real-world/tree-view',
+            },
             { text: 'Kanban Board', link: '/examples/real-world/kanban' },
             { text: 'File Manager', link: '/examples/real-world/file-manager' },
             { text: 'Form Builder', link: '/examples/real-world/form-builder' },

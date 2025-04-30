@@ -8,12 +8,9 @@
 
   const { elementRef: dropZoneRef, isOvered } = useDroppable({
     events: {
-      onHover: (store) => {
-        store.activeContainer.component.value = markRaw(ExampleOverlay);
-      },
-      onLeave: (store) => {
-        store.activeContainer.component.value = null;
-      },
+      onHover: (store) =>
+        (store.activeContainer.component.value = markRaw(ExampleOverlay)),
+      onLeave: (store) => (store.activeContainer.component.value = null),
     },
   });
 </script>
@@ -32,8 +29,9 @@
     <div
       ref="dropZoneRef"
       class="drop-zone"
+      :class="{ 'is-overed': isOvered }"
     >
-      Drop zone {{ isOvered }}
+      Drop zone
     </div>
   </ExampleContainer>
 </template>
@@ -81,7 +79,7 @@
     transition: all 0.3s ease;
   }
 
-  .drop-zone:hover {
+  .is-overed {
     background-color: rgba(62, 175, 124, 0.1);
     border-color: rgba(62, 175, 124, 0.6);
   }

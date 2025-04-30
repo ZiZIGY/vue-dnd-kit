@@ -24,4 +24,7 @@
     opacity: 0.5;
     cursor: grabbing;
   }
+  .draggable {
+    touch-action: none;
+  }
 </style>

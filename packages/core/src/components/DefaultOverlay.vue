@@ -27,14 +27,26 @@
     ref="elementRef"
     :style="computedStyle"
   >
-    <div
-      v-for="[_, element] in draggingElements"
+    <template
+      v-for="[node, element] in draggingElements"
       :key="element.id"
-      v-html="element.initialHTML"
-      :style="{
-        width: `${element.initialRect?.width}px`,
-        height: `${element.initialRect?.height}px`,
-      }"
-    />
+    >
+      <component
+        v-if="element.layer"
+        :is="element.layer"
+        :node="node"
+        :data="element.data"
+        :id="element.id"
+        :groups="element.groups"
+      />
+      <div
+        v-else
+        v-html="element.initialHTML"
+        :style="{
+          width: `${element.initialRect?.width}px`,
+          height: `${element.initialRect?.height}px`,
+        }"
+      />
+    </template>
   </div>
 </template>

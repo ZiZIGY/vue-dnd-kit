@@ -49,7 +49,7 @@
     border-radius: 8px;
     position: relative;
     overflow: hidden;
-    background-color: #0a0a0a;
+    background-color: var(--vp-sidebar-bg-color);
   }
 
   .dot-background {
@@ -59,15 +59,16 @@
     right: 0;
     bottom: 0;
     background-image: radial-gradient(
-      rgba(255, 255, 255, 0.15) var(--dot-size),
+      var(--vp-local-search-result-border) var(--dot-size),
       transparent var(--dot-size)
     );
     background-size: var(--dot-spacing) var(--dot-spacing);
     z-index: 1;
+    box-shadow: inset 0 0 25px 10px rgba(0, 0, 0, 0.25);
   }
 
   .example-content {
-    background-color: rgba(20, 20, 20, 0.7);
+    background-color: var(--vp-c-bg) opacity(0.9);
     border-radius: 6px;
     padding: 24px;
     position: relative;

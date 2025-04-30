@@ -48,9 +48,10 @@
   .user-card-skeleton {
     width: 100%;
     max-width: 350px;
-    
+    background-color: #16161625;
     padding: 16px;
     border-radius: 8px;
+    backdrop-filter: blur(10px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 

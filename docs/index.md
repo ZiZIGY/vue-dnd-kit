@@ -58,7 +58,7 @@ Try interacting with the demo above:
 
 - Use **Tab** to focus on the draggable element
 - Press **Space** to start dragging
-- Use **Arrow keys** to move the element
+- Use **<kbd>WASD</kbd>** to move the element
 - Press **Enter** to drop in the target zone
 - Press **Escape** to cancel dragging
 

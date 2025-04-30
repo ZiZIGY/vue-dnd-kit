@@ -25,4 +25,5 @@ export type {
   IDragElement,
   IDraggingElement,
   IDropZone,
+  TLayerProps,
 } from './types';

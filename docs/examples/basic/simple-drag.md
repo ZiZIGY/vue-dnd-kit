@@ -18,6 +18,7 @@ The Simple Drag example shows how to create draggable elements using the `useDra
 - Handling drag start events
 - Tracking the dragging state
 - Styling draggable elements
+- Supporting mobile devices with proper touch handling
 
 ## Basic Usage
 
@@ -33,6 +34,7 @@ The Simple Drag example shows how to create draggable elements using the `useDra
 <template>
   <div
     ref="elementRef"
+    class="draggable"
     :class="{ dragging: isDragging }"
     @pointerdown="handleDragStart"
   >
@@ -41,12 +43,27 @@ The Simple Drag example shows how to create draggable elements using the `useDra
 </template>
 
 <style scoped>
+  .draggable {
+    touch-action: none;
+  }
   .dragging {
     opacity: 0.5;
     cursor: grabbing;
   }
 </style>
 ```
+
+## Mobile Support
+
+To ensure proper drag behavior on mobile devices, it's crucial to add `touch-action: none` to your draggable elements. This CSS property prevents the browser's default touch actions (like scrolling) from interfering with your drag operations.
+
+```css
+.draggable {
+  touch-action: none;
+}
+```
+
+Without this property, mobile users might experience issues where attempting to drag an element results in page scrolling instead of the expected drag behavior.
 
 ## Next Steps
 
