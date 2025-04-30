@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import { type TLayerProps } from '@vue-dnd-kit/core';
-
-  const props = defineProps<TLayerProps>();
+  const props = defineProps<{
+    id: string;
+  }>();
 </script>
 
 <template>
