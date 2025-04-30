@@ -50,7 +50,10 @@ export default defineConfig({
               text: 'useDragContainer',
               link: '/guide/core/use-drag-container',
             },
-            { text: 'DnDOperations', link: '/guide/core/dnd-operations' },
+            {
+              text: 'DnDOperations',
+              link: '/guide/core/dnd-operations',
+            },
             {
               text: 'Collision Detection',
               link: '/guide/core/collision-detection',
