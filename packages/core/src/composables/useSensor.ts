@@ -147,35 +147,39 @@ export const useSensor = (
   const processCollisionResults = (results: ICollisionDetectionResult) => {
     const previousElement = store.hovered.element.value;
     const previousZone = store.hovered.zone.value;
+    const newElement = results.element;
+    const newZone = results.zone;
 
-    store.hovered.element.value = results.element;
-    store.hovered.zone.value = results.zone;
-
-    if (previousElement) {
-      if (store.hovered.element.value !== previousElement) {
+    if (previousElement !== newElement) {
+      if (previousElement) {
         store.elementsMap.value
           .get(previousElement)
           ?.events?.onLeave?.(store, createPayload(store));
+      }
 
-        if (store.hovered.element.value)
-          store.elementsMap.value
-            .get(store.hovered.element.value)
-            ?.events?.onHover?.(store, createPayload(store));
+      if (newElement) {
+        store.elementsMap.value
+          .get(newElement)
+          ?.events?.onHover?.(store, createPayload(store));
       }
     }
 
-    if (previousZone) {
-      if (store.hovered.zone.value !== previousZone) {
+    if (previousZone !== newZone) {
+      if (previousZone) {
         store.zonesMap.value
           .get(previousZone)
           ?.events?.onLeave?.(store, createPayload(store));
+      }
 
-        if (store.hovered.zone.value)
-          store.zonesMap.value
-            .get(store.hovered.zone.value)
-            ?.events?.onHover?.(store, createPayload(store));
+      if (newZone) {
+        store.zonesMap.value
+          .get(newZone)
+          ?.events?.onHover?.(store, createPayload(store));
       }
     }
+
+    store.hovered.element.value = newElement;
+    store.hovered.zone.value = newZone;
   };
 
   const throttledDetectAndProcess = useThrottleFn(() => {

@@ -93,6 +93,10 @@ export default defineConfig({
           collapsed: false,
           items: [
             {
+              text: 'Changing Overlay',
+              link: '/examples/advanced/changing-overlay',
+            },
+            {
               text: 'Multiple Containers',
               link: '/examples/advanced/multiple-containers',
             },
