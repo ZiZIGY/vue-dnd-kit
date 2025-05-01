@@ -23,6 +23,11 @@ export const useDnDStore = createGlobalState(() => {
     component: ref<Component | null>(null),
     ref: shallowRef<HTMLElement | null>(null),
     options: shallowRef<TransitionProps | null>(null),
+    animating: {
+      enter: shallowRef<boolean>(false),
+      leave: shallowRef<boolean>(false),
+      appear: shallowRef<boolean>(false),
+    },
   };
 
   const elementsMap = ref<Map<HTMLElement | Element, IDragElement>>(new Map());

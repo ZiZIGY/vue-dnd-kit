@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
+import Animation from '../pages/Animation.vue';
 import Kanban from '../pages/Kanban.vue';
 import SortableList from '../pages/SortableList.vue';
 import Table from '../pages/Table.vue';
@@ -23,6 +24,11 @@ const routes = [
     path: '/sortable-list',
     name: 'SortableList',
     component: SortableList,
+  },
+  {
+    path: '/animation',
+    name: 'Animation',
+    component: Animation,
   },
 ];
 

@@ -30,6 +30,12 @@ export const createStore = (
       value: {
         component: store.activeContainer.component.value,
         ref: store.activeContainer.ref.value,
+        animating: {
+          appear: store.activeContainer.animating.appear.value,
+          enter: store.activeContainer.animating.enter.value,
+          leave: store.activeContainer.animating.leave.value,
+        },
+        options: store.activeContainer.options.value,
       },
     },
     {
@@ -53,6 +59,7 @@ export const createStore = (
         },
       },
     },
+
     {
       key: 'selectedElements',
       value: store.selectedElements.value,

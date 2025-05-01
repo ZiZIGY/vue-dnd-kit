@@ -23,5 +23,6 @@ export const useDragContainer = (options?: Omit<TransitionProps, 'appear'>) => {
     draggingElements,
     pointerPosition,
     isDragging,
+    animating: activeContainer.animating,
   };
 };

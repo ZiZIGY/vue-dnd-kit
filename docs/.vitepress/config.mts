@@ -126,6 +126,10 @@ export default defineConfig({
               text: 'Morph SVG',
               link: '/examples/real-world/morph-svg',
             },
+            {
+              text: 'Animating Elements',
+              link: '/examples/real-world/animating',
+            },
           ],
         },
       ],

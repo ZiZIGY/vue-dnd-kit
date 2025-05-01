@@ -11,11 +11,8 @@ import { watch } from 'vue';
 
 const stateType = 'DnD Kit State';
 const inspectorId = 'dnd-kit-inspector';
-const timelineLayerId = 'dnd-kit-timeline';
 
 export function setupDevtools(app: App) {
-  let trackId = 0;
-
   setupDevtoolsPlugin(
     {
       id: 'vue-dnd-kit-devtools',

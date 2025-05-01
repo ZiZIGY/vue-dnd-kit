@@ -27,7 +27,7 @@ export const useElementManager = (options?: IUseDragOptions) => {
 
   const isDragging = computed<boolean>(() => {
     if (!elementRef.value) return false;
-    if (!visibleElements.value.has(elementRef.value)) return false;
+    if (!elementsMap.value.has(elementRef.value)) return false;
     return draggingElements.value.has(elementRef.value);
   });
 

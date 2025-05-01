@@ -4,7 +4,6 @@
   import { useDroppable } from '@vue-dnd-kit/core';
   import { onMounted, ref } from 'vue';
 
-  // Флаг для проверки клиентской среды
   const isBrowser = typeof window !== 'undefined';
   const gsap = ref<any>(null);
 
@@ -29,7 +28,6 @@
 
   onMounted(async () => {
     if (isBrowser) {
-      // Динамический импорт GSAP и плагина только на клиенте
       try {
         const gsapModule = await import('gsap');
         const MorphSVGPluginModule = await import('gsap/MorphSVGPlugin');
@@ -37,7 +35,7 @@
         gsap.value = gsapModule.default;
         gsap.value.registerPlugin(MorphSVGPluginModule.default);
       } catch (error) {
-        console.error('Не удалось загрузить GSAP или MorphSVG плагин:', error);
+        console.error('Error importing GSAP or MorphSVGPlugin:', error);
       }
     }
   });

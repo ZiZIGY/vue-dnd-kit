@@ -2,6 +2,13 @@
 
 All notable changes to the Vue DnD Kit project are documented in this file.
 
+## 2025-05-01
+
+### Core Package
+
+- Added DragOverlay transition detection (need to handle it, Example in docs)
+- fix bug with isDragging on Draggable element in useDraggable hook
+
 ## 2025-04-30 Added payload to all DnD Events
 
 ### Core Package

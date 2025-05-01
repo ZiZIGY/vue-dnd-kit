@@ -15,5 +15,19 @@ export const createContainer = (
       value: store.activeContainer.ref.value,
       objectType: 'ref',
     },
+    {
+      key: 'animating',
+      value: {
+        appear: store.activeContainer.animating.appear.value,
+        enter: store.activeContainer.animating.enter.value,
+        leave: store.activeContainer.animating.leave.value,
+      },
+      objectType: 'ref',
+    },
+    {
+      key: 'options',
+      value: store.activeContainer.options.value,
+      objectType: 'ref',
+    },
   ],
 });
