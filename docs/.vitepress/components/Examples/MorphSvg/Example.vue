@@ -2,13 +2,17 @@
   import Draggable from './Draggable.vue';
   import ExampleContainer from '../../ExampleContainer.vue';
   import { useDroppable } from '@vue-dnd-kit/core';
-  import gsap from 'gsap';
-  import { onMounted } from 'vue';
-  import MorphSVGPlugin from 'gsap/MorphSVGPlugin';
+  import { onMounted, ref } from 'vue';
+
+  // Флаг для проверки клиентской среды
+  const isBrowser = typeof window !== 'undefined';
+  const gsap = ref<any>(null);
 
   const { elementRef } = useDroppable({
     events: {
       onHover: (store) => {
+        if (!isBrowser || !gsap.value) return;
+
         const hippo = store.activeContainer.ref.value?.querySelector(
           '#hippo'
         ) as SVGPathElement;
@@ -18,13 +22,24 @@
 
         if (!hippo || !circle) return;
 
-        gsap.to(hippo, { duration: 1, morphSVG: circle });
+        gsap.value?.to(hippo, { duration: 1, morphSVG: circle });
       },
     },
   });
 
-  onMounted(() => {
-    gsap.registerPlugin(MorphSVGPlugin);
+  onMounted(async () => {
+    if (isBrowser) {
+      // Динамический импорт GSAP и плагина только на клиенте
+      try {
+        const gsapModule = await import('gsap');
+        const MorphSVGPluginModule = await import('gsap/MorphSVGPlugin');
+
+        gsap.value = gsapModule.default;
+        gsap.value.registerPlugin(MorphSVGPluginModule.default);
+      } catch (error) {
+        console.error('Не удалось загрузить GSAP или MorphSVG плагин:', error);
+      }
+    }
   });
 </script>
 
