@@ -117,6 +117,16 @@ export default defineConfig({
         {
           text: 'Real-World Examples',
           collapsed: false,
+          items: [
+            {
+              text: 'Reordering Items',
+              link: '/examples/real-world/reordering-items',
+            },
+            {
+              text: 'Morph SVG',
+              link: '/examples/real-world/morph-svg',
+            },
+          ],
         },
       ],
     },
