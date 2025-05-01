@@ -1,1 +1,0 @@
-import{_ as t,c as i,o as a,ap as r}from"./chunks/framework.CM7R_tuH.js";const p=JSON.parse('{"title":"About Vue DnD Kit","description":"","frontmatter":{},"headers":[],"relativePath":"about.md","filePath":"about.md"}'),o={name:"about.md"};function n(l,e,s,u,d,h){return a(),i("div",null,e[0]||(e[0]=[r("",28)]))}const m=t(o,[["render",n]]);export{p as __pageData,m as default};
