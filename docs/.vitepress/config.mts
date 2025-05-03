@@ -130,6 +130,14 @@ export default defineConfig({
               text: 'Animating Elements',
               link: '/examples/real-world/animating',
             },
+            {
+              text: 'Sorting Lists',
+              link: '/examples/real-world/sorting-lists',
+            },
+            {
+              text: 'Tree',
+              link: '/examples/real-world/tree',
+            },
           ],
         },
       ],
