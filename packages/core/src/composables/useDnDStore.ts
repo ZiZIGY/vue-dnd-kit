@@ -36,23 +36,35 @@ export const useDnDStore = createGlobalState(() => {
   const visibleZones = ref<Set<HTMLElement | Element>>(new Set());
   const visibleElements = ref<Set<HTMLElement | Element>>(new Set());
 
-  const elementObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) =>
-      visibleElements.value[entry.isIntersecting ? 'add' : 'delete'](
-        entry.target
-      )
-    );
-  });
-  const zoneObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) =>
-      visibleZones.value[entry.isIntersecting ? 'add' : 'delete'](entry.target)
-    );
-  });
+  const hasIntersectionObserver =
+    typeof window !== 'undefined' && 'IntersectionObserver' in window;
+
+  const elementObserver = hasIntersectionObserver
+    ? new IntersectionObserver((entries) => {
+        entries.forEach((entry) =>
+          visibleElements.value[entry.isIntersecting ? 'add' : 'delete'](
+            entry.target
+          )
+        );
+      })
+    : null;
+
+  const zoneObserver = hasIntersectionObserver
+    ? new IntersectionObserver((entries) => {
+        entries.forEach((entry) =>
+          visibleZones.value[entry.isIntersecting ? 'add' : 'delete'](
+            entry.target
+          )
+        );
+      })
+    : null;
 
   const handleDragElementIntersection = (
     action: 'add' | 'remove',
     element: HTMLElement | Element
   ) => {
+    if (!elementObserver) return;
+
     if (action === 'add') {
       elementObserver.observe(element);
     } else {
@@ -65,6 +77,8 @@ export const useDnDStore = createGlobalState(() => {
     action: 'add' | 'remove',
     element: HTMLElement | Element
   ) => {
+    if (!zoneObserver) return;
+
     if (action === 'add') {
       zoneObserver.observe(element);
     } else {
