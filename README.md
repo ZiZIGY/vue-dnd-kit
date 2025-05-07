@@ -1,5 +1,3 @@
-# Vue DnD Kit
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/ZiZIGY/vue-dnd-kit/refs/heads/master/public/logo.svg" width="400" alt="Vue DnD Kit Logo">
 </p>
