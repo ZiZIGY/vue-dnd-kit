@@ -1,13 +1,18 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { computed, CSSProperties } from 'vue';
   import { useDnDStore } from '../composables/useDnDStore';
   import DefaultOverlay from './DefaultOverlay.vue';
 
+  const props = defineProps<{
+    styles?: CSSProperties;
+  }>();
+
   const { activeContainer } = useDnDStore();
 
-  const overlay = computed(
-    () => activeContainer.component.value ?? DefaultOverlay
-  );
+  const overlay = computed(() => ({
+    component: activeContainer.component.value ?? DefaultOverlay,
+    props,
+  }));
 </script>
 
 <template>
@@ -38,11 +43,15 @@
     @after-leave="activeContainer.options.value.onAfterLeave"
     @after-appear="activeContainer.options.value.onAfterAppear"
   >
-    <component :is="overlay" />
+    <component
+      :is="overlay.component || overlay"
+      v-bind="overlay.props || {}"
+    />
   </Transition>
 
   <component
     v-else
-    :is="overlay"
+    :is="overlay.component || overlay"
+    v-bind="overlay.props || {}"
   />
 </template>

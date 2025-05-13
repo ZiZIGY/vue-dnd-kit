@@ -5,6 +5,10 @@
   const { elementRef, pointerPosition, isDragging, draggingElements } =
     useDragContainer();
 
+  const { styles } = defineProps<{
+    styles?: CSSProperties;
+  }>();
+
   const computedStyle = computed<CSSProperties>(() => ({
     transform: `translate3d(${
       (pointerPosition.current.value?.x ?? 0) -
@@ -18,6 +22,7 @@
     top: 0,
     left: 0,
     transition: '0.3s cubic-bezier(0.165, 0.84, 0.44, 1)',
+    ...styles,
   }));
 </script>
 

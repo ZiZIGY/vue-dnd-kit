@@ -26,4 +26,5 @@ export type {
   IDraggingElement,
   IDropZone,
   TLayerProps,
+  IPluginOptions,
 } from './types';

@@ -1,4 +1,10 @@
-import type { Component, ComputedRef, Ref, ShallowRef } from 'vue';
+import type {
+  Component,
+  ComputedRef,
+  CSSProperties,
+  Ref,
+  ShallowRef,
+} from 'vue';
 import { useDnDStore } from '../composables/useDnDStore';
 
 export interface IDnDStore extends ReturnType<typeof useDnDStore> {}
@@ -6,6 +12,12 @@ export interface IDnDStore extends ReturnType<typeof useDnDStore> {}
 export interface IActiveContainer {
   component: Ref<Component | null>;
   ref: Ref<HTMLElement | null>;
+}
+
+export interface IPluginOptions {
+  defaultOverlay?: {
+    styles?: CSSProperties;
+  };
 }
 
 export interface IPointerPosition {

@@ -2,6 +2,12 @@
 
 All notable changes to the Vue DnD Kit project are documented in this file.
 
+## 2025-05-13
+
+### Core Package
+
+- Added options for plugin, now u can cutomize default overlay styles
+
 ## 2025-05-01
 
 ### Core Package

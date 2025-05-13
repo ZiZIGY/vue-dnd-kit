@@ -117,20 +117,37 @@ After installation, you need to register the Vue DnD Kit plugin in your main app
 import { createApp } from 'vue';
 import App from './App.vue';
 import VueDnDKitPlugin from '@vue-dnd-kit/core';
-import VueDnDKitDevtools from '@vue-dnd-kit/devtools';
 
 const app = createApp(App);
 
-// Register the Vue DnD Kit plugin
+// Basic registration
 app.use(VueDnDKitPlugin);
-
-// Register the DevTools (automatically only enabled in development)
-app.use(VueDnDKitDevtools);
 
 app.mount('#app');
 ```
 
 This step is crucial as it sets up the global state management and event handling required for drag and drop functionality.
+
+### Plugin Options (Optional)
+
+You can customize the plugin behavior by passing options during registration. For better TypeScript support, you can import the `IPluginOptions` type:
+
+```ts
+import VueDnDKitPlugin, { type IPluginOptions } from '@vue-dnd-kit/core';
+
+app.use(VueDnDKitPlugin, {
+  defaultOverlay: {
+    styles: {
+      // Optional custom styles for drag overlay
+      opacity: 0.8,
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      transition: 'none',
+    },
+  },
+} as IPluginOptions);
+```
+
+The `IPluginOptions` interface provides type safety and autocompletion for all available plugin options.
 
 ### Using in Components
 
