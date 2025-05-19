@@ -2,6 +2,13 @@
 
 All notable changes to the Vue DnD Kit project are documented in this file.
 
+## 2025-05-19
+
+### Core Package
+
+- Added lazyAllowed for all composables
+- Added promise support for dropzone
+
 ## 2025-05-13
 
 ### Core Package
