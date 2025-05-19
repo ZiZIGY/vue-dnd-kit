@@ -200,6 +200,8 @@ export const useSensor = (
 
   const stopDetection = () => {
     if (animationFrameId !== null) {
+      onPointerEnd();
+      onKeyboardEnd();
       cancelAnimationFrame(animationFrameId);
       animationFrameId = null;
     }
@@ -232,29 +234,58 @@ export const useSensor = (
     }
   };
 
-  const deactivate = (triggerEvents = true) => {
-    onPointerEnd();
-    onKeyboardEnd();
+  const deactivate = async (triggerEvents = true) => {
+    if (store.hovered.zone.value) {
+      const zone = store.zonesMap.value.get(store.hovered.zone.value);
+      const result = zone?.events.onDrop?.(store, createPayload(store));
 
-    if (triggerEvents) {
-      if (store.hovered.zone.value) {
-        const zone = store.zonesMap.value.get(store.hovered.zone.value);
-        zone?.events.onDrop?.(store, createPayload(store));
+      if (result instanceof Promise) {
+        try {
+          store.isPending.value = true;
+
+          const promiseResult = await result;
+
+          if (promiseResult) {
+            if (triggerEvents) store.selectedElements.value.clear();
+
+            store.draggingElements.value.clear();
+
+            store.hovered.zone.value = null;
+            store.hovered.element.value = null;
+
+            stopDetection();
+          }
+
+          return promiseResult;
+        } catch {
+          return false;
+        } finally {
+          store.isPending.value = false;
+        }
       } else {
-        store.draggingElements.value.forEach((element) =>
-          element.events.onEnd?.(store, createPayload(store))
-        );
+        if (triggerEvents) store.selectedElements.value.clear();
+
+        store.draggingElements.value.clear();
+
+        store.hovered.zone.value = null;
+        store.hovered.element.value = null;
+
+        stopDetection();
       }
+    } else {
+      store.draggingElements.value.forEach((element) =>
+        element.events.onEnd?.(store, createPayload(store))
+      );
 
-      store.selectedElements.value.clear();
+      if (triggerEvents) store.selectedElements.value.clear();
+
+      store.draggingElements.value.clear();
+
+      store.hovered.zone.value = null;
+      store.hovered.element.value = null;
+
+      stopDetection();
     }
-
-    store.draggingElements.value.clear();
-
-    store.hovered.zone.value = null;
-    store.hovered.element.value = null;
-
-    stopDetection();
   };
 
   return {

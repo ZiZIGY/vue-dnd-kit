@@ -21,11 +21,11 @@ The `options` object can include the following properties:
 
 #### Events Object
 
-| Event   | Type                                               | Description                                     |
-| ------- | -------------------------------------------------- | ----------------------------------------------- |
-| onHover | `(store: IDnDStore, payload: IDnDPayload) => void` | Called when a draggable hovers over this zone   |
-| onLeave | `(store: IDnDStore, payload: IDnDPayload) => void` | Called when a draggable leaves this zone        |
-| onDrop  | `(store: IDnDStore, payload: IDnDPayload) => void` | Called when a draggable is dropped in this zone |
+| Event   | Type                                                                   | Description                                                                                                                           |
+| ------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| onHover | `(store: IDnDStore, payload: IDnDPayload) => void`                     | Called when a draggable hovers over this zone                                                                                         |
+| onLeave | `(store: IDnDStore, payload: IDnDPayload) => void`                     | Called when a draggable leaves this zone                                                                                              |
+| onDrop  | `(store: IDnDStore, payload: IDnDPayload) => void \| Promise<boolean>` | Called when a draggable is dropped in this zone. Can return a Promise that resolves to boolean to indicate if the drop was successful |
 
 All event handlers receive the entire drag and drop store and a payload object as parameters, giving you access to all current drag state.
 
@@ -48,11 +48,12 @@ The `payload` parameter provides access to all dragging elements:
 
 `useDroppable` returns an object with the following properties:
 
-| Property   | Type                       | Description                                               |
-| ---------- | -------------------------- | --------------------------------------------------------- |
-| elementRef | `Ref<HTMLElement \| null>` | Template ref to attach to the drop zone element           |
-| isOvered   | `ComputedRef<boolean>`     | Whether a compatible draggable is hovering over this zone |
-| isAllowed  | `ComputedRef<boolean>`     | Whether the current draggable can be dropped in this zone |
+| Property      | Type                       | Description                                                        |
+| ------------- | -------------------------- | ------------------------------------------------------------------ |
+| elementRef    | `Ref<HTMLElement \| null>` | Template ref to attach to the drop zone element                    |
+| isOvered      | `ComputedRef<boolean>`     | Whether a compatible draggable is hovering over this zone          |
+| isAllowed     | `ComputedRef<boolean>`     | Whether the current draggable can be dropped in this zone          |
+| isLazyAllowed | `ComputedRef<boolean>`     | Similar to isAllowed, but only updates when hovering over the zone |
 
 ## Handling Drop Events
 
@@ -158,3 +159,47 @@ const { elementRef } = useDroppable({
   })),
 });
 ```
+
+## Handling Async Drop Events
+
+You can now return a Promise from the `onDrop` handler to handle asynchronous operations and indicate whether the drop was successful:
+
+```ts
+const { elementRef } = useDroppable({
+  groups: ['tasks'],
+  events: {
+    onDrop: async (store, payload) => {
+      try {
+        // Perform async operation
+        await taskApi.moveTask(payload.items[0].data.taskId);
+
+        // Apply the move if API call was successful
+        DnDOperations.applyMove(store);
+        return true; // Indicate successful drop
+      } catch (error) {
+        console.error('Failed to move task:', error);
+        return false; // Indicate failed drop
+      }
+    },
+  },
+});
+```
+
+## Using isLazyAllowed
+
+The `isLazyAllowed` computed property works similarly to `isAllowed`, but it only updates when a draggable element hovers over the drop zone. This can be useful for optimizing performance when you have complex allowance calculations:
+
+```html
+<div
+  ref="elementRef"
+  class="drop-zone"
+  :class="{
+    'drop-zone--active': isOvered,
+    'drop-zone--valid': isLazyAllowed // Only updates on hover
+  }"
+>
+  Drop items here
+</div>
+```
+
+This is particularly useful when your drop validation logic is computationally expensive or requires API calls, as it will only be evaluated when necessary.

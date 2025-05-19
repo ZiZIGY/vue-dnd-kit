@@ -14,6 +14,7 @@ import {
 import { createGlobalState, useMagicKeys } from '@vueuse/core';
 
 export const useDnDStore = createGlobalState(() => {
+  const isPending = shallowRef<boolean>(false);
   const draggingElements = ref<Map<HTMLElement | Element, IDraggingElement>>(
     new Map()
   );
@@ -33,8 +34,8 @@ export const useDnDStore = createGlobalState(() => {
   const elementsMap = ref<Map<HTMLElement | Element, IDragElement>>(new Map());
   const selectedElements = ref<Set<HTMLElement | Element>>(new Set());
   const zonesMap = ref<Map<HTMLElement | Element, IDropZone>>(new Map());
-  const visibleZones = ref<Set<HTMLElement | Element>>(new Set());
-  const visibleElements = ref<Set<HTMLElement | Element>>(new Set());
+  const visibleZones = shallowRef<Set<HTMLElement | Element>>(new Set());
+  const visibleElements = shallowRef<Set<HTMLElement | Element>>(new Set());
 
   const hasIntersectionObserver =
     typeof window !== 'undefined' && 'IntersectionObserver' in window;
@@ -124,6 +125,7 @@ export const useDnDStore = createGlobalState(() => {
       meta,
     },
     hovered,
+    isPending,
     handleDragElementIntersection,
     handleDropZoneIntersection,
   };

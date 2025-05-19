@@ -138,6 +138,10 @@ export default defineConfig({
               text: 'Tree',
               link: '/examples/real-world/tree',
             },
+            {
+              text: 'Async Drop Promise',
+              link: '/examples/real-world/promise-drop',
+            },
           ],
         },
       ],

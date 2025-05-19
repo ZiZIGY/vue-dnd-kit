@@ -85,7 +85,6 @@ When the draggable element hovers over the drop zone, the `onHover` event trigge
 ```vue
 <script setup lang="ts">
   import Draggable from './Draggable.vue';
-  import ExampleContainer from '../../ExampleContainer.vue';
   import { useDroppable } from '@vue-dnd-kit/core';
   import gsap from 'gsap';
   import { onMounted } from 'vue';
@@ -114,17 +113,15 @@ When the draggable element hovers over the drop zone, the `onHover` event trigge
 </script>
 
 <template>
-  <ExampleContainer>
-    <div class="container">
-      <Draggable />
+  <div class="container">
+    <Draggable />
 
-      <div
-        ref="elementRef"
-        class="droppable"
-        >morph me</div
-      >
-    </div>
-  </ExampleContainer>
+    <div
+      ref="elementRef"
+      class="droppable"
+      >morph me</div
+    >
+  </div>
 </template>
 
 <style scoped>

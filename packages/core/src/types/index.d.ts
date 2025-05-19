@@ -70,7 +70,10 @@ export interface IDropZone {
   events: {
     onHover?: (store: IDnDStore, payload: IDnDPayload) => void;
     onLeave?: (store: IDnDStore, payload: IDnDPayload) => void;
-    onDrop?: (store: IDnDStore, payload: IDnDPayload) => void;
+    onDrop?: (
+      store: IDnDStore,
+      payload: IDnDPayload
+    ) => void | Promise<boolean>;
   };
 }
 
@@ -82,7 +85,10 @@ export interface IPoint {
 export interface IUseDropOptions {
   groups?: string[];
   events?: {
-    onDrop?: (store: IDnDStore, payload: IDnDPayload) => void;
+    onDrop?: (
+      store: IDnDStore,
+      payload: IDnDPayload
+    ) => void | Promise<boolean>;
     onHover?: (store: IDnDStore, payload: IDnDPayload) => void;
     onLeave?: (store: IDnDStore, payload: IDnDPayload) => void;
   };

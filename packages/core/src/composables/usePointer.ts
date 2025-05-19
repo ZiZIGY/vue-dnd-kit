@@ -22,6 +22,8 @@ export const usePointer = (elementRef: Ref<HTMLElement | null>) => {
   };
 
   const onPointerMove = (event: PointerEvent | WheelEvent) => {
+    if (store.isPending.value) return;
+
     store.pointerPosition.current.value = {
       x: event.clientX,
       y: event.clientY,

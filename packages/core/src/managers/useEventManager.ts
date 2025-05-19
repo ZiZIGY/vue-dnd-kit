@@ -30,7 +30,7 @@ export const useEventManager = createGlobalState(() => {
   let currentScrollHandler: ((event: WheelEvent) => void) | null = null;
   let currentKeyHandler: ((event: KeyboardEvent) => void) | null = null;
 
-  const { activeContainer } = useDnDStore();
+  const { activeContainer, isPending } = useDnDStore();
 
   const disableInteractions = () => {
     const body = document.body;
@@ -91,6 +91,7 @@ export const useEventManager = createGlobalState(() => {
     elementRef: Ref<HTMLElement | null>,
     options?: IUseDragOptions
   ) => {
+    if (isPending.value) return;
     clearAllListeners();
 
     (event.target as HTMLElement).blur();
@@ -100,10 +101,14 @@ export const useEventManager = createGlobalState(() => {
     const { activate, track, deactivate } = useSensor(elementRef, options);
 
     currentEndHandler = () => {
-      activeContainer.component.value = null;
-      enableInteractions();
-      deactivate(true);
-      clearAllListeners();
+      deactivate(true).then((response) => {
+        if (response === false) return;
+
+        activeContainer.component.value = null;
+        enableInteractions();
+        deactivate(true);
+        clearAllListeners();
+      });
     };
 
     currentCancelHandler = () => {

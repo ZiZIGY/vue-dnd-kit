@@ -61,15 +61,16 @@ The `payload` parameter provides access to all dragging elements:
 
 `useDraggable` returns an object with the following properties:
 
-| Property        | Type                       | Description                                                  |
-| --------------- | -------------------------- | ------------------------------------------------------------ |
-| elementRef      | `Ref<HTMLElement \| null>` | Template ref to attach to the draggable element              |
-| isDragging      | `ComputedRef<boolean>`     | Whether this element is currently being dragged              |
-| isOvered        | `ComputedRef<boolean>`     | Whether this element is being hovered over by a draggable    |
-| isAllowed       | `ComputedRef<boolean>`     | Whether the current draggable can be dropped on this element |
-| pointerPosition | `Object`                   | Current and initial pointer positions                        |
-| handleDragStart | `Function`                 | Function to start the drag operation                         |
-| id              | `string \| number`         | Unique identifier for this draggable                         |
+| Property        | Type                       | Description                                                           |
+| --------------- | -------------------------- | --------------------------------------------------------------------- |
+| elementRef      | `Ref<HTMLElement \| null>` | Template ref to attach to the draggable element                       |
+| isDragging      | `ComputedRef<boolean>`     | Whether this element is currently being dragged                       |
+| isOvered        | `ComputedRef<boolean>`     | Whether this element is being hovered over by a draggable             |
+| isAllowed       | `ComputedRef<boolean>`     | Whether the current draggable can be dropped on this element          |
+| isLazyAllowed   | `ComputedRef<boolean>`     | Similar to isAllowed, but only updates when hovering over the element |
+| pointerPosition | `Object`                   | Current and initial pointer positions                                 |
+| handleDragStart | `Function`                 | Function to start the drag operation                                  |
+| id              | `string \| number`         | Unique identifier for this draggable                                  |
 
 ## Event Handling with Payload
 
@@ -179,17 +180,24 @@ const { elementRef } = useDraggable({
 3. For more precise control over drag triggers, use Vue's event modifiers (`.self`, `.stop`, etc.).
 4. Always add `tabindex="0"` to draggable elements when implementing keyboard support.
 5. Use the `isDragging` computed value to apply visual feedback during drag operations.
-6. To ensure proper reactivity, especially for dynamic content, wrap the `data` property in a `computed()`:
+6. The `isLazyAllowed` property is useful for optimizing performance with complex validation logic, as it only updates when hovering:
 
-```ts
-import { computed } from 'vue';
+```html
+<div
+  ref="elementRef"
+  class="draggable"
+  :class="{
+    'draggable--dragging': isDragging,
+    'draggable--allowed': isLazyAllowed // Only updates on hover
+  }"
+  @pointerdown="handleDragStart"
+>
+  Drag me
+</div>
+```
 
-const { elementRef } = useDraggable({
-  groups: ['items'],
-  data: computed(() => ({
-    source: myArray,
-    index: myIndex,
-    // other data properties
-  })),
-});
+7. To ensure proper reactivity, especially for dynamic content, wrap the `data` property in a `computed()`:
+
+```
+
 ```

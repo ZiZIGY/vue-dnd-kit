@@ -236,7 +236,6 @@ This example shows how to coordinate animations between draggable elements and d
   import { ref } from 'vue';
   import Draggable from './Draggable.vue';
   import { useDnDStore, useDroppable } from '@vue-dnd-kit/core';
-  import ExampleContainer from '../../ExampleContainer.vue';
 
   const dropped = ref(false);
 
@@ -250,40 +249,38 @@ This example shows how to coordinate animations between draggable elements and d
 </script>
 
 <template>
-  <ExampleContainer>
-    <div class="animation-example">
+  <div class="animation-example">
+    <Draggable
+      v-if="!dropped"
+      @end="dropped = false"
+      class="source-draggable"
+    >
+      Drag me to zone
+    </Draggable>
+
+    <div
+      ref="elementRef"
+      class="drop-zone"
+      :class="{ 'is-overed': isOvered && isDragging }"
+    >
+      <span class="drop-zone-label">Drop here</span>
+
+      <Transition name="circle-skeleton">
+        <div
+          v-if="isOvered && isDragging"
+          class="circle-skeleton"
+        />
+      </Transition>
+
       <Draggable
-        v-if="!dropped"
+        v-if="dropped"
         @end="dropped = false"
-        class="source-draggable"
+        class="target-draggable"
       >
-        Drag me to zone
+        Drag me back
       </Draggable>
-
-      <div
-        ref="elementRef"
-        class="drop-zone"
-        :class="{ 'is-overed': isOvered && isDragging }"
-      >
-        <span class="drop-zone-label">Drop here</span>
-
-        <Transition name="circle-skeleton">
-          <div
-            v-if="isOvered && isDragging"
-            class="circle-skeleton"
-          />
-        </Transition>
-
-        <Draggable
-          v-if="dropped"
-          @end="dropped = false"
-          class="target-draggable"
-        >
-          Drag me back
-        </Draggable>
-      </div>
     </div>
-  </ExampleContainer>
+  </div>
 </template>
 
 <style>
