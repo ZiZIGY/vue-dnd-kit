@@ -32,9 +32,26 @@ export const useElementManager = (options?: IUseDragOptions) => {
   });
 
   const isAllowed = computed<boolean>(() => {
-    if (!elementRef.value) return false;
-    if (!isDragStarted.value) return false;
+    if (!elementRef.value || !isDragStarted.value) return false;
     if (!visibleElements.value.has(elementRef.value)) return false;
+
+    const currentElement = elementsMap.value.get(elementRef.value);
+    if (!currentElement?.groups.length) return true;
+
+    return !Array.from(draggingElements.value.entries()).some(
+      ([_, draggingElement]) => {
+        if (!draggingElement.groups.length) return false;
+        return !draggingElement.groups.some((group) =>
+          currentElement.groups.includes(group)
+        );
+      }
+    );
+  });
+
+  const isLazyAllowed = computed<boolean>(() => {
+    if (!elementRef.value || !isDragStarted.value) return false;
+    if (!visibleElements.value.has(elementRef.value)) return false;
+    if (hovered.element.value !== elementRef.value) return false;
 
     const currentElement = elementsMap.value.get(elementRef.value);
     if (!currentElement?.groups.length) return true;
@@ -89,6 +106,7 @@ export const useElementManager = (options?: IUseDragOptions) => {
     isDragging,
     isOvered,
     isAllowed,
+    isLazyAllowed,
     id,
   };
 };

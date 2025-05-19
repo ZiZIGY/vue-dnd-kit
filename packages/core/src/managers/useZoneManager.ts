@@ -14,9 +14,9 @@ export const useZoneManager = (options?: IUseDropOptions) => {
 
   const elementRef = ref<HTMLElement | null>(null);
 
-  const isOvered = computed<boolean>(() => {
-    return hovered.zone.value === elementRef.value;
-  });
+  const isOvered = computed<boolean>(
+    () => hovered.zone.value === elementRef.value
+  );
 
   const isAllowed = computed<boolean>(() => {
     if (!elementRef.value || !isDragging.value) return false;
@@ -26,6 +26,20 @@ export const useZoneManager = (options?: IUseDropOptions) => {
 
     return !Array.from(draggingElements.value.values()).some((element) => {
       if (!element.groups.length) return false;
+      return !element.groups.some((group) =>
+        currentZone.groups.includes(group)
+      );
+    });
+  });
+
+  const isLazyAllowed = computed<boolean>(() => {
+    if (!elementRef.value || !isDragging.value) return false;
+    if (hovered.zone.value !== elementRef.value) return false;
+
+    const currentZone = zonesMap.value.get(elementRef.value);
+    if (!currentZone?.groups.length) return true;
+
+    return !Array.from(draggingElements.value.values()).some((element) => {
       return !element.groups.some((group) =>
         currentZone.groups.includes(group)
       );
@@ -55,5 +69,12 @@ export const useZoneManager = (options?: IUseDropOptions) => {
     zonesMap.value.delete(elementRef.value);
   };
 
-  return { elementRef, registerZone, unregisterZone, isOvered, isAllowed };
+  return {
+    elementRef,
+    registerZone,
+    unregisterZone,
+    isOvered,
+    isAllowed,
+    isLazyAllowed,
+  };
 };

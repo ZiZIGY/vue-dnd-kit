@@ -12,6 +12,7 @@ export const useDraggable = (options?: IUseDragOptions) => {
     isDragging,
     isOvered,
     isAllowed,
+    isLazyAllowed,
     registerElement,
     unregisterElement,
   } = useElementManager(options);
@@ -31,6 +32,7 @@ export const useDraggable = (options?: IUseDragOptions) => {
     isDragging,
     isOvered,
     isAllowed,
+    isLazyAllowed,
     handleDragStart,
     id,
   };
