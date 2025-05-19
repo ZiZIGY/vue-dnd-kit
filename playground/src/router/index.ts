@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import Animation from '../pages/Animation.vue';
 import Kanban from '../pages/Kanban.vue';
+import LazyDrop from 'src/pages/LazyDrop.vue';
 import SortableList from '../pages/SortableList.vue';
 import Table from '../pages/Table.vue';
 
@@ -29,6 +30,11 @@ const routes = [
     path: '/animation',
     name: 'Animation',
     component: Animation,
+  },
+  {
+    path: '/lazy-drop',
+    name: 'LazyDrop',
+    component: LazyDrop,
   },
 ];
 
