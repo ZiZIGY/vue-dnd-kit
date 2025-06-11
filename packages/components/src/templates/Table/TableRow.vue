@@ -28,8 +28,7 @@
     <td
       v-for="column in columns"
       :key="column.key"
-    >
-      {{ row[column.key] }}
-    </td>
+      v-text="row[column.key]"
+    />
   </tr>
 </template>

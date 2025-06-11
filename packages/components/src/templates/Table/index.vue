@@ -23,7 +23,7 @@
     })),
     events: {
       onDrop: (store) => {
-        DnDOperations.applyTransfer(store);
+        if (store.hovered.element.value) DnDOperations.applyTransfer(store);
       },
     },
   });
@@ -51,12 +51,17 @@
         columns: ITableColumn<T>[];
         bodyGroups: string[];
       }) => any;
+      footer: () => any;
+      caption: () => any;
     }
   >();
 </script>
 
 <template>
   <table>
+    <caption>
+      <slot name="caption" />
+    </caption>
     <thead ref="tableHeaderRef">
       <tr>
         <TableColumn
@@ -81,5 +86,8 @@
         :body-groups="bodyGroups"
       />
     </tbody>
+    <tfoot>
+      <slot name="footer" />
+    </tfoot>
   </table>
 </template>

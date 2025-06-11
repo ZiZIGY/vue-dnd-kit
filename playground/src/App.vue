@@ -22,17 +22,25 @@
   const columns = ref<ITableColumn<IRow>[]>([
     { label: 'ID', key: 'id' },
     { label: 'Name', key: 'name' },
-    { label: 'Age', key: 'age' },
+    { label: 'Age', key: 'age', disabled: true },
   ]);
 </script>
 
 <template>
   <div class="playground">
     <Table
-      :rows
-      :columns
+      :rows="rows"
+      :columns="columns"
     >
-      <template #header-age></template>
+      <template #header-age="{ column }">
+        <div>
+          {{ column.label }}
+          <input
+            type="checkbox"
+            v-model="column.disabled"
+          />
+        </div>
+      </template>
       <template #default="props">
         <TableRow
           v-for="(row, index) in rows"
@@ -42,6 +50,12 @@
           v-bind="props"
         >
         </TableRow>
+      </template>
+
+      <template #footer>
+        <div>
+          <button> Add row </button>
+        </div>
       </template>
     </Table>
   </div>
