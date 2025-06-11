@@ -1,38 +1,49 @@
-<script setup>
-  import { computed } from 'vue';
-  import { Draggable } from '@vue-dnd-kit/components';
-  import Drag from './components/Drag.vue';
+<script setup lang="ts">
+  import { ref } from 'vue';
 
-  import router from './router';
+  import Table from '@vue-dnd-kit/components/templates/Table/index.vue';
+  import { ITableColumn } from '@vue-dnd-kit/components/templates/Table/types';
+  import TableRow from '@vue-dnd-kit/components/templates/Table/TableRow.vue';
 
-  import { useDnDStore } from '@vue-dnd-kit/core';
+  interface IRow {
+    id: number;
+    name: string;
+    age?: number;
+  }
 
-  const routes = computed(() => router.options.routes);
+  const rows = ref<IRow[]>([
+    { id: 1, name: 'John Doe' },
+    { id: 2, name: 'Jane Smith' },
+    { id: 3, name: 'Jim Beam' },
+    { id: 4, name: 'Jill Johnson' },
+    { id: 5, name: 'Jack Daniels', age: 20 },
+  ]);
+
+  const columns = ref<ITableColumn<IRow>[]>([
+    { label: 'ID', key: 'id' },
+    { label: 'Name', key: 'name' },
+    { label: 'Age', key: 'age' },
+  ]);
 </script>
 
 <template>
   <div class="playground">
-    <header>
-      <h1>Vue DnD Kit Playground</h1>
-      <nav>
-        <ul class="nav-links">
-          <li
-            v-for="route in routes"
-            :key="route.path"
-          >
-            <router-link :to="route.path">{{ route.name }}</router-link>
-          </li>
-        </ul>
-      </nav>
-    </header>
-
-    <main>
-      <router-view />
-    </main>
-
-    <footer>
-      <p>Vue DnD Kit - Библиотека для перетаскивания элементов</p>
-    </footer>
+    <Table
+      :rows
+      :columns
+    >
+      <template #header-age></template>
+      <template #default="props">
+        <TableRow
+          v-for="(row, index) in rows"
+          :key="row.id"
+          :row="row"
+          :row-index="index"
+          v-bind="props"
+        >
+        </TableRow>
+      </template>
+    </Table>
   </div>
 </template>
 
