@@ -27,4 +27,12 @@ export type {
   IDropZone,
   TLayerProps,
   IPluginOptions,
+  IPoint,
+  IDnDPayload,
+  IPointerPosition,
+  IBoundingBox,
+  IUseDragOptions,
+  IUseDropOptions,
+  IUseSensorOptions,
+  ICollisionDetectionResult,
 } from './types';

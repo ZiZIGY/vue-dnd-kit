@@ -1,6 +1,6 @@
 {
   "name": "@vue-dnd-kit/components",
-  "version": "0.2.37",
+  "version": "0.2.42",
   "description": "Components for Vue DnD Kit",
   "author": "ZiZIGY",
   "license": "MIT",
@@ -51,7 +51,8 @@
     "LICENSE",
     "dist",
     "src/components/*.vue",
-    "templates"
+    "templates",
+    "src/templates"
   ],
   "exports": {
     ".": {

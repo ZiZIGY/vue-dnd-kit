@@ -107,6 +107,33 @@ yarn add @vue-dnd-kit/components @vue-dnd-kit/core
 pnpm install @vue-dnd-kit/components @vue-dnd-kit/core
 ```
 
+## CLI
+
+Vue DnD Kit provides a CLI to quickly install components.
+
+We recommend using [pnpm](https://pnpm.io/) to run the CLI:
+
+```bash
+# List available components
+pnpm dlx @vue-dnd-kit/components list
+
+# Add a component to your project
+pnpm dlx @vue-dnd-kit/components add DraggableCard
+
+# Add a component to a specific directory
+pnpm dlx @vue-dnd-kit/components add DroppableZone --dir src/shared/components
+```
+
+> **Note:** Some Node.js versions may have compatibility issues when using `npx`. We recommend using `pnpm dlx` or `yarn dlx` instead of `npx`.
+
+### Available Commands
+
+- `list`: Show available components
+- `add <component>`: Add a component to your project
+  - Options:
+    - `-d, --dir <directory>`: Directory to install the component (default: `src/components`)
+- `debug`: Debug information (for developers)
+
 ## Basic Usage
 
 ### Table Component

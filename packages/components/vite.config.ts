@@ -23,7 +23,6 @@ export default defineConfig({
           content: content,
         };
       },
-      
     }),
   ],
   build: {
@@ -31,7 +30,7 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'VueDndKitComponents',
-      formats: ['es', 'umd'],
+      formats: ['es', 'umd', 'cjs'],
       fileName: (format) => `vue-dnd-kit-components.${format}.js`,
     },
     rollupOptions: {

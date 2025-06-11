@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useDraggable, useSelection } from '@vue-dnd-kit/core';
+  import { DnDOperations, useDraggable, useSelection } from '@vue-dnd-kit/core';
   import { computed } from 'vue';
 
   const props = defineProps<{
@@ -12,6 +12,11 @@
       source: props.source,
       index: props.index,
     })),
+    events: {
+      onHover: (store) => {
+        DnDOperations.applyTransfer(store);
+      },
+    },
   });
 
   const { handleToggleSelect, isSelected } = useSelection(elementRef);

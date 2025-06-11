@@ -117,6 +117,10 @@ export interface IUseDragOptions extends IUseSensorOptions {
   };
   layer?: Component | null;
   container?: Component;
+  sensor?: {
+    throttle?: number;
+    setup?: (store: IDnDStore) => Element | Element[] | null;
+  };
 }
 
 export type ISensor = (
