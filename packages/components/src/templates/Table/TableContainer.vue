@@ -58,7 +58,7 @@
 </script>
 
 <template>
-  <table>
+  <table class="vue-dnd-table">
     <caption>
       <slot name="caption" />
     </caption>
@@ -91,3 +91,5 @@
     </tfoot>
   </table>
 </template>
+
+<style lang="css" src="./styles.css" />

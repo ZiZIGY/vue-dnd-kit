@@ -46,7 +46,6 @@ export const defaultCollisionDetection = (store: IDnDStore) => {
       const overlapPercent = getOverlapPercent(rect, containerRect);
       const centerDistance = getDistance(containerCenter, elementCenter);
 
-      // Вычисляем глубину вложенности
       let depth = 0;
       for (const [parentNode, _] of store.visibleElements.value.entries()) {
         if (

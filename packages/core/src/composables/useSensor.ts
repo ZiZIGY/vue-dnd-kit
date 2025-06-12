@@ -116,26 +116,41 @@ export const useSensor = (
       return { element: null, zone: null };
     }
 
-    const possibleElement = elements.find(
-      (htmlElement) =>
-        store.visibleElements.value.has(htmlElement) &&
-        store.elementsMap.value.has(htmlElement) &&
-        !activeDragNodes.some(
-          (dragNode) =>
-            dragNode &&
-            (dragNode === htmlElement ||
-              isDescendant(
-                htmlElement as HTMLElement,
-                dragNode as HTMLElement
-              ) ||
-              isDescendant(dragNode as HTMLElement, htmlElement as HTMLElement))
-        ) &&
-        (htmlElement === filteredZoneElement ||
-          isDescendant(
-            htmlElement as HTMLElement,
-            filteredZoneElement as HTMLElement
-          ))
-    );
+    const filteredElements = elements.filter((htmlElement) => {
+      if (!store.visibleElements.value.has(htmlElement)) return false;
+      if (!store.elementsMap.value.has(htmlElement)) return false;
+
+      const isGroupsCompatible = !Array.from(
+        store.draggingElements.value.values()
+      ).some((element) => {
+        if (!element.groups.length) return false;
+        return !element.groups.some((group) =>
+          store.elementsMap.value.get(htmlElement)?.groups.includes(group)
+        );
+      });
+
+      return isGroupsCompatible;
+    });
+
+    const possibleElement = filteredElements.find((htmlElement) => {
+      const isCompatible = !activeDragNodes.some(
+        (dragNode) =>
+          dragNode &&
+          (dragNode === htmlElement ||
+            isDescendant(htmlElement as HTMLElement, dragNode as HTMLElement) ||
+            isDescendant(dragNode as HTMLElement, htmlElement as HTMLElement))
+      );
+
+      if (!isCompatible) return false;
+
+      return (
+        htmlElement === filteredZoneElement ||
+        isDescendant(
+          htmlElement as HTMLElement,
+          filteredZoneElement as HTMLElement
+        )
+      );
+    });
 
     return {
       element: possibleElement || null,

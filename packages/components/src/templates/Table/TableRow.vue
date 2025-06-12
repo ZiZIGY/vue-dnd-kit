@@ -11,7 +11,7 @@
     bodyGroups: string[];
   }>();
 
-  const { elementRef, handleDragStart } = useDraggable({
+  const { isDragging, elementRef, handleDragStart, isOvered } = useDraggable({
     groups: bodyGroups,
     data: computed(() => ({
       source: rows,
@@ -24,10 +24,16 @@
   <tr
     ref="elementRef"
     @pointerdown="handleDragStart"
+    class="vue-dnd-table-row"
+    :class="{
+      'vue-dnd-table-dragging': isDragging,
+      'vue-dnd-table-row-drop-indicator': isOvered,
+    }"
   >
     <td
       v-for="column in columns"
       :key="column.key"
+      class="vue-dnd-table-cell"
       v-text="row[column.key]"
     />
   </tr>

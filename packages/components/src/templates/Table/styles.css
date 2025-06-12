@@ -1,0 +1,302 @@
+:root {
+  --table-radius: 0.5rem;
+  --table-radius-sm: 0.25rem;
+
+  /* Dark mode (default) */
+  --table-bg: hsl(224, 71%, 4%);
+  --table-border: hsl(216, 34%, 17%);
+  --table-foreground: hsl(213, 31%, 91%);
+  --table-primary: hsl(210, 40%, 98%);
+  --table-primary-foreground: hsl(222.2, 47.4%, 1.2%);
+  --table-secondary: hsl(222.2, 47.4%, 11.2%);
+  --table-secondary-foreground: hsl(210, 40%, 98%);
+  --table-muted: hsl(223, 47%, 11%);
+  --table-muted-foreground: hsl(215.4, 16.3%, 56.9%);
+  --table-accent: hsl(216, 34%, 17%);
+  --table-accent-foreground: hsl(210, 40%, 98%);
+  --table-destructive: hsl(0, 63%, 31%);
+  --table-destructive-foreground: hsl(210, 40%, 98%);
+  --table-ring: hsl(216, 34%, 17%);
+  --table-header-bg: hsl(223, 47%, 11%);
+  --table-row-bg: hsl(224, 71%, 4%);
+  --table-row-bg-hover: hsl(222.2, 84%, 4.9%);
+  --table-row-selected: hsla(217, 91%, 60%, 0.15);
+  --table-success: hsl(142, 76%, 36%);
+  --table-warning: hsl(41, 100%, 35%);
+  --table-error: hsl(0, 84%, 60%);
+  --table-processing: hsl(250, 95%, 75%);
+
+  /* Drag indicators */
+  --table-drag-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --table-drag-outline: hsla(217, 91%, 60%, 0.3);
+  --table-drop-highlight: hsla(217, 91%, 60%, 0.2);
+  --table-drop-area: hsla(217, 91%, 60%, 0.1);
+}
+
+.vue-dnd-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1rem 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  position: relative;
+  border: 1px solid var(--table-border);
+  border-radius: var(--table-radius);
+  overflow: hidden;
+  background-color: var(--table-bg);
+  color: var(--table-foreground);
+  font-size: 0.8125rem;
+  letter-spacing: -0.011em;
+}
+
+.vue-dnd-table caption {
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: left;
+  margin-bottom: 0.5rem;
+  color: var(--table-primary);
+  padding: 0 1rem;
+}
+
+.vue-dnd-table thead {
+  background-color: var(--table-header-bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.vue-dnd-table thead tr {
+  border-bottom: 1px solid var(--table-border);
+}
+
+.vue-dnd-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 500;
+  color: var(--table-muted-foreground);
+  cursor: grab;
+  user-select: none;
+  position: relative;
+  transition: all 0.2s ease;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.vue-dnd-table th:hover {
+  color: var(--table-primary);
+  background-color: hsla(216, 34%, 20%, 0.3);
+}
+
+.vue-dnd-table th::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: transparent;
+  transition: background-color 0.2s;
+}
+
+.vue-dnd-table th:hover::after {
+  background-color: var(--table-accent);
+}
+
+.vue-dnd-table tbody tr {
+  border-bottom: 1px solid var(--table-border);
+  cursor: grab;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.vue-dnd-table td {
+  padding: 0.875rem 1rem;
+  color: var(--table-foreground);
+  transition: background-color 0.2s;
+  vertical-align: middle;
+  position: relative;
+}
+
+.vue-dnd-table tfoot {
+  border-top: 1px solid var(--table-border);
+  background-color: var(--table-muted);
+}
+
+.vue-dnd-table tfoot td {
+  padding: 0.75rem 1rem;
+  color: var(--table-muted-foreground);
+}
+
+/* Dragging states with improved visibility */
+.vue-dnd-table-dragging {
+  opacity: 0.85;
+  background-color: var(--table-row-selected) !important;
+  box-shadow: var(--table-drag-shadow);
+  outline: 1px solid var(--table-drag-outline);
+  position: relative;
+  z-index: 20;
+}
+
+.vue-dnd-table-row-drop-indicator {
+  background-color: var(--table-drop-highlight);
+  border-top: 2px dashed var(--table-drop-area);
+  border-bottom: 2px dashed var(--table-drop-area);
+}
+
+.vue-dnd-table-column-drop-indicator {
+  position: absolute;
+  width: 2px;
+  top: 0;
+  height: 100%;
+  background-color: hsla(217, 91%, 60%, 0.7);
+  box-shadow: 0 0 8px hsla(217, 91%, 60%, 0.5);
+}
+
+/* Row status styles with improved visibility */
+.vue-dnd-table-row-success {
+  position: relative;
+}
+
+.vue-dnd-table-row-success td:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: var(--table-success);
+  box-shadow: 0 0 8px var(--table-success);
+}
+
+.vue-dnd-table-row-processing {
+  position: relative;
+}
+
+.vue-dnd-table-row-processing td:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: var(--table-processing);
+  box-shadow: 0 0 8px var(--table-processing);
+}
+
+.vue-dnd-table-row-failed {
+  position: relative;
+}
+
+.vue-dnd-table-row-failed td:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: var(--table-error);
+  box-shadow: 0 0 8px var(--table-error);
+}
+
+/* Enhanced status badges */
+.vue-dnd-table-status {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--table-muted);
+  color: var(--table-muted-foreground);
+  letter-spacing: 0.02em;
+  box-shadow: inset 0 0 0 1px hsla(0, 0%, 100%, 0.1);
+}
+
+.vue-dnd-table-status-success {
+  background-color: hsla(142, 76%, 36%, 0.2);
+  color: hsl(142, 76%, 80%);
+  border: 1px solid hsla(142, 76%, 36%, 0.5);
+}
+
+.vue-dnd-table-status-processing {
+  background-color: hsla(250, 95%, 75%, 0.15);
+  color: hsl(250, 95%, 85%);
+  border: 1px solid hsla(250, 95%, 75%, 0.5);
+}
+
+.vue-dnd-table-status-failed {
+  background-color: hsla(0, 84%, 60%, 0.15);
+  color: hsl(0, 84%, 80%);
+  border: 1px solid hsla(0, 84%, 60%, 0.5);
+}
+
+/* Action buttons in cells with improved interactivity */
+.vue-dnd-table-action {
+  cursor: pointer;
+  color: var(--table-muted-foreground);
+  background: none;
+  border: none;
+  padding: 0.3rem;
+  border-radius: var(--table-radius-sm);
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vue-dnd-table-action:hover {
+  color: var(--table-primary);
+  background-color: var(--table-accent);
+  transform: translateY(-1px);
+}
+
+.vue-dnd-table-action:active {
+  transform: translateY(0);
+}
+
+/* Improved checkbox styling */
+.vue-dnd-table-checkbox {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--table-border);
+  border-radius: 4px;
+  background-color: var(--table-bg);
+  cursor: pointer;
+  position: relative;
+  margin: 0;
+  transition: all 0.15s ease;
+}
+
+.vue-dnd-table-checkbox:hover {
+  border-color: hsla(217, 91%, 60%, 0.5);
+  box-shadow: 0 0 0 1px hsla(217, 91%, 60%, 0.1);
+}
+
+.vue-dnd-table-checkbox:checked {
+  background-color: hsla(217, 91%, 60%, 0.9);
+  border-color: hsla(217, 91%, 60%, 1);
+}
+
+.vue-dnd-table-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--table-primary);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Row selection and hover effects */
+.vue-dnd-table tbody tr.selected {
+  background-color: var(--table-row-selected);
+}
+
+.vue-dnd-table tbody tr.selected td {
+  color: var(--table-primary);
+}

@@ -10,7 +10,7 @@
     headerGroups: string[];
   }>();
 
-  const { elementRef, handleDragStart } = useDraggable({
+  const { elementRef, handleDragStart, isDragging } = useDraggable({
     groups: headerGroups,
     data: computed(() => ({
       source: columns,
@@ -23,6 +23,8 @@
   <th
     ref="elementRef"
     @pointerdown="handleDragStart"
+    class="vue-dnd-table-column"
+    :class="{ 'vue-dnd-table-dragging': isDragging }"
   >
     <slot :column="column">
       {{ column.label }}

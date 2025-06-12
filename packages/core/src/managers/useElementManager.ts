@@ -17,11 +17,9 @@ export const useElementManager = (options?: IUseDragOptions) => {
   } = useDnDStore();
 
   const elementRef = ref<HTMLElement | null>(null);
-  const isOvered = computed<boolean>(
-    () =>
-      visibleElements.value.has(elementRef.value as HTMLElement) &&
-      hovered.element.value === elementRef.value
-  );
+  const isOvered = computed<boolean>(() => {
+    return hovered.element.value === elementRef.value;
+  });
 
   const id = shallowRef(options?.id || useId());
 

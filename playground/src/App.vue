@@ -1,64 +1,81 @@
 <script setup lang="ts">
   import { ref } from 'vue';
+  import {
+    Kanban,
+    KanbanColumn,
+    KanbanItem,
+  } from '@vue-dnd-kit/components/templates/Kanban';
+  import { useDnDStore } from '@vue-dnd-kit/core';
 
-  import Table from '@vue-dnd-kit/components/templates/Table/index.vue';
-  import { ITableColumn } from '@vue-dnd-kit/components/templates/Table/types';
-  import TableRow from '@vue-dnd-kit/components/templates/Table/TableRow.vue';
-
-  interface IRow {
+  interface ITask {
     id: number;
-    name: string;
-    age?: number;
+    title: string;
   }
 
-  const rows = ref<IRow[]>([
-    { id: 1, name: 'John Doe' },
-    { id: 2, name: 'Jane Smith' },
-    { id: 3, name: 'Jim Beam' },
-    { id: 4, name: 'Jill Johnson' },
-    { id: 5, name: 'Jack Daniels', age: 20 },
+  interface IColumn {
+    id: number;
+    title: string;
+    tasks: ITask[];
+  }
+
+  const columns = ref<IColumn[]>([
+    {
+      id: 1,
+      title: 'To Do',
+      tasks: [
+        { id: 1, title: 'Research competitors' },
+        { id: 2, title: 'Define project scope' },
+      ],
+    },
+    {
+      id: 2,
+      title: 'In Progress',
+      tasks: [
+        { id: 3, title: 'Create wireframes' },
+        { id: 4, title: 'Design UI components' },
+      ],
+    },
+    {
+      id: 3,
+      title: 'Done',
+      tasks: [
+        { id: 5, title: 'Project kickoff meeting' },
+        { id: 6, title: 'Gather requirements' },
+      ],
+    },
   ]);
 
-  const columns = ref<ITableColumn<IRow>[]>([
-    { label: 'ID', key: 'id' },
-    { label: 'Name', key: 'name' },
-    { label: 'Age', key: 'age', disabled: true },
-  ]);
+  const store = useDnDStore();
 </script>
 
 <template>
-  <div class="playground">
-    <Table
-      :rows="rows"
+  <Kanban
+    :columns="columns"
+    v-slot="{ columns }"
+  >
+    <KanbanColumn
+      v-for="(column, index) in columns"
+      :key="column.id"
+      :column="column"
       :columns="columns"
+      :column-index="index"
+      :body-source="column.tasks"
     >
-      <template #header-age="{ column }">
-        <div>
-          {{ column.label }}
-          <input
-            type="checkbox"
-            v-model="column.disabled"
-          />
-        </div>
-      </template>
-      <template #default="props">
-        <TableRow
-          v-for="(row, index) in rows"
-          :key="row.id"
-          :row="row"
-          :row-index="index"
-          v-bind="props"
-        >
-        </TableRow>
+      <template #header>
+        {{ column.title }}
       </template>
 
-      <template #footer>
-        <div>
-          <button> Add row </button>
-        </div>
-      </template>
-    </Table>
-  </div>
+      <KanbanItem
+        v-for="(task, taskIndex) in column.tasks"
+        :key="task.id"
+        :item="task"
+        :items="column.tasks"
+        :item-index="taskIndex"
+      >
+        {{ task.title }}
+      </KanbanItem>
+    </KanbanColumn>
+  </Kanban>
 </template>
 
 <style>
@@ -95,57 +112,9 @@
     padding: 0 16px;
   }
 
-  header {
-    padding: 24px 0;
-    border-bottom: 1px solid #e2e8f0;
-  }
-
-  h1 {
-    margin: 0 0 16px 0;
-    font-size: 28px;
-    color: #0f172a;
-  }
-
-  .nav-links {
-    display: flex;
-    gap: 8px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .nav-links a {
-    display: inline-block;
-    padding: 8px 16px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-size: 16px;
-    color: #64748b;
-    transition: all 0.2s;
-  }
-
-  .nav-links a:hover {
-    background-color: #f1f5f9;
-    color: #334155;
-  }
-
-  .nav-links a.router-link-active {
-    background-color: #e0f2fe;
-    color: #0284c7;
-    font-weight: 500;
-  }
-
   main {
     flex: 1;
     padding: 24px 0;
-  }
-
-  footer {
-    padding: 16px 0;
-    border-top: 1px solid #e2e8f0;
-    text-align: center;
-    font-size: 14px;
-    color: #64748b;
   }
 
   /* Сбрасываем стили из исходного файла */
