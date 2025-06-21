@@ -25,7 +25,15 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.vue"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.vue",
+    "../../playground/src/components/StatCard.vue",
+    "../../playground/src/components/Dashboard.vue",
+    "../../playground/src/components/ChartCard.vue",
+    "../../playground/src/components/NotificationCard.vue"
+  ],
   "exclude": ["node_modules", "dist", "**/*.test.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

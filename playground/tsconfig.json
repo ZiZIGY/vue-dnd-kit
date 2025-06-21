@@ -35,6 +35,11 @@
     "src/**/*.d.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "shims.d.ts"
+    "shims.d.ts",
+    "../packages/components/src/templates/Dashboard/Dashboard.vue",
+    "../packages/components/src/templates/Dashboard/Example/ChartCard.vue",
+    "../packages/components/src/templates/Dashboard/Example/NotificationCard.vue",
+    "../packages/components/src/templates/Dashboard/Example/StatCard.vue",
+    "../packages/components/src/templates/Dashboard/Example/TaskList.vue"
   ]
 }
