@@ -11,9 +11,6 @@
   "dependencies": {
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
-    "vuetify": "^3.7.0",
-    "@mdi/font": "^7.4.47",
-    "zod": "^3.23.8",
     "@vue-dnd-kit/core": "workspace:*",
     "@vue-dnd-kit/components": "workspace:*"
   },
