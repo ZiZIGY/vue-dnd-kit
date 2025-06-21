@@ -136,7 +136,7 @@
     cursor: grab;
     border-radius: 4px;
     transition: all 0.2s ease;
-    opacity: 0;
+    touch-action: none;
   }
 
   .tree-drag-handle:hover {
@@ -148,10 +148,5 @@
   .tree-drag-handle:active {
     cursor: grabbing;
     transform: scale(0.95);
-  }
-
-  /* Показываем drag handle при наведении на родительский элемент */
-  .tree-item-content:hover .tree-drag-handle {
-    opacity: 1;
   }
 </style>

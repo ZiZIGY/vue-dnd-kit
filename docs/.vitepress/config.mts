@@ -61,7 +61,17 @@ export default defineConfig({
           ],
         },
         {
-          text: 'DevTools',
+          text: 'Components Package',
+          collapsed: false,
+          items: [
+            { text: 'Dashboard', link: '/guide/components/dashboard' },
+            { text: 'Kanban', link: '/guide/components/kanban' },
+            { text: 'Table', link: '/guide/components/table' },
+            { text: 'Tree', link: '/guide/components/tree' },
+          ],
+        },
+        {
+          text: 'DevTools Package',
           collapsed: false,
           items: [{ text: 'Usage', link: '/guide/devtools/usage' }],
         },
@@ -187,7 +197,7 @@ export default defineConfig({
         ),
         '@vue-dnd-kit/components': resolve(
           __dirname,
-          '../../packages/components/src/index.ts'
+          '../../packages/components'
         ),
         '@vue-dnd-kit/utils': resolve(
           __dirname,

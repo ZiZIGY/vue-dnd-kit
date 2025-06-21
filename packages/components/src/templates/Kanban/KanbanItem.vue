@@ -6,15 +6,11 @@
     items,
     itemIndex,
     groups = ['kanban-column-body'],
-    backendId,
-    columnId,
   } = defineProps<{
     item: T;
     items: T[];
     itemIndex: number;
     groups?: string[];
-    backendId: number;
-    columnId: number;
   }>();
 
   const { elementRef, handleDragStart, isDragging } = useDraggable({
@@ -22,8 +18,6 @@
     data: computed(() => ({
       source: items,
       index: itemIndex,
-      backendId,
-      columnId,
     })),
   });
 </script>
@@ -33,7 +27,7 @@
     class="vue-dnd-kanban-item"
     :class="{ 'vue-dnd-kanban-item-dragging': isDragging }"
     ref="elementRef"
-    @pointerdown.self="handleDragStart"
+    @pointerdown="handleDragStart"
   >
     <slot :item="item" />
   </li>
