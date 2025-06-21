@@ -37,9 +37,7 @@
       source: bodySource,
     })),
     events: {
-      onDrop: (store) => {
-        DnDOperations.applyTransfer(store);
-      },
+      onDrop: DnDOperations.applyTransfer,
     },
   });
 </script>
@@ -66,9 +64,6 @@
       :class="{ 'vue-dnd-kanban-column-body-overed': isBodyOvered }"
     >
       <slot :body-source="bodySource" />
-      {{
-        bodyGroups
-      }}
     </ul>
 
     <footer class="vue-dnd-kanban-column-footer">

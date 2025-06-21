@@ -2,7 +2,14 @@
 
 All notable changes to the Vue DnD Kit project are documented in this file.
 
-## 2025-05-19
+## v1.5.1 (2025-06-12)
+
+### 🐛 Bug Fixes
+
+- **core:** Fixed element detection issue within nested zones with incompatible groups
+  - Resolved a critical bug where elements from invalid nested zones (with incompatible groups) could be incorrectly detected
+  - Improved element search logic in the `validateCollisionResults` function to account for nested zones group compatibility
+  - Added additional validation to the `possibleElement` condition to prevent element detection in zones with incompatible groups
 
 ### Core Package
 

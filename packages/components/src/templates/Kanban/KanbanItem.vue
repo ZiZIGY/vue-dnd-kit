@@ -6,11 +6,15 @@
     items,
     itemIndex,
     groups = ['kanban-column-body'],
+    backendId,
+    columnId,
   } = defineProps<{
     item: T;
     items: T[];
     itemIndex: number;
     groups?: string[];
+    backendId: number;
+    columnId: number;
   }>();
 
   const { elementRef, handleDragStart, isDragging } = useDraggable({
@@ -18,6 +22,8 @@
     data: computed(() => ({
       source: items,
       index: itemIndex,
+      backendId,
+      columnId,
     })),
   });
 </script>
@@ -30,6 +36,5 @@
     @pointerdown.self="handleDragStart"
   >
     <slot :item="item" />
-    {{ groups }}
   </li>
 </template>
