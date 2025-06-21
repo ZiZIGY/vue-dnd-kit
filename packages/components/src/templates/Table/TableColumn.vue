@@ -31,3 +31,5 @@
     </slot>
   </th>
 </template>
+
+<style lang="css" src="./styles.css" />

@@ -1,81 +1,47 @@
 <script setup lang="ts">
   import { ref } from 'vue';
-  import {
-    Kanban,
-    KanbanColumn,
-    KanbanItem,
-  } from '@vue-dnd-kit/components/templates/Kanban';
-  import { useDnDStore } from '@vue-dnd-kit/core';
+  import { Tree } from '@vue-dnd-kit/components/templates/Tree';
 
-  interface ITask {
+  interface IUser {
     id: number;
-    title: string;
+    name: string;
+    children?: IUser[];
   }
 
-  interface IColumn {
-    id: number;
-    title: string;
-    tasks: ITask[];
-  }
-
-  const columns = ref<IColumn[]>([
+  const users = ref<IUser[]>([
     {
       id: 1,
-      title: 'To Do',
-      tasks: [
-        { id: 1, title: 'Research competitors' },
-        { id: 2, title: 'Define project scope' },
-      ],
-    },
-    {
-      id: 2,
-      title: 'In Progress',
-      tasks: [
-        { id: 3, title: 'Create wireframes' },
-        { id: 4, title: 'Design UI components' },
-      ],
-    },
-    {
-      id: 3,
-      title: 'Done',
-      tasks: [
-        { id: 5, title: 'Project kickoff meeting' },
-        { id: 6, title: 'Gather requirements' },
+      name: 'John',
+      children: [
+        {
+          id: 2,
+          name: 'Victoria',
+          children: [],
+        },
+        {
+          id: 3,
+          name: 'Abraham',
+          children: [
+            {
+              id: 4,
+              name: 'Eliz',
+            },
+          ],
+        },
       ],
     },
   ]);
-
-  const store = useDnDStore();
 </script>
 
 <template>
-  <Kanban
-    :columns="columns"
-    v-slot="{ columns }"
+  <Tree
+    :data="users"
+    item-key="id"
+    nesting-key="children"
+    v-slot="{ item }"
   >
-    <KanbanColumn
-      v-for="(column, index) in columns"
-      :key="column.id"
-      :column="column"
-      :columns="columns"
-      :column-index="index"
-      :body-source="column.tasks"
-    >
-      <template #header>
-        {{ column.title }}
-      </template>
-
-      <KanbanItem
-        v-for="(task, taskIndex) in column.tasks"
-        :key="task.id"
-        :item="task"
-        :items="column.tasks"
-        :item-index="taskIndex"
-      >
-        {{ task.title }}
-      </KanbanItem>
-    </KanbanColumn>
-  </Kanban>
+    {{ item.name }}
+  </Tree>
 </template>
 
 <style>
