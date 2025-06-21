@@ -20,6 +20,7 @@
         tabindex="0"
         aria-label="Drag handle"
         @pointerdown="handleDragStart"
+        style="touch-action: none"
       >
         ⋮⋮
       </div>

@@ -13,6 +13,7 @@
       ref="elementRef"
       :class="{ dragging: isDragging }"
       @pointerdown="handleDragStart"
+      style="touch-action: none"
     >
       Drag me!
     </div>

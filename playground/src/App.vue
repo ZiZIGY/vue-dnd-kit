@@ -1,117 +1,94 @@
 <script setup lang="ts">
-  import { type Component, ref } from 'vue';
-  import {
-    Dashboard,
-    DashboardItem,
-  } from '@vue-dnd-kit/components/templates/Dashboard';
+  import { ref } from 'vue';
 
-  import ChartCard from '@vue-dnd-kit/components/templates/Dashboard/Example/ChartCard.vue';
-  import StatCard from '@vue-dnd-kit/components/templates/Dashboard/Example/StatCard.vue';
-  import TaskList from '@vue-dnd-kit/components/templates/Dashboard/Example/TaskList.vue';
-  import NotificationCard from '@vue-dnd-kit/components/templates/Dashboard/Example/NotificationCard.vue';
+  const formData = ref({
+    name: '',
+    email: '',
+    message: '',
+  });
 
-  interface IDashboardItem {
-    id: number;
-    component: Component;
-  }
-
-  const dashboard = ref<IDashboardItem[]>([
-    { id: 1, component: ChartCard },
-    { id: 2, component: TaskList },
-    { id: 3, component: StatCard },
-    { id: 4, component: NotificationCard },
-  ]);
+  const rules = {
+    name: [(v: string) => !!v || 'Имя обязательно'],
+    email: [
+      (v: string) => !!v || 'Email обязателен',
+      (v: string) => /.+@.+\..+/.test(v) || 'Email должен быть валидным',
+    ],
+    message: [(v: string) => !!v || 'Сообщение обязательно'],
+  };
 </script>
 
 <template>
-  <Dashboard
-    :data="dashboard"
-    class="dashboard"
-  >
-    <TransitionGroup
-      name="dashboard"
-      appear
-    >
-      <DashboardItem
-        v-for="(item, index) in dashboard"
-        :key="item.id"
-        :index="index"
-        :source="dashboard"
-        :class="['dashboard-item', `item-${index + 1}`]"
-      >
-        <component :is="item.component" />
-      </DashboardItem>
-    </TransitionGroup>
-  </Dashboard>
+  <v-app>
+    <v-main>
+      <v-container class="py-8">
+        <v-row justify="center">
+          <v-col
+            cols="12"
+            md="8"
+            lg="6"
+          >
+            <v-card class="pa-6">
+              <v-card-title class="text-h4 mb-4">
+                FormBuilder Demo
+              </v-card-title>
+
+              <v-form @submit.prevent>
+                <v-text-field
+                  v-model="formData.name"
+                  label="Имя"
+                  :rules="rules.name"
+                  variant="outlined"
+                  class="mb-4"
+                />
+
+                <v-text-field
+                  v-model="formData.email"
+                  label="Email"
+                  type="email"
+                  :rules="rules.email"
+                  variant="outlined"
+                  class="mb-4"
+                />
+
+                <v-textarea
+                  v-model="formData.message"
+                  label="Сообщение"
+                  :rules="rules.message"
+                  variant="outlined"
+                  rows="4"
+                  class="mb-6"
+                />
+
+                <v-btn
+                  color="primary"
+                  size="large"
+                  block
+                  type="submit"
+                >
+                  Отправить
+                </v-btn>
+              </v-form>
+
+              <v-divider class="my-6" />
+
+              <v-card-text>
+                <h3>Данные формы:</h3>
+                <pre>{{ JSON.stringify(formData, null, 2) }}</pre>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
 
-<style>
-  .dashboard {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto auto;
-    gap: 20px;
-    padding: 20px;
-    min-height: 100vh;
-  }
-
-  .dashboard-item {
-    border-radius: 12px;
-    overflow: hidden;
-    background: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    height: 100%;
-  }
-
-  .item-1 {
-    grid-column: 1 / 3;
-    grid-row: 1 / 2;
-  }
-
-  .item-2 {
-    grid-column: 1 / 2;
-    grid-row: 2 / 3;
-  }
-
-  .item-3 {
-    grid-column: 2 / 3;
-    grid-row: 2 / 3;
-  }
-
-  .item-4 {
-    grid-column: 1 / 3;
-    grid-row: 3 / 4;
-  }
-
-  @keyframes slideIn {
-    from {
-      opacity: 0.8;
-      transform: scale(0.95) translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
-  }
-
-  .dashboard-item:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
-  }
-
-  .dashboard-move {
-    transition: all 0.3s ease;
-  }
-
-  .dashboard-enter-active,
-  .dashboard-leave-active {
-    transition: all 0.3s ease;
-  }
-
-  .dashboard-enter-from,
-  .dashboard-leave-to {
-    opacity: 0;
-    transform: translateY(30px);
+<style scoped>
+  pre {
+    background: #f5f5f5;
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    overflow-x: auto;
   }
 </style>
