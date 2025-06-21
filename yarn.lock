@@ -1241,6 +1241,20 @@
     "@volar/language-core" "1.11.1"
     path-browserify "^1.0.1"
 
+"@vue-dnd-kit/components@workspace:*":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@vue-dnd-kit/components/-/components-0.4.0.tgz#d363da929ac151c57c2c6bdf096eeeea139943fa"
+  integrity sha512-Qw9XPVnI0ru/AVjRoOnsV0ZylZck8F41t+6I9Px0WnhGyixcSa1FTsk8NGBkpdIUgCEagZjesd/FSAANpL5Yeg==
+  dependencies:
+    chalk "^5.4.1"
+    commander "^14.0.0"
+    fs-extra "^11.3.0"
+
+"@vue-dnd-kit/core@workspace:*":
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/@vue-dnd-kit/core/-/core-1.5.1.tgz#5087fa938403e087f316bd5d486386587dd16f01"
+  integrity sha512-2NSgUO7BqIurV3/nIPBcErJhMIB404LfmKDnBUxPQ5B9HCLwnff7xOd8+fwULR1C2kP6HZboAVIMcNxtAlajqA==
+
 "@vue/compiler-core@3.5.13":
   version "3.5.13"
   resolved "https://registry.yarnpkg.com/@vue/compiler-core/-/compiler-core-3.5.13.tgz#b0ae6c4347f60c03e849a05d34e5bf747c9bda05"
