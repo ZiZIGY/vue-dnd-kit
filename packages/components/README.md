@@ -5,17 +5,17 @@
 > ⚠️ **Warning**: This project is in active development (beta). The API may change between minor versions. Not recommended for production use until version 1.0.0.
 
 <p align="center">
-  <a href="https://zizigy.github.io/vue-dnd-hooks/">
-    <img src="https://raw.githubusercontent.com/ZiZiGY/vue-dnd-hooks/master/public/logo.svg" width="400" alt="Vue Drag & Drop Logo">
+  <a href="https://zizigy.github.io/vue-dnd-kit/">
+    <img src="https://raw.githubusercontent.com/ZiZiGY/vue-dnd-kit/master/public/logo.svg" width="400" alt="Vue Drag & Drop Logo">
   </a>
 </p>
 
 <p align="center">
-  Ready-to-use components for the Vue Drag & Drop library with Kanban, Table, and more.
+  Ready-to-use components for the Vue Drag & Drop library with Kanban, Table, Tree, and more.
 </p>
 
 <p align="center">
-  <a href="https://zizigy.github.io/vue-dnd-hooks/" target="_blank">
+  <a href="https://zizigy.github.io/vue-dnd-kit/" target="_blank">
     <img src="https://img.shields.io/badge/Documentation-Visit-blue?style=flat-square" alt="Documentation">
   </a>
 </p>
@@ -33,7 +33,7 @@ Roadmap:
 - [x] Basic drag & drop components
 - [x] Table component
 - [x] Kanban board
-- [ ] Tree
+- [x] Tree component
 - [ ] SortableList
 - [ ] FormBuilder
 - [ ] Dashboard
@@ -60,6 +60,14 @@ Roadmap:
   - Unopinionated styling
   - Flexible data handling
   - Customizable drag & drop logic
+
+- 🌳 **Tree Component**
+
+  - Hierarchical tree structure with unlimited nesting levels
+  - Expandable/collapsible tree nodes
+  - Visual indicators for items with and without children
+  - Drag and drop functionality for reordering and moving items
+  - Empty zone highlighting for drop targets
 
 - 🧩 **Base Components**
 
@@ -118,10 +126,13 @@ We recommend using [pnpm](https://pnpm.io/) to run the CLI:
 pnpm dlx @vue-dnd-kit/components list
 
 # Add a component to your project
-pnpm dlx @vue-dnd-kit/components add DraggableCard
+pnpm dlx @vue-dnd-kit/components add <component-name>
 
 # Add a component to a specific directory
-pnpm dlx @vue-dnd-kit/components add DroppableZone --dir src/shared/components
+pnpm dlx @vue-dnd-kit/components add <component-name> --dir src/shared/components
+
+# Debug information (for developers)
+pnpm dlx @vue-dnd-kit/components debug
 ```
 
 > **Note:** Some Node.js versions may have compatibility issues when using `npx`. We recommend using `pnpm dlx` or `yarn dlx` instead of `npx`.
@@ -129,173 +140,16 @@ pnpm dlx @vue-dnd-kit/components add DroppableZone --dir src/shared/components
 ### Available Commands
 
 - `list`: Show available components
-- `add <component>`: Add a component to your project
+- `add <component-name>`: Add a component to your project
   - Options:
     - `-d, --dir <directory>`: Directory to install the component (default: `src/components`)
 - `debug`: Debug information (for developers)
 
-## Basic Usage
+### Available Components
 
-### Table Component
-
-```vue
-<script setup>
-  import { ref } from 'vue';
-  import { Table, TableHead, TableBody } from '@vue-dnd-kit/components';
-  import { DnDOperations } from '@vue-dnd-kit/core';
-
-  const columns = ref([
-    { key: 'code', name: 'Code' },
-    { key: 'name', name: 'Name' },
-    { key: 'category', name: 'Category' },
-    { key: 'price', name: 'Price' },
-  ]);
-
-  const tableData = ref([
-    { code: '1001', name: 'Product 1', category: 'Category A', price: 99 },
-    { code: '1002', name: 'Product 2', category: 'Category B', price: 149 },
-    { code: '1003', name: 'Product 3', category: 'Category A', price: 249 },
-  ]);
-
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(value);
-  };
-</script>
-
-<template>
-  <Table>
-    <TableHead
-      :columns="columns"
-      @update:columns="columns = $event"
-      @drop="DnDOperations.applyTransfer"
-    />
-
-    <TableBody
-      :columns="columns"
-      :data="tableData"
-      @drop="DnDOperations.applyTransfer"
-    >
-      <template #cell="{ row, column, value }">
-        <div v-if="column.key === 'price'">
-          {{ formatCurrency(value) }}
-        </div>
-        <div v-else>
-          {{ value }}
-        </div>
-      </template>
-    </TableBody>
-  </Table>
-</template>
-```
-
-### Kanban Board
-
-```vue
-<script setup>
-  import { Kanban, KanbanColumn, KanbanItem } from '@vue-dnd-kit/components';
-  import { DnDOperations } from '@vue-dnd-kit/core';
-  import { ref } from 'vue';
-
-  const data = ref([
-    {
-      title: 'To Do',
-      items: ['Task 1', 'Task 2', 'Task 3', 'Task 4', 'Task 5'],
-    },
-    {
-      title: 'In Progress',
-      items: [],
-    },
-    {
-      title: 'Done',
-      items: [],
-    },
-  ]);
-</script>
-
-<template>
-  <div class="kanban-container">
-    <Kanban @drop="DnDOperations.applyTransfer">
-      <KanbanColumn
-        v-for="(column, index) in data"
-        :key="`kanban-column-${column.title}`"
-        :title="column.title"
-        :index="index"
-        :source="data"
-        @drop="DnDOperations.applyTransfer"
-      >
-        <template #header>
-          <h2 class="column-header">{{ column.title }}</h2>
-        </template>
-
-        <KanbanItem
-          v-for="(item, index) in column.items"
-          :key="item"
-          :index="index"
-          :source="column.items"
-          :prevent-root-drag="false"
-        >
-          {{ item }}
-        </KanbanItem>
-      </KanbanColumn>
-    </Kanban>
-  </div>
-</template>
-
-<style>
-  .kanban-container {
-    display: flex;
-    width: 100%;
-    padding: 20px;
-  }
-
-  .column-header {
-    font-weight: bold;
-    margin-bottom: 12px;
-  }
-</style>
-```
-
-### Custom Implementation
-
-You can easily implement your own drag & drop logic:
-
-```vue
-<script setup>
-  import { Draggable } from '@vue-dnd-kit/components';
-  import { ref, computed } from 'vue';
-
-  const items = ref(['Item 1', 'Item 2', 'Item 3']);
-
-  const handleDrop = (store) => {
-    const { source, sourceIndex, targetIndex } = store;
-
-    // Implement your own reordering logic
-    if (source && sourceIndex !== undefined && targetIndex !== undefined) {
-      const newItems = [...items.value];
-      const [removed] = newItems.splice(sourceIndex, 1);
-      newItems.splice(targetIndex, 0, removed);
-      items.value = newItems;
-    }
-  };
-</script>
-
-<template>
-  <div class="custom-list">
-    <Draggable
-      v-for="(item, index) in items"
-      :key="item"
-      :data="computed(() => ({ index, source: items }))"
-      @end="handleDrop"
-      class="custom-item"
-    >
-      {{ item }}
-    </Draggable>
-  </div>
-</template>
-```
+- `Table` - Draggable table with sortable rows and columns
+- `Kanban` - Kanban board with draggable columns and items
+- `Tree` - Hierarchical tree structure with drag and drop functionality
 
 ## 📄 License
 
