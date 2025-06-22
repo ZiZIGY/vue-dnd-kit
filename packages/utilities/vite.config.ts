@@ -21,7 +21,7 @@ export default defineConfig({
       copyDtsFiles: true,
       insertTypesEntry: true,
       cleanVueFileName: true,
-    }),
+    }) as any,
   ],
   build: {
     lib: {

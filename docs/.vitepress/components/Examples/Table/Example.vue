@@ -40,13 +40,15 @@
       <template #caption>Employee Data</template>
 
       <template #default="props">
-        <TableRow
-          v-for="(row, index) in rows"
-          :key="row.id"
-          :row="row"
-          :row-index="index"
-          v-bind="props"
-        />
+        <TransitionGroup name="data-table">
+          <TableRow
+            v-for="(row, index) in rows"
+            :key="row.id"
+            :row="row"
+            :row-index="index"
+            v-bind="props"
+          />
+        </TransitionGroup>
       </template>
 
       <template #footer>
@@ -65,6 +67,20 @@
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  .data-table-move {
+    transition: all 0.3s ease;
+  }
+
+  .data-table-enter-active,
+  .data-table-leave-active {
+    transition: all 0.3s ease;
+  }
+
+  .data-table-enter-from,
+  .data-table-leave-to {
+    opacity: 0;
+    transform: translateY(30px);
   }
 
   .data-table th,

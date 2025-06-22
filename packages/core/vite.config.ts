@@ -13,7 +13,7 @@ export default defineConfig({
       insertTypesEntry: true,
       // Оставляем copyDtsFiles: true для копирования .d.ts файлов
       copyDtsFiles: true,
-    }),
+    }) as any,
   ],
   build: {
     lib: {
