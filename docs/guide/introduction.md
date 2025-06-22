@@ -40,7 +40,7 @@ The foundation package providing essential drag and drop functionality through c
 
 ### @vue-dnd-kit/components
 
-Ready-to-use components for common drag and drop patterns such as sortable lists, drag overlays, and more.
+A CLI tool that generates drag and drop components directly in your project, similar to shadcn. Instead of importing pre-built components, it scaffolds the code into your codebase, giving you full ownership and customization ability.
 
 ### @vue-dnd-kit/utils
 

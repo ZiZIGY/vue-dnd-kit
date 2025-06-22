@@ -63,18 +63,33 @@ pnpm add @vue-dnd-kit/devtools
 
 #### Components Package
 
-Ready-to-use components for common drag and drop patterns:
+The Components package is a CLI tool for generating and scaffolding drag and drop components directly into your project:
 
 ```bash
-# npm
-npm install @vue-dnd-kit/components
+# Generate components using npx
+npx @vue-dnd-kit/components add <component-name>
 
-# yarn
-yarn add @vue-dnd-kit/components
+# Or with pnpm
+pnpm dlx @vue-dnd-kit/components add <component-name>
 
-# pnpm
-pnpm add @vue-dnd-kit/components
+# Or with yarn
+yarn dlx @vue-dnd-kit/components add <component-name>
 ```
+
+Available commands:
+
+```bash
+# List available components
+npx @vue-dnd-kit/components list
+
+# Add a component to your project
+npx @vue-dnd-kit/components add <component-name>
+
+# Add a component to a specific directory
+npx @vue-dnd-kit/components add <component-name> --dir src/components
+```
+
+Unlike traditional component libraries, @vue-dnd-kit/components doesn't need to be installed as a dependency. It generates code directly in your project, giving you full ownership and customization ability.
 
 #### Utilities Package
 
@@ -97,13 +112,13 @@ If you want to install all packages at once:
 
 ```bash
 # npm
-npm install @vueuse/core @vue-dnd-kit/core @vue-dnd-kit/components @vue-dnd-kit/utilities @vue-dnd-kit/devtools
+npm install @vueuse/core @vue-dnd-kit/core @vue-dnd-kit/utilities @vue-dnd-kit/devtools
 
 # yarn
-yarn add @vueuse/core @vue-dnd-kit/core @vue-dnd-kit/components @vue-dnd-kit/utilities @vue-dnd-kit/devtools
+yarn add @vueuse/core @vue-dnd-kit/core @vue-dnd-kit/utilities @vue-dnd-kit/devtools
 
 # pnpm
-pnpm add @vueuse/core @vue-dnd-kit/core @vue-dnd-kit/components @vue-dnd-kit/utilities @vue-dnd-kit/devtools
+pnpm add @vueuse/core @vue-dnd-kit/core @vue-dnd-kit/utilities @vue-dnd-kit/devtools
 ```
 
 ## Setting Up in Your Project
