@@ -1,9 +1,11 @@
 <script setup lang="ts">
+  import { ref } from 'vue';
   import {
     Sortable,
     SortableItem,
-  } from '@vue-dnd-kit/components/templates/Sortable';
-  import { ref } from 'vue';
+  } from '@vue-dnd-kit/components/src/templates/Sortable';
+
+  import ExampleContainer from '../../ExampleContainer.vue';
 
   interface Task {
     id: number;
@@ -28,23 +30,16 @@
       ] as any,
     });
   };
-
-  const removeTask = (id: number) => {
-    const index = tasks.value.findIndex((t) => t.id === id);
-    if (index !== -1) {
-      tasks.value.splice(index, 1);
-    }
-  };
 </script>
 
 <template>
-  <div class="sortable-container">
-    <h2>Animated Task List</h2>
+  <ExampleContainer>
     <button
       @click="addTask"
       class="add-task-btn"
-      >Add Task</button
     >
+      Add Task
+    </button>
 
     <Sortable :data="tasks">
       <TransitionGroup
@@ -60,20 +55,15 @@
           :status="task.status"
         >
           <div class="task-item">
-            <h3>{{ task.title }}</h3>
+            {{ task.title }}
             <div class="task-actions">
               <span class="task-status">{{ task.status }}</span>
-              <button
-                @click.stop="removeTask(task.id)"
-                class="remove-btn"
-                >×</button
-              >
             </div>
           </div>
         </SortableItem>
       </TransitionGroup>
     </Sortable>
-  </div>
+  </ExampleContainer>
 </template>
 
 <style>
@@ -117,27 +107,6 @@
     font-size: 0.875rem;
     padding: 0.25rem 0.5rem;
     border-radius: 9999px;
-    background-color: #f3f4f6;
-  }
-
-  .remove-btn {
-    background-color: #ef4444;
-    color: white;
-    border: none;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    cursor: pointer;
-    padding: 0;
-    line-height: 1;
-  }
-
-  .remove-btn:hover {
-    background-color: #dc2626;
   }
 
   /* TransitionGroup animations */

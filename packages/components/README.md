@@ -34,11 +34,10 @@ Roadmap:
 - [x] Table component
 - [x] Kanban board
 - [x] Tree component
-- [ ] SortableList
+- [x] SortableList
 - [ ] FormBuilder
-- [ ] Dashboard
-- [ ] Tabs
-- [ ] FileExplorer
+- [ ] HTMLBuilder
+- [x] Dashboard
 - [ ] Grid
 - [ ] Tests
 - [ ] Stable API (version 1.0.0)

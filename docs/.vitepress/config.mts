@@ -64,7 +64,9 @@ export default defineConfig({
           text: 'Components Package',
           collapsed: false,
           items: [
+            { text: 'Sortable', link: '/guide/components/sortable' },
             { text: 'Dashboard', link: '/guide/components/dashboard' },
+
             { text: 'Kanban', link: '/guide/components/kanban' },
             { text: 'Table', link: '/guide/components/table' },
             { text: 'Tree', link: '/guide/components/tree' },

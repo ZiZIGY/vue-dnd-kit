@@ -1,0 +1,178 @@
+/* Sortable Component Styles */
+.vue-dnd-sortable {
+  list-style: none;
+  padding: 1rem;
+  margin: 0;
+  min-height: 100px;
+
+  border-radius: 0.5rem;
+
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.vue-dnd-sortable-item {
+  list-style: none;
+  margin-bottom: 0.75rem;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  cursor: grab;
+  user-select: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease;
+  position: relative;
+}
+
+.vue-dnd-sortable-item:last-child {
+  margin-bottom: 0;
+}
+
+.vue-dnd-sortable-item:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.vue-dnd-sortable-item:active {
+  cursor: grabbing;
+}
+
+.vue-dnd-sortable-item-dragging {
+  opacity: 0.5;
+  box-shadow: none !important;
+  border: 1px dashed #e5e7eb !important;
+}
+
+.vue-dnd-sortable-item-ghost {
+  opacity: 0.8;
+  background-color: #f3f4f6;
+  border: 1px dashed #d1d5db;
+  box-shadow: none;
+}
+
+/* Animation for item being dropped */
+@keyframes dropIn {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  }
+}
+
+.vue-dnd-sortable-item-dropped {
+  animation: dropIn 0.3s ease forwards;
+}
+
+/* Different status styles */
+.vue-dnd-sortable-item-success {
+  border-left: 4px solid #10b981;
+}
+
+.vue-dnd-sortable-item-warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.vue-dnd-sortable-item-error {
+  border-left: 4px solid #ef4444;
+}
+
+.vue-dnd-sortable-item-info {
+  border-left: 4px solid #3b82f6;
+}
+
+/* Drop indicator */
+.vue-dnd-sortable-drop-indicator {
+  height: 2px;
+  margin: 0.5rem 0;
+  background-color: #3b82f6;
+  border-radius: 1px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+/* TransitionGroup Animation Classes */
+.vue-dnd-sortable-move {
+  transition: transform 0.5s ease;
+}
+
+.vue-dnd-sortable-enter-active,
+.vue-dnd-sortable-leave-active {
+  transition: all 0.5s ease;
+}
+
+.vue-dnd-sortable-enter-from {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+.vue-dnd-sortable-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+/* Flip animation for items */
+.vue-dnd-sortable-flip-list-move {
+  transition: transform 0.5s;
+}
+
+.vue-dnd-sortable-flip-list-enter-active {
+  transition: all 0.5s ease-out;
+}
+
+.vue-dnd-sortable-flip-list-leave-active {
+  transition: all 0.5s ease-in;
+  position: absolute;
+}
+
+.vue-dnd-sortable-flip-list-enter-from,
+.vue-dnd-sortable-flip-list-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+/* Fade animation for items */
+.vue-dnd-sortable-fade-move,
+.vue-dnd-sortable-fade-enter-active,
+.vue-dnd-sortable-fade-leave-active {
+  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+}
+
+.vue-dnd-sortable-fade-enter-from,
+.vue-dnd-sortable-fade-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.vue-dnd-sortable-fade-leave-active {
+  position: absolute;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .vue-dnd-sortable {
+    padding: 0.75rem;
+  }
+
+  .vue-dnd-sortable-item {
+    padding: 0.75rem;
+  }
+}
