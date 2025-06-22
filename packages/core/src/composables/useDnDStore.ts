@@ -97,7 +97,7 @@ export const useDnDStore = createGlobalState(() => {
     },
   };
 
-  const { w, s, a, d, ctrl, shift, alt, meta } = useMagicKeys();
+  const { KeyW, KeyS, KeyA, KeyD, ctrl, shift, alt, meta } = useMagicKeys();
 
   const hovered = {
     zone: shallowRef<HTMLElement | Element | null>(null),
@@ -115,10 +115,10 @@ export const useDnDStore = createGlobalState(() => {
     visibleElements,
     pointerPosition,
     keyboard: {
-      w,
-      s,
-      a,
-      d,
+      w: KeyW,
+      s: KeyS,
+      a: KeyA,
+      d: KeyD,
       ctrl,
       shift,
       alt,
