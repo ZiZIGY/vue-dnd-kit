@@ -80,14 +80,31 @@ export const useSensor = (
     const elements = Array.isArray(htmlElements)
       ? htmlElements
       : [htmlElements];
-
     const activeDragNodes = Array.from(store.draggingElements.value.keys());
+
+    const disabledZones = Array.from(store.zonesMap.value.entries()).flatMap(
+      ([element, zone]) => (zone.disabled ? [element] : [])
+    );
+
+    const disabledElements = Array.from(
+      store.elementsMap.value.entries()
+    ).flatMap(([element, data]) => (data.disabled ? [element] : []));
 
     const filteredZoneElement = elements.find((htmlElement) => {
       if (!store.visibleZones.value.has(htmlElement)) return false;
 
       const zone = store.zonesMap.value.get(htmlElement);
       if (!zone) return false;
+
+      if (zone.disabled) return false;
+
+      const isInsideDisabledZone = disabledZones.some(
+        (disabledZone) =>
+          htmlElement === disabledZone ||
+          isDescendant(htmlElement as HTMLElement, disabledZone as HTMLElement)
+      );
+
+      if (isInsideDisabledZone) return false;
 
       if (
         activeDragNodes.some(
@@ -119,6 +136,26 @@ export const useSensor = (
     const filteredElements = elements.filter((htmlElement) => {
       if (!store.visibleElements.value.has(htmlElement)) return false;
       if (!store.elementsMap.value.has(htmlElement)) return false;
+
+      const element = store.elementsMap.value.get(htmlElement);
+      if (element?.disabled) return false;
+
+      const isInsideDisabledZone = disabledZones.some(
+        (disabledZone) =>
+          htmlElement === disabledZone ||
+          isDescendant(htmlElement as HTMLElement, disabledZone as HTMLElement)
+      );
+
+      const isInsideDisabledElement = disabledElements.some(
+        (disabledElement) =>
+          htmlElement === disabledElement ||
+          isDescendant(
+            htmlElement as HTMLElement,
+            disabledElement as HTMLElement
+          )
+      );
+
+      if (isInsideDisabledZone || isInsideDisabledElement) return false;
 
       const isGroupsCompatible = !Array.from(
         store.draggingElements.value.values()

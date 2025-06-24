@@ -1,35 +1,92 @@
 <script setup lang="ts">
-  import { useDnDStore, useDraggable, useDroppable } from '@vue-dnd-kit/core';
+  import {
+    Sortable,
+    SortableItem,
+  } from '@vue-dnd-kit/components/templates/Sortable';
+
   import { ref } from 'vue';
 
-  const disabled = ref(false);
+  interface Task {
+    id: number;
+    title: string;
+    status: 'success' | 'warning' | 'error' | 'info';
+    disabled: boolean;
+  }
 
-  const { elementRef, handleDragStart } = useDraggable({});
+  const tasks = ref<Task[]>([
+    { id: 1, title: 'Complete project', status: 'success', disabled: false },
+    { id: 2, title: 'Client meeting', status: 'warning', disabled: false },
+    { id: 3, title: 'Update documentation', status: 'info', disabled: false },
+    { id: 4, title: 'Fix bugs', status: 'error', disabled: false },
+  ]);
 
-  const { elementRef: zoneRef } = useDroppable({
-    disabled,
-  });
+  const addTask = () => {
+    const newId = Math.max(0, ...tasks.value.map((t) => t.id)) + 1;
+    tasks.value.push({
+      id: newId,
+      title: `New task ${newId}`,
+      status: ['success', 'warning', 'error', 'info'][
+        Math.floor(Math.random() * 4)
+      ] as any,
+      disabled: false,
+    });
+  };
 
-  const { elementRef: zoneRef2 } = useDroppable();
-
-  const store = useDnDStore();
+  const removeTask = (id: number) => {
+    const index = tasks.value.findIndex((t) => t.id === id);
+    if (index !== -1) {
+      tasks.value.splice(index, 1);
+    }
+  };
 </script>
 
 <template>
-  <div
-    ref="elementRef"
-    @pointerdown="handleDragStart"
-  >
-    drag me
+  <div class="sortable-container">
+    <button @click="disabled = !disabled">change</button>
+
+    <button
+      @click="addTask"
+      class="add-task-btn"
+      >Add Task</button
+    >
+
+    <Sortable
+      :data="tasks"
+      :disabled="disabled"
+    >
+      <TransitionGroup
+        name="task-list"
+        tag="div"
+        class="task-transition-group"
+      >
+        <SortableItem
+          v-for="(task, index) in tasks"
+          :key="task.id"
+          :source="tasks"
+          :index="index"
+          :status="task.status"
+          :disabled="task.disabled"
+        >
+          <div class="task-item">
+            <h3>{{ task.title }}</h3>
+            <div class="task-actions">
+              <span class="task-status">{{ task.status }}</span>
+              <button
+                @click.stop="removeTask(task.id)"
+                class="remove-btn"
+                >×</button
+              >
+              <button @click="task.disabled = !task.disabled">
+                {{ task.disabled }}
+              </button>
+            </div>
+          </div>
+        </SortableItem>
+      </TransitionGroup>
+    </Sortable>
   </div>
 
-  <button @click="disabled = !disabled">change</button>
-  <div ref="zoneRef">
-    hello im zone
-    <div ref="zoneRef2"> hello im nested zone 2 </div>
-  </div>
-
-  <pre>{{ store }}</pre>
+  <pre>{{ tasks }}</pre>
 </template>
 
 <style>
@@ -40,7 +97,6 @@
     z-index: 1000;
     height: 100vh;
     overflow: auto;
-    padding: 0;
   }
   .sortable-container {
     max-width: 500px;
