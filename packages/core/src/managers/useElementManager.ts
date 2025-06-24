@@ -22,14 +22,17 @@ export const useElementManager = (options?: IUseDragOptions) => {
   });
 
   const id = shallowRef(options?.id || useId());
+  const disabled = shallowRef<boolean>((options?.disabled as boolean) ?? false);
 
   const isDragging = computed<boolean>(() => {
+    if (disabled.value) return false;
     if (!elementRef.value) return false;
     if (!elementsMap.value.has(elementRef.value)) return false;
     return draggingElements.value.has(elementRef.value);
   });
 
   const isAllowed = computed<boolean>(() => {
+    if (disabled.value) return false;
     if (!elementRef.value || !isDragStarted.value) return false;
     if (!visibleElements.value.has(elementRef.value)) return false;
 
@@ -47,6 +50,7 @@ export const useElementManager = (options?: IUseDragOptions) => {
   });
 
   const isLazyAllowed = computed<boolean>(() => {
+    if (disabled.value) return false;
     if (!elementRef.value || !isDragStarted.value) return false;
     if (!visibleElements.value.has(elementRef.value)) return false;
     if (hovered.element.value !== elementRef.value) return false;
@@ -69,12 +73,13 @@ export const useElementManager = (options?: IUseDragOptions) => {
 
     elementsMap.value.set(elementRef.value, {
       node: elementRef.value,
-      groups: options?.groups ?? [],
+      groups: (options?.groups as string[]) ?? [],
       layer: options?.layer ?? null,
       defaultLayer: options?.layer ?? null,
       events: options?.events ?? {},
       data: options?.data ?? null,
       id: id.value,
+      disabled: (disabled as unknown as boolean) ?? false,
     });
 
     handleDragElementIntersection('add', elementRef.value);

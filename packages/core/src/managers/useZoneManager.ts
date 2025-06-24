@@ -56,6 +56,7 @@ export const useZoneManager = (options?: IUseDropOptions) => {
       groups: options?.groups ?? [],
       events: options?.events ?? {},
       data: options?.data ?? undefined,
+      disabled: (options?.disabled as boolean) ?? false,
     });
 
     elementRef.value.setAttribute('data-dnd-droppable', 'true');

@@ -30,7 +30,7 @@ export const useEventManager = createGlobalState(() => {
   let currentScrollHandler: ((event: WheelEvent) => void) | null = null;
   let currentKeyHandler: ((event: KeyboardEvent) => void) | null = null;
 
-  const { activeContainer, isPending } = useDnDStore();
+  const { activeContainer, isPending, elementsMap } = useDnDStore();
 
   const disableInteractions = () => {
     const body = document.body;
@@ -91,7 +91,12 @@ export const useEventManager = createGlobalState(() => {
     elementRef: Ref<HTMLElement | null>,
     options?: IUseDragOptions
   ) => {
+    if (!elementRef.value) return;
     if (isPending.value) return;
+
+    const element = elementsMap.value.get(elementRef.value);
+    if (element?.disabled) return;
+
     clearAllListeners();
 
     (event.target as HTMLElement).blur();

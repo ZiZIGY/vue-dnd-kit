@@ -35,6 +35,7 @@ export interface IDragElement {
   groups: string[];
   layer: Component | null;
   defaultLayer: Component | null;
+  disabled: boolean;
   data: {
     source?: any[];
     index?: number;
@@ -63,6 +64,7 @@ export interface IDraggingElement extends IDragElement {
 export interface IDropZone {
   node: HTMLElement | Element | null;
   groups: string[];
+  disabled: boolean;
   data?: {
     source?: any[];
     [key: string]: any;
@@ -84,6 +86,7 @@ export interface IPoint {
 
 export interface IUseDropOptions {
   groups?: string[];
+  disabled?: boolean | Ref<boolean>;
   events?: {
     onDrop?: (
       store: IDnDStore,
@@ -99,7 +102,8 @@ export interface IUseDropOptions {
 }
 export interface IUseDragOptions extends IUseSensorOptions {
   id?: string | number;
-  groups?: string[];
+  groups?: string[] | Ref<string[]>;
+  disabled?: boolean | Ref<boolean>;
   events?: {
     onEnd?: (store: IDnDStore, payload: IDnDPayload) => void;
     onStart?: (store: IDnDStore, payload: IDnDPayload) => void;

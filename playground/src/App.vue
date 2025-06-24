@@ -1,82 +1,47 @@
 <script setup lang="ts">
-  import {
-    Sortable,
-    SortableItem,
-  } from '@vue-dnd-kit/components/templates/Sortable';
+  import { useDnDStore, useDraggable, useDroppable } from '@vue-dnd-kit/core';
   import { ref } from 'vue';
 
-  interface Task {
-    id: number;
-    title: string;
-    status: 'success' | 'warning' | 'error' | 'info';
-  }
+  const disabled = ref(false);
 
-  const tasks = ref<Task[]>([
-    { id: 1, title: 'Complete project', status: 'success' },
-    { id: 2, title: 'Client meeting', status: 'warning' },
-    { id: 3, title: 'Update documentation', status: 'info' },
-    { id: 4, title: 'Fix bugs', status: 'error' },
-  ]);
+  const { elementRef, handleDragStart } = useDraggable({});
 
-  const addTask = () => {
-    const newId = Math.max(0, ...tasks.value.map((t) => t.id)) + 1;
-    tasks.value.push({
-      id: newId,
-      title: `New task ${newId}`,
-      status: ['success', 'warning', 'error', 'info'][
-        Math.floor(Math.random() * 4)
-      ] as any,
-    });
-  };
+  const { elementRef: zoneRef } = useDroppable({
+    disabled,
+  });
 
-  const removeTask = (id: number) => {
-    const index = tasks.value.findIndex((t) => t.id === id);
-    if (index !== -1) {
-      tasks.value.splice(index, 1);
-    }
-  };
+  const { elementRef: zoneRef2 } = useDroppable();
+
+  const store = useDnDStore();
 </script>
 
 <template>
-  <div class="sortable-container">
-    <h2>Animated Task List</h2>
-    <button
-      @click="addTask"
-      class="add-task-btn"
-      >Add Task</button
-    >
-
-    <Sortable :data="tasks">
-      <TransitionGroup
-        name="task-list"
-        tag="div"
-        class="task-transition-group"
-      >
-        <SortableItem
-          v-for="(task, index) in tasks"
-          :key="task.id"
-          :source="tasks"
-          :index="index"
-          :status="task.status"
-        >
-          <div class="task-item">
-            <h3>{{ task.title }}</h3>
-            <div class="task-actions">
-              <span class="task-status">{{ task.status }}</span>
-              <button
-                @click.stop="removeTask(task.id)"
-                class="remove-btn"
-                >×</button
-              >
-            </div>
-          </div>
-        </SortableItem>
-      </TransitionGroup>
-    </Sortable>
+  <div
+    ref="elementRef"
+    @pointerdown="handleDragStart"
+  >
+    drag me
   </div>
+
+  <button @click="disabled = !disabled">change</button>
+  <div ref="zoneRef">
+    hello im zone
+    <div ref="zoneRef2"> hello im nested zone 2 </div>
+  </div>
+
+  <pre>{{ store }}</pre>
 </template>
 
 <style>
+  pre {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+    height: 100vh;
+    overflow: auto;
+    padding: 0;
+  }
   .sortable-container {
     max-width: 500px;
     margin: 0 auto;
