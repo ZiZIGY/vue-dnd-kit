@@ -12,6 +12,7 @@ import { useDnDStore } from './useDnDStore';
 import { useKeyboard } from './useKeyboard';
 import { usePointer } from './usePointer';
 import { useThrottleFn } from '@vueuse/core';
+import { getBoundingBox, getCenter, getDistance } from '../utils/geometry';
 
 export const useSensor = (
   elementRef: Ref<HTMLElement | null>,
@@ -201,8 +202,8 @@ export const useSensor = (
     const previousElement = store.hovered.element.value;
     const previousZone = store.hovered.zone.value;
 
-    const newElement = results.element;
-    const newZone = results.zone;
+    let newElement = results.element;
+    let newZone = results.zone;
 
     store.hovered.element.value = newElement;
     store.hovered.zone.value = newZone;

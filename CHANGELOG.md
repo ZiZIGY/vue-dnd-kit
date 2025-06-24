@@ -2,6 +2,12 @@
 
 All notable changes to the Vue DnD Kit project are documented in this file.
 
+## v1.6.0 (2025-06-24)
+
+### Core Package
+
+- Added disabled for draggable and droppable
+
 ## v1.5.1 (2025-06-12)
 
 ### 🐛 Bug Fixes

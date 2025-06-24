@@ -1,0 +1,831 @@
+/* 
+ * HTML Builder - Modern UI Styles
+ * Стильный и современный интерфейс для HTML Builder
+ */
+
+:root {
+  --primary-color: #6366f1;
+  --primary-hover: #818cf8;
+  --secondary-color: #e0e7ff;
+  --accent-color: #4f46e5;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --light-bg: #f9fafb;
+  --dark-bg: #1f2937;
+  --card-bg: #ffffff;
+  --border-color: #e5e7eb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-disabled: #9ca3af;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --radius-sm: 0.125rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  /* Настройки точечного фона */
+  --dot-color: rgba(99, 102, 241, 0.2);
+  --dot-size: 1px;
+  --dot-spacing: 20px;
+  --animation-speed: 20s;
+  --animation-direction: top-right;
+
+  /* Цвета для дерева элементов */
+  --tree-hover-bg: rgba(99, 102, 241, 0.15);
+  --tree-active-bg: rgba(99, 102, 241, 0.2);
+  --tree-hover-dark-bg: rgba(129, 140, 248, 0.15);
+  --tree-active-dark-bg: rgba(129, 140, 248, 0.2);
+  --tree-line-color: var(--primary-color);
+  --tree-line-opacity: 0.3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --light-bg: #111827;
+    --dark-bg: #030712;
+    --card-bg: #1f2937;
+    --border-color: #374151;
+    --text-primary: #f9fafb;
+    --text-secondary: #e5e7eb;
+    --text-disabled: #6b7280;
+    --dot-color: rgba(99, 102, 241, 0.3);
+  }
+}
+
+/* Анимации для фона с точками */
+@keyframes move-to-top-right {
+  0% {
+    background-position: 0 100%;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+@keyframes move-to-top-left {
+  0% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+@keyframes move-to-bottom-right {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+
+@keyframes move-to-bottom-left {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 100%;
+  }
+}
+
+@keyframes move-to-top {
+  0% {
+    background-position: 0 100%;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+@keyframes move-to-bottom {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 100%;
+  }
+}
+
+@keyframes move-to-right {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+@keyframes move-to-left {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+/* Основной контейнер */
+.html-builder {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  height: 100vh;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background-color: var(--light-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* === ОБЛАСТЬ РЕДАКТОРА === */
+.html-builder-area-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border-radius: var(--radius-lg);
+  background-color: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  height: 100%;
+}
+
+.html-builder-area-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: var(--light-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.html-builder-area-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.html-builder-area-content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  position: relative;
+  background-color: var(--card-bg);
+  position: relative;
+}
+
+/* Точечный фон для области редактирования */
+.html-builder-area-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background-image: radial-gradient(
+    var(--dot-color) var(--dot-size),
+    transparent calc(var(--dot-size) + 0.5px)
+  );
+  background-size: var(--dot-spacing) var(--dot-spacing);
+  /* Используем направление по умолчанию - top-right */
+  animation: move-to-top-right var(--animation-speed) linear infinite;
+  z-index: 0;
+}
+
+/* Классы для изменения направления */
+.direction-top-right .html-builder-area-content::before {
+  animation-name: move-to-top-right;
+}
+
+.direction-top-left .html-builder-area-content::before {
+  animation-name: move-to-top-left;
+}
+
+.direction-bottom-right .html-builder-area-content::before {
+  animation-name: move-to-bottom-right;
+}
+
+.direction-bottom-left .html-builder-area-content::before {
+  animation-name: move-to-bottom-left;
+}
+
+.direction-top .html-builder-area-content::before {
+  animation-name: move-to-top;
+}
+
+.direction-bottom .html-builder-area-content::before {
+  animation-name: move-to-bottom;
+}
+
+.direction-right .html-builder-area-content::before {
+  animation-name: move-to-right;
+}
+
+.direction-left .html-builder-area-content::before {
+  animation-name: move-to-left;
+}
+
+.html-builder-area-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 200px;
+  position: absolute;
+
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.html-builder-area-placeholder {
+  padding: 20px;
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  text-align: center;
+  backdrop-filter: blur(5px);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* === ДЕРЕВО КОМПОНЕНТОВ === */
+.html-builder-tree-container {
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  border-radius: var(--radius-lg);
+  background-color: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  height: 100%;
+}
+
+.html-builder-tree-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: var(--light-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.html-builder-tree-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.html-builder-tree-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+  background-color: var(--card-bg);
+}
+
+.html-builder-tree-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 100px;
+}
+
+.html-builder-tree-empty-text {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+/* Основные стили для элементов дерева */
+.tree-item {
+  position: relative;
+  font-size: 0.875rem;
+}
+
+.tree-item-content {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  user-select: none;
+  transition: background-color 0.15s ease;
+}
+
+.tree-item-content:hover {
+  background-color: var(--tree-hover-bg);
+}
+
+.tree-item.active > .tree-item-content {
+  background-color: var(--tree-active-bg);
+  border-left: 2px solid var(--primary-color);
+}
+
+.tree-toggle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 10px;
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.tree-toggle-button:hover {
+  color: var(--primary-color);
+}
+
+.tree-item-spacer {
+  width: 16px;
+}
+
+.tree-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  color: var(--primary-color);
+  font-size: 14px;
+}
+
+.tree-item-label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  cursor: move;
+}
+
+.tree-item-tag {
+  font-weight: 500;
+}
+
+.tree-item-id {
+  margin-left: 4px;
+  font-size: 0.675rem;
+  opacity: 0.5;
+  color: var(--text-secondary);
+}
+
+.tree-item-actions {
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.tree-item-content:hover .tree-item-actions {
+  opacity: 1;
+}
+
+.tree-action-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.tree-action-button:hover {
+  opacity: 1;
+}
+
+/* Улучшенные стили для вложенности */
+.tree-children-container {
+  position: relative;
+  padding-left: 24px;
+  margin-top: 2px;
+}
+
+.tree-children-line {
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 12px;
+  width: 1px;
+  background-color: var(--tree-line-color);
+  opacity: var(--tree-line-opacity);
+}
+
+.tree-children-content {
+  position: relative;
+}
+
+/* Состояние невидимого элемента */
+.tree-item:has(.visibility-toggle:not([title='Hide element']))
+  > .tree-item-content {
+  opacity: 0.5;
+}
+
+/* Темная тема для дерева */
+@media (prefers-color-scheme: dark) {
+  .tree-item-content:hover {
+    background-color: var(--tree-hover-dark-bg);
+  }
+
+  .tree-item.active > .tree-item-content {
+    background-color: var(--tree-active-dark-bg);
+  }
+}
+
+.tree-item-root {
+  font-weight: 500;
+}
+
+.tree-item-indent {
+  margin-left: 20px;
+  position: relative;
+}
+
+.tree-item-indent:before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  width: 8px;
+  height: 1px;
+  background-color: var(--border-color);
+}
+
+/* === ПАНЕЛЬ КОМПОНЕНТОВ === */
+.html-builder-components-container {
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  border-radius: var(--radius-lg);
+  background-color: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  height: 100%;
+}
+
+.html-builder-components-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: var(--light-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.html-builder-components-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.html-builder-components-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  background-color: var(--card-bg);
+}
+
+.component-category {
+  margin-bottom: 24px;
+}
+
+.category-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.components-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.component-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  border-radius: var(--radius-md);
+  background-color: var(--light-bg);
+  border: 1px solid var(--border-color);
+  cursor: move;
+  transition: all 0.2s;
+}
+
+.component-item:hover {
+  border-color: var(--primary-hover);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.component-item-icon {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+  color: var(--primary-color);
+}
+
+.component-item-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* === ПАНЕЛЬ КОНФИГУРАЦИИ === */
+.html-builder-config-container {
+  height: 300px;
+  width: 100%;
+  position: fixed;
+  background-color: var(--card-bg);
+  bottom: 0;
+  left: 0;
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border-color);
+}
+
+.html-builder-config-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: var(--light-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.html-builder-config-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.html-builder-config-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  padding: 16px;
+  overflow-y: auto;
+  height: calc(100% - 50px);
+  background-color: var(--card-bg);
+}
+
+.html-builder-config-section {
+  background-color: var(--light-bg);
+  border-radius: var(--radius-md);
+  padding: 4px;
+}
+
+.html-builder-config-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100% - 50px);
+  background-color: var(--card-bg);
+}
+
+.html-builder-config-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.html-builder-config-empty-icon {
+  font-size: 2rem;
+}
+
+.html-builder-config-empty-text {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+/* === ЭЛЕМЕНТЫ ФОРМЫ === */
+fieldset {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-bottom: 12px;
+  background-color: var(--card-bg);
+}
+
+legend {
+  font-weight: 600;
+  padding: 0 6px;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+input[type='range'] {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  background: var(--secondary-color);
+  border-radius: 10px;
+  outline: none;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: var(--shadow-sm);
+}
+
+input[type='color'] {
+  width: 100%;
+  height: 30px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--card-bg);
+  padding: 2px;
+}
+
+select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+select:focus {
+  border-color: var(--primary-color);
+}
+
+/* === ПЕРЕТАСКИВАЕМЫЕ ЭЛЕМЕНТЫ === */
+.draggable-component {
+  position: relative;
+  cursor: move;
+  user-select: none;
+  transition: outline 0.2s;
+  z-index: 1;
+}
+
+.draggable-component:hover {
+  outline: 1px dashed var(--primary-color);
+}
+
+.dropzone {
+  min-height: 50px;
+  border: 2px dashed transparent;
+  padding: 10px;
+  position: relative;
+  border-radius: var(--radius-md);
+  transition: all 0.2s;
+  z-index: 1;
+}
+
+.dropzone.is-active {
+  border-color: var(--primary-color);
+  background-color: rgba(99, 102, 241, 0.05);
+}
+
+/* === СТИЛИ ЭЛЕМЕНТОВ === */
+[data-htmlbuilder-element] {
+  position: relative;
+}
+
+[data-htmlbuilder-element]:not([data-htmlbuilder-element='root']):before {
+  content: attr(data-htmlbuilder-element-tag);
+  position: absolute;
+  top: -20px;
+  left: 0;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 2px 8px;
+  font-size: 10px;
+  border-radius: var(--radius-sm);
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+[data-htmlbuilder-element]:hover:before {
+  opacity: 1;
+}
+
+/* === АКТИВНЫЕ ЭЛЕМЕНТЫ === */
+.active-element {
+  outline: 2px solid var(--primary-color) !important;
+  position: relative;
+  z-index: 1;
+}
+
+.active-element::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 1px dashed var(--primary-color);
+  pointer-events: none;
+  border-radius: 2px;
+}
+
+/* === УТИЛИТЫ === */
+.hidden {
+  display: none !important;
+}
+
+/* === ПЕРЕКЛЮЧАТЕЛЬ АНИМАЦИИ === */
+.animation-top-right .html-builder-area-content::before {
+  animation: move-to-top-right var(--animation-speed) linear infinite;
+}
+
+.animation-right .html-builder-area-content::before {
+  animation: move-to-right var(--animation-speed) linear infinite;
+}
+
+.animation-top .html-builder-area-content::before {
+  animation: move-to-top var(--animation-speed) linear infinite;
+}
+
+.animation-rotate .html-builder-area-content::before {
+  animation: move-to-bottom-right var(--animation-speed) linear infinite;
+}
+
+/* === АДАПТИВНЫЕ СТИЛИ === */
+@media (prefers-color-scheme: dark) {
+  .draggable-component,
+  .html-builder-area-placeholder,
+  .component-item,
+  .tree-item,
+  .html-builder-config-section,
+  input,
+  select,
+  option,
+  button {
+    color: var(--text-primary);
+  }
+
+  input[type='range']::-webkit-slider-thumb {
+    border-color: var(--dark-bg);
+  }
+}
+
+/* Адаптивные стили для мобильных устройств */
+@media (max-width: 768px) {
+  .html-builder {
+    flex-direction: column;
+  }
+
+  .html-builder-tree-container,
+  .html-builder-components-container {
+    width: 100%;
+    height: auto;
+    max-height: 250px;
+  }
+
+  .html-builder-config-container {
+    height: 250px;
+  }
+
+  .html-builder-config-sections {
+    grid-template-columns: 1fr;
+  }
+}
