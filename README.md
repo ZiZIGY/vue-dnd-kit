@@ -33,7 +33,7 @@ The repository is organized into several packages:
 - **packages/core**: The main package with core drag and drop functionality
 - **packages/components**: (Coming soon) Ready-to-use components built on top of the core library
 - **packages/utils**: (Coming soon) Utility functions for advanced customization
-- **packages/devtools**: (Coming soon) Developer tools for debugging and optimizing
+- **packages/devtools**: Developer tools for debugging and optimizing
 - **docs**: Documentation site built with VitePress
 
 ## 📖 Documentation
