@@ -10,14 +10,13 @@
     id: number;
     title: string;
     status: 'success' | 'warning' | 'error' | 'info';
-    disabled: boolean;
   }
 
   const tasks = ref<Task[]>([
-    { id: 1, title: 'Complete project', status: 'success', disabled: false },
-    { id: 2, title: 'Client meeting', status: 'warning', disabled: false },
-    { id: 3, title: 'Update documentation', status: 'info', disabled: false },
-    { id: 4, title: 'Fix bugs', status: 'error', disabled: false },
+    { id: 1, title: 'Complete project', status: 'success' },
+    { id: 2, title: 'Client meeting', status: 'warning' },
+    { id: 3, title: 'Update documentation', status: 'info' },
+    { id: 4, title: 'Fix bugs', status: 'error' },
   ]);
 
   const addTask = () => {
@@ -28,7 +27,6 @@
       status: ['success', 'warning', 'error', 'info'][
         Math.floor(Math.random() * 4)
       ] as any,
-      disabled: false,
     });
   };
 
@@ -42,18 +40,13 @@
 
 <template>
   <div class="sortable-container">
-    <button @click="disabled = !disabled">change</button>
-
     <button
       @click="addTask"
       class="add-task-btn"
       >Add Task</button
     >
 
-    <Sortable
-      :data="tasks"
-      :disabled="disabled"
-    >
+    <Sortable :data="tasks">
       <TransitionGroup
         name="task-list"
         tag="div"
@@ -65,7 +58,6 @@
           :source="tasks"
           :index="index"
           :status="task.status"
-          :disabled="task.disabled"
         >
           <div class="task-item">
             <h3>{{ task.title }}</h3>
@@ -76,9 +68,6 @@
                 class="remove-btn"
                 >×</button
               >
-              <button @click="task.disabled = !task.disabled">
-                {{ task.disabled }}
-              </button>
             </div>
           </div>
         </SortableItem>

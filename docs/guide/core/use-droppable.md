@@ -12,12 +12,13 @@ useDroppable(options?: IUseDropOptions)
 
 The `options` object can include the following properties:
 
-| Property | Type               | Description                                 | Required |
-| -------- | ------------------ | ------------------------------------------- | -------- |
-| id       | `string \| number` | Unique identifier for the drop zone         | No       |
-| groups   | `string[]`         | Groups this drop zone accepts               | No       |
-| events   | `Object`           | Event handlers (see Events section)         | No       |
-| data     | `Object`           | Custom data to associate with the drop zone | No       |
+| Property | Type                      | Description                                 | Required |
+| -------- | ------------------------- | ------------------------------------------- | -------- |
+| id       | `string \| number`        | Unique identifier for the drop zone         | No       |
+| groups   | `string[]`                | Groups this drop zone accepts               | No       |
+| disabled | `boolean \| Ref<boolean>` | Whether drop functionality is disabled      | No       |
+| events   | `Object`                  | Event handlers (see Events section)         | No       |
+| data     | `Object`                  | Custom data to associate with the drop zone | No       |
 
 #### Events Object
 
@@ -203,3 +204,24 @@ The `isLazyAllowed` computed property works similarly to `isAllowed`, but it onl
 ```
 
 This is particularly useful when your drop validation logic is computationally expensive or requires API calls, as it will only be evaluated when necessary.
+
+## Handling Reactivity Issues
+
+If you're encountering reactivity problems, especially with dynamic properties like `disabled` or `data`, wrap them in a `computed()` property:
+
+```ts
+import { computed, ref } from 'vue';
+
+const isZoneDisabled = ref(false);
+
+const { elementRef } = useDroppable({
+  groups: ['tasks'],
+  disabled: computed(() => isZoneDisabled.value),
+  data: computed(() => ({
+    source: targetArray,
+    status: currentStatus.value,
+  })),
+});
+```
+
+This ensures Vue correctly tracks dependencies and updates the drop zone behavior when your reactive values change.

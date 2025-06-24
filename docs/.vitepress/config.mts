@@ -98,6 +98,10 @@ export default defineConfig({
               text: 'Drag Overlay',
               link: '/examples/basic/drag-overlay',
             },
+            {
+              text: 'Disabled',
+              link: '/examples/basic/disabled-elements',
+            },
           ],
         },
         {

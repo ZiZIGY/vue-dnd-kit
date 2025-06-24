@@ -12,16 +12,17 @@ useDraggable(options?: IUseDragOptions)
 
 The `options` object can include the following properties:
 
-| Property  | Type                | Description                                     | Required |
-| --------- | ------------------- | ----------------------------------------------- | -------- |
-| id        | `string \| number`  | Unique identifier for the draggable element     | No       |
-| groups    | `string[]`          | Groups this draggable belongs to                | No       |
-| events    | `Object`            | Event handlers (see Events section)             | No       |
-| data      | `Object`            | Custom data to associate with draggable element | No       |
-| keyboard  | `Object`            | Keyboard navigation configuration               | No       |
-| container | `Component`         | Custom overlay component                        | No       |
-| layer     | `Component \| null` | Custom layer component                          | No       |
-| sensor    | `Object`            | Custom sensor configuration                     | No       |
+| Property  | Type                      | Description                                     | Required |
+| --------- | ------------------------- | ----------------------------------------------- | -------- |
+| id        | `string \| number`        | Unique identifier for the draggable element     | No       |
+| groups    | `string[]`                | Groups this draggable belongs to                | No       |
+| disabled  | `boolean \| Ref<boolean>` | Whether dragging is disabled                    | No       |
+| events    | `Object`                  | Event handlers (see Events section)             | No       |
+| data      | `Object`                  | Custom data to associate with draggable element | No       |
+| keyboard  | `Object`                  | Keyboard navigation configuration               | No       |
+| container | `Component`               | Custom overlay component                        | No       |
+| layer     | `Component \| null`       | Custom layer component                          | No       |
+| sensor    | `Object`                  | Custom sensor configuration                     | No       |
 
 #### Events Object
 
@@ -198,6 +199,25 @@ const { elementRef } = useDraggable({
 
 7. To ensure proper reactivity, especially for dynamic content, wrap the `data` property in a `computed()`:
 
+## Handling Reactivity Issues
+
+If you're encountering reactivity problems with dynamic properties like `disabled` or `data`, wrap them in a `computed()` property:
+
+```ts
+import { computed, ref } from 'vue';
+
+const isDragDisabled = ref(false);
+
+const { elementRef } = useDraggable({
+  id: 'my-draggable',
+  disabled: computed(() => isDragDisabled.value),
+  data: computed(() => ({
+    source: itemsArray,
+    index: props.itemIndex,
+    task: props.task,
+    status: currentStatus.value,
+  })),
+});
 ```
 
-```
+This ensures Vue correctly tracks dependencies and updates the draggable behavior when your reactive values change.
