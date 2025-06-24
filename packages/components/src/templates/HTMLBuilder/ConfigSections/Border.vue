@@ -167,31 +167,3 @@
     </div>
   </fieldset>
 </template>
-
-<style scoped>
-  fieldset {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .border-radius-section {
-    margin-top: 10px;
-  }
-
-  h4 {
-    margin: 5px 0;
-    font-size: 0.9em;
-  }
-
-  label {
-    font-size: 0.8em;
-    color: #666;
-  }
-</style>

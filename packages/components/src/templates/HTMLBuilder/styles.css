@@ -273,6 +273,11 @@
   height: 100%;
 }
 
+.html-builder-droppable {
+  height: 100%;
+  display: inherit;
+}
+
 .html-builder-tree-header {
   display: flex;
   align-items: center;
@@ -585,29 +590,17 @@
   gap: 16px;
   padding: 16px;
   overflow-y: auto;
-  height: calc(100% - 50px);
   background-color: var(--card-bg);
+}
+
+.html-builder-draggable.is-dragging {
+  opacity: 0;
 }
 
 .html-builder-config-section {
   background-color: var(--light-bg);
   border-radius: var(--radius-md);
   padding: 4px;
-}
-
-.html-builder-config-empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: calc(100% - 50px);
-  background-color: var(--card-bg);
-}
-
-.html-builder-config-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
 }
 
 .html-builder-config-empty-icon {
@@ -678,6 +671,22 @@ input[type='color'] {
   border-radius: var(--radius-md);
   background-color: var(--card-bg);
   padding: 2px;
+}
+
+input[type='text'] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--card-bg);
+}
+
+input[type='number'] {
+  width: min-content;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--card-bg);
 }
 
 select {
@@ -819,6 +828,7 @@ select:focus {
     width: 100%;
     height: auto;
     max-height: 250px;
+    overflow: auto;
   }
 
   .html-builder-config-container {

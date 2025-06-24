@@ -15,11 +15,7 @@
   const builderStore = useHTMLBuilderStore();
 
   const hasChildren = computed(() => {
-    return (
-      props.component.children &&
-      Array.isArray(props.component.children) &&
-      props.component.children.length > 0
-    );
+    return props.component.children && Array.isArray(props.component.children);
   });
 
   const isActive = computed(() => {

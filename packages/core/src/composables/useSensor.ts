@@ -12,7 +12,6 @@ import { useDnDStore } from './useDnDStore';
 import { useKeyboard } from './useKeyboard';
 import { usePointer } from './usePointer';
 import { useThrottleFn } from '@vueuse/core';
-import { getBoundingBox, getCenter, getDistance } from '../utils/geometry';
 
 export const useSensor = (
   elementRef: Ref<HTMLElement | null>,

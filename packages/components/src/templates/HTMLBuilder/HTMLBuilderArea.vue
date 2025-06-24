@@ -3,7 +3,8 @@
   import type { IHTMLBuilderElement } from './types';
   import { computed } from 'vue';
   import HTMLBuilderDraggable from './HTMLBuilderDraggable.vue';
-  import { handleDropArea } from './utils';
+  import { handleDropArea, useHTMLBuilderStore } from './utils';
+  import { onKeyStroke } from '@vueuse/core';
 
   const { components } = defineProps<{
     components: IHTMLBuilderElement[];
@@ -20,6 +21,19 @@
       },
     },
   });
+
+  onKeyStroke(
+    'Escape',
+    (e) => {
+      e.preventDefault();
+      builderStore.activeElement.value = null;
+    },
+    {
+      dedupe: true,
+    }
+  );
+
+  const builderStore = useHTMLBuilderStore();
 </script>
 
 <template>
@@ -30,7 +44,10 @@
     <div class="html-builder-area-header">
       <span class="html-builder-area-title">Canvas</span>
     </div>
-    <div class="html-builder-area-content">
+    <div
+      class="html-builder-area-content"
+      @pointerdown.self="builderStore.activeElement.value = null"
+    >
       <template
         v-for="(component, index) in components"
         :key="`component-${component.id}`"

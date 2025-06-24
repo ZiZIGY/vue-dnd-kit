@@ -26,7 +26,10 @@
 
   const builderStore = useHTMLBuilderStore();
 
-  const handleFocus = () => (builderStore.activeElement.value = component);
+  const handleFocus = () => {
+    if (!store.keyboard.shift.value)
+      builderStore.activeElement.value = component;
+  };
 
   onMounted(() => {
     if (builderStore.autoFocus.value) {

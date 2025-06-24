@@ -6,13 +6,15 @@
   import { ref } from 'vue';
   import type { IHTMLBuilderElement } from './types';
 
-  import './styles.css';
+  import { useHTMLBuilderStore } from './utils';
 
   const components = ref<IHTMLBuilderElement[]>([]);
 
   defineExpose({
     components,
   });
+
+  const builderStore = useHTMLBuilderStore();
 </script>
 
 <template>
@@ -26,6 +28,11 @@
       class="html-builder-area"
     />
     <HTMLBuilderComponents class="html-builder-components" />
-    <HTMLBuilderConfig class="html-builder-config" />
+    <HTMLBuilderConfig
+      v-if="builderStore.activeElement.value"
+      class="html-builder-config"
+    />
   </div>
 </template>
+
+<style src="./styles.css"></style>
