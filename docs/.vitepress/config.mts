@@ -66,10 +66,10 @@ export default defineConfig({
           items: [
             { text: 'Sortable', link: '/guide/components/sortable' },
             { text: 'Dashboard', link: '/guide/components/dashboard' },
-
             { text: 'Kanban', link: '/guide/components/kanban' },
             { text: 'Table', link: '/guide/components/table' },
             { text: 'Tree', link: '/guide/components/tree' },
+            { text: 'HTML Builder', link: '/guide/components/html-builder' },
           ],
         },
         {
@@ -157,6 +157,10 @@ export default defineConfig({
             {
               text: 'Async Drop Promise',
               link: '/examples/real-world/promise-drop',
+            },
+            {
+              text: 'HTML Builder',
+              link: '/examples/real-world/html-builder',
             },
           ],
         },
