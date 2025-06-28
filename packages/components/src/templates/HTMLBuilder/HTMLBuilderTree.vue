@@ -8,14 +8,16 @@
     components: IHTMLBuilderElement<T>[];
   }>();
 
-  const { elementRef } = useDroppable({
+  const { elementRef, isOvered } = useDroppable({
     groups: ['tree'],
     data: computed(() => ({
       source: components,
     })),
     events: {
       onDrop: (store) => {
-        DnDOperations.applyTransfer(store);
+        if (store.keyboard.ctrl.value) {
+          DnDOperations.applySwap(store);
+        } else DnDOperations.applyTransfer(store);
       },
     },
   });
@@ -25,6 +27,7 @@
   <div
     ref="elementRef"
     class="html-builder-tree-container"
+    :class="{ 'is-overed': isOvered }"
   >
     <HTMLBuilderTreeItem
       v-for="(component, index) in components"
@@ -32,6 +35,7 @@
       :source="components"
       :index="index"
       :component="component"
+      v-model:is-expanded="component.isExpanded"
       class="tree-item-root"
     >
       {{ component.tag }}

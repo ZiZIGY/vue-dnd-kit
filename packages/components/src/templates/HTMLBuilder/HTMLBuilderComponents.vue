@@ -69,7 +69,10 @@
 </script>
 
 <template>
-  <div class="html-builder-components-container">
+  <div
+    class="html-builder-components-container"
+    v-once
+  >
     <div class="html-builder-components-header">
       <span class="html-builder-components-title">Components</span>
     </div>

@@ -64,7 +64,20 @@
       v-if="!components.length"
       class="html-builder-area-empty"
     >
-      <div class="html-builder-area-placeholder"> Drag components here </div>
+      <div class="html-builder-area-placeholder">
+        <div>Drag components here</div>
+        <div class="html-builder-tips">
+          <div class="tip"><strong>Shift</strong> - to move elements</div>
+          <div class="tip">Moving items in tree changes structure</div>
+          <div class="tip"
+            ><strong>Ctrl</strong> - swap elements instead of transfer</div
+          >
+          <div class="tip"
+            ><strong>Escape</strong> - cancels selected element</div
+          >
+          <div class="tip">Click on a tree item to select it</div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

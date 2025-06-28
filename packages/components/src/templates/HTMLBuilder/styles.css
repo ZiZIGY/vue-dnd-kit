@@ -260,17 +260,46 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+.html-builder-tips {
+  margin-top: 15px;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tip {
+  padding: 5px 8px;
+  background-color: rgba(99, 102, 241, 0.1);
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--primary-color);
+}
+
+.tip strong {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
 /* === ДЕРЕВО КОМПОНЕНТОВ === */
 .html-builder-tree-container {
   display: flex;
   flex-direction: column;
-  width: 250px;
+  width: 100%;
   border-radius: var(--radius-lg);
   background-color: var(--card-bg);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   border: 1px solid var(--border-color);
   height: 100%;
+  min-height: 30px;
+}
+
+.html-builder-tree {
+  width: 300px;
+}
+.html-builder-tree-container.is-overed {
+  border-color: var(--primary-color);
 }
 
 .html-builder-droppable {
@@ -413,6 +442,10 @@
   opacity: 1;
 }
 
+.tree-action-button.delete-button:hover {
+  color: var(--danger-color);
+}
+
 /* Улучшенные стили для вложенности */
 .tree-children-container {
   position: relative;
@@ -421,13 +454,7 @@
 }
 
 .tree-children-line {
-  position: absolute;
-  left: 8px;
-  top: 0;
-  bottom: 12px;
-  width: 1px;
-  background-color: var(--tree-line-color);
-  opacity: var(--tree-line-opacity);
+  display: none;
 }
 
 .tree-children-content {
@@ -734,27 +761,9 @@ select:focus {
 }
 
 /* === СТИЛИ ЭЛЕМЕНТОВ === */
-[data-htmlbuilder-element] {
-  position: relative;
-}
 
-[data-htmlbuilder-element]:not([data-htmlbuilder-element='root']):before {
-  content: attr(data-htmlbuilder-element-tag);
-  position: absolute;
-  top: -20px;
-  left: 0;
-  background-color: var(--primary-color);
-  color: white;
-  padding: 2px 8px;
-  font-size: 10px;
-  border-radius: var(--radius-sm);
-  z-index: 1;
+.tree-item.dragging {
   opacity: 0;
-  transition: opacity 0.2s;
-}
-
-[data-htmlbuilder-element]:hover:before {
-  opacity: 1;
 }
 
 /* === АКТИВНЫЕ ЭЛЕМЕНТЫ === */
@@ -762,18 +771,6 @@ select:focus {
   outline: 2px solid var(--primary-color) !important;
   position: relative;
   z-index: 1;
-}
-
-.active-element::after {
-  content: '';
-  position: absolute;
-  top: -4px;
-  left: -4px;
-  right: -4px;
-  bottom: -4px;
-  border: 1px dashed var(--primary-color);
-  pointer-events: none;
-  border-radius: 2px;
 }
 
 /* === УТИЛИТЫ === */

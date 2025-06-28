@@ -9,7 +9,7 @@
   }>();
 
   const { elementRef, handleDragStart } = useDraggable({
-    groups: ['components', 'tree'],
+    groups: ['components'],
     data: {
       type: 'created',
       tag: props.tag,

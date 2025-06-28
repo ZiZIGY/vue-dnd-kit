@@ -8,6 +8,7 @@ export interface IHTMLBuilderElement<T = keyof HTMLElementTagNameMap> {
   children?: IHTMLBuilderElement<T>[];
   attributes?: Omit<HTMLAttributes, 'style'>;
   visible?: boolean;
+  isExpanded?: boolean;
 }
 
 export interface IHTMLBuilderDraggable extends Omit<IHTMLBuilderElement, 'id'> {

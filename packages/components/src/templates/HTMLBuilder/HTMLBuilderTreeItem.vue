@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import { useDraggable } from '@vue-dnd-kit/core';
-  import { computed, ref } from 'vue';
+  import { useDnDStore, useDraggable } from '@vue-dnd-kit/core';
+  import { computed } from 'vue';
   import { IHTMLBuilderElement } from './types';
   import HTMLBuilderTree from './HTMLBuilderTree.vue';
   import { useHTMLBuilderStore } from './utils';
@@ -11,7 +11,6 @@
     component: IHTMLBuilderElement;
   }>();
 
-  const isExpanded = ref(true);
   const builderStore = useHTMLBuilderStore();
 
   const hasChildren = computed(() => {
@@ -22,15 +21,23 @@
     return builderStore.activeElement.value?.id === props.component.id;
   });
 
-  const toggleExpand = () => {
-    isExpanded.value = !isExpanded.value;
-  };
+  const isExpanded = defineModel<boolean>('isExpanded');
 
   const selectElement = () => {
     builderStore.activeElement.value = props.component;
   };
 
-  const { elementRef, handleDragStart } = useDraggable({
+  const deleteElement = () => {
+    props.source.splice(props.index, 1);
+
+    if (builderStore.activeElement.value?.id === props.component.id) {
+      builderStore.activeElement.value = null;
+    }
+  };
+
+  const store = useDnDStore();
+
+  const { elementRef, handleDragStart, isDragging } = useDraggable({
     groups: ['tree'],
     data: computed(() => ({
       source: props.source,
@@ -42,15 +49,18 @@
 <template>
   <div
     ref="elementRef"
+    @pointerdown.stop="
+      (event: PointerEvent) => store.keyboard.shift.value && handleDragStart(event)
+    "
     class="tree-item"
-    :class="{ active: isActive }"
+    :class="{ active: isActive, dragging: isDragging }"
     @click.stop="selectElement"
   >
     <div class="tree-item-content">
       <button
         v-if="hasChildren"
         class="tree-toggle-button"
-        @click.stop="toggleExpand"
+        @click.stop="isExpanded = !isExpanded"
       >
         <span class="toggle-icon">{{ isExpanded ? '▼' : '►' }}</span>
       </button>
@@ -87,10 +97,7 @@
         >
       </div>
 
-      <div
-        class="tree-item-label"
-        @pointerdown.stop="handleDragStart"
-      >
+      <div class="tree-item-label">
         <span class="tree-item-tag">{{ component.tag }}</span>
         <span
           v-if="component.id"
@@ -107,6 +114,13 @@
         >
           <span>{{ component.visible ? '👁️' : '👁️‍🗨️' }}</span>
         </button>
+        <button
+          class="tree-action-button delete-button"
+          @click.stop="deleteElement"
+          title="Delete element"
+        >
+          <span>🗑️</span>
+        </button>
       </div>
     </div>
 
@@ -114,7 +128,6 @@
       v-if="hasChildren && isExpanded"
       class="tree-children-container"
     >
-      <div class="tree-children-line"></div>
       <div class="tree-children-content">
         <HTMLBuilderTree
           v-if="component.children"
