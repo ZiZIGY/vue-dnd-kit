@@ -1,38 +1,50 @@
 <script setup lang="ts">
-  import { HTMLBuilderBase } from '@vue-dnd-kit/components/templates/HTMLBuilder';
+  import { ref } from 'vue';
+  import Test from './components/Test.vue';
+  import { useDnDProvider } from '@vue-dnd-kit/core';
+
+  const data = ref([
+    {
+      id: 1,
+      name: 'test',
+    },
+    {
+      id: 2,
+      name: 'test2',
+    },
+    {
+      id: 3,
+      name: 'test3',
+    },
+  ]);
+
+  const store = useDnDProvider();
 </script>
 
 <template>
-  <HTMLBuilderBase />
+  <Test
+    v-for="(item, index) in data"
+    :key="item.id"
+    :name="item.name"
+    :index="index"
+    :id="item.id"
+    :source="data"
+  />
+
+  <pre>{{ store }}</pre>
 </template>
 
-<style scoped>
-  .html-builder {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    height: 100%;
-    height: 100svh;
-  }
-
-  .html-builder-area {
-    flex: 1;
-
-    border: 1px solid #000;
-    background-color: #f0f0f0;
-  }
-
-  .html-builder-tree {
-    width: 200px;
-  }
-
-  .html-builder-config {
-    height: 300px;
-    width: 100%;
+<style>
+  pre {
     position: fixed;
-    background-color: #fff;
-    bottom: 0;
-    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.25);
+    top: 0;
+    right: 0;
+    z-index: 1000;
+    height: 100svh;
     overflow: auto;
+  }
+
+  body {
+    height: 200svh;
   }
 </style>

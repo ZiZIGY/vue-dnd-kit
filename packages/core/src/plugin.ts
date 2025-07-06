@@ -1,13 +1,21 @@
-import { createVNode, render } from 'vue';
-
 import type { App } from 'vue';
-import DragOverlay from './components/DragOverlay.vue';
-import { IPluginOptions } from './types';
-import { useDnDStore } from './composables/useDnDStore';
+import { createVNode, render } from 'vue';
+import { cleanupDnDProvider, createDnDProvider } from './provider/context';
+import Overlay from './components/Overlay.vue';
+
+// export interface IPluginOptions {
+//   defaultOverlay?: {
+//     styles?: Record<string, string>;
+//   };
+// }
 
 export const VueDndKitPlugin = {
-  install(app: App, options?: IPluginOptions) {
-    app.component('DragOverlay', DragOverlay);
+  install(app: App) {
+    const dndProvider = createDnDProvider();
+
+    app.__VUE_DND_KIT_STORE__ = dndProvider;
+    app.component('VueDndKitOverlay', Overlay);
+
     const originalMount = app.mount;
     app.mount = function (rootContainer) {
       const instance = originalMount.call(this, rootContainer);
@@ -18,41 +26,34 @@ export const VueDndKitPlugin = {
           : rootContainer;
 
       if (rootEl && rootEl instanceof Element) {
-        if (!rootEl.querySelector('#vue-dnd-kit-overlay')) {
+        if (!rootEl.querySelector('#dnd-kit-overlay')) {
           const overlayContainer = document.createElement('div');
-
-          overlayContainer.id = 'vue-dnd-kit-overlay';
+          overlayContainer.id = 'dnd-kit-overlay';
           overlayContainer.style.pointerEvents = 'none';
-
           rootEl.appendChild(overlayContainer);
 
-          // Передаем опции напрямую в компонент
-          const vnode = createVNode(DragOverlay, {
-            styles: options?.defaultOverlay?.styles,
-          });
+          const vnode = createVNode(Overlay, {});
           render(vnode, overlayContainer);
 
           app.__VUE_DND_KIT_OVERLAY__ = {
             container: overlayContainer,
             vnode,
-            options: options?.defaultOverlay || {},
           };
-
-          const store = useDnDStore();
-          app.__VUE_DND_KIT_STORE__ = store;
         }
       }
 
       return instance;
     };
 
-    // Модифицируем метод unmount для очистки
     const originalUnmount = app.unmount;
     app.unmount = function () {
       if (app.__VUE_DND_KIT_OVERLAY__) {
         render(null, app.__VUE_DND_KIT_OVERLAY__.container);
         delete app.__VUE_DND_KIT_OVERLAY__;
       }
+
+      cleanupDnDProvider();
+
       return originalUnmount.call(this);
     };
   },
@@ -60,11 +61,10 @@ export const VueDndKitPlugin = {
 
 declare module '@vue/runtime-core' {
   export interface App {
+    __VUE_DND_KIT_STORE__?: ReturnType<typeof createDnDProvider>;
     __VUE_DND_KIT_OVERLAY__?: {
       container: HTMLElement;
       vnode: any;
-      options: IPluginOptions['defaultOverlay'];
     };
-    __VUE_DND_KIT_STORE__?: ReturnType<typeof useDnDStore>;
   }
 }
