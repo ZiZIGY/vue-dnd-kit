@@ -12,17 +12,18 @@ useDraggable(options?: IUseDragOptions)
 
 The `options` object can include the following properties:
 
-| Property  | Type                      | Description                                     | Required |
-| --------- | ------------------------- | ----------------------------------------------- | -------- |
-| id        | `string \| number`        | Unique identifier for the draggable element     | No       |
-| groups    | `string[]`                | Groups this draggable belongs to                | No       |
-| disabled  | `boolean \| Ref<boolean>` | Whether dragging is disabled                    | No       |
-| events    | `Object`                  | Event handlers (see Events section)             | No       |
-| data      | `Object`                  | Custom data to associate with draggable element | No       |
-| keyboard  | `Object`                  | Keyboard navigation configuration               | No       |
-| container | `Component`               | Custom overlay component                        | No       |
-| layer     | `Component \| null`       | Custom layer component                          | No       |
-| sensor    | `Object`                  | Custom sensor configuration                     | No       |
+| Property       | Type                      | Description                                     | Required |
+| -------------- | ------------------------- | ----------------------------------------------- | -------- |
+| id             | `string \| number`        | Unique identifier for the draggable element     | No       |
+| groups         | `string[]`                | Groups this draggable belongs to                | No       |
+| disabled       | `boolean \| Ref<boolean>` | Whether dragging is disabled                    | No       |
+| events         | `Object`                  | Event handlers (see Events section)             | No       |
+| data           | `Object`                  | Custom data to associate with draggable element | No       |
+| keyboard       | `Object`                  | Keyboard navigation configuration               | No       |
+| container      | `Component`               | Custom overlay component                        | No       |
+| layer          | `Component \| null`       | Custom layer component                          | No       |
+| containerProps | `Record<string, any>`     | Props to pass to the drag container component   | No       |
+| sensor         | `Object`                  | Custom sensor configuration                     | No       |
 
 #### Events Object
 
@@ -58,6 +59,45 @@ The `payload` parameter provides access to all dragging elements:
 | -------- | -------- | --------------------------------------------- |
 | moveStep | `number` | Pixels to move when using keyboard navigation |
 
+### Container Props
+
+The `containerProps` option allows you to pass custom data and configuration to your drag container component. This is useful for customizing the appearance and behavior of the container during drag operations:
+
+```ts
+import { ref, computed } from 'vue';
+
+const currentTheme = ref('dark');
+const animationType = ref('fade');
+
+const { elementRef } = useDraggable({
+  id: 'my-draggable',
+  containerProps: {
+    // Static values
+    theme: 'light',
+    animation: 'slide',
+
+    // Reactive values (pass refs directly)
+    currentTheme: currentTheme,
+    animationType: animationType,
+
+    // Computed values
+    style: computed(() => ({
+      backgroundColor: currentTheme.value === 'dark' ? '#333' : '#fff',
+      transition:
+        animationType.value === 'fade' ? 'opacity 0.3s' : 'transform 0.3s',
+    })),
+
+    // Custom data
+    customData: {
+      userId: 123,
+      itemType: 'task',
+    },
+  },
+});
+```
+
+**Important**: When passing reactive values (ref, reactive, computed), pass them directly without calling `.value`. Vue will automatically track reactivity.
+
 ### Return Value
 
 `useDraggable` returns an object with the following properties:
@@ -83,6 +123,10 @@ const { elementRef } = useDraggable({
   data: computed(() => ({
     task: props.task,
   })),
+  containerProps: {
+    theme: 'dark',
+    animation: 'fade',
+  },
   events: {
     onStart: (store, payload) => {
       // Access the first dragged element (most common scenario)
@@ -217,7 +261,13 @@ const { elementRef } = useDraggable({
     task: props.task,
     status: currentStatus.value,
   })),
+  containerProps: {
+    theme: computed(() => currentTheme.value),
+    animation: computed(() => animationType.value),
+  },
 });
 ```
 
 This ensures Vue correctly tracks dependencies and updates the draggable behavior when your reactive values change.
+
+8. **Container Props**: Use the `containerProps` option to pass custom data and configuration to your drag container component. This allows for dynamic customization of the container during drag operations.

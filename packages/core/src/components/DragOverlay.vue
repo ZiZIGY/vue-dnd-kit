@@ -11,7 +11,10 @@
 
   const overlay = computed(() => ({
     component: activeContainer.component.value ?? DefaultOverlay,
-    props,
+    props: {
+      ...props,
+      ...activeContainer.props.value,
+    },
   }));
 </script>
 

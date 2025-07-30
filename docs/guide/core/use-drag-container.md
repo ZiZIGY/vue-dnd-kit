@@ -12,6 +12,100 @@ const result = useDragContainer();
 
 The `useDragContainer` composable doesn't accept any parameters.
 
+### Props Support
+
+The drag container component can accept props using `defineProps()`. This allows you to pass custom data and configuration to your container component:
+
+```vue
+<script setup lang="ts">
+  import { useDragContainer } from '@vue-dnd-kit/core';
+
+  // Define props for your container
+  const props = defineProps<{
+    theme?: 'light' | 'dark';
+    animation?: 'fade' | 'slide';
+    customData?: any;
+  }>();
+
+  const { elementRef, isDragging, draggingElements } = useDragContainer();
+</script>
+
+<template>
+  <div
+    v-if="isDragging"
+    ref="elementRef"
+    class="drag-container"
+    :class="{
+      'drag-container--light': theme === 'light',
+      'drag-container--dark': theme === 'dark',
+      'drag-container--fade': animation === 'fade',
+      'drag-container--slide': animation === 'slide',
+    }"
+  >
+    <!-- Your dragged elements will be rendered here -->
+  </div>
+</template>
+```
+
+### Reactive Props
+
+For reactive props, pass them in their reactive state without calling `.value`. You can use `ref`, `reactive`, or `computed`:
+
+```vue
+<script setup lang="ts">
+  import { ref, computed } from 'vue';
+  import { useDraggable } from '@vue-dnd-kit/core';
+
+  // Reactive state
+  const currentTheme = ref('light');
+  const isAnimationEnabled = ref(true);
+  const userPreferences = ref({ fontSize: 14, color: 'blue' });
+
+  // Computed props
+  const containerStyle = computed(() => ({
+    fontSize: userPreferences.value.fontSize + 'px',
+    color: userPreferences.value.color,
+  }));
+
+  const { elementRef } = useDraggable({
+    id: 'my-draggable',
+    containerProps: {
+      // Pass refs directly (without .value)
+      theme: currentTheme,
+      animation: isAnimationEnabled,
+
+      // Pass computed values
+      style: containerStyle,
+
+      // Pass reactive objects
+      preferences: userPreferences,
+
+      // Static values
+      staticProp: 'always-the-same',
+    },
+  });
+</script>
+```
+
+### Using Props with Dragged Elements
+
+You can access container props within your dragged elements by passing them through the `containerProps` option in `useDraggable`:
+
+```vue
+<script setup lang="ts">
+  import { useDraggable } from '@vue-dnd-kit/core';
+
+  const { elementRef } = useDraggable({
+    id: 'my-draggable',
+    containerProps: {
+      theme: 'dark',
+      animation: 'fade',
+      customData: { userId: 123 },
+    },
+  });
+</script>
+```
+
 ### Return Value
 
 `useDragContainer` returns an object with the following properties:
@@ -53,3 +147,9 @@ The `pointerPosition` object includes:
 8. For performance reasons, apply `will-change: transform` to elements that will move during dragging.
 
 9. You may want to conditionally show the container only when `isDragging` is true to improve performance.
+
+10. **Props Support**: Container components can accept props using `defineProps()` and access them within the component template and logic.
+
+11. **Container Props**: Use the `containerProps` option in `useDraggable` to pass custom data to your container component.
+
+12. **Reactive Props**: When passing reactive values (ref, reactive, computed), pass them directly without calling `.value`. Vue will automatically track reactivity.

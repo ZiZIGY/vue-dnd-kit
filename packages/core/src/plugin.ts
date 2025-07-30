@@ -24,7 +24,54 @@ export const VueDndKitPlugin = {
           overlayContainer.id = 'vue-dnd-kit-overlay';
           overlayContainer.style.pointerEvents = 'none';
 
-          rootEl.appendChild(overlayContainer);
+          // Применяем кастомный z-index если указан
+          if (options?.overlayPosition?.zIndex) {
+            overlayContainer.style.zIndex =
+              options.overlayPosition.zIndex.toString();
+          }
+
+          // Применяем кастомный класс если указан
+          if (options?.overlayPosition?.className) {
+            overlayContainer.className = options.overlayPosition.className;
+          }
+
+          // Определяем метод вставки overlay
+          const insertMethod = options?.overlayPosition?.method || 'append';
+          const targetElement = options?.overlayPosition?.target
+            ? typeof options.overlayPosition.target === 'string'
+              ? document.querySelector(options.overlayPosition.target)
+              : options.overlayPosition.target
+            : rootEl;
+
+          if (targetElement && targetElement instanceof Element) {
+            switch (insertMethod) {
+              case 'prepend':
+                targetElement.insertBefore(
+                  overlayContainer,
+                  targetElement.firstChild
+                );
+                break;
+              case 'after':
+                targetElement.parentNode?.insertBefore(
+                  overlayContainer,
+                  targetElement.nextSibling
+                );
+                break;
+              case 'before':
+                targetElement.parentNode?.insertBefore(
+                  overlayContainer,
+                  targetElement
+                );
+                break;
+              case 'append':
+              default:
+                targetElement.appendChild(overlayContainer);
+                break;
+            }
+          } else {
+            // Fallback к старому поведению
+            rootEl.appendChild(overlayContainer);
+          }
 
           // Передаем опции напрямую в компонент
           const vnode = createVNode(DragOverlay, {
