@@ -102,6 +102,8 @@ export const useEventManager = createGlobalState(() => {
     (event.target as HTMLElement).blur();
 
     if (options?.container) activeContainer.component.value = options.container;
+    if (options?.containerProps)
+      activeContainer.props.value = options.containerProps;
 
     const { activate, track, deactivate } = useSensor(elementRef, options);
 

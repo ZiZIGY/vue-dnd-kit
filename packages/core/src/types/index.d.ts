@@ -18,6 +18,12 @@ export interface IPluginOptions {
   defaultOverlay?: {
     styles?: CSSProperties;
   };
+  overlayPosition?: {
+    target?: string | Element | HTMLElement;
+    method?: 'append' | 'prepend' | 'after' | 'before';
+    zIndex?: number;
+    className?: string;
+  };
 }
 
 export interface IPointerPosition {
@@ -121,6 +127,7 @@ export interface IUseDragOptions extends IUseSensorOptions {
   };
   layer?: Component | null;
   container?: Component;
+  containerProps?: Record<string, any>;
   sensor?: {
     throttle?: number;
     setup?: (store: IDnDStore) => Element | Element[] | null;

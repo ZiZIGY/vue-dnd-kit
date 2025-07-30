@@ -24,6 +24,7 @@ export const useDnDStore = createGlobalState(() => {
     component: ref<Component | null>(null),
     ref: shallowRef<HTMLElement | null>(null),
     options: shallowRef<TransitionProps | null>(null),
+    props: shallowRef<Record<string, any> | null>(null),
     animating: {
       enter: shallowRef<boolean>(false),
       leave: shallowRef<boolean>(false),

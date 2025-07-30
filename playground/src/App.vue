@@ -1,81 +1,25 @@
 <script setup lang="ts">
-  import {
-    Sortable,
-    SortableItem,
-  } from '@vue-dnd-kit/components/templates/Sortable';
+  import { useDraggable } from '@vue-dnd-kit/core';
+  import Container from './components/Container.vue';
+  import { markRaw } from 'vue';
 
-  import { ref } from 'vue';
-
-  interface Task {
-    id: number;
-    title: string;
-    status: 'success' | 'warning' | 'error' | 'info';
-  }
-
-  const tasks = ref<Task[]>([
-    { id: 1, title: 'Complete project', status: 'success' },
-    { id: 2, title: 'Client meeting', status: 'warning' },
-    { id: 3, title: 'Update documentation', status: 'info' },
-    { id: 4, title: 'Fix bugs', status: 'error' },
-  ]);
-
-  const addTask = () => {
-    const newId = Math.max(0, ...tasks.value.map((t) => t.id)) + 1;
-    tasks.value.push({
-      id: newId,
-      title: `New task ${newId}`,
-      status: ['success', 'warning', 'error', 'info'][
-        Math.floor(Math.random() * 4)
-      ] as any,
-    });
-  };
-
-  const removeTask = (id: number) => {
-    const index = tasks.value.findIndex((t) => t.id === id);
-    if (index !== -1) {
-      tasks.value.splice(index, 1);
-    }
-  };
+  const { elementRef, handleDragStart } = useDraggable({
+    container: markRaw(Container),
+    containerProps: {
+      text: 'test prop',
+    },
+  });
 </script>
 
 <template>
   <div class="sortable-container">
-    <button
-      @click="addTask"
-      class="add-task-btn"
-      >Add Task</button
+    <div
+      ref="elementRef"
+      @pointerdown="handleDragStart"
     >
-
-    <Sortable :data="tasks">
-      <TransitionGroup
-        name="task-list"
-        tag="div"
-        class="task-transition-group"
-      >
-        <SortableItem
-          v-for="(task, index) in tasks"
-          :key="task.id"
-          :source="tasks"
-          :index="index"
-          :status="task.status"
-        >
-          <div class="task-item">
-            <h3>{{ task.title }}</h3>
-            <div class="task-actions">
-              <span class="task-status">{{ task.status }}</span>
-              <button
-                @click.stop="removeTask(task.id)"
-                class="remove-btn"
-                >×</button
-              >
-            </div>
-          </div>
-        </SortableItem>
-      </TransitionGroup>
-    </Sortable>
+      meme
+    </div>
   </div>
-
-  <pre>{{ tasks }}</pre>
 </template>
 
 <style>
