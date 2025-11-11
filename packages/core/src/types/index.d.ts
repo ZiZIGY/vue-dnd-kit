@@ -38,11 +38,14 @@ export interface IDroppableEntity extends IBaseEntity {
   payload?: TDroppablePayload;
 }
 
-export interface ISelectableAreaEntity {}
+export interface ISelectableAreaEntity {
+  modifierKey: 'ctrl' | 'shift' | 'alt' | 'meta';
+  restrictToArea: boolean;
+}
 
 export interface IConstraintsAreaEntity {
   axis?: TDragAxis;
-  restrictToViewport?: boolean;
+  restrictToArea?: boolean;
 }
 
 export interface IDnDProvider {
@@ -50,6 +53,7 @@ export interface IDnDProvider {
     draggableMap: Map<TDnDNode, IDraggableEntity>;
     droppableMap: Map<TDnDNode, IDroppable>;
     selectableAreaMap: Map<TDnDNode, ISelectableAreaEntity>;
+    constraintsAreaMap: Map<TDnDNode, IConstraintsAreaEntity>;
   };
   events: {};
 }
