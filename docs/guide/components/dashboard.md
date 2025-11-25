@@ -125,7 +125,7 @@ The Dashboard component provides a powerful grid-based layout system with drag-a
 ## Installation
 
 ```bash
-pnpm dlx @vue-dnd-kit/components add dashboard
+pnpm dlx @vue-dnd-kit/components add Dashboard
 ```
 
 ## Import
