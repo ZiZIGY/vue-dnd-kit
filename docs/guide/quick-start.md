@@ -71,7 +71,7 @@ Now, let's create a drop zone where our draggable element can be dropped:
     id: 'my-draggable',
   });
 
-  const { elementRef: dropzoneRef, isOver } = useDroppable({
+  const { elementRef: dropzoneRef, isOvered } = useDroppable({
     id: 'my-dropzone',
   });
 </script>
@@ -88,7 +88,7 @@ Now, let's create a drop zone where our draggable element can be dropped:
 
     <div
       ref="dropzoneRef"
-      :class="{ over: isOver }"
+      :class="{ over: isOvered }"
       class="dropzone"
     >
       Drop here
@@ -163,7 +163,7 @@ Let's enhance our example to handle drop events:
     id: 'my-draggable',
   });
 
-  const { elementRef: dropzoneRef, isOver } = useDroppable({
+  const { elementRef: dropzoneRef, isOvered } = useDroppable({
     id: 'my-dropzone',
     events: {
       onDrop: () => {
@@ -194,7 +194,7 @@ Let's enhance our example to handle drop events:
 
       <div
         ref="dropzoneRef"
-        :class="{ over: isOver, dropped: isDropped }"
+        :class="{ over: isOvered, dropped: isDropped }"
         class="dropzone"
       >
         Drop here
