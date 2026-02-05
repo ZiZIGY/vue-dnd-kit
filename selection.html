@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selection Area with Auto-Scroll</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            overflow: auto;
+            border: 2px solid #333;
+            margin: 20px auto;
+            background: #f5f5f5;
+        }
+        
+        .content {
+            width: 3000px;
+            height: 2000px;
+            padding: 20px;
+            background: linear-gradient(45deg, #f0f0f0 25%, #e0e0e0 25%, #e0e0e0 50%, #f0f0f0 50%, #f0f0f0 75%, #e0e0e0 75%);
+            background-size: 50px 50px;
+        }
+        
+        .selection-box {
+            position: absolute;
+            border: 2px solid #3498db;
+            background-color: rgba(52, 152, 219, 0.1);
+            pointer-events: none;
+        }
+        
+        .info {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        
+        .auto-scroll-indicator {
+            position: fixed;
+            width: 100px;
+            height: 100px;
+            background: rgba(231, 76, 60, 0.3);
+            border: 2px dashed #e74c3c;
+            display: none;
+            pointer-events: none;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="info">
+            <p>Зажмите Ctrl + ЛКМ и тяните для выделения</p>
+            <p>Координаты: {{ selection.start.x.toFixed(0) }}, {{ selection.start.y.toFixed(0) }} → {{ selection.current.x.toFixed(0) }}, {{ selection.current.y.toFixed(0) }}</p>
+            <p>Размер: {{ selection.width.toFixed(0) }} × {{ selection.height.toFixed(0) }}</p>
+            <p>Статус: {{ isSelecting ? 'выделяем' : 'ожидание' }}</p>
+            <p>Автоскролл: {{ autoScroll.active ? 'активен (' + autoScroll.direction + ')' : 'не активен' }}</p>
+            <p>Скролл контейнера: X:{{ containerScroll.x }}, Y:{{ containerScroll.y }}</p>
+        </div>
+        
+        <div class="auto-scroll-indicator" :style="autoScrollIndicatorStyle"></div>
+        
+        <div 
+            class="container"
+            ref="container"
+            @mousedown="startSelection"
+            @scroll="onScroll"
+        >
+            <div class="content">
+                <div 
+                    v-if="isSelecting"
+                    class="selection-box"
+                    :style="selectionBoxStyle"
+                ></div>
+                
+                <!-- Тестовые элементы -->
+                <div 
+                    v-for="i in 50" 
+                    :key="i"
+                    :style="{
+                        position: 'absolute',
+                        left: ((i % 10) * 300 + 50) + 'px',
+                        top: (Math.floor(i / 10) * 300 + 50) + 'px',
+                        width: '100px',
+                        height: '100px',
+                        background: '#e74c3c',
+                        border: '2px solid #c0392b',
+                        borderRadius: '5px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontWeight: 'bold'
+                    }"
+                >
+                    {{ i }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+
+        createApp({
+            setup() {
+                const container = ref(null);
+                const isSelecting = ref(false);
+                const selection = ref({
+                    start: { x: 0, y: 0 },
+                    current: { x: 0, y: 0 }
+                });
+                const lastMouse = ref({ x: 0, y: 0 });
+                const containerScroll = ref({ x: 0, y: 0 });
+                const autoScroll = ref({
+                    active: false,
+                    direction: '',
+                    speed: 0,
+                    interval: null
+                });
+
+                // Начало выделения
+                const startSelection = (event) => {
+                    if (event.button !== 0 || !event.ctrlKey) return;
+                    
+                    const rect = container.value.getBoundingClientRect();
+                    selection.value.start = {
+                        x: event.clientX - rect.left + container.value.scrollLeft,
+                        y: event.clientY - rect.top + container.value.scrollTop
+                    };
+                    selection.value.current = { ...selection.value.start };
+                    lastMouse.value = { x: event.clientX, y: event.clientY };
+                    isSelecting.value = true;
+                    
+                    event.preventDefault();
+                    event.stopPropagation();
+                };
+
+                // Проверка необходимости автоскролла
+                const checkAutoScroll = (clientX, clientY) => {
+                    if (!container.value || !isSelecting.value) return;
+                    
+                    const rect = container.value.getBoundingClientRect();
+                    const scrollMargin = 50; // расстояние от границы для активации автоскролла
+                    const maxSpeed = 30; // максимальная скорость скролла
+                    
+                    // Вычисляем расстояние до границ
+                    const distLeft = clientX - rect.left;
+                    const distRight = rect.right - clientX;
+                    const distTop = clientY - rect.top;
+                    const distBottom = rect.bottom - clientY;
+                    
+                    let direction = '';
+                    let speed = 0;
+                    
+                    // Проверяем каждую границу
+                    if (distLeft < scrollMargin) {
+                        direction = 'left';
+                        speed = Math.min(maxSpeed, Math.round((scrollMargin - distLeft) / 5));
+                    } else if (distRight < scrollMargin) {
+                        direction = 'right';
+                        speed = Math.min(maxSpeed, Math.round((scrollMargin - distRight) / 5));
+                    }
+                    
+                    if (distTop < scrollMargin) {
+                        direction = direction ? direction + '-up' : 'up';
+                        speed = Math.max(speed, Math.min(maxSpeed, Math.round((scrollMargin - distTop) / 5)));
+                    } else if (distBottom < scrollMargin) {
+                        direction = direction ? direction + '-down' : 'down';
+                        speed = Math.max(speed, Math.min(maxSpeed, Math.round((scrollMargin - distBottom) / 5)));
+                    }
+                    
+                    // Обновляем состояние автоскролла
+                    autoScroll.value.active = direction !== '';
+                    autoScroll.value.direction = direction;
+                    autoScroll.value.speed = speed;
+                    
+                    // Запускаем или останавливаем автоскролл
+                    if (autoScroll.value.active && !autoScroll.value.interval) {
+                        startAutoScroll();
+                    } else if (!autoScroll.value.active && autoScroll.value.interval) {
+                        stopAutoScroll();
+                    }
+                };
+
+                // Запуск автоскролла
+                const startAutoScroll = () => {
+                    if (autoScroll.value.interval) return;
+                    
+                    autoScroll.value.interval = setInterval(() => {
+                        if (!container.value || !autoScroll.value.active) {
+                            stopAutoScroll();
+                            return;
+                        }
+                        
+                        const { direction, speed } = autoScroll.value;
+                        
+                        // Вычисляем новые значения скролла
+                        let scrollX = container.value.scrollLeft;
+                        let scrollY = container.value.scrollTop;
+                        
+                        if (direction.includes('left')) {
+                            scrollX = Math.max(0, scrollX - speed);
+                        }
+                        if (direction.includes('right')) {
+                            scrollX = Math.min(
+                                container.value.scrollWidth - container.value.clientWidth,
+                                scrollX + speed
+                            );
+                        }
+                        if (direction.includes('up')) {
+                            scrollY = Math.max(0, scrollY - speed);
+                        }
+                        if (direction.includes('down')) {
+                            scrollY = Math.min(
+                                container.value.scrollHeight - container.value.clientHeight,
+                                scrollY + speed
+                            );
+                        }
+                        
+                        // Применяем скролл
+                        container.value.scrollLeft = scrollX;
+                        container.value.scrollTop = scrollY;
+                        
+                        // Обновляем координаты выделения после скролла
+                        updateSelectionAfterScroll();
+                        
+                    }, 16); // ~60 FPS
+                };
+
+                // Остановка автоскролла
+                const stopAutoScroll = () => {
+                    if (autoScroll.value.interval) {
+                        clearInterval(autoScroll.value.interval);
+                        autoScroll.value.interval = null;
+                    }
+                    autoScroll.value.active = false;
+                    autoScroll.value.direction = '';
+                    autoScroll.value.speed = 0;
+                };
+
+                // Обновление выделения после автоскролла
+                const updateSelectionAfterScroll = () => {
+                    if (!isSelecting.value || !container.value) return;
+                    
+                    const rect = container.value.getBoundingClientRect();
+                    const x = lastMouse.value.x - rect.left + container.value.scrollLeft;
+                    const y = lastMouse.value.y - rect.top + container.value.scrollTop;
+                    
+                    selection.value.current = {
+                        x: Math.max(0, Math.min(x, container.value.scrollWidth)),
+                        y: Math.max(0, Math.min(y, container.value.scrollHeight))
+                    };
+                };
+
+                // Обновление при движении мыши
+                const onMouseMove = (event) => {
+                    if (!isSelecting.value) return;
+                    
+                    const rect = container.value.getBoundingClientRect();
+                    const x = event.clientX - rect.left + container.value.scrollLeft;
+                    const y = event.clientY - rect.top + container.value.scrollTop;
+                    
+                    // Ограничиваем координаты границами контейнера
+                    selection.value.current = {
+                        x: Math.max(0, Math.min(x, container.value.scrollWidth)),
+                        y: Math.max(0, Math.min(y, container.value.scrollHeight))
+                    };
+                    lastMouse.value = { x: event.clientX, y: event.clientY };
+                    
+                    // Проверяем автоскролл
+                    checkAutoScroll(event.clientX, event.clientY);
+                };
+
+                // Скролл контейнера
+                const onScroll = () => {
+                    if (!container.value) return;
+                    
+                    containerScroll.value = {
+                        x: container.value.scrollLeft,
+                        y: container.value.scrollTop
+                    };
+                    
+                    if (!isSelecting.value) return;
+                    
+                    const rect = container.value.getBoundingClientRect();
+                    const x = lastMouse.value.x - rect.left + container.value.scrollLeft;
+                    const y = lastMouse.value.y - rect.top + container.value.scrollTop;
+                    
+                    selection.value.current = {
+                        x: Math.max(0, Math.min(x, container.value.scrollWidth)),
+                        y: Math.max(0, Math.min(y, container.value.scrollHeight))
+                    };
+                };
+
+                // Окончание выделения
+                const onMouseUp = () => {
+                    if (isSelecting.value) {
+                        isSelecting.value = false;
+                        stopAutoScroll();
+                    }
+                };
+
+                // Стили с ограничением внутри контейнера
+                const selectionBoxStyle = computed(() => {
+                    if (!isSelecting.value) return {};
+                    
+                    const { start, current } = selection.value;
+                    
+                    // Ограничиваем область границами контейнера
+                    const left = Math.max(0, Math.min(start.x, current.x));
+                    const top = Math.max(0, Math.min(start.y, current.y));
+                    const right = Math.min(container.value.scrollWidth, Math.max(start.x, current.x));
+                    const bottom = Math.min(container.value.scrollHeight, Math.max(start.y, current.y));
+                    
+                    const width = right - left;
+                    const height = bottom - top;
+                    
+                    return {
+                        left: left + 'px',
+                        top: top + 'px',
+                        width: width + 'px',
+                        height: height + 'px'
+                    };
+                });
+
+                // Стили для индикатора автоскролла
+                const autoScrollIndicatorStyle = computed(() => {
+                    if (!autoScroll.value.active || !lastMouse.value) return { display: 'none' };
+                    
+                    const size = 100;
+                    let left = lastMouse.value.x - size / 2;
+                    let top = lastMouse.value.y - size / 2;
+                    
+                    // Смещаем индикатор от границы
+                    const rect = container.value?.getBoundingClientRect();
+                    if (rect) {
+                        if (lastMouse.value.x - rect.left < 50) left += 20;
+                        if (rect.right - lastMouse.value.x < 50) left -= 20;
+                        if (lastMouse.value.y - rect.top < 50) top += 20;
+                        if (rect.bottom - lastMouse.value.y < 50) top -= 20;
+                    }
+                    
+                    return {
+                        display: 'block',
+                        left: left + 'px',
+                        top: top + 'px',
+                        opacity: Math.min(1, autoScroll.value.speed / 30)
+                    };
+                });
+
+                // Вычисляемые размеры
+                const selectionComputed = computed(() => {
+                    const width = Math.abs(selection.value.current.x - selection.value.start.x);
+                    const height = Math.abs(selection.value.current.y - selection.value.start.y);
+                    
+                    return {
+                        ...selection.value,
+                        width,
+                        height
+                    };
+                });
+
+                // Инициализация
+                onMounted(() => {
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                    
+                    // Обработка ESC
+                    document.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape' && isSelecting.value) {
+                            isSelecting.value = false;
+                            stopAutoScroll();
+                        }
+                    });
+                    
+                    // Инициализируем скролл
+                    onScroll();
+                });
+
+                // Очистка
+                onUnmounted(() => {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                    stopAutoScroll();
+                });
+
+                return {
+                    container,
+                    isSelecting,
+                    selection: selectionComputed,
+                    selectionBoxStyle,
+                    autoScroll,
+                    containerScroll,
+                    autoScrollIndicatorStyle,
+                    startSelection,
+                    onScroll
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

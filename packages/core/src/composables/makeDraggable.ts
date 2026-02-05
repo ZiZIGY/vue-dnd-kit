@@ -1,38 +1,104 @@
-import { inject, onBeforeUnmount, onMounted } from 'vue';
-
 import type {
   IBaseOptions,
   IDnDProvider,
+  IDragActivation,
   IDraggableEvents,
+  IModifier,
+  IModifierOptions,
   TDnDNodeRef,
   TDraggablePayload,
+  TModifierMethod,
 } from '../types';
+import {
+  inject,
+  onBeforeUnmount,
+  onMounted,
+  type Component,
+  type ComputedRef,
+  type Ref,
+  type ShallowRef,
+} from 'vue';
 
-interface IDraggableOptions extends IBaseOptions {
+import { DnDAttributes } from '../utils/namespaces';
+import { getNode, preventEvent } from '../utils/dom';
+
+interface IMakeDraggableOptions extends IBaseOptions {
   events?: IDraggableEvents;
+  modifier?: IModifierOptions;
+  render?: Component;
+  dragHandle?: string | Ref<string>;
+  activation?: IDragActivation | Ref<IDragActivation>;
 }
 
-export const makeDraggable = (
+interface IMakeDraggableReturnType {
+  distanceProgress: ComputedRef<number>;
+  delayProgress: ShallowRef<number>;
+}
+
+export function makeDraggable(
   ref: TDnDNodeRef,
-  options: IDraggableOptions,
   payload?: TDraggablePayload
-) => {
-  const provider = inject<IDnDProvider>('DnDProvider')!;
+): IMakeDraggableReturnType;
+export function makeDraggable(
+  ref: TDnDNodeRef,
+  options: IMakeDraggableOptions,
+  payload?: TDraggablePayload
+): IMakeDraggableReturnType;
+export function makeDraggable(
+  ref: TDnDNodeRef,
+  optionsOrPayload?: IMakeDraggableOptions | TDraggablePayload,
+  payload?: TDraggablePayload
+): IMakeDraggableReturnType {
+  const provider = inject<IDnDProvider>('DnDProvider');
+
+  if (!provider) throw Error('DnD provider not found');
+
+  let options: IMakeDraggableOptions;
+  let finalPayload: TDraggablePayload | undefined;
+  let container: HTMLElement | null;
+
+  if (typeof optionsOrPayload === 'function') {
+    options = {};
+    finalPayload = optionsOrPayload;
+  } else {
+    options = optionsOrPayload ?? {};
+    finalPayload = payload;
+  }
 
   onMounted(() => {
-    provider.entities.draggableMap.set(ref.value, {
+    container = getNode(ref);
+    if (!container) return;
+    
+    container.addEventListener('dragstart', preventEvent);
+    container.addEventListener('drag', preventEvent);
+    container.addEventListener('dragend', preventEvent);
+    
+    container.setAttribute(DnDAttributes.DRAGGABLE, '');
+    
+    provider.lib.draggableObserver.observe(container);
+
+    provider.entities.draggableMap.set(container, {
+      render: options.render,
       disabled: (options.disabled as boolean) ?? false,
-      events: options.events,
       groups: (options.groups as string[]) ?? [],
-      payload,
+      modifier: options.modifier as IModifier,
+      events: options.events,
+      payload: finalPayload,
+      dragHandle: options.dragHandle as string,
+      activation: options.activation as IDragActivation,
     });
   });
 
   onBeforeUnmount(() => {
-    provider.entities.draggableMap.delete(ref.value);
+    if (!container) return;
+    provider.lib.draggableObserver.unobserve(container);
+    provider.entities.visibleDraggableSet.delete(container);
+    provider.entities.draggableMap.delete(container);
+    provider.entities.modifiersDraggableSet.delete(container);
   });
 
   return {
-    ...provider,
+    distanceProgress: provider.distanceProgress,
+    delayProgress: provider.delayProgress,
   };
-};
+}
