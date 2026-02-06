@@ -1,10 +1,10 @@
 <script setup lang="ts">
   import { ref } from 'vue';
 
-  import DnDProvider from './components/DnDProvider.vue';
-  import Draggable from './components/Draggable.vue';
-  import SelectionArea from './components/SelectionArea.vue';
-  import AxisBox from './components/AxisBox.vue';
+  import DnDProvider from './external/components/DnDProvider.vue';
+  import Draggable from './internal/components/Draggable.vue';
+  import SelectionArea from './internal/components/SelectionArea.vue';
+  import AxisBox from './internal/components/AxisBox.vue';
 
   const test = ref([1, 2, 3, 4, 5, 6, 7]);
 </script>
@@ -56,16 +56,36 @@
       </SelectionArea>
     </div>
 
-    <!-- Combined Activation -->
+    <!-- Combined Activation (both distance AND delay must be met) -->
     <div class="example-section">
       <h3>Combined (сдвинь 20px + держи 0.3s) - с индикатором</h3>
       <SelectionArea>
         <Draggable 
           :index="203"
+          :activation="{ distance: 20, delay: 0.3 }"
           :show-progress="true"
           class="card"
         >
           Сначала сдвинь на 20px, потом держи 0.3s
+        </Draggable>
+      </SelectionArea>
+    </div>
+
+    <!-- Groups Example (Ctrl+Click - выделяются только board) -->
+    <div class="example-section">
+      <h3>Groups (только board выделяется, Ctrl+Click)</h3>
+      <SelectionArea :groups="['board']">
+        <Draggable :index="300" :groups="['board']" class="card">
+          🎯 board карточка
+        </Draggable>
+        <Draggable :index="301" :groups="['board']" class="card">
+          🎯 board карточка
+        </Draggable>
+        <Draggable :index="302" :groups="['sidebar']" class="card">
+          📌 sidebar (не выделится)
+        </Draggable>
+        <Draggable :index="303" :groups="['sidebar']" class="card">
+          📌 sidebar (не выделится)
         </Draggable>
       </SelectionArea>
     </div>
@@ -90,22 +110,20 @@
       </SelectionArea>
     </AxisBox>
 
-    <!-- Пример с BoundingBox - оба направления но ограничен контейнером -->
-    <DnDProvider>
-      <AxisBox axis="both" :restrict-to-area="true" class="bounding-box-example both">
-        <h3>Оба направления (ограничен контейнером)</h3>
-        <SelectionArea>
-          <Draggable
-            v-for="(value, index) in test"
-            :key="value"
-            :index="value"
-          >
-            Драггабл - value: {{ value }}: index: {{ index }}
-            <button @click="test.splice(index, 1)">Удалить</button>
-          </Draggable>
-        </SelectionArea>
-      </AxisBox>
-    </DnDProvider>
+
+    <AxisBox axis="both" :restrict-to-area="true" class="bounding-box-example both">
+      <h3>Оба направления (ограничен контейнером)</h3>
+      <SelectionArea>
+        <Draggable
+          v-for="(value, index) in test"
+          :key="value"
+          :index="value"
+        >
+          Драггабл - value: {{ value }}: index: {{ index }}
+          <button @click="test.splice(index, 1)">Удалить</button>
+        </Draggable>
+      </SelectionArea>
+    </AxisBox>
 
     <button @click="test.push(test.length)">Добавить</button>
   </DnDProvider>
