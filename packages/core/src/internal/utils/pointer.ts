@@ -17,17 +17,17 @@ export function createPointerState(
 }
 
 /**
- * Calculates offset between cursor and element
+ * Calculates cursor offset as ratio (0–1) relative to element size
  */
 export function calculateCursorOffset(
   event: PointerEvent,
   element: HTMLElement
 ): { x: number; y: number } {
   const rect = element.getBoundingClientRect();
-  return {
-    x: event.clientX - rect.left,
-    y: event.clientY - rect.top,
-  };
+
+  const x = rect.width > 0 ? (event.clientX - rect.left) / rect.width : 0.5;
+  const y = rect.height > 0 ? (event.clientY - rect.top) / rect.height : 0.5;
+  return { x, y };
 }
 
 /**

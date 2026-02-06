@@ -1,14 +1,14 @@
-<script setup lang="tsx">
+<script setup lang="ts">
   import { useTemplateRef } from 'vue';
   import { makeDraggable } from '../../external/composables/makeDraggable';
   import type { IDragActivation } from '../../external/types';
-
 
   const props = defineProps<{
     index: number;
     dragHandle?: string;
     activation?: IDragActivation;
     groups?: string[];
+    source: any[]
   }>();
 
   const node = useTemplateRef('node');

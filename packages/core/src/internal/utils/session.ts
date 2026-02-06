@@ -8,7 +8,7 @@ export const resetDnDSession = (provider: IDnDProviderInternal): void => {
   provider.state.value = undefined;
   provider.entities.selectingArea = undefined;
   provider.entities.initiatingDraggable = undefined;
-  provider.delayProgress.value = 0;
-  provider.delayStartTime.value = 0;
+  provider.delay.progress = 0;
+  provider.delay.startTime = 0;
   provider.entities.draggingMap.clear();
 };

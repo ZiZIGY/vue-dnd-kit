@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { onBeforeUnmount, onMounted, provide, useTemplateRef } from 'vue';
+  import { computed, onBeforeUnmount, onMounted, provide, useTemplateRef } from 'vue';
 
   import { injectionKey } from '../../internal/utils/namespaces';
   import { useDnDProviderState } from '../../internal/composables/useDnDProviderState';
@@ -13,6 +13,8 @@
   const overlayRef = useTemplateRef<HTMLElement>('overlayRef');
   const provider = useDnDProviderState(overlayRef);
   const pointerHandlers = createPointerHandlers(provider);
+  
+  const overlay = computed(() => provider.overlay.render.value ?? DefaultOverlay)
 
   onMounted(() => {
     document.addEventListener('pointerdown', pointerHandlers.pointerDown);
@@ -22,7 +24,7 @@
     document.addEventListener('scroll', handleScrollEvent(provider), true);
   });
 
-  onBeforeUnmount(() => {
+  onBeforeUnmount(() => {    
     document.removeEventListener('pointerdown', pointerHandlers.pointerDown);
     document.removeEventListener('pointerup', pointerHandlers.pointerUp);
     document.removeEventListener('pointermove', pointerHandlers.pointerMove);
@@ -46,7 +48,7 @@
     class="dnd-kit-overlay-container"
   >
     <slot name="overlay">
-      <component :is="DefaultOverlay" />
+      <component :is="overlay" />
     </slot>
   </div>
 
@@ -55,13 +57,14 @@
 
 <style>
   pre {
-    position: fixed;
+    display: inline-flex;
     width: 300px;
     height: 100svh;
     overflow: scroll;
     text-align: left;
+    position: fixed;
     top: 0;
-    left: 0;
+    right: 0;
   }
   .dnd-kit-overlay-container {
     position: fixed;

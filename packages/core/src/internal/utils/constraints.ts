@@ -81,15 +81,19 @@ export function calculateConstrainedPosition(
   pointer: TPointerState,
   overlayElement: HTMLElement | null,
   firstDraggable: HTMLElement | null,
-  constraintsAreaMap: Map<HTMLElement, IConstraintsAreaEntity>
+  constraintsAreaMap: Map<HTMLElement, IConstraintsAreaEntity>,
+  overlaySizeFallback?: { width: number; height: number } | null
 ): { x: number; y: number } {
   if (!pointer || !overlayElement) {
     return { x: 0, y: 0 };
   }
 
-  // Desired position (cursor - offset)
-  let targetX = pointer.current.x - pointer.offset.x;
-  let targetY = pointer.current.y - pointer.offset.y;
+  const overlayRect = overlayElement.getBoundingClientRect();
+  const width = overlayRect.width || overlaySizeFallback?.width || 0;
+  const height = overlayRect.height || overlaySizeFallback?.height || 0;
+  // offset is ratio (0–1)
+  let targetX = pointer.current.x - width * pointer.offset.x;
+  let targetY = pointer.current.y - height * pointer.offset.y;
 
   if (!firstDraggable) {
     return { x: targetX, y: targetY };
@@ -103,7 +107,6 @@ export function calculateConstrainedPosition(
 
   const { element: constraintElement, entity } = constraint;
   const constraintRect = constraintElement.getBoundingClientRect();
-  const overlayRect = overlayElement.getBoundingClientRect();
   const draggableRect = firstDraggable.getBoundingClientRect();
 
   // Apply axis constraint

@@ -75,7 +75,7 @@ export const createPointerHandlers = (provider: IDnDProviderInternal) => {
       if (hasActivation) {
         provider.state.value = 'activating';
         if (entity?.activation?.delay) {
-          provider.delayStartTime.value = Date.now();
+          provider.delay.startTime = Date.now();
           delayTimer = createActivationDelayTimer(provider, () => startDraggingForProvider(provider));
         }
       } else {
@@ -88,9 +88,11 @@ export const createPointerHandlers = (provider: IDnDProviderInternal) => {
     delayTimer?.cancel();
     document.removeEventListener('pointerup', pointerUp);
     document.removeEventListener('pointermove', pointerMove);
+    
     provider.lib.draggableObserver.disconnect();
     provider.lib.droppableObserver.disconnect();
     provider.lib.selectableAreaObserver.disconnect();
+    provider.lib.overlaySizeObserver.disconnect();
   };
 
   return { pointerDown, pointerUp, pointerMove, cleanup };

@@ -1,14 +1,18 @@
 <script setup lang="ts">
   import { useDnDProvider } from '../composables/useDnDProvider';
 
-  const { entities, state, overlayStyle } = useDnDProvider();
+  const { entities, state, overlay } = useDnDProvider();
 </script>
 
 <template>
-  <div v-show="state === 'dragging'" class="dnd-kit-default-overlay" :style="{
-    '--position-x': overlayStyle.x + 'px',
-    '--position-y': overlayStyle.y + 'px'
-  }">
+  <div
+    v-if="state === 'dragging'"
+    class="dnd-kit-default-overlay"
+    :style="{
+      '--position-x': overlay.style.value.x + 'px',
+      '--position-y': overlay.style.value.y + 'px'
+    }"
+  >
     <template v-for="[node, draggable] in entities.draggingMap">
       <component
         v-if="entities.draggableMap.get(node)?.render"

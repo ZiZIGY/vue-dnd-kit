@@ -1,7 +1,8 @@
-import { computed, reactive, ref, shallowRef, type Ref } from 'vue';
-import type { ICoordinates, IEntities, TDnDState, TPointerState } from '../../external/types';
+import { computed, reactive, ref, shallowRef, type Component, type Ref } from 'vue';
+import type { ICoordinates, IDelay, IEntities, TDnDState, TPointerState } from '../../external/types';
 import { filterByModifiers } from '../utils/provider';
-import { createObserver } from '../utils/observer';
+import { createIntersectionObserver } from '../utils/observer';
+import { useSizeObserver } from './useSizeObserver';
 import { calculateDistanceProgress } from '../utils/drag-activation';
 import { calculateConstrainedPosition } from '../utils/constraints';
 import type { IDnDProviderInternal } from '../types/provider';
@@ -51,9 +52,11 @@ export function useDnDProviderState(
     x: window.scrollX,
     y: window.scrollY,
   });
-
-  const delayProgress = shallowRef(0);
-  const delayStartTime = ref(0);
+  
+  const delay = reactive<IDelay>({
+    progress: 0,
+    startTime: 0,
+  })
 
   const distanceProgress = computed(() => {
     if (!pointer.value || !entities.initiatingDraggable) return 0;
@@ -66,15 +69,15 @@ export function useDnDProviderState(
     return calculateDistanceProgress(pointer.value, distanceThreshold);
   });
 
-  const draggableObserver = createObserver(entities.visibleDraggableSet);
-  const droppableObserver = createObserver(entities.visibleDroppableSet);
-  const selectableAreaObserver = createObserver(
+  const draggableObserver = createIntersectionObserver(entities.visibleDraggableSet);
+  const droppableObserver = createIntersectionObserver(entities.visibleDroppableSet);
+  const selectableAreaObserver = createIntersectionObserver(
     entities.visibleSelectableAreaSet
   );
 
-  const overlaySize = ref<{ width: number; height: number } | null>(null);
+  const { overlaySize, overlaySizeObserver } = useSizeObserver(overlayRef);
 
-
+  const overlayRender = ref<Component>()
   const overlayStyle = computed(() => {
     scrollPosition.y;
     scrollPosition.x;
@@ -86,6 +89,7 @@ export function useDnDProviderState(
       overlayRef.value,
       draggable || null,
       entities.constraintsAreaMap,
+      overlaySize.value
     );
   });
 
@@ -95,14 +99,18 @@ export function useDnDProviderState(
     entities,
     modifiers,
     scrollPosition,
-    delayProgress,
-    delayStartTime,
+    delay,
     distanceProgress,
-    overlayStyle,
+    overlay: {
+      size: overlaySize,
+      style: overlayStyle,
+      render: overlayRender,
+    },
     lib: {
       draggableObserver,
       droppableObserver,
-      selectableAreaObserver
-    }
+      selectableAreaObserver,
+      overlaySizeObserver,
+    },
   };
 }
