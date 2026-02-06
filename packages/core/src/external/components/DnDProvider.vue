@@ -52,7 +52,7 @@
     </slot>
   </div>
 
-  <pre>{{ provider.entities }}</pre>
+  <pre>{{ provider.hovered }}</pre>
 </template>
 
 <style>

@@ -12,10 +12,12 @@ import SelectionArea from './internal/components/SelectionArea.vue';
 <template>
   <DnDProvider>
     <SelectionArea>
-      <AxisBox axis="y">
-        <TransitionGroup>
-          <Draggable v-for="(key, index) in test" :key :index="index" :source="test">value - {{ key }}</Draggable>
-        </TransitionGroup>
+      <AxisBox axis="y" restrict-to-area>
+        <Draggable v-for="(key, index) in test" :key :index="index" :source="test">value - {{ key }}
+            <AxisBox axis="y" restrict-to-area>
+              <Draggable v-for="(key, index) in test" :key :index="index" :source="test">value - {{ key }}</Draggable>
+            </AxisBox>
+        </Draggable>
       </AxisBox>
     </SelectionArea>
   </DnDProvider>

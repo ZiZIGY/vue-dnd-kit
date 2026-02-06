@@ -19,6 +19,18 @@ export const getNode = (node: TDnDNodeRef) => {
 };
 
 /**
+ * Checks if point (x, y) is inside rect
+ */
+export const containsPoint = (rect: DOMRect, x: number, y: number): boolean =>
+  x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+
+/**
+ * True if child is a descendant of parent (parent.contains(child) and parent !== child)
+ */
+export const isDescendant = (parent: HTMLElement, child: HTMLElement): boolean =>
+  parent !== child && parent.contains(child);
+
+/**
  * Checks if two DOMRects intersect
  */
 export const checkIntersection = (rect1: DOMRect, rect2: DOMRect): boolean => {

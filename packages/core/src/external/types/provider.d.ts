@@ -7,7 +7,16 @@ import type {
   TDnDNode,
 } from './entities';
 import type { ICoordinates, TPointerState } from './pointer';
+import type { IPlacement } from './placement';
 import type { Component, ComputedRef, CSSProperties, Reactive, Ref, ShallowRef } from 'vue';
+
+/** Map element → placement for elements under cursor during drag */
+export type THoveredMap = Map<HTMLElement, IPlacement>;
+
+export interface IHovered {
+  draggable: THoveredMap;
+  droppable: THoveredMap;
+}
 
 export interface IDnDProviderExternal  {
   state: Ref<TDnDState | undefined>;
@@ -18,10 +27,12 @@ export interface IDnDProviderExternal  {
   delay: Reactive<IDelay>,
   distanceProgress: ComputedRef<number>;
   overlay: {
+    ref: Ref<HTMLElement | null>;
     style: ComputedRef<ICoordinates>;
     size: Ref<DOMRect| null>;
     render: Ref<Component | undefined>;
-  }
+  };
+  hovered: IHovered;
 }
 
 export interface IDelay {

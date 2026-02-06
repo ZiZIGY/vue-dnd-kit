@@ -15,6 +15,7 @@ import {
 } from '../../utils/drag-activation';
 import { resetDnDSession } from '../../utils/session';
 import { updateSelectionByBox } from '../../utils/selection';
+import { updateHoveredFromPointer } from '../../utils/hover';
 import type { IDnDProviderInternal } from '../../types/provider';
 
 export const createPointerHandlers = (provider: IDnDProviderInternal) => {
@@ -37,6 +38,10 @@ export const createPointerHandlers = (provider: IDnDProviderInternal) => {
     provider.pointer.value.current = { x: event.clientX, y: event.clientY };
 
     if (tryStartDragIfActivationComplete(provider)) return;
+
+    if (provider.state.value === 'dragging') {
+      updateHoveredFromPointer(provider, provider.hovered);
+    }
 
     if (provider.state.value === 'selecting') {
       updateSelectionByBox(provider);

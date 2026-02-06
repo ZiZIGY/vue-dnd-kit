@@ -11,4 +11,6 @@ export const resetDnDSession = (provider: IDnDProviderInternal): void => {
   provider.delay.progress = 0;
   provider.delay.startTime = 0;
   provider.entities.draggingMap.clear();
+  provider.hovered.draggable.clear();
+  provider.hovered.droppable.clear();
 };

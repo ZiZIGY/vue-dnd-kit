@@ -2,6 +2,7 @@
 import { useTemplateRef } from 'vue';
 import type { TDragAxis } from '../../external/types';
 import { makeBoundingBox } from '../../external/composables/makeBoundingBox';
+import { makeDroppable } from '../../external/composables/makeDroppable';
 
 const props = defineProps<{
   axis: TDragAxis // "x" | "y" | "both";
@@ -11,6 +12,7 @@ const props = defineProps<{
 const node = useTemplateRef('node');
 
 makeBoundingBox(node, props);
+makeDroppable(node);
 </script>
 
 <template>
@@ -22,5 +24,6 @@ makeBoundingBox(node, props);
 <style scoped>
 .bounding-box {
   position: relative;
+  padding: 20px;
 }
 </style>

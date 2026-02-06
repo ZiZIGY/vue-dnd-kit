@@ -12,6 +12,7 @@ export const useDnDProvider = (): IDnDProviderExternal => {
     pointer: provider.pointer,
     state: provider.state,
     scrollPosition: provider.scrollPosition,
-    modifiers: provider.modifiers
+    modifiers: provider.modifiers,
+    hovered: provider.hovered
   }
 }

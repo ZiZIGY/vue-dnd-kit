@@ -1,5 +1,6 @@
 import { computed, reactive, ref, shallowRef, type Component, type Ref } from 'vue';
 import type { ICoordinates, IDelay, IEntities, TDnDState, TPointerState } from '../../external/types';
+import type { IHovered } from '../../external/types/provider';
 import { filterByModifiers } from '../utils/provider';
 import { createIntersectionObserver } from '../utils/observer';
 import { useSizeObserver } from './useSizeObserver';
@@ -77,7 +78,13 @@ export function useDnDProviderState(
 
   const { overlaySize, overlaySizeObserver } = useSizeObserver(overlayRef);
 
-  const overlayRender = ref<Component>()
+  const overlayRender = ref<Component>();
+
+  const hovered = reactive<IHovered>({
+    draggable: new Map(),
+    droppable: new Map(),
+  });
+
   const overlayStyle = computed(() => {
     scrollPosition.y;
     scrollPosition.x;
@@ -101,10 +108,12 @@ export function useDnDProviderState(
     scrollPosition,
     delay,
     distanceProgress,
+    hovered,
     overlay: {
       size: overlaySize,
       style: overlayStyle,
       render: overlayRender,
+      ref: overlayRef,
     },
     lib: {
       draggableObserver,
