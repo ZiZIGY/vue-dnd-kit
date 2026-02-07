@@ -1,28 +1,36 @@
 <script setup lang="ts">
   import { useTemplateRef } from 'vue';
-  import { makeDraggable, makeDroppable, useDnDProvider } from '../../external';
+  import { makeBoundingBox, makeDroppable } from '../../external';
 
   const node = useTemplateRef('node');
 
-  makeDraggable(node, {
-    placementMargins: { top: 5, right: 5, bottom: 5, left: 5 },
-  });
   makeDroppable(node);
+
+  makeBoundingBox(node, {
+    axis: 'y',
+    restrictToArea: true,
+  });
 </script>
 
 <template>
-  <div ref="node">
+  <div
+    ref="node"
+    class="zone"
+  >
     <slot />
   </div>
 </template>
 
 <style scoped>
-  div {
+  .zone {
     user-select: none;
     touch-action: none;
     position: relative;
-    padding: 5px;
-    border: 1px solid red;
+    padding: 1rem;
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 12px;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    min-height: 120px;
   }
 
   .top-placement,

@@ -56,8 +56,10 @@ async function handleDropAndFinish(
   if (isEffectivelyDisabledDroppable(hoveredZone, provider)) return true;
 
   const zoneEntity = provider.entities.droppableMap.get(hoveredZone);
-  const payload = createDragPayload(provider);
-  const dragEvent = { payload };
+  const dragEvent = {
+    payload: createDragPayload(provider),
+    provider,
+  };
 
   const result = zoneEntity?.events?.onDrop?.(dragEvent);
 

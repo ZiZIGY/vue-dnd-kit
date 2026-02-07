@@ -27,46 +27,70 @@
 <template>
   <div
     ref="node"
-    :style="{ background: isOvered ? 'red' : '' }"
+    class="draggable-card"
+    :class="{ 'draggable-card--over': isOvered }"
   >
-    <span
+    <div
       v-if="provider.hovered.draggable.get(node!)?.top"
-      class="top-placement"
-      >top</span
-    >
-    <slot />
-    <span
+      class="drop-indicator drop-indicator--top"
+    />
+    <div class="draggable-card__inner">
+      <slot name="handle" />
+      <div class="draggable-card__content">
+        <slot />
+      </div>
+    </div>
+    <div
       v-if="provider.hovered.draggable.get(node!)?.bottom"
-      class="bottom-placement"
-      >bottom</span
-    >
+      class="drop-indicator drop-indicator--bottom"
+    />
   </div>
 </template>
 
-<style scoped>
-  div {
+<style>
+  .draggable-card {
     user-select: none;
     touch-action: none;
     position: relative;
-    padding: 5px;
+    background: #334155;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
-  .top-placement {
-    position: absolute;
-    margin: auto;
-    inset: 0;
-    display: block;
-    text-align: center;
-    transform: translateY(-50%);
-    pointer-events: none;
+  .draggable-card--over {
+    background: #475569;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   }
-  .bottom-placement {
+
+  .draggable-card__inner {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 12px;
+  }
+
+  .draggable-card__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .drop-indicator {
     position: absolute;
-    margin: auto;
-    inset: 0;
-    display: block;
-    text-align: center;
-    transform: translateY(50%);
+    left: 8px;
+    right: 8px;
+    height: 2px;
+    background: #38bdf8;
+    border-radius: 1px;
     pointer-events: none;
+    z-index: 1;
+    box-shadow: 0 0 8px #38bdf8;
+  }
+
+  .drop-indicator--top {
+    top: 0;
+  }
+
+  .drop-indicator--bottom {
+    bottom: 0;
   }
 </style>

@@ -1,5 +1,6 @@
 import type { ComponentPublicInstance, ComputedRef, Ref } from 'vue';
 import type { IPlacementMargins } from './placement';
+import type { IDragEvent } from './provider';
 
 export type TDnDNode = HTMLElement | ComponentPublicInstance | null;
 export type TDnDNodeRef = Readonly<Ref<TDnDNode>>;
@@ -11,11 +12,6 @@ export interface IDragPayload<T = unknown, D = unknown> {
   index: number;
   items: T[];
   dropData?: D;
-}
-
-/** Event object passed to drag/drop handlers */
-export interface IDragEvent<T = unknown, D = unknown> {
-  payload: IDragPayload<T, D> | undefined;
 }
 
 export interface IBaseOptions {
@@ -103,25 +99,30 @@ export interface IDroppableEvents {
 }
 
 export interface IDragActivationOptions {
-  distance?: {
-    x?: number | Ref<number>;
-    y?: number | Ref<number>;
-    condition?: TCondition | Ref<TCondition>;
-  } | number | Ref<number>;
+  distance?:
+    | {
+        x?: number | Ref<number>;
+        y?: number | Ref<number>;
+        condition?: TCondition | Ref<TCondition>;
+      }
+    | number
+    | Ref<number>;
   delay?: number | Ref<number>;
 }
 
 export interface IDragActivation {
-  distance?: {
-    x?: number;
-    y?: number;
-    condition?: TCondition;
-  } | number;
+  distance?:
+    | {
+        x?: number;
+        y?: number;
+        condition?: TCondition;
+      }
+    | number;
   delay?: number;
   condition?: TCondition;
 }
 
-export type TCondition = 'any' | 'both'
+export type TCondition = 'any' | 'both';
 
 export interface IDraggableEntity extends IBaseEntity {
   render?: Component;

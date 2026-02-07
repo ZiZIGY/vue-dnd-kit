@@ -9,8 +9,7 @@ import {
 } from './disabled';
 import { createDragPayload } from '../logic/payload';
 import type { IDnDProviderInternal } from '../types/provider';
-import type { IDragEvent } from '../../external/types';
-import type { IHovered } from '../../external/types/provider';
+import type { IDragEvent, IHovered } from '../../external/types/provider';
 
 export type TSelfDragEvent = 'onSelfDragStart' | 'onSelfDragMove' | 'onSelfDragEnd' | 'onSelfDragCancel';
 
@@ -24,6 +23,7 @@ export const getClosestDraggableFromEvent = (event: PointerEvent): HTMLElement |
 
 const getDragEvent = (provider: IDnDProviderInternal): IDragEvent => ({
   payload: createDragPayload(provider),
+  provider,
 });
 
 /** Triggers onSelf* for element from event if it's in draggingMap */

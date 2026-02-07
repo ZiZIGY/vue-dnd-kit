@@ -1,5 +1,6 @@
 import type {
   IConstraintsAreaEntity,
+  IDragPayload,
   IDraggableEntity,
   IDroppableEntity,
   IEntities,
@@ -9,6 +10,12 @@ import type {
 import type { ICoordinates, TPointerState } from './pointer';
 import type { IPlacement } from './placement';
 import type { Component, ComputedRef, CSSProperties, Reactive, Ref, ShallowRef } from 'vue';
+
+/** Event object passed to drag/drop handlers */
+export interface IDragEvent<T = unknown, D = unknown> {
+  payload: IDragPayload<T, D> | undefined;
+  provider: IDnDProviderExternal;
+}
 
 /** Map element → placement for elements under cursor during drag */
 export type THoveredMap = Map<HTMLElement, IPlacement>;
