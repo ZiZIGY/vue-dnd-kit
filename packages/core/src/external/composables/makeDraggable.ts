@@ -5,19 +5,11 @@ import type {
   IDraggableEvents,
   IModifier,
   IModifierOptions,
+  IPlacementMargins,
   TDnDNodeRef,
   TDraggablePayload,
-  TModifierMethod,
 } from '../types';
-import {
-  computed,
-  onBeforeUnmount,
-  onMounted,
-  type Component,
-  type ComputedRef,
-  type Ref,
-  type ShallowRef,
-} from 'vue';
+import { onBeforeUnmount, onMounted, type Component, type Ref } from 'vue';
 
 import { DnDAttributes } from '../../internal/utils/namespaces';
 import { getNode, preventEvent } from '../../internal/utils/dom';
@@ -29,12 +21,11 @@ interface IMakeDraggableOptions extends IBaseOptions {
   render?: Component;
   dragHandle?: string | Ref<string>;
   activation?: IDragActivationOptions;
+  /** Margins for center zone. When pointer in center and element is also droppable, zone mode is used. */
+  placementMargins?: IPlacementMargins;
 }
 
-interface IMakeDraggableReturnType {
-  distanceProgress: ComputedRef<number>;
-  delayProgress: ShallowRef<number>;
-}
+interface IMakeDraggableReturnType {}
 
 export function makeDraggable(
   ref: TDnDNodeRef,
@@ -50,9 +41,8 @@ export function makeDraggable(
   optionsOrPayload?: IMakeDraggableOptions | TDraggablePayload,
   payload?: TDraggablePayload
 ): IMakeDraggableReturnType {
-  
-  const provider = useDnDProviderInternal()
-  
+  const provider = useDnDProviderInternal();
+
   let options: IMakeDraggableOptions;
   let finalPayload: TDraggablePayload | undefined;
   let container: HTMLElement | null;
@@ -68,13 +58,13 @@ export function makeDraggable(
   onMounted(() => {
     container = getNode(ref);
     if (!container) return;
-    
+
     container.addEventListener('dragstart', preventEvent);
     container.addEventListener('drag', preventEvent);
     container.addEventListener('dragend', preventEvent);
-    
+
     container.setAttribute(DnDAttributes.DRAGGABLE, '');
-    
+
     provider.lib.draggableObserver.observe(container);
 
     provider.entities.draggableMap.set(container, {
@@ -86,6 +76,7 @@ export function makeDraggable(
       payload: finalPayload,
       dragHandle: options.dragHandle as string,
       activation: options.activation as IDragActivation,
+      placementMargins: options.placementMargins,
     });
   });
 
@@ -98,8 +89,5 @@ export function makeDraggable(
     provider.entities.modifiersDraggableSet.delete(container);
   });
 
-  return {
-    distanceProgress: provider.distanceProgress,
-    delayProgress: provider.delayProgress,
-  };
+  return {};
 }

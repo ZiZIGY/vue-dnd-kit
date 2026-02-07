@@ -2,35 +2,44 @@
   import { computed, useTemplateRef } from 'vue';
   import { makeDraggable } from '../../external/composables/makeDraggable';
   import type { IDragActivation } from '../../external/types';
-import { useDnDProvider } from '../../external';
+  import { useDnDProvider } from '../../external';
 
   const props = defineProps<{
     index: number;
     dragHandle?: string;
     activation?: IDragActivation;
     groups?: string[];
-    source: any[]
+    source: any[];
   }>();
 
   const node = useTemplateRef('node');
 
-  makeDraggable(node, {
-    ...props,
-  });
-  
-  const provider = useDnDProvider()
-  
+  makeDraggable(node, { ...props }, () => [props.index, props.source]);
+
+  const provider = useDnDProvider();
+
   const isOvered = computed(() => {
-    if (!node.value) return false
-    return provider.hovered.draggable.has(node.value)
-  })
+    if (!node.value) return false;
+    return provider.hovered.draggable.has(node.value);
+  });
 </script>
 
 <template>
-  <div ref="node" :style="{ background: isOvered ? 'red' : ''}">
-    <span v-if="provider.hovered.draggable.get(node!)?.top" class="top-placement">top</span>
+  <div
+    ref="node"
+    :style="{ background: isOvered ? 'red' : '' }"
+  >
+    <span
+      v-if="provider.hovered.draggable.get(node!)?.top"
+      class="top-placement"
+      >top</span
+    >
     <slot />
-    <span v-if="provider.hovered.draggable.get(node!)?.bottom" class="bottom-placement">bottom</span>
+    <span
+      v-if="provider.hovered.draggable.get(node!)?.bottom"
+      class="bottom-placement"
+      >bottom</span
+    >
   </div>
 </template>
 
@@ -41,7 +50,7 @@ import { useDnDProvider } from '../../external';
     position: relative;
     padding: 5px;
   }
-  
+
   .top-placement {
     position: absolute;
     margin: auto;

@@ -5,6 +5,7 @@ import { DnDAttributes } from '../../internal/utils/namespaces';
 import type {
   IBaseOptions,
   IModifier,
+  ISelectableAreaEvents,
   TDnDNodeRef,
   TModifierKeys,
   TModifierMethod,
@@ -17,6 +18,7 @@ interface ISelectableAreaOptions extends IBaseOptions {
     keys: TModifierKeys | Ref<TModifierKeys>;
     method: TModifierMethod | Ref<TModifierMethod>;
   };
+  events?: ISelectableAreaEvents;
 }
 
 export const makeSelectableArea = (
@@ -42,6 +44,7 @@ export const makeSelectableArea = (
         keys: ['ControlLeft'],
         method: 'every',
       },
+      events: options?.events,
       disabled: (options?.disabled as boolean) ?? false,
       groups: (options?.groups as string[]) ?? [],
     });

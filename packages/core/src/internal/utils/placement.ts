@@ -1,14 +1,15 @@
 /**
- * Placement — closest edge/area (top, right, bottom, left) for drop insertion
+ * Placement — closest edge/area (top, right, bottom, left, center) for drop insertion
  */
 
-import type { IDnDProviderExternal } from "../../external";
+import type { IDnDProviderExternal, IPlacementMargins } from '../../external';
 
 export interface IPlacement {
   top: boolean;
   right: boolean;
   bottom: boolean;
   left: boolean;
+  center?: boolean;
 }
 
 export interface IRect {
@@ -47,14 +48,37 @@ export const getPointerBoxFromProvider = (provider: IDnDProviderExternal): IRect
 
 /**
  * Returns which edge of element is closest to pointer box center.
- * Exactly one of top/right/bottom/left is true.
+ * With placementMargins: if pointer in center zone, returns center: true.
+ * Else exactly one of top/right/bottom/left is true.
  */
 export const getClosestPlacement = (
   pointerBox: IRect,
-  elementRect: DOMRect
+  elementRect: DOMRect,
+  margins?: IPlacementMargins
 ): IPlacement => {
   const cx = pointerBox.left + pointerBox.width / 2;
   const cy = pointerBox.top + pointerBox.height / 2;
+
+  if (margins) {
+    const t = margins.top ?? 0;
+    const r = margins.right ?? 0;
+    const b = margins.bottom ?? 0;
+    const l = margins.left ?? 0;
+    const innerLeft = elementRect.left + l;
+    const innerRight = elementRect.right - r;
+    const innerTop = elementRect.top + t;
+    const innerBottom = elementRect.bottom - b;
+    if (
+      innerLeft < innerRight &&
+      innerTop < innerBottom &&
+      cx >= innerLeft &&
+      cx <= innerRight &&
+      cy >= innerTop &&
+      cy <= innerBottom
+    ) {
+      return { top: false, right: false, bottom: false, left: false, center: true };
+    }
+  }
 
   const dTop = cy - elementRect.top;
   const dBottom = elementRect.bottom - cy;

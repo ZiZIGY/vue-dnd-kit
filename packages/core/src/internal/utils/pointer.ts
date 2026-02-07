@@ -1,4 +1,8 @@
-import type { IDraggableEntity, IDraggingEntity, TPointerState } from '../../external/types';
+import type {
+  IDraggableEntity,
+  IDraggingEntity,
+  TPointerState,
+} from '../../external/types';
 import type { IDnDProviderInternal } from '../types/provider';
 
 /**

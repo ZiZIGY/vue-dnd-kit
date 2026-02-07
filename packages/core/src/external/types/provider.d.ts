@@ -33,6 +33,13 @@ export interface IDnDProviderExternal  {
     render: Ref<Component | undefined>;
   };
   hovered: IHovered;
+  collision: {
+    run?: (provider: any) => {
+      elements: HTMLElement[];
+      zones: HTMLElement[];
+    };
+    throttle: Ref<number>;
+  };
 }
 
 export interface IDelay {

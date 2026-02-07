@@ -1,4 +1,4 @@
-import type { IDnDProviderInternal } from "../../types/provider";
+import type { IDnDProviderInternal } from '../types/provider';
 
 export const handleModifierEvents = {
   keyDown: (provider: IDnDProviderInternal) => (event: KeyboardEvent) => {
@@ -11,5 +11,5 @@ export const handleModifierEvents = {
 
   clear: (provider: IDnDProviderInternal) => () => {
     provider.modifiers.value.clear();
-  }
+  },
 };

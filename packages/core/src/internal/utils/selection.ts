@@ -3,6 +3,7 @@ import type { ICoordinates } from '../../external/types';
 import { DnDSelectors } from './namespaces';
 import { areGroupsCompatible } from './groups';
 import { checkIntersection } from './dom';
+import { isEffectivelyDisabledDraggable } from './disabled';
 import type { IDnDProviderInternal } from '../types/provider';
 
 /**
@@ -93,7 +94,12 @@ export const updateSelectionByBox = (provider: IDnDProviderInternal): void => {
 
   provider.entities.visibleDraggableSet.forEach((el) => {
     if (!selectingArea.contains(el)) return;
-    const draggableGroups = provider.entities.draggableMap.get(el)?.groups ?? [];
+    if (isEffectivelyDisabledDraggable(el, provider)) {
+      provider.entities.selectedSet.delete(el);
+      return;
+    }
+    const draggableEntity = provider.entities.draggableMap.get(el);
+    const draggableGroups = draggableEntity?.groups ?? [];
     if (!areGroupsCompatible(selectionAreaGroups, draggableGroups)) {
       provider.entities.selectedSet.delete(el);
       return;

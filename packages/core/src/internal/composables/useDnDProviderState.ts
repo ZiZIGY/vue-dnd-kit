@@ -1,7 +1,21 @@
-import { computed, reactive, ref, shallowRef, type Component, type Ref } from 'vue';
-import type { ICoordinates, IDelay, IEntities, TDnDState, TPointerState } from '../../external/types';
+import {
+  computed,
+  reactive,
+  ref,
+  shallowRef,
+  type Component,
+  type Ref,
+} from 'vue';
+import type {
+  ICoordinates,
+  IDelay,
+  IEntities,
+  TDnDState,
+  TPointerState,
+} from '../../external/types';
 import type { IHovered } from '../../external/types/provider';
 import { filterByModifiers } from '../utils/provider';
+import { isEffectivelyDisabledDraggable } from '../utils/disabled';
 import { createIntersectionObserver } from '../utils/observer';
 import { useSizeObserver } from './useSizeObserver';
 import { calculateDistanceProgress } from '../utils/drag-activation';
@@ -32,15 +46,16 @@ export function useDnDProviderState(
         entities.selectableAreaMap,
         entities.visibleSelectableAreaSet,
         modifiers
-      )
+      );
       return selectableSet;
     }),
     modifiersDraggableSet: computed(() => {
       const draggableSet = filterByModifiers(
         entities.draggableMap,
         entities.visibleDraggableSet,
-        modifiers
-      )
+        modifiers,
+        (node) => isEffectivelyDisabledDraggable(node, { entities })
+      );
       return draggableSet;
     }),
 
@@ -53,11 +68,11 @@ export function useDnDProviderState(
     x: window.scrollX,
     y: window.scrollY,
   });
-  
+
   const delay = reactive<IDelay>({
     progress: 0,
     startTime: 0,
-  })
+  });
 
   const distanceProgress = computed(() => {
     if (!pointer.value || !entities.initiatingDraggable) return 0;
@@ -70,8 +85,12 @@ export function useDnDProviderState(
     return calculateDistanceProgress(pointer.value, distanceThreshold);
   });
 
-  const draggableObserver = createIntersectionObserver(entities.visibleDraggableSet);
-  const droppableObserver = createIntersectionObserver(entities.visibleDroppableSet);
+  const draggableObserver = createIntersectionObserver(
+    entities.visibleDraggableSet
+  );
+  const droppableObserver = createIntersectionObserver(
+    entities.visibleDroppableSet
+  );
   const selectableAreaObserver = createIntersectionObserver(
     entities.visibleSelectableAreaSet
   );
@@ -84,6 +103,10 @@ export function useDnDProviderState(
     draggable: new Map(),
     droppable: new Map(),
   });
+
+  const collision = {
+    throttle: shallowRef(0),
+  };
 
   const overlayStyle = computed(() => {
     scrollPosition.y;
@@ -109,6 +132,7 @@ export function useDnDProviderState(
     delay,
     distanceProgress,
     hovered,
+    collision,
     overlay: {
       size: overlaySize,
       style: overlayStyle,

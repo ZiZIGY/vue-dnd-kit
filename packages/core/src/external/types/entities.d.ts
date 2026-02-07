@@ -1,9 +1,22 @@
 import type { ComponentPublicInstance, ComputedRef, Ref } from 'vue';
+import type { IPlacementMargins } from './placement';
 
 export type TDnDNode = HTMLElement | ComponentPublicInstance | null;
 export type TDnDNodeRef = Readonly<Ref<TDnDNode>>;
 export type TDragAxis = 'x' | 'y' | 'both';
 export type TDraggablePayload<T = any, D = any> = () => [number, T[], D?];
+
+/** Resolved payload from TDraggablePayload (index + items + optional dropData) */
+export interface IDragPayload<T = unknown, D = unknown> {
+  index: number;
+  items: T[];
+  dropData?: D;
+}
+
+/** Event object passed to drag/drop handlers */
+export interface IDragEvent<T = unknown, D = unknown> {
+  payload: IDragPayload<T, D> | undefined;
+}
 
 export interface IBaseOptions {
   disabled?: boolean | Ref<boolean>;
@@ -49,8 +62,14 @@ export interface IModifierOptions {
   method: TModifierMethod | Ref<TModifierMethod>;
 }
 
+export interface ISelectableAreaEvents {
+  /** Called when selection ends (pointer up) with selected elements */
+  onSelected?: (selected: HTMLElement[]) => void;
+}
+
 export interface ISelectableAreaEntity extends IBaseEntity {
   modifier: IModifier;
+  events?: ISelectableAreaEvents;
 }
 
 export interface IConstraintsAreaEntity {
@@ -59,21 +78,28 @@ export interface IConstraintsAreaEntity {
 }
 
 export interface IDraggableEvents {
-  onSelfDragStart?: () => void;
-  onSelfDragMove?: () => void;
-  onSelfDragEnd?: () => void;
-  onSelfDragCancel?: () => void;
-  
-  onDragStart?: () => void;
-  onDragMove?: () => void;
-  onDragEnd?: () => void;
-  onDragCancel?: () => void;
+  /** Dragged element(s) — identifies which element is being dragged */
+  onSelfDragStart?: (event: IDragEvent) => void;
+  onSelfDragMove?: (event: IDragEvent) => void;
+  onSelfDragEnd?: (event: IDragEvent) => void;
+  onSelfDragCancel?: (event: IDragEvent) => void;
+
+  /** Element under cursor during drag — when another element is dragged over this one */
+  onDragStart?: (event: IDragEvent) => void;
+  onDragMove?: (event: IDragEvent) => void;
+  onDragEnd?: (event: IDragEvent) => void;
+  onDragCancel?: (event: IDragEvent) => void;
+
+  /** Alias / shortcut: cursor enters this draggable during drag */
+  onHover?: (event: IDragEvent) => void;
+  /** Cursor leaves this draggable during drag */
+  onLeave?: (event: IDragEvent) => void;
 }
 
 export interface IDroppableEvents {
-  onEnter?: () => void;
-  onDrop?: () => void;
-  onLeave?: () => void;
+  onEnter?: (event: IDragEvent) => void;
+  onDrop?: (event: IDragEvent) => void | Promise<void>;
+  onLeave?: (event: IDragEvent) => void;
 }
 
 export interface IDragActivationOptions {
@@ -104,6 +130,8 @@ export interface IDraggableEntity extends IBaseEntity {
   modifier?: IModifier;
   dragHandle?: string;
   activation?: IDragActivation;
+  /** Margins for center zone. When pointer in center and element is also droppable, zone mode is used. */
+  placementMargins?: IPlacementMargins;
 }
 
 export interface IDraggingEntity extends IDraggableEntity {

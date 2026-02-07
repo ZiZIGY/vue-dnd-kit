@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { makeDroppable } from '../../external';
   import { makeSelectableArea } from '../../external/composables/makeSelectableArea';
   import { useTemplateRef } from 'vue';
 
@@ -14,6 +15,14 @@
     modifier: props.modifier ?? {
       keys: ['ControlLeft'],
       method: 'some',
+    },
+  });
+
+  makeDroppable(node, {
+    events: {
+      onDrop(event) {
+        console.log('dropped', event);
+      },
     },
   });
 </script>
@@ -38,5 +47,4 @@
     padding: 1.25rem;
     background-color: rgba(0, 0, 0, 0.4);
   }
-
 </style>

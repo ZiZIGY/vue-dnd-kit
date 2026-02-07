@@ -1,4 +1,4 @@
-import type { IDnDProviderInternal } from '../../types/provider';
+import type { IDnDProviderInternal } from '../types/provider';
 
 export const handleScrollEvent = (provider: IDnDProviderInternal) => () => {
   if (provider.state.value) {

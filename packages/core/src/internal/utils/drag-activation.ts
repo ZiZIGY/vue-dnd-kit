@@ -13,9 +13,9 @@ export function checkDragHandle(
   if (!handleSelector) return true;
 
   const handleElement = target.closest(handleSelector) as HTMLElement | null;
-  
+
   if (!handleElement) return false;
-  
+
   return draggable.contains(handleElement);
 }
 
@@ -36,7 +36,11 @@ export function calculateDistanceProgress(
     return Math.min(movedDistance / distanceThreshold, 1);
   }
 
-  const { x: distanceX = 0, y: distanceY = 0, condition = 'any' } = distanceThreshold;
+  const {
+    x: distanceX = 0,
+    y: distanceY = 0,
+    condition = 'any',
+  } = distanceThreshold;
 
   if (distanceX === 0 && distanceY === 0) return 1;
 
@@ -84,10 +88,24 @@ export function isActivationComplete(
 /**
  * If activation is complete, starts dragging. Returns true if drag was started
  */
-export function tryStartDragIfActivationComplete(provider: IDnDProviderInternal): boolean {
-  if (provider.state.value !== 'activating' || !provider.entities.initiatingDraggable) return false;
-  const entity = provider.entities.draggableMap.get(provider.entities.initiatingDraggable);
-  if (!isActivationComplete(provider.distanceProgress.value, provider.delayProgress.value, entity?.activation)) {
+export function tryStartDragIfActivationComplete(
+  provider: IDnDProviderInternal
+): boolean {
+  if (
+    provider.state.value !== 'activating' ||
+    !provider.entities.initiatingDraggable
+  )
+    return false;
+  const entity = provider.entities.draggableMap.get(
+    provider.entities.initiatingDraggable
+  );
+  if (
+    !isActivationComplete(
+      provider.distanceProgress.value,
+      provider.delay.progress,
+      entity?.activation
+    )
+  ) {
     return false;
   }
   startDraggingForProvider(provider);
@@ -103,21 +121,32 @@ export function createActivationDelayTimer(
 ): { cancel: () => void } {
   let rafId: number | null = null;
   const tick = () => {
-    if (provider.state.value !== 'activating' || !provider.entities.initiatingDraggable) {
+    if (
+      provider.state.value !== 'activating' ||
+      !provider.entities.initiatingDraggable
+    ) {
       rafId = null;
       return;
     }
-    const entity = provider.entities.draggableMap.get(provider.entities.initiatingDraggable);
+    const entity = provider.entities.draggableMap.get(
+      provider.entities.initiatingDraggable
+    );
     const delay = entity?.activation?.delay;
     if (!delay) {
       rafId = null;
       return;
     }
-    provider.delayProgress.value = Math.min(
-      (Date.now() - provider.delayStartTime.value) / (delay * 1000),
+    provider.delay.progress = Math.min(
+      (Date.now() - provider.delay.startTime) / (delay * 1000),
       1
     );
-    if (isActivationComplete(provider.distanceProgress.value, provider.delayProgress.value, entity?.activation)) {
+    if (
+      isActivationComplete(
+        provider.distanceProgress.value,
+        provider.delay.progress,
+        entity?.activation
+      )
+    ) {
       onComplete();
       rafId = null;
     } else {
