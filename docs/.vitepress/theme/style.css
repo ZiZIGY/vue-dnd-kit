@@ -31,7 +31,7 @@
   background-size: 200% 100%;
   animation: glass-bg-shimmer 8s linear infinite;
   will-change: background-position;
-  border-radius: 8px;
+  border-radius: 24px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   @variant dark {
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
@@ -93,7 +93,7 @@
 
 /* ========== VitePress переменные ========== */
 :root {
-  --glow-border-radius: 10px;
+  --glow-border-radius: 24px;
   --glow-border-width: 2px;
   --glow-duration: 10s;
   --glow-color: #65a30d;
@@ -378,6 +378,61 @@ html {
   @apply relative z-10;
 }
 
+.VDndHome__hero-layout {
+  @apply flex flex-col gap-8 md:flex-row md:items-center md:justify-between md:gap-12;
+}
+
+.VDndHome__hero-text {
+  @apply flex-1 min-w-0;
+}
+
+.VDndHome__hero-logo {
+  @apply relative flex-shrink-0 flex items-center justify-center md:justify-end;
+}
+
+.VDndHome__logo-glow {
+  position: absolute;
+  inset: -20%;
+  border-radius: 50%;
+  background: linear-gradient(
+    90deg,
+    var(--glow-card-1) 0%,
+    var(--glow-card-2) 25%,
+    var(--glow-card-3) 50%,
+    var(--glow-card-4) 75%,
+    var(--glow-card-1) 100%
+  );
+  background-size: 200% 100%;
+  animation: nav-shimmer 6s linear infinite;
+  filter: blur(50px);
+  opacity: 0.2;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.VDndHome__logo-img {
+  position: relative;
+  z-index: 1;
+  width: 16rem;
+  height: auto;
+  max-height: 380px;
+  object-fit: contain;
+}
+
+@media (min-width: 768px) {
+  .VDndHome__logo-img {
+    width: 20rem;
+    max-height: 420px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .VDndHome__logo-img {
+    width: 24rem;
+    max-height: 480px;
+  }
+}
+
 .VDndHome__title {
   @apply text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-4;
   background: linear-gradient(135deg, #1a1a1e 0%, #52525b 100%);
@@ -394,19 +449,26 @@ html {
 
 .VDndHome__title .accent {
   background: linear-gradient(
-    135deg,
+    90deg,
     var(--glow-card-1) 0%,
-    var(--glow-card-2) 35%,
-    var(--glow-card-3) 70%,
-    var(--glow-card-4) 100%
+    var(--glow-card-2) 25%,
+    var(--glow-card-3) 50%,
+    var(--glow-card-4) 75%,
+    var(--glow-card-1) 100%
   );
+  background-size: 200% 100%;
+  animation: nav-shimmer 4s linear infinite;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .VDndHome__tagline {
-  @apply text-xl text-(--vp-c-text-2) mb-10 leading-relaxed;
+  @apply text-xl text-(--vp-c-text-2) mb-4 leading-relaxed;
+}
+
+.VDndHome__sub {
+  @apply text-base text-(--vp-c-text-3) mb-8 leading-relaxed max-w-xl;
 }
 
 .VDndHome__actions {

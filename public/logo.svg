@@ -6,96 +6,30 @@
   xmlns="http://www.w3.org/2000/svg"
 >
   <defs>
-    <!-- Простой радиальный градиент с легкой анимацией прозрачности -->
+    <!-- Радиальный градиент заливки — призматические тона -->
     <radialGradient id="radialVueGradient" cx="50%" cy="50%" r="70%">
-      <stop offset="0%" style="stop-color: #41b883; stop-opacity: 0.9">
-        <animate
-          attributeName="stop-opacity"
-          values="0.85;0.95;0.85"
-          dur="3s"
-          repeatCount="indefinite"
-          calcMode="spline"
-          keyTimes="0;0.5;1"
-          keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
-        />
+      <stop offset="0%" style="stop-color: #42b883; stop-opacity: 0.9">
+        <animate attributeName="stop-opacity" values="0.85;0.95;0.85" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1" />
       </stop>
-      <stop offset="50%" style="stop-color: #41b883; stop-opacity: 0.7" />
-      <stop offset="100%" style="stop-color: #34d399; stop-opacity: 0.4">
-        <animate
-          attributeName="stop-opacity"
-          values="0.35;0.45;0.35"
-          dur="3s"
-          repeatCount="indefinite"
-          calcMode="spline"
-          keyTimes="0;0.5;1"
-          keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
-        />
+      <stop offset="50%" style="stop-color: #5ab8c8; stop-opacity: 0.7" />
+      <stop offset="100%" style="stop-color: #9080d0; stop-opacity: 0.4">
+        <animate attributeName="stop-opacity" values="0.35;0.45;0.35" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1" />
       </stop>
     </radialGradient>
 
-    <!-- Улучшенный градиент для бордера с непрерывной анимацией -->
+    <!-- Призматический градиент только в фазе «драга» (смещение): цикл 8s, keyTimes как у translate -->
     <linearGradient id="vueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color: #41b883">
-        <animate
-          attributeName="offset"
-          values="-0.5;1.5"
-          dur="2.5s"
-          repeatCount="indefinite"
-          calcMode="spline"
-          keyTimes="0;1"
-          keySplines="0.165 0.84 0.44 1"
-        />
+      <stop offset="0%" style="stop-color: #42b883">
+        <animate attributeName="stop-color" values="#42b883;#42b883;#42b883;#42b883;#5ab8c8;#9080d0;#e0a058;#42b883;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.25;0.35;0.5;0.65;0.75;0.85;1" />
       </stop>
-      <stop offset="30%" style="stop-color: #34d399">
-        <animate
-          attributeName="offset"
-          values="-0.2;1.8"
-          dur="2.5s"
-          repeatCount="indefinite"
-          calcMode="spline"
-          keyTimes="0;1"
-          keySplines="0.165 0.84 0.44 1"
-        />
-        <animate
-          attributeName="stop-color"
-          values="#34d399;#41b883;#34d399"
-          dur="4s"
-          repeatCount="indefinite"
-          calcMode="spline"
-          keyTimes="0;0.5;1"
-          keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
-        />
+      <stop offset="33%" style="stop-color: #42b883">
+        <animate attributeName="stop-color" values="#42b883;#42b883;#42b883;#5ab8c8;#9080d0;#e0a058;#42b883;#42b883;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.25;0.35;0.5;0.65;0.75;0.85;1" />
       </stop>
-      <stop offset="60%" style="stop-color: #2a9c82">
-        <animate
-          attributeName="offset"
-          values="0.1;2.1"
-          dur="2.5s"
-          repeatCount="indefinite"
-          calcMode="spline"
-          keyTimes="0;1"
-          keySplines="0.165 0.84 0.44 1"
-        />
-        <animate
-          attributeName="stop-color"
-          values="#2a9c82;#34d399;#2a9c82"
-          dur="4s"
-          repeatCount="indefinite"
-          calcMode="spline"
-          keyTimes="0;0.5;1"
-          keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
-        />
+      <stop offset="66%" style="stop-color: #5ab8c8">
+        <animate attributeName="stop-color" values="#42b883;#42b883;#42b883;#9080d0;#e0a058;#42b883;#5ab8c8;#42b883;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.25;0.35;0.5;0.65;0.75;0.85;1" />
       </stop>
-      <stop offset="100%" style="stop-color: #41b883">
-        <animate
-          attributeName="offset"
-          values="0.4;2.4"
-          dur="2.5s"
-          repeatCount="indefinite"
-          calcMode="spline"
-          keyTimes="0;1"
-          keySplines="0.165 0.84 0.44 1"
-        />
+      <stop offset="100%" style="stop-color: #42b883">
+        <animate attributeName="stop-color" values="#42b883;#42b883;#42b883;#e0a058;#42b883;#5ab8c8;#9080d0;#42b883;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.25;0.35;0.5;0.65;0.75;0.85;1" />
       </stop>
     </linearGradient>
 
@@ -108,18 +42,10 @@
       x2="128"
       y2="220"
     >
-      <stop offset="0%" style="stop-color: #41b883; stop-opacity: 0.3">
-        <animate
-          attributeName="stop-opacity"
-          values="0.25;0.35;0.25"
-          dur="3s"
-          repeatCount="indefinite"
-          calcMode="spline"
-          keyTimes="0;0.5;1"
-          keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
-        />
+      <stop offset="0%" style="stop-color: #42b883; stop-opacity: 0.3">
+        <animate attributeName="stop-opacity" values="0.25;0.35;0.25" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1" />
       </stop>
-      <stop offset="100%" style="stop-color: #41b883; stop-opacity: 0.08">
+      <stop offset="100%" style="stop-color: #5ab8c8; stop-opacity: 0.08">
         <animate
           attributeName="stop-opacity"
           values="0.05;0.1;0.05"
@@ -214,16 +140,9 @@
         />
       </feOffset>
       
-      <feFlood flood-color="#41b883" flood-opacity="0.25" result="color">
-        <animate
-          attributeName="flood-opacity"
-          values="0.2;0.3;0.2"
-          dur="3s"
-          repeatCount="indefinite"
-          calcMode="spline"
-          keyTimes="0;0.5;1"
-          keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
-        />
+      <feFlood flood-color="#42b883" flood-opacity="0.25" result="color">
+        <animate attributeName="flood-color" values="#42b883;#42b883;#42b883;#42b883;#5ab8c8;#9080d0;#e0a058;#42b883;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.25;0.35;0.5;0.65;0.75;0.85;1" />
+        <animate attributeName="flood-opacity" values="0.2;0.3;0.2" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1" />
       </feFlood>
       
       <feComposite in="color" in2="leftShadow" operator="in" result="coloredLeftShadow"/>
@@ -283,16 +202,9 @@
         />
       </feGaussianBlur>
       <feOffset in="blur" dx="0" dy="0" result="offsetBlur"/>
-      <feFlood flood-color="#41b883" flood-opacity="0.8" result="color">
-        <animate
-          attributeName="flood-opacity"
-          values="0.6;0.9;0.6"
-          dur="1.8s"
-          repeatCount="indefinite"
-          calcMode="spline"
-          keyTimes="0;0.5;1"
-          keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
-        />
+      <feFlood flood-color="#42b883" flood-opacity="0.8" result="color">
+        <animate attributeName="flood-color" values="#42b883;#42b883;#42b883;#42b883;#5ab8c8;#9080d0;#e0a058;#42b883;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.25;0.35;0.5;0.65;0.75;0.85;1" />
+        <animate attributeName="flood-opacity" values="0.6;0.9;0.6" dur="1.8s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1" />
       </feFlood>
       <feComposite in="color" in2="offsetBlur" operator="in" result="shadow"/>
       <feMerge>
@@ -303,7 +215,7 @@
 
     <!-- Background blur circles -->
     <radialGradient id="bgGlow1">
-      <stop offset="0%" style="stop-color: #41b883; stop-opacity: 0.3">
+      <stop offset="0%" style="stop-color: #42b883; stop-opacity: 0.3">
         <animate
           attributeName="stop-opacity"
           values="0.25;0.35;0.25"
@@ -314,11 +226,11 @@
           keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
         />
       </stop>
-      <stop offset="100%" style="stop-color: #41b883; stop-opacity: 0" />
+      <stop offset="100%" style="stop-color: #5ab8c8; stop-opacity: 0" />
     </radialGradient>
 
     <radialGradient id="bgGlow2">
-      <stop offset="0%" style="stop-color: #35495e; stop-opacity: 0.25">
+      <stop offset="0%" style="stop-color: #9080d0; stop-opacity: 0.25">
         <animate
           attributeName="stop-opacity"
           values="0.2;0.3;0.2"
@@ -329,7 +241,7 @@
           keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
         />
       </stop>
-      <stop offset="100%" style="stop-color: #35495e; stop-opacity: 0" />
+      <stop offset="100%" style="stop-color: #e0a058; stop-opacity: 0" />
     </radialGradient>
 
     <!-- Logo glow pulse effect -->
@@ -345,16 +257,9 @@
           keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
         />
       </feGaussianBlur>
-      <feFlood flood-color="#41b883" flood-opacity="0.35" result="color">
-        <animate
-          attributeName="flood-opacity"
-          values="0.25;0.4;0.25"
-          dur="3s"
-          repeatCount="indefinite"
-          calcMode="spline"
-          keyTimes="0;0.5;1"
-          keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
-        />
+      <feFlood flood-color="#42b883" flood-opacity="0.35" result="color">
+        <animate attributeName="flood-color" values="#42b883;#42b883;#42b883;#42b883;#5ab8c8;#9080d0;#e0a058;#42b883;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.25;0.35;0.5;0.65;0.75;0.85;1" />
+        <animate attributeName="flood-opacity" values="0.25;0.4;0.25" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1" />
       </feFlood>
       <feComposite in="color" in2="blur" operator="in" result="shadow"/>
       <feMerge>
@@ -374,7 +279,7 @@
   <g opacity="0.3" transform="translate(20, 10)">
     <path
       d="M157.44 0L128 51.2L97.92 0H0L128 220.8L256 0H157.44Z"
-      fill="#41B883"
+      fill="#42b883"
       opacity="0.15"
     />
     <path
