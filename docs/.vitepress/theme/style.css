@@ -13,10 +13,13 @@
   --color-glass-dark-to: rgba(13, 13, 16, 0.9);
   --glow-color: #65a30d;
   --glow-color-dark: #a3e635;
+  /* Container — max 1440px */
+  --container-max-width: 1440px;
 }
 
-/* ========== @utility glass-card — утилита для glass-карточек ========== */
+/* ========== @utility glass-card — утилита для glass-карточек + призматическая обводка ========== */
 @utility glass-card {
+  position: relative;
   -webkit-backdrop-filter: blur(12px) saturate(1.1);
   backdrop-filter: blur(12px) saturate(1.1);
   background: linear-gradient(
@@ -33,6 +36,59 @@
   @variant dark {
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
   }
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    padding: var(--glow-border-width);
+    background: linear-gradient(
+      90deg,
+      var(--glow-card-1) 0%,
+      var(--glow-card-2) 25%,
+      var(--glow-card-3) 50%,
+      var(--glow-card-4) 75%,
+      var(--glow-card-1) 100%
+    );
+    background-size: 200% 100%;
+    animation: nav-shimmer 4s linear infinite;
+    will-change: background-position;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+}
+
+/* glass-card на лендинге — сильнее блюр, призматический фон, тень */
+.VDndHome .glass-card {
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  backdrop-filter: blur(24px) saturate(1.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.VDndHome .glass-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(66, 184, 131, 0.04) 0%,
+    rgba(90, 184, 200, 0.03) 25%,
+    rgba(144, 128, 208, 0.04) 50%,
+    rgba(224, 160, 88, 0.03) 75%,
+    rgba(66, 184, 131, 0.04) 100%
+  );
+  background-size: 200% 200%;
+  animation: glass-bg-shimmer 12s linear infinite;
+  will-change: background-position;
+  z-index: 0;
+}
+.dark .VDndHome .glass-card {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* ========== VitePress переменные ========== */
@@ -41,7 +97,8 @@
   --glow-border-width: 2px;
   --glow-duration: 10s;
   --glow-color: #65a30d;
-  --vp-font-family-base: 'DM Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --vp-font-family-base: 'DM Sans', 'Inter', ui-sans-serif, system-ui,
+    sans-serif;
   --vp-sidebar-width: 280px;
 }
 
@@ -65,7 +122,11 @@
   --vp-nav-screen-bg-color: #f8f9fafa;
   --vp-nav-shadow: 0 4px 24px #0000000f;
   --nav-shimmer-base: rgba(0, 0, 0, 0.1);
-  --nav-shimmer-highlight: rgba(101, 163, 13, 0.85);
+  /* Призматические цвета для shimmer/glow */
+  --glow-card-1: #42b883;
+  --glow-card-2: #5ab8c8;
+  --glow-card-3: #9080d0;
+  --glow-card-4: #e0a058;
   /* Почти белый, чуть зелёный — переливается в нейтральный белый */
   --glass-bg-1: rgba(238, 248, 230, 0.5);
   --glass-bg-2: rgba(250, 250, 250, 0.5);
@@ -74,6 +135,11 @@
   --glass-card-2: rgba(251, 251, 251, 0.5);
   --glass-card-3: rgba(236, 246, 230, 0.5);
   --text-shimmer-to: #e0e0e0;
+  /* Шейдер-фон — призматический, 4 контрастных цвета */
+  --bg-lens-1: #42b883;
+  --bg-lens-2: #5ab8c8;
+  --bg-lens-3: #9080d0;
+  --bg-lens-4: #e0a058;
 }
 
 .dark {
@@ -96,7 +162,10 @@
   --vp-nav-screen-bg-color: #0c0c10f2;
   --vp-nav-shadow: 0 4px 24px #00000033;
   --nav-shimmer-base: rgba(255, 255, 255, 0.06);
-  --nav-shimmer-highlight: rgba(163, 230, 53, 0.85);
+  --glow-card-1: #42b883;
+  --glow-card-2: #58b8c8;
+  --glow-card-3: #9878d8;
+  --glow-card-4: #e0a058;
   /* Почти чёрный, чуть зелёный — переливается в нейтральный тёмный */
   --glass-bg-1: rgba(12, 18, 10, 0.5);
   --glass-bg-2: rgba(18, 18, 18, 0.5);
@@ -106,28 +175,51 @@
   --glass-card-3: rgba(10, 15, 8, 0.5);
   --text-shimmer-to: rgba(255, 255, 255, 0.88);
   --glow-color: #a3e635;
+  /* Тёмный фон — призматический, 4 цвета */
+  --bg-lens-1: #42b883;
+  --bg-lens-2: #58b8c8;
+  --bg-lens-3: #9878d8;
+  --bg-lens-4: #e0a058;
 }
 
 /* ========== Keyframes ========== */
 @keyframes glow-border {
-  0% { background-position: 0% 0%; }
-  50% { background-position: 100% 100%; }
-  100% { background-position: 0% 0%; }
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
 }
 
 @keyframes glass-bg-shimmer {
-  0% { background-position: 0% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes nav-shimmer {
-  0% { background-position: 0% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes text-shimmer {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
 }
 
 html {
@@ -140,17 +232,40 @@ html {
   @apply glass-card;
 }
 
-/* ========== Glow border ========== */
+/* Поиск — контент модалки glass + shimmer-border по всем сторонам */
+.VPLocalSearchBox .shell {
+  @apply shimmer-border m-auto! rounded-xl!;
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  backdrop-filter: blur(12px) saturate(1.1);
+  background: linear-gradient(
+    139deg,
+    var(--glass-bg-1) 0%,
+    var(--glass-bg-2) 50%,
+    var(--glass-bg-3) 100%
+  ) !important;
+  background-size: 200% 100%;
+  animation: glass-bg-shimmer 8s linear infinite;
+  will-change: background-position;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.dark .VPLocalSearchBox .shell {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ========== Glow border — призматический ========== */
 .glow-border {
   @apply absolute inset-0 pointer-events-none;
   border-radius: var(--glow-border-radius);
   padding: var(--glow-border-width);
   background-image: radial-gradient(
-    transparent,
-    transparent,
-    var(--glow-color),
-    transparent,
-    transparent
+    ellipse 200% 200% at 50% 50%,
+    transparent 0%,
+    var(--glow-card-1) 15%,
+    var(--glow-card-2) 35%,
+    var(--glow-card-3) 55%,
+    var(--glow-card-4) 75%,
+    transparent 100%
   );
   background-size: 300% 300%;
   animation: glow-border var(--glow-duration) infinite linear;
@@ -162,13 +277,40 @@ html {
 }
 
 .glow-border--nav {
-  --glow-color: rgba(163, 230, 53, 0.5);
   --glow-border-width: 1px;
   --glow-duration: 15s;
 }
 
-.glow-border--card {
-  --glow-color: #a3e635;
+/* ========== @utility shimmer-border — призматическая обводка ========== */
+@utility shimmer-border {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(
+      90deg,
+      var(--nav-shimmer-base) 0%,
+      var(--nav-shimmer-base) 15%,
+      var(--glow-card-1) 25%,
+      var(--glow-card-2) 40%,
+      var(--glow-card-3) 55%,
+      var(--glow-card-4) 70%,
+      var(--nav-shimmer-base) 85%,
+      var(--nav-shimmer-base) 100%
+    );
+    background-size: 200% 100%;
+    animation: nav-shimmer 4s linear infinite;
+    will-change: background-position;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
 }
 
 /* ========== VPNav — header, градиент + shimmer ========== */
@@ -194,10 +336,12 @@ html {
   background: linear-gradient(
     90deg,
     var(--nav-shimmer-base) 0%,
-    var(--nav-shimmer-base) 20%,
-    var(--nav-shimmer-highlight) 35%,
-    var(--nav-shimmer-highlight) 65%,
-    var(--nav-shimmer-base) 80%,
+    var(--nav-shimmer-base) 15%,
+    var(--glow-card-1) 25%,
+    var(--glow-card-2) 40%,
+    var(--glow-card-3) 55%,
+    var(--glow-card-4) 70%,
+    var(--nav-shimmer-base) 85%,
     var(--nav-shimmer-base) 100%
   );
   background-size: 200% 100%;
@@ -209,7 +353,7 @@ html {
   @apply z-[100];
 }
 
-/* ========== Custom Home ========== */
+/* ========== Custom Home — prismatic glassmorphism + max 1440px ========== */
 .VDndHome {
   @apply min-h-screen;
   padding: calc(var(--vp-nav-height) + 48px) 24px 96px;
@@ -221,8 +365,17 @@ html {
   }
 }
 
+/* Container переопределение — max-width 1440px */
+.container {
+  max-width: var(--container-max-width, 1440px) !important;
+}
+
 .VDndHome__hero {
-  @apply max-w-[720px] mx-auto mb-16;
+  @apply mb-8 overflow-hidden p-8 md:p-12;
+}
+
+.VDndHome__hero-inner {
+  @apply relative z-10;
 }
 
 .VDndHome__title {
@@ -240,15 +393,15 @@ html {
 }
 
 .VDndHome__title .accent {
-  background: linear-gradient(135deg, #65a30d 0%, #84cc16 100%);
+  background: linear-gradient(
+    135deg,
+    var(--glow-card-1) 0%,
+    var(--glow-card-2) 35%,
+    var(--glow-card-3) 70%,
+    var(--glow-card-4) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.dark .VDndHome__title .accent {
-  background: linear-gradient(135deg, #a3e635 0%, #65a30d 100%);
-  -webkit-background-clip: text;
   background-clip: text;
 }
 
@@ -281,10 +434,14 @@ html {
 }
 
 .VDndHome__content {
-  @apply max-w-[720px] mx-auto;
+  @apply overflow-hidden relative p-8 md:p-10;
 }
 
-.VDndHome__content :deep(.vp-doc) {
+.VDndHome__content-inner {
+  @apply relative z-10;
+}
+
+.VDndHome__content-inner :deep(.vp-doc) {
   @apply p-0;
 }
 
@@ -317,7 +474,37 @@ html {
   @apply border-r border-(--vp-c-border);
 }
 
-.VPSidebar .nav-link.active,
 .VPSidebar .nav-link:hover {
   @apply text-(--vp-c-brand-1);
+}
+
+.VPLink.active {
+  background: linear-gradient(
+    90deg,
+    var(--glow-card-1) 0%,
+    var(--glow-card-2) 25%,
+    var(--glow-card-3) 50%,
+    var(--glow-card-4) 75%,
+    var(--glow-card-1) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: nav-shimmer 4s linear infinite;
+}
+.VPSidebarItem.is-active {
+  background: linear-gradient(
+    90deg,
+    var(--glow-card-1) 0%,
+    var(--glow-card-2) 25%,
+    var(--glow-card-3) 50%,
+    var(--glow-card-4) 75%,
+    var(--glow-card-1) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: nav-shimmer 4s linear infinite;
 }
