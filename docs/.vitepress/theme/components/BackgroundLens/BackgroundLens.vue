@@ -6,7 +6,9 @@
 </template>
 
 <script setup lang="ts">
+  //@ts-ignore
   import frag from './fragment.glsl?raw';
+  //@ts-ignore
   import vert from './vertex.glsl?raw';
 
   import * as THREE from 'three';

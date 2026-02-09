@@ -17,6 +17,7 @@
   "author": "ZiZIGY",
   "license": "MIT",
   "dependencies": {
+    "@iconify/vue": "^5.0.0",
     "@tailwindcss/vite": "^4.1.18",
     "@types/node": "^25.2.2",
     "@vue-dnd-kit/core": "1.7.0",

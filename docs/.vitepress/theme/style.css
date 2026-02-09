@@ -14,7 +14,23 @@
   --glow-color: #65a30d;
   --glow-color-dark: #a3e635;
   /* Container — max 1440px */
-  --container-max-width: 1440px;
+  --container-max-width: 1660px;
+}
+
+@utility rainbow-text {
+  background: linear-gradient(
+    90deg,
+    var(--glow-card-1) 0%,
+    var(--glow-card-2) 25%,
+    var(--glow-card-3) 50%,
+    var(--glow-card-4) 75%,
+    var(--glow-card-1) 100%
+  );
+  background-size: 200% 100%;
+  animation: nav-shimmer 4s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* ========== @utility glass-card — утилита для glass-карточек + призматическая обводка ========== */
@@ -31,7 +47,6 @@
   background-size: 200% 100%;
   animation: glass-bg-shimmer 8s linear infinite;
   will-change: background-position;
-  border-radius: 24px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   @variant dark {
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
@@ -93,7 +108,6 @@
 
 /* ========== VitePress переменные ========== */
 :root {
-  --glow-border-radius: 24px;
   --glow-border-width: 2px;
   --glow-duration: 10s;
   --glow-color: #65a30d;
@@ -256,7 +270,7 @@ html {
 /* ========== Glow border — призматический ========== */
 .glow-border {
   @apply absolute inset-0 pointer-events-none;
-  border-radius: var(--glow-border-radius);
+  border-radius: inherit;
   padding: var(--glow-border-width);
   background-image: radial-gradient(
     ellipse 200% 200% at 50% 50%,
@@ -355,7 +369,7 @@ html {
 
 /* ========== Custom Home — prismatic glassmorphism + max 1440px ========== */
 .VDndHome {
-  @apply min-h-screen;
+  @apply min-h-svh;
   padding: calc(var(--vp-nav-height) + 48px) 24px 96px;
 }
 
@@ -367,7 +381,8 @@ html {
 
 /* Container переопределение — max-width 1440px */
 .container {
-  max-width: var(--container-max-width, 1440px) !important;
+  max-width: var(--container-max-width) !important;
+  @apply box-content;
 }
 
 .VDndHome__hero {
@@ -448,19 +463,7 @@ html {
 }
 
 .VDndHome__title .accent {
-  background: linear-gradient(
-    90deg,
-    var(--glow-card-1) 0%,
-    var(--glow-card-2) 25%,
-    var(--glow-card-3) 50%,
-    var(--glow-card-4) 75%,
-    var(--glow-card-1) 100%
-  );
-  background-size: 200% 100%;
-  animation: nav-shimmer 4s linear infinite;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  @apply rainbow-text;
 }
 
 .VDndHome__tagline {
@@ -495,6 +498,51 @@ html {
   @apply border-(--vp-c-brand-3) text-(--vp-c-brand-1);
 }
 
+/* Features grid — карточки с glass-card */
+.VDndHome__features {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-10 md:mb-12;
+}
+
+.VDndHome__feature-card {
+  @apply relative overflow-hidden p-6 md:p-8 flex flex-col;
+}
+
+/* Круг glassmorphism под иконку: блюр, тень, без обводки */
+.VDndHome__feature-icon {
+  @apply flex items-center justify-center shrink-0 w-12 h-12 rounded-xl mb-4;
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  backdrop-filter: blur(12px) saturate(1.2);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0.15) 100%
+  );
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.dark .VDndHome__feature-icon {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* Иконка в градиент (призматика) */
+.VDndHome__feature-icon :deep(svg) {
+  fill: url(#featureIconGrad);
+  stroke: url(#featureIconGrad);
+}
+
+.VDndHome__feature-title {
+  @apply text-lg font-bold text-(--vp-c-text-1) mb-2 leading-tight;
+}
+
+.VDndHome__feature-desc {
+  @apply text-sm text-(--vp-c-text-2) leading-relaxed;
+}
+
 .VDndHome__content {
   @apply overflow-hidden relative p-8 md:p-10;
 }
@@ -527,13 +575,20 @@ html {
   animation: text-shimmer 10s ease-in-out infinite;
 }
 
+.VDndContent.has-sidebar {
+  @apply pl-[var(--vp-sidebar-width)]! pr-0!;
+}
+
+.VPDoc.has-aside .content-container {
+  @apply max-w-full!;
+}
 /* ========== Doc / Sidebar ========== */
 .VDndDoc {
   @apply py-8 px-6 pb-24 md:py-12 md:px-8 md:pb-32;
 }
 
 .VPSidebar {
-  @apply border-r border-(--vp-c-border);
+  @apply border-r border-(--vp-c-border) pl-8! w-auto!;
 }
 
 .VPSidebar .nav-link:hover {
