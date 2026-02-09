@@ -710,6 +710,11 @@
     path-browserify "^1.0.1"
     vscode-uri "^3.0.8"
 
+"@vue-dnd-kit/core@^2.0.0-alpha3":
+  version "2.0.0-alpha3"
+  resolved "https://registry.npmjs.org/@vue-dnd-kit/core/-/core-2.0.0-alpha3.tgz#cae548adf393e2121fb7c09cba5d4222de96e1b1"
+  integrity sha512-F2iUyMnblICNRWfBwaJZYUetZWK9NBr8DNnevliwL/NVlfnKUT6dN7CMLr+YbnJZSzTl1DknBLwij6WlaTSxTw==
+
 "@vue/babel-helper-vue-transform-on@2.0.1":
   version "2.0.1"
   resolved "https://registry.npmjs.org/@vue/babel-helper-vue-transform-on/-/babel-helper-vue-transform-on-2.0.1.tgz#3cadaa769fda53b61f193ab63668ccc5c7dfe244"
@@ -1459,6 +1464,11 @@ uri-js@^4.2.2, uri-js@^4.4.1:
   integrity sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==
   dependencies:
     punycode "^2.1.0"
+
+vite-plugin-css-injected-by-js@^3.5.2:
+  version "3.5.2"
+  resolved "https://registry.npmjs.org/vite-plugin-css-injected-by-js/-/vite-plugin-css-injected-by-js-3.5.2.tgz#1f75d16ad5c05b6b49bf18018099a189ec2e46ad"
+  integrity sha512-2MpU/Y+SCZyWUB6ua3HbJCrgnF0KACAsmzOQt1UvRVJCGF6S8xdA3ZUhWcWdM9ivG4I5az8PnQmwwrkC2CAQrQ==
 
 vite-plugin-dts@^4.5.4:
   version "4.5.4"

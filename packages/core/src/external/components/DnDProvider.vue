@@ -32,20 +32,9 @@
       <component :is="overlay" />
     </slot>
   </div>
-
-  <pre>
-    {{ provider.pointer }}
-  </pre>
 </template>
 
 <style>
-  pre {
-    position: fixed;
-    top: 0;
-    right: 0;
-    height: 100svh;
-    overflow: auto;
-  }
   .dnd-kit-overlay-container {
     position: fixed;
     top: 0;

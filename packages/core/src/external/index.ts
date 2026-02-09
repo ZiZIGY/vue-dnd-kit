@@ -6,8 +6,8 @@
 export { default as DnDProvider } from './components/DnDProvider.vue';
 
 export { makeDraggable } from './composables/makeDraggable';
-export { makeSelectableArea } from './composables/makeSelectableArea';
-export { makeBoundingBox } from './composables/makeBoundingBox';
+export { makeSelectionArea } from './composables/makeSelectionArea';
+export { makeConstraintArea } from './composables/makeConstraintArea';
 export { makeDroppable } from './composables/makeDroppable';
 export { useDnDProvider } from './composables/useDnDProvider';
 

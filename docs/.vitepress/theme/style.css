@@ -1,0 +1,323 @@
+@import 'tailwindcss';
+
+/**
+ * Vue DnD Kit — Custom Theme
+ * Tailwind 4 + глассморфизм
+ */
+
+/* ========== @theme — токены для Tailwind ========== */
+@theme {
+  --color-glass-from: rgba(248, 249, 250, 0.9);
+  --color-glass-to: rgba(230, 235, 240, 0.9);
+  --color-glass-dark-from: rgba(22, 22, 26, 0.85);
+  --color-glass-dark-to: rgba(13, 13, 16, 0.9);
+  --glow-color: #65a30d;
+  --glow-color-dark: #a3e635;
+}
+
+/* ========== @utility glass-card — утилита для glass-карточек ========== */
+@utility glass-card {
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  backdrop-filter: blur(12px) saturate(1.1);
+  background: linear-gradient(
+    139deg,
+    var(--glass-card-1) 0%,
+    var(--glass-card-2) 50%,
+    var(--glass-card-3) 100%
+  ) !important;
+  background-size: 200% 100%;
+  animation: glass-bg-shimmer 8s linear infinite;
+  will-change: background-position;
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  @variant dark {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* ========== VitePress переменные ========== */
+:root {
+  --glow-border-radius: 10px;
+  --glow-border-width: 2px;
+  --glow-duration: 10s;
+  --glow-color: #65a30d;
+  --vp-font-family-base: 'DM Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --vp-sidebar-width: 280px;
+}
+
+:root {
+  --vp-c-bg: #f8f9fa;
+  --vp-c-bg-alt: #f0f1f3;
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-bg-soft: #f0f1f3;
+  --vp-c-text-1: #1a1a1e;
+  --vp-c-text-2: #52525b;
+  --vp-c-text-3: #71717a;
+  --vp-c-border: #e4e4e7;
+  --vp-c-divider: #e4e4e7;
+  --vp-c-gutter: #e4e4e7;
+  --vp-c-brand-1: #65a30d;
+  --vp-c-brand-2: #84cc16;
+  --vp-c-brand-3: #a3e635;
+  --vp-c-brand-soft: rgba(101, 163, 13, 0.12);
+  --vp-sidebar-bg-color: #f8f9fa;
+  --vp-nav-bg-color: rgba(248, 249, 250, 0.35);
+  --vp-nav-screen-bg-color: #f8f9fafa;
+  --vp-nav-shadow: 0 4px 24px #0000000f;
+  --nav-shimmer-base: rgba(0, 0, 0, 0.1);
+  --nav-shimmer-highlight: rgba(101, 163, 13, 0.85);
+  /* Почти белый, чуть зелёный — переливается в нейтральный белый */
+  --glass-bg-1: rgba(238, 248, 230, 0.5);
+  --glass-bg-2: rgba(250, 250, 250, 0.5);
+  --glass-bg-3: rgba(235, 245, 228, 0.5);
+  --glass-card-1: rgba(240, 248, 235, 0.5);
+  --glass-card-2: rgba(251, 251, 251, 0.5);
+  --glass-card-3: rgba(236, 246, 230, 0.5);
+  --text-shimmer-to: #e0e0e0;
+}
+
+.dark {
+  --vp-c-bg: #0c0c10;
+  --vp-c-bg-alt: #12121a;
+  --vp-c-bg-elv: #18181f;
+  --vp-c-bg-soft: #16161e;
+  --vp-c-text-1: #e4e4e7;
+  --vp-c-text-2: #a1a1aa;
+  --vp-c-text-3: #71717a;
+  --vp-c-border: #27272a;
+  --vp-c-divider: #27272a;
+  --vp-c-gutter: #1f1f23;
+  --vp-c-brand-1: #a3e635;
+  --vp-c-brand-2: #84cc16;
+  --vp-c-brand-3: #65a30d;
+  --vp-c-brand-soft: rgba(163, 230, 53, 0.12);
+  --vp-sidebar-bg-color: #0c0c10;
+  --vp-nav-bg-color: rgba(12, 12, 16, 0.3);
+  --vp-nav-screen-bg-color: #0c0c10f2;
+  --vp-nav-shadow: 0 4px 24px #00000033;
+  --nav-shimmer-base: rgba(255, 255, 255, 0.06);
+  --nav-shimmer-highlight: rgba(163, 230, 53, 0.85);
+  /* Почти чёрный, чуть зелёный — переливается в нейтральный тёмный */
+  --glass-bg-1: rgba(12, 18, 10, 0.5);
+  --glass-bg-2: rgba(18, 18, 18, 0.5);
+  --glass-bg-3: rgba(10, 16, 9, 0.5);
+  --glass-card-1: rgba(11, 17, 9, 0.5);
+  --glass-card-2: rgba(17, 17, 17, 0.5);
+  --glass-card-3: rgba(10, 15, 8, 0.5);
+  --text-shimmer-to: rgba(255, 255, 255, 0.88);
+  --glow-color: #a3e635;
+}
+
+/* ========== Keyframes ========== */
+@keyframes glow-border {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+@keyframes glass-bg-shimmer {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes nav-shimmer {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes text-shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+html {
+  color-scheme: light dark;
+}
+
+/* Menu — glass-card без псевдоэлементов */
+.VPFlyout .menu .VPMenu,
+.VPNavScreen .container {
+  @apply glass-card;
+}
+
+/* ========== Glow border ========== */
+.glow-border {
+  @apply absolute inset-0 pointer-events-none;
+  border-radius: var(--glow-border-radius);
+  padding: var(--glow-border-width);
+  background-image: radial-gradient(
+    transparent,
+    transparent,
+    var(--glow-color),
+    transparent,
+    transparent
+  );
+  background-size: 300% 300%;
+  animation: glow-border var(--glow-duration) infinite linear;
+  will-change: background-position;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.glow-border--nav {
+  --glow-color: rgba(163, 230, 53, 0.5);
+  --glow-border-width: 1px;
+  --glow-duration: 15s;
+}
+
+.glow-border--card {
+  --glow-color: #a3e635;
+}
+
+/* ========== VPNav — header, градиент + shimmer ========== */
+.VPNav {
+  -webkit-backdrop-filter: blur(8px) saturate(1.1);
+  backdrop-filter: blur(8px) saturate(1.1);
+  background: linear-gradient(
+    139deg,
+    var(--glass-bg-1) 0%,
+    var(--glass-bg-2) 50%,
+    var(--glass-bg-3) 100%
+  ) !important;
+  background-size: 200% 100%;
+  animation: glass-bg-shimmer 8s linear infinite;
+  will-change: background-position;
+  box-shadow: var(--vp-nav-shadow);
+}
+
+.VPNav::before {
+  content: '';
+  @apply absolute bottom-0 left-0 right-0 z-10 pointer-events-none;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--nav-shimmer-base) 0%,
+    var(--nav-shimmer-base) 20%,
+    var(--nav-shimmer-highlight) 35%,
+    var(--nav-shimmer-highlight) 65%,
+    var(--nav-shimmer-base) 80%,
+    var(--nav-shimmer-base) 100%
+  );
+  background-size: 200% 100%;
+  animation: nav-shimmer 4s linear infinite;
+  will-change: background-position;
+}
+
+.menu {
+  @apply z-[100];
+}
+
+/* ========== Custom Home ========== */
+.VDndHome {
+  @apply min-h-screen;
+  padding: calc(var(--vp-nav-height) + 48px) 24px 96px;
+}
+
+@media (min-width: 768px) {
+  .VDndHome {
+    padding: calc(var(--vp-nav-height) + 80px) 48px 128px;
+  }
+}
+
+.VDndHome__hero {
+  @apply max-w-[720px] mx-auto mb-16;
+}
+
+.VDndHome__title {
+  @apply text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-4;
+  background: linear-gradient(135deg, #1a1a1e 0%, #52525b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .VDndHome__title {
+  background: linear-gradient(135deg, #e4e4e7 0%, #a1a1aa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.VDndHome__title .accent {
+  background: linear-gradient(135deg, #65a30d 0%, #84cc16 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .VDndHome__title .accent {
+  background: linear-gradient(135deg, #a3e635 0%, #65a30d 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.VDndHome__tagline {
+  @apply text-xl text-(--vp-c-text-2) mb-10 leading-relaxed;
+}
+
+.VDndHome__actions {
+  @apply flex flex-wrap gap-3;
+}
+
+.VDndHome__btn {
+  @apply inline-flex items-center gap-2 px-6 py-3 text-base font-semibold rounded-lg transition-all duration-200;
+}
+
+.VDndHome__btn--primary {
+  @apply bg-(--vp-c-brand-3) text-[#0c0c10];
+}
+
+.VDndHome__btn--primary:hover {
+  @apply bg-(--vp-c-brand-2) -translate-y-px;
+}
+
+.VDndHome__btn--secondary {
+  @apply bg-transparent border border-(--vp-c-border) text-(--vp-c-text-1);
+}
+
+.VDndHome__btn--secondary:hover {
+  @apply border-(--vp-c-brand-3) text-(--vp-c-brand-1);
+}
+
+.VDndHome__content {
+  @apply max-w-[720px] mx-auto;
+}
+
+.VDndHome__content :deep(.vp-doc) {
+  @apply p-0;
+}
+
+/* Дефолтный текст — тёмный/светлый с еле заметным переливом в белый */
+.vp-doc p,
+.vp-doc li,
+.vp-doc td,
+.vp-doc th {
+  background: linear-gradient(
+    90deg,
+    var(--vp-c-text-1) 0%,
+    var(--vp-c-text-1) 40%,
+    var(--text-shimmer-to) 50%,
+    var(--vp-c-text-1) 60%,
+    var(--vp-c-text-1) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-shimmer 10s ease-in-out infinite;
+}
+
+/* ========== Doc / Sidebar ========== */
+.VDndDoc {
+  @apply py-8 px-6 pb-24 md:py-12 md:px-8 md:pb-32;
+}
+
+.VPSidebar {
+  @apply border-r border-(--vp-c-border);
+}
+
+.VPSidebar .nav-link.active,
+.VPSidebar .nav-link:hover {
+  @apply text-(--vp-c-brand-1);
+}

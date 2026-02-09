@@ -1,0 +1,27 @@
+{
+  "name": "vue-dnd-kit",
+  "private": true,
+  "description": "Drag and Drop toolkit for Vue 3",
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs"
+  },
+  "keywords": [
+    "vue",
+    "drag-and-drop",
+    "dnd",
+    "draggable",
+    "vue3"
+  ],
+  "author": "ZiZIGY",
+  "license": "MIT",
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "@types/node": "^25.2.2",
+    "@vue-dnd-kit/core": "1.7.0",
+    "gsap": "^3.14.2",
+    "tailwindcss": "^4.1.18",
+    "vitepress": "^1.6.4"
+  }
+}
