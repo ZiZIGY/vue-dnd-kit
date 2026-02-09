@@ -2,6 +2,7 @@ import type { IDnDProviderInternal } from '../types/provider';
 
 export const handleModifierEvents = {
   keyDown: (provider: IDnDProviderInternal) => (event: KeyboardEvent) => {
+    console.log('')
     provider.modifiers.value.add(event.code);
   },
 

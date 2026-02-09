@@ -1,55 +1,19 @@
 <script setup lang="ts">
-  import {
-    computed,
-    onBeforeUnmount,
-    onMounted,
-    provide,
-    useTemplateRef,
-  } from 'vue';
+  import { computed, provide, useTemplateRef } from 'vue';
 
   import { injectionKey } from '../../internal/utils/namespaces';
   import { useDnDProviderState } from '../../internal/composables/useDnDProviderState';
-
-  import { handleModifierEvents } from '../../internal/logic/modifier';
-  import { handleScrollEvent } from '../../internal/logic/scroll';
-  import { createPointerHandlers } from '../../internal/logic/pointer';
+  import { useDnDProviderEvents } from '../../internal/composables/useDnDProviderEvents';
 
   import DefaultOverlay from './DefaultOverlay.vue';
 
   const overlayRef = useTemplateRef<HTMLElement>('overlayRef');
   const provider = useDnDProviderState(overlayRef);
-  const pointerHandlers = createPointerHandlers(provider);
+  useDnDProviderEvents(provider);
 
   const overlay = computed(
     () => provider.overlay.render.value ?? DefaultOverlay
   );
-
-  onMounted(() => {
-    document.addEventListener('pointerdown', pointerHandlers.pointerDown);
-    document.addEventListener(
-      'keydown',
-      handleModifierEvents.keyDown(provider)
-    );
-    document.addEventListener('keyup', handleModifierEvents.keyUp(provider));
-    document.addEventListener('blur', handleModifierEvents.clear(provider));
-    document.addEventListener('scroll', handleScrollEvent(provider), true);
-  });
-
-  onBeforeUnmount(() => {
-    document.removeEventListener('pointerdown', pointerHandlers.pointerDown);
-    document.removeEventListener('pointerup', pointerHandlers.pointerUp);
-    document.removeEventListener('pointermove', pointerHandlers.pointerMove);
-
-    document.removeEventListener(
-      'keydown',
-      handleModifierEvents.keyDown(provider)
-    );
-    document.removeEventListener('keyup', handleModifierEvents.keyUp(provider));
-    document.removeEventListener('blur', handleModifierEvents.clear(provider));
-    document.removeEventListener('scroll', handleScrollEvent(provider), true);
-
-    pointerHandlers.cleanup();
-  });
 
   provide(injectionKey, provider);
 </script>
@@ -70,7 +34,7 @@
   </div>
 
   <pre>
-    {{ provider.hovered }}
+    {{ provider.pointer }}
   </pre>
 </template>
 

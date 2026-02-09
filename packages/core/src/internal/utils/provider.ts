@@ -1,4 +1,7 @@
-import type { IDraggableEntity, ISelectableAreaEntity } from '../../external/types';
+import type {
+  IDraggableEntity,
+  ISelectableAreaEntity,
+} from '../../external/types';
 
 import type { Ref } from 'vue';
 

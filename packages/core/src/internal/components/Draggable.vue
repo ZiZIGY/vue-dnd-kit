@@ -6,7 +6,6 @@
 
   const props = defineProps<{
     index: number;
-    dragHandle?: string;
     activation?: IDragActivation;
     groups?: string[];
     source: any[];
@@ -29,6 +28,7 @@
     ref="node"
     class="draggable-card"
     :class="{ 'draggable-card--over': isOvered }"
+    tabindex="0"
   >
     <div
       v-if="provider.hovered.draggable.get(node!)?.top"

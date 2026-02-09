@@ -5,7 +5,6 @@
   import DnDProvider from './external/components/DnDProvider.vue';
   import Draggable from './internal/components/Draggable.vue';
   import SelectionArea from './internal/components/SelectionArea.vue';
-  import DraggableZone from './internal/components/DroppableZone.vue';
 
   const test = ref([1, 2, 3, 4, 5, 6, 7]);
 
@@ -13,7 +12,10 @@
     const arr = [...test.value];
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+      const a = arr[i]!;
+      const b = arr[j]!;
+      arr[i] = b;
+      arr[j] = a;
     }
     test.value = arr;
   };
@@ -34,6 +36,7 @@
           </button>
         </div>
         <SelectionArea class="selection-area">
+          у
           <TransitionGroup
             name="list"
             class="list"

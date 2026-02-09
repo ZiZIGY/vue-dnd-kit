@@ -4,13 +4,15 @@ import { startDraggingForProvider } from './pointer';
 
 /**
  * Checks if the click target is within the drag handle (if specified)
+ * @param skipHandle - when true (e.g. keyboard drag), bypass handle check
  */
 export function checkDragHandle(
   target: HTMLElement,
   draggable: HTMLElement,
-  handleSelector?: string
+  handleSelector?: string,
+  skipHandle?: boolean
 ): boolean {
-  if (!handleSelector) return true;
+  if (skipHandle || !handleSelector) return true;
 
   const handleElement = target.closest(handleSelector) as HTMLElement | null;
 

@@ -9,7 +9,14 @@ import type {
 } from './entities';
 import type { ICoordinates, TPointerState } from './pointer';
 import type { IPlacement } from './placement';
-import type { Component, ComputedRef, CSSProperties, Reactive, Ref, ShallowRef } from 'vue';
+import type {
+  Component,
+  ComputedRef,
+  CSSProperties,
+  Reactive,
+  Ref,
+  ShallowRef,
+} from 'vue';
 
 /** Event object passed to drag/drop handlers */
 export interface IDragEvent<T = unknown, D = unknown> {
@@ -25,18 +32,29 @@ export interface IHovered {
   droppable: THoveredMap;
 }
 
-export interface IDnDProviderExternal  {
+export interface IDnDProviderExternal {
   state: Ref<TDnDState | undefined>;
   pointer: Ref<TPointerState | undefined>;
   entities: Reactive<IEntities>;
-  modifiers: Ref<Set<string>>;
+  keyboard: {
+    keys: {
+      pressedKeys: Ref<Set<string>>;
+      forDrag: string[];
+      forCancel: string[];
+      forDrop: string[];
+      forMove: string[];
+      forMoveFaster: string[];
+    };
+    step: number;
+    moveFaster: number;
+  };
   scrollPosition: Reactive<ICoordinates>;
-  delay: Reactive<IDelay>,
+  delay: Reactive<IDelay>;
   distanceProgress: ComputedRef<number>;
   overlay: {
     ref: Ref<HTMLElement | null>;
     style: ComputedRef<ICoordinates>;
-    size: Ref<DOMRect| null>;
+    size: Ref<DOMRect | null>;
     render: Ref<Component | undefined>;
   };
   hovered: IHovered;
@@ -54,4 +72,9 @@ export interface IDelay {
   startTime: number;
 }
 
-export type TDnDState = 'dragging' | 'selecting' | 'activating' | null | undefined;
+export type TDnDState =
+  | 'dragging'
+  | 'selecting'
+  | 'activating'
+  | null
+  | undefined;

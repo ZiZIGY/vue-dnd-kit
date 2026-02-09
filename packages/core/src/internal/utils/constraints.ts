@@ -1,4 +1,7 @@
-import type { IConstraintsAreaEntity, TPointerState } from '../../external/types';
+import type {
+  IConstraintsAreaEntity,
+  TPointerState,
+} from '../../external/types';
 import { DnDSelectors } from './namespaces';
 
 /**
@@ -38,7 +41,7 @@ export function applyAxisConstraint(
     // Vertical movement only
     return { x: draggableRect.left, y: targetY };
   }
-  
+
   return { x: targetX, y: targetY };
 }
 
@@ -129,4 +132,41 @@ export function calculateConstrainedPosition(
   }
 
   return axisConstrained;
+}
+
+/**
+ * Updates pointer.current with constraint-applied coordinates.
+ * When constraints exist, stores the "effective" position so pointer matches overlay.
+ */
+export function updatePointerWithConstraints(
+  pointer: TPointerState,
+  rawX: number,
+  rawY: number,
+  overlayElement: HTMLElement | null,
+  firstDraggable: HTMLElement | null,
+  constraintsAreaMap: Map<HTMLElement, IConstraintsAreaEntity>,
+  overlaySizeFallback?: { width: number; height: number } | null
+): void {
+  if (!pointer) return;
+
+  const overlayRect = overlayElement?.getBoundingClientRect();
+  const width = overlayRect?.width ?? overlaySizeFallback?.width ?? 0;
+  const height = overlayRect?.height ?? overlaySizeFallback?.height ?? 0;
+
+  const tempPointer = {
+    start: pointer.start,
+    current: { x: rawX, y: rawY },
+    offset: pointer.offset,
+  };
+
+  const constrained = calculateConstrainedPosition(
+    tempPointer,
+    overlayElement,
+    firstDraggable,
+    constraintsAreaMap,
+    overlaySizeFallback
+  );
+
+  pointer.current.x = constrained.x + width * pointer.offset.x;
+  pointer.current.y = constrained.y + height * pointer.offset.y;
 }

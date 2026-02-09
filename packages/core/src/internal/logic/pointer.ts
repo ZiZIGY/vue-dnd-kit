@@ -47,7 +47,7 @@ function runThrottledCollision(
   }
 }
 
-async function handleDropAndFinish(
+export async function handleDropAndFinish(
   provider: IDnDProviderInternal
 ): Promise<boolean> {
   const hoveredZone = provider.hovered.droppable.keys().next().value;
@@ -63,7 +63,8 @@ async function handleDropAndFinish(
 
   const result = zoneEntity?.events?.onDrop?.(dragEvent);
 
-  const isPromise = result != null && typeof (result as Promise<unknown>).then === 'function';
+  const isPromise =
+    result != null && typeof (result as Promise<unknown>).then === 'function';
   if (isPromise) {
     try {
       await (result as Promise<unknown>);
@@ -79,7 +80,7 @@ async function handleDropAndFinish(
   return true;
 }
 
-function finishDragSession(provider: IDnDProviderInternal): void {
+export function finishDragSession(provider: IDnDProviderInternal): void {
   const initiating = provider.entities.initiatingDraggable;
   triggerSelfDragForElement(provider, initiating, 'onSelfDragEnd');
   triggerDragForAll(provider, 'onDragEnd');
@@ -96,7 +97,9 @@ function finishSelectionSession(provider: IDnDProviderInternal): void {
 }
 
 export const createPointerHandlers = (provider: IDnDProviderInternal) => {
-  const delayTimer = { current: null as ReturnType<typeof createActivationDelayTimer> | null };
+  const delayTimer = {
+    current: null as ReturnType<typeof createActivationDelayTimer> | null,
+  };
   const lastCollisionRun = { value: 0 };
 
   const pointerUp = async () => {
@@ -152,8 +155,12 @@ export const createPointerHandlers = (provider: IDnDProviderInternal) => {
     document.addEventListener('pointermove', pointerMove);
 
     const target = event.target as HTMLElement;
-    const closestSelectionArea = target.closest(DnDSelectors.SELECT_AREA) as HTMLElement;
-    const closestDraggable = target.closest(DnDSelectors.DRAGGABLE) as HTMLElement;
+    const closestSelectionArea = target.closest(
+      DnDSelectors.SELECT_AREA
+    ) as HTMLElement;
+    const closestDraggable = target.closest(
+      DnDSelectors.DRAGGABLE
+    ) as HTMLElement;
 
     if (
       provider.entities.modifiersSelectableAreaSet.size > 0 &&
@@ -171,14 +178,16 @@ export const createPointerHandlers = (provider: IDnDProviderInternal) => {
       provider.entities.modifiersDraggableSet.has(closestDraggable)
     ) {
       const entity = provider.entities.draggableMap.get(closestDraggable);
-      if (!checkDragHandle(target, closestDraggable, entity?.dragHandle)) return;
+      if (!checkDragHandle(target, closestDraggable, entity?.dragHandle))
+        return;
 
       disableInteractions();
       provider.entities.initiatingDraggable = closestDraggable;
       const offset = calculateCursorOffset(event, closestDraggable);
       provider.pointer.value = createPointerState(event, offset.x, offset.y);
 
-      const hasActivation = entity?.activation?.distance || entity?.activation?.delay;
+      const hasActivation =
+        entity?.activation?.distance || entity?.activation?.delay;
 
       if (hasActivation) {
         provider.state.value = 'activating';

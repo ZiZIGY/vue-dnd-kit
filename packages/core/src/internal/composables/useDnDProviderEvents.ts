@@ -1,29 +1,32 @@
-import { handleModifierEvents } from '../logic/modifier';
+import { onBeforeUnmount, onMounted } from 'vue';
+import { handleKeyboardEvents } from '../logic/keyboard';
 import { createPointerHandlers } from '../logic/pointer';
 import { handleScrollEvent } from '../logic/scroll';
 import type { IDnDProviderInternal } from '../types/provider';
 
 export const useDnDProviderEvents = (provider: IDnDProviderInternal) => {
   const handlers = createPointerHandlers(provider);
+  const keyDown = handleKeyboardEvents.keyDown(provider);
+  const keyUp = handleKeyboardEvents.keyUp(provider);
+  const clear = handleKeyboardEvents.clear(provider);
+  const scrollHandler = handleScrollEvent(provider);
 
-  const registerEvents = () => {
-    document.addEventListener('keydown', handleModifierEvents.keyDown(provider));
-    document.addEventListener('keyup', handleModifierEvents.keyUp(provider));
-    document.addEventListener('blur', handleModifierEvents.clear(provider));
-    document.addEventListener('scroll', handleScrollEvent(provider), true);
+  onMounted(() => {
     document.addEventListener('pointerdown', handlers.pointerDown);
-  };
+    document.addEventListener('keydown', keyDown);
+    document.addEventListener('keyup', keyUp);
+    document.addEventListener('blur', clear);
+    document.addEventListener('scroll', scrollHandler, true);
+  });
 
-  const unregisterEvents = () => {
+  onBeforeUnmount(() => {
     document.removeEventListener('pointerdown', handlers.pointerDown);
     document.removeEventListener('pointerup', handlers.pointerUp);
     document.removeEventListener('pointermove', handlers.pointerMove);
-    document.removeEventListener('keydown', handleModifierEvents.keyDown(provider));
-    document.removeEventListener('keyup', handleModifierEvents.keyUp(provider));
-    document.removeEventListener('blur', handleModifierEvents.clear(provider));
-    document.removeEventListener('scroll', handleScrollEvent(provider), true);
+    document.removeEventListener('keydown', keyDown);
+    document.removeEventListener('keyup', keyUp);
+    document.removeEventListener('blur', clear);
+    document.removeEventListener('scroll', scrollHandler, true);
     handlers.cleanup();
-  };
-
-  return { registerEvents, unregisterEvents };
+  });
 };

@@ -22,12 +22,42 @@ import { calculateDistanceProgress } from '../utils/drag-activation';
 import { calculateConstrainedPosition } from '../utils/constraints';
 import type { IDnDProviderInternal } from '../types/provider';
 
+const DEFAULT_KEYS = {
+  forDrag: ['Enter', 'Space'],
+  forCancel: ['Escape'],
+  forDrop: ['Enter', 'Space'],
+  forMove: [
+    'ArrowUp',
+    'ArrowDown',
+    'ArrowLeft',
+    'ArrowRight',
+    'KeyW',
+    'KeyA',
+    'KeyS',
+    'KeyD',
+  ],
+  forMoveFaster: ['ShiftLeft', 'ShiftRight'],
+} as const;
+
 export function useDnDProviderState(
   overlayRef: Ref<HTMLElement | null>
 ): IDnDProviderInternal {
   const state = shallowRef<TDnDState>();
   const pointer = ref<TPointerState | undefined>();
-  const modifiers = ref<Set<string>>(new Set());
+  const pressedKeys = ref<Set<string>>(new Set());
+
+  const keyboard = {
+    keys: {
+      pressedKeys,
+      forDrag: [...DEFAULT_KEYS.forDrag],
+      forCancel: [...DEFAULT_KEYS.forCancel],
+      forDrop: [...DEFAULT_KEYS.forDrop],
+      forMove: [...DEFAULT_KEYS.forMove],
+      forMoveFaster: [...DEFAULT_KEYS.forMoveFaster],
+    },
+    step: 8,
+    moveFaster: 4,
+  };
 
   const entities = reactive<IEntities>({
     draggableMap: new Map(),
@@ -45,7 +75,7 @@ export function useDnDProviderState(
       const selectableSet = filterByModifiers(
         entities.selectableAreaMap,
         entities.visibleSelectableAreaSet,
-        modifiers
+        keyboard.keys.pressedKeys
       );
       return selectableSet;
     }),
@@ -53,7 +83,7 @@ export function useDnDProviderState(
       const draggableSet = filterByModifiers(
         entities.draggableMap,
         entities.visibleDraggableSet,
-        modifiers,
+        keyboard.keys.pressedKeys,
         (node) => isEffectivelyDisabledDraggable(node, { entities })
       );
       return draggableSet;
@@ -127,7 +157,7 @@ export function useDnDProviderState(
     state,
     pointer,
     entities,
-    modifiers,
+    keyboard,
     scrollPosition,
     delay,
     distanceProgress,
