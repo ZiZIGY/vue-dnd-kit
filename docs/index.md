@@ -22,26 +22,26 @@ hero:
 features:
   - title: High Performance
     description: Optimized for smooth interactions even with large lists and complex interfaces
-    icon: mdi:rocket-launch
+    icon: 🚀
   - title: Composable API
     description: Built with Vue 3's Composition API for maximum flexibility and reusability
-    icon: mdi:puzzle-outline
+    icon: 🧩
   - title: Accessible
     description: Full keyboard navigation and screen reader support for inclusive interfaces
-    icon: mdi:accessibility
+    icon: ♿
   - title: Extensible
     description: Create custom drag overlays, sensors, and collision detection algorithms
-    icon: mdi:wrench
+    icon: 🔧
   - title: Precise Control
     description: Fine-grained control over drag start, move, and drop behaviors
-    icon: mdi:target
+    icon: 🎯
   - title: Lightweight
     description: Minimal bundle size impact with no external dependencies
-    icon: mdi:package-variant
+    icon: 📦
 ---
 
 <style> :root { --vp-home-hero-image-background-image: linear-gradient(-45deg, #42b883 50%, #35495e 50%); --vp-home-hero-image-filter: blur(72px); } .VPHero .image-bg { opacity: 0.5; transition: opacity 1s ease; } .VPHero .image-container { transform: scale(1.2); } .VPHero .image-container::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 80%; background: var(--vp-home-hero-image-background-image); filter: blur(120px); opacity: 0.3; z-index: -1; animation: pulse 4s ease-in-out infinite; } html:not(.dark) .VPHero .image-container::after { opacity: 0.2; } @keyframes pulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; } 50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.4; } } .VPHero .image-container:hover::after { animation: none; opacity: 0.5; filter: blur(90px); transition: all 0.5s ease; } </style>
 
 [data-vue-dnd-kit-draggable="true"] {
-  touch-action: none;
+touch-action: none;
 }

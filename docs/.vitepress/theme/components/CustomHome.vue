@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import { useData } from 'vitepress';
-  import { Icon } from '@iconify/vue';
   import { BackgroundLens } from './BackgroundLens';
 
   const { frontmatter } = useData();
@@ -82,16 +81,12 @@
           :key="i"
           class="VDndHome__feature-card glass-card rounded-4xl"
         >
-          <div
+          <span
             class="VDndHome__feature-icon"
             aria-hidden="true"
           >
-            <Icon
-              :icon="feat.icon"
-              width="28"
-              height="28"
-            />
-          </div>
+            {{ feat.icon }}
+          </span>
           <h3 class="VDndHome__feature-title">{{ feat.title }}</h3>
           <p class="VDndHome__feature-desc">{{ feat.description }}</p>
         </article>

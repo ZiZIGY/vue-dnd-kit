@@ -86,23 +86,53 @@ export default defineConfig({
           collapsed: false,
           items: [
             { text: 'Simple Drag', link: '/v1/examples/basic/simple-drag' },
-            { text: 'Multi-Selection', link: '/v1/examples/basic/multi-selection' },
+            {
+              text: 'Multi-Selection',
+              link: '/v1/examples/basic/multi-selection',
+            },
             { text: 'Drag to Zone', link: '/v1/examples/basic/drag-to-zone' },
             { text: 'Drag Handle', link: '/v1/examples/basic/drag-handle' },
-            { text: 'Adding Keyboard Support', link: '/v1/examples/basic/keyboard-support' },
+            {
+              text: 'Adding Keyboard Support',
+              link: '/v1/examples/basic/keyboard-support',
+            },
             { text: 'Drag Overlay', link: '/v1/examples/basic/drag-overlay' },
             { text: 'Disabled', link: '/v1/examples/basic/disabled-elements' },
-            { text: 'Changing Overlay', link: '/v1/examples/advanced/changing-overlay' },
-            { text: 'Changing Layers', link: '/v1/examples/advanced/changing-layers' },
-            { text: 'Nesting Zones', link: '/v1/examples/advanced/nesting-zones' },
+            {
+              text: 'Changing Overlay',
+              link: '/v1/examples/advanced/changing-overlay',
+            },
+            {
+              text: 'Changing Layers',
+              link: '/v1/examples/advanced/changing-layers',
+            },
+            {
+              text: 'Nesting Zones',
+              link: '/v1/examples/advanced/nesting-zones',
+            },
             { text: 'Grouping', link: '/v1/examples/advanced/grouping' },
-            { text: 'Custom Sensor', link: '/v1/examples/advanced/custom-sensor' },
-            { text: 'Reordering Items', link: '/v1/examples/real-world/reordering-items' },
+            {
+              text: 'Custom Sensor',
+              link: '/v1/examples/advanced/custom-sensor',
+            },
+            {
+              text: 'Reordering Items',
+              link: '/v1/examples/real-world/reordering-items',
+            },
             { text: 'Morph SVG', link: '/v1/examples/real-world/morph-svg' },
-            { text: 'Animating Elements', link: '/v1/examples/real-world/animating' },
-            { text: 'Sorting Lists', link: '/v1/examples/real-world/sorting-lists' },
+            {
+              text: 'Animating Elements',
+              link: '/v1/examples/real-world/animating',
+            },
+            {
+              text: 'Sorting Lists',
+              link: '/v1/examples/real-world/sorting-lists',
+            },
             { text: 'Tree', link: '/v1/examples/real-world/tree' },
-            { text: 'Async Drop Promise', link: '/v1/examples/real-world/promise-drop' },
+            {
+              text: 'Async Drop Promise',
+              link: '/v1/examples/real-world/promise-drop',
+            },
           ],
         },
         { text: 'About', link: '/v1/about' },

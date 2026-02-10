@@ -140,7 +140,7 @@
 }
 
 .VDndHome__feature-icon {
-  @apply flex items-center justify-center shrink-0 w-12 h-12 rounded-xl mb-4;
+  @apply flex items-center justify-center shrink-0 w-12 h-12 rounded-xl mb-4 text-[1.75rem];
   -webkit-backdrop-filter: blur(12px) saturate(1.2);
   backdrop-filter: blur(12px) saturate(1.2);
   background: linear-gradient(
@@ -158,11 +158,6 @@
     rgba(255, 255, 255, 0.02) 100%
   );
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-}
-
-.VDndHome__feature-icon :deep(svg) {
-  fill: url(#featureIconGrad);
-  stroke: url(#featureIconGrad);
 }
 
 .VDndHome__feature-title {

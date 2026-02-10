@@ -7,6 +7,9 @@
   @apply glass-card;
 }
 
+.VPLocalSearchBox .backdrop {
+}
+
 .VPLocalSearchBox .shell {
   @apply mx-auto! mt-auto! mb-8! rounded-xl! flex-col-reverse!;
   -webkit-backdrop-filter: blur(12px) saturate(1.1);
@@ -76,11 +79,11 @@
 .vp-doc th {
   background: linear-gradient(
     90deg,
-    var(--vp-c-text-1) 0%,
-    var(--vp-c-text-1) 40%,
+    var(--text-shimmer-from) 0%,
+    var(--text-shimmer-from) 40%,
     var(--text-shimmer-to) 50%,
-    var(--vp-c-text-1) 60%,
-    var(--vp-c-text-1) 100%
+    var(--text-shimmer-from) 60%,
+    var(--text-shimmer-from) 100%
   );
   background-size: 200% 100%;
   -webkit-background-clip: text;
@@ -176,6 +179,10 @@
   @apply rounded-lg!;
 }
 
-code mark {
-  background-color: unset !important;
+.excerpt {
+  @apply opacity-100! max-h-max!;
+}
+
+mark[data-markjs='true'] {
+  -webkit-text-fill-color: var(--vp-local-search-highlight-text) !important;
 }
