@@ -1,0 +1,181 @@
+/**
+ * Стили VitePress: nav, sidebar, search, doc
+ */
+
+.VPFlyout .menu .VPMenu,
+.VPNavScreen .container {
+  @apply glass-card;
+}
+
+.VPLocalSearchBox .shell {
+  @apply mx-auto! mt-auto! mb-8! rounded-xl! flex-col-reverse!;
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  backdrop-filter: blur(12px) saturate(1.1);
+  background: linear-gradient(
+    139deg,
+    var(--glass-bg-1) 0%,
+    var(--glass-bg-2) 50%,
+    var(--glass-bg-3) 100%
+  ) !important;
+  background-size: 200% 100%;
+  animation: glass-bg-shimmer 8s linear infinite;
+  will-change: background-position;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.dark .VPLocalSearchBox .shell {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.shell .search-bar {
+  @apply border-none!;
+}
+
+.VPNav {
+  -webkit-backdrop-filter: blur(8px) saturate(1.1);
+  backdrop-filter: blur(8px) saturate(1.1);
+  background: linear-gradient(
+    139deg,
+    var(--glass-bg-1) 0%,
+    var(--glass-bg-2) 50%,
+    var(--glass-bg-3) 100%
+  ) !important;
+  background-size: 200% 100%;
+  animation: glass-bg-shimmer 8s linear infinite;
+  will-change: background-position;
+  box-shadow: var(--vp-nav-shadow);
+}
+
+.VPNav::before {
+  content: '';
+  @apply absolute bottom-0 left-0 right-0 z-10 pointer-events-none;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--nav-shimmer-base) 0%,
+    var(--nav-shimmer-base) 15%,
+    var(--glow-card-1) 25%,
+    var(--glow-card-2) 40%,
+    var(--glow-card-3) 55%,
+    var(--glow-card-4) 70%,
+    var(--nav-shimmer-base) 85%,
+    var(--nav-shimmer-base) 100%
+  );
+  background-size: 200% 100%;
+  animation: nav-shimmer 4s linear infinite;
+  will-change: background-position;
+}
+
+.menu {
+  @apply z-[100];
+}
+
+.vp-doc p,
+.vp-doc li,
+.vp-doc td,
+.vp-doc th {
+  background: linear-gradient(
+    90deg,
+    var(--vp-c-text-1) 0%,
+    var(--vp-c-text-1) 40%,
+    var(--text-shimmer-to) 50%,
+    var(--vp-c-text-1) 60%,
+    var(--vp-c-text-1) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-shimmer 10s ease-in-out infinite;
+}
+
+.VDndContent.has-sidebar {
+  @apply pl-[var(--vp-sidebar-width)]! pr-0!;
+}
+
+.VPDoc.has-aside .content-container {
+  @apply max-w-full!;
+}
+
+.VDndDoc {
+  @apply py-8 px-6 pb-24 md:py-12 md:px-8 md:pb-32;
+}
+
+.VPSidebar {
+  @apply border-r border-(--vp-c-border) pl-8! w-auto!;
+}
+
+.VPSidebar .nav-link:hover {
+  @apply text-(--vp-c-brand-1);
+}
+
+.VPLink.active {
+  background: linear-gradient(
+    90deg,
+    var(--glow-card-1) 0%,
+    var(--glow-card-2) 25%,
+    var(--glow-card-3) 50%,
+    var(--glow-card-4) 75%,
+    var(--glow-card-1) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: nav-shimmer 4s linear infinite;
+}
+
+.VPSidebarItem.is-active {
+  background: linear-gradient(
+    90deg,
+    var(--glow-card-1) 0%,
+    var(--glow-card-2) 25%,
+    var(--glow-card-3) 50%,
+    var(--glow-card-4) 75%,
+    var(--glow-card-1) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: nav-shimmer 4s linear infinite;
+}
+
+#local-search {
+  @apply w-full;
+}
+
+#local-search .DocSearch-Button-Keys {
+  display: none;
+}
+
+#local-search .DocSearch-Button {
+  @apply bg-transparent border-none;
+}
+.excerpt-gradient-bottom,
+.excerpt-gradient-top {
+  @apply hidden;
+}
+
+#localsearch-list .result.selected {
+  @apply shimmer-border border-none!;
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  backdrop-filter: blur(12px) saturate(1.1);
+  background: linear-gradient(
+    139deg,
+    var(--glass-bg-1) 0%,
+    var(--glass-bg-2) 50%,
+    var(--glass-bg-3) 100%
+  ) !important;
+  background-size: 200% 0%;
+  animation: glass-bg-shimmer 8s linear infinite;
+  will-change: background-position;
+}
+
+#localsearch-list .result {
+  @apply rounded-lg!;
+}
+
+code mark {
+  background-color: unset !important;
+}

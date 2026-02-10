@@ -1,0 +1,186 @@
+/**
+ * Custom Home (лендинг): VDndHome, hero, features, content
+ */
+
+.VDndHome {
+  @apply min-h-svh;
+  padding: calc(var(--vp-nav-height) + 48px) 24px 96px;
+}
+
+@media (min-width: 768px) {
+  .VDndHome {
+    padding: calc(var(--vp-nav-height) + 80px) 48px 128px;
+  }
+}
+
+.container {
+  max-width: var(--container-max-width) !important;
+  @apply box-content;
+}
+
+.VDndHome__hero {
+  @apply mb-8 overflow-hidden p-8 md:p-12;
+}
+
+.VDndHome__hero-inner {
+  @apply relative z-10;
+}
+
+.VDndHome__hero-layout {
+  @apply flex flex-col gap-8 md:flex-row md:items-center md:justify-between md:gap-12;
+}
+
+.VDndHome__hero-text {
+  @apply flex-1 min-w-0;
+}
+
+.VDndHome__hero-logo {
+  @apply relative shrink-0 flex items-center justify-center md:justify-end;
+}
+
+.VDndHome__logo-glow {
+  position: absolute;
+  inset: -20%;
+  border-radius: 50%;
+  background: linear-gradient(
+    90deg,
+    var(--glow-card-1) 0%,
+    var(--glow-card-2) 25%,
+    var(--glow-card-3) 50%,
+    var(--glow-card-4) 75%,
+    var(--glow-card-1) 100%
+  );
+  background-size: 200% 100%;
+  animation: nav-shimmer 6s linear infinite;
+  filter: blur(50px);
+  opacity: 0.2;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.VDndHome__logo-img {
+  position: relative;
+  z-index: 1;
+  width: 16rem;
+  height: auto;
+  max-height: 380px;
+  object-fit: contain;
+}
+
+@media (min-width: 768px) {
+  .VDndHome__logo-img {
+    width: 20rem;
+    max-height: 420px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .VDndHome__logo-img {
+    width: 24rem;
+    max-height: 480px;
+  }
+}
+
+.VDndHome__title {
+  @apply text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-4;
+  background: linear-gradient(135deg, #1a1a1e 0%, #52525b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .VDndHome__title {
+  background: linear-gradient(135deg, #e4e4e7 0%, #a1a1aa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.VDndHome__title .accent {
+  @apply rainbow-text;
+}
+
+.VDndHome__tagline {
+  @apply text-2xl text-(--vp-c-text-1) mb-4 leading-relaxed;
+}
+
+.VDndHome__sub {
+  @apply text-lg text-(--vp-c-text-1) mb-8 leading-relaxed max-w-xl;
+}
+
+.VDndHome__actions {
+  @apply flex flex-wrap gap-3;
+}
+
+.VDndHome__btn {
+  @apply inline-flex items-center gap-2 px-6 py-3 text-base font-semibold rounded-lg transition-all duration-200;
+}
+
+.VDndHome__btn--primary {
+  @apply bg-(--vp-c-brand-3) text-[#0c0c10];
+}
+
+.VDndHome__btn--primary:hover {
+  @apply bg-(--vp-c-brand-2) -translate-y-px;
+}
+
+.VDndHome__btn--secondary {
+  @apply bg-transparent border border-(--vp-c-border) text-(--vp-c-text-1);
+}
+
+.VDndHome__btn--secondary:hover {
+  @apply border-(--vp-c-brand-3) text-(--vp-c-brand-1);
+}
+
+.VDndHome__features {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-10 md:mb-12;
+}
+
+.VDndHome__feature-card {
+  @apply relative overflow-hidden p-6 md:p-8 flex flex-col;
+}
+
+.VDndHome__feature-icon {
+  @apply flex items-center justify-center shrink-0 w-12 h-12 rounded-xl mb-4;
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  backdrop-filter: blur(12px) saturate(1.2);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0.15) 100%
+  );
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.dark .VDndHome__feature-icon {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.VDndHome__feature-icon :deep(svg) {
+  fill: url(#featureIconGrad);
+  stroke: url(#featureIconGrad);
+}
+
+.VDndHome__feature-title {
+  @apply text-lg font-bold text-(--vp-c-text-1) mb-2 leading-tight;
+}
+
+.VDndHome__feature-desc {
+  @apply text-sm text-(--vp-c-text-2) leading-relaxed;
+}
+
+.VDndHome__content {
+  @apply overflow-hidden relative p-8 md:p-10;
+}
+
+.VDndHome__content-inner {
+  @apply relative z-10;
+}
+
+.VDndHome__content-inner :deep(.vp-doc) {
+  @apply p-0;
+}

@@ -1,0 +1,271 @@
+/**
+ * Утилиты: rainbow-text, glass-card, shimmer-border, glass-btn
+ */
+
+@utility rainbow-text {
+  background: linear-gradient(
+    90deg,
+    var(--glow-card-1) 0%,
+    var(--glow-card-2) 25%,
+    var(--glow-card-3) 50%,
+    var(--glow-card-4) 75%,
+    var(--glow-card-1) 100%
+  );
+  background-size: 200% 100%;
+  animation: nav-shimmer 4s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@utility glass-card {
+  position: relative;
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  backdrop-filter: blur(12px) saturate(1.1);
+  background: linear-gradient(
+    139deg,
+    var(--glass-card-1) 0%,
+    var(--glass-card-2) 50%,
+    var(--glass-card-3) 100%
+  ) !important;
+  background-size: 200% 100%;
+  animation: glass-bg-shimmer 8s linear infinite;
+  will-change: background-position;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  @variant dark {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  }
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    padding: var(--glow-border-width);
+    background: linear-gradient(
+      90deg,
+      var(--glow-card-1) 0%,
+      var(--glow-card-2) 25%,
+      var(--glow-card-3) 50%,
+      var(--glow-card-4) 75%,
+      var(--glow-card-1) 100%
+    );
+    background-size: 200% 100%;
+    animation: nav-shimmer 4s linear infinite;
+    will-change: background-position;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+}
+
+.VDndHome .glass-card {
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  backdrop-filter: blur(24px) saturate(1.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.VDndHome .glass-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(66, 184, 131, 0.04) 0%,
+    rgba(90, 184, 200, 0.03) 25%,
+    rgba(144, 128, 208, 0.04) 50%,
+    rgba(224, 160, 88, 0.03) 75%,
+    rgba(66, 184, 131, 0.04) 100%
+  );
+  background-size: 200% 200%;
+  animation: glass-bg-shimmer 12s linear infinite;
+  will-change: background-position;
+  z-index: 0;
+}
+.dark .VDndHome .glass-card {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.glow-border {
+  @apply absolute inset-0 pointer-events-none;
+  border-radius: inherit;
+  padding: var(--glow-border-width);
+  background-image: radial-gradient(
+    ellipse 200% 200% at 50% 50%,
+    transparent 0%,
+    var(--glow-card-1) 15%,
+    var(--glow-card-2) 35%,
+    var(--glow-card-3) 55%,
+    var(--glow-card-4) 75%,
+    transparent 100%
+  );
+  background-size: 300% 300%;
+  animation: glow-border var(--glow-duration) infinite linear;
+  will-change: background-position;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.glow-border--nav {
+  --glow-border-width: 1px;
+  --glow-duration: 15s;
+}
+
+@utility shimmer-border {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(
+      90deg,
+      var(--nav-shimmer-base) 0%,
+      var(--nav-shimmer-base) 15%,
+      var(--glow-card-1) 25%,
+      var(--glow-card-2) 40%,
+      var(--glow-card-3) 55%,
+      var(--glow-card-4) 70%,
+      var(--nav-shimmer-base) 85%,
+      var(--nav-shimmer-base) 100%
+    );
+    background-size: 200% 100%;
+    animation: nav-shimmer 4s linear infinite;
+    will-change: background-position;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+}
+
+@utility glass-btn {
+  @apply inline-flex items-center justify-center rounded-full border-none font-medium transition-all duration-200;
+  padding: 0.5rem 1.25rem;
+  min-height: 2.5rem;
+  position: relative;
+  -webkit-backdrop-filter: blur(8px) saturate(1.1);
+  backdrop-filter: blur(8px) saturate(1.1);
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  @variant dark {
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: linear-gradient(
+      90deg,
+      var(--glass-btn-shimmer-1) 0%,
+      var(--glass-btn-shimmer-2) 25%,
+      var(--glass-btn-shimmer-3) 50%,
+      var(--glass-btn-shimmer-2) 75%,
+      var(--glass-btn-shimmer-1) 100%
+    );
+    background-size: 200% 100%;
+    animation: nav-shimmer 4s linear infinite;
+    will-change: background-position;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+}
+
+:root {
+  --glass-btn-shimmer-1: rgba(255, 255, 255, 0.5);
+  --glass-btn-shimmer-2: rgba(255, 255, 255, 0.75);
+  --glass-btn-shimmer-3: rgba(255, 255, 255, 0.9);
+}
+
+.dark .glass-btn {
+  --glass-btn-shimmer-1: rgba(255, 255, 255, 0.12);
+  --glass-btn-shimmer-2: rgba(255, 255, 255, 0.2);
+  --glass-btn-shimmer-3: rgba(255, 255, 255, 0.28);
+}
+
+@utility glass-btn--primary {
+  @apply inline-flex items-center justify-center rounded-full border-none font-medium transition-all duration-200;
+  padding: 0.5rem 1.25rem;
+  min-height: 2.5rem;
+  position: relative;
+  -webkit-backdrop-filter: blur(8px) saturate(1.1);
+  backdrop-filter: blur(8px) saturate(1.1);
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  @variant dark {
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: linear-gradient(
+      90deg,
+      var(--glass-btn-shimmer-1) 0%,
+      var(--glass-btn-shimmer-2) 25%,
+      var(--glass-btn-shimmer-3) 50%,
+      var(--glass-btn-shimmer-2) 75%,
+      var(--glass-btn-shimmer-1) 100%
+    );
+    background-size: 200% 100%;
+    animation: nav-shimmer 4s linear infinite;
+    will-change: background-position;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: -1;
+    background: linear-gradient(
+      90deg,
+      rgba(66, 184, 131, 0.2) 0%,
+      rgba(90, 184, 200, 0.2) 25%,
+      rgba(144, 128, 208, 0.2) 50%,
+      rgba(224, 160, 88, 0.2) 75%,
+      rgba(66, 184, 131, 0.2) 100%
+    );
+    background-size: 200% 100%;
+    animation: nav-shimmer 4s linear infinite;
+    will-change: background-position;
+  }
+  @variant dark {
+    &::after {
+      background: linear-gradient(
+        90deg,
+        rgba(66, 184, 131, 0.15) 0%,
+        rgba(90, 184, 200, 0.15) 25%,
+        rgba(144, 128, 208, 0.15) 50%,
+        rgba(224, 160, 88, 0.15) 75%,
+        rgba(66, 184, 131, 0.15) 100%
+      );
+      background-size: 200% 100%;
+      animation: nav-shimmer 4s linear infinite;
+    }
+  }
+}
