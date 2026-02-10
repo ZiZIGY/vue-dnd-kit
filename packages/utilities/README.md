@@ -159,7 +159,7 @@ pnpm install @vue-dnd-kit/utilities
 This package requires `@vue-dnd-kit/core` as a peer dependency:
 
 ```bash
-npm install @vue-dnd-kit/core
+npm install @vue-dnd-kit/core@1.7.0
 ```
 
 ## 📄 License

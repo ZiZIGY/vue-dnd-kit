@@ -31,13 +31,13 @@ The core package is the foundation of Vue DnD Kit and provides essential drag an
 
 ```bash
 # npm
-npm install @vue-dnd-kit/core
+npm install @vue-dnd-kit/core@1.7.0
 
 # yarn
-yarn add @vue-dnd-kit/core
+yarn add @vue-dnd-kit/core@1.7.0
 
 # pnpm
-pnpm add @vue-dnd-kit/core
+pnpm add @vue-dnd-kit/core@1.7.0
 ```
 
 For most projects, the core package is all you need to get started with basic drag and drop functionality.

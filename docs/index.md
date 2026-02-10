@@ -123,13 +123,13 @@ Vue DnD Kit provides a modern solution for implementing drag and drop interfaces
 
 ```bash
 # npm
-npm install @vue-dnd-kit/core @vueuse/core
+npm install @vue-dnd-kit/core@1.7.0 @vueuse/core
 
 # yarn
-yarn add @vue-dnd-kit/core @vueuse/core
+yarn add @vue-dnd-kit/core@1.7.0 @vueuse/core
 
 # pnpm
-pnpm add @vue-dnd-kit/core @vueuse/core
+pnpm add @vue-dnd-kit/core@1.7.0 @vueuse/core
 ```
 
 ## Ecosystem

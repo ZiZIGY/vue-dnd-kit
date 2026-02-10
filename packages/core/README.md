@@ -148,15 +148,15 @@ The library is built with flexibility as a core principle, allowing you to imple
 Choose your preferred package manager:
 
 ```bash
-npm install @vue-dnd-kit/core @vueuse/core
+npm install @vue-dnd-kit/core@1.7.0 @vueuse/core
 ```
 
 ```bash
-yarn add @vue-dnd-kit/core @vueuse/core
+yarn add @vue-dnd-kit/core@1.7.0 @vueuse/core
 ```
 
 ```bash
-pnpm install @vue-dnd-kit/core @vueuse/core
+pnpm install @vue-dnd-kit/core@1.7.0 @vueuse/core
 ```
 
 ## Setup as a Plugin
