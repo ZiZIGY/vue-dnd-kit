@@ -11,7 +11,7 @@ export default defineConfig({
       'link',
       {
         rel: 'icon',
-        href: 'https://raw.githubusercontent.com/ZiZiGY/vue-dnd-kit/master/public/logo.svg',
+        href: 'https://raw.githubusercontent.com/ZiZIGY/vue-dnd-kit/refs/heads/v2/public/logo.svg',
       },
     ],
     [
@@ -25,7 +25,7 @@ export default defineConfig({
   description:
     'Vue DnD Kit - a modern, lightweight, and high-performance drag and drop ecosystem for Vue 3',
   themeConfig: {
-    logo: 'https://raw.githubusercontent.com/ZiZiGY/vue-dnd-kit/master/public/logo.svg',
+    logo: 'https://raw.githubusercontent.com/ZiZIGY/vue-dnd-kit/refs/heads/v2/public/logo.svg',
     nav: [
       { text: 'Home', link: '/' },
       {

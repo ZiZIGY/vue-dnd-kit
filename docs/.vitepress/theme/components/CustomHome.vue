@@ -1,14 +1,18 @@
 <script setup lang="ts">
-  import { useData } from 'vitepress';
+  import { useData, withBase } from 'vitepress';
+  import { computed } from 'vue';
   import { BackgroundLens } from './BackgroundLens';
 
-  const { frontmatter } = useData();
+  const { frontmatter, theme } = useData();
+
+  const actionHref = (link: string) => {
+    return link.startsWith('http') ? link : withBase(link);
+  };
   const hero = frontmatter.value.hero ?? {};
   const actions = hero.actions ?? [];
   const features = frontmatter.value.features ?? [];
 
-  const logoUrl =
-    'https://raw.githubusercontent.com/ZiZIGY/vue-dnd-kit/refs/heads/v2/public/logo.svg';
+  const logoUrl = computed(() => theme.value.logo);
 </script>
 
 <template>
@@ -48,7 +52,7 @@
                 <a
                   v-for="action in actions"
                   :key="action.link"
-                  :href="action.link"
+                  :href="actionHref(action.link)"
                   class="glass-btn"
                   :class="action.theme === 'brand' ? 'glass-btn--primary' : ''"
                 >
