@@ -7,9 +7,6 @@
   @apply glass-card;
 }
 
-.VPLocalSearchBox .backdrop {
-}
-
 .VPLocalSearchBox .shell {
   @apply mx-auto! mt-auto! mb-8! rounded-xl! flex-col-reverse!;
   -webkit-backdrop-filter: blur(12px) saturate(1.1);

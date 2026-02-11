@@ -7,7 +7,7 @@
 >
   <defs>
     <!-- Радиальный градиент заливки — призматические тона -->
-    <radialGradient id="radialVueGradient" cx="50%" cy="50%" r="70%">
+    <radialGradient id="radialDGradient" cx="50%" cy="50%" r="70%">
       <stop offset="0%" style="stop-color: #42b883; stop-opacity: 0.9">
         <animate attributeName="stop-opacity" values="0.85;0.95;0.85" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1" />
       </stop>
@@ -17,19 +17,19 @@
       </stop>
     </radialGradient>
 
-    <!-- Призматический градиент только в фазе «драга» (смещение): цикл 8s, keyTimes как у translate -->
-    <linearGradient id="vueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- Призматический градиент только в фазе «драга» (смещение): цикл 8s -->
+    <linearGradient id="dGradient" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color: #42b883">
-        <animate attributeName="stop-color" values="#42b883;#42b883;#42b883;#42b883;#5ab8c8;#9080d0;#e0a058;#42b883;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.25;0.35;0.5;0.65;0.75;0.85;1" />
+        <animate attributeName="stop-color" values="#42b883;#42b883;#5ab8c8;#9080d0;#e0a058;#42b883;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.35;0.55;0.75;0.85;1" />
       </stop>
       <stop offset="33%" style="stop-color: #42b883">
-        <animate attributeName="stop-color" values="#42b883;#42b883;#42b883;#5ab8c8;#9080d0;#e0a058;#42b883;#42b883;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.25;0.35;0.5;0.65;0.75;0.85;1" />
+        <animate attributeName="stop-color" values="#42b883;#42b883;#9080d0;#e0a058;#42b883;#5ab8c8;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.35;0.55;0.75;0.85;1" />
       </stop>
       <stop offset="66%" style="stop-color: #5ab8c8">
-        <animate attributeName="stop-color" values="#42b883;#42b883;#42b883;#9080d0;#e0a058;#42b883;#5ab8c8;#42b883;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.25;0.35;0.5;0.65;0.75;0.85;1" />
+        <animate attributeName="stop-color" values="#42b883;#42b883;#e0a058;#42b883;#5ab8c8;#9080d0;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.35;0.55;0.75;0.85;1" />
       </stop>
       <stop offset="100%" style="stop-color: #42b883">
-        <animate attributeName="stop-color" values="#42b883;#42b883;#42b883;#e0a058;#42b883;#5ab8c8;#9080d0;#42b883;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.25;0.35;0.5;0.65;0.75;0.85;1" />
+        <animate attributeName="stop-color" values="#42b883;#42b883;#42b883;#5ab8c8;#9080d0;#e0a058;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.35;0.55;0.75;0.85;1" />
       </stop>
     </linearGradient>
 
@@ -92,7 +92,6 @@
 
     <!-- Улучшенный фильтр боковых теней -->
     <filter id="glassSideShadow" x="-150%" y="-50%" width="400%" height="200%">
-      <!-- Левая тень -->
       <feGaussianBlur in="SourceAlpha" stdDeviation="6" result="leftBlur">
         <animate
           attributeName="stdDeviation"
@@ -116,7 +115,6 @@
         />
       </feOffset>
       
-      <!-- Правая тень -->
       <feGaussianBlur in="SourceAlpha" stdDeviation="6" result="rightBlur">
         <animate
           attributeName="stdDeviation"
@@ -141,7 +139,7 @@
       </feOffset>
       
       <feFlood flood-color="#42b883" flood-opacity="0.25" result="color">
-        <animate attributeName="flood-color" values="#42b883;#42b883;#42b883;#42b883;#5ab8c8;#9080d0;#e0a058;#42b883;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.25;0.35;0.5;0.65;0.75;0.85;1" />
+        <animate attributeName="flood-color" values="#42b883;#42b883;#5ab8c8;#9080d0;#e0a058;#42b883;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.35;0.55;0.75;0.85;1" />
         <animate attributeName="flood-opacity" values="0.2;0.3;0.2" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1" />
       </feFlood>
       
@@ -188,6 +186,36 @@
       </feMerge>
     </filter>
 
+    <!-- Background blur circles -->
+    <radialGradient id="bgGlow1">
+      <stop offset="0%" style="stop-color: #42b883; stop-opacity: 0.3">
+        <animate
+          attributeName="stop-opacity"
+          values="0.25;0.35;0.25"
+          dur="3.5s"
+          repeatCount="indefinite"
+          calcMode="spline"
+          keyTimes="0;0.5;1"
+          keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
+        />
+      </stop>
+      <stop offset="100%" style="stop-color: #5ab8c8; stop-opacity: 0" />
+    </radialGradient>
+
+    <radialGradient id="bgGlow2">
+      <stop offset="0%" style="stop-color: #9080d0; stop-opacity: 0.25">
+        <animate
+          attributeName="stop-opacity"
+          values="0.2;0.3;0.2"
+          dur="4.5s"
+          repeatCount="indefinite"
+          calcMode="spline"
+          keyTimes="0;0.5;1"
+          keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
+        />
+      </stop>
+      <stop offset="100%" style="stop-color: #e0a058; stop-opacity: 0" />
+    </radialGradient>
 
     <!-- Logo glow pulse effect -->
     <filter id="logoGlow" x="-150%" y="-150%" width="400%" height="400%">
@@ -203,7 +231,7 @@
         />
       </feGaussianBlur>
       <feFlood flood-color="#42b883" flood-opacity="0.35" result="color">
-        <animate attributeName="flood-color" values="#42b883;#42b883;#42b883;#42b883;#5ab8c8;#9080d0;#e0a058;#42b883;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.25;0.35;0.5;0.65;0.75;0.85;1" />
+        <animate attributeName="flood-color" values="#42b883;#42b883;#5ab8c8;#9080d0;#e0a058;#42b883;#42b883" dur="8s" repeatCount="indefinite" keyTimes="0;0.15;0.35;0.55;0.75;0.85;1" />
         <animate attributeName="flood-opacity" values="0.25;0.4;0.25" dur="3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1" />
       </feFlood>
       <feComposite in="color" in2="blur" operator="in" result="shadow"/>
@@ -214,30 +242,33 @@
     </filter>
   </defs>
 
-  <!-- Logo centered in viewBox (256×220.8 → viewBox 396×341) -->
-  <g transform="translate(20, 10)">
-  <!-- Shadow trail -->
-  <g opacity="0.3">
+  <!-- Static background removed -->
+
+  <!-- Shadow trail - призрачная версия буквы на исходной позиции -->
+  <g opacity="0.3" transform="translate(48, 10)">
+    <!-- Outer D shadow -->
     <path
-      d="M157.44 0L128 51.2L97.92 0H0L128 220.8L256 0H157.44Z"
+      d="M 30 20 L 30 200 L 100 200 C 160 200, 190 160, 190 110 C 190 60, 160 20, 100 20 Z"
       fill="#42b883"
       opacity="0.15"
     />
+    <!-- Inner cutout shadow -->
     <path
-      d="M157.44 0L128 51.2L97.92 0H50.56L128 132.48L204.8 0H157.44Z"
+      d="M 60 50 L 60 170 L 100 170 C 140 170, 160 145, 160 110 C 160 75, 140 50, 100 50 Z"
       fill="#35495E"
       opacity="0.2"
     />
   </g>
 
   <!-- Main logo group -->
-  <g>
-    <!-- Normal solid Vue logo -->
+  <g transform="translate(48, 10)">
+    <!-- Normal solid D logo -->
     <g opacity="1" filter="url(#logoGlow)">
+      <!-- Outer D shape -->
       <path
-        d="M157.44 0L128 51.2L97.92 0H0L128 220.8L256 0H157.44Z"
-        fill="url(#radialVueGradient)"
-        stroke="url(#vueGradient)"
+        d="M 30 20 L 30 200 L 100 200 C 160 200, 190 160, 190 110 C 190 60, 160 20, 100 20 Z"
+        fill="url(#radialDGradient)"
+        stroke="url(#dGradient)"
         stroke-width="4"
         stroke-linejoin="round"
       >
@@ -250,7 +281,6 @@
           keyTimes="0;0.5;1"
           keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
         />
-        <!-- Анимация цвета заливки -->
         <animate
           attributeName="fill-opacity"
           values="0.95;1;0.95"
@@ -262,10 +292,11 @@
         />
       </path>
       
+      <!-- Inner cutout -->
       <path
-        d="M157.44 0L128 51.2L97.92 0H50.56L128 132.48L204.8 0H157.44Z"
+        d="M 60 50 L 60 170 L 100 170 C 140 170, 160 145, 160 110 C 160 75, 140 50, 100 50 Z"
         fill="#35495E"
-        stroke="url(#vueGradient)"
+        stroke="url(#dGradient)"
         stroke-width="4"
         stroke-linejoin="round"
       >
@@ -278,7 +309,6 @@
           keyTimes="0;0.5;1"
           keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
         />
-        <!-- Анимация внутреннего треугольника -->
         <animate
           attributeName="fill-opacity"
           values="0.95;1;0.95"
@@ -292,22 +322,22 @@
       
       <animate
         attributeName="opacity"
-        values="1;1;1;0;0;0;0;1;1"
-        keyTimes="0;0.15;0.25;0.35;0.5;0.65;0.75;0.85;1"
+        values="1; 1; 0; 0; 0; 1; 1"
+        keyTimes="0; 0.15; 0.35; 0.55; 0.75; 0.85; 1"
         dur="8s"
         repeatCount="indefinite"
         calcMode="spline"
-        keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
+        keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
       />
     </g>
 
-    <!-- Glass morphism logo -->
+    <!-- Glass morphism D logo -->
     <g opacity="0">
-      <!-- Outer triangle with glass effect -->
+      <!-- Outer D with glass effect -->
       <path
-        d="M157.44 0L128 51.2L97.92 0H0L128 220.8L256 0H157.44Z"
+        d="M 30 20 L 30 200 L 100 200 C 160 200, 190 160, 190 110 C 190 60, 160 20, 100 20 Z"
         fill="url(#glassFill1)"
-        stroke="url(#vueGradient)"
+        stroke="url(#dGradient)"
         stroke-width="4"
         filter="url(#innerGlow)"
         opacity="0.9"
@@ -322,7 +352,6 @@
           keyTimes="0;0.5;1"
           keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
         />
-        <!-- Плавная анимация прозрачности -->
         <animate
           attributeName="opacity"
           values="0.85;0.95;0.85"
@@ -334,21 +363,11 @@
         />
       </path>
 
-      <!-- Highlight line on outer triangle -->
+      <!-- Inner cutout with glass effect -->
       <path
-        d="M157.44 0L128 51.2L97.92 0"
-        fill="none"
-        stroke="white"
-        stroke-width="2"
-        opacity="0.4"
-        stroke-linecap="round"
-      />
-
-      <!-- Inner triangle with glass effect -->
-      <path
-        d="M157.44 0L128 51.2L97.92 0H50.56L128 132.48L204.8 0H157.44Z"
+        d="M 60 50 L 60 170 L 100 170 C 140 170, 160 145, 160 110 C 160 75, 140 50, 100 50 Z"
         fill="url(#glassFill2)"
-        stroke="url(#vueGradient)"
+        stroke="url(#dGradient)"
         stroke-width="4"
         filter="url(#innerGlow)"
         opacity="0.95"
@@ -374,16 +393,15 @@
         />
       </path>
 
-      <!-- Highlight line on inner triangle -->
+      <!-- Highlight line on inner cutout -->
       <path
-        d="M157.44 0L128 51.2L97.92 0"
+        d="M 60 50 L 60 110"
         fill="none"
         stroke="white"
         stroke-width="1.5"
         opacity="0.6"
         stroke-linecap="round"
       >
-        <!-- Анимация подсветки -->
         <animate
           attributeName="opacity"
           values="0.5;0.7;0.5"
@@ -398,13 +416,13 @@
       <!-- Side shadow effect -->
       <g filter="url(#glassSideShadow)">
         <path
-          d="M157.44 0L128 51.2L97.92 0H0L128 220.8L256 0H157.44Z"
+          d="M 30 20 L 30 200 L 100 200 C 160 200, 190 160, 190 110 C 190 60, 160 20, 100 20 Z"
           fill="transparent"
           stroke="transparent"
           stroke-width="25"
         />
         <path
-          d="M157.44 0L128 51.2L97.92 0H50.56L128 132.48L204.8 0H157.44Z"
+          d="M 60 50 L 60 170 L 100 170 C 140 170, 160 145, 160 110 C 160 75, 140 50, 100 50 Z"
           fill="transparent"
           stroke="transparent"
           stroke-width="18"
@@ -413,14 +431,13 @@
 
       <animate
         attributeName="opacity"
-        values="0;0;0;1;1;1;1;0;0"
-        keyTimes="0;0.15;0.25;0.35;0.5;0.65;0.75;0.85;1"
+        values="0; 0; 1; 1; 1; 0; 0"
+        keyTimes="0; 0.15; 0.35; 0.55; 0.75; 0.85; 1"
         dur="8s"
         repeatCount="indefinite"
         calcMode="spline"
-        keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
+        keySplines="0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1; 0.165 0.84 0.44 1"
       />
     </g>
-  </g>
   </g>
 </svg>

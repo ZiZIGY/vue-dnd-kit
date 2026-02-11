@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import { useData, withBase } from 'vitepress';
-  import { computed } from 'vue';
   import { BackgroundLens } from './BackgroundLens';
 
   const { frontmatter, theme } = useData();
@@ -12,7 +11,8 @@
   const actions = hero.actions ?? [];
   const features = frontmatter.value.features ?? [];
 
-  const logoUrl = computed(() => theme.value.logo);
+  const secondLogoUrl =
+    'https://raw.githubusercontent.com/ZiZIGY/vue-dnd-kit/refs/heads/v2/public/logo-v2.svg';
 </script>
 
 <template>
@@ -66,7 +66,7 @@
             >
               <div class="VDndHome__logo-glow" />
               <img
-                :src="logoUrl"
+                :src="secondLogoUrl"
                 alt="Vue DnD Kit"
                 class="VDndHome__logo-img"
               />

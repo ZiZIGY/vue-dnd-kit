@@ -160,6 +160,10 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
 }
 
+.VPImage.logo {
+  @apply w-16 h-16;
+}
+
 .VDndHome__feature-title {
   @apply text-lg font-bold text-(--vp-c-text-1) mb-2 leading-tight;
 }
