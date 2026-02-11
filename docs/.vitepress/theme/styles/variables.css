@@ -39,7 +39,7 @@
   --vp-local-search-highlight-bg: #ffff00;
   --vp-local-search-highlight-text: #000;
   --vp-sidebar-bg-color: #f8f9fa;
-  --vp-nav-bg-color: rgba(248, 249, 250, 0.35);
+  --vp-nav-bg-color: transparent;
   --vp-nav-screen-bg-color: #f8f9fafa;
   --vp-nav-shadow: 0 4px 24px #0000000f;
   --nav-shimmer-base: rgba(0, 0, 0, 0.1);
@@ -79,7 +79,7 @@
   --vp-local-search-highlight-bg: #ffff00;
   --vp-local-search-highlight-text: #000;
   --vp-sidebar-bg-color: #0c0c10;
-  --vp-nav-bg-color: rgba(12, 12, 16, 0.3);
+  --vp-nav-bg-color: transparent;
   --vp-nav-screen-bg-color: #0c0c10f2;
   --vp-nav-shadow: 0 4px 24px #00000033;
   --nav-shimmer-base: rgba(255, 255, 255, 0.06);
@@ -93,8 +93,8 @@
   --glass-card-1: rgba(11, 17, 9, 0.5);
   --glass-card-2: rgba(17, 17, 17, 0.5);
   --glass-card-3: rgba(10, 15, 8, 0.5);
-  --text-shimmer-from: #8b8b92;
-  --text-shimmer-to: rgba(255, 255, 255, 0.95);
+  --text-shimmer-from: #e4e4e7;
+  --text-shimmer-to: #7a7a7a;
   --glow-color: #42b883;
   --bg-lens-1: #42b883;
   --bg-lens-2: #58b8c8;

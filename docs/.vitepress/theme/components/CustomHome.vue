@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { motion } from 'motion-v';
   import { useData, withBase } from 'vitepress';
   import { BackgroundLens } from './BackgroundLens';
 
@@ -13,17 +14,44 @@
 
   const secondLogoUrl =
     'https://raw.githubusercontent.com/ZiZIGY/vue-dnd-kit/refs/heads/v2/public/logo-v2.svg';
+
+  const heroTransition = {
+    type: 'spring' as const,
+    stiffness: 120,
+    damping: 24,
+  };
+  const heroStagger = 0.08;
 </script>
 
 <template>
-  <div class="VDndHome relative">
+  <motion.div
+    class="VDndHome relative"
+    :initial="{ opacity: 0 }"
+    :animate="{ opacity: 1 }"
+    :transition="{ duration: 0.4 }"
+  >
     <BackgroundLens class="fixed! inset-0 -z-20" />
-    <main class="container mx-auto px-6 md:px-12">
-      <section class="VDndHome__hero glass-card rounded-4xl">
+    <motion.main
+      class="container mx-auto px-6 md:px-12"
+      :initial="{ opacity: 0 }"
+      :animate="{ opacity: 1 }"
+      :transition="{ duration: 0.5, delay: 0.1 }"
+    >
+      <motion.section
+        class="VDndHome__hero glass-card rounded-4xl"
+        :initial="{ opacity: 0, y: 24 }"
+        :animate="{ opacity: 1, y: 0 }"
+        :transition="{ ...heroTransition, delay: 0.15 }"
+      >
         <div class="VDndHome__hero-inner">
           <div class="VDndHome__hero-layout">
             <header class="VDndHome__hero-text">
-              <h1 class="VDndHome__title">
+              <motion.h1
+                class="VDndHome__title"
+                :initial="{ opacity: 0, y: 16 }"
+                :animate="{ opacity: 1, y: 0 }"
+                :transition="{ ...heroTransition, delay: 0.25 }"
+              >
                 <span
                   v-if="hero.name"
                   class="accent"
@@ -31,23 +59,32 @@
                   {{ hero.name }}
                 </span>
                 <span v-if="hero.text"> — {{ hero.text }}</span>
-              </h1>
-              <p
+              </motion.h1>
+              <motion.p
                 v-if="hero.tagline"
                 class="VDndHome__tagline"
+                :initial="{ opacity: 0, y: 12 }"
+                :animate="{ opacity: 1, y: 0 }"
+                :transition="{ ...heroTransition, delay: 0.25 + heroStagger }"
               >
                 {{ hero.tagline }}
-              </p>
-              <p
+              </motion.p>
+              <motion.p
                 v-if="hero.sub"
                 class="VDndHome__sub"
+                :initial="{ opacity: 0, y: 12 }"
+                :animate="{ opacity: 1, y: 0 }"
+                :transition="{ ...heroTransition, delay: 0.25 + heroStagger * 2 }"
               >
                 {{ hero.sub }}
-              </p>
-              <nav
+              </motion.p>
+              <motion.nav
                 v-if="actions.length"
                 class="VDndHome__actions"
                 aria-label="Main"
+                :initial="{ opacity: 0, y: 12 }"
+                :animate="{ opacity: 1, y: 0 }"
+                :transition="{ ...heroTransition, delay: 0.25 + heroStagger * 3 }"
               >
                 <a
                   v-for="action in actions"
@@ -58,11 +95,14 @@
                 >
                   {{ action.text }}
                 </a>
-              </nav>
+              </motion.nav>
             </header>
-            <div
+            <motion.div
               class="VDndHome__hero-logo"
               aria-hidden="true"
+              :initial="{ opacity: 0, scale: 0.96 }"
+              :animate="{ opacity: 1, scale: 1 }"
+              :transition="{ ...heroTransition, delay: 0.35 }"
             >
               <div class="VDndHome__logo-glow" />
               <img
@@ -70,20 +110,29 @@
                 alt="Vue DnD Kit"
                 class="VDndHome__logo-img"
               />
-            </div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section
+      <motion.section
         v-if="features.length"
         class="VDndHome__features"
         aria-label="Features"
       >
-        <article
+        <motion.article
           v-for="(feat, i) in features"
           :key="i"
           class="VDndHome__feature-card glass-card rounded-4xl"
+          :initial="{ opacity: 0, y: 20 }"
+          :while-in-view="{ opacity: 1, y: 0 }"
+          :transition="{
+            type: 'spring' as const,
+            stiffness: 100,
+            damping: 20,
+            delay: Number(i) * 0.08,
+          }"
+          :in-view-options="{ once: true, margin: '-40px' }"
         >
           <span
             class="VDndHome__feature-icon"
@@ -93,8 +142,8 @@
           </span>
           <h3 class="VDndHome__feature-title">{{ feat.title }}</h3>
           <p class="VDndHome__feature-desc">{{ feat.description }}</p>
-        </article>
-      </section>
-    </main>
-  </div>
+        </motion.article>
+      </motion.section>
+    </motion.main>
+  </motion.div>
 </template>

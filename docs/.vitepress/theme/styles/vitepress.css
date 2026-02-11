@@ -7,19 +7,113 @@
   @apply glass-card;
 }
 
+.VPNavBarSearch.search {
+  @apply m-0! w-full!;
+}
+
+.VPDoc > .container > .content {
+  @apply glass-card p-8 rounded-4xl;
+  -webkit-backdrop-filter: blur(24px) saturate(1.15);
+  backdrop-filter: blur(24px) saturate(1.15);
+}
+
+.VPDoc > .container > .content::before {
+  background: rgba(0, 0, 0, 0.06);
+  background-size: auto;
+  animation: none;
+}
+.dark .VPDoc > .container > .content::before {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.18) 25%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(255, 255, 255, 0.18) 75%,
+    rgba(255, 255, 255, 0.12) 100%
+  );
+  background-size: 200% 100%;
+  animation: nav-shimmer 4s linear infinite;
+}
+
+.VPNavBarTitle.has-sidebar .title {
+  @apply border-none!;
+}
+
+.VPNav .divider {
+  @apply hidden;
+}
+
+.aside-curtain {
+  @apply hidden;
+}
+.dark .VPDoc > .container > .content {
+  background: rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.VPDocAsideOutline .content {
+  @apply border-none!;
+}
+
+:root:not(.dark) .VPDocAsideOutline::before {
+  background: rgba(0, 0, 0, 0.06);
+  background-size: auto;
+  animation: none;
+}
+
+.VPDocAsideOutline {
+  position: relative;
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  backdrop-filter: blur(20px) saturate(1.15);
+  background: var(--glass-card-2) !important;
+  border-radius: 1rem;
+}
+
+.dark .VPDocAsideOutline {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark .VPDocAsideOutline::before {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.18) 25%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(255, 255, 255, 0.18) 75%,
+    rgba(255, 255, 255, 0.12) 100%
+  );
+}
+
+.VPDocAsideOutline::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(
+    90deg,
+    var(--glass-btn-shimmer-1) 0%,
+    var(--glass-btn-shimmer-2) 25%,
+    var(--glass-btn-shimmer-3) 50%,
+    var(--glass-btn-shimmer-2) 75%,
+    var(--glass-btn-shimmer-1) 100%
+  );
+  background-size: 200% 100%;
+  animation: nav-shimmer 4s linear infinite;
+  will-change: background-position;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
 .VPLocalSearchBox .shell {
   @apply mx-auto! mt-auto! mb-8! rounded-xl! flex-col-reverse!;
   -webkit-backdrop-filter: blur(12px) saturate(1.1);
   backdrop-filter: blur(12px) saturate(1.1);
-  background: linear-gradient(
-    139deg,
-    var(--glass-bg-1) 0%,
-    var(--glass-bg-2) 50%,
-    var(--glass-bg-3) 100%
-  ) !important;
-  background-size: 200% 100%;
-  animation: glass-bg-shimmer 8s linear infinite;
-  will-change: background-position;
+  background: var(--glass-bg-2) !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
@@ -34,15 +128,7 @@
 .VPNav {
   -webkit-backdrop-filter: blur(8px) saturate(1.1);
   backdrop-filter: blur(8px) saturate(1.1);
-  background: linear-gradient(
-    139deg,
-    var(--glass-bg-1) 0%,
-    var(--glass-bg-2) 50%,
-    var(--glass-bg-3) 100%
-  ) !important;
-  background-size: 200% 100%;
-  animation: glass-bg-shimmer 8s linear infinite;
-  will-change: background-position;
+  background: var(--glass-bg-2) !important;
   box-shadow: var(--vp-nav-shadow);
 }
 
@@ -161,15 +247,7 @@
   @apply shimmer-border border-none!;
   -webkit-backdrop-filter: blur(12px) saturate(1.1);
   backdrop-filter: blur(12px) saturate(1.1);
-  background: linear-gradient(
-    139deg,
-    var(--glass-bg-1) 0%,
-    var(--glass-bg-2) 50%,
-    var(--glass-bg-3) 100%
-  ) !important;
-  background-size: 200% 0%;
-  animation: glass-bg-shimmer 8s linear infinite;
-  will-change: background-position;
+  background: var(--glass-bg-2) !important;
 }
 
 #localsearch-list .result {

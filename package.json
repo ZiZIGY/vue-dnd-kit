@@ -22,8 +22,11 @@
     "@types/node": "^25.2.2",
     "@vue-dnd-kit/core": "1.7.0",
     "gsap": "^3.14.2",
+    "motion-v": "^1.10.3",
+    "npm": "^11.9.0",
     "tailwindcss": "^4.1.18",
     "three": "^0.182.0",
+    "unplugin-vue-components": "^31.0.0",
     "vitepress": "^1.6.4"
   }
 }

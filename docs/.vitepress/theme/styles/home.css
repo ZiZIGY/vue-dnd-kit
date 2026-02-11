@@ -143,25 +143,17 @@
   @apply flex items-center justify-center shrink-0 w-12 h-12 rounded-xl mb-4 text-[1.75rem];
   -webkit-backdrop-filter: blur(12px) saturate(1.2);
   backdrop-filter: blur(12px) saturate(1.2);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.4) 0%,
-    rgba(255, 255, 255, 0.15) 100%
-  );
+  background: rgba(255, 255, 255, 0.25);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .dark .VDndHome__feature-icon {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.08) 0%,
-    rgba(255, 255, 255, 0.02) 100%
-  );
+  background: rgba(255, 255, 255, 0.05);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
 }
 
 .VPImage.logo {
-  @apply w-16 h-16;
+  @apply w-16 h-16 m-0!;
 }
 
 .VDndHome__feature-title {

@@ -22,15 +22,7 @@
   position: relative;
   -webkit-backdrop-filter: blur(12px) saturate(1.1);
   backdrop-filter: blur(12px) saturate(1.1);
-  background: linear-gradient(
-    139deg,
-    var(--glass-card-1) 0%,
-    var(--glass-card-2) 50%,
-    var(--glass-card-3) 100%
-  ) !important;
-  background-size: 200% 100%;
-  animation: glass-bg-shimmer 8s linear infinite;
-  will-change: background-position;
+  background: var(--glass-card-2) !important;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   @variant dark {
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
@@ -61,6 +53,13 @@
   }
 }
 
+/* Светлая тема: без радужной обводки, нейтральная граница */
+:root:not(.dark) .glass-card::before {
+  background: rgba(0, 0, 0, 0.06);
+  background-size: auto;
+  animation: none;
+}
+
 .VDndHome .glass-card {
   -webkit-backdrop-filter: blur(24px) saturate(1.2);
   backdrop-filter: blur(24px) saturate(1.2);
@@ -72,17 +71,7 @@
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
-  background: linear-gradient(
-    135deg,
-    rgba(66, 184, 131, 0.04) 0%,
-    rgba(90, 184, 200, 0.03) 25%,
-    rgba(144, 128, 208, 0.04) 50%,
-    rgba(224, 160, 88, 0.03) 75%,
-    rgba(66, 184, 131, 0.04) 100%
-  );
-  background-size: 200% 200%;
-  animation: glass-bg-shimmer 12s linear infinite;
-  will-change: background-position;
+  background: rgba(66, 184, 131, 0.04);
   z-index: 0;
 }
 .dark .VDndHome .glass-card {

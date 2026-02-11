@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { motion } from 'motion-v';
   import { useRoute } from 'vitepress';
   import { computed, provide, useSlots, watch } from 'vue';
   import VPBackdrop from 'vitepress/dist/client/theme-default/components/VPBackdrop.vue';
@@ -14,6 +15,8 @@
     useSidebar,
   } from 'vitepress/dist/client/theme-default/composables/sidebar.js';
 
+  const isHome = computed(() => useData().frontmatter.value?.layout === 'home');
+
   const {
     isOpen: isSidebarOpen,
     open: openSidebar,
@@ -26,6 +29,7 @@
   useCloseSidebarOnEscape(isSidebarOpen, closeSidebar);
 
   const { frontmatter } = useData();
+  const layoutTransition = { duration: 0.35 };
 
   const slots = useSlots();
   const heroImageSlotExists = computed(() => !!slots['home-hero-image']);
@@ -34,13 +38,17 @@
 </script>
 
 <template>
-  <div
+  <motion.div
     v-if="frontmatter.layout !== false"
     class="Layout"
     :class="frontmatter.pageClass"
+    :initial="isHome ? { opacity: 0 } : undefined"
+    :animate="{ opacity: 1 }"
+    :transition="layoutTransition"
   >
     <slot name="layout-top" />
     <VPSkipLink />
+
     <VPBackdrop
       class="backdrop"
       :show="isSidebarOpen"
@@ -120,7 +128,7 @@
 
     <VPFooter />
     <slot name="layout-bottom" />
-  </div>
+  </motion.div>
   <Content v-else />
 </template>
 

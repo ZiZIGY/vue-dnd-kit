@@ -1,6 +1,8 @@
 import { defineConfig } from 'vitepress';
 import { resolve } from 'path';
 import tailwindcss from '@tailwindcss/vite';
+import Components from 'unplugin-vue-components/vite';
+import MotionResolver from 'motion-v/resolver';
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -31,8 +33,8 @@ export default defineConfig({
       {
         text: 'Documentation',
         items: [
+          { text: 'v2 (Actual)', link: '/v2/guide/introduction' },
           { text: 'v1', link: '/v1/guide/introduction' },
-          { text: 'v2', link: '/v2/guide/introduction' },
         ],
       },
     ],
@@ -194,7 +196,13 @@ export default defineConfig({
     },
   },
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [
+      tailwindcss(),
+      Components({
+        dts: true,
+        resolvers: [MotionResolver()],
+      }),
+    ],
     ssr: {
       noExternal: [],
     },
