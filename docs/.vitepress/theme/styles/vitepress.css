@@ -1,38 +1,12 @@
-/**
- * Стили VitePress: nav, sidebar, search, doc
- */
-
-.VPFlyout .menu .VPMenu,
+.VPFlyout .menu .VPMenu {
+  @apply default-glass-card;
+}
 .VPNavScreen .container {
   @apply glass-card;
 }
 
 .VPNavBarSearch.search {
   @apply m-0! w-full!;
-}
-
-.VPDoc > .container > .content {
-  @apply glass-card p-8 rounded-4xl;
-  -webkit-backdrop-filter: blur(24px) saturate(1.15);
-  backdrop-filter: blur(24px) saturate(1.15);
-}
-
-.VPDoc > .container > .content::before {
-  background: rgba(0, 0, 0, 0.06);
-  background-size: auto;
-  animation: none;
-}
-.dark .VPDoc > .container > .content::before {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0.18) 25%,
-    rgba(255, 255, 255, 0.22) 50%,
-    rgba(255, 255, 255, 0.18) 75%,
-    rgba(255, 255, 255, 0.12) 100%
-  );
-  background-size: 200% 100%;
-  animation: nav-shimmer 4s linear infinite;
 }
 
 .VPNavBarTitle.has-sidebar .title {
@@ -46,67 +20,9 @@
 .aside-curtain {
   @apply hidden;
 }
-.dark .VPDoc > .container > .content {
-  background: rgba(255, 255, 255, 0.05) !important;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
 
 .VPDocAsideOutline .content {
   @apply border-none!;
-}
-
-:root:not(.dark) .VPDocAsideOutline::before {
-  background: rgba(0, 0, 0, 0.06);
-  background-size: auto;
-  animation: none;
-}
-
-.VPDocAsideOutline {
-  position: relative;
-  -webkit-backdrop-filter: blur(20px) saturate(1.15);
-  backdrop-filter: blur(20px) saturate(1.15);
-  background: var(--glass-card-2) !important;
-  border-radius: 1rem;
-}
-
-.dark .VPDocAsideOutline {
-  background: rgba(255, 255, 255, 0.05) !important;
-}
-
-.dark .VPDocAsideOutline::before {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0.18) 25%,
-    rgba(255, 255, 255, 0.22) 50%,
-    rgba(255, 255, 255, 0.18) 75%,
-    rgba(255, 255, 255, 0.12) 100%
-  );
-}
-
-.VPDocAsideOutline::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  padding: 1.5px;
-  background: linear-gradient(
-    90deg,
-    var(--glass-btn-shimmer-1) 0%,
-    var(--glass-btn-shimmer-2) 25%,
-    var(--glass-btn-shimmer-3) 50%,
-    var(--glass-btn-shimmer-2) 75%,
-    var(--glass-btn-shimmer-1) 100%
-  );
-  background-size: 200% 100%;
-  animation: nav-shimmer 4s linear infinite;
-  will-change: background-position;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
 }
 
 .VPLocalSearchBox .shell {
@@ -176,11 +92,15 @@
 }
 
 .VDndContent.has-sidebar {
-  @apply pl-[var(--vp-sidebar-width)]! pr-0!;
+  @apply pl-(--vp-sidebar-width)! pr-0!;
 }
 
 .VPDoc.has-aside .content-container {
   @apply max-w-full!;
+}
+
+.VPDoc {
+  @apply pt-28!;
 }
 
 .VDndDoc {
@@ -260,4 +180,16 @@
 
 mark[data-markjs='true'] {
   -webkit-text-fill-color: var(--vp-local-search-highlight-text) !important;
+}
+
+.VPDoc .main {
+  @apply default-glass-card p-8 rounded-4xl;
+}
+
+.VPLink.link.pager-link {
+  @apply default-glass-card border-none! ease-in-out transition-all duration-200 rounded-full;
+}
+
+.VPLink.link.pager-link.next {
+  @apply shimmer-border;
 }

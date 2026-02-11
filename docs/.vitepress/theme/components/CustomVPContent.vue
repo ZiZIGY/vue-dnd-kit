@@ -5,9 +5,9 @@
   import VPDoc from 'vitepress/dist/client/theme-default/components/VPDoc.vue';
   import VPPage from 'vitepress/dist/client/theme-default/components/VPPage.vue';
   import CustomHome from './CustomHome.vue';
-  import { computed } from 'vue';
+  import { computed, watch, onMounted, onUnmounted } from 'vue';
   import { useSidebar } from 'vitepress/dist/client/theme-default/composables/sidebar.js';
-  import { BackgroundLens } from './BackgroundLens';
+  import LiquidEtherBackground from './LiquidBackground.vue';
 
   const { page, frontmatter } = useData();
   const route = useRoute();
@@ -20,13 +20,34 @@
   };
 
   const isDoc = computed(() => frontmatter.value.layout !== 'home');
+
+  const DOC_PAGE_CLASS = 'vdnd-doc-page';
+  watch(
+    isDoc,
+    (v) => {
+      if (v) document.documentElement.classList.add(DOC_PAGE_CLASS);
+      else document.documentElement.classList.remove(DOC_PAGE_CLASS);
+    },
+    { immediate: true }
+  );
+  onMounted(() => {
+    if (isDoc.value) document.documentElement.classList.add(DOC_PAGE_CLASS);
+  });
+  onUnmounted(() => {
+    document.documentElement.classList.remove(DOC_PAGE_CLASS);
+  });
 </script>
 
 <template>
-  <BackgroundLens
+  <motion.div
     v-if="isDoc"
-    class="fixed! inset-0 -z-20 pointer-events-none"
-  />
+    class="fixed inset-0 -z-20 pointer-events-none"
+    :initial="{ opacity: 0 }"
+    :animate="{ opacity: 1 }"
+    :transition="{ duration: 0.6 }"
+  >
+    <LiquidEtherBackground class="absolute inset-0" />
+  </motion.div>
   <AnimatePresence mode="wait">
     <motion.div
       :key="route.path"
@@ -35,6 +56,7 @@
       :class="{
         'has-sidebar': hasSidebar,
         'is-home': frontmatter.layout === 'home',
+        'is-doc': isDoc,
       }"
       :initial="{ opacity: 0, y: 8 }"
       :animate="{ opacity: 1, y: 0 }"
@@ -105,7 +127,6 @@
     </motion.div>
   </AnimatePresence>
 </template>
-
 <style scoped>
   .VPContent {
     flex-grow: 1;
@@ -123,23 +144,14 @@
     margin: 0;
   }
 
-  @media (min-width: 960px) {
-    .VPContent {
-      padding-top: var(--vp-nav-height);
-    }
-
-    .VPContent.has-sidebar {
-      margin: var(--vp-layout-top-height, 0px) 0 0;
-      padding-left: var(--vp-sidebar-width);
-    }
+  /* Прозрачный фон на страницах доков, чтобы был виден LiquidEther */
+  .VPContent.is-doc {
+    background: transparent;
   }
 
-  @media (min-width: 1440px) {
-    .VPContent.has-sidebar {
-      padding-right: calc((100vw - var(--vp-layout-max-width)) / 2);
-      padding-left: calc(
-        (100vw - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width)
-      );
+  @media (max-width: 960px) {
+    #VPContent {
+      padding: 0 !important;
     }
   }
 </style>

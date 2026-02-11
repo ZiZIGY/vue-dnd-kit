@@ -23,6 +23,7 @@
 
 :root {
   --vp-c-bg: #f8f9fa;
+
   --vp-c-bg-alt: #f0f1f3;
   --vp-c-bg-elv: #ffffff;
   --vp-c-bg-soft: #f0f1f3;
@@ -30,7 +31,7 @@
   --vp-c-text-2: #52525b;
   --vp-c-text-3: #71717a;
   --vp-c-border: #e4e4e7;
-  --vp-c-divider: #e4e4e7;
+  --vp-c-divider: transparent;
   --vp-c-gutter: #e4e4e7;
   --vp-c-brand-1: #42b883;
   --vp-c-brand-2: #35a372;
@@ -70,7 +71,7 @@
   --vp-c-text-2: #a1a1aa;
   --vp-c-text-3: #71717a;
   --vp-c-border: #27272a;
-  --vp-c-divider: #27272a;
+  --vp-c-divider: transparent;
   --vp-c-gutter: #1f1f23;
   --vp-c-brand-1: #42b883;
   --vp-c-brand-2: #5dd9a8;

@@ -53,13 +53,6 @@
   }
 }
 
-/* Светлая тема: без радужной обводки, нейтральная граница */
-:root:not(.dark) .glass-card::before {
-  background: rgba(0, 0, 0, 0.06);
-  background-size: auto;
-  animation: none;
-}
-
 .VDndHome .glass-card {
   -webkit-backdrop-filter: blur(24px) saturate(1.2);
   backdrop-filter: blur(24px) saturate(1.2);
@@ -103,6 +96,13 @@
 .glow-border--nav {
   --glow-border-width: 1px;
   --glow-duration: 15s;
+}
+
+@utility default-glass-card {
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  backdrop-filter: blur(12px) saturate(1.1);
+  background: var(--glass-bg-2) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
 @utility shimmer-border {

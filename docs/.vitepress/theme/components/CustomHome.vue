@@ -32,7 +32,7 @@
   >
     <BackgroundLens class="fixed! inset-0 -z-20" />
     <motion.main
-      class="container mx-auto px-6 md:px-12"
+      class="container mx-auto"
       :initial="{ opacity: 0 }"
       :animate="{ opacity: 1 }"
       :transition="{ duration: 0.5, delay: 0.1 }"
@@ -74,7 +74,10 @@
                 class="VDndHome__sub"
                 :initial="{ opacity: 0, y: 12 }"
                 :animate="{ opacity: 1, y: 0 }"
-                :transition="{ ...heroTransition, delay: 0.25 + heroStagger * 2 }"
+                :transition="{
+                  ...heroTransition,
+                  delay: 0.25 + heroStagger * 2,
+                }"
               >
                 {{ hero.sub }}
               </motion.p>
@@ -84,7 +87,10 @@
                 aria-label="Main"
                 :initial="{ opacity: 0, y: 12 }"
                 :animate="{ opacity: 1, y: 0 }"
-                :transition="{ ...heroTransition, delay: 0.25 + heroStagger * 3 }"
+                :transition="{
+                  ...heroTransition,
+                  delay: 0.25 + heroStagger * 3,
+                }"
               >
                 <a
                   v-for="action in actions"
