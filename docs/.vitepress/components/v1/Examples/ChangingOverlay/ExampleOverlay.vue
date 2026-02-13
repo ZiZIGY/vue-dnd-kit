@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useDragContainer } from '@vue-dnd-kit/core';
+  import { useDragContainer } from '@vue-dnd-kit/core-v1';
   import { computed, CSSProperties } from 'vue';
 
   const { elementRef, pointerPosition } = useDragContainer();

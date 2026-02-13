@@ -59,7 +59,7 @@
     right: 0;
     bottom: 0;
     background-image: radial-gradient(
-      var(--vp-local-search-result-border) var(--dot-size),
+      var(--vp-c-text-1) var(--dot-size),
       transparent var(--dot-size)
     );
     background-size: var(--dot-spacing) var(--dot-spacing);

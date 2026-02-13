@@ -5,7 +5,12 @@
   "scripts": {
     "dev": "vitepress dev docs",
     "build": "vitepress build docs",
-    "preview": "vitepress preview docs"
+    "preview": "vitepress preview docs",
+    "playground:build": "yarn --cwd packages/core build && yarn --cwd packages/utilities build",
+    "playground:watch:core": "yarn --cwd packages/core start",
+    "playground:watch:utilities": "yarn --cwd packages/utilities start",
+    "playground:dev": "yarn --cwd playground dev",
+    "playground": "yarn playground:build && concurrently -n core,utils,play -c blue,green,magenta \"yarn playground:watch:core\" \"yarn playground:watch:utilities\" \"yarn playground:dev\""
   },
   "keywords": [
     "vue",
@@ -16,11 +21,15 @@
   ],
   "author": "ZiZIGY",
   "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
   "dependencies": {
     "@iconify/vue": "^5.0.0",
     "@tailwindcss/vite": "^4.1.18",
     "@types/node": "^25.2.2",
-    "@vue-dnd-kit/core": "1.7.0",
+    "@vue-dnd-kit/core": "^2.0.0-alpha6",
+    "@vue-dnd-kit/core-v1": "npm:@vue-dnd-kit/core@^1.7.0",
     "@vueuse/core": "^14.2.1",
     "gsap": "^3.14.2",
     "motion-v": "^1.10.3",

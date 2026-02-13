@@ -29,9 +29,9 @@ export const overlayContainer: (
 export const overlayBoxFromStyle: TContainerBoxFn = (
   provider
 ): IBoundingBox => {
-  const style = provider.overlay.style?.value ?? { x: 0, y: 0 };
+  const position = provider.overlay.position?.value ?? { x: 0, y: 0 };
   const size = provider.overlay.size?.value ?? null;
-  const { x, y } = style;
+  const { x, y } = position;
   const w = size?.width ?? 0;
   const h = size?.height ?? 0;
   return {

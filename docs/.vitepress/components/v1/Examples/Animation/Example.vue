@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import Draggable from './Draggable.vue';
-  import { useDnDStore, useDroppable } from '@vue-dnd-kit/core';
+  import { useDnDStore, useDroppable } from '@vue-dnd-kit/core-v1';
   import ExampleContainer from '../../ExampleContainer.vue';
 
   const dropped = ref(false);

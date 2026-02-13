@@ -7,7 +7,7 @@ import {
   isEffectivelyDisabledDraggable,
   isEffectivelyDisabledDroppable,
 } from './disabled';
-import { createDragPayload } from '../logic/payload';
+import { createDragPayload, createDropZonePayload } from '../logic/payload';
 import type { IDnDProviderInternal } from '../types/provider';
 import type { IDragEvent, IHovered } from '../../external/types/provider';
 
@@ -21,10 +21,19 @@ export const getFirstKey = <K>(map: Map<K, unknown>): K | undefined =>
 export const getClosestDraggableFromEvent = (event: PointerEvent): HTMLElement | null =>
   (event.target as HTMLElement).closest(DnDSelectors.DRAGGABLE) as HTMLElement | null;
 
-const getDragEvent = (provider: IDnDProviderInternal): IDragEvent => ({
-  payload: createDragPayload(provider),
-  provider,
-});
+export const getDragEvent = (
+  provider: IDnDProviderInternal,
+  dropZone?: HTMLElement
+): IDragEvent => {
+  const event: IDragEvent = {
+    payload: createDragPayload(provider),
+    provider,
+  };
+  if (dropZone) {
+    event.dropZonePayload = createDropZonePayload(provider, dropZone);
+  }
+  return event;
+};
 
 /** Triggers onSelf* for element from event if it's in draggingMap */
 export const triggerSelfDragFromEvent = (
@@ -68,11 +77,14 @@ export const triggerZoneEnterLeave = (
   newZone: HTMLElement | undefined
 ): void => {
   if (prevZone !== newZone) {
-    const dragEvent = getDragEvent(provider);
-    if (prevZone && !isEffectivelyDisabledDroppable(prevZone, provider))
+    if (prevZone && !isEffectivelyDisabledDroppable(prevZone, provider)) {
+      const dragEvent = getDragEvent(provider, prevZone);
       provider.entities.droppableMap.get(prevZone)?.events?.onLeave?.(dragEvent);
-    if (newZone && !isEffectivelyDisabledDroppable(newZone, provider))
+    }
+    if (newZone && !isEffectivelyDisabledDroppable(newZone, provider)) {
+      const dragEvent = getDragEvent(provider, newZone);
       provider.entities.droppableMap.get(newZone)?.events?.onEnter?.(dragEvent);
+    }
   }
 };
 
@@ -95,7 +107,7 @@ export const triggerDraggableHoverChange = (
 export const triggerZoneLeave = (provider: IDnDProviderInternal, hovered: IHovered): void => {
   const zone = getFirstKey(hovered.droppable);
   if (zone && !isEffectivelyDisabledDroppable(zone, provider)) {
-    const dragEvent = getDragEvent(provider);
+    const dragEvent = getDragEvent(provider, zone);
     provider.entities.droppableMap.get(zone)?.events?.onLeave?.(dragEvent);
   }
 };
@@ -107,7 +119,7 @@ export const triggerDropCancelEvents = (
 ): void => {
   const zone = getFirstKey(hovered.droppable);
   if (zone && !isEffectivelyDisabledDroppable(zone, provider)) {
-    const dragEvent = getDragEvent(provider);
+    const dragEvent = getDragEvent(provider, zone);
     provider.entities.droppableMap.get(zone)?.events?.onLeave?.(dragEvent);
   }
 };

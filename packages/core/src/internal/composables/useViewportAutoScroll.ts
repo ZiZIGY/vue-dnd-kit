@@ -1,0 +1,73 @@
+import { onMounted, ref, shallowRef, watch } from 'vue';
+import { onScopeDispose } from 'vue';
+import { createAutoScrollController } from '../utils/auto-scroll';
+import type {
+  IAutoScrollOptionsInternal,
+  IScrollAdapter,
+} from '../types/auto-scroll';
+import type { IDnDProviderInternal } from '../types/provider';
+
+const viewportScrollAdapter: IScrollAdapter = {
+  getScrollState() {
+    return {
+      scrollTop: window.scrollY ?? document.documentElement.scrollTop,
+      scrollLeft: window.scrollX ?? document.documentElement.scrollLeft,
+      rect: new DOMRect(0, 0, window.innerWidth, window.innerHeight),
+    };
+  },
+  setScroll(_, scrollTop, scrollLeft) {
+    window.scrollTo(scrollLeft, scrollTop);
+  },
+};
+
+/**
+ * Internal composable: viewport (window) auto-scroll. Not exposed to user.
+ */
+export function useViewportAutoScroll(
+  provider: IDnDProviderInternal,
+  options?: IAutoScrollOptionsInternal
+) {
+  const containerRef = ref<HTMLElement | null>(null);
+  onMounted(() => {
+    containerRef.value = document.documentElement;
+  });
+
+  const isScrolling = shallowRef(false);
+
+  const getOverlayPoint = () => {
+    if (provider.state.value !== 'dragging') return null;
+    const position = provider.overlay.position.value;
+    const size = provider.overlay.size.value;
+    if (!position) return null;
+    if (size?.width && size?.height) {
+      return {
+        x: position.x + size.width / 2,
+        y: position.y + size.height / 2,
+      };
+    }
+    return position;
+  };
+
+  const controller = createAutoScrollController(
+    containerRef,
+    options ?? {},
+    getOverlayPoint,
+    viewportScrollAdapter,
+    isScrolling
+  );
+
+  const stopWatch = watch(
+    () => provider.state.value,
+    (state) => {
+      if (state === 'dragging') controller.run();
+      else controller.stop();
+    }
+  );
+
+  onScopeDispose(() => {
+    stopWatch();
+    controller.stop();
+  });
+
+  return { isScrolling };
+}

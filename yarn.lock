@@ -1020,10 +1020,15 @@
   resolved "https://registry.npmjs.org/@vitejs/plugin-vue/-/plugin-vue-5.2.4.tgz#9e8a512eb174bfc2a333ba959bbf9de428d89ad8"
   integrity sha512-7Yx/SXSOcQq5HiiV3orevHUFn+pmMB4cgbEkDYgnkUWb0WfeQ/wa2yFv6D5ICiCQOVpjA7vYDXrC7AGO8yjDHA==
 
-"@vue-dnd-kit/core@1.7.0":
+"@vue-dnd-kit/core-v1@npm:@vue-dnd-kit/core@^1.7.0":
   version "1.7.0"
   resolved "https://registry.npmjs.org/@vue-dnd-kit/core/-/core-1.7.0.tgz#fd9374db1ce6fa72c3a45905c6b3d886d160e3c3"
   integrity sha512-6Otpo/9Fp/cX5EiUoN6XmIPtm/mOreAXi8clr9HgzVvDHD0sfkgVOFxCUiVbH46yAzr6KBU1Q1tjSWLBqua+5g==
+
+"@vue-dnd-kit/core@^2.0.0-alpha6":
+  version "2.0.0-alpha6"
+  resolved "https://registry.npmjs.org/@vue-dnd-kit/core/-/core-2.0.0-alpha6.tgz#33b4f416c25101b23dc1de6b24f83ff3bed2b382"
+  integrity sha512-11FDdQjj4GiWT0I+t6/h6hqrJJCY8L0xEKtZY7KcLVZIZgw0aogxPnlz6CFjGbuIxm/aoe2+v7wYxP7qUcSggQ==
 
 "@vue/compiler-core@3.5.28":
   version "3.5.28"

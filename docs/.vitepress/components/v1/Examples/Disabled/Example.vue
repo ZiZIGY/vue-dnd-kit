@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import { useDroppable } from '@vue-dnd-kit/core';
-  import { useDraggable } from '@vue-dnd-kit/core';
+  import { useDroppable } from '@vue-dnd-kit/core-v1';
+  import { useDraggable } from '@vue-dnd-kit/core-v1';
   import ExampleContainer from '../../ExampleContainer.vue';
   import { shallowRef } from 'vue';
 

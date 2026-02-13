@@ -1,7 +1,7 @@
 <script lang="ts" setup>
   import { computed, ref } from 'vue';
   import Draggable from './Draggable.vue';
-  import { DnDOperations, useDroppable } from '@vue-dnd-kit/core';
+  import { DnDOperations, useDroppable } from '@vue-dnd-kit/core-v1';
   import ExampleContainer from '../../ExampleContainer.vue';
 
   const { elementRef, isOvered, isAllowed } = useDroppable({

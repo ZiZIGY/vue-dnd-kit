@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-  import { DnDOperations, useDraggable } from '@vue-dnd-kit/core';
+  import { DnDOperations, useDraggable } from '@vue-dnd-kit/core-v1';
   import { computed } from 'vue';
 
   const { index, source } = defineProps<{

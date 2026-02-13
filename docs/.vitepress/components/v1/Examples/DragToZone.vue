@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useDraggable, useDroppable } from '@vue-dnd-kit/core';
+  import { useDraggable, useDroppable } from '@vue-dnd-kit/core-v1';
   import ExampleContainer from '../ExampleContainer.vue';
   import { ref } from 'vue';
 

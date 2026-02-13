@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useDnDStore, useDraggable } from '@vue-dnd-kit/core';
+  import { useDnDStore, useDraggable } from '@vue-dnd-kit/core-v1';
   import CustomContainer from './CustomContainer.vue';
   import { computed, markRaw } from 'vue';
 

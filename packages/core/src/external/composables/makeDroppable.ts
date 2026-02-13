@@ -1,4 +1,9 @@
-import type { IBaseOptions, IDroppableEvents, TDnDNodeRef } from '../types';
+import type {
+  IBaseOptions,
+  IDroppableEvents,
+  TDnDNodeRef,
+  TDroppablePayload,
+} from '../types';
 import { onBeforeUnmount, onMounted } from 'vue';
 
 import { DnDAttributes } from '../../internal/utils/namespaces';
@@ -9,9 +14,34 @@ interface IMakeDroppableOptions extends IBaseOptions {
   events?: IDroppableEvents;
 }
 
-export function makeDroppable(ref: TDnDNodeRef, options: IMakeDroppableOptions = {}): void {
+export function makeDroppable(ref: TDnDNodeRef): void;
+export function makeDroppable(
+  ref: TDnDNodeRef,
+  options: IMakeDroppableOptions,
+  payload?: TDroppablePayload
+): void;
+export function makeDroppable(
+  ref: TDnDNodeRef,
+  payload: TDroppablePayload
+): void;
+export function makeDroppable(
+  ref: TDnDNodeRef,
+  optionsOrPayload?: IMakeDroppableOptions | TDroppablePayload,
+  payload?: TDroppablePayload
+): void {
   const provider = useDnDProviderInternal();
   let container: HTMLElement | null = null;
+
+  let options: IMakeDroppableOptions;
+  let finalPayload: TDroppablePayload | undefined;
+
+  if (typeof optionsOrPayload === 'function') {
+    options = {};
+    finalPayload = optionsOrPayload;
+  } else {
+    options = optionsOrPayload ?? {};
+    finalPayload = payload;
+  }
 
   onMounted(() => {
     container = getNode(ref);
@@ -24,6 +54,7 @@ export function makeDroppable(ref: TDnDNodeRef, options: IMakeDroppableOptions =
       disabled: (options.disabled as boolean) ?? false,
       groups: (options.groups as string[]) ?? [],
       events: options.events,
+      payload: finalPayload,
     });
   });
 

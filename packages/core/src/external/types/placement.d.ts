@@ -13,3 +13,10 @@ export interface IPlacementMargins {
   bottom?: number;
   left?: number;
 }
+
+/** Options for makeAutoScroll / makeAutoScrollViewport */
+export interface IAutoScrollOptions {
+  threshold?: number | IPlacementMargins;
+  speed?: number;
+  disabled?: boolean;
+}

@@ -9,7 +9,16 @@ import type {
   TDnDNodeRef,
   TDraggablePayload,
 } from '../types';
-import { onBeforeUnmount, onMounted, type Component, type Ref } from 'vue';
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  watch,
+  type Component,
+  type ComputedRef,
+  type Ref,
+  type WritableComputedRef,
+} from 'vue';
 
 import { DnDAttributes } from '../../internal/utils/namespaces';
 import { getNode, preventEvent } from '../../internal/utils/dom';
@@ -25,7 +34,10 @@ interface IMakeDraggableOptions extends IBaseOptions {
   placementMargins?: IPlacementMargins;
 }
 
-interface IMakeDraggableReturnType {}
+interface IMakeDraggableReturnType {
+  selected: WritableComputedRef<boolean>;
+  isDragging: ComputedRef<boolean>;
+}
 
 export function makeDraggable(
   ref: TDnDNodeRef,
@@ -80,6 +92,25 @@ export function makeDraggable(
     });
   });
 
+  const selected = computed({
+    get() {
+      const node = getNode(ref);
+      if (!node) return false;
+      return provider.entities.selectedSet.has(node);
+    },
+    set(value) {
+      const node = getNode(ref);
+      if (!node) return;
+      provider.entities.selectedSet[value ? 'add' : 'delete'](node);
+    },
+  });
+
+  const isDragging = computed(() => {
+    const node = getNode(ref);
+    if (!node) return false;
+    return provider.entities.draggingMap.has(node);
+  });
+
   onBeforeUnmount(() => {
     if (!container) return;
 
@@ -89,5 +120,8 @@ export function makeDraggable(
     provider.entities.modifiersDraggableSet.delete(container);
   });
 
-  return {};
+  return {
+    selected,
+    isDragging,
+  };
 }

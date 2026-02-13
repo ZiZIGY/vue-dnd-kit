@@ -21,17 +21,19 @@
 <template>
   <slot />
 
-  <div
-    ref="overlayRef"
-    class="dnd-kit-overlay-container"
-  >
-    <slot
-      name="overlay"
-      :overlay
+  <Teleport to="body">
+    <div
+      ref="overlayRef"
+      class="dnd-kit-overlay-container"
     >
-      <component :is="overlay" />
-    </slot>
-  </div>
+      <slot
+        name="overlay"
+        :overlay
+      >
+        <component :is="overlay" />
+      </slot>
+    </div>
+  </Teleport>
 </template>
 
 <style>

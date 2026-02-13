@@ -1,5 +1,5 @@
 <script setup>
-  import { useDraggable } from '@vue-dnd-kit/core';
+  import { useDraggable } from '@vue-dnd-kit/core-v1';
   import Container from './Container.vue';
   import Skeleton from './Skeleton.vue';
   import { markRaw } from 'vue';

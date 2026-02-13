@@ -1,8 +1,13 @@
 /**
- * Creates drag payload from initiating draggable
+ * Creates drag/drop payloads from draggable and droppable entities
  */
 
-import type { IDragPayload, TDraggablePayload } from '../../external/types';
+import type {
+  IDragPayload,
+  IDropZonePayload,
+  TDraggablePayload,
+  TDroppablePayload,
+} from '../../external/types';
 import type { IDnDProviderInternal } from '../types/provider';
 
 /**
@@ -27,5 +32,27 @@ export const createDragPayload = (
     index: Number(index),
     items: Array.isArray(items) ? items : [],
     dropData,
+  };
+};
+
+/**
+ * Resolves payload from a droppable zone.
+ * Calls zone entity.payload() and returns { items, userData }.
+ */
+export const createDropZonePayload = (
+  provider: IDnDProviderInternal,
+  zone: HTMLElement
+): IDropZonePayload | undefined => {
+  const entity = provider.entities.droppableMap.get(zone);
+  const payloadFn = entity?.payload as TDroppablePayload | undefined;
+  if (!payloadFn) return undefined;
+
+  const result = payloadFn();
+  if (!Array.isArray(result) || result.length < 1) return undefined;
+
+  const [items, userData] = result;
+  return {
+    items: Array.isArray(items) ? items : [],
+    userData,
   };
 };

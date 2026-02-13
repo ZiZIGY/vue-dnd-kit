@@ -45,6 +45,7 @@ export function createDraggingEntity(
     ...draggableEntity,
     initialHTML: element.innerHTML,
     initialRect: element.getBoundingClientRect(),
+    initialOuterHTML: element.outerHTML,
   };
 }
 

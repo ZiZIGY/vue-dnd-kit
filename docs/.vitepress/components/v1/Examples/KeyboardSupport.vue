@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useDraggable } from '@vue-dnd-kit/core';
+  import { useDraggable } from '@vue-dnd-kit/core-v1';
   import ExampleContainer from '../ExampleContainer.vue';
 
   const { elementRef, isDragging, handleDragStart } = useDraggable({

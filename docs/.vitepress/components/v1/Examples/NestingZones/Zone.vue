@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useDroppable } from '@vue-dnd-kit/core';
+  import { useDroppable } from '@vue-dnd-kit/core-v1';
 
   const emit = defineEmits<{
     (e: 'drop'): void;

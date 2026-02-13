@@ -1,0 +1,51 @@
+{
+  "name": "@vue-dnd-kit/utilities",
+  "version": "1.0.0",
+  "description": "Utility helpers for Vue DnD Kit",
+  "author": "ZiZIGY",
+  "license": "MIT",
+  "type": "module",
+  "keywords": [
+    "vue",
+    "dnd",
+    "vue-dnd-kit",
+    "utilities"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zizigy/vue-dnd-kit.git",
+    "directory": "packages/utilities"
+  },
+  "scripts": {
+    "build": "vite build --config vite.config.ts",
+    "start": "vite build --config vite.config.ts --watch",
+    "prepublishOnly": "yarn build"
+  },
+  "main": "dist/vue-dnd-kit-utilities.cjs.js",
+  "module": "dist/vue-dnd-kit-utilities.es.js",
+  "types": "dist/utilities/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/utilities/src/index.d.ts",
+      "import": "./dist/vue-dnd-kit-utilities.es.js",
+      "require": "./dist/vue-dnd-kit-utilities.cjs.js"
+    }
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "peerDependencies": {
+    "@vue-dnd-kit/core": "^2.0.0",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "@vue-dnd-kit/core": "file:../core",
+    "@vue/tsconfig": "^0.8.1",
+    "typescript": "~5.9.3",
+    "vite": "^7.2.2",
+    "vite-plugin-dts": "^4.5.4",
+    "vue": "^3.5.24"
+  }
+}

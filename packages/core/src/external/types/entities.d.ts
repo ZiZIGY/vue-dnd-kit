@@ -14,6 +14,14 @@ export interface IDragPayload<T = unknown, D = unknown> {
   dropData?: D;
 }
 
+export type TDroppablePayload<T = any, U = any> = () => [T[], U?];
+
+/** Resolved payload from TDroppablePayload (items + optional userData) */
+export interface IDropZonePayload<T = unknown, U = unknown> {
+  items: T[];
+  userData?: U;
+}
+
 export interface IBaseOptions {
   disabled?: boolean | Ref<boolean>;
   groups?: string[] | Ref<string[]>;
@@ -138,8 +146,10 @@ export interface IDraggableEntity extends IBaseEntity {
 export interface IDraggingEntity extends IDraggableEntity {
   initialHTML: string;
   initialRect: DOMRect;
+  initialOuterHTML: string;
 }
 
 export interface IDroppableEntity extends IBaseEntity {
   events?: IDroppableEvents;
+  payload?: TDroppablePayload;
 }

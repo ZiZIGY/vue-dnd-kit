@@ -139,9 +139,6 @@ export function useDnDProviderState(
   };
 
   const overlayStyle = computed(() => {
-    scrollPosition.y;
-    scrollPosition.x;
-
     const draggable = entities.initiatingDraggable;
 
     return calculateConstrainedPosition(
@@ -165,7 +162,7 @@ export function useDnDProviderState(
     collision,
     overlay: {
       size: overlaySize,
-      style: overlayStyle,
+      position: overlayStyle,
       render: overlayRender,
       ref: overlayRef,
     },

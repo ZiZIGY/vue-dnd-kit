@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import Draggable from './Draggable.vue';
   import ExampleContainer from '../../ExampleContainer.vue';
-  import { useDroppable } from '@vue-dnd-kit/core';
+  import { useDroppable } from '@vue-dnd-kit/core-v1';
   import { onMounted, ref } from 'vue';
 
   const isBrowser = typeof window !== 'undefined';

@@ -1,5 +1,5 @@
 <script setup>
-  import { useDraggable } from '@vue-dnd-kit/core';
+  import { useDraggable } from '@vue-dnd-kit/core-v1';
   import { computed } from 'vue';
   const emit = defineEmits(['start', 'leave', 'hover', 'move', 'end']);
 

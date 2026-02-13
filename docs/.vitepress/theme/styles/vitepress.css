@@ -73,9 +73,7 @@
 }
 
 .vp-doc p,
-.vp-doc li,
-.vp-doc td,
-.vp-doc th {
+.vp-doc li {
   background: linear-gradient(
     90deg,
     var(--text-shimmer-from) 0%,

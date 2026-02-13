@@ -1,5 +1,5 @@
 import DefaultTheme from 'vitepress/theme';
-import VueDnDKitPlugin from '@vue-dnd-kit/core';
+import VueDnDKitPlugin from '@vue-dnd-kit/core-v1';
 import Layout from './Layout.vue';
 import './style.css';
 

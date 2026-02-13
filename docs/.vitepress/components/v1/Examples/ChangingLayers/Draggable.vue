@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useDraggable, useSelection } from '@vue-dnd-kit/core';
+  import { useDraggable, useSelection } from '@vue-dnd-kit/core-v1';
   import { type Component } from 'vue';
   const { layer } = defineProps<{
     layer?: Component;

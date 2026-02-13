@@ -9,24 +9,22 @@
     v-if="state === 'dragging'"
     class="dnd-kit-default-overlay"
     :style="{
-      '--position-x': overlay.style.value.x + 'px',
-      '--position-y': overlay.style.value.y + 'px'
+      '--position-x': overlay.position.value.x + 'px',
+      '--position-y': overlay.position.value.y + 'px',
     }"
   >
     <template v-for="[node, draggable] in entities.draggingMap">
       <component
         v-if="entities.draggableMap.get(node)?.render"
         :is="entities.draggableMap.get(node)?.render"
-        class="test"
       />
       <component
         v-else
         :is="node.tagName"
-        v-html="draggable.initialHTML"
-        class="test"
+        v-html="draggable.initialOuterHTML"
         :style="{
           width: draggable.initialRect.width + 'px',
-          height: draggable.initialRect.height + 'px'
+          height: draggable.initialRect.height + 'px',
         }"
       />
     </template>

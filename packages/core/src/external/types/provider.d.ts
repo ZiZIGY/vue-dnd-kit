@@ -1,6 +1,7 @@
 import type {
   IConstraintsAreaEntity,
   IDragPayload,
+  IDropZonePayload,
   IDraggableEntity,
   IDroppableEntity,
   IEntities,
@@ -19,8 +20,16 @@ import type {
 } from 'vue';
 
 /** Event object passed to drag/drop handlers */
-export interface IDragEvent<T = unknown, D = unknown> {
+export interface IDragEvent<
+  T = unknown,
+  D = unknown,
+  U = unknown,
+  V = unknown,
+> {
+  /** Payload from the dragged item (draggable payload) */
   payload: IDragPayload<T, D> | undefined;
+  /** Payload from the drop zone (droppable payload), set for onEnter/onDrop/onLeave */
+  dropZonePayload?: IDropZonePayload<U, V>;
   provider: IDnDProviderExternal;
 }
 
@@ -53,7 +62,7 @@ export interface IDnDProviderExternal {
   distanceProgress: ComputedRef<number>;
   overlay: {
     ref: Ref<HTMLElement | null>;
-    style: ComputedRef<ICoordinates>;
+    position: ComputedRef<ICoordinates>;
     size: Ref<DOMRect | null>;
     render: Ref<Component | undefined>;
   };

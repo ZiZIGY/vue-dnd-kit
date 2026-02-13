@@ -1,8 +1,4 @@
-import type {
-  IDnDProviderExternal,
-  TDnDNodeRef,
-  TDragAxis,
-} from '../types';
+import type { IDnDProviderExternal, TDnDNodeRef, TDragAxis } from '../types';
 import { inject, onBeforeUnmount, onMounted, type Ref } from 'vue';
 import { DnDAttributes, injectionKey } from '../../internal/utils/namespaces';
 import { getNode } from '../../internal/utils/dom';

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useDraggable, useSelection } from '@vue-dnd-kit/core';
+  import { useDraggable, useSelection } from '@vue-dnd-kit/core-v1';
 
   const { elementRef, isDragging, handleDragStart } = useDraggable();
 

@@ -1,7 +1,7 @@
 <script setup>
   import { ref, computed } from 'vue';
-  import { useDroppable, DnDOperations } from '@vue-dnd-kit/core';
-  import { useDnDStore } from '@vue-dnd-kit/core';
+  import { useDroppable, DnDOperations } from '@vue-dnd-kit/core-v1';
+  import { useDnDStore } from '@vue-dnd-kit/core-v1';
   import DraggableList from './DraggableList.vue';
   const items = ref([
     { id: 1, content: 'Item 1', color: '#3eaf7c' },

@@ -19,7 +19,7 @@ import {
   triggerZoneLeave,
   triggerDropCancelEvents,
 } from '../utils/events';
-import { createDragPayload } from './payload';
+import { getDragEvent } from '../utils/events';
 import { isEffectivelyDisabledDroppable } from '../utils/disabled';
 import { applyCollisionResultToHovered } from './hover';
 import { defaultCollisionDetection } from '../sensors/defaultCollision';
@@ -56,10 +56,7 @@ export async function handleDropAndFinish(
   if (isEffectivelyDisabledDroppable(hoveredZone, provider)) return true;
 
   const zoneEntity = provider.entities.droppableMap.get(hoveredZone);
-  const dragEvent = {
-    payload: createDragPayload(provider),
-    provider,
-  };
+  const dragEvent = getDragEvent(provider, hoveredZone);
 
   const result = zoneEntity?.events?.onDrop?.(dragEvent);
 

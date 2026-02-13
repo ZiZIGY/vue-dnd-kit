@@ -149,19 +149,59 @@ export default defineConfig({
           ],
         },
         {
-          text: 'API',
+          text: 'Core',
           items: [
-            { text: 'DnDProvider', link: '/v2/guide/dnd-provider' },
-            { text: 'makeDraggable', link: '/v2/guide/make-draggable' },
-            { text: 'makeDroppable', link: '/v2/guide/make-droppable' },
+            { text: 'DnDProvider', link: '/v2/guide/core/dnd-provider' },
+            { text: 'useDnDProvider', link: '/v2/guide/core/use-dnd-provider' },
+            { text: 'makeDraggable', link: '/v2/guide/core/make-draggable' },
+            { text: 'makeDroppable', link: '/v2/guide/core/make-droppable' },
             {
               text: 'makeSelectionArea',
-              link: '/v2/guide/make-selection-area',
+              link: '/v2/guide/core/make-selection-area',
             },
             {
               text: 'makeConstraintArea',
-              link: '/v2/guide/make-constraint-area',
+              link: '/v2/guide/core/make-constraint-area',
             },
+          ],
+        },
+        {
+          text: 'Examples',
+          items: [
+            { text: 'Base Drop', link: '/v2/examples/base-drop' },
+          ],
+        },
+      ],
+      '/v2/examples/': [
+        {
+          text: 'Getting Started',
+          items: [
+            { text: 'Introduction', link: '/v2/guide/introduction' },
+            { text: 'Installation', link: '/v2/guide/installation' },
+            { text: 'Quick Start', link: '/v2/guide/quick-start' },
+          ],
+        },
+        {
+          text: 'Core',
+          items: [
+            { text: 'DnDProvider', link: '/v2/guide/core/dnd-provider' },
+            { text: 'useDnDProvider', link: '/v2/guide/core/use-dnd-provider' },
+            { text: 'makeDraggable', link: '/v2/guide/core/make-draggable' },
+            { text: 'makeDroppable', link: '/v2/guide/core/make-droppable' },
+            {
+              text: 'makeSelectionArea',
+              link: '/v2/guide/core/make-selection-area',
+            },
+            {
+              text: 'makeConstraintArea',
+              link: '/v2/guide/core/make-constraint-area',
+            },
+          ],
+        },
+        {
+          text: 'Examples',
+          items: [
+            { text: 'Base Drop', link: '/v2/examples/base-drop' },
           ],
         },
       ],
@@ -218,6 +258,7 @@ export default defineConfig({
       alias: {
         '@components': resolve(__dirname, './components'),
         '@examples': resolve(__dirname, './components/v1/Examples'),
+        '@examples-v2': resolve(__dirname, './components/v2/Examples'),
         '@assets': resolve(__dirname, './public'),
       },
     },

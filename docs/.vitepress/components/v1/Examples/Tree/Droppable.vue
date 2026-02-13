@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useDroppable, DnDOperations } from '@vue-dnd-kit/core';
+  import { useDroppable, DnDOperations } from '@vue-dnd-kit/core-v1';
   import { computed } from 'vue';
 
   const { source } = defineProps<{

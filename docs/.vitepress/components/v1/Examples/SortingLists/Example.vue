@@ -2,7 +2,7 @@
   import Draggable from './Draggable.vue';
   import ExampleContainer from '../../ExampleContainer.vue';
   import { computed, ref } from 'vue';
-  import { useDroppable, DnDOperations } from '@vue-dnd-kit/core';
+  import { useDroppable, DnDOperations } from '@vue-dnd-kit/core-v1';
   const firstColumn = ref([
     { id: 1, name: 'Item 1' },
     { id: 2, name: 'Item 2' },
