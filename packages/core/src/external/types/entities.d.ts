@@ -48,6 +48,8 @@ export interface IEntities {
   modifiersDraggableSet: ComputedRef<Set<HTMLElement>>;
   modifiersSelectableAreaSet: ComputedRef<Set<HTMLElement>>;
 
+  allowedDroppableSet: ComputedRef<Set<HTMLElement>>;
+
   visibleDraggableSet: Set<HTMLElement>;
   visibleDroppableSet: Set<HTMLElement>;
   visibleSelectableAreaSet: Set<HTMLElement>;

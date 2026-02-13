@@ -5,7 +5,6 @@
   const node = useTemplateRef('draggableRef');
 
   const { selected } = makeDraggable(node, {
-    groups: ['draggable'],
     dragHandle: '.drag-handle',
   });
 </script>

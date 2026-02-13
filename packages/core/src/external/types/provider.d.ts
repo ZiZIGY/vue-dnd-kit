@@ -43,7 +43,6 @@ export interface IHovered {
 }
 
 export interface IDnDProviderExternal {
-  teleportTo: WritableComputedRef<string | false | null | undefined>;
   state: Ref<TDnDState | undefined>;
   pointer: Ref<TPointerState | undefined>;
   entities: Reactive<IEntities>;
@@ -67,6 +66,7 @@ export interface IDnDProviderExternal {
     position: ComputedRef<ICoordinates>;
     size: Ref<DOMRect | null>;
     render: Ref<Component | undefined>;
+    to: WritableComputedRef<string | false | null | undefined>;
   };
   hovered: IHovered;
   collision: {
@@ -97,6 +97,6 @@ export type TDnDState =
 export interface IDnDProviderProps {
   /** Enable viewport auto-scroll: true = defaults, object = options. false | null | undefined = disabled. */
   autoScrollViewport?: IAutoScrollOptions | true | false | null;
-  /** Teleport to element: 'body' = defaults, string = element id. false | null | undefined = disabled. */
-  teleportTo?: string | false | null;
+  /** Teleport overlay to element: 'body' = defaults, string = element id. false | null | undefined = disabled. */
+  overlayTo?: string | false | null;
 }

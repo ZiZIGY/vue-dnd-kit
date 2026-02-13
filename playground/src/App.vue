@@ -9,7 +9,7 @@
 <template>
   <DnDProvider
     :auto-scroll-viewport="{ threshold: 60, speed: 11 }"
-    teleport-to="#app"
+    overlay-to="body"
   >
     <div class="playground">
       <h1>Vue DnD Kit — Playground</h1>

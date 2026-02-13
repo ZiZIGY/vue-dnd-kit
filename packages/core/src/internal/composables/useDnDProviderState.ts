@@ -3,7 +3,6 @@ import {
   reactive,
   ref,
   shallowRef,
-  watch,
   type Component,
   type Ref,
 } from 'vue';
@@ -20,6 +19,7 @@ import type {
 } from '../../external/types/provider';
 import { filterByModifiers } from '../utils/provider';
 import { isEffectivelyDisabledDraggable } from '../utils/disabled';
+import { filterByGroups } from '../utils/groups';
 import { createIntersectionObserver } from '../utils/observer';
 import { useSizeObserver } from './useSizeObserver';
 import { calculateDistanceProgress } from '../utils/drag-activation';
@@ -47,11 +47,6 @@ export function useDnDProviderState(
   overlayRef: Ref<HTMLElement | null>,
   props?: IDnDProviderProps
 ): IDnDProviderInternal {
-  const teleportTo = computed<string | false | null | undefined>({
-    get: () => props?.teleportTo,
-    set: (value) => (teleportTo.value = value),
-  });
-
   const state = shallowRef<TDnDState>();
   const pointer = ref<TPointerState | undefined>();
   const pressedKeys = ref<Set<string>>(new Set());
@@ -81,6 +76,19 @@ export function useDnDProviderState(
     draggingMap: new Map(),
     selectedSet: new Set(),
 
+    allowedDroppableSet: computed(() => {
+      if (state.value) {
+        const allowedDroppableSet = filterByGroups(
+          entities.visibleDroppableSet,
+          entities.draggingMap,
+          entities.draggableMap,
+          entities.droppableMap
+        );
+        return allowedDroppableSet;
+      }
+      return new Set();
+    }),
+
     modifiersSelectableAreaSet: computed(() => {
       const selectableSet = filterByModifiers(
         entities.selectableAreaMap,
@@ -103,6 +111,15 @@ export function useDnDProviderState(
     visibleDroppableSet: new Set(),
     visibleSelectableAreaSet: new Set(),
   });
+
+  const hovered = reactive<IHovered>({
+    draggable: new Map(),
+    droppable: new Map(),
+  });
+
+  const collision = {
+    throttle: shallowRef(0),
+  };
 
   const scrollPosition = reactive<ICoordinates>({
     x: window.scrollX,
@@ -139,15 +156,6 @@ export function useDnDProviderState(
 
   const overlayRender = ref<Component>();
 
-  const hovered = reactive<IHovered>({
-    draggable: new Map(),
-    droppable: new Map(),
-  });
-
-  const collision = {
-    throttle: shallowRef(0),
-  };
-
   const overlayStyle = computed(() => {
     const draggable = entities.initiatingDraggable;
 
@@ -158,6 +166,11 @@ export function useDnDProviderState(
       entities.constraintsAreaMap,
       overlaySize.value
     );
+  });
+
+  const overlayTo = computed<string | false | null | undefined>({
+    get: () => props?.overlayTo,
+    set: (value) => (overlayTo.value = value),
   });
 
   const autoScrollViewport = computed(() => props?.autoScrollViewport);
@@ -177,6 +190,7 @@ export function useDnDProviderState(
       position: overlayStyle,
       render: overlayRender,
       ref: overlayRef,
+      to: overlayTo,
     },
     lib: {
       draggableObserver,
@@ -185,6 +199,5 @@ export function useDnDProviderState(
       overlaySizeObserver,
     },
     autoScrollViewport,
-    teleportTo,
   };
 }

@@ -23,7 +23,7 @@
 
 <template>
   <slot />
-  <Teleport :to="provider.teleportTo.value || 'body'">
+  <Teleport :to="provider.overlay.to.value || 'body'">
     <div
       ref="overlayRef"
       class="dnd-kit-overlay-container"
@@ -36,6 +36,8 @@
       </slot>
     </div>
   </Teleport>
+
+  <pre>{{ provider.entities }}</pre>
 </template>
 
 <style>
