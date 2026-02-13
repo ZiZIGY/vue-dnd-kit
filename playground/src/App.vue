@@ -1,19 +1,16 @@
 <script setup lang="ts">
-  import { DnDProvider } from '@vue-dnd-kit/core';
+  import { DnDProvider } from '../../packages/core/src/external/index';
   import ScrollArea from './components/ScrollArea.vue';
   import Draggable from './components/Draggable.vue';
   import Overlay from './components/Overlay.vue';
   import Droppable from './components/Droppable.vue';
-  import { onMounted, ref } from 'vue';
-  import { makeAutoScroll } from '../../packages/utilities/src';
-
-  onMounted(() => {
-    const body = document.body;
-  });
 </script>
 
 <template>
-  <DnDProvider>
+  <DnDProvider
+    :auto-scroll-viewport="{ threshold: 60, speed: 11 }"
+    teleport-to="#app"
+  >
     <div class="playground">
       <h1>Vue DnD Kit — Playground</h1>
       <p

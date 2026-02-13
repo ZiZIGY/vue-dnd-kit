@@ -14,7 +14,7 @@ export interface IPlacementMargins {
   left?: number;
 }
 
-/** Options for makeAutoScroll / makeAutoScrollViewport */
+/** Options for makeAutoScroll and DnDProvider autoScrollViewport prop */
 export interface IAutoScrollOptions {
   threshold?: number | IPlacementMargins;
   speed?: number;

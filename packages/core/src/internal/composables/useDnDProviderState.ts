@@ -3,6 +3,7 @@ import {
   reactive,
   ref,
   shallowRef,
+  watch,
   type Component,
   type Ref,
 } from 'vue';
@@ -13,7 +14,10 @@ import type {
   TDnDState,
   TPointerState,
 } from '../../external/types';
-import type { IHovered } from '../../external/types/provider';
+import type {
+  IDnDProviderProps,
+  IHovered,
+} from '../../external/types/provider';
 import { filterByModifiers } from '../utils/provider';
 import { isEffectivelyDisabledDraggable } from '../utils/disabled';
 import { createIntersectionObserver } from '../utils/observer';
@@ -40,8 +44,14 @@ const DEFAULT_KEYS = {
 } as const;
 
 export function useDnDProviderState(
-  overlayRef: Ref<HTMLElement | null>
+  overlayRef: Ref<HTMLElement | null>,
+  props?: IDnDProviderProps
 ): IDnDProviderInternal {
+  const teleportTo = computed<string | false | null | undefined>({
+    get: () => props?.teleportTo,
+    set: (value) => (teleportTo.value = value),
+  });
+
   const state = shallowRef<TDnDState>();
   const pointer = ref<TPointerState | undefined>();
   const pressedKeys = ref<Set<string>>(new Set());
@@ -150,6 +160,8 @@ export function useDnDProviderState(
     );
   });
 
+  const autoScrollViewport = computed(() => props?.autoScrollViewport);
+
   return {
     state,
     pointer,
@@ -172,5 +184,7 @@ export function useDnDProviderState(
       selectableAreaObserver,
       overlaySizeObserver,
     },
+    autoScrollViewport,
+    teleportTo,
   };
 }

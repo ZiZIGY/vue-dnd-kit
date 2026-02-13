@@ -1,7 +1,8 @@
-import { onBeforeUnmount, onMounted } from 'vue';
+import { onBeforeUnmount, onMounted, watch } from 'vue';
 import { handleKeyboardEvents } from '../logic/keyboard';
 import { createPointerHandlers } from '../logic/pointer';
 import { handleScrollEvent } from '../logic/scroll';
+import { useViewportAutoScroll } from './useViewportAutoScroll';
 import type { IDnDProviderInternal } from '../types/provider';
 
 export const useDnDProviderEvents = (provider: IDnDProviderInternal) => {
@@ -10,6 +11,27 @@ export const useDnDProviderEvents = (provider: IDnDProviderInternal) => {
   const keyUp = handleKeyboardEvents.keyUp(provider);
   const clear = handleKeyboardEvents.clear(provider);
   const scrollHandler = handleScrollEvent(provider);
+
+  let viewportScrollStop: (() => void) | null = null;
+
+  watch(
+    provider.autoScrollViewport,
+    (autoScrollViewport) => {
+      viewportScrollStop?.();
+      viewportScrollStop = null;
+      if (
+        autoScrollViewport === true ||
+        (autoScrollViewport && typeof autoScrollViewport === 'object')
+      ) {
+        const result = useViewportAutoScroll(
+          provider,
+          autoScrollViewport === true ? {} : autoScrollViewport
+        );
+        viewportScrollStop = result.stop;
+      }
+    },
+    { immediate: true }
+  );
 
   onMounted(() => {
     document.addEventListener('pointerdown', handlers.pointerDown);
@@ -27,6 +49,8 @@ export const useDnDProviderEvents = (provider: IDnDProviderInternal) => {
     document.removeEventListener('keyup', keyUp);
     document.removeEventListener('blur', clear);
     document.removeEventListener('scroll', scrollHandler, true);
+
+    viewportScrollStop?.();
     handlers.cleanup();
   });
 };

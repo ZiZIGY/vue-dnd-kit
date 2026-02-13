@@ -1,6 +1,7 @@
-import type { Ref } from "vue";
-import type { IDnDProviderExternal } from "../../external";
-import type { IIntersectionObserverWrapper } from "./observer";
+import type { Ref } from 'vue';
+import type { IDnDProviderExternal } from '../../external';
+import type { IAutoScrollOptions } from '../../external/types/placement';
+import type { IIntersectionObserverWrapper } from './observer';
 
 export interface IKeyboardKeys {
   pressedKeys: Ref<Set<string>>;

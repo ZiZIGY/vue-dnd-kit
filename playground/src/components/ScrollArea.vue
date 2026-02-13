@@ -2,16 +2,14 @@
   import { useTemplateRef } from 'vue';
   import {
     makeAutoScroll,
-    makeAutoScrollViewport,
-  } from '../../../packages/utilities/src/index';
-  import { makeConstraintArea } from '@vue-dnd-kit/core';
+    makeConstraintArea,
+  } from '../../../packages/core/src/external/index';
 
   const scrollContainerRef = useTemplateRef('scrollContainerRef');
 
   makeConstraintArea(scrollContainerRef, {
-    restrictToArea: true,
+    // restrictToArea: true,
   });
-  makeAutoScrollViewport({ threshold: 60, speed: 12 });
   makeAutoScroll(scrollContainerRef, { threshold: 60, speed: 12 });
 </script>
 

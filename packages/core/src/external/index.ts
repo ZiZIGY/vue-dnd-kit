@@ -14,5 +14,9 @@ export {
   makeAutoScroll,
   type IAutoScrollOptions,
 } from './composables/makeAutoScroll';
+export {
+  makeSnappedOverlayPosition,
+  type TSnapOverlayOptions,
+} from './composables/makeSnappedOverlayPosition';
 
 export type * from './types';

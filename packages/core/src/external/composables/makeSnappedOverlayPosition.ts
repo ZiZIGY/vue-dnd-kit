@@ -26,8 +26,8 @@ function snapToGrid(value: number, step: number): number {
  * @param options - grid (or gridX / gridY)
  * @returns ComputedRef<ICoordinates> — use for --position-x / --position-y in overlay
  */
-export function makeSnappedOverlayStyle(
-  overlayStyle: ComputedRef<ICoordinates>,
+export function makeSnappedOverlayPosition(
+  position: ComputedRef<ICoordinates>,
   options?: TSnapOverlayOptions
 ): ComputedRef<ICoordinates> {
   const hasGrid =
@@ -35,16 +35,16 @@ export function makeSnappedOverlayStyle(
   const stepX = !options
     ? 1
     : hasGrid
-    ? (options as { grid: number }).grid
-    : (options as { gridX: number; gridY: number }).gridX;
+      ? (options as { grid: number }).grid
+      : (options as { gridX: number; gridY: number }).gridX;
   const stepY = !options
     ? 1
     : hasGrid
-    ? (options as { grid: number }).grid
-    : (options as { gridX: number; gridY: number }).gridY;
+      ? (options as { grid: number }).grid
+      : (options as { gridX: number; gridY: number }).gridY;
 
   return computed<ICoordinates>(() => {
-    const { x, y } = overlayStyle.value;
+    const { x, y } = position.value;
     return {
       x: snapToGrid(x, stepX),
       y: snapToGrid(y, stepY),

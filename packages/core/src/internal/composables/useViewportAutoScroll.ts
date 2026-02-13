@@ -1,4 +1,4 @@
-import { onMounted, ref, shallowRef, watch } from 'vue';
+import { shallowRef, watch } from 'vue';
 import { onScopeDispose } from 'vue';
 import { createAutoScrollController } from '../utils/auto-scroll';
 import type {
@@ -20,6 +20,13 @@ const viewportScrollAdapter: IScrollAdapter = {
   },
 };
 
+/** Viewport container for controller (adapter ignores element, only window is used). */
+const viewportContainer = {
+  get value(): HTMLElement | null {
+    return typeof document !== 'undefined' ? document.documentElement : null;
+  },
+};
+
 /**
  * Internal composable: viewport (window) auto-scroll. Not exposed to user.
  */
@@ -27,11 +34,6 @@ export function useViewportAutoScroll(
   provider: IDnDProviderInternal,
   options?: IAutoScrollOptionsInternal
 ) {
-  const containerRef = ref<HTMLElement | null>(null);
-  onMounted(() => {
-    containerRef.value = document.documentElement;
-  });
-
   const isScrolling = shallowRef(false);
 
   const getOverlayPoint = () => {
@@ -49,7 +51,7 @@ export function useViewportAutoScroll(
   };
 
   const controller = createAutoScrollController(
-    containerRef,
+    viewportContainer,
     options ?? {},
     getOverlayPoint,
     viewportScrollAdapter,
@@ -64,10 +66,12 @@ export function useViewportAutoScroll(
     }
   );
 
-  onScopeDispose(() => {
+  const stop = () => {
     stopWatch();
     controller.stop();
-  });
+  };
 
-  return { isScrolling };
+  onScopeDispose(stop);
+
+  return { isScrolling, stop };
 }

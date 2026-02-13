@@ -1,14 +1,17 @@
 <script setup lang="ts">
   import { computed, provide, useTemplateRef } from 'vue';
 
+  import type { IDnDProviderProps } from '../types/provider';
   import { injectionKey } from '../../internal/utils/namespaces';
   import { useDnDProviderState } from '../../internal/composables/useDnDProviderState';
   import { useDnDProviderEvents } from '../../internal/composables/useDnDProviderEvents';
 
   import DefaultOverlay from './DefaultOverlay.vue';
 
+  const props = defineProps<IDnDProviderProps>();
+
   const overlayRef = useTemplateRef<HTMLElement>('overlayRef');
-  const provider = useDnDProviderState(overlayRef);
+  const provider = useDnDProviderState(overlayRef, props);
   useDnDProviderEvents(provider);
 
   const overlay = computed(
@@ -20,8 +23,7 @@
 
 <template>
   <slot />
-
-  <Teleport to="body">
+  <Teleport :to="provider.teleportTo.value || 'body'">
     <div
       ref="overlayRef"
       class="dnd-kit-overlay-container"

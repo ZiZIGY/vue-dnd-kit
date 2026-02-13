@@ -1,13 +1,7 @@
 <script setup lang="ts">
-  import { useDnDProvider } from '@vue-dnd-kit/core';
-  import { makeSnappedOverlayStyle } from '../../../packages/utilities/src';
+  import { useDnDProvider } from '../../../packages/core/src/external/index';
 
   const { entities, state, overlay } = useDnDProvider();
-
-  const coords = makeSnappedOverlayStyle(overlay.style, {
-    gridY: 20,
-    gridX: 20,
-  });
 </script>
 
 <template>
@@ -15,8 +9,8 @@
     v-if="state === 'dragging'"
     class="dnd-kit-default-overlay"
     :style="{
-      '--position-x': coords.x + 'px',
-      '--position-y': coords.y + 'px',
+      '--position-x': overlay.position.value.x + 'px',
+      '--position-y': overlay.position.value.y + 'px',
     }"
   >
     <template v-for="[node, draggable] in entities.draggingMap">
