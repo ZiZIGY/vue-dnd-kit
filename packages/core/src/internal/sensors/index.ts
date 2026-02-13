@@ -1,2 +1,2 @@
 export * from './steps';
-export { defaultCollisionDetection } from './defaultCollision';
+export { defaultCollisionDetection } from './default-collision';

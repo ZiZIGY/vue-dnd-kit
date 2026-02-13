@@ -22,7 +22,7 @@ import {
 import { getDragEvent } from '../utils/events';
 import { isEffectivelyDisabledDroppable } from '../utils/disabled';
 import { applyCollisionResultToHovered } from './hover';
-import { defaultCollisionDetection } from '../sensors/defaultCollision';
+import { defaultCollisionDetection } from '../sensors/default-collision';
 import type { IDnDProviderInternal } from '../types/provider';
 
 function runCollisionAndApply(provider: IDnDProviderInternal): void {
