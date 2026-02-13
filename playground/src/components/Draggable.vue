@@ -4,13 +4,17 @@
 
   const node = useTemplateRef('draggableRef');
 
-  const { selected } = makeDraggable(node, {
+  const { selected, isDragging } = makeDraggable(node, {
+    groups: ['draggable'],
     dragHandle: '.drag-handle',
   });
 </script>
 
 <template>
-  <div ref="draggableRef">
+  <div
+    ref="draggableRef"
+    :class="{ 'is-dragging': isDragging }"
+  >
     <input
       type="checkbox"
       v-model="selected"
@@ -75,5 +79,8 @@
   }
   .drag-handle:active {
     cursor: grabbing;
+  }
+  .is-dragging {
+    opacity: 0.5;
   }
 </style>

@@ -4,7 +4,7 @@ import type {
   TDnDNodeRef,
   TDroppablePayload,
 } from '../types';
-import { onBeforeUnmount, onMounted } from 'vue';
+import { computed, onBeforeUnmount, onMounted, type ComputedRef } from 'vue';
 
 import { DnDAttributes } from '../../internal/utils/namespaces';
 import { getNode } from '../../internal/utils/dom';
@@ -14,21 +14,25 @@ interface IMakeDroppableOptions extends IBaseOptions {
   events?: IDroppableEvents;
 }
 
-export function makeDroppable(ref: TDnDNodeRef): void;
+interface IMakeDroppableReturnType {
+  isAllowed: ComputedRef<boolean>;
+}
+
+export function makeDroppable(ref: TDnDNodeRef): IMakeDroppableReturnType;
 export function makeDroppable(
   ref: TDnDNodeRef,
   options: IMakeDroppableOptions,
   payload?: TDroppablePayload
-): void;
+): IMakeDroppableReturnType;
 export function makeDroppable(
   ref: TDnDNodeRef,
   payload: TDroppablePayload
-): void;
+): IMakeDroppableReturnType;
 export function makeDroppable(
   ref: TDnDNodeRef,
   optionsOrPayload?: IMakeDroppableOptions | TDroppablePayload,
   payload?: TDroppablePayload
-): void {
+): IMakeDroppableReturnType {
   const provider = useDnDProviderInternal();
   let container: HTMLElement | null = null;
 
@@ -42,6 +46,12 @@ export function makeDroppable(
     options = optionsOrPayload ?? {};
     finalPayload = payload;
   }
+
+  const isAllowed = computed(() => {
+    const container = getNode(ref);
+    if (!container) return false;
+    return provider.entities.allowedDroppableSet.has(container);
+  });
 
   onMounted(() => {
     container = getNode(ref);
@@ -65,4 +75,8 @@ export function makeDroppable(
     provider.entities.visibleDroppableSet.delete(container);
     provider.entities.droppableMap.delete(container);
   });
+
+  return {
+    isAllowed,
+  };
 }

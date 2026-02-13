@@ -13,7 +13,6 @@ import {
   computed,
   onBeforeUnmount,
   onMounted,
-  watch,
   type Component,
   type ComputedRef,
   type Ref,
@@ -30,13 +29,13 @@ interface IMakeDraggableOptions extends IBaseOptions {
   render?: Component;
   dragHandle?: string | Ref<string>;
   activation?: IDragActivationOptions;
-  /** Margins for center zone. When pointer in center and element is also droppable, zone mode is used. */
   placementMargins?: IPlacementMargins;
 }
 
 interface IMakeDraggableReturnType {
   selected: WritableComputedRef<boolean>;
   isDragging: ComputedRef<boolean>;
+  isAllowed: ComputedRef<boolean>;
 }
 
 export function makeDraggable(
@@ -67,6 +66,31 @@ export function makeDraggable(
     finalPayload = payload;
   }
 
+  const selected = computed({
+    get() {
+      const node = getNode(ref);
+      if (!node) return false;
+      return provider.entities.selectedSet.has(node);
+    },
+    set(value) {
+      const node = getNode(ref);
+      if (!node) return;
+      provider.entities.selectedSet[value ? 'add' : 'delete'](node);
+    },
+  });
+
+  const isDragging = computed(() => {
+    const node = getNode(ref);
+    if (!node) return false;
+    return provider.entities.draggingMap.has(node);
+  });
+
+  const isAllowed = computed(() => {
+    const container = getNode(ref);
+    if (!container) return false;
+    return provider.entities.allowedDraggableSet.has(container);
+  });
+
   onMounted(() => {
     container = getNode(ref);
     if (!container) return;
@@ -92,25 +116,6 @@ export function makeDraggable(
     });
   });
 
-  const selected = computed({
-    get() {
-      const node = getNode(ref);
-      if (!node) return false;
-      return provider.entities.selectedSet.has(node);
-    },
-    set(value) {
-      const node = getNode(ref);
-      if (!node) return;
-      provider.entities.selectedSet[value ? 'add' : 'delete'](node);
-    },
-  });
-
-  const isDragging = computed(() => {
-    const node = getNode(ref);
-    if (!node) return false;
-    return provider.entities.draggingMap.has(node);
-  });
-
   onBeforeUnmount(() => {
     if (!container) return;
 
@@ -123,5 +128,6 @@ export function makeDraggable(
   return {
     selected,
     isDragging,
+    isAllowed,
   };
 }

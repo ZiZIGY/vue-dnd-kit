@@ -46,13 +46,13 @@ export const overlayBoxFromStyle: TContainerBoxFn = (
   };
 };
 
-/** Visible draggables */
+/** Allowed draggables (visible + filtered by groups) */
 export const visibleElements = (p: IDnDProviderInternal) =>
-  p.entities.visibleDraggableSet;
+  p.entities.allowedDraggableSet;
 
-/** Visible droppables */
-export const visibleZones = (p: IDnDProviderInternal) =>
-  p.entities.visibleDroppableSet;
+/** Allowed droppables (visible + filtered by groups) */
+export const allowedVisibleZones = (p: IDnDProviderInternal) =>
+  p.entities.allowedDroppableSet;
 
 /** Exclude nodes being dragged */
 export const filterNotDragging: TFilterFn = (node, provider) =>

@@ -19,7 +19,10 @@ import type {
 } from '../../external/types/provider';
 import { filterByModifiers } from '../utils/provider';
 import { isEffectivelyDisabledDraggable } from '../utils/disabled';
-import { filterByGroups } from '../utils/groups';
+import {
+  filterByGroupsDraggables,
+  filterByGroupsDroppables,
+} from '../utils/groups';
 import { createIntersectionObserver } from '../utils/observer';
 import { useSizeObserver } from './useSizeObserver';
 import { calculateDistanceProgress } from '../utils/drag-activation';
@@ -78,7 +81,7 @@ export function useDnDProviderState(
 
     allowedDroppableSet: computed(() => {
       if (state.value) {
-        const allowedDroppableSet = filterByGroups(
+        const allowedDroppableSet = filterByGroupsDroppables(
           entities.visibleDroppableSet,
           entities.draggingMap,
           entities.draggableMap,
@@ -89,6 +92,17 @@ export function useDnDProviderState(
       return new Set();
     }),
 
+    allowedDraggableSet: computed(() => {
+      if (state.value) {
+        const allowedDraggableSet = filterByGroupsDraggables(
+          entities.visibleDraggableSet,
+          entities.draggingMap,
+          entities.draggableMap
+        );
+        return allowedDraggableSet;
+      }
+      return new Set();
+    }),
     modifiersSelectableAreaSet: computed(() => {
       const selectableSet = filterByModifiers(
         entities.selectableAreaMap,

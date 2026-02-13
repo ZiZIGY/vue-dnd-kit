@@ -9,6 +9,15 @@ import {
 import { isDescendant } from '../utils/dom';
 import type { IDnDProviderInternal } from '../types/provider';
 
+/**
+ * Collision detection function signature.
+ * Returns sorted lists of colliding elements and zones.
+ *
+ * IMPORTANT: When implementing custom sensors, use:
+ * - `provider.entities.allowedDroppableSet` for zones (visible + filtered by groups)
+ * - `provider.entities.allowedDraggableSet` for draggables (visible + filtered by groups)
+ * OR use helper functions from `steps.ts`: `allowedVisibleZones()` and `visibleElements()`.
+ */
 export type CollisionDetectionFn = (
   provider: IDnDProviderInternal
 ) => { elements: HTMLElement[]; zones: HTMLElement[] };

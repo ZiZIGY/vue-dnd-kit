@@ -10,7 +10,7 @@ import {
   overlayContainer,
   overlayBoxFromStyle,
   visibleElements,
-  visibleZones,
+  allowedVisibleZones,
   filterValidCollisionTarget,
   aabbCollision,
   sortByOverlapAndPointer,
@@ -20,7 +20,7 @@ export const defaultCollisionDetection = createSensor()
   .container(overlayContainer)
   .containerBox(overlayBoxFromStyle)
   .elements(visibleElements)
-  .zones(visibleZones)
+  .zones(allowedVisibleZones)
   .filterElements(filterValidCollisionTarget)
   .filterZones(filterValidCollisionTarget)
   .collision(aabbCollision)

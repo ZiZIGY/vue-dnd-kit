@@ -40,7 +40,7 @@ export const getBoundedSelectionArea = (
   if (!container) return {};
 
   const containerRect = container.getBoundingClientRect();
-  
+
   const left = Math.max(containerRect.left, Math.min(start.x, current.x));
   const top = Math.max(containerRect.top, Math.min(start.y, current.y));
   const right = Math.min(containerRect.right, Math.max(start.x, current.x));
@@ -54,10 +54,10 @@ export const getBoundedSelectionArea = (
     top: `${top}px`,
     width: `${width}px`,
     height: `${height}px`,
-    position: 'fixed', 
+    position: 'fixed',
     pointerEvents: 'none',
     border: '1px solid #3b82f6',
-    backgroundColor: '#3b82f61a'
+    backgroundColor: '#3b82f61a',
   };
 };
 
@@ -90,7 +90,8 @@ export const updateSelectionByBox = (provider: IDnDProviderInternal): void => {
     provider.pointer.value.start,
     provider.pointer.value.current
   );
-  const selectionAreaGroups = provider.entities.selectableAreaMap.get(selectingArea)?.groups ?? [];
+  const selectionAreaGroups =
+    provider.entities.selectableAreaMap.get(selectingArea)?.groups ?? [];
 
   provider.entities.visibleDraggableSet.forEach((el) => {
     if (!selectingArea.contains(el)) return;
@@ -121,9 +122,9 @@ export const getSelectionBoxRect = (
   const top = Math.min(start.y, current.y);
   const right = Math.max(start.x, current.x);
   const bottom = Math.max(start.y, current.y);
-  
+
   const width = right - left;
   const height = bottom - top;
-  
+
   return new DOMRect(left, top, width, height);
 };

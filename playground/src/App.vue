@@ -21,9 +21,7 @@
         ref="scrollContainerRef"
         class="scroll-area"
       >
-        <div class="content">
-          <Draggable class="card"> Drag me — auto-scroll near edges</Draggable>
-        </div>
+        <Draggable class="card"> Drag me — auto-scroll near edges</Draggable>
         <Droppable>
           <div class="droppable">Drop here</div>
         </Droppable>

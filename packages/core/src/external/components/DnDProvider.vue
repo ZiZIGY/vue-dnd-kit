@@ -36,8 +36,6 @@
       </slot>
     </div>
   </Teleport>
-
-  <pre>{{ provider.entities }}</pre>
 </template>
 
 <style>
