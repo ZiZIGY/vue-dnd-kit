@@ -12,6 +12,7 @@ import {
   triggerDraggableHoverChange,
 } from '../utils/events';
 import { isDescendant } from '../utils/dom';
+import { getDistanceToRectCenter } from '../utils/hover';
 import type { IDnDProviderInternal } from '../types/provider';
 import type { IHovered } from '../../external/types/provider';
 
@@ -71,10 +72,42 @@ export const applyCollisionResultToHovered = (
       hovered.droppable.set(newZone, getClosestPlacement(pointerBox, rect));
     }
     if (newElement) {
-      // Если есть зона, draggable записывается только если он внутри зоны
-      if (newZone && !isDescendant(newZone, newElement)) {
-        // Draggable не внутри зоны — не записываем
+      // Если есть и зона, и элемент:
+      // - Если элемент внутри зоны → записываем оба (зона для drop, элемент для сортировки)
+      // - Если элемент не внутри зоны → выбираем ближайший к курсору
+      if (newZone) {
+        if (isDescendant(newZone, newElement)) {
+          // Элемент внутри зоны — записываем оба
+          const rect = newElement.getBoundingClientRect();
+          const margins =
+            provider.entities.draggableMap.get(newElement)?.placementMargins;
+          hovered.draggable.set(
+            newElement,
+            getClosestPlacement(pointerBox, rect, margins)
+          );
+        } else {
+          // Элемент не внутри зоны — выбираем ближайший к курсору
+          const pointer = provider.pointer.value?.current ?? { x: 0, y: 0 };
+          const zoneRect = newZone.getBoundingClientRect();
+          const elementRect = newElement.getBoundingClientRect();
+
+          const zoneDistance = getDistanceToRectCenter(pointer, zoneRect);
+          const elementDistance = getDistanceToRectCenter(pointer, elementRect);
+
+          if (elementDistance < zoneDistance) {
+            // Элемент ближе — убираем зону, оставляем элемент
+            hovered.droppable.clear();
+            const margins =
+              provider.entities.draggableMap.get(newElement)?.placementMargins;
+            hovered.draggable.set(
+              newElement,
+              getClosestPlacement(pointerBox, elementRect, margins)
+            );
+          }
+          // Иначе зона ближе — зона уже записана выше, элемент не записываем
+        }
       } else {
+        // Нет зоны — просто записываем элемент
         const rect = newElement.getBoundingClientRect();
         const margins =
           provider.entities.draggableMap.get(newElement)?.placementMargins;

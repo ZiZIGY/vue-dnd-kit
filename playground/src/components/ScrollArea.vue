@@ -3,7 +3,7 @@
   import {
     makeAutoScroll,
     makeConstraintArea,
-  } from '../../../packages/core/src/external/index';
+  } from '@vue-dnd-kit/core';
 
   const scrollContainerRef = useTemplateRef('scrollContainerRef');
 

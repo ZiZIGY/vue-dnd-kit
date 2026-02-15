@@ -5,7 +5,7 @@
 ## Signature
 
 ```ts
-makeDroppable(ref, options?, payload?): void
+makeDroppable(ref, options?, payload?): IMakeDroppableReturnType
 ```
 
 Overloads:
@@ -16,6 +16,15 @@ Overloads:
 - **`makeDroppable(ref, options, payload?)`** — options and optional payload.
 
 **`ref`** must be a ref to an HTML element (or component root element). The element is registered on mount and unregistered on unmount.
+
+---
+
+## Return value
+
+| Property    | Type                            | Description |
+|------------|----------------------------------|-------------|
+| `isAllowed`| `ComputedRef<boolean>`          | `true` when this zone is a valid drop target (visible, not disabled, groups match with currently dragging items). |
+| `isDragOver`| `ComputedRef<IPlacement \| undefined>` | When an item is dragged over this zone: placement flags `{ top, right, bottom, left, center }`. `undefined` when not hovered. Use for drop highlight and placement indicators. |
 
 ---
 
@@ -99,6 +108,27 @@ Without payload:
 makeDroppable(zoneRef, {
   events: { onDrop: (e) => console.log('dropped', e.payload) },
 });
+```
+
+Using return values (e.g. for drop highlight):
+
+```vue
+<script setup lang="ts">
+  const zoneRef = useTemplateRef<HTMLElement>('zoneRef');
+  const { isDragOver, isAllowed } = makeDroppable(zoneRef, { ... });
+</script>
+
+<template>
+  <div
+    ref="zoneRef"
+    :class="{
+      'ring-2 ring-primary': isDragOver && isAllowed,
+      'bg-muted': isDragOver?.center,
+    }"
+  >
+    Drop here
+  </div>
+</template>
 ```
 
 ---

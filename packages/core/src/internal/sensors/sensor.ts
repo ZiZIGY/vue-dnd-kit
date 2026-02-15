@@ -73,6 +73,26 @@ interface ISensorConfig {
   mergeStrategy: TMergeStrategy;
   /** Pick closest between first zone and first element (by distance to pointer) */
   pickClosestBetweenFirst: boolean;
+  /** Minimum overlap percent required for collision (0-100) */
+  minOverlapPercent?: number;
+}
+
+export interface ISensorBuilder {
+  container(fn: TContainerFn): ISensorBuilder;
+  containerBox(fn: TContainerBoxFn): ISensorBuilder;
+  elements(fn: TCandidatesFn): ISensorBuilder;
+  zones(fn: TCandidatesFn): ISensorBuilder;
+  filterElements(fn: TFilterFn): ISensorBuilder;
+  filterZones(fn: TFilterFn): ISensorBuilder;
+  collision(fn: TCollisionCheckFn): ISensorBuilder;
+  sortElements(fn: TSortCompareFn): ISensorBuilder;
+  sortZones(fn: TSortCompareFn): ISensorBuilder;
+  mergeStrategy(strategy: TMergeStrategy): ISensorBuilder;
+  /** Pick closest between first zone and first element by distance to pointer */
+  pickClosestBetweenFirst(enable: boolean): ISensorBuilder;
+  /** Filter by minimum overlap percent (0-100). Applied after collision check. */
+  minOverlapPercent(percent: number): ISensorBuilder;
+  build(): CollisionDetectionFn;
 }
 
 const defaultFilter = () => true;
@@ -97,7 +117,7 @@ const createBuilder = (): ISensorBuilder => {
     filter: TFilterFn,
     sortFn: TSortCompareFn,
     collisionCheck: TCollisionCheckFn
-  ): HTMLElement[] => {
+  ): Array<{ node: HTMLElement; box: IBoundingBox }> => {
     const nodeSet = new Set(candidates);
     const ctx = { containerBox, pointer };
 
@@ -112,12 +132,14 @@ const createBuilder = (): ISensorBuilder => {
           if (parent !== node && isDescendant(parent, node)) depth++;
         }
 
+        const overlapPercent = getOverlapPercent(nodeBox, containerBox);
+
         return {
           node,
           box: nodeBox,
           meta: {
             isPointerInElement: containsPoint(nodeBox, pointer.x, pointer.y),
-            overlapPercent: getOverlapPercent(nodeBox, containerBox),
+            overlapPercent,
             depth,
             centerDistance: getDistance(
               getCenter(containerBox),
@@ -128,9 +150,17 @@ const createBuilder = (): ISensorBuilder => {
       })
       .filter((e): e is NonNullable<typeof e> => e !== null);
 
+    // Filter by minOverlapPercent if configured
+    if (config.minOverlapPercent !== undefined) {
+      const minOverlap = config.minOverlapPercent;
+      const filtered = entries.filter((e) => e.meta.overlapPercent >= minOverlap);
+      entries.length = 0;
+      entries.push(...filtered);
+    }
+
     entries.sort((a, b) => sortFn(a, b, ctx));
 
-    return entries.map((e) => e.node);
+    return entries;
   };
 
   const builder: ISensorBuilder = {
@@ -189,6 +219,11 @@ const createBuilder = (): ISensorBuilder => {
       return builder;
     },
 
+    minOverlapPercent(percent) {
+      config.minOverlapPercent = percent;
+      return builder;
+    },
+
     build(): CollisionDetectionFn {
       const cfg = config as ISensorConfig;
       if (!cfg.container || !cfg.elements || !cfg.zones || !cfg.collision) {
@@ -227,19 +262,24 @@ const createBuilder = (): ISensorBuilder => {
 
         if (cfg.mergeStrategy === 'unified-closest') {
           const all = [
-            ...elements.map((node) => ({ node, isZone: false, distance: 0 })),
-            ...zones.map((node) => ({ node, isZone: true, distance: 0 })),
+            ...elements.map((entry) => ({ 
+              node: entry.node, 
+              box: entry.box, 
+              isZone: false, 
+              distance: 0 
+            })),
+            ...zones.map((entry) => ({ 
+              node: entry.node, 
+              box: entry.box, 
+              isZone: true, 
+              distance: 0 
+            })),
           ];
           if (all.length === 0) return { elements: [], zones: [] };
 
           for (const item of all) {
-            const rect = item.node.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            item.distance = Math.hypot(
-              pointer.x - centerX,
-              pointer.y - centerY
-            );
+            const center = getCenter(item.box);
+            item.distance = Math.hypot(pointer.x - center.x, pointer.y - center.y);
           }
 
           const closest = all.reduce((acc, item) =>
@@ -251,27 +291,34 @@ const createBuilder = (): ISensorBuilder => {
             : { elements: [closest.node], zones: [] };
         }
 
-        return { elements, zones };
+        // Pick closest between first zone and first element
+        if (cfg.pickClosestBetweenFirst && elements[0] && zones[0]) {
+          const zoneCenter = getCenter(zones[0].box);
+          const elementCenter = getCenter(elements[0].box);
+          
+          const zoneDistance = Math.hypot(
+            pointer.x - zoneCenter.x,
+            pointer.y - zoneCenter.y
+          );
+          const elementDistance = Math.hypot(
+            pointer.x - elementCenter.x,
+            pointer.y - elementCenter.y
+          );
+          
+          return elementDistance < zoneDistance
+            ? { elements: elements.map(e => e.node), zones: [] }
+            : { elements: [], zones: zones.map(z => z.node) };
+        }
+
+        return { 
+          elements: elements.map(e => e.node), 
+          zones: zones.map(z => z.node) 
+        };
       };
     },
   };
 
   return builder;
 };
-
-export interface ISensorBuilder {
-  container(fn: TContainerFn): ISensorBuilder;
-  containerBox(fn: TContainerBoxFn): ISensorBuilder;
-  elements(fn: TCandidatesFn): ISensorBuilder;
-  zones(fn: TCandidatesFn): ISensorBuilder;
-  filterElements(fn: TFilterFn): ISensorBuilder;
-  filterZones(fn: TFilterFn): ISensorBuilder;
-  collision(fn: TCollisionCheckFn): ISensorBuilder;
-  sortElements(fn: TSortCompareFn): ISensorBuilder;
-  sortZones(fn: TSortCompareFn): ISensorBuilder;
-  mergeStrategy(strategy: TMergeStrategy): ISensorBuilder;
-  pickClosestBetweenFirst(enable: boolean): ISensorBuilder;
-  build(): CollisionDetectionFn;
-}
 
 export const createSensor = () => createBuilder();

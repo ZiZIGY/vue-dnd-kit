@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useDnDProvider } from '../../../packages/core/src/external';
+  import { useDnDProvider } from '@vue-dnd-kit/core';
 
   const { entities, state, overlay } = useDnDProvider();
 </script>

@@ -5,10 +5,10 @@
 ## Signature
 
 ```ts
-makeDraggable(ref, options?, payload?): {}
+makeDraggable(ref, options?, payload?): IMakeDraggableReturnType
 ```
 
-Two overloads:
+Overloads:
 
 - **`makeDraggable(ref)`** — no options, no payload.
 - **`makeDraggable(ref, options?)`** — optional options object.
@@ -16,6 +16,17 @@ Two overloads:
 - **`makeDraggable(ref, options, payload?)`** — options and optional payload.
 
 **`ref`** must be a ref to an HTML element (or component root element). The element is registered on mount and unregistered on unmount. Native `dragstart` / `drag` / `dragend` are prevented so the browser doesn’t start its own drag.
+
+---
+
+## Return value
+
+| Property     | Type                          | Description |
+|-------------|--------------------------------|-------------|
+| `selected`   | `WritableComputedRef<boolean>` | Whether this element is in the current selection. Can be read and written (e.g. for checkboxes). |
+| `isDragging`| `ComputedRef<boolean>`         | `true` while this element is being dragged. |
+| `isAllowed` | `ComputedRef<boolean>`         | `true` when this element is a valid drag target (visible, not disabled, groups match with currently dragging items). |
+| `isDragOver`| `ComputedRef<IPlacement \| undefined>` | When another item is dragged over this one: placement flags `{ top, right, bottom, left, center }`. `undefined` when not hovered. Use for sort indicators and drop preview. |
 
 ---
 
@@ -121,6 +132,28 @@ With payload (for lists / drop handlers that need index and items):
 ```ts
 const items = ref([1, 2, 3]);
 makeDraggable(itemRef, { dragHandle: '.handle' }, () => [0, items.value]);
+```
+
+Using return values (e.g. for styling and sort indicators):
+
+```vue
+<script setup lang="ts">
+  const itemRef = useTemplateRef<HTMLElement>('itemRef');
+  const { isDragging, isDragOver, selected } = makeDraggable(itemRef, { ... });
+</script>
+
+<template>
+  <div
+    ref="itemRef"
+    :class="{
+      'opacity-50': isDragging,
+      'ring': isDragOver?.top,
+      'border-t-2': isDragOver?.top,
+    }"
+  >
+    Item
+  </div>
+</template>
 ```
 
 ---

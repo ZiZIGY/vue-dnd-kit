@@ -24,8 +24,8 @@ export const defaultCollisionDetection = createSensor()
   .filterElements(filterValidCollisionTarget)
   .filterZones(filterValidCollisionTarget)
   .collision(aabbCollision)
+  .minOverlapPercent(10)
   .sortElements(sortByOverlapAndPointer)
   .sortZones(sortByOverlapAndPointer)
-  .pickClosestBetweenFirst(true)
   .build();
 

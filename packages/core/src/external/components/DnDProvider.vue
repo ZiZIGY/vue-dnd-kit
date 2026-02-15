@@ -24,7 +24,6 @@
 <template>
   <slot />
 
-  <pre>{{ provider.hovered }}</pre>
   <Teleport :to="provider.overlay.to.value || 'body'">
     <div
       ref="overlayRef"

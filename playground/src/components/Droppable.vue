@@ -3,7 +3,7 @@
     makeDraggable,
     makeDroppable,
     useDnDProvider,
-  } from '../../../packages/core/src/external';
+  } from '@vue-dnd-kit/core';
   import { useTemplateRef } from 'vue';
 
   const node = useTemplateRef('droppableRef');

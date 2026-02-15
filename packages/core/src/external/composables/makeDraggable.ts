@@ -94,6 +94,7 @@ export function makeDraggable(
   });
 
   const isDragOver = computed(() => {
+    console.log('batching');
     const node = getNode(ref);
     if (!node)
       return {
@@ -103,6 +104,7 @@ export function makeDraggable(
         top: false,
         center: false,
       };
+
     return provider.hovered.draggable.get(node);
   });
 

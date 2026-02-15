@@ -1,18 +1,13 @@
 <script setup lang="ts">
-  import { useTemplateRef, computed, onMounted } from 'vue';
+  import { useTemplateRef, onMounted } from 'vue';
   import { motion } from 'motion-v';
   import { makeDraggable, useDnDProvider } from '@vue-dnd-kit/core';
 
   const itemRef = useTemplateRef<HTMLElement>('itemRef');
 
-  makeDraggable(itemRef);
+  const { isDragging } = makeDraggable(itemRef);
 
   const provider = useDnDProvider();
-  const isDragging = computed(() => {
-    if (itemRef.value)
-      return provider.entities.draggingMap.has(itemRef.value.$el);
-    return false;
-  });
 
   onMounted(() => {
     console.log(itemRef.value);

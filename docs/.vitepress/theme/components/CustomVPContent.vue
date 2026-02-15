@@ -7,7 +7,7 @@
   import CustomHome from './CustomHome.vue';
   import { computed, watch, onMounted, onUnmounted } from 'vue';
   import { useSidebar } from 'vitepress/dist/client/theme-default/composables/sidebar.js';
-  import LiquidEtherBackground from './LiquidBackground.vue';
+  import LiquidEtherBackground from './LiquidBackground';
 
   const { page, frontmatter } = useData();
   const route = useRoute();

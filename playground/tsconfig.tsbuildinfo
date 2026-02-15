@@ -1,0 +1,1 @@
+{"root":["./src/main.ts","./src/vite-env.d.ts","./src/app.vue","./src/components/draggable.vue","./src/components/droppable.vue","./src/components/overlay.vue","./src/components/scrollarea.vue"],"version":"5.9.3"}

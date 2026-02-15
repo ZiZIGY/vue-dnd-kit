@@ -17,14 +17,13 @@
     :class="{ 'is-dragging': isDragging }"
   >
     <div
-      v-show="isDragOver?.top"
+      v-if="isDragOver?.top"
       class="top indicator"
     ></div>
     <input
       type="checkbox"
       v-model="selected"
     />
-    <!-- drag handle -->
     <button class="drag-handle">
       <svg
         xmlns="http://www.w3.org/2000/svg"

@@ -3,8 +3,9 @@
  * Re-exports from internal for future package consumers
  */
 
-export { default as DnDProvider } from './components/DnDProvider.vue';
+import DnDProvider from './components/DnDProvider.vue';
 
+export { DnDProvider };
 export { makeDraggable } from './composables/makeDraggable';
 export { makeSelectionArea } from './composables/makeSelectionArea';
 export { makeConstraintArea } from './composables/makeConstraintArea';

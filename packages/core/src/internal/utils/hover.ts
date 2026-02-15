@@ -2,9 +2,11 @@
  * Hover utilities: distance from pointer to element center
  */
 
+import type { ICoordinates } from '../../external';
+
 /** Distance from pointer to element center */
 export const getDistanceFromPointerToElement = (
-  pointer: { x: number; y: number },
+  pointer: ICoordinates,
   element: HTMLElement
 ): number => {
   const rect = element.getBoundingClientRect();
@@ -13,9 +15,27 @@ export const getDistanceFromPointerToElement = (
   return Math.hypot(pointer.x - centerX, pointer.y - centerY);
 };
 
+/**
+ * Get element center coordinates from DOMRect
+ * Utility for inline calculations without getBoundingClientRect call
+ */
+export const getCenterFromRect = (rect: DOMRect): ICoordinates => ({
+  x: rect.left + rect.width / 2,
+  y: rect.top + rect.height / 2,
+});
+
+/** Calculate distance between pointer and rect center */
+export const getDistanceToRectCenter = (
+  pointer: ICoordinates,
+  rect: DOMRect
+) => {
+  const center = getCenterFromRect(rect);
+  return Math.hypot(pointer.x - center.x, pointer.y - center.y);
+};
+
 /** Pick closest to pointer among zone and element (by distance to center). Returns { zone?, element? } */
 export const pickClosestToPointer = (
-  pointer: { x: number; y: number },
+  pointer: ICoordinates,
   zone: HTMLElement | undefined,
   element: HTMLElement | undefined
 ): { zone?: HTMLElement; element?: HTMLElement } => {

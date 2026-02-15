@@ -1,33 +1,27 @@
 <script setup lang="ts">
   import { DnDProvider } from '../../packages/core/src/external/index';
-  import ScrollArea from './components/ScrollArea.vue';
   import Draggable from './components/Draggable.vue';
   import Overlay from './components/Overlay.vue';
   import Droppable from './components/Droppable.vue';
 </script>
 
 <template>
-  <DnDProvider
-    :auto-scroll-viewport="{ threshold: 60, speed: 11 }"
-    overlay-to="body"
-  >
+  <DnDProvider overlay-to="body">
     <div class="playground">
       <h1>Vue DnD Kit — Playground</h1>
       <p
         >Local packages: core + utilities. Run <code>yarn playground</code> —
         watch builds packages, dev runs app.</p
       >
-      <ScrollArea
-        ref="scrollContainerRef"
-        class="scroll-area"
-      >
-        <Draggable class="card"> Drag me — auto-scroll near edges</Draggable>
-        <Draggable class="card">Second</Draggable>
-        <Droppable>
-          <Draggable class="card"> Drag me — auto-scroll near edges</Draggable>
-          <Draggable class="card">Second</Draggable>
-        </Droppable>
-      </ScrollArea>
+      <Droppable>
+        <Draggable
+          class="card"
+          v-for="value in 10_000"
+          :key="value"
+        >
+          Drag me — auto-scroll near edges</Draggable
+        >
+      </Droppable>
     </div>
 
     <template #overlay>

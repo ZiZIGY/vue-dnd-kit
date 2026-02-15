@@ -42,6 +42,14 @@ export interface IHovered {
   droppable: THoveredMap;
 }
 
+export interface ICollision {
+  run?: (provider: any) => {
+    elements: HTMLElement[];
+    zones: HTMLElement[];
+  };
+  throttle: Ref<number>;
+}
+
 export interface IDnDProviderExternal {
   state: Ref<TDnDState | undefined>;
   pointer: Ref<TPointerState | undefined>;
@@ -69,13 +77,7 @@ export interface IDnDProviderExternal {
     to: WritableComputedRef<string | false | null | undefined>;
   };
   hovered: IHovered;
-  collision: {
-    run?: (provider: any) => {
-      elements: HTMLElement[];
-      zones: HTMLElement[];
-    };
-    throttle: Ref<number>;
-  };
+  collision: ICollision;
   autoScrollViewport: ComputedRef<
     IAutoScrollOptions | true | false | null | undefined
   >;

@@ -14,6 +14,7 @@ import type {
   TPointerState,
 } from '../../external/types';
 import type {
+  ICollision,
   IDnDProviderProps,
   IHovered,
 } from '../../external/types/provider';
@@ -131,7 +132,7 @@ export function useDnDProviderState(
     droppable: new Map(),
   });
 
-  const collision = {
+  const collision: ICollision = {
     throttle: shallowRef(0),
   };
 
