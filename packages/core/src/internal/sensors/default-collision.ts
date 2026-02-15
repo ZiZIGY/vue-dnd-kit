@@ -2,7 +2,7 @@
  * Default collision: same logic as vue-dnd-box reference
  * - Filter: AABB overlap with container (overlay)
  * - Sort: pointer outside container → isPointerInElement + depth; else overlap % + centerDistance
- * - Returns full sorted list
+ * - Picks closest to pointer when both zone and element present
  */
 
 import { createSensor } from './sensor';
@@ -26,4 +26,6 @@ export const defaultCollisionDetection = createSensor()
   .collision(aabbCollision)
   .sortElements(sortByOverlapAndPointer)
   .sortZones(sortByOverlapAndPointer)
+  .pickClosestBetweenFirst(true)
   .build();
+

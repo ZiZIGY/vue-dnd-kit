@@ -22,8 +22,10 @@
         class="scroll-area"
       >
         <Draggable class="card"> Drag me — auto-scroll near edges</Draggable>
+        <Draggable class="card">Second</Draggable>
         <Droppable>
-          <div class="droppable">Drop here</div>
+          <Draggable class="card"> Drag me — auto-scroll near edges</Draggable>
+          <Draggable class="card">Second</Draggable>
         </Droppable>
       </ScrollArea>
     </div>

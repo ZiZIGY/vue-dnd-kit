@@ -1,6 +1,7 @@
 import type {
   IBaseOptions,
   IDroppableEvents,
+  IPlacement,
   TDnDNodeRef,
   TDroppablePayload,
 } from '../types';
@@ -16,6 +17,7 @@ interface IMakeDroppableOptions extends IBaseOptions {
 
 interface IMakeDroppableReturnType {
   isAllowed: ComputedRef<boolean>;
+  isDragOver: ComputedRef<IPlacement | undefined>;
 }
 
 export function makeDroppable(ref: TDnDNodeRef): IMakeDroppableReturnType;
@@ -53,6 +55,19 @@ export function makeDroppable(
     return provider.entities.allowedDroppableSet.has(container);
   });
 
+  const isDragOver = computed(() => {
+    const node = getNode(ref);
+    if (!node)
+      return {
+        bottom: false,
+        left: false,
+        right: false,
+        top: false,
+        center: false,
+      };
+    return provider.hovered.droppable.get(node);
+  });
+
   onMounted(() => {
     container = getNode(ref);
     if (!container) return;
@@ -78,5 +93,6 @@ export function makeDroppable(
 
   return {
     isAllowed,
+    isDragOver,
   };
 }

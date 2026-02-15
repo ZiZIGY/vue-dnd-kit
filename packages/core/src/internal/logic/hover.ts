@@ -51,6 +51,7 @@ export const applyCollisionResultToHovered = (
     const placement = getClosestPlacement(pointerBox, rect, margins);
 
     if (placement.center) {
+      // Центр — это зона, draggable не записываем (только если есть nested внутри)
       hovered.droppable.set(newZone, placement);
       const nested = findNestedDraggable(result.elements, newZone);
       if (nested) {
@@ -61,8 +62,8 @@ export const applyCollisionResultToHovered = (
         );
       }
     } else {
+      // Не центр — это draggable, зону не записываем
       hovered.draggable.set(newElement, placement);
-      hovered.droppable.set(newZone, placement);
     }
   } else {
     if (newZone) {
@@ -70,13 +71,18 @@ export const applyCollisionResultToHovered = (
       hovered.droppable.set(newZone, getClosestPlacement(pointerBox, rect));
     }
     if (newElement) {
-      const rect = newElement.getBoundingClientRect();
-      const margins =
-        provider.entities.draggableMap.get(newElement)?.placementMargins;
-      hovered.draggable.set(
-        newElement,
-        getClosestPlacement(pointerBox, rect, margins)
-      );
+      // Если есть зона, draggable записывается только если он внутри зоны
+      if (newZone && !isDescendant(newZone, newElement)) {
+        // Draggable не внутри зоны — не записываем
+      } else {
+        const rect = newElement.getBoundingClientRect();
+        const margins =
+          provider.entities.draggableMap.get(newElement)?.placementMargins;
+        hovered.draggable.set(
+          newElement,
+          getClosestPlacement(pointerBox, rect, margins)
+        );
+      }
     }
   }
 

@@ -19,4 +19,11 @@ export {
   type TSnapOverlayOptions,
 } from './composables/makeSnappedOverlayPosition';
 
+export {
+  createSensor,
+  defaultCollisionDetection,
+  type CollisionDetectionFn,
+  type TMergeStrategy,
+} from '../internal/sensors';
+
 export type * from './types';

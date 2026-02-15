@@ -87,9 +87,25 @@ export const aabbCollision: TCollisionCheckFn = (nodeBox, ctx) =>
 export const pointerInElementCollision: TCollisionCheckFn = (nodeBox, ctx) =>
   containsPoint(nodeBox, ctx.pointer.x, ctx.pointer.y);
 
+/** Always true — no container check (for "closest on screen" regardless of overlay position) */
+export const noContainerCollision: TCollisionCheckFn = () => true;
+
 /** Sort: deepest first (topmost visible element under cursor) */
 export const sortByDepth: TSortCompareFn = (a, b) =>
   b.meta.depth - a.meta.depth;
+
+/** Sort: by distance from pointer to element center (closest first) */
+export const sortByPointerDistance: TSortCompareFn = (a, b, ctx) => {
+  const distA = Math.hypot(
+    ctx.pointer.x - (a.box.x + a.box.width / 2),
+    ctx.pointer.y - (a.box.y + a.box.height / 2)
+  );
+  const distB = Math.hypot(
+    ctx.pointer.x - (b.box.x + b.box.width / 2),
+    ctx.pointer.y - (b.box.y + b.box.height / 2)
+  );
+  return distA - distB;
+};
 
 /** Sort: pointer-in-element + depth when pointer INSIDE container; overlap % + centerDistance when OUTSIDE */
 export const sortByOverlapAndPointer: TSortCompareFn = (a, b, ctx) => {

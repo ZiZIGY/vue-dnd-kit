@@ -18,21 +18,40 @@ import type { IDnDProviderInternal } from '../types/provider';
  * - `provider.entities.allowedDraggableSet` for draggables (visible + filtered by groups)
  * OR use helper functions from `steps.ts`: `allowedVisibleZones()` and `visibleElements()`.
  */
-export type CollisionDetectionFn = (
-  provider: IDnDProviderInternal
-) => { elements: HTMLElement[]; zones: HTMLElement[] };
+export type CollisionDetectionFn = (provider: IDnDProviderInternal) => {
+  elements: HTMLElement[];
+  zones: HTMLElement[];
+};
 
-export type TContainerFn = (provider: IDnDProviderInternal) => HTMLElement | null;
+export type TContainerFn = (
+  provider: IDnDProviderInternal
+) => HTMLElement | null;
 export type TContainerBoxFn = (provider: IDnDProviderInternal) => IBoundingBox;
-export type TCandidatesFn = (provider: IDnDProviderInternal) => Iterable<HTMLElement>;
-export type TFilterFn = (node: HTMLElement, provider: IDnDProviderInternal) => boolean;
-export type TCollisionContext = { containerBox: IBoundingBox; pointer: { x: number; y: number } };
-export type TCollisionCheckFn = (nodeBox: IBoundingBox, ctx: TCollisionContext) => boolean;
+export type TCandidatesFn = (
+  provider: IDnDProviderInternal
+) => Iterable<HTMLElement>;
+export type TFilterFn = (
+  node: HTMLElement,
+  provider: IDnDProviderInternal
+) => boolean;
+export type TCollisionContext = {
+  containerBox: IBoundingBox;
+  pointer: { x: number; y: number };
+};
+export type TCollisionCheckFn = (
+  nodeBox: IBoundingBox,
+  ctx: TCollisionContext
+) => boolean;
 export type TSortCompareFn = (
   a: { node: HTMLElement; box: IBoundingBox; meta: ICollisionMeta },
   b: { node: HTMLElement; box: IBoundingBox; meta: ICollisionMeta },
   ctx: { containerBox: IBoundingBox; pointer: { x: number; y: number } }
 ) => number;
+
+/** Merge strategy: how to combine elements and zones into final result */
+export type TMergeStrategy =
+  | 'separate' // Default: return separate lists (elements[], zones[])
+  | 'unified-closest'; // Return single closest from both lists
 
 export interface ICollisionMeta {
   isPointerInElement: boolean;
@@ -51,10 +70,14 @@ interface ISensorConfig {
   collision: TCollisionCheckFn;
   sortElements: TSortCompareFn;
   sortZones: TSortCompareFn;
+  mergeStrategy: TMergeStrategy;
+  /** Pick closest between first zone and first element (by distance to pointer) */
+  pickClosestBetweenFirst: boolean;
 }
 
 const defaultFilter = () => true;
 const defaultSort = () => 0;
+const defaultMergeStrategy: TMergeStrategy = 'separate';
 
 const createBuilder = (): ISensorBuilder => {
   const config: Partial<ISensorConfig> = {
@@ -62,6 +85,8 @@ const createBuilder = (): ISensorBuilder => {
     filterZones: defaultFilter,
     sortElements: defaultSort,
     sortZones: defaultSort,
+    mergeStrategy: defaultMergeStrategy,
+    pickClosestBetweenFirst: false,
   };
 
   const run = (
@@ -94,7 +119,10 @@ const createBuilder = (): ISensorBuilder => {
             isPointerInElement: containsPoint(nodeBox, pointer.x, pointer.y),
             overlapPercent: getOverlapPercent(nodeBox, containerBox),
             depth,
-            centerDistance: getDistance(getCenter(containerBox), getCenter(nodeBox)),
+            centerDistance: getDistance(
+              getCenter(containerBox),
+              getCenter(nodeBox)
+            ),
           },
         };
       })
@@ -151,10 +179,22 @@ const createBuilder = (): ISensorBuilder => {
       return builder;
     },
 
+    mergeStrategy(strategy) {
+      config.mergeStrategy = strategy;
+      return builder;
+    },
+
+    pickClosestBetweenFirst(enable) {
+      config.pickClosestBetweenFirst = enable;
+      return builder;
+    },
+
     build(): CollisionDetectionFn {
       const cfg = config as ISensorConfig;
       if (!cfg.container || !cfg.elements || !cfg.zones || !cfg.collision) {
-        throw new Error('sensor: container, elements, zones, collision are required');
+        throw new Error(
+          'sensor: container, elements, zones, collision are required'
+        );
       }
 
       return (provider: IDnDProviderInternal) => {
@@ -166,26 +206,52 @@ const createBuilder = (): ISensorBuilder => {
           : getBoundingBox(containerEl);
         const pointer = provider.pointer.value?.current ?? { x: 0, y: 0 };
 
-        return {
-          elements: run(
-            provider,
-            containerBox,
-            pointer,
-            cfg.elements(provider),
-            cfg.filterElements,
-            cfg.sortElements,
-            cfg.collision
-          ),
-          zones: run(
-            provider,
-            containerBox,
-            pointer,
-            cfg.zones(provider),
-            cfg.filterZones,
-            cfg.sortZones,
-            cfg.collision
-          ),
-        };
+        const elements = run(
+          provider,
+          containerBox,
+          pointer,
+          cfg.elements(provider),
+          cfg.filterElements,
+          cfg.sortElements,
+          cfg.collision
+        );
+        const zones = run(
+          provider,
+          containerBox,
+          pointer,
+          cfg.zones(provider),
+          cfg.filterZones,
+          cfg.sortZones,
+          cfg.collision
+        );
+
+        if (cfg.mergeStrategy === 'unified-closest') {
+          const all = [
+            ...elements.map((node) => ({ node, isZone: false, distance: 0 })),
+            ...zones.map((node) => ({ node, isZone: true, distance: 0 })),
+          ];
+          if (all.length === 0) return { elements: [], zones: [] };
+
+          for (const item of all) {
+            const rect = item.node.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            item.distance = Math.hypot(
+              pointer.x - centerX,
+              pointer.y - centerY
+            );
+          }
+
+          const closest = all.reduce((acc, item) =>
+            item.distance < acc.distance ? item : acc
+          );
+
+          return closest.isZone
+            ? { elements: [], zones: [closest.node] }
+            : { elements: [closest.node], zones: [] };
+        }
+
+        return { elements, zones };
       };
     },
   };
@@ -203,6 +269,8 @@ export interface ISensorBuilder {
   collision(fn: TCollisionCheckFn): ISensorBuilder;
   sortElements(fn: TSortCompareFn): ISensorBuilder;
   sortZones(fn: TSortCompareFn): ISensorBuilder;
+  mergeStrategy(strategy: TMergeStrategy): ISensorBuilder;
+  pickClosestBetweenFirst(enable: boolean): ISensorBuilder;
   build(): CollisionDetectionFn;
 }
 

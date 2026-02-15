@@ -5,6 +5,7 @@ import type {
   IDraggableEvents,
   IModifier,
   IModifierOptions,
+  IPlacement,
   IPlacementMargins,
   TDnDNodeRef,
   TDraggablePayload,
@@ -36,6 +37,7 @@ interface IMakeDraggableReturnType {
   selected: WritableComputedRef<boolean>;
   isDragging: ComputedRef<boolean>;
   isAllowed: ComputedRef<boolean>;
+  isDragOver: ComputedRef<IPlacement | undefined>;
 }
 
 export function makeDraggable(
@@ -91,6 +93,19 @@ export function makeDraggable(
     return provider.entities.allowedDraggableSet.has(container);
   });
 
+  const isDragOver = computed(() => {
+    const node = getNode(ref);
+    if (!node)
+      return {
+        bottom: false,
+        left: false,
+        right: false,
+        top: false,
+        center: false,
+      };
+    return provider.hovered.draggable.get(node);
+  });
+
   onMounted(() => {
     container = getNode(ref);
     if (!container) return;
@@ -129,5 +144,6 @@ export function makeDraggable(
     selected,
     isDragging,
     isAllowed,
+    isDragOver,
   };
 }

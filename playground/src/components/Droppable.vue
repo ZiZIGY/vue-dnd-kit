@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {
+    makeDraggable,
     makeDroppable,
     useDnDProvider,
   } from '../../../packages/core/src/external';
@@ -9,8 +10,16 @@
 
   const { state } = useDnDProvider();
 
+  makeDraggable(node, {
+    placementMargins: {
+      bottom: 5,
+      left: 5,
+      right: 5,
+      top: 5,
+    },
+  });
+
   const { isAllowed } = makeDroppable(node, {
-    groups: ['droppable'],
     events: {
       onEnter: (e) => console.log('enter', e.dropZonePayload),
       onDrop: (e) => console.log('drop', e.payload),

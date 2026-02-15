@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useDnDProvider } from '../../../packages/core/src/external/index';
+  import { useDnDProvider } from '../../../packages/core/src/external';
 
   const { entities, state, overlay } = useDnDProvider();
 </script>

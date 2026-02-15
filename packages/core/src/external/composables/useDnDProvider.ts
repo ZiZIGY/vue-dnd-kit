@@ -16,6 +16,5 @@ export const useDnDProvider = (): IDnDProviderExternal => {
     hovered: provider.hovered,
     collision: provider.collision,
     autoScrollViewport: provider.autoScrollViewport,
-    teleportTo: provider.teleportTo,
   };
 };

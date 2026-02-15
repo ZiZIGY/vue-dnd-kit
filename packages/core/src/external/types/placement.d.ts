@@ -4,7 +4,7 @@ export interface IPlacement {
   bottom: boolean;
   left: boolean;
   /** True when pointer is in center zone (inside placementMargins). Used for dual-role draggable+zone. */
-  center?: boolean;
+  center: boolean;
 }
 
 export interface IPlacementMargins {
