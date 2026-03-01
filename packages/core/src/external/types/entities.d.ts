@@ -1,5 +1,10 @@
-import type { ComponentPublicInstance, ComputedRef, Ref } from 'vue';
-import type { IPlacementMargins } from './placement';
+import type {
+  ComponentPublicInstance,
+  ComputedRef,
+  Ref,
+  ShallowRef,
+} from 'vue';
+import type { IPlacement, IPlacementMargins } from './placement';
 import type { IDragEvent } from './provider';
 
 export type TDnDNode = HTMLElement | ComponentPublicInstance | null;
@@ -144,6 +149,7 @@ export interface IDraggableEntity extends IBaseEntity {
   activation?: IDragActivation;
   /** Margins for center zone. When pointer in center and element is also droppable, zone mode is used. */
   placementMargins?: IPlacementMargins;
+  hoveredPlacement: IPlacement | undefined;
 }
 
 export interface IDraggingEntity extends IDraggableEntity {
@@ -155,4 +161,5 @@ export interface IDraggingEntity extends IDraggableEntity {
 export interface IDroppableEntity extends IBaseEntity {
   events?: IDroppableEvents;
   payload?: TDroppablePayload;
+  hoveredPlacement: IPlacement | undefined;
 }

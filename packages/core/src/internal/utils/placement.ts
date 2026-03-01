@@ -88,10 +88,11 @@ export const getClosestPlacement = (
   const midX = elementRect.left + elementRect.width / 2;
   const midY = elementRect.top + elementRect.height / 2;
 
+  // Use <= for top/left so the midpoint always resolves to exactly one side per axis
   return {
-    top: cy < midY,
+    top: cy <= midY,
     bottom: cy > midY,
-    left: cx < midX,
+    left: cx <= midX,
     right: cx > midX,
     center: false,
   };

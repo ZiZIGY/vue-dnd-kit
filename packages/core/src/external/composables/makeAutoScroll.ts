@@ -1,8 +1,8 @@
-import { shallowRef, watch } from 'vue';
-import type { Ref } from 'vue';
-import { useDnDProvider } from './useDnDProvider';
-import { createAutoScrollController } from '../../internal/utils/auto-scroll';
-import type { IAutoScrollOptions } from '../types';
+import { shallowRef, watch } from "vue";
+import type { Ref } from "vue";
+import { useDnDProvider } from "./useDnDProvider";
+import { createAutoScrollController } from "../../internal/utils/auto-scroll";
+import type { IAutoScrollOptions } from "../types";
 
 export type { IAutoScrollOptions };
 
@@ -15,13 +15,13 @@ export type { IAutoScrollOptions };
  */
 export const makeAutoScroll = (
   container: Ref<HTMLElement | null>,
-  options?: IAutoScrollOptions
+  options?: IAutoScrollOptions,
 ) => {
   const provider = useDnDProvider();
   const isScrolling = shallowRef(false);
 
   const getOverlayPoint = () => {
-    if (provider.state.value !== 'dragging') return null;
+    if (provider.state.value !== "dragging") return null;
     const position = provider.overlay.position.value;
     const size = provider.overlay.size.value;
     if (!position) return null;
@@ -39,15 +39,15 @@ export const makeAutoScroll = (
     options ?? {},
     getOverlayPoint,
     undefined,
-    isScrolling
+    isScrolling,
   );
 
   watch(
     () => provider.state.value,
     (state) => {
-      if (state === 'dragging') controller.run();
+      if (state === "dragging") controller.run();
       else controller.stop();
-    }
+    },
   );
 
   return { isScrolling };

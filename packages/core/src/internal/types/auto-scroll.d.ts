@@ -8,12 +8,13 @@ export interface IAutoScrollOptionsInternal {
 export interface IScrollState {
   scrollTop: number;
   scrollLeft: number;
-  rect: DOMRect;
 }
 
 export interface IScrollAdapter {
   getScrollState(el: HTMLElement): IScrollState;
   setScroll(el: HTMLElement, scrollTop: number, scrollLeft: number): void;
+  /** Override rect calculation. Defaults to el.getBoundingClientRect(). */
+  getRect?(el: HTMLElement): DOMRect;
 }
 
 export type TOverlayPoint = { x: number; y: number } | null;

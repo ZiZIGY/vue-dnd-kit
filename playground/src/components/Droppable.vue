@@ -2,6 +2,7 @@
   import {
     makeDraggable,
     makeDroppable,
+    makeSelectionArea,
     useDnDProvider,
   } from '@vue-dnd-kit/core';
   import { useTemplateRef } from 'vue';
@@ -18,6 +19,8 @@
       top: 5,
     },
   });
+
+  const { style } = makeSelectionArea(node);
 
   const { isAllowed } = makeDroppable(node, {
     events: {
@@ -38,7 +41,7 @@
     }"
   >
     <slot />
-    {{ isAllowed }}
+    <div :style></div>
   </div>
 </template>
 
@@ -47,6 +50,7 @@
     padding: 20px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    position: relative;
     transition: border-color 0.3s ease;
   }
   .droppable.is-allowed {

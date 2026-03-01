@@ -57,15 +57,8 @@ export function makeDroppable(
 
   const isDragOver = computed(() => {
     const node = getNode(ref);
-    if (!node)
-      return {
-        bottom: false,
-        left: false,
-        right: false,
-        top: false,
-        center: false,
-      };
-    return provider.hovered.droppable.get(node);
+    if (!node) return undefined;
+    return provider.entities.droppableMap.get(node)?.hoveredPlacement;
   });
 
   onMounted(() => {
@@ -80,6 +73,7 @@ export function makeDroppable(
       groups: (options.groups as string[]) ?? [],
       events: options.events,
       payload: finalPayload,
+      hoveredPlacement: undefined,
     });
   });
 

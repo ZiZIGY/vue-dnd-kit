@@ -1,13 +1,20 @@
 <script setup lang="ts">
   import { makeDraggable } from '../../../packages/core/src/external';
-  import { useTemplateRef } from 'vue';
+  import { computed, useTemplateRef } from 'vue';
+  import type { IPlacement } from '../../../packages/core/src/external/types';
 
-  const node = useTemplateRef('draggableRef');
+  const node = useTemplateRef<HTMLElement>('draggableRef');
 
-  const { selected, isDragging, isDragOver } = makeDraggable(node, {
+  const { selected, isDragging, isDragOver } = makeDraggable(node as any, {
     groups: ['draggable'],
     dragHandle: '.drag-handle',
   });
+
+  const placement = computed<IPlacement | undefined>(() => isDragOver.value);
+
+  const emits = defineEmits<{
+    test: [void];
+  }>();
 </script>
 
 <template>
@@ -16,10 +23,10 @@
     class="draggable"
     :class="{ 'is-dragging': isDragging }"
   >
-    <div
-      v-if="isDragOver?.top"
-      class="top indicator"
-    ></div>
+    <div v-if="placement?.top" class="indicator top"></div>
+    <div v-if="placement?.bottom" class="indicator bottom"></div>
+    <div v-if="placement?.left" class="indicator left"></div>
+    <div v-if="placement?.right" class="indicator right"></div>
     <input
       type="checkbox"
       v-model="selected"
@@ -72,10 +79,6 @@
     </button>
 
     <slot />
-    <div
-      v-show="isDragOver?.bottom"
-      class="bottom indicator"
-    ></div>
   </div>
 </template>
 
@@ -96,17 +99,25 @@
   }
 
   .indicator {
-    margin-left: auto;
-    margin-right: auto;
     position: absolute;
-    height: 2px;
-    inset: 0;
     background-color: red;
+    pointer-events: none;
+    z-index: 1;
   }
-  .indicator.top {
-    margin-bottom: auto;
-  }
+  .indicator.top,
   .indicator.bottom {
-    margin-top: auto;
+    left: 0;
+    right: 0;
+    height: 2px;
   }
+  .indicator.top { top: 0; }
+  .indicator.bottom { bottom: 0; }
+  .indicator.left,
+  .indicator.right {
+    top: 0;
+    bottom: 0;
+    width: 2px;
+  }
+  .indicator.left { left: 0; }
+  .indicator.right { right: 0; }
 </style>

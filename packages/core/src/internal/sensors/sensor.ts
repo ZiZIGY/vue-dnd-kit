@@ -118,44 +118,45 @@ const createBuilder = (): ISensorBuilder => {
     sortFn: TSortCompareFn,
     collisionCheck: TCollisionCheckFn
   ): Array<{ node: HTMLElement; box: IBoundingBox }> => {
-    const nodeSet = new Set(candidates);
+    // candidates is already a Set<HTMLElement> — avoid copying it again
+    const candidateSet = candidates instanceof Set
+      ? candidates
+      : new Set<HTMLElement>(candidates);
     const ctx = { containerBox, pointer };
+    const minOverlap = config.minOverlapPercent;
 
-    const entries = [...candidates]
-      .filter((node) => filter(node, provider))
-      .map((node) => {
-        const nodeBox = getBoundingBox(node);
-        if (!collisionCheck(nodeBox, ctx)) return null;
+    const entries: Array<{
+      node: HTMLElement;
+      box: IBoundingBox;
+      meta: ICollisionMeta;
+    }> = [];
 
-        let depth = 0;
-        for (const parent of nodeSet) {
-          if (parent !== node && isDescendant(parent, node)) depth++;
-        }
+    for (const node of candidateSet) {
+      if (!filter(node, provider)) continue;
 
-        const overlapPercent = getOverlapPercent(nodeBox, containerBox);
+      const nodeBox = getBoundingBox(node);
+      if (!collisionCheck(nodeBox, ctx)) continue;
 
-        return {
-          node,
-          box: nodeBox,
-          meta: {
-            isPointerInElement: containsPoint(nodeBox, pointer.x, pointer.y),
-            overlapPercent,
-            depth,
-            centerDistance: getDistance(
-              getCenter(containerBox),
-              getCenter(nodeBox)
-            ),
-          },
-        };
-      })
-      .filter((e): e is NonNullable<typeof e> => e !== null);
+      const overlapPercent = getOverlapPercent(nodeBox, containerBox);
 
-    // Filter by minOverlapPercent if configured
-    if (config.minOverlapPercent !== undefined) {
-      const minOverlap = config.minOverlapPercent;
-      const filtered = entries.filter((e) => e.meta.overlapPercent >= minOverlap);
-      entries.length = 0;
-      entries.push(...filtered);
+      // Early-exit: skip depth calculation if overlap threshold not met
+      if (minOverlap !== undefined && overlapPercent < minOverlap) continue;
+
+      let depth = 0;
+      for (const parent of candidateSet) {
+        if (parent !== node && isDescendant(parent, node)) depth++;
+      }
+
+      entries.push({
+        node,
+        box: nodeBox,
+        meta: {
+          isPointerInElement: containsPoint(nodeBox, pointer.x, pointer.y),
+          overlapPercent,
+          depth,
+          centerDistance: getDistance(getCenter(containerBox), getCenter(nodeBox)),
+        },
+      });
     }
 
     entries.sort((a, b) => sortFn(a, b, ctx));

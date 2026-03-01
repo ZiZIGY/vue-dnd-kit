@@ -1,7 +1,3 @@
-/**
- * Hover detection — applies collision result and triggers enter/leave events
- */
-
 import {
   getClosestPlacement,
   getPointerBoxFromProvider,
@@ -15,15 +11,38 @@ import { isDescendant } from '../utils/dom';
 import { getDistanceToRectCenter } from '../utils/hover';
 import type { IDnDProviderInternal } from '../types/provider';
 import type { IHovered } from '../../external/types/provider';
+import type { IPlacement } from '../../external/types/placement';
 
-/** First draggable inside zone (nested under cursor) or undefined */
+function isSamePlacement(
+  a: IPlacement | undefined,
+  b: IPlacement | undefined
+): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return (
+    a.top === b.top &&
+    a.right === b.right &&
+    a.bottom === b.bottom &&
+    a.left === b.left &&
+    a.center === b.center
+  );
+}
+
+function setHoveredPlacement(
+  entity: { hoveredPlacement?: IPlacement },
+  placement: IPlacement | undefined
+): void {
+  if (!isSamePlacement(entity.hoveredPlacement, placement)) {
+    entity.hoveredPlacement = placement;
+  }
+}
+
 const findNestedDraggable = (
   elements: HTMLElement[],
   zone: HTMLElement
 ): HTMLElement | undefined =>
   elements.find((el) => el !== zone && isDescendant(zone, el));
 
-/** Applies collision result to hovered and triggers zone/draggable events */
 export const applyCollisionResultToHovered = (
   provider: IDnDProviderInternal,
   hovered: IHovered,
@@ -32,8 +51,8 @@ export const applyCollisionResultToHovered = (
   const prevZone = getFirstKey(hovered.droppable);
   const prevElement = getFirstKey(hovered.draggable);
 
-  hovered.draggable.clear();
-  hovered.droppable.clear();
+  if (prevElement) hovered.draggable.delete(prevElement);
+  if (prevZone) hovered.droppable.delete(prevZone);
 
   const pointerBox = getPointerBoxFromProvider(provider);
   const newZone = result.zones[0];
@@ -121,6 +140,25 @@ export const applyCollisionResultToHovered = (
 
   const finalZone = getFirstKey(hovered.droppable);
   const finalElement = getFirstKey(hovered.draggable);
+
+  // Sync hoveredPlacement: clear only elements that left, update only elements that changed.
+  // Avoids double-trigger when the same element stays hovered (clear → set → 2 computed runs).
+  if (prevElement && prevElement !== finalElement) {
+    const entity = provider.entities.draggableMap.get(prevElement);
+    if (entity) setHoveredPlacement(entity, undefined);
+  }
+  if (prevZone && prevZone !== finalZone) {
+    const entity = provider.entities.droppableMap.get(prevZone);
+    if (entity) setHoveredPlacement(entity, undefined);
+  }
+  if (finalElement) {
+    const entity = provider.entities.draggableMap.get(finalElement);
+    if (entity) setHoveredPlacement(entity, hovered.draggable.get(finalElement));
+  }
+  if (finalZone) {
+    const entity = provider.entities.droppableMap.get(finalZone);
+    if (entity) setHoveredPlacement(entity, hovered.droppable.get(finalZone));
+  }
 
   triggerZoneEnterLeave(provider, prevZone, finalZone);
   triggerDraggableHoverChange(provider, prevElement, finalElement);

@@ -25,5 +25,7 @@ export interface IDnDProviderInternal extends IDnDProviderExternal {
     droppableObserver: IIntersectionObserverWrapper;
     selectableAreaObserver: IIntersectionObserverWrapper;
     overlaySizeObserver: { disconnect: () => void };
+    /** BoundingClientRect cache — invalidated on scroll and session reset */
+    rectCache: Map<HTMLElement, DOMRect>;
   };
 }

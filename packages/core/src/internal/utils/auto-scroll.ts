@@ -40,7 +40,6 @@ export const defaultScrollAdapter: IScrollAdapter = {
     return {
       scrollTop: el.scrollTop,
       scrollLeft: el.scrollLeft,
-      rect: el.getBoundingClientRect(),
     };
   },
   setScroll(el, scrollTop, scrollLeft) {
@@ -91,18 +90,15 @@ export function createAutoScrollController(
     const currentSpeed = speed * (deltaTime / frameTime);
     lastTime = timestamp;
 
-    const {
-      scrollTop: currentScrollTop,
-      scrollLeft: currentScrollLeft,
-      rect,
-    } = scrollAdapter.getScrollState(el);
+    const { scrollTop: currentScrollTop, scrollLeft: currentScrollLeft } =
+      scrollAdapter.getScrollState(el);
 
     if (
       !lastRect ||
       lastScrollTop !== currentScrollTop ||
       lastScrollLeft !== currentScrollLeft
     ) {
-      lastRect = rect;
+      lastRect = scrollAdapter.getRect ? scrollAdapter.getRect(el) : el.getBoundingClientRect();
       lastScrollTop = currentScrollTop;
       lastScrollLeft = currentScrollLeft;
     }

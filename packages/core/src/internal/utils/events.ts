@@ -3,10 +3,7 @@
  */
 
 import { DnDSelectors } from './namespaces';
-import {
-  isEffectivelyDisabledDraggable,
-  isEffectivelyDisabledDroppable,
-} from './disabled';
+import { isEffectivelyDisabledDroppable } from './disabled';
 import { createDragPayload, createDropZonePayload } from '../logic/payload';
 import type { IDnDProviderInternal } from '../types/provider';
 import type { IDragEvent, IHovered } from '../../external/types/provider';
@@ -61,9 +58,15 @@ export const triggerSelfDragForElement = (
   element: HTMLElement | undefined,
   eventName: TSelfDragEvent
 ): void => {
-  if (!element || isEffectivelyDisabledDraggable(element, provider)) return;
+  if (!element) return;
+  // Prefer draggingMap entity (survives unmount for virtual lists) over draggableMap.
+  // Check entity.disabled directly — avoids iterating all visibleDraggableSet on every call.
+  const entity =
+    provider.entities.draggingMap.get(element) ??
+    provider.entities.draggableMap.get(element);
+  if (!entity || entity.disabled) return;
   const dragEvent = getDragEvent(provider);
-  provider.entities.draggableMap.get(element)?.events?.[eventName]?.(dragEvent);
+  entity.events?.[eventName]?.(dragEvent);
 };
 
 /** Triggers onDrag* for ALL non-disabled draggable elements */
@@ -72,8 +75,10 @@ export const triggerDragForAll = (
   eventName: 'onDragStart' | 'onDragMove' | 'onDragEnd' | 'onDragCancel'
 ): void => {
   const dragEvent = getDragEvent(provider);
-  provider.entities.draggingMap.forEach((entity, node) => {
-    if (isEffectivelyDisabledDraggable(node, provider)) return;
+  provider.entities.draggingMap.forEach((entity) => {
+    // entity is a snapshot from drag start — disabled state is captured there.
+    // Avoids iterating all visibleDraggableSet via isEffectivelyDisabledDraggable on every call.
+    if (entity.disabled) return;
     entity.events?.[eventName]?.(dragEvent);
   });
 };
@@ -106,10 +111,14 @@ export const triggerDraggableHoverChange = (
 ): void => {
   if (prevEl !== newEl) {
     const dragEvent = getDragEvent(provider);
-    if (prevEl && !isEffectivelyDisabledDraggable(prevEl, provider))
-      provider.entities.draggableMap.get(prevEl)?.events?.onLeave?.(dragEvent);
-    if (newEl && !isEffectivelyDisabledDraggable(newEl, provider))
-      provider.entities.draggableMap.get(newEl)?.events?.onHover?.(dragEvent);
+    if (prevEl) {
+      const prevEntity = provider.entities.draggableMap.get(prevEl);
+      if (prevEntity && !prevEntity.disabled) prevEntity.events?.onLeave?.(dragEvent);
+    }
+    if (newEl) {
+      const newEntity = provider.entities.draggableMap.get(newEl);
+      if (newEntity && !newEntity.disabled) newEntity.events?.onHover?.(dragEvent);
+    }
   }
 };
 

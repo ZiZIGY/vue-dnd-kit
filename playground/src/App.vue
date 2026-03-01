@@ -16,7 +16,7 @@
       <Droppable>
         <Draggable
           class="card"
-          v-for="value in 10_000"
+          v-for="value in 5000"
           :key="value"
         >
           Drag me — auto-scroll near edges</Draggable

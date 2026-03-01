@@ -126,11 +126,11 @@ export function useDnDProviderState(
     visibleDroppableSet: new Set(),
     visibleSelectableAreaSet: new Set(),
   });
-
-  const hovered = reactive<IHovered>({
+  
+  const hovered: IHovered = {
     draggable: new Map(),
     droppable: new Map(),
-  });
+  };
 
   const collision: ICollision = {
     throttle: shallowRef(0),
@@ -212,6 +212,7 @@ export function useDnDProviderState(
       droppableObserver,
       selectableAreaObserver,
       overlaySizeObserver,
+      rectCache: new Map<HTMLElement, DOMRect>(),
     },
     autoScrollViewport,
   };

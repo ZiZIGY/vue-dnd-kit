@@ -23,12 +23,74 @@ import { getDragEvent } from '../utils/events';
 import { isEffectivelyDisabledDroppable } from '../utils/disabled';
 import { applyCollisionResultToHovered } from './hover';
 import { defaultCollisionDetection } from '../sensors/default-collision';
+import { getCollisionWorker, type ICollisionWorkerInput } from '../sensors/collision-worker';
+import { overlayBoxFromStyle, filterValidCollisionTarget } from '../sensors/steps';
 import type { IDnDProviderInternal } from '../types/provider';
 
-function runCollisionAndApply(provider: IDnDProviderInternal): void {
-  const run = provider.collision?.run ?? defaultCollisionDetection;
-  const result = run(provider);
-  applyCollisionResultToHovered(provider, provider.hovered, result);
+function packBoxes(elements: HTMLElement[], cache: Map<HTMLElement, DOMRect>): number[] {
+  const result: number[] = [];
+  for (const el of elements) {
+    let r = cache.get(el);
+    if (!r) {
+      r = el.getBoundingClientRect();
+      cache.set(el, r);
+    }
+    result.push(r.x, r.y, r.width, r.height);
+  }
+  return result;
+}
+
+let _latestCollisionRequestId = 0;
+
+function runCollisionViaWorker(provider: IDnDProviderInternal): void {
+  const worker = getCollisionWorker();
+  const requestId = ++_latestCollisionRequestId;
+
+  const elementCandidates = [...provider.entities.allowedDraggableSet].filter(
+    (el) => filterValidCollisionTarget(el, provider)
+  );
+  const zoneCandidates = [...provider.entities.allowedDroppableSet].filter(
+    (el) => filterValidCollisionTarget(el, provider)
+  );
+
+  const overlayBox = overlayBoxFromStyle(provider);
+  const rawPointer = provider.pointer.value?.current;
+  const cache = provider.lib.rectCache;
+
+  const input: ICollisionWorkerInput = {
+    containerBox: { x: overlayBox.x, y: overlayBox.y, width: overlayBox.width, height: overlayBox.height },
+    pointer: { x: rawPointer?.x ?? 0, y: rawPointer?.y ?? 0 },
+    elements: packBoxes(elementCandidates, cache),
+    elementCount: elementCandidates.length,
+    zones: packBoxes(zoneCandidates, cache),
+    zoneCount: zoneCandidates.length,
+    config: { minOverlapPercent: 10 },
+  };
+
+  worker.run(input).then((workerResult) => {
+    if (requestId !== _latestCollisionRequestId) return;
+    if (provider.state.value !== 'dragging') return;
+
+    const elements = workerResult.elementIndices.map((i) => elementCandidates[i] as HTMLElement);
+    const zones = workerResult.zoneIndices.map((i) => zoneCandidates[i] as HTMLElement);
+    applyCollisionResultToHovered(provider, provider.hovered, { elements, zones });
+  });
+}
+
+export function runCollisionAndApply(provider: IDnDProviderInternal): void {
+  if (provider.collision?.run) {
+    const result = provider.collision.run(provider);
+    applyCollisionResultToHovered(provider, provider.hovered, result);
+    return;
+  }
+
+  const worker = getCollisionWorker();
+  if (worker.isSupported) {
+    runCollisionViaWorker(provider);
+  } else {
+    const result = defaultCollisionDetection(provider);
+    applyCollisionResultToHovered(provider, provider.hovered, result);
+  }
 }
 
 function runThrottledCollision(

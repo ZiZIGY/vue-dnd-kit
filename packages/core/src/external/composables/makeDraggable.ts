@@ -94,18 +94,9 @@ export function makeDraggable(
   });
 
   const isDragOver = computed(() => {
-    console.log('batching');
     const node = getNode(ref);
-    if (!node)
-      return {
-        bottom: false,
-        left: false,
-        right: false,
-        top: false,
-        center: false,
-      };
-
-    return provider.hovered.draggable.get(node);
+    if (!node) return undefined;
+    return provider.entities.draggableMap.get(node)?.hoveredPlacement;
   });
 
   onMounted(() => {
@@ -130,6 +121,7 @@ export function makeDraggable(
       dragHandle: options.dragHandle as string,
       activation: options.activation as IDragActivation,
       placementMargins: options.placementMargins,
+      hoveredPlacement: undefined,
     });
   });
 

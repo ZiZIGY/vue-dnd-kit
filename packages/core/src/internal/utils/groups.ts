@@ -16,7 +16,8 @@ export const areGroupsCompatible = (
   groupsB: string[]
 ): boolean => {
   if (!groupsA.length || !groupsB.length) return true;
-  return groupsA.some((g) => groupsB.includes(g));
+  const setB = new Set(groupsB);
+  return groupsA.some((g) => setB.has(g));
 };
 
 /**

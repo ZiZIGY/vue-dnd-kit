@@ -12,11 +12,13 @@ const viewportScrollAdapter: IScrollAdapter = {
     return {
       scrollTop: window.scrollY ?? document.documentElement.scrollTop,
       scrollLeft: window.scrollX ?? document.documentElement.scrollLeft,
-      rect: new DOMRect(0, 0, window.innerWidth, window.innerHeight),
     };
   },
   setScroll(_, scrollTop, scrollLeft) {
     window.scrollTo(scrollLeft, scrollTop);
+  },
+  getRect() {
+    return new DOMRect(0, 0, window.innerWidth, window.innerHeight);
   },
 };
 
