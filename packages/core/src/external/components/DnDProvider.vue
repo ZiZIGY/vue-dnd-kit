@@ -9,7 +9,6 @@
   import DefaultOverlay from './DefaultOverlay.vue';
 
   const props = defineProps<IDnDProviderProps>();
-
   const overlayRef = useTemplateRef<HTMLElement>('overlayRef');
   const provider = useDnDProviderState(overlayRef, props);
   useDnDProviderEvents(provider);
@@ -46,5 +45,6 @@
     left: 0;
     pointer-events: none;
     cursor: grabbing;
+    z-index: 9999;
   }
 </style>

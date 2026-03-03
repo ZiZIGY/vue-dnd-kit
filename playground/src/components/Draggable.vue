@@ -1,20 +1,27 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="T">
   import { makeDraggable } from '../../../packages/core/src/external';
   import { computed, useTemplateRef } from 'vue';
   import type { IPlacement } from '../../../packages/core/src/external/types';
 
+  const props = defineProps<{
+    index: number;
+    items: T[];
+    /** Optional: for cross-zone drop data */
+    dropData?: unknown;
+  }>();
+
   const node = useTemplateRef<HTMLElement>('draggableRef');
 
-  const { selected, isDragging, isDragOver } = makeDraggable(node as any, {
-    groups: ['draggable'],
-    dragHandle: '.drag-handle',
-  });
+  const { selected, isDragging, isDragOver } = makeDraggable(
+    node as any,
+    {
+      groups: ['draggable'],
+      dragHandle: '.drag-handle',
+    },
+    () => [props.index, props.items, props.dropData]
+  );
 
   const placement = computed<IPlacement | undefined>(() => isDragOver.value);
-
-  const emits = defineEmits<{
-    test: [void];
-  }>();
 </script>
 
 <template>
@@ -23,10 +30,22 @@
     class="draggable"
     :class="{ 'is-dragging': isDragging }"
   >
-    <div v-if="placement?.top" class="indicator top"></div>
-    <div v-if="placement?.bottom" class="indicator bottom"></div>
-    <div v-if="placement?.left" class="indicator left"></div>
-    <div v-if="placement?.right" class="indicator right"></div>
+    <div
+      v-if="placement?.top"
+      class="indicator top"
+    ></div>
+    <div
+      v-if="placement?.bottom"
+      class="indicator bottom"
+    ></div>
+    <div
+      v-if="placement?.left"
+      class="indicator left"
+    ></div>
+    <div
+      v-if="placement?.right"
+      class="indicator right"
+    ></div>
     <input
       type="checkbox"
       v-model="selected"
@@ -110,14 +129,22 @@
     right: 0;
     height: 2px;
   }
-  .indicator.top { top: 0; }
-  .indicator.bottom { bottom: 0; }
+  .indicator.top {
+    top: 0;
+  }
+  .indicator.bottom {
+    bottom: 0;
+  }
   .indicator.left,
   .indicator.right {
     top: 0;
     bottom: 0;
     width: 2px;
   }
-  .indicator.left { left: 0; }
-  .indicator.right { right: 0; }
+  .indicator.left {
+    left: 0;
+  }
+  .indicator.right {
+    right: 0;
+  }
 </style>

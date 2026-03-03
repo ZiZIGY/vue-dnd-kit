@@ -7,6 +7,14 @@ import { isEffectivelyDisabledDraggable } from './disabled';
 import type { IDnDProviderInternal } from '../types/provider';
 
 /**
+ * Returns the closest SelectionArea ANCESTOR of el (not including el itself).
+ * Used to determine whether el "belongs" to a nested SelectionArea.
+ */
+function getClosestAncestorSelectionArea(el: HTMLElement): HTMLElement | null {
+  return (el.parentElement?.closest(DnDSelectors.SELECT_AREA) as HTMLElement | null) ?? null;
+}
+
+/**
  * Converts viewport coordinates to container-relative coordinates.
  * scroll - page scroll position (window.scrollX, window.scrollY)
  */
@@ -81,7 +89,8 @@ export const checkIsSelectableArea = (
 };
 
 /**
- * Updates selectedSet based on selection box (pointer start → current)
+ * Updates selectedSet based on selection box (pointer start → current).
+ * Uses rectCache to avoid getBoundingClientRect() on every pointer move.
  */
 export const updateSelectionByBox = (provider: IDnDProviderInternal): void => {
   if (!provider.pointer.value || !provider.entities.selectingArea) return;
@@ -92,9 +101,22 @@ export const updateSelectionByBox = (provider: IDnDProviderInternal): void => {
   );
   const selectionAreaGroups =
     provider.entities.selectableAreaMap.get(selectingArea)?.groups ?? [];
+  const cache = provider.lib.rectCache;
 
   provider.entities.visibleDraggableSet.forEach((el) => {
+    // The selectingArea itself is never selectable from its own context.
+    if (el === selectingArea) return;
+
     if (!selectingArea.contains(el)) return;
+
+    // Skip elements inside a nested SelectionArea — they belong to that area's context,
+    // not to the current selectingArea.
+    const closestAncestorArea = getClosestAncestorSelectionArea(el);
+    if (closestAncestorArea && closestAncestorArea !== selectingArea) {
+      provider.entities.selectedSet.delete(el);
+      return;
+    }
+
     if (isEffectivelyDisabledDraggable(el, provider)) {
       provider.entities.selectedSet.delete(el);
       return;
@@ -105,7 +127,12 @@ export const updateSelectionByBox = (provider: IDnDProviderInternal): void => {
       provider.entities.selectedSet.delete(el);
       return;
     }
-    checkIntersection(selectionBoxRect, el.getBoundingClientRect())
+    let rect = cache.get(el);
+    if (!rect) {
+      rect = el.getBoundingClientRect();
+      cache.set(el, rect);
+    }
+    checkIntersection(selectionBoxRect, rect)
       ? provider.entities.selectedSet.add(el)
       : provider.entities.selectedSet.delete(el);
   });

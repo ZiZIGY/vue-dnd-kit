@@ -2,6 +2,8 @@
  * Observers — IntersectionObserver (visibility) and ResizeObserver (size)
  */
 
+import type { Ref } from 'vue';
+
 export interface IObserverWrapper {
   observe: (element: HTMLElement) => void;
   unobserve: (element: HTMLElement) => void;
@@ -14,7 +16,9 @@ export interface IObserverWrapper {
  * @param targetSet - Set to add/remove elements
  * @returns Object with observe/unobserve/disconnect methods
  */
-export const createIntersectionObserver = (targetSet: Set<HTMLElement>): IObserverWrapper => {
+export const createIntersectionObserver = (
+  targetSet: Set<HTMLElement>
+): IObserverWrapper => {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       const element = entry.target as HTMLElement;
@@ -36,7 +40,7 @@ export const createIntersectionObserver = (targetSet: Set<HTMLElement>): IObserv
  * @returns Object with observe/unobserve/disconnect methods
  */
 export const createSizeObserver = (
-  target: { value: { width: number; height: number } | null }
+  target: Ref<{ width: number; height: number } | null>
 ): IObserverWrapper => {
   const observer = new ResizeObserver((entries) => {
     const entry = entries[0];

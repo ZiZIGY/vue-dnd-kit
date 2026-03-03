@@ -10,21 +10,46 @@ import type { IDragEvent } from './provider';
 export type TDnDNode = HTMLElement | ComponentPublicInstance | null;
 export type TDnDNodeRef = Readonly<Ref<TDnDNode>>;
 export type TDragAxis = 'x' | 'y' | 'both';
+/** Factory registered on a draggable: returns [index, items, dropData?] */
 export type TDraggablePayload<T = any, D = any> = () => [number, T[], D?];
 
-/** Resolved payload from TDraggablePayload (index + items + optional dropData) */
+/** Factory registered on a droppable zone: returns [items, userData?] */
+export type TDroppablePayload<T = any, U = any> = () => [T[], U?];
+
+// ─── Internal resolved types (used by entity system) ──────────────────────────
+
+/** @internal */
 export interface IDragPayload<T = unknown, D = unknown> {
   index: number;
   items: T[];
   dropData?: D;
 }
 
-export type TDroppablePayload<T = any, U = any> = () => [T[], U?];
-
-/** Resolved payload from TDroppablePayload (items + optional userData) */
+/** @internal */
 export interface IDropZonePayload<T = unknown, U = unknown> {
   items: T[];
   userData?: U;
+}
+
+// ─── Public event types ────────────────────────────────────────────────────────
+
+/** One dragged item — always carries its source array and position */
+export interface IDragItem<T = unknown, D = unknown> {
+  /** Index of this item in `items` */
+  index: number;
+  /** The actual object: `items[index]` */
+  item: T;
+  /** Source array (same reference as passed to the draggable payload factory) */
+  items: T[];
+  dropData?: D;
+}
+
+/** Drop zone context — present in onEnter / onDrop / onLeave */
+export interface IDropZoneContext<T = unknown, U = unknown> {
+  items: T[];
+  userData?: U;
+  /** Cursor position relative to the zone boundary */
+  placement: IPlacement | undefined;
 }
 
 export interface IBaseOptions {

@@ -8,9 +8,7 @@ import { createSizeObserver } from '../utils/observer';
  * @returns { overlaySize, overlaySizeObserver } — ref with { width, height } and cleanup
  */
 
-export const useSizeObserver = (
-  elementRef: Ref<HTMLElement | null>
-) => {
+export const useSizeObserver = (elementRef: Ref<HTMLElement | null>) => {
   const overlaySize = ref<DOMRect | null>(null);
   const observer = createSizeObserver(overlaySize);
 

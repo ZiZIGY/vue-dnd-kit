@@ -1,34 +1,43 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="T">
   import {
-    makeDraggable,
     makeDroppable,
     makeSelectionArea,
     useDnDProvider,
-  } from '@vue-dnd-kit/core';
+  } from '../../../packages/core/src/external';
+  import type { IDragEvent } from '../../../packages/core/src/external/types';
   import { useTemplateRef } from 'vue';
 
-  const node = useTemplateRef('droppableRef');
+  const props = withDefaults(
+    defineProps<{
+      items: T[];
+      orientation?: 'vertical' | 'horizontal';
+    }>(),
+    { orientation: 'vertical' }
+  );
+
+  const emit = defineEmits<{
+    drop: [event: IDragEvent];
+  }>();
+
+  const node = useTemplateRef<HTMLElement>('droppableRef');
 
   const { state } = useDnDProvider();
 
-  makeDraggable(node, {
-    placementMargins: {
-      bottom: 5,
-      left: 5,
-      right: 5,
-      top: 5,
-    },
-  });
+  const { style } = makeSelectionArea(node as any);
 
-  const { style } = makeSelectionArea(node);
-
-  const { isAllowed } = makeDroppable(node, {
-    events: {
-      onEnter: (e) => console.log('enter', e.dropZonePayload),
-      onDrop: (e) => console.log('drop', e.payload),
-      onLeave: (e) => console.log('leave', e.dropZonePayload),
+  const { isAllowed } = makeDroppable(
+    node as any,
+    {
+      events: {
+        onEnter() {},
+        onDrop(e) {
+          emit('drop', e);
+        },
+        onLeave() {},
+      },
     },
-  });
+    () => [props.items]
+  );
 </script>
 
 <template>
@@ -41,7 +50,7 @@
     }"
   >
     <slot />
-    <div :style></div>
+    <div :style="style"></div>
   </div>
 </template>
 

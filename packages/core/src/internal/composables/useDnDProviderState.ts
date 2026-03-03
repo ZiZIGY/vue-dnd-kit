@@ -126,11 +126,11 @@ export function useDnDProviderState(
     visibleDroppableSet: new Set(),
     visibleSelectableAreaSet: new Set(),
   });
-  
-  const hovered: IHovered = {
+
+  const hovered = reactive<IHovered>({
     draggable: new Map(),
     droppable: new Map(),
-  };
+  });
 
   const collision: ICollision = {
     throttle: shallowRef(0),

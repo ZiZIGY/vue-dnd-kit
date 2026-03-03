@@ -1,15 +1,16 @@
 import type {
   IConstraintsAreaEntity,
-  IDragPayload,
-  IDropZonePayload,
   IDraggableEntity,
   IDroppableEntity,
   IEntities,
   ISelectableAreaEntity,
   TDnDNode,
+  IDragItem,
+  IDropZoneContext,
 } from './entities';
 import type { ICoordinates, TPointerState } from './pointer';
-import type { IAutoScrollOptions, IPlacement } from './placement';
+import type { IAutoScrollOptions } from './placement';
+import type { IHelpers, IHoveredDraggableContext } from './operations';
 import type {
   Component,
   ComputedRef,
@@ -20,18 +21,22 @@ import type {
   WritableComputedRef,
 } from 'vue';
 
-/** Event object passed to drag/drop handlers */
+/** Event object passed to all drag/drop handlers */
 export interface IDragEvent<
-  T = unknown,
-  D = unknown,
-  U = unknown,
-  V = unknown,
+  DragT = unknown,
+  DragD = unknown,
+  ZoneT = unknown,
+  ZoneU = unknown,
 > {
-  /** Payload from the dragged item (draggable payload) */
-  payload: IDragPayload<T, D> | undefined;
-  /** Payload from the drop zone (droppable payload), set for onEnter/onDrop/onLeave */
-  dropZonePayload?: IDropZonePayload<U, V>;
+  /** All dragged items sorted by index. Length > 1 means multi-drag. */
+  draggables: IDragItem<DragT, DragD>[];
+  /** Drop zone context — present in onEnter / onDrop / onLeave. */
+  dropZone: IDropZoneContext<ZoneT, ZoneU> | undefined;
+  /** Draggable element under cursor inside the zone — use for insert-before/after. */
+  hoveredDraggable: IHoveredDraggableContext | undefined;
   provider: IDnDProviderExternal;
+  /** Helpers bound to this event. Low-level array ops + high-level suggest* presets. */
+  helpers: IHelpers;
 }
 
 /** Map element → placement for elements under cursor during drag */

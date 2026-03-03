@@ -23,11 +23,20 @@ import { getDragEvent } from '../utils/events';
 import { isEffectivelyDisabledDroppable } from '../utils/disabled';
 import { applyCollisionResultToHovered } from './hover';
 import { defaultCollisionDetection } from '../sensors/default-collision';
-import { getCollisionWorker, type ICollisionWorkerInput } from '../sensors/collision-worker';
-import { overlayBoxFromStyle, filterValidCollisionTarget } from '../sensors/steps';
+import {
+  getCollisionWorker,
+  type ICollisionWorkerInput,
+} from '../sensors/collision-worker';
+import {
+  overlayBoxFromStyle,
+  filterValidCollisionTarget,
+} from '../sensors/steps';
 import type { IDnDProviderInternal } from '../types/provider';
 
-function packBoxes(elements: HTMLElement[], cache: Map<HTMLElement, DOMRect>): number[] {
+function packBoxes(
+  elements: HTMLElement[],
+  cache: Map<HTMLElement, DOMRect>
+): number[] {
   const result: number[] = [];
   for (const el of elements) {
     let r = cache.get(el);
@@ -58,7 +67,12 @@ function runCollisionViaWorker(provider: IDnDProviderInternal): void {
   const cache = provider.lib.rectCache;
 
   const input: ICollisionWorkerInput = {
-    containerBox: { x: overlayBox.x, y: overlayBox.y, width: overlayBox.width, height: overlayBox.height },
+    containerBox: {
+      x: overlayBox.x,
+      y: overlayBox.y,
+      width: overlayBox.width,
+      height: overlayBox.height,
+    },
     pointer: { x: rawPointer?.x ?? 0, y: rawPointer?.y ?? 0 },
     elements: packBoxes(elementCandidates, cache),
     elementCount: elementCandidates.length,
@@ -71,9 +85,16 @@ function runCollisionViaWorker(provider: IDnDProviderInternal): void {
     if (requestId !== _latestCollisionRequestId) return;
     if (provider.state.value !== 'dragging') return;
 
-    const elements = workerResult.elementIndices.map((i) => elementCandidates[i] as HTMLElement);
-    const zones = workerResult.zoneIndices.map((i) => zoneCandidates[i] as HTMLElement);
-    applyCollisionResultToHovered(provider, provider.hovered, { elements, zones });
+    const elements = workerResult.elementIndices.map(
+      (i) => elementCandidates[i] as HTMLElement
+    );
+    const zones = workerResult.zoneIndices.map(
+      (i) => zoneCandidates[i] as HTMLElement
+    );
+    applyCollisionResultToHovered(provider, provider.hovered, {
+      elements,
+      zones,
+    });
   });
 }
 

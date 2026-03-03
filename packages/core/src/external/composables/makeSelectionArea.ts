@@ -64,7 +64,12 @@ export const makeSelectionArea = (
     provider.scrollPosition.y;
 
     const pointer = provider.pointer.value;
-    if (!pointer || provider.state.value !== 'selecting' || !container) {
+    if (
+      !pointer ||
+      provider.state.value !== 'selecting' ||
+      !container ||
+      !isSelecting.value
+    ) {
       return {};
     }
 
