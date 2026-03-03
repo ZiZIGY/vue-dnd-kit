@@ -146,18 +146,22 @@ export async function handleDropAndFinish(
   const isPromise =
     result != null && typeof (result as Promise<unknown>).then === 'function';
   if (isPromise) {
+    let resolvedValue: unknown;
     try {
-      await (result as Promise<unknown>);
-      return true;
+      resolvedValue = await (result as Promise<unknown>);
     } catch {
+      // Promise rejected → hard cancel with cancel events
       const initiating = provider.entities.initiatingDraggable;
       triggerSelfDragForElement(provider, initiating, 'onSelfDragCancel');
       triggerDragForAll(provider, 'onDragCancel');
       triggerDropCancelEvents(provider, provider.hovered);
       return false;
     }
+    // Promise resolved to false → soft reject (no cancel events)
+    return resolvedValue !== false;
   }
-  return true;
+  // Sync false → soft reject (no cancel events)
+  return result !== false;
 }
 
 export function finishDragSession(provider: IDnDProviderInternal): void {

@@ -47,16 +47,24 @@ Extends **base options** (shared with draggable/selection/constraint):
 
 ## Payload
 
-**`payload`** is an optional function that describes the zone for drop handlers (e.g. list of items in the zone and custom data):
+**`payload`** is an optional function that describes the zone (e.g. its list and metadata):
 
 ```ts
 type TDroppablePayload<T = any, U = any> = () => [T[], U?];
 ```
 
-- **`items`** — array (e.g. current items in this zone).
-- **`userData`** (optional) — extra data for the drop handler.
+- **`items`** — array of items in this zone.
+- **`userData`** (optional) — extra zone data.
 
-The library calls this when building the event for zone callbacks. The result is passed as **`event.dropZonePayload`** (`{ items, userData }`) in `onEnter`, `onDrop`, and `onLeave`. The dragged item’s data is still in **`event.payload`** (from the draggable’s payload). Omit `payload` if you don’t need zone data in handlers.
+The library calls this when building the event for zone callbacks. The result is passed as **`event.dropZone`**:
+
+```ts
+interface IDropZoneContext<T = unknown, U = unknown> {
+  items: T[];
+  userData?: U;
+  placement: IPlacement | undefined; // cursor position relative to the zone
+}
+```
 
 ---
 
@@ -70,11 +78,13 @@ The library calls this when building the event for zone callbacks. The result is
 | `onDrop`  | Item is dropped on this zone. Can return `Promise`; rejection triggers cancel flow. |
 | `onLeave` | Cursor leaves this drop zone during drag. |
 
-Every event receives **`IDragEvent`**:
+Every event receives the same **`IDragEvent`** as in makeDraggable:
 
-- **`payload`** — from the **dragged** item (result of its `payload()`): `{ index, items, dropData }` or `undefined`.
-- **`dropZonePayload`** — from **this** zone (result of its `payload()`): `{ items, userData }` or `undefined`.
-- **`provider`** — shared state/pointer for advanced use.
+- **`draggedItems`** — all dragged items (for multi-drag).
+- **`dropZone`** — context of this zone (`items`, `userData`, `placement`).
+- **`hoveredDraggable`** — hovered element inside the zone (if any).
+- **`operation`** — helper utilities for indices and sorting.
+- **`provider`** — access to provider state.
 
 ---
 
@@ -90,9 +100,12 @@ Every event receives **`IDragEvent`**:
 
   makeDroppable(zoneRef, {
     events: {
-      onEnter: (e) => console.log('enter', e.dropZonePayload),
-      onDrop: (e) => { /* use e.payload and e.dropZonePayload */ },
-      onLeave: (e) => console.log('leave', e.dropZonePayload),
+      onEnter: (e) => console.log('enter', e.dropZone),
+      onDrop: (e) => {
+        // e.draggedItems → what we're dragging
+        // e.dropZone     → where we're dropping
+      },
+      onLeave: (e) => console.log('leave', e.dropZone),
     },
   }, () => [zoneItems.value, { id: 'main-zone' }]);
 </script>
@@ -106,7 +119,7 @@ Without payload:
 
 ```ts
 makeDroppable(zoneRef, {
-  events: { onDrop: (e) => console.log('dropped', e.payload) },
+  events: { onDrop: (e) => console.log('dropped', e.draggedItems) },
 });
 ```
 
@@ -135,5 +148,5 @@ Using return values (e.g. for drop highlight):
 
 ## See also
 
-- [makeDraggable](/v2/guide/core/make-draggable) — payload shape and `event.payload`.
+- [makeDraggable](/v2/guide/core/make-draggable) — payload shape and `event.draggedItems`.
 - [DnDProvider](/v2/guide/core/dnd-provider) — provider and groups.

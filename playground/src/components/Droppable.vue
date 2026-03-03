@@ -11,6 +11,8 @@
     defineProps<{
       items: T[];
       orientation?: 'vertical' | 'horizontal';
+      /** Optional: when provided, return value (e.g. Promise) is passed to core for async/confirm flows */
+      onDrop?: (event: IDragEvent) => void | Promise<void>;
     }>(),
     { orientation: 'vertical' }
   );
@@ -30,8 +32,10 @@
     {
       events: {
         onEnter() {},
-        onDrop(e) {
+        async onDrop(e) {
+          const result = props.onDrop?.(e);
           emit('drop', e);
+          return result;
         },
         onLeave() {},
       },

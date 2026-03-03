@@ -64,7 +64,18 @@ type TDraggablePayload<T = any, D = any> = () => [index, items, dropData?];
 - **`items`** — the full list (array).
 - **`dropData`** (optional) — extra data for the drop target.
 
-The library calls this when a drag starts and passes the result to droppable `onDrop` and similar as `event.payload` (`{ index, items, dropData }`). Omit `payload` if you don’t need list/index or drop data (e.g. simple drag-to-zone).
+The library calls this when a drag starts and uses the result to build **`event.draggedItems`**:
+
+```ts
+interface IDragItem<T = unknown, D = unknown> {
+  index: number; // position in items
+  item: T;       // the actual data: items[index]
+  items: T[];    // reference to the source array
+  dropData?: D;
+}
+```
+
+So in handlers (`onSelfDragStart`, `onDrop`, etc.) you work with ready-made `event.draggedItems` instead of raw `[index, items]`.
 
 ---
 
@@ -96,7 +107,19 @@ Use these to avoid accidental drags (e.g. require 5px move or 200ms hold).
 - `onHover` — cursor entered this draggable.
 - `onLeave` — cursor left this draggable.
 
-Every event receives **`IDragEvent`**: `{ payload, provider }`. `payload` is the result of the dragging item’s `payload()` (if any); `provider` exposes shared state/pointer for advanced use.
+Every event receives **`IDragEvent`**:
+
+```ts
+interface IDragEvent<DragT = unknown, DragD = unknown, ZoneT = unknown, ZoneU = unknown> {
+  draggedItems: IDragItem<DragT, DragD>[];         // all dragged items (multi-drag)
+  dropZone?: IDropZoneContext<ZoneT, ZoneU>;      // zone under cursor (items + userData + placement)
+  hoveredDraggable?: IHoveredDraggableContext;     // hovered draggable inside the zone
+  operation: IOperation;                            // helper utilities (insertAt, removeIndexes, suggest*)
+  provider: IDnDProviderExternal;                  // access to provider state (pointer, state, etc.)
+}
+```
+
+For simple cases you only need `event.draggedItems`, `event.dropZone`, and for sorting, `event.hoveredDraggable`.
 
 ---
 
@@ -113,8 +136,8 @@ Every event receives **`IDragEvent`**: `{ payload, provider }`. `payload` is the
     dragHandle: '.handle',
     activation: { distance: 5 },
     events: {
-      onSelfDragStart: (e) => console.log('drag start', e.payload),
-      onSelfDragEnd: (e) => console.log('drag end', e.payload),
+      onSelfDragStart: (e) => console.log('drag start', e.draggedItems),
+      onSelfDragEnd: (e) => console.log('drag end', e.draggedItems),
     },
   });
 </script>
@@ -132,6 +155,9 @@ With payload (for lists / drop handlers that need index and items):
 ```ts
 const items = ref([1, 2, 3]);
 makeDraggable(itemRef, { dragHandle: '.handle' }, () => [0, items.value]);
+
+// later in onDrop:
+// e.draggedItems[0].index, e.draggedItems[0].item, e.draggedItems[0].items
 ```
 
 Using return values (e.g. for styling and sort indicators):

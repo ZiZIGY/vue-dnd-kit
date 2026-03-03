@@ -88,5 +88,5 @@ Same idea: use **`useTemplateRef`** for the drop zone element and pass it to `ma
 ## What's next
 
 - [DnDProvider](/v2/guide/core/dnd-provider) — provider API and options
-- [makeDraggable](/v2/guide/core/make-draggable) — draggable options, payload, drag handle
+- [makeDraggable](/v2/guide/core/make-draggable) — draggable options, payload, and `event.draggedItems`
 - [makeDroppable](/v2/guide/core/make-droppable) — drop events and validation

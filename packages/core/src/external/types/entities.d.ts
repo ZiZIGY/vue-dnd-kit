@@ -174,7 +174,7 @@ export interface IDraggableEntity extends IBaseEntity {
   activation?: IDragActivation;
   /** Margins for center zone. When pointer in center and element is also droppable, zone mode is used. */
   placementMargins?: IPlacementMargins;
-  hoveredPlacement: IPlacement | undefined;
+  hoveredPlacement?: IPlacement;
 }
 
 export interface IDraggingEntity extends IDraggableEntity {

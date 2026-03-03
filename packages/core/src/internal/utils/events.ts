@@ -2,13 +2,14 @@
  * DnD event triggering utilities
  */
 
-import { DnDSelectors } from './namespaces';
-import { isEffectivelyDisabledDroppable } from './disabled';
-import { createHelpers } from '../logic/operations';
-import type { IDnDProviderInternal } from '../types/provider';
 import type { IDragEvent, IHovered } from '../../external/types/provider';
+
+import { DnDSelectors } from './namespaces';
+import type { IDnDProviderInternal } from '../types/provider';
 import type { IDragItem } from '../../external/types/entities';
 import type { TDraggablePayload } from '../../external/types/entities';
+import { createHelpers } from '../logic/operations';
+import { isEffectivelyDisabledDroppable } from './disabled';
 
 export type TSelfDragEvent =
   | 'onSelfDragStart'
@@ -28,9 +29,9 @@ export const getClosestDraggableFromEvent = (
     DnDSelectors.DRAGGABLE
   ) as HTMLElement | null;
 
-// ─── Draggables builder ───────────────────────────────────────────────────────
+// ─── Dragged items builder ─────────────────────────────────────────────────────
 
-function buildDraggables(provider: IDnDProviderInternal): IDragItem[] {
+function buildDraggedItems(provider: IDnDProviderInternal): IDragItem[] {
   const initiating = provider.entities.initiatingDraggable;
   if (!initiating) return [];
 
@@ -55,16 +56,15 @@ function buildDraggables(provider: IDnDProviderInternal): IDragItem[] {
     dropData: baseDropData,
   });
 
-  // Collect all currently-dragged elements (draggingMap is already built from selection).
+  // Collect all currently-dragged elements (draggingMap is built from selection).
   provider.entities.draggingMap.forEach((_, el) => {
-    // initiating already добавили выше — но byIndex защитит от дубля.
     const e2 = provider.entities.draggableMap.get(el);
     const fn2 = e2?.payload as TDraggablePayload | undefined;
     if (!fn2) return;
     const r2 = fn2();
     if (!Array.isArray(r2) || r2.length < 2) return;
     const [idx2, items2, dropData2] = r2;
-    if ((items2 as unknown) !== itemsRef) return; // другой список — игнорим
+    if ((items2 as unknown) !== itemsRef) return; // different list — skip
     const i2 = Number(idx2);
     if (!byIndex.has(i2)) {
       byIndex.set(i2, {
@@ -85,7 +85,7 @@ export const getDragEvent = (
   provider: IDnDProviderInternal,
   dropZoneEl?: HTMLElement
 ): IDragEvent => {
-  const draggables = buildDraggables(provider);
+  const draggedItems = buildDraggedItems(provider);
   let dropZone: IDragEvent['dropZone'] = undefined;
   let hoveredDraggable: IDragEvent['hoveredDraggable'] = undefined;
 
@@ -139,11 +139,11 @@ export const getDragEvent = (
   }
 
   return {
-    draggables,
+    draggedItems,
     dropZone,
     hoveredDraggable,
     provider,
-    helpers: createHelpers({ draggables, dropZone, hoveredDraggable }),
+    helpers: createHelpers({ draggedItems, dropZone, hoveredDraggable }),
   };
 };
 

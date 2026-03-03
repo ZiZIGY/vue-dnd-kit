@@ -1,4 +1,8 @@
-import type { IPlacement, TInsertSide, TPlacementOrientation } from './placement';
+import type {
+  IPlacement,
+  TInsertSide,
+  TPlacementOrientation,
+} from './placement';
 
 // ── Result types ───────────────────────────────────────────────────────────────
 
@@ -77,15 +81,15 @@ export interface IPlacementHelpers {
   /** 'before' = top (vertical) / left (horizontal). 'after' = bottom / right. */
   getInsertSide(
     placement: IPlacement | undefined,
-    orientation: TPlacementOrientation,
+    orientation: TPlacementOrientation
   ): TInsertSide | null;
   isAtZoneStart(
     placement: IPlacement | undefined,
-    orientation: TPlacementOrientation,
+    orientation: TPlacementOrientation
   ): boolean;
   isAtZoneEnd(
     placement: IPlacement | undefined,
-    orientation: TPlacementOrientation,
+    orientation: TPlacementOrientation
   ): boolean;
 }
 
@@ -128,17 +132,17 @@ export interface IHelpers {
   /** 'before' or 'after' relative to the orientation axis, or null if ambiguous. */
   getInsertSide(
     placement: IPlacement | undefined,
-    orientation: TPlacementOrientation,
+    orientation: TPlacementOrientation
   ): TInsertSide | null;
   /** True when pointer is at the very start edge of the zone (no center). */
   isAtZoneStart(
     placement: IPlacement | undefined,
-    orientation: TPlacementOrientation,
+    orientation: TPlacementOrientation
   ): boolean;
   /** True when pointer is at the very end edge of the zone (no center). */
   isAtZoneEnd(
     placement: IPlacement | undefined,
-    orientation: TPlacementOrientation,
+    orientation: TPlacementOrientation
   ): boolean;
 
   // ── High-level: event-bound presets ───────────────────────────────────────
@@ -151,7 +155,7 @@ export interface IHelpers {
    * - Without `hoveredDraggable`: appends to zone start/end based on zone placement.
    * - Same-list: reorders in place. Cross-list: transfers (removes from source, inserts into target).
    *
-   * Returns null when context is insufficient (no draggables or no dropZone).
+   * Returns null when context is insufficient (no draggedItems or no dropZone).
    * Cast result arrays to your item type: `r.targetItems as MyItem[]`.
    */
   suggestSort(orientation?: TPlacementOrientation): ISuggestSortResult | null;
@@ -179,7 +183,7 @@ export interface IHelpers {
   /**
    * **Remove** — remove dragged items from their source list.
    *
-   * Returns null when there are no draggables.
+   * Returns null when there are no draggedItems.
    */
   suggestRemove(): ISuggestRemoveResult | null;
 }

@@ -3,8 +3,8 @@
  * Split by context to avoid iterating both maps when only one is needed.
  */
 
-import { isDescendant } from './dom';
 import type { IEntities } from '../../external/types';
+import { isDescendant } from './dom';
 
 /** Minimal context for draggable/droppable checks */
 export type IEffectivelyDisabledContext = {
@@ -24,7 +24,7 @@ export const isEffectivelyDisabledDraggable = (
 ): boolean => {
   const entity = ctx.entities.draggableMap.get(node);
   if (entity?.disabled) return true;
-  // Only iterate visible draggables, not all draggableMap
+  // Only iterate visible draggedItems, not all draggableMap
   for (const el of ctx.entities.visibleDraggableSet) {
     const e = ctx.entities.draggableMap.get(el);
     if (e?.disabled && isDescendant(el, node)) return true;

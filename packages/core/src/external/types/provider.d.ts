@@ -29,7 +29,7 @@ export interface IDragEvent<
   ZoneU = unknown,
 > {
   /** All dragged items sorted by index. Length > 1 means multi-drag. */
-  draggables: IDragItem<DragT, DragD>[];
+  draggedItems: IDragItem<DragT, DragD>[];
   /** Drop zone context — present in onEnter / onDrop / onLeave. */
   dropZone: IDropZoneContext<ZoneT, ZoneU> | undefined;
   /** Draggable element under cursor inside the zone — use for insert-before/after. */

@@ -3,23 +3,24 @@
  * and createHelpers() factory that binds them to an event context.
  */
 
-import type { IPlacement } from '../../external/types/placement';
 import type {
   IHelpers,
   IPlacementHelpers,
-  ISuggestSortResult,
-  ISuggestSwapResult,
   ISuggestCopyResult,
   ISuggestRemoveResult,
+  ISuggestSortResult,
+  ISuggestSwapResult,
 } from '../../external/types/operations';
 import type {
   TInsertSide,
   TPlacementOrientation,
 } from '../../external/types/placement';
 
+import type { IPlacement } from '../../external/types/placement';
+
 /** Minimal event shape used by internal suggest* (avoids circular import). */
 export interface IDropEventContext {
-  draggables: Array<{
+  draggedItems: Array<{
     index: number;
     item: unknown;
     items: unknown[];
@@ -125,27 +126,36 @@ function resolveTarget(
   event: IDropEventContext,
   orientation: TPlacementOrientation,
 ): { targetIndex: number; mode: ISuggestSortResult['mode']; targetArr: unknown[] } | null {
-  const { draggables, dropZone, hoveredDraggable } = event;
-  if (!draggables.length) return null;
+  const { draggedItems, dropZone, hoveredDraggable } = event;
+  if (!draggedItems.length) return null;
+
+  // When hoveredDraggable is in its center zone (via placementMargins) AND a different
+  // dropZone is active, prefer the dropZone list for insertion (e.g. tree node nesting).
+  const useNestedZone =
+    hoveredDraggable?.placement.center === true &&
+    dropZone != null &&
+    dropZone.items !== hoveredDraggable.items;
 
   // Effective target array
-  const targetArr = hoveredDraggable?.items ?? dropZone?.items;
+  const targetArr = useNestedZone
+    ? dropZone!.items
+    : (hoveredDraggable?.items ?? dropZone?.items);
   if (!targetArr) return null;
 
-  const sourceItems = draggables[0]!.items;
-  const sourceIndexes = draggables.map((d) => d.index);
+  const sourceItems = draggedItems[0]!.items;
+  const sourceIndexes = draggedItems.map((d) => d.index);
   const targetLen = targetArr.length;
 
   let targetIndex: number;
   let mode: ISuggestSortResult['mode'];
 
-  if (hoveredDraggable) {
+  if (hoveredDraggable && !useNestedZone) {
     // isSelf: hovered element is one of the items being dragged
     const isSelf =
       hoveredDraggable.items === sourceItems &&
       sourceIndexes.includes(hoveredDraggable.index);
 
-    if (isSelf && draggables.length === 1) {
+    if (isSelf && draggedItems.length === 1) {
       // Single drag onto itself — fall back to zone edge
       const atStart = placementHelpers.isAtZoneStart(dropZone?.placement, orientation);
       targetIndex = atStart ? 0 : targetLen;
@@ -183,8 +193,8 @@ export function _suggestSort(
   event: IDropEventContext,
   orientation: TPlacementOrientation = 'vertical',
 ): ISuggestSortResult | null {
-  const { draggables } = event;
-  if (!draggables.length) return null;
+  const { draggedItems } = event;
+  if (!draggedItems.length) return null;
 
   const resolved = resolveTarget(event, orientation);
   if (!resolved) return null;
@@ -192,37 +202,37 @@ export function _suggestSort(
   const { targetArr, mode } = resolved;
   let { targetIndex } = resolved;
 
-  const sourceIndexes = draggables.map((d) => d.index);
-  const draggedItems = draggables.map((d) => d.item);
-  const sourceArr = draggables[0]!.items as unknown[];
+  const sourceIndexes = draggedItems.map((d) => d.index);
+  const movedItems = draggedItems.map((d) => d.item);
+  const sourceArr = draggedItems[0]!.items as unknown[];
   const sameList = sourceArr === targetArr;
 
   if (sameList) {
     // Adjust for index shift caused by removal of source items
     const shift = sourceIndexes.filter((i) => i < targetIndex).length;
     targetIndex = Math.max(0, targetIndex - shift);
-    const result = insertAt(removeIndexes(sourceArr, sourceIndexes), targetIndex, draggedItems);
-    return { sourceItems: result, targetItems: result, draggedItems, sourceIndexes, targetIndex, mode, sameList: true };
+    const result = insertAt(removeIndexes(sourceArr, sourceIndexes), targetIndex, movedItems);
+    return { sourceItems: result, targetItems: result, draggedItems: movedItems, sourceIndexes, targetIndex, mode, sameList: true };
   } else {
     const sourceItems = removeIndexes(sourceArr, sourceIndexes);
-    const targetItems = insertAt(targetArr, targetIndex, draggedItems);
-    return { sourceItems, targetItems, draggedItems, sourceIndexes, targetIndex, mode, sameList: false };
+    const targetItems = insertAt(targetArr, targetIndex, movedItems);
+    return { sourceItems, targetItems, draggedItems: movedItems, sourceIndexes, targetIndex, mode, sameList: false };
   }
 }
 
 export function _suggestSwap(
   event: IDropEventContext,
 ): ISuggestSwapResult | null {
-  const { draggables, hoveredDraggable } = event;
+  const { draggedItems, hoveredDraggable } = event;
   // Swap always requires a hovered target element
-  if (!draggables.length || !hoveredDraggable) return null;
+  if (!draggedItems.length || !hoveredDraggable) return null;
 
-  const sourceIndexes = draggables.map((d) => d.index);
+  const sourceIndexes = draggedItems.map((d) => d.index);
   const targetIndex = hoveredDraggable.index;
-  const draggedItems = draggables.map((d) => d.item);
+  const movedItems = draggedItems.map((d) => d.item);
   const displacedItem = hoveredDraggable.item;
 
-  const sourceArr = draggables[0]!.items as unknown[];
+  const sourceArr = draggedItems[0]!.items as unknown[];
   // Target is always the hovered element's own list, not the drop zone.
   const targetArr = hoveredDraggable.items as unknown[];
   const sameList = sourceArr === targetArr;
@@ -230,7 +240,7 @@ export function _suggestSwap(
   // Can't swap if target is one of the dragged items (same list)
   if (sameList && sourceIndexes.includes(targetIndex)) return null;
 
-  if (draggables.length === 1) {
+  if (draggedItems.length === 1) {
     // ── Single: true positional swap ──────────────────────────────────────────
     const srcIdx = sourceIndexes[0]!;
     if (sameList) {
@@ -265,11 +275,11 @@ export function _suggestSwap(
       const adjFirstSrc = Math.max(0, firstSrcIdx - srcShift);
 
       let result = removeIndexes(sourceArr, sourceIndexes);
-      result = insertAt(result, adjTarget, draggedItems);
+      result = insertAt(result, adjTarget, movedItems);
       // After inserting the group at adjTarget, the displaced item goes to adjFirstSrc.
       // If adjFirstSrc >= adjTarget it was pushed right by the group insertion.
       const finalDisplacedIdx = adjFirstSrc >= adjTarget
-        ? adjFirstSrc + draggedItems.length
+        ? adjFirstSrc + movedItems.length
         : adjFirstSrc;
       result = insertAt(result, finalDisplacedIdx, [displacedItem]);
 
@@ -284,7 +294,7 @@ export function _suggestSwap(
 
       // Target: remove displaced item, insert dragged group at its original position
       let after_target = removeAt(targetArr, targetIndex);
-      after_target = insertAt(after_target, targetIndex, draggedItems);
+      after_target = insertAt(after_target, targetIndex, movedItems);
 
       return { sourceItems: after_source, targetItems: after_target, sourceIndexes, targetIndex, sameList: false };
     }
@@ -295,14 +305,14 @@ export function _suggestCopy(
   event: IDropEventContext,
   orientation: TPlacementOrientation = 'vertical',
 ): ISuggestCopyResult | null {
-  const { draggables } = event;
-  if (!draggables.length) return null;
+  const { draggedItems } = event;
+  if (!draggedItems.length) return null;
 
   const resolved = resolveTarget(event, orientation);
   if (!resolved) return null;
 
   const { targetArr, targetIndex, mode } = resolved;
-  const copiedItems = draggables.map((d) => d.item);
+  const copiedItems = draggedItems.map((d) => d.item);
   const targetItems = insertAt(targetArr as unknown[], targetIndex, copiedItems);
 
   return { targetItems, copiedItems, targetIndex, mode };
@@ -311,12 +321,12 @@ export function _suggestCopy(
 export function _suggestRemove(
   event: IDropEventContext,
 ): ISuggestRemoveResult | null {
-  const { draggables } = event;
-  if (!draggables.length) return null;
+  const { draggedItems } = event;
+  if (!draggedItems.length) return null;
 
-  const sourceIndexes = draggables.map((d) => d.index);
-  const removedItems = draggables.map((d) => d.item);
-  const sourceArr = draggables[0]!.items as unknown[];
+  const sourceIndexes = draggedItems.map((d) => d.index);
+  const removedItems = draggedItems.map((d) => d.item);
+  const sourceArr = draggedItems[0]!.items as unknown[];
   const sourceItems = removeIndexes(sourceArr, sourceIndexes);
 
   return { sourceItems, removedItems, sourceIndexes };

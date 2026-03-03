@@ -11,7 +11,7 @@ import type { Ref } from 'vue';
  * @param entityMap - Map of entities (e.g. selectableAreaMap or draggableEntityMap)
  * @param visibleSet - Set of visible nodes
  * @param modifiers - Ref with pressed keys
- * @param isDisabled - Optional: override disabled check (e.g. isEffectivelyDisabledDraggable for draggables)
+ * @param isDisabled - Optional: override disabled check (e.g. isEffectivelyDisabledDraggable for draggedItems)
  * @returns Set of filtered nodes with matching modifiers
  */
 export const filterByModifiers = (

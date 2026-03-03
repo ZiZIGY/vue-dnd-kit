@@ -15,7 +15,7 @@ import type { IDnDProviderInternal } from '../types/provider';
  *
  * IMPORTANT: When implementing custom sensors, use:
  * - `provider.entities.allowedDroppableSet` for zones (visible + filtered by groups)
- * - `provider.entities.allowedDraggableSet` for draggables (visible + filtered by groups)
+ * - `provider.entities.allowedDraggableSet` for draggedItems (visible + filtered by groups)
  * OR use helper functions from `steps.ts`: `allowedVisibleZones()` and `visibleElements()`.
  */
 export type CollisionDetectionFn = (provider: IDnDProviderInternal) => {
@@ -119,9 +119,8 @@ const createBuilder = (): ISensorBuilder => {
     collisionCheck: TCollisionCheckFn
   ): Array<{ node: HTMLElement; box: IBoundingBox }> => {
     // candidates is already a Set<HTMLElement> — avoid copying it again
-    const candidateSet = candidates instanceof Set
-      ? candidates
-      : new Set<HTMLElement>(candidates);
+    const candidateSet =
+      candidates instanceof Set ? candidates : new Set<HTMLElement>(candidates);
     const ctx = { containerBox, pointer };
     const minOverlap = config.minOverlapPercent;
 
@@ -154,7 +153,10 @@ const createBuilder = (): ISensorBuilder => {
           isPointerInElement: containsPoint(nodeBox, pointer.x, pointer.y),
           overlapPercent,
           depth,
-          centerDistance: getDistance(getCenter(containerBox), getCenter(nodeBox)),
+          centerDistance: getDistance(
+            getCenter(containerBox),
+            getCenter(nodeBox)
+          ),
         },
       });
     }
@@ -263,24 +265,27 @@ const createBuilder = (): ISensorBuilder => {
 
         if (cfg.mergeStrategy === 'unified-closest') {
           const all = [
-            ...elements.map((entry) => ({ 
-              node: entry.node, 
-              box: entry.box, 
-              isZone: false, 
-              distance: 0 
+            ...elements.map((entry) => ({
+              node: entry.node,
+              box: entry.box,
+              isZone: false,
+              distance: 0,
             })),
-            ...zones.map((entry) => ({ 
-              node: entry.node, 
-              box: entry.box, 
-              isZone: true, 
-              distance: 0 
+            ...zones.map((entry) => ({
+              node: entry.node,
+              box: entry.box,
+              isZone: true,
+              distance: 0,
             })),
           ];
           if (all.length === 0) return { elements: [], zones: [] };
 
           for (const item of all) {
             const center = getCenter(item.box);
-            item.distance = Math.hypot(pointer.x - center.x, pointer.y - center.y);
+            item.distance = Math.hypot(
+              pointer.x - center.x,
+              pointer.y - center.y
+            );
           }
 
           const closest = all.reduce((acc, item) =>
@@ -296,7 +301,7 @@ const createBuilder = (): ISensorBuilder => {
         if (cfg.pickClosestBetweenFirst && elements[0] && zones[0]) {
           const zoneCenter = getCenter(zones[0].box);
           const elementCenter = getCenter(elements[0].box);
-          
+
           const zoneDistance = Math.hypot(
             pointer.x - zoneCenter.x,
             pointer.y - zoneCenter.y
@@ -305,15 +310,15 @@ const createBuilder = (): ISensorBuilder => {
             pointer.x - elementCenter.x,
             pointer.y - elementCenter.y
           );
-          
+
           return elementDistance < zoneDistance
-            ? { elements: elements.map(e => e.node), zones: [] }
-            : { elements: [], zones: zones.map(z => z.node) };
+            ? { elements: elements.map((e) => e.node), zones: [] }
+            : { elements: [], zones: zones.map((z) => z.node) };
         }
 
-        return { 
-          elements: elements.map(e => e.node), 
-          zones: zones.map(z => z.node) 
+        return {
+          elements: elements.map((e) => e.node),
+          zones: zones.map((z) => z.node),
         };
       };
     },
