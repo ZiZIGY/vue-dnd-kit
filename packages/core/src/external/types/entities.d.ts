@@ -135,7 +135,7 @@ export interface IDraggableEvents {
 
 export interface IDroppableEvents {
   onEnter?: (event: IDragEvent) => void;
-  onDrop?: (event: IDragEvent) => void | Promise<void>;
+  onDrop?: (event: IDragEvent) => void | boolean | Promise<void | boolean>;
   onLeave?: (event: IDragEvent) => void;
 }
 

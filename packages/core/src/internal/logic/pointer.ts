@@ -32,6 +32,7 @@ import {
   filterValidCollisionTarget,
 } from '../sensors/steps';
 import type { IDnDProviderInternal } from '../types/provider';
+import type { TDropResult } from '../../external';
 
 function packBoxes(
   elements: HTMLElement[],
@@ -132,11 +133,11 @@ function runThrottledCollision(
 
 export async function handleDropAndFinish(
   provider: IDnDProviderInternal
-): Promise<boolean> {
+): Promise<TDropResult> {
   const hoveredZone = provider.hovered.droppable.keys().next().value;
-  if (!hoveredZone) return true;
+  if (!hoveredZone) return 'accept';
 
-  if (isEffectivelyDisabledDroppable(hoveredZone, provider)) return true;
+  if (isEffectivelyDisabledDroppable(hoveredZone, provider)) return 'accept';
 
   const zoneEntity = provider.entities.droppableMap.get(hoveredZone);
   const dragEvent = getDragEvent(provider, hoveredZone);
@@ -146,22 +147,29 @@ export async function handleDropAndFinish(
   const isPromise =
     result != null && typeof (result as Promise<unknown>).then === 'function';
   if (isPromise) {
-    let resolvedValue: unknown;
+    provider.state.value = 'pending';
+    let resolvedValue: boolean | void;
     try {
-      resolvedValue = await (result as Promise<unknown>);
+      resolvedValue = await (result as Promise<boolean | void>);
     } catch {
-      // Promise rejected → hard cancel with cancel events
+      // Promise rejected → hard cancel with cancel events, then reset
       const initiating = provider.entities.initiatingDraggable;
       triggerSelfDragForElement(provider, initiating, 'onSelfDragCancel');
       triggerDragForAll(provider, 'onDragCancel');
       triggerDropCancelEvents(provider, provider.hovered);
-      return false;
+      return 'cancel';
     }
-    // Promise resolved to false → soft reject (no cancel events)
-    return resolvedValue !== false;
+    // Resolved false → decline this drop, keep drag active (no reset, user can move and drop elsewhere)
+    if (resolvedValue === false) {
+      provider.state.value = 'dragging';
+      return 'decline';
+    }
+    return 'accept';
   }
-  // Sync false → soft reject (no cancel events)
-  return result !== false;
+  // Sync false → decline (keep drag active)
+  return (result as boolean | void | undefined) === false
+    ? 'decline'
+    : 'accept';
 }
 
 export function finishDragSession(provider: IDnDProviderInternal): void {
@@ -195,14 +203,18 @@ export const createPointerHandlers = (provider: IDnDProviderInternal) => {
     const state = provider.state.value;
 
     if (state === 'dragging') {
-      const dropOk = await handleDropAndFinish(provider);
-      if (!dropOk) {
+      const dropResult = await handleDropAndFinish(provider);
+      if (dropResult === 'accept') {
+        finishDragSession(provider);
+      }
+      if (dropResult === 'accept' || dropResult === 'cancel') {
         resetDnDSession(provider);
         document.removeEventListener('pointerup', pointerUp);
         document.removeEventListener('pointermove', pointerMove);
         return;
       }
-      finishDragSession(provider);
+      // dropResult === 'decline' — don't reset, keep drag active so user can move and drop elsewhere
+      return;
     } else if (state === 'selecting') {
       finishSelectionSession(provider);
     }

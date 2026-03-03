@@ -11,8 +11,8 @@
     defineProps<{
       items: T[];
       orientation?: 'vertical' | 'horizontal';
-      /** Optional: when provided, return value (e.g. Promise) is passed to core for async/confirm flows */
-      onDrop?: (event: IDragEvent) => void | Promise<void>;
+      /** Optional: return false or Promise<false> to decline drop and keep drag active; reject() to cancel with events */
+      onDrop?: (event: IDragEvent) => void | boolean | Promise<void | boolean>;
     }>(),
     { orientation: 'vertical' }
   );

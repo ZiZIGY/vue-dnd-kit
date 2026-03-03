@@ -20,15 +20,15 @@
     { id: 'c-b2', label: 'B2' },
   ]);
 
-  /** onDrop returns a Promise: confirm() → resolve and apply, or reject to cancel drop */
-  function handleDrop(e: IDragEvent): Promise<void> {
-    return new Promise((resolve, reject) => {
+  /** onDrop returns a Promise: OK → resolve(), Cancel → resolve(false) so drag stays active and user can drop elsewhere */
+  function handleDrop(e: IDragEvent): Promise<void | boolean> {
+    return new Promise((resolve) => {
       const labels = e.draggedItems.map((d) => (d.item as Item).label).join(', ');
       const ok = window.confirm(
-        `Drop "${labels}" here?\n\nCancel = revert drag.`
+        `Drop "${labels}" here?\n\nCancel = keep dragging, you can drop elsewhere.`
       );
       if (!ok) {
-        reject(new Error('User cancelled'));
+        resolve(false);
         return;
       }
 
@@ -55,8 +55,8 @@
 <template>
   <div>
     <p class="hint">
-      Drop returns a <b>Promise</b>. Here we use <code>confirm()</code>: OK applies the drop,
-      Cancel rejects and the drag is reverted.
+      Drop returns a <b>Promise</b>. OK applies the drop. <b>Cancel</b> returns <code>resolve(false)</code>:
+      drag stays active, you can move and drop in another zone.
     </p>
     <div class="zones">
       <Droppable

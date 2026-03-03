@@ -97,8 +97,11 @@ export type TDnDState =
   | 'dragging'
   | 'selecting'
   | 'activating'
+  | 'pending' /** awaiting async onDrop (e.g. confirm); drag still active */
   | null
   | undefined;
+
+export type TDropResult = 'accept' | 'cancel' | 'decline';
 
 /** DnDProvider props */
 export interface IDnDProviderProps {
