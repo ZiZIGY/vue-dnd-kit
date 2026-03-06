@@ -51,6 +51,5 @@
   .dnd-kit-preview {
     transform-origin: 0 0;
     will-change: transform;
-    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
   }
 </style>
