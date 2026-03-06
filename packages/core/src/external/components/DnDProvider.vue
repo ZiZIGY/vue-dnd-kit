@@ -6,16 +6,14 @@
   import { useDnDProviderState } from '../../internal/composables/useDnDProviderState';
   import { useDnDProviderEvents } from '../../internal/composables/useDnDProviderEvents';
 
-  import DefaultOverlay from './DefaultOverlay.vue';
+  import DragPreview from './DragPreview.vue';
 
   const props = defineProps<IDnDProviderProps>();
-  const overlayRef = useTemplateRef<HTMLElement>('overlayRef');
-  const provider = useDnDProviderState(overlayRef, props);
+  const previewRef = useTemplateRef<HTMLElement>('previewRef');
+  const provider = useDnDProviderState(previewRef, props);
   useDnDProviderEvents(provider);
 
-  const overlay = computed(
-    () => provider.overlay.render.value ?? DefaultOverlay
-  );
+  const preview = computed(() => provider.preview.render.value ?? DragPreview);
 
   provide(injectionKey, provider);
 </script>
@@ -23,24 +21,24 @@
 <template>
   <slot />
 
-  <Teleport :to="provider.overlay.to.value || 'body'">
+  <Teleport :to="provider.preview.to.value || 'body'">
     <div
-      ref="overlayRef"
-      class="dnd-kit-overlay-container"
+      ref="previewRef"
+      class="dnd-kit-preview-container"
       v-bind="props"
     >
       <slot
-        name="overlay"
-        :overlay
+        name="preview"
+        :preview
       >
-        <component :is="overlay" />
+        <component :is="preview" />
       </slot>
     </div>
   </Teleport>
 </template>
 
 <style>
-  .dnd-kit-overlay-container {
+  .dnd-kit-preview-container {
     position: fixed;
     top: 0;
     left: 0;

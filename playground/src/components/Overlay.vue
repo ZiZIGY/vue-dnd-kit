@@ -1,18 +1,9 @@
 <script setup lang="ts">
-  import { useDnDProvider } from '@vue-dnd-kit/core';
-
-  const { entities, state, overlay } = useDnDProvider();
+  import { DragPreview } from '../../../packages/core/src/external';
 </script>
 
 <template>
-  <div
-    v-if="state === 'dragging'"
-    class="dnd-kit-default-overlay"
-    :style="{
-      '--position-x': overlay.position.value.x + 'px',
-      '--position-y': overlay.position.value.y + 'px',
-    }"
-  >
+  <DragPreview>
     Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae ducimus
     consequatur nihil quisquam? Quibusdam, eius laborum, labore vel id earum
     sint illum rem voluptate nemo aspernatur fugiat ratione quidem, iusto cum
@@ -117,11 +108,7 @@
     quae obcaecati magni omnis sapiente. Nulla recusandae, reiciendis temporibus
     voluptates omnis accusantium, aperiam eligendi tempore exercitationem
     maiores quibusdam vitae adipisci eveniet similique voluptate ipsa fugiat.
-  </div>
+  </DragPreview>
 </template>
 
-<style scoped>
-  .dnd-kit-default-overlay {
-    transform: translate3d(var(--position-x), var(--position-y), 0px);
-  }
-</style>
+<style scoped></style>

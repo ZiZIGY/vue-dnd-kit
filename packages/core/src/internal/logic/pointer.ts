@@ -63,7 +63,10 @@ export async function handleDropAndFinish(
 
   // ── groupMatch: 'some' — split valid/invalid, run onValidate if present ────
   let finalDragEvent = dragEvent;
-  if (zoneEntity?.groupMatch === 'some' && (zoneEntity.groups?.length ?? 0) > 0) {
+  if (
+    zoneEntity?.groupMatch === 'some' &&
+    (zoneEntity.groups?.length ?? 0) > 0
+  ) {
     const zoneGroups = zoneEntity.groups!;
 
     // For each dragged item, find its groups from draggingMap by index + items identity
@@ -104,7 +107,9 @@ export async function handleDropAndFinish(
         if (isValidatePromise) {
           provider.state.value = 'pending';
           try {
-            resolved = await (validateResult as Promise<void | false | IDragItem[]>);
+            resolved = await (validateResult as Promise<
+              void | false | IDragItem[]
+            >);
           } catch {
             const initiating = provider.entities.initiatingDraggable;
             triggerSelfDragForElement(provider, initiating, 'onSelfDragCancel');
@@ -306,7 +311,6 @@ export const createPointerHandlers = (provider: IDnDProviderInternal) => {
     provider.lib.draggableObserver.disconnect();
     provider.lib.droppableObserver.disconnect();
     provider.lib.selectableAreaObserver.disconnect();
-    provider.lib.overlaySizeObserver.disconnect();
   };
 
   return { pointerDown, pointerUp, pointerMove, cleanup };

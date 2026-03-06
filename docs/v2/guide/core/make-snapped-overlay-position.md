@@ -11,7 +11,7 @@ makeSnappedOverlayPosition(
 ): ComputedRef<ICoordinates>
 ```
 
-- **`position`** — the raw overlay position. Typically `provider.overlay.position` from `useDnDProvider()`.
+- **`position`** — the raw overlay position. Typically `provider.preview.position` from `useDnDProvider()`.
 - **`options`** — grid configuration. See [Options](#options).
 
 ---
@@ -77,7 +77,7 @@ Uniform 20px grid snap:
   const provider = useDnDProvider();
 
   const snappedPosition = makeSnappedOverlayPosition(
-    provider.overlay.position,
+    provider.preview.position,
     { grid: 20 }
   );
 
@@ -91,7 +91,7 @@ Uniform 20px grid snap:
     v-if="provider.state.value === 'dragging'"
     :style="overlayStyle"
   >
-    <component :is="provider.overlay.render.value" />
+    <component :is="provider.preview.render.value" />
   </div>
 </template>
 ```
@@ -99,20 +99,20 @@ Uniform 20px grid snap:
 Asymmetric grid (horizontal 40px, vertical 20px):
 
 ```ts
-const snappedPosition = makeSnappedOverlayPosition(provider.overlay.position, {
+const snappedPosition = makeSnappedOverlayPosition(provider.preview.position, {
   gridX: 40,
   gridY: 20,
 });
 ```
 
-Typically used inside the `#overlay` slot of `DnDProvider`:
+Typically used inside the `#preview` slot of `DnDProvider`:
 
 ```vue
 <DnDProvider>
   <YourApp />
 
-  <template #overlay="{ overlay }">
-    <SnappedOverlay :overlay="overlay" />
+  <template #preview="{ preview }">
+    <SnappedOverlay :preview="preview" />
   </template>
 </DnDProvider>
 ```
@@ -126,10 +126,10 @@ Typically used inside the `#overlay` slot of `DnDProvider`:
     makeSnappedOverlayPosition,
   } from '@vue-dnd-kit/core';
 
-  defineProps<{ overlay: Component }>();
+  defineProps<{ preview: Component }>();
 
   const provider = useDnDProvider();
-  const pos = makeSnappedOverlayPosition(provider.overlay.position, {
+  const pos = makeSnappedOverlayPosition(provider.preview.position, {
     grid: 20,
   });
 
@@ -144,7 +144,7 @@ Typically used inside the `#overlay` slot of `DnDProvider`:
 
 <template>
   <div :style="style">
-    <component :is="overlay" />
+    <component :is="preview" />
   </div>
 </template>
 ```
@@ -153,5 +153,5 @@ Typically used inside the `#overlay` slot of `DnDProvider`:
 
 ## See also
 
-- [DnDProvider](/v2/guide/core/dnd-provider) — `#overlay` slot for custom overlay rendering.
-- [useDnDProvider](/v2/guide/core/use-dnd-provider) — `overlay.position` source.
+- [DnDProvider](/v2/guide/core/dnd-provider) — `#preview` slot for custom overlay rendering.
+- [useDnDProvider](/v2/guide/core/use-dnd-provider) — `preview.position` source.

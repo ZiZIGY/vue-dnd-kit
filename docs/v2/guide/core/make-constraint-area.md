@@ -1,6 +1,6 @@
 # makeConstraintArea
 
-`makeConstraintArea` marks an element as a constraint area: drag movement can be limited to an axis or kept inside this element’s bounds. It must be used inside a [DnDProvider](/v2/guide/core/dnd-provider). Throws if the provider is not found.
+`makeConstraintArea` marks an element as a constraint area: drag movement can be limited to an axis or kept inside this element's bounds. It must be used inside a [DnDProvider](/v2/guide/core/dnd-provider). Throws if the provider is not found.
 
 ## Signature
 
@@ -28,3 +28,4 @@ Returns an empty object (reserved for future use).
 
 - [makeDraggable](/v2/guide/core/make-draggable) — elements that are constrained when dragging.
 - [DnDProvider](/v2/guide/core/dnd-provider) — provider.
+- [Constraint Area examples](/v2/examples/constraint-area) — live demos.

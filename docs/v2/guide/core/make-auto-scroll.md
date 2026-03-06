@@ -49,7 +49,7 @@ interface IAutoScrollOptions {
 ## How it works
 
 - Auto-scroll starts when `provider.state === 'dragging'` and stops when dragging ends.
-- The scroll target point is the **center of the overlay** (`overlay.position + overlay.size / 2`). If `overlay.size` is not yet available, the overlay position itself is used.
+- The scroll target point is the **center of the overlay** (`preview.position + preview.size / 2`). If `preview.size` is not yet available, the overlay position itself is used.
 - The closer the overlay center is to the container edge (within `threshold`), the faster the scroll.
 
 ---
@@ -96,4 +96,5 @@ makeAutoScroll(listRef, {
 ## See also
 
 - [DnDProvider](/v2/guide/core/dnd-provider) — `autoScrollViewport` prop for viewport scroll.
-- [useDnDProvider](/v2/guide/core/use-dnd-provider) — access `provider.overlay.position` and `provider.state`.
+- [useDnDProvider](/v2/guide/core/use-dnd-provider) — access `provider.preview.position` and `provider.state`.
+- [Auto Scroll example](/v2/examples/auto-scroll) — live demo.

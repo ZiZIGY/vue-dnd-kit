@@ -21,8 +21,8 @@
 import type { CollisionDetectionFn } from './sensor';
 import type { IDnDProviderInternal } from '../types/provider';
 import {
-  overlayContainer,
-  overlayBoxFromStyle,
+  previewContainer,
+  previewBoxFromStyle,
   visibleElements,
   allowedVisibleZones,
   filterValidCollisionTarget,
@@ -86,7 +86,7 @@ export function runCursorPhase(
 }
 
 export const defaultCollisionDetection: CollisionDetectionFn = (provider) => {
-  const containerEl = overlayContainer(provider);
+  const containerEl = previewContainer(provider);
   if (!containerEl) return { elements: [], zones: [] };
 
   const pointer = provider.pointer.value?.current ?? { x: 0, y: 0 };
@@ -105,7 +105,7 @@ export const defaultCollisionDetection: CollisionDetectionFn = (provider) => {
     const zone = cursorResult.zones[0];
     if (!zone) return cursorResult;
 
-    const containerBox = overlayBoxFromStyle(provider);
+    const containerBox = previewBoxFromStyle(provider);
     const draggableSet = visibleElements(provider) as unknown as Set<HTMLElement>;
 
     const nearestInZone = [...draggableSet]
@@ -125,7 +125,7 @@ export const defaultCollisionDetection: CollisionDetectionFn = (provider) => {
   }
 
   // Phase 2: AABB fallback — overlay overlaps element, closest to cursor wins
-  const containerBox = overlayBoxFromStyle(provider);
+  const containerBox = previewBoxFromStyle(provider);
 
   const allElements = [...visibleElements(provider)].filter((n) =>
     filterValidCollisionTarget(n, provider)

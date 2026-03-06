@@ -32,7 +32,6 @@ const MOVE_MAP: Record<string, { dx: number; dy: number }> = {
 const handleKeyDown =
   (provider: IDnDProviderInternal) => (event: KeyboardEvent) => {
     const { keys } = provider.keyboard;
-    console.log(event.code);
 
     keys.pressedKeys.value.add(event.code);
 

@@ -8,11 +8,6 @@
   const { isDragging } = makeDraggable(itemRef);
 
   const provider = useDnDProvider();
-
-  onMounted(() => {
-    console.log(itemRef.value);
-    console.log(provider.entities);
-  });
 </script>
 
 <template>

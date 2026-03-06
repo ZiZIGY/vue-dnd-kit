@@ -150,9 +150,9 @@
               :items="reactionItems"
               @drop="handleDrop"
               @enter="
-                $event.provider.overlay.render.value = markRaw(AlchemyOverlay)
+                $event.provider.preview.render.value = markRaw(AlchemyOverlay)
               "
-              @leave="$event.provider.overlay.render.value = null"
+              @leave="$event.provider.preview.render.value = null"
             />
 
             <div class="mt-1 flex flex-wrap items-center gap-2">

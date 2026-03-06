@@ -82,8 +82,18 @@ export const applyCollisionResultToHovered = (
         );
       }
     } else {
-      // Не центр — это draggable, зону не записываем
+      // Не центр — это draggable, зону не записываем напрямую.
+      // Но используем следующую зону из результата коллизии (родительский контейнер)
+      // как fallback-дропзону, чтобы onDrop мог сработать для сортировки.
       hovered.draggable.set(newElement, placement);
+      const fallbackZone = result.zones.find((z) => z !== newZone);
+      if (fallbackZone) {
+        const fRect = fallbackZone.getBoundingClientRect();
+        hovered.droppable.set(
+          fallbackZone,
+          getClosestPlacement(pointerBox, fRect)
+        );
+      }
     }
   } else {
     if (newZone) {

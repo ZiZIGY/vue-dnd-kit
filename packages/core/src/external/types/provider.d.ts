@@ -67,10 +67,10 @@ export interface IDnDProviderExternal {
   scrollPosition: Reactive<ICoordinates>;
   delay: Reactive<IDelay>;
   distanceProgress: ComputedRef<number>;
-  overlay: {
+  preview: {
     ref: Ref<HTMLElement | null>;
     position: ComputedRef<ICoordinates>;
-    size: Ref<DOMRect | null>;
+    size: ShallowRef<DOMRect>;
     render: Ref<Component | undefined>;
     to: WritableComputedRef<string | false | null | undefined>;
   };
@@ -100,8 +100,8 @@ export type TDropResult = 'accept' | 'cancel' | 'decline';
 export interface IDnDProviderProps {
   /** Enable viewport auto-scroll: true = defaults, object = options. false | null | undefined = disabled. */
   autoScrollViewport?: IAutoScrollOptions | true | false | null;
-  /** Teleport overlay to element: 'body' = defaults, string = element id. false | null | undefined = disabled. */
-  overlayTo?: string | false | null;
+  /** Teleport preview to element: 'body' = defaults, string = element id. false | null | undefined = disabled. */
+  previewTo?: string | false | null;
   style?: any;
   class?: any;
 }

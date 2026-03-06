@@ -22,8 +22,8 @@ export const makeAutoScroll = (
 
   const getOverlayPoint = () => {
     if (provider.state.value !== "dragging") return null;
-    const position = provider.overlay.position.value;
-    const size = provider.overlay.size.value;
+    const position = provider.preview.position.value;
+    const size = provider.preview.size.value;
     if (!position) return null;
     if (size?.width && size?.height) {
       return {

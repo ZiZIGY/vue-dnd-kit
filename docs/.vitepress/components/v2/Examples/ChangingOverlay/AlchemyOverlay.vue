@@ -10,10 +10,10 @@
     name: string;
   }
 
-  const { state, overlay, entities } = useDnDProvider();
+  const { state, preview, entities } = useDnDProvider();
 
   const style = computed(() => ({
-    transform: `translate3d(${overlay.position.value.x}px, ${overlay.position.value.y}px, 0)`,
+    transform: `translate3d(${preview.position.value.x}px, ${preview.position.value.y}px, 0)`,
   }));
 
   const elementMeta = {

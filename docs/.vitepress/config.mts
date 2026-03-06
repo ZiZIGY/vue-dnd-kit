@@ -153,6 +153,7 @@ export default defineConfig({
           items: [
             { text: 'DnDProvider', link: '/v2/guide/core/dnd-provider' },
             { text: 'useDnDProvider', link: '/v2/guide/core/use-dnd-provider' },
+            { text: 'DragPreview', link: '/v2/guide/core/drag-preview' },
             { text: 'makeDraggable', link: '/v2/guide/core/make-draggable' },
             { text: 'makeDroppable', link: '/v2/guide/core/make-droppable' },
             {
@@ -173,6 +174,7 @@ export default defineConfig({
           text: 'Guides',
           items: [
             { text: 'Patterns & Concepts', link: '/v2/guide/patterns' },
+            { text: 'Pitfalls & Best Practices', link: '/v2/guide/pitfalls' },
           ],
         },
         {
@@ -193,6 +195,13 @@ export default defineConfig({
             { text: 'Changing Overlay', link: '/v2/examples/changing-overlay' },
             { text: 'Async Drop (Promise)', link: '/v2/examples/promise-drop' },
             { text: 'Tree / Nesting', link: '/v2/examples/tree' },
+            { text: 'Constraint Area', link: '/v2/examples/constraint-area' },
+            { text: 'Auto Scroll', link: '/v2/examples/auto-scroll' },
+            { text: 'Drag Activation', link: '/v2/examples/activation' },
+            { text: 'Drag Modifier', link: '/v2/examples/modifier' },
+            { text: 'Draggable Zone', link: '/v2/examples/draggable-zone' },
+            { text: 'Overlay Transition', link: '/v2/examples/overlay-transition' },
+            { text: 'Drag Animation', link: '/v2/examples/animation' },
           ],
         },
       ],
@@ -210,6 +219,7 @@ export default defineConfig({
           items: [
             { text: 'DnDProvider', link: '/v2/guide/core/dnd-provider' },
             { text: 'useDnDProvider', link: '/v2/guide/core/use-dnd-provider' },
+            { text: 'DragPreview', link: '/v2/guide/core/drag-preview' },
             { text: 'makeDraggable', link: '/v2/guide/core/make-draggable' },
             { text: 'makeDroppable', link: '/v2/guide/core/make-droppable' },
             {
@@ -230,6 +240,7 @@ export default defineConfig({
           text: 'Guides',
           items: [
             { text: 'Patterns & Concepts', link: '/v2/guide/patterns' },
+            { text: 'Pitfalls & Best Practices', link: '/v2/guide/pitfalls' },
           ],
         },
         {
@@ -250,6 +261,13 @@ export default defineConfig({
             { text: 'Changing Overlay', link: '/v2/examples/changing-overlay' },
             { text: 'Async Drop (Promise)', link: '/v2/examples/promise-drop' },
             { text: 'Tree / Nesting', link: '/v2/examples/tree' },
+            { text: 'Constraint Area', link: '/v2/examples/constraint-area' },
+            { text: 'Auto Scroll', link: '/v2/examples/auto-scroll' },
+            { text: 'Drag Activation', link: '/v2/examples/activation' },
+            { text: 'Drag Modifier', link: '/v2/examples/modifier' },
+            { text: 'Draggable Zone', link: '/v2/examples/draggable-zone' },
+            { text: 'Overlay Transition', link: '/v2/examples/overlay-transition' },
+            { text: 'Drag Animation', link: '/v2/examples/animation' },
           ],
         },
       ],

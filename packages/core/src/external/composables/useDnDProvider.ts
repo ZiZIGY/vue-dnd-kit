@@ -5,7 +5,7 @@ export const useDnDProvider = (): IDnDProviderExternal => {
   const provider = useDnDProviderInternal();
 
   return {
-    overlay: provider.overlay,
+    preview: provider.preview,
     delay: provider.delay,
     distanceProgress: provider.distanceProgress,
     entities: provider.entities,

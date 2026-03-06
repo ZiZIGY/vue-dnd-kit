@@ -1,6 +1,6 @@
 # Custom Overlay per Draggable
 
-Each draggable element can specify its own overlay component via the `render` option in `makeDraggable`. When that element is dragged, `DefaultOverlay` renders your component instead of a clone of the original element.
+Each draggable element can specify its own preview component via the `render` option in `makeDraggable`. When that element is dragged, `DragPreview` renders your component instead of a clone of the original element.
 
 <script setup>
 import Example from '@examples-v2/CustomOverlay/Example.vue';
@@ -10,7 +10,7 @@ import Example from '@examples-v2/CustomOverlay/Example.vue';
 
 <Example />
 
-Tasks show a card-style overlay with priority badge. Notes show a tilted sticky-note overlay. Each item type has its own visual identity while dragging.
+Tasks show a card-style preview with priority badge. Notes show a tilted sticky-note preview. Each item type has its own visual identity while dragging.
 
 ## Setup
 
@@ -31,9 +31,9 @@ makeDraggable(itemRef, {
 Wrap the component with `markRaw()` so Vue doesn't make it deeply reactive. This is required for components stored in reactive state.
 :::
 
-## Writing the overlay component
+## Writing the preview component
 
-The overlay component is rendered **inside** `DefaultOverlay`'s already-positioned container, so you don't need to handle positioning yourself. Use `useDnDProvider()` to read the dragged item's data:
+The preview component is rendered **inside** `DragPreview`'s already-positioned container, so you don't need to handle positioning yourself. Use `useDnDProvider()` to read the dragged item's data:
 
 ```vue
 <script setup lang="ts">
@@ -53,21 +53,21 @@ The overlay component is rendered **inside** `DefaultOverlay`'s already-position
 </script>
 
 <template>
-  <div class="task-overlay">
+  <div class="task-preview">
     <span>📋 {{ draggingData?.label }}</span>
     <span class="priority">{{ draggingData?.priority }}</span>
   </div>
 </template>
 ```
 
-## Global overlay override
+## Global preview override
 
-To replace the overlay for the **entire provider** (not per-item), use the `#overlay` slot on `DnDProvider`, or set `provider.overlay.render` from any descendant:
+To replace the preview for the **entire provider** (not per-item), use the `#preview` slot on `DnDProvider`, or set `provider.preview.render` from any descendant:
 
 ```vue
 <!-- Slot approach -->
 <DnDProvider>
-  <template #overlay>
+  <template #preview>
     <MyGlobalOverlay />
   </template>
 </DnDProvider>
@@ -81,7 +81,7 @@ import MyGlobalOverlay from './MyGlobalOverlay.vue';
 
 const provider = useDnDProvider();
 onMounted(() => {
-  provider.overlay.render.value = markRaw(MyGlobalOverlay);
+  provider.preview.render.value = markRaw(MyGlobalOverlay);
 });
 ```
 
@@ -132,10 +132,10 @@ makeDraggable(itemRef, {
 });
 ```
 
-This is the escape hatch when you need static props baked into the component. For dynamic data that changes per drag, the `data` option + `useDnDProvider()` inside the overlay is the recommended pattern.
+This is the escape hatch when you need static props baked into the component. For dynamic data that changes per drag, the `data` option + `useDnDProvider()` inside the preview is the recommended pattern.
 
 ## See also
 
-- [Changing Overlay](/v2/examples/changing-overlay) — replacing the overlay globally per drop zone
-- [DnDProvider](/v2/guide/core/dnd-provider) — `#overlay` slot
+- [Changing Overlay](/v2/examples/changing-overlay) — replacing the preview globally per drop zone
+- [DnDProvider](/v2/guide/core/dnd-provider) — `#preview` slot
 - [makeDraggable](/v2/guide/core/make-draggable) — `render` and `data` options

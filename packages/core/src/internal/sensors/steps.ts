@@ -21,9 +21,9 @@ import type {
 } from './sensor';
 
 /** Container from overlay ref */
-export const overlayContainer: (
+export const previewContainer: (
   p: IDnDProviderInternal
-) => HTMLElement | null = (provider) => provider.overlay.ref?.value ?? null;
+) => HTMLElement | null = (provider) => provider.preview.ref?.value ?? null;
 
 /**
  * Box from overlay style (x,y) + size.
@@ -35,13 +35,13 @@ export const overlayContainer: (
  * Without the fallback: size=0 → containerBox is a zero-size point → pointer.x <= box.x+0
  * fails whenever offset.x>0 (grabbed away from left edge) → pointerInContainer=false always.
  */
-export const overlayBoxFromStyle: TContainerBoxFn = (
+export const previewBoxFromStyle: TContainerBoxFn = (
   provider
 ): IBoundingBox => {
-  const position = provider.overlay.position?.value ?? { x: 0, y: 0 };
+  const position = provider.preview.position?.value ?? { x: 0, y: 0 };
   const { x, y } = position;
 
-  const sizeValue = provider.overlay.size?.value;
+  const sizeValue = provider.preview.size?.value;
   let w: number;
   let h: number;
   if (sizeValue) {
@@ -49,7 +49,7 @@ export const overlayBoxFromStyle: TContainerBoxFn = (
     h = sizeValue.height;
   } else {
     // ResizeObserver hasn't fired yet — fall back to live rect for size only
-    const rect = provider.overlay.ref?.value?.getBoundingClientRect();
+    const rect = provider.preview.ref?.value?.getBoundingClientRect();
     w = rect?.width ?? 0;
     h = rect?.height ?? 0;
   }
@@ -80,9 +80,33 @@ export const filterNotDragging: TFilterFn = (node, provider) =>
 
 /** Exclude nodes that are descendants of any dragged element (nesting into self) */
 export const filterNotDescendantOfDragged: TFilterFn = (node, provider) =>
-  ![...provider.entities.draggingMap.keys()].some((dragged) =>
-    isDescendant(dragged, node)
-  );
+  ![...provider.entities.draggingMap.keys()].some((dragged) => {
+    // Direct descendant: dragged element contains the candidate
+    if (isDescendant(dragged, node)) return true;
+
+    // Sibling-subtree exclusion: when the dragging element lives inside an
+    // unregistered wrapper (e.g. a dual-role row inside a .node div), siblings
+    // in that same wrapper (such as a childrenRef droppable) must also be
+    // excluded — otherwise a node can be dropped into its own children.
+    // The single-draggable-child guard limits this to the dual-role pattern,
+    // leaving flat lists (where multiple items share one unregistered parent)
+    // unaffected.
+    const parent = dragged.parentElement;
+    if (
+      parent &&
+      node !== dragged &&
+      !provider.entities.draggableMap.has(parent) &&
+      !provider.entities.droppableMap.has(parent) &&
+      isDescendant(parent, node)
+    ) {
+      const directDraggableChildren = [
+        ...provider.entities.draggableMap.keys(),
+      ].filter((el) => el.parentElement === parent);
+      if (directDraggableChildren.length === 1) return true;
+    }
+
+    return false;
+  });
 
 /** Exclude disabled draggedItems and zones (including those inside disabled parents) */
 export const filterNotDisabled: TFilterFn = (node, provider) => {
@@ -130,8 +154,8 @@ export const sortByPointerDistance: TSortCompareFn = (a, b, ctx) => {
 /**
  * Sort: pointer-in-element + depth when pointer inside container; overlap % + centerDistance when outside.
  *
- * The container box MUST be computed via overlayBoxFromStyle (not getBoundingClientRect) so that
- * position is correct for a fixed+transform overlay. The size fallback in overlayBoxFromStyle ensures
+ * The container box MUST be computed via previewBoxFromStyle (not getBoundingClientRect) so that
+ * position is correct for a fixed+transform overlay. The size fallback in previewBoxFromStyle ensures
  * the box is never zero-sized on the first frame, making `pointerInContainer` reliably true whenever
  * the cursor is above the drag ghost.
  */

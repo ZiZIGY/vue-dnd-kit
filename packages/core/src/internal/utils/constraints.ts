@@ -53,7 +53,7 @@ export function applyBoundsConstraint(
   targetY: number,
   axis: 'x' | 'y' | 'both',
   constraintRect: DOMRect,
-  overlayRect: DOMRect
+  overlayRect: { width: number; height: number }
 ): { x: number; y: number } {
   let x = targetX;
   let y = targetY;
@@ -82,18 +82,16 @@ export function applyBoundsConstraint(
  */
 export function calculateConstrainedPosition(
   pointer: TPointerState,
-  overlayElement: HTMLElement | null,
+  overlaySize: { width: number; height: number } | null,
   firstDraggable: HTMLElement | null,
-  constraintsAreaMap: Map<HTMLElement, IConstraintsAreaEntity>,
-  overlaySizeFallback?: { width: number; height: number } | null
+  constraintsAreaMap: Map<HTMLElement, IConstraintsAreaEntity>
 ): { x: number; y: number } {
-  if (!pointer || !overlayElement) {
+  if (!pointer) {
     return { x: 0, y: 0 };
   }
 
-  const overlayRect = overlayElement.getBoundingClientRect();
-  const width = overlayRect.width || overlaySizeFallback?.width || 0;
-  const height = overlayRect.height || overlaySizeFallback?.height || 0;
+  const width = overlaySize?.width ?? 0;
+  const height = overlaySize?.height ?? 0;
   // offset is ratio (0–1)
   let targetX = pointer.current.x - width * pointer.offset.x;
   let targetY = pointer.current.y - height * pointer.offset.y;
@@ -127,7 +125,7 @@ export function calculateConstrainedPosition(
       axisConstrained.y,
       entity.axis || 'both',
       constraintRect,
-      overlayRect
+      overlaySize ?? { width: 0, height: 0 }
     );
   }
 
@@ -142,16 +140,14 @@ export function updatePointerWithConstraints(
   pointer: TPointerState,
   rawX: number,
   rawY: number,
-  overlayElement: HTMLElement | null,
+  overlaySize: { width: number; height: number } | null,
   firstDraggable: HTMLElement | null,
-  constraintsAreaMap: Map<HTMLElement, IConstraintsAreaEntity>,
-  overlaySizeFallback?: { width: number; height: number } | null
+  constraintsAreaMap: Map<HTMLElement, IConstraintsAreaEntity>
 ): void {
   if (!pointer) return;
 
-  const overlayRect = overlayElement?.getBoundingClientRect();
-  const width = overlayRect?.width ?? overlaySizeFallback?.width ?? 0;
-  const height = overlayRect?.height ?? overlaySizeFallback?.height ?? 0;
+  const width = overlaySize?.width ?? 0;
+  const height = overlaySize?.height ?? 0;
 
   const tempPointer = {
     start: pointer.start,
@@ -161,10 +157,9 @@ export function updatePointerWithConstraints(
 
   const constrained = calculateConstrainedPosition(
     tempPointer,
-    overlayElement,
+    overlaySize,
     firstDraggable,
-    constraintsAreaMap,
-    overlaySizeFallback
+    constraintsAreaMap
   );
 
   pointer.current.x = constrained.x + width * pointer.offset.x;

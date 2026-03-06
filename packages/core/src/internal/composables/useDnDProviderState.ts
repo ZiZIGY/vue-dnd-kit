@@ -25,7 +25,6 @@ import {
   filterByGroupsDroppables,
 } from '../utils/groups';
 import { createIntersectionObserver } from '../utils/observer';
-import { useSizeObserver } from './useSizeObserver';
 import { calculateDistanceProgress } from '../utils/drag-activation';
 import { calculateConstrainedPosition } from '../utils/constraints';
 import type { IDnDProviderInternal } from '../types/provider';
@@ -48,7 +47,7 @@ const DEFAULT_KEYS = {
 } as const;
 
 export function useDnDProviderState(
-  overlayRef: Ref<HTMLElement | null>,
+  previewRef: Ref<HTMLElement | null>,
   props?: IDnDProviderProps
 ): IDnDProviderInternal {
   const state = shallowRef<TDnDState>();
@@ -168,25 +167,30 @@ export function useDnDProviderState(
     entities.visibleSelectableAreaSet
   );
 
-  const { overlaySize, overlaySizeObserver } = useSizeObserver(overlayRef);
+  const previewRender = ref<Component>();
 
-  const overlayRender = ref<Component>();
+  const previewSize = shallowRef<DOMRect>(new DOMRect());
 
-  const overlayStyle = computed(() => {
+  const previewStyle = computed(() => {
+    scrollPosition.x;
+    scrollPosition.y;
+    const size = previewSize.value;
     const draggable = entities.initiatingDraggable;
+    const draggingEntity = draggable ? entities.draggingMap.get(draggable) : null;
+    const effectiveSize =
+      size.width && size.height ? size : (draggingEntity?.initialRect ?? null);
 
     return calculateConstrainedPosition(
       pointer.value,
-      overlayRef.value,
+      effectiveSize,
       draggable || null,
-      entities.constraintsAreaMap,
-      overlaySize.value
+      entities.constraintsAreaMap
     );
   });
 
-  const overlayTo = computed<string | false | null | undefined>({
-    get: () => props?.overlayTo,
-    set: (value) => (overlayTo.value = value),
+  const previewTo = computed<string | false | null | undefined>({
+    get: () => props?.previewTo,
+    set: (value) => (previewTo.value = value),
   });
 
   const autoScrollViewport = computed(() => props?.autoScrollViewport);
@@ -201,18 +205,17 @@ export function useDnDProviderState(
     distanceProgress,
     hovered,
     collision,
-    overlay: {
-      size: overlaySize,
-      position: overlayStyle,
-      render: overlayRender,
-      ref: overlayRef,
-      to: overlayTo,
+    preview: {
+      size: previewSize,
+      position: previewStyle,
+      render: previewRender,
+      ref: previewRef,
+      to: previewTo,
     },
     lib: {
       draggableObserver,
       droppableObserver,
       selectableAreaObserver,
-      overlaySizeObserver,
       rectCache: new Map<HTMLElement, DOMRect>(),
     },
     autoScrollViewport,

@@ -4,8 +4,9 @@
  */
 
 import DnDProvider from './components/DnDProvider.vue';
+import DragPreview from './components/DragPreview.vue';
 
-export { DnDProvider };
+export { DnDProvider, DragPreview };
 export { makeDraggable } from './composables/makeDraggable';
 export { makeSelectionArea } from './composables/makeSelectionArea';
 export { makeConstraintArea } from './composables/makeConstraintArea';
@@ -15,6 +16,5 @@ export {
   makeAutoScroll,
   type IAutoScrollOptions,
 } from './composables/makeAutoScroll';
-export { defaultCollisionDetection } from '../internal/sensors';
 
 export type * from './types';

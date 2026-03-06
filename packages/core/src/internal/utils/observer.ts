@@ -1,8 +1,6 @@
 /**
- * Observers — IntersectionObserver (visibility) and ResizeObserver (size)
+ * Observers — IntersectionObserver (visibility)
  */
-
-import type { Ref } from 'vue';
 
 export interface IObserverWrapper {
   observe: (element: HTMLElement) => void;
@@ -33,25 +31,3 @@ export const createIntersectionObserver = (
   };
 };
 
-/**
- * Creates a ResizeObserver that tracks element size and writes to target ref
- *
- * @param target - Ref to write { width, height } on resize
- * @returns Object with observe/unobserve/disconnect methods
- */
-export const createSizeObserver = (
-  target: Ref<{ width: number; height: number } | null>
-): IObserverWrapper => {
-  const observer = new ResizeObserver((entries) => {
-    const entry = entries[0];
-    if (!entry) return;
-    const { width, height } = entry.contentRect;
-    target.value = { width, height };
-  });
-
-  return {
-    observe: (el) => observer.observe(el),
-    unobserve: (el) => observer.unobserve(el),
-    disconnect: () => observer.disconnect(),
-  };
-};

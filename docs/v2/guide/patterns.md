@@ -173,7 +173,7 @@ No special handling needed — `suggestSort` already accounts for multi-drag.
 
 These are separate concerns:
 
-| | `render` in `makeDraggable` | Custom overlay (`DnDProvider overlay` slot) |
+| | `render` in `makeDraggable` | Custom preview (`DnDProvider` `#preview` slot) |
 |---|---|---|
 | **Scope** | Per-draggable — controls how *this item* looks when dragged | Global — controls the entire floating container for all drags |
 | **When to use** | Different items need different drag appearances | Custom animation, backdrop blur, different positioning |

@@ -1,6 +1,6 @@
 # Custom Render per Draggable
 
-By default, `DefaultOverlay` clones the outer HTML of the dragged element and shows the clone at the overlay position. The `render` option in `makeDraggable` lets you replace that clone with any Vue component — so each draggable type can look completely different while being dragged.
+By default, `DragPreview` clones the outer HTML of the dragged element and shows the clone at the preview position. The `render` option in `makeDraggable` lets you replace that clone with any Vue component — so each draggable type can look completely different while being dragged.
 
 <script setup>
 import Example from '@examples-v2/CustomOverlay/Example.vue';
@@ -10,14 +10,14 @@ import Example from '@examples-v2/CustomOverlay/Example.vue';
 
 <Example />
 
-Tasks show a card-style overlay with a priority badge. Notes show a tilted sticky-note overlay. Both are rendered by `DefaultOverlay`, just with different components per item type.
+Tasks show a card-style preview with a priority badge. Notes show a tilted sticky-note preview. Both are rendered by `DragPreview`, just with different components per item type.
 
 ## How it works
 
-`DefaultOverlay` loops over `entities.draggingMap` and for each dragged element checks whether a `render` component is registered. If yes — renders that component. If no — falls back to the HTML clone:
+`DragPreview` loops over `entities.draggingMap` and for each dragged element checks whether a `render` component is registered. If yes — renders that component. If no — falls back to the HTML clone:
 
 ```ts
-// Simplified DefaultOverlay logic
+// Simplified DragPreview logic
 for (const [node, draggable] of entities.draggingMap) {
   const customRender = entities.draggableMap.get(node)?.render;
   if (customRender) {
@@ -28,7 +28,7 @@ for (const [node, draggable] of entities.draggingMap) {
 }
 ```
 
-The render component is placed **inside** the already-positioned overlay container, so it does not need to handle transforms or absolute positioning.
+The render component is placed **inside** the already-positioned preview container, so it does not need to handle transforms or absolute positioning.
 
 ## Setup
 
@@ -72,14 +72,14 @@ The component receives no props from the library. Use `useDnDProvider()` to read
 </script>
 
 <template>
-  <div class="task-overlay">
+  <div class="task-preview">
     📋 {{ draggingData?.label }}
     <span>{{ draggingData?.priority }}</span>
   </div>
 </template>
 ```
 
-No `transform` or `position` needed — the parent overlay container handles that.
+No `transform` or `position` needed — the parent preview container handles that.
 
 ## Using TSX for inline components
 
@@ -117,17 +117,17 @@ makeDraggable(itemRef, {
 
 The arrow function `() => <MyOverlay />` is a valid functional component in Vue — no `defineComponent` needed.
 
-## Difference from overlay customization
+## Difference from preview customization
 
 | Concept | API | Controls |
 |---|---|---|
 | **Render per draggable** | `render` in `makeDraggable` | How this specific element looks while being dragged |
-| **Overlay component** | `#overlay` slot / `provider.overlay.render` | The entire drag container — positioning, animation, what's shown |
+| **Overlay component** | `#preview` slot / `provider.preview.render` | The entire drag container — positioning, animation, what's shown |
 
-The `render` option works *inside* the overlay. Replacing the overlay component replaces the whole system including positioning logic. See [Changing Overlay](/v2/examples/changing-overlay) for the latter.
+The `render` option works *inside* the preview. Replacing the preview component replaces the whole system including positioning logic. See [Changing Overlay](/v2/examples/changing-overlay) for the latter.
 
 ## See also
 
-- [Changing Overlay](/v2/examples/changing-overlay) — replacing the overlay component entirely
+- [Changing Overlay](/v2/examples/changing-overlay) — replacing the preview component entirely
 - [makeDraggable](/v2/guide/core/make-draggable) — `render` and `data` options
-- [DnDProvider](/v2/guide/core/dnd-provider) — `#overlay` slot
+- [DnDProvider](/v2/guide/core/dnd-provider) — `#preview` slot

@@ -66,9 +66,9 @@
         :items="[]"
         @drop="handleDrop"
         @enter="
-          (event) => (event.provider.overlay.render.value = markRaw(Overlay))
+          (event) => (event.provider.preview.render.value = markRaw(Overlay))
         "
-        @leave="(event) => (event.provider.overlay.render.value = null)"
+        @leave="(event) => (event.provider.preview.render.value = null)"
       >
       </Droppable>
     </div>
