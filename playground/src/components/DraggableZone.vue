@@ -66,6 +66,7 @@
     }"
   >
     <!-- Placement indicators (before/after this zone) -->
+
     <div
       v-if="placement?.top"
       class="dz__indicator dz__indicator--top"

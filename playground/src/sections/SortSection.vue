@@ -10,11 +10,9 @@
     label: string;
   }
 
-  const listA = ref<Item[]>([
-    { id: 's-a1', label: 'A1' },
-    { id: 's-a2', label: 'A2' },
-    { id: 's-a3', label: 'A3' },
-  ]);
+  const listA = ref<Item[]>(
+    Array.from({ length: 100 }, (_, i) => ({ id: `s-a${i}`, label: `A${i}` }))
+  );
   const listB = ref<Item[]>([
     { id: 's-b1', label: 'B1' },
     { id: 's-b2', label: 'B2' },

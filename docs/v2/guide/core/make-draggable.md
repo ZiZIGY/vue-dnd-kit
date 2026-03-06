@@ -15,7 +15,7 @@ Overloads:
 - **`makeDraggable(ref, payload)`** — if the second argument is a **function**, it is treated as the payload (options are empty).
 - **`makeDraggable(ref, options, payload?)`** — options and optional payload.
 
-**`ref`** must be a ref to an HTML element (or component root element). The element is registered on mount and unregistered on unmount. Native `dragstart` / `drag` / `dragend` are prevented so the browser doesn’t start its own drag.
+**`ref`** must be a ref to an HTML element (or component root element). The element is registered on mount and unregistered on unmount. Native `dragstart` / `drag` / `dragend` are prevented so the browser doesn't start its own drag.
 
 ---
 
@@ -48,34 +48,40 @@ Extends **base options** (shared with droppable/selection/constraint):
 | `activation`      | `IDragActivationOptions` | When drag starts: **distance** (pixels or `{ x, y, condition }`) and/or **delay** (ms). See [Activation](#activation). |
 | `events`          | `IDraggableEvents`      | Callbacks for drag lifecycle and hover. See [Events](#events). |
 | `render`           | `Component`             | Custom Vue component used in the overlay instead of cloning the node. |
-| `placementMargins`| `IPlacementMargins`     | `{ top?, right?, bottom?, left? }` in pixels. Used when this element is also a droppable: defines the “center” zone for placement. |
+| `placementMargins`| `IPlacementMargins`     | `{ top?, right?, bottom?, left? }` in pixels. Used when this element is also a droppable: defines the "center" zone for placement. |
 
 ---
 
 ## Payload
 
-**`payload`** is an optional function that describes the item for drop handlers and reordering:
+**`payload`** is an optional function that describes the item position and source list — needed for the `suggestSort` / `suggestSwap` / `suggestCopy` helpers:
 
 ```ts
-type TDraggablePayload<T = any, D = any> = () => [index, items, dropData?];
+type TDraggablePayload<T = any> = () => [index: number, items: T[]];
 ```
 
 - **`index`** — index of this item in the list.
 - **`items`** — the full list (array).
-- **`dropData`** (optional) — extra data for the drop target.
 
-The library calls this when a drag starts and uses the result to build **`event.draggedItems`**:
+The library calls this when building **`event.draggedItems`**:
 
 ```ts
-interface IDragItem<T = unknown, D = unknown> {
-  index: number; // position in items
-  item: T;       // the actual data: items[index]
-  items: T[];    // reference to the source array
-  dropData?: D;
+interface IDragItem<T = unknown> {
+  index: number;   // position in items
+  item: T;         // the actual data: items[index]
+  items: T[];      // reference to the source array
+  data?: unknown;  // custom data from the `data` option
 }
 ```
 
-So in handlers (`onSelfDragStart`, `onDrop`, etc.) you work with ready-made `event.draggedItems` instead of raw `[index, items]`.
+For arbitrary custom data (without a list), use the **`data`** option instead:
+
+```ts
+makeDraggable(ref, { data: () => myCard })
+// → event.draggedItems[0].data === myCard
+```
+
+You can combine both — `payload` for the helpers, `data` for custom metadata.
 
 ---
 
@@ -110,16 +116,16 @@ Use these to avoid accidental drags (e.g. require 5px move or 200ms hold).
 Every event receives **`IDragEvent`**:
 
 ```ts
-interface IDragEvent<DragT = unknown, DragD = unknown, ZoneT = unknown, ZoneU = unknown> {
-  draggedItems: IDragItem<DragT, DragD>[];         // all dragged items (multi-drag)
-  dropZone?: IDropZoneContext<ZoneT, ZoneU>;      // zone under cursor (items + userData + placement)
-  hoveredDraggable?: IHoveredDraggableContext;     // hovered draggable inside the zone
-  operation: IOperation;                            // helper utilities (insertAt, removeIndexes, suggest*)
-  provider: IDnDProviderExternal;                  // access to provider state (pointer, state, etc.)
+interface IDragEvent<DragT = unknown, ZoneT = unknown> {
+  draggedItems: IDragItem<DragT>[];              // all dragged items (multi-drag)
+  dropZone: IDropZoneContext<ZoneT> | undefined; // zone under cursor (items + placement + data)
+  hoveredDraggable: IHoveredDraggableContext | undefined; // hovered draggable inside the zone
+  helpers: IHelpers;                             // low-level array ops + high-level suggest* presets
+  provider: IDnDProviderExternal;                // access to provider state (pointer, state, etc.)
 }
 ```
 
-For simple cases you only need `event.draggedItems`, `event.dropZone`, and for sorting, `event.hoveredDraggable`.
+For simple cases you only need `event.draggedItems`, `event.dropZone`, and for sorting, `event.hoveredDraggable`. Use `event.helpers.suggestSort()` to compute new array state without writing sort logic manually.
 
 ---
 
@@ -173,8 +179,8 @@ Using return values (e.g. for styling and sort indicators):
     ref="itemRef"
     :class="{
       'opacity-50': isDragging,
-      'ring': isDragOver?.top,
       'border-t-2': isDragOver?.top,
+      'border-b-2': isDragOver?.bottom,
     }"
   >
     Item

@@ -27,6 +27,7 @@
     <div
       ref="overlayRef"
       class="dnd-kit-overlay-container"
+      v-bind="props"
     >
       <slot
         name="overlay"

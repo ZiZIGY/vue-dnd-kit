@@ -15,16 +15,6 @@ export {
   makeAutoScroll,
   type IAutoScrollOptions,
 } from './composables/makeAutoScroll';
-export {
-  makeSnappedOverlayPosition,
-  type TSnapOverlayOptions,
-} from './composables/makeSnappedOverlayPosition';
-
-export {
-  createSensor,
-  defaultCollisionDetection,
-  type CollisionDetectionFn,
-  type TMergeStrategy,
-} from '../internal/sensors';
+export { defaultCollisionDetection } from '../internal/sensors';
 
 export type * from './types';

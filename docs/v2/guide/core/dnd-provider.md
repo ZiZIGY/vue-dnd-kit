@@ -21,6 +21,23 @@ In both cases, **do not nest** multiple providers on the same page: only one pro
 
 Because of that, **do not nest** multiple providers on the same screen: each would attach its own document listeners, which can lead to double handling, focus conflicts, or unpredictable behavior. One provider per context (app or page), one active DnD scope at a time.
 
+## Props
+
+| Prop                 | Type                                    | Default     | Description |
+|----------------------|-----------------------------------------|-------------|-------------|
+| `autoScrollViewport` | `IAutoScrollOptions \| true \| false \| null` | `undefined` | Enable viewport (window) auto-scroll when the overlay nears the viewport edge during drag. `true` = default options. Pass an options object to customize `threshold` and `speed`. `false` / `null` / `undefined` = disabled. For container scroll, use [makeAutoScroll](/v2/guide/core/make-auto-scroll) instead. |
+| `overlayTo`          | `string \| false \| null`               | `undefined` | Teleport the overlay to a different DOM element. Accepts a CSS selector string (e.g. `'body'` or `'#my-portal'`). `false` / `null` / `undefined` = render overlay in-place. |
+
+### `IAutoScrollOptions`
+
+```ts
+interface IAutoScrollOptions {
+  threshold?: number | IPlacementMargins; // px from edge to start scrolling (default ~50)
+  speed?: number;                          // scroll speed multiplier (default 1)
+  disabled?: boolean;                      // disable without removing the prop
+}
+```
+
 ## Basic usage
 
 ```vue
@@ -35,6 +52,16 @@ Because of that, **do not nest** multiple providers on the same screen: each wou
 </script>
 ```
 
+With props:
+
+```vue
+<template>
+  <DnDProvider :autoScrollViewport="true" overlayTo="body">
+    <YourApp />
+  </DnDProvider>
+</template>
+```
+
 `DnDProvider` renders:
 
 1. Its default slot — your app content.
@@ -42,22 +69,22 @@ Because of that, **do not nest** multiple providers on the same screen: each wou
 
 ## Overlay: default and custom
 
-While dragging, the library shows an overlay (a clone or custom component that tracks the pointer). That overlay is rendered inside the provider’s fixed container.
+While dragging, the library shows an overlay (a clone or custom component that tracks the pointer). That overlay is rendered inside the provider's fixed container.
 
 ### Default overlay
 
-If you don’t use the `overlay` slot, the provider uses **DefaultOverlay**:
+If you don't use the `overlay` slot, the provider uses **DefaultOverlay**:
 
-- When `state === 'dragging'`, it renders a single wrapper positioned with `transform: translate3d(x, y, 0)` (coordinates come from the provider).
+- When `state === 'dragging'`, it renders a single wrapper positioned with `transform: translate3d(x, y, 0)` (coordinates come from `provider.overlay.position`).
 - For each dragged item it either:
   - Renders the **custom component** you passed as `render` in `makeDraggable`, or
   - **Clones the dragged node**: same tag, `innerHTML`, and size (`initialRect.width` / `height`) so it looks like the original element.
 
-So by default you get a simple “ghost” that follows the cursor. You can customize the look per draggable via `makeDraggable`’s `render` option.
+So by default you get a simple "ghost" that follows the cursor. You can customize the look per draggable via `makeDraggable`'s `render` option.
 
 ### Overlay slot
 
-You can take full control of the overlay with the `#overlay` slot. The slot receives `{ overlay }` — the **component** that should be rendered in the overlay container (either the current draggable’s `render` component or the default overlay component).
+You can take full control of the overlay with the `#overlay` slot. The slot receives `{ overlay }` — the **component** that should be rendered in the overlay container (either the current draggable's `render` component or the default overlay component).
 
 ```vue
 <DnDProvider>
@@ -74,7 +101,12 @@ The default implementation is exactly that: render `<component :is="overlay" />`
 ## How it fits together
 
 - **DnDProvider** mounts, sets up shared state and observers, and registers document listeners. It `provide`s the DnD context and renders the overlay container.
-- **DefaultOverlay** (used when you don’t use the slot) subscribes to that context, shows when `state === 'dragging'`, and for each dragging entity renders either its custom `render` component or a DOM clone.
-- **makeDraggable** / **makeDroppable** / etc. inject the same context and register their elements with the provider’s state. They don’t register document listeners themselves; the single provider does that.
+- **DefaultOverlay** (used when you don't use the slot) subscribes to that context, shows when `state === 'dragging'`, and for each dragging entity renders either its custom `render` component or a DOM clone.
+- **makeDraggable** / **makeDroppable** / etc. inject the same context and register their elements with the provider's state. They don't register document listeners themselves; the single provider does that.
 
 So: one `DnDProvider` at the app root, no nested providers, and optionally a custom `#overlay` slot if you need a different overlay container or behavior.
+
+## See also
+
+- [useDnDProvider](/v2/guide/core/use-dnd-provider) — access the DnD context from descendants.
+- [makeAutoScroll](/v2/guide/core/make-auto-scroll) — auto-scroll a specific scrollable container.

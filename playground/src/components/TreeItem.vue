@@ -11,7 +11,10 @@
    *  - Hover inside children zone → insert into this node's children (dropZone.items = node.children)
    */
   import { ref, computed, useTemplateRef } from 'vue';
-  import { makeDraggable, makeDroppable } from '../../../packages/core/src/external';
+  import {
+    makeDraggable,
+    makeDroppable,
+  } from '../../../packages/core/src/external';
   import type { IDragEvent } from '../../../packages/core/src/external/types';
   import type { TreeNode } from '../types';
 
@@ -31,16 +34,17 @@
   const { isDragging, isDragOver } = makeDraggable(
     nodeRef as any,
     { dragHandle: '.tree-handle' },
-    () => [props.index, props.siblings],
+    () => [props.index, props.siblings]
   );
 
   // ── Children container: droppable zone for child nodes ────────────────────
   const childrenRef = useTemplateRef<HTMLElement>('childrenRef');
-  const { isAllowed: isChildrenAllowed } = makeDroppable(
-    childrenRef as any,
-    { events: { onDrop: (e) => emit('drop', e) } },
-    () => [props.node.children],
-  );
+  const { isAllowed: isChildrenAllowed, isDragOver: isZoneOver } =
+    makeDroppable(
+      nodeRef as any,
+      { events: { onDrop: (e) => emit('drop', e) } },
+      () => [props.node.children]
+    );
 
   const placement = computed(() => isDragOver.value);
 </script>
@@ -52,12 +56,14 @@
     :class="{ 'tree-node--dragging': isDragging }"
   >
     <!-- Before indicator -->
+    {{ isZoneOver }}
     <div
       v-if="placement?.top"
       class="tree-indicator tree-indicator--top"
     />
 
     <div class="tree-node__header">
+      {{ placement }}
       <button class="tree-handle">⠿</button>
       <button
         v-if="node.children.length"
@@ -69,7 +75,9 @@
       <span
         v-else
         class="tree-toggle tree-toggle--leaf"
-      >·</span>
+      >
+        ·
+      </span>
       <span class="tree-label">{{ node.label }}</span>
     </div>
 

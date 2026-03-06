@@ -23,6 +23,10 @@ export const areGroupsCompatible = (
 /**
  * Фильтрует видимые зоны по группам: оставляет только те, куда можно дропнуть
  * текущий набор перетаскиваемых (draggingMap). Внутри сам берёт ключи из draggingMap.
+ *
+ * groupMatch on the zone controls the matching strategy:
+ * - 'every' (default): ALL dragged items must individually match zone's groups.
+ * - 'some': zone is accessible if AT LEAST ONE dragged item matches.
  */
 export function filterByGroupsDroppables(
   visibleDroppableSet: Set<HTMLElement>,
@@ -30,17 +34,23 @@ export function filterByGroupsDroppables(
   draggableMap: Map<HTMLElement, IDraggableEntity>,
   droppableMap: Map<HTMLElement, IDroppableEntity>
 ): Set<HTMLElement> {
-  const draggingGroups = new Set<string>();
+  const draggingItems: Array<{ groups: string[] }> = [];
   for (const el of draggingMap.keys()) {
     const entity = draggableMap.get(el);
-    for (const g of entity?.groups ?? []) draggingGroups.add(g);
+    draggingItems.push({ groups: entity?.groups ?? [] });
   }
-  const draggingGroupsArr = [...draggingGroups];
+
   const allowed = new Set<HTMLElement>();
   for (const el of visibleDroppableSet) {
     const zoneEntity = droppableMap.get(el);
     const zoneGroups = zoneEntity?.groups ?? [];
-    if (areGroupsCompatible(draggingGroupsArr, zoneGroups)) allowed.add(el);
+    const groupMatch = zoneEntity?.groupMatch ?? 'every';
+
+    const isAllowed =
+      !draggingItems.length ||
+      draggingItems[groupMatch]((item) => areGroupsCompatible(item.groups, zoneGroups));
+
+    if (isAllowed) allowed.add(el);
   }
   return allowed;
 }

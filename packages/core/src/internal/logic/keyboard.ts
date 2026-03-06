@@ -1,21 +1,22 @@
-import { DnDSelectors } from '../utils/namespaces';
-import { disableInteractions, enableInteractions } from '../utils/dom';
 import {
-  createPointerState,
   calculateCursorOffset,
+  createPointerState,
   startDraggingForProvider,
 } from '../utils/pointer';
-import { checkDragHandle } from '../utils/drag-activation';
-import { resetDnDSession } from '../utils/session';
+import { disableInteractions, enableInteractions } from '../utils/dom';
+import { finishDragSession, handleDropAndFinish } from './pointer';
 import {
-  triggerSelfDragForElement,
   triggerDragForAll,
   triggerDropCancelEvents,
+  triggerSelfDragForElement,
 } from '../utils/events';
-import { handleDropAndFinish, finishDragSession } from './pointer';
-import { applyCollisionResultToHovered } from './hover';
-import { defaultCollisionDetection } from '../sensors/default-collision';
+
+import { DnDSelectors } from '../utils/namespaces';
 import type { IDnDProviderInternal } from '../types/provider';
+import { applyCollisionResultToHovered } from './hover';
+import { checkDragHandle } from '../utils/drag-activation';
+import { defaultCollisionDetection } from '../sensors/default-collision';
+import { resetDnDSession } from '../utils/session';
 
 const MOVE_MAP: Record<string, { dx: number; dy: number }> = {
   ArrowUp: { dx: 0, dy: -1 },
@@ -31,6 +32,7 @@ const MOVE_MAP: Record<string, { dx: number; dy: number }> = {
 const handleKeyDown =
   (provider: IDnDProviderInternal) => (event: KeyboardEvent) => {
     const { keys } = provider.keyboard;
+    console.log(event.code);
 
     keys.pressedKeys.value.add(event.code);
 
@@ -73,8 +75,7 @@ const handleKeyDown =
           y: provider.pointer.value.current.y + move.dy * dist,
         };
 
-        const run = provider.collision?.run ?? defaultCollisionDetection;
-        const result = run(provider);
+        const result = defaultCollisionDetection(provider);
         applyCollisionResultToHovered(provider, provider.hovered, result);
         triggerSelfDragForElement(
           provider,
@@ -129,8 +130,7 @@ const handleKeyDown =
 
       startDraggingForProvider(provider);
 
-      const run = provider.collision?.run ?? defaultCollisionDetection;
-      const result = run(provider);
+      const result = defaultCollisionDetection(provider);
       applyCollisionResultToHovered(provider, provider.hovered, result);
 
       triggerSelfDragForElement(provider, closestDraggable, 'onSelfDragStart');

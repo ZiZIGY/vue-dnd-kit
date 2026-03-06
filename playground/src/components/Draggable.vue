@@ -1,27 +1,22 @@
 <script setup lang="ts" generic="T">
   import { makeDraggable } from '../../../packages/core/src/external';
-  import { computed, useTemplateRef } from 'vue';
-  import type { IPlacement } from '../../../packages/core/src/external/types';
+  import { useTemplateRef } from 'vue';
 
   const props = defineProps<{
     index: number;
     items: T[];
-    /** Optional: for cross-zone drop data */
-    dropData?: unknown;
   }>();
 
   const node = useTemplateRef<HTMLElement>('draggableRef');
 
-  const { selected, isDragging, isDragOver } = makeDraggable(
-    node as any,
+  const { selected, isDragging } = makeDraggable(
+    node,
     {
       groups: ['draggable'],
       dragHandle: '.drag-handle',
     },
-    () => [props.index, props.items, props.dropData]
+    () => [props.index, props.items]
   );
-
-  const placement = computed<IPlacement | undefined>(() => isDragOver.value);
 </script>
 
 <template>
@@ -30,22 +25,6 @@
     class="draggable"
     :class="{ 'is-dragging': isDragging }"
   >
-    <div
-      v-if="placement?.top"
-      class="indicator top"
-    ></div>
-    <div
-      v-if="placement?.bottom"
-      class="indicator bottom"
-    ></div>
-    <div
-      v-if="placement?.left"
-      class="indicator left"
-    ></div>
-    <div
-      v-if="placement?.right"
-      class="indicator right"
-    ></div>
     <input
       type="checkbox"
       v-model="selected"

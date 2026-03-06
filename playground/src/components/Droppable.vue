@@ -18,7 +18,7 @@
   );
 
   const emit = defineEmits<{
-    drop: [event: IDragEvent];
+    (e: 'drop' | 'enter' | 'leave', event: IDragEvent): void;
   }>();
 
   const node = useTemplateRef<HTMLElement>('droppableRef');
@@ -31,13 +31,17 @@
     node as any,
     {
       events: {
-        onEnter() {},
+        onEnter(e) {
+          emit('enter', e);
+        },
         async onDrop(e) {
           const result = props.onDrop?.(e);
           emit('drop', e);
           return result;
         },
-        onLeave() {},
+        onLeave(e) {
+          emit('leave', e);
+        },
       },
     },
     () => [props.items]

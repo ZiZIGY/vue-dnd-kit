@@ -8,16 +8,33 @@
   import TreeSection from './sections/TreeSection.vue';
   import KanbanSection from './sections/KanbanSection.vue';
   import ConfirmSection from './sections/ConfirmSection.vue';
+  import OverlaySection from './sections/OverlaySection.vue';
 
-  type Tab = 'sort' | 'swap' | 'copy' | 'tree' | 'kanban' | 'confirm';
+  type Tab =
+    | 'sort'
+    | 'swap'
+    | 'copy'
+    | 'tree'
+    | 'kanban'
+    | 'confirm'
+    | 'overlay';
 
   const tabs: { id: Tab; label: string; desc: string }[] = [
-    { id: 'sort',   label: 'Sort & Transfer', desc: 'suggestSort()' },
-    { id: 'swap',   label: 'Swap',            desc: 'suggestSwap()' },
-    { id: 'copy',   label: 'Copy',            desc: 'suggestCopy()' },
-    { id: 'tree',   label: 'Tree',            desc: 'nested sort / swap' },
-    { id: 'kanban', label: 'Kanban',          desc: 'DraggableZone' },
-    { id: 'confirm', label: 'Confirm drop',   desc: 'onDrop Promise + confirm()' },
+    { id: 'sort', label: 'Sort & Transfer', desc: 'suggestSort()' },
+    { id: 'swap', label: 'Swap', desc: 'suggestSwap()' },
+    { id: 'copy', label: 'Copy', desc: 'suggestCopy()' },
+    { id: 'tree', label: 'Tree', desc: 'nested sort / swap' },
+    { id: 'kanban', label: 'Kanban', desc: 'DraggableZone' },
+    {
+      id: 'confirm',
+      label: 'Confirm drop',
+      desc: 'onDrop Promise + confirm()',
+    },
+    {
+      id: 'overlay',
+      label: 'Changing Overlay',
+      desc: 'Test',
+    },
   ];
 
   const activeTab = ref<Tab>('sort');
@@ -42,18 +59,15 @@
       </nav>
 
       <section class="section">
-        <SortSection   v-if="activeTab === 'sort'" />
-        <SwapSection   v-else-if="activeTab === 'swap'" />
-        <CopySection   v-else-if="activeTab === 'copy'" />
-        <TreeSection   v-else-if="activeTab === 'tree'" />
+        <SortSection v-if="activeTab === 'sort'" />
+        <SwapSection v-else-if="activeTab === 'swap'" />
+        <CopySection v-else-if="activeTab === 'copy'" />
+        <TreeSection v-else-if="activeTab === 'tree'" />
         <KanbanSection v-else-if="activeTab === 'kanban'" />
         <ConfirmSection v-else-if="activeTab === 'confirm'" />
+        <OverlaySection v-else-if="activeTab === 'overlay'" />
       </section>
     </div>
-
-    <template #overlay>
-      <Overlay />
-    </template>
   </DnDProvider>
 </template>
 
@@ -61,15 +75,6 @@
   body {
     background: #f0f0f0;
     min-height: 100svh;
-  }
-
-  .playground {
-    padding: 2rem;
-    max-width: 72rem;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
   }
 
   h1 {
@@ -201,10 +206,18 @@
     gap: 0.5rem;
   }
 
-  .card--blue   { background: #3b82f6; }
-  .card--green  { background: #22c55e; }
-  .card--purple { background: #a855f7; }
-  .card--orange { background: #f97316; }
+  .card--blue {
+    background: #3b82f6;
+  }
+  .card--green {
+    background: #22c55e;
+  }
+  .card--purple {
+    background: #a855f7;
+  }
+  .card--orange {
+    background: #f97316;
+  }
 
   /* ── TransitionGroup animations ────────────────────────────────────────────── */
   .list-move,

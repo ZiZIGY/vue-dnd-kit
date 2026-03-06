@@ -18,20 +18,17 @@ import type {
   Reactive,
   Ref,
   ShallowRef,
+  VNode,
+  VueElement,
   WritableComputedRef,
 } from 'vue';
 
 /** Event object passed to all drag/drop handlers */
-export interface IDragEvent<
-  DragT = unknown,
-  DragD = unknown,
-  ZoneT = unknown,
-  ZoneU = unknown,
-> {
+export interface IDragEvent<DragT = unknown, ZoneT = unknown> {
   /** All dragged items sorted by index. Length > 1 means multi-drag. */
-  draggedItems: IDragItem<DragT, DragD>[];
+  draggedItems: IDragItem<DragT>[];
   /** Drop zone context — present in onEnter / onDrop / onLeave. */
-  dropZone: IDropZoneContext<ZoneT, ZoneU> | undefined;
+  dropZone: IDropZoneContext<ZoneT> | undefined;
   /** Draggable element under cursor inside the zone — use for insert-before/after. */
   hoveredDraggable: IHoveredDraggableContext | undefined;
   provider: IDnDProviderExternal;
@@ -48,10 +45,6 @@ export interface IHovered {
 }
 
 export interface ICollision {
-  run?: (provider: any) => {
-    elements: HTMLElement[];
-    zones: HTMLElement[];
-  };
   throttle: Ref<number>;
 }
 
@@ -109,4 +102,6 @@ export interface IDnDProviderProps {
   autoScrollViewport?: IAutoScrollOptions | true | false | null;
   /** Teleport overlay to element: 'body' = defaults, string = element id. false | null | undefined = disabled. */
   overlayTo?: string | false | null;
+  style?: any;
+  class?: any;
 }

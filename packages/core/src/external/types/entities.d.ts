@@ -6,50 +6,38 @@ import type {
 } from 'vue';
 import type { IPlacement, IPlacementMargins } from './placement';
 import type { IDragEvent } from './provider';
+import type { IHoveredDraggableContext } from './operations';
 
 export type TDnDNode = HTMLElement | ComponentPublicInstance | null;
 export type TDnDNodeRef = Readonly<Ref<TDnDNode>>;
 export type TDragAxis = 'x' | 'y' | 'both';
-/** Factory registered on a draggable: returns [index, items, dropData?] */
-export type TDraggablePayload<T = any, D = any> = () => [number, T[], D?];
+/** Factory registered on a draggable: returns [index, items] */
+export type TDraggablePayload<T = any> = () => [number, T[]];
 
-/** Factory registered on a droppable zone: returns [items, userData?] */
-export type TDroppablePayload<T = any, U = any> = () => [T[], U?];
-
-// ─── Internal resolved types (used by entity system) ──────────────────────────
-
-/** @internal */
-export interface IDragPayload<T = unknown, D = unknown> {
-  index: number;
-  items: T[];
-  dropData?: D;
-}
-
-/** @internal */
-export interface IDropZonePayload<T = unknown, U = unknown> {
-  items: T[];
-  userData?: U;
-}
+/** Factory registered on a droppable zone: returns items array */
+export type TDroppablePayload<T = any> = () => T[];
 
 // ─── Public event types ────────────────────────────────────────────────────────
 
 /** One dragged item — always carries its source array and position */
-export interface IDragItem<T = unknown, D = unknown> {
+export interface IDragItem<T = unknown> {
   /** Index of this item in `items` */
   index: number;
   /** The actual object: `items[index]` */
   item: T;
   /** Source array (same reference as passed to the draggable payload factory) */
   items: T[];
-  dropData?: D;
+  /** Custom data from the `data` option (reactive, always up-to-date) */
+  data?: unknown;
 }
 
 /** Drop zone context — present in onEnter / onDrop / onLeave */
-export interface IDropZoneContext<T = unknown, U = unknown> {
+export interface IDropZoneContext<T = unknown> {
   items: T[];
-  userData?: U;
   /** Cursor position relative to the zone boundary */
   placement: IPlacement | undefined;
+  /** Custom data from the `data` option (reactive, always up-to-date) */
+  data?: unknown;
 }
 
 export interface IBaseOptions {
@@ -74,6 +62,9 @@ export interface IEntities {
 
   draggingMap: Map<HTMLElement, IDraggingEntity>;
   selectedSet: Set<HTMLElement>;
+  /** Snapshot of selectedSet taken at the start of a rubber-band selection session.
+   *  Elements in this set are preserved when the new rect doesn't cover them. */
+  selectionBase: Set<HTMLElement>;
 
   modifiersDraggableSet: ComputedRef<Set<HTMLElement>>;
   modifiersSelectableAreaSet: ComputedRef<Set<HTMLElement>>;
@@ -133,8 +124,30 @@ export interface IDraggableEvents {
   onLeave?: (event: IDragEvent) => void;
 }
 
+export interface IDropValidateEvent {
+  /** Items whose groups are compatible with the zone's groups */
+  validItems: IDragItem[];
+  /** Items whose groups do NOT match the zone's groups */
+  invalidItems: IDragItem[];
+  dropZone: IDropZoneContext | undefined;
+  hoveredDraggable?: IHoveredDraggableContext;
+}
+
 export interface IDroppableEvents {
   onEnter?: (event: IDragEvent) => void;
+  /**
+   * Called before `onDrop` when `groupMatch: 'some'` and some dragged items
+   * don't match the zone's groups. Receives valid/invalid item split.
+   *
+   * Return:
+   * - `void` — drop only `validItems` (default)
+   * - `false` — decline this drop (drag stays active)
+   * - `IDragItem[]` — drop exactly these items
+   * - `Promise<...>` — async (state becomes 'pending' while waiting)
+   */
+  onValidate?: (
+    event: IDropValidateEvent
+  ) => void | false | IDragItem[] | Promise<void | false | IDragItem[]>;
   onDrop?: (event: IDragEvent) => void | boolean | Promise<void | boolean>;
   onLeave?: (event: IDragEvent) => void;
 }
@@ -169,6 +182,7 @@ export interface IDraggableEntity extends IBaseEntity {
   render?: Component;
   events?: IDraggableEvents;
   payload?: TDraggablePayload;
+  data?: () => unknown;
   modifier?: IModifier;
   dragHandle?: string;
   activation?: IDragActivation;
@@ -184,7 +198,11 @@ export interface IDraggingEntity extends IDraggableEntity {
 }
 
 export interface IDroppableEntity extends IBaseEntity {
+  /** 'every' — all dragged items must match zone groups (default).
+   *  'some'  — zone is accessible if at least one item matches. */
+  groupMatch?: TModifierMethod;
   events?: IDroppableEvents;
   payload?: TDroppablePayload;
+  data?: () => unknown;
   hoveredPlacement: IPlacement | undefined;
 }

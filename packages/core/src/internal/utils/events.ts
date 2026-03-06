@@ -6,8 +6,7 @@ import type { IDragEvent, IHovered } from '../../external/types/provider';
 
 import { DnDSelectors } from './namespaces';
 import type { IDnDProviderInternal } from '../types/provider';
-import type { IDragItem } from '../../external/types/entities';
-import type { TDraggablePayload } from '../../external/types/entities';
+import type { IDragItem, TDraggablePayload } from '../../external/types/entities';
 import { createHelpers } from '../logic/operations';
 import { isEffectivelyDisabledDroppable } from './disabled';
 
@@ -39,12 +38,17 @@ function buildDraggedItems(provider: IDnDProviderInternal): IDragItem[] {
     provider.entities.draggingMap.get(initiating) ??
     provider.entities.draggableMap.get(initiating);
   const payloadFn = entity?.payload as TDraggablePayload | undefined;
-  if (!payloadFn) return [];
+
+  // Data-only mode: no payload, just custom data
+  if (!payloadFn) {
+    if (!entity?.data) return [];
+    return [{ index: -1, item: undefined as never, items: [], data: entity.data() }];
+  }
 
   const baseResult = payloadFn();
   if (!Array.isArray(baseResult) || baseResult.length < 2) return [];
 
-  const [baseIdx, baseItemsArr, baseDropData] = baseResult;
+  const [baseIdx, baseItemsArr] = baseResult;
   const baseIndex = Number(baseIdx);
   const itemsRef = baseItemsArr as unknown[];
 
@@ -53,7 +57,7 @@ function buildDraggedItems(provider: IDnDProviderInternal): IDragItem[] {
     index: baseIndex,
     item: itemsRef[baseIndex],
     items: itemsRef,
-    dropData: baseDropData,
+    data: entity?.data?.(),
   });
 
   // Collect all currently-dragged elements (draggingMap is built from selection).
@@ -63,7 +67,7 @@ function buildDraggedItems(provider: IDnDProviderInternal): IDragItem[] {
     if (!fn2) return;
     const r2 = fn2();
     if (!Array.isArray(r2) || r2.length < 2) return;
-    const [idx2, items2, dropData2] = r2;
+    const [idx2, items2] = r2;
     if ((items2 as unknown) !== itemsRef) return; // different list — skip
     const i2 = Number(idx2);
     if (!byIndex.has(i2)) {
@@ -71,7 +75,7 @@ function buildDraggedItems(provider: IDnDProviderInternal): IDragItem[] {
         index: i2,
         item: (items2 as unknown[])[i2],
         items: itemsRef,
-        dropData: dropData2,
+        data: e2?.data?.(),
       });
     }
   });
@@ -92,16 +96,13 @@ export const getDragEvent = (
   if (dropZoneEl) {
     // ── Drop zone ─────────────────────────────────────────────────────────────
     const dzEntity = provider.entities.droppableMap.get(dropZoneEl);
-    const dzPayloadFn = dzEntity?.payload;
-    if (dzPayloadFn) {
-      const dzResult = dzPayloadFn();
-      if (Array.isArray(dzResult) && dzResult.length >= 1) {
-        dropZone = {
-          items: Array.isArray(dzResult[0]) ? (dzResult[0] as unknown[]) : [],
-          userData: dzResult[1],
-          placement: provider.hovered.droppable.get(dropZoneEl),
-        };
-      }
+    if (dzEntity) {
+      const dzPayloadFn = dzEntity.payload;
+      dropZone = {
+        items: dzPayloadFn ? (dzPayloadFn() as unknown[]) : [],
+        placement: provider.hovered.droppable.get(dropZoneEl),
+        data: dzEntity.data?.(),
+      };
     }
 
     // ── Hovered draggable (element under cursor inside the zone) ──────────────
@@ -113,27 +114,32 @@ export const getDragEvent = (
       const elEntity = provider.entities.draggableMap.get(hoveredEl);
       const elPayloadFn = elEntity?.payload as TDraggablePayload | undefined;
       const elPlacement = provider.hovered.draggable.get(hoveredEl);
+      const defaultPlacement = { top: false, right: false, bottom: false, left: false, center: false };
 
       if (elPayloadFn) {
         const elResult = elPayloadFn();
         if (Array.isArray(elResult) && elResult.length >= 2) {
-          const [elIdx, elItems, elDropData] = elResult;
+          const [elIdx, elItems] = elResult;
           const idx = Number(elIdx);
           hoveredDraggable = {
             element: hoveredEl,
-            placement: elPlacement ?? {
-              top: false,
-              right: false,
-              bottom: false,
-              left: false,
-              center: false,
-            },
+            placement: elPlacement ?? defaultPlacement,
             index: idx,
             item: (elItems as unknown[])[idx],
             items: elItems as unknown[],
-            dropData: elDropData,
+            data: elEntity?.data?.(),
           };
         }
+      } else if (elEntity?.data) {
+        // Data-only mode: no payload, just custom data on the hovered element
+        hoveredDraggable = {
+          element: hoveredEl,
+          placement: elPlacement ?? defaultPlacement,
+          index: -1,
+          item: undefined as never,
+          items: [],
+          data: elEntity.data(),
+        };
       }
     }
   }

@@ -10,6 +10,10 @@ import Example from '@examples-v2/BaseDrop/Example.vue';
 
 <Example />
 
+## Source
+
+- [Base Drop example component](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/BaseDrop/Example.vue)
+
 ## What’s used
 
 - **DnDProvider** — wraps the example.

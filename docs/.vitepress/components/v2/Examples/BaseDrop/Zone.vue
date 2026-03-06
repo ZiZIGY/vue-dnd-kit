@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, useTemplateRef } from 'vue';
+  import { useTemplateRef } from 'vue';
   import { makeDroppable } from '@vue-dnd-kit/core';
 
   const emit = defineEmits<{
@@ -7,18 +7,10 @@
   }>();
 
   const zoneRef = useTemplateRef<HTMLElement>('zoneRef');
-  const isOver = ref(false);
 
-  makeDroppable(zoneRef, {
+  const { isDragOver } = makeDroppable(zoneRef, {
     events: {
-      onEnter: () => {
-        isOver.value = true;
-      },
-      onLeave: () => {
-        isOver.value = false;
-      },
       onDrop: () => {
-        isOver.value = false;
         emit('drop');
       },
     },
@@ -29,7 +21,7 @@
   <div
     ref="zoneRef"
     class="zone"
-    :class="{ 'zone--over': isOver }"
+    :class="{ 'zone--over': isDragOver }"
   >
     <slot />
   </div>

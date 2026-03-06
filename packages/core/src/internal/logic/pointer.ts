@@ -21,98 +21,17 @@ import {
 } from '../utils/events';
 import { getDragEvent } from '../utils/events';
 import { isEffectivelyDisabledDroppable } from '../utils/disabled';
+import { areGroupsCompatible } from '../utils/groups';
 import { applyCollisionResultToHovered } from './hover';
 import { defaultCollisionDetection } from '../sensors/default-collision';
-import {
-  getCollisionWorker,
-  type ICollisionWorkerInput,
-} from '../sensors/collision-worker';
-import {
-  overlayBoxFromStyle,
-  filterValidCollisionTarget,
-} from '../sensors/steps';
+import { createHelpers } from './operations';
 import type { IDnDProviderInternal } from '../types/provider';
 import type { TDropResult } from '../../external';
-
-function packBoxes(
-  elements: HTMLElement[],
-  cache: Map<HTMLElement, DOMRect>
-): number[] {
-  const result: number[] = [];
-  for (const el of elements) {
-    let r = cache.get(el);
-    if (!r) {
-      r = el.getBoundingClientRect();
-      cache.set(el, r);
-    }
-    result.push(r.x, r.y, r.width, r.height);
-  }
-  return result;
-}
-
-let _latestCollisionRequestId = 0;
-
-function runCollisionViaWorker(provider: IDnDProviderInternal): void {
-  const worker = getCollisionWorker();
-  const requestId = ++_latestCollisionRequestId;
-
-  const elementCandidates = [...provider.entities.allowedDraggableSet].filter(
-    (el) => filterValidCollisionTarget(el, provider)
-  );
-  const zoneCandidates = [...provider.entities.allowedDroppableSet].filter(
-    (el) => filterValidCollisionTarget(el, provider)
-  );
-
-  const overlayBox = overlayBoxFromStyle(provider);
-  const rawPointer = provider.pointer.value?.current;
-  const cache = provider.lib.rectCache;
-
-  const input: ICollisionWorkerInput = {
-    containerBox: {
-      x: overlayBox.x,
-      y: overlayBox.y,
-      width: overlayBox.width,
-      height: overlayBox.height,
-    },
-    pointer: { x: rawPointer?.x ?? 0, y: rawPointer?.y ?? 0 },
-    elements: packBoxes(elementCandidates, cache),
-    elementCount: elementCandidates.length,
-    zones: packBoxes(zoneCandidates, cache),
-    zoneCount: zoneCandidates.length,
-    config: { minOverlapPercent: 10 },
-  };
-
-  worker.run(input).then((workerResult) => {
-    if (requestId !== _latestCollisionRequestId) return;
-    if (provider.state.value !== 'dragging') return;
-
-    const elements = workerResult.elementIndices.map(
-      (i) => elementCandidates[i] as HTMLElement
-    );
-    const zones = workerResult.zoneIndices.map(
-      (i) => zoneCandidates[i] as HTMLElement
-    );
-    applyCollisionResultToHovered(provider, provider.hovered, {
-      elements,
-      zones,
-    });
-  });
-}
+import type { IDragItem } from '../../external/types/entities';
 
 export function runCollisionAndApply(provider: IDnDProviderInternal): void {
-  if (provider.collision?.run) {
-    const result = provider.collision.run(provider);
-    applyCollisionResultToHovered(provider, provider.hovered, result);
-    return;
-  }
-
-  const worker = getCollisionWorker();
-  if (worker.isSupported) {
-    runCollisionViaWorker(provider);
-  } else {
-    const result = defaultCollisionDetection(provider);
-    applyCollisionResultToHovered(provider, provider.hovered, result);
-  }
+  const result = defaultCollisionDetection(provider);
+  applyCollisionResultToHovered(provider, provider.hovered, result);
 }
 
 function runThrottledCollision(
@@ -142,7 +61,81 @@ export async function handleDropAndFinish(
   const zoneEntity = provider.entities.droppableMap.get(hoveredZone);
   const dragEvent = getDragEvent(provider, hoveredZone);
 
-  const result = zoneEntity?.events?.onDrop?.(dragEvent);
+  // ── groupMatch: 'some' — split valid/invalid, run onValidate if present ────
+  let finalDragEvent = dragEvent;
+  if (zoneEntity?.groupMatch === 'some' && (zoneEntity.groups?.length ?? 0) > 0) {
+    const zoneGroups = zoneEntity.groups!;
+
+    // For each dragged item, find its groups from draggingMap by index + items identity
+    const validItems = dragEvent.draggedItems.filter((item) => {
+      for (const [, draggingEntity] of provider.entities.draggingMap) {
+        const payload = draggingEntity.payload?.();
+        if (!Array.isArray(payload) || payload.length < 2) continue;
+        if (Number(payload[0]) === item.index && payload[1] === item.items) {
+          return areGroupsCompatible(draggingEntity.groups ?? [], zoneGroups);
+        }
+      }
+      return true;
+    });
+    const invalidItems = dragEvent.draggedItems.filter(
+      (item) => !validItems.includes(item)
+    );
+
+    if (invalidItems.length > 0) {
+      const makeEvent = (items: IDragItem[]) => ({
+        ...dragEvent,
+        draggedItems: items,
+        helpers: createHelpers({ ...dragEvent, draggedItems: items }),
+      });
+
+      if (zoneEntity.events?.onValidate) {
+        const validateResult = zoneEntity.events.onValidate({
+          validItems,
+          invalidItems,
+          dropZone: dragEvent.dropZone,
+          hoveredDraggable: dragEvent.hoveredDraggable,
+        });
+
+        const isValidatePromise =
+          validateResult != null &&
+          typeof (validateResult as Promise<unknown>).then === 'function';
+
+        let resolved: void | false | IDragItem[];
+        if (isValidatePromise) {
+          provider.state.value = 'pending';
+          try {
+            resolved = await (validateResult as Promise<void | false | IDragItem[]>);
+          } catch {
+            const initiating = provider.entities.initiatingDraggable;
+            triggerSelfDragForElement(provider, initiating, 'onSelfDragCancel');
+            triggerDragForAll(provider, 'onDragCancel');
+            triggerDropCancelEvents(provider, provider.hovered);
+            return 'cancel';
+          }
+        } else {
+          resolved = validateResult as void | false | IDragItem[];
+        }
+
+        if (resolved === false) {
+          provider.state.value = 'dragging';
+          return 'decline';
+        }
+
+        const itemsToUse: IDragItem[] = Array.isArray(resolved)
+          ? resolved
+          : validItems;
+        if (itemsToUse.length === 0) return 'accept';
+        finalDragEvent = makeEvent(itemsToUse);
+      } else {
+        // Default: silently drop only valid items
+        if (validItems.length === 0) return 'accept';
+        finalDragEvent = makeEvent(validItems);
+      }
+    }
+  }
+  // ────────────────────────────────────────────────────────────────────────────
+
+  const result = zoneEntity?.events?.onDrop?.(finalDragEvent);
 
   const isPromise =
     result != null && typeof (result as Promise<unknown>).then === 'function';
@@ -226,6 +219,7 @@ export const createPointerHandlers = (provider: IDnDProviderInternal) => {
 
   const pointerMove = (event: PointerEvent) => {
     if (!provider.pointer.value) return;
+    if (provider.state.value === 'pending') return;
     provider.pointer.value.current = { x: event.clientX, y: event.clientY };
 
     if (tryStartDragIfActivationComplete(provider)) {
@@ -266,6 +260,8 @@ export const createPointerHandlers = (provider: IDnDProviderInternal) => {
       provider.pointer.value = createPointerState(event);
       provider.state.value = 'selecting';
       provider.entities.selectingArea = closestSelectionArea;
+      // Snapshot current selection so previous picks survive the new rubber-band pass
+      provider.entities.selectionBase = new Set(provider.entities.selectedSet);
       return;
     }
 

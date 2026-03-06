@@ -31,6 +31,7 @@ interface IMakeDraggableOptions extends IBaseOptions {
   dragHandle?: string | Ref<string>;
   activation?: IDragActivationOptions;
   placementMargins?: IPlacementMargins;
+  data?: () => unknown;
 }
 
 interface IMakeDraggableReturnType {
@@ -118,6 +119,7 @@ export function makeDraggable(
       modifier: options.modifier as IModifier,
       events: options.events,
       payload: finalPayload,
+      data: options.data,
       dragHandle: options.dragHandle as string,
       activation: options.activation as IDragActivation,
       placementMargins: options.placementMargins,

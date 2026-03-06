@@ -65,7 +65,7 @@ export interface ISuggestRemoveResult<T = unknown> {
 }
 
 /** Draggable element currently under the cursor (inside the drop zone). */
-export interface IHoveredDraggableContext<T = unknown, D = unknown> {
+export interface IHoveredDraggableContext<T = unknown> {
   element: HTMLElement;
   /** Cursor position relative to this element. */
   placement: IPlacement;
@@ -73,7 +73,8 @@ export interface IHoveredDraggableContext<T = unknown, D = unknown> {
   /** The actual object: items[index]. */
   item: T;
   items: T[];
-  dropData?: D;
+  /** Custom data from the `data` option (reactive, always up-to-date) */
+  data?: unknown;
 }
 
 /** Placement helpers: interpret placement flags by list orientation. */

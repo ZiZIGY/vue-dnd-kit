@@ -20,6 +20,7 @@ export const resetDnDSession = (provider: IDnDProviderInternal): void => {
   provider.pointer.value = undefined;
   provider.state.value = undefined;
   provider.entities.selectingArea = undefined;
+  provider.entities.selectionBase.clear();
   provider.entities.initiatingDraggable = undefined;
   provider.delay.progress = 0;
   provider.delay.startTime = 0;

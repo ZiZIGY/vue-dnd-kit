@@ -47,23 +47,27 @@ Extends **base options** (shared with draggable/selection/constraint):
 
 ## Payload
 
-**`payload`** is an optional function that describes the zone (e.g. its list and metadata):
+**`payload`** is an optional function that returns the zone's items array — needed for the `suggestSort` / `suggestSwap` / `suggestCopy` helpers:
 
 ```ts
-type TDroppablePayload<T = any, U = any> = () => [T[], U?];
+type TDroppablePayload<T = any> = () => T[];
 ```
 
-- **`items`** — array of items in this zone.
-- **`userData`** (optional) — extra zone data.
-
-The library calls this when building the event for zone callbacks. The result is passed as **`event.dropZone`**:
+The library calls this when building **`event.dropZone`**:
 
 ```ts
-interface IDropZoneContext<T = unknown, U = unknown> {
+interface IDropZoneContext<T = unknown> {
   items: T[];
-  userData?: U;
   placement: IPlacement | undefined; // cursor position relative to the zone
+  data?: unknown;                     // custom data from the `data` option
 }
+```
+
+For arbitrary custom data, use the **`data`** option:
+
+```ts
+makeDroppable(ref, { data: () => myColumn })
+// → event.dropZone.data === myColumn
 ```
 
 ---
@@ -81,9 +85,9 @@ interface IDropZoneContext<T = unknown, U = unknown> {
 Every event receives the same **`IDragEvent`** as in makeDraggable:
 
 - **`draggedItems`** — all dragged items (for multi-drag).
-- **`dropZone`** — context of this zone (`items`, `userData`, `placement`).
+- **`dropZone`** — context of this zone (`items`, `placement`, `data`).
 - **`hoveredDraggable`** — hovered element inside the zone (if any).
-- **`operation`** — helper utilities for indices and sorting.
+- **`helpers`** — low-level array ops + high-level `suggestSort` / `suggestSwap` / `suggestCopy` / `suggestRemove` presets.
 - **`provider`** — access to provider state.
 
 ---
@@ -92,6 +96,7 @@ Every event receives the same **`IDragEvent`** as in makeDraggable:
 
 ```vue
 <script setup lang="ts">
+  import { ref } from 'vue';
   import { useTemplateRef } from 'vue';
   import { makeDroppable } from '@vue-dnd-kit/core';
 
@@ -104,6 +109,7 @@ Every event receives the same **`IDragEvent`** as in makeDraggable:
       onDrop: (e) => {
         // e.draggedItems → what we're dragging
         // e.dropZone     → where we're dropping
+        // e.helpers.suggestSort() → ready-made sort result
       },
       onLeave: (e) => console.log('leave', e.dropZone),
     },

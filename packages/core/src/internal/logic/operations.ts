@@ -24,12 +24,12 @@ export interface IDropEventContext {
     index: number;
     item: unknown;
     items: unknown[];
-    dropData?: unknown;
+    data?: unknown;
   }>;
   dropZone?: {
     items: unknown[];
-    userData?: unknown;
     placement: IPlacement | undefined;
+    data?: unknown;
   };
   hoveredDraggable?: {
     element: HTMLElement;
@@ -37,7 +37,7 @@ export interface IDropEventContext {
     index: number;
     item: unknown;
     items: unknown[];
-    dropData?: unknown;
+    data?: unknown;
   };
 }
 

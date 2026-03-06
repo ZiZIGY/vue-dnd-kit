@@ -28,7 +28,7 @@
     "@iconify/vue": "^5.0.0",
     "@tailwindcss/vite": "^4.1.18",
     "@types/node": "^25.2.2",
-    "@vue-dnd-kit/core": "^2.0.0-alpha10",
+    "@vue-dnd-kit/core": "^2.1.1",
     "@vue-dnd-kit/core-v1": "npm:@vue-dnd-kit/core@^1.7.0",
     "@vueuse/core": "^14.2.1",
     "gsap": "^3.14.2",

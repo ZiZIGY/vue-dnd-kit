@@ -4,6 +4,7 @@ import type {
   IPlacement,
   TDnDNodeRef,
   TDroppablePayload,
+  TModifierMethod,
 } from '../types';
 import { computed, onBeforeUnmount, onMounted, type ComputedRef } from 'vue';
 
@@ -12,7 +13,15 @@ import { getNode } from '../../internal/utils/dom';
 import { useDnDProviderInternal } from '../../internal/composables/useDnDProviderInternal';
 
 interface IMakeDroppableOptions extends IBaseOptions {
+  /**
+   * Group matching strategy.
+   * - `'every'` (default): zone is accessible only if ALL dragged items match zone's groups.
+   * - `'some'`: zone is accessible if AT LEAST ONE dragged item matches.
+   *   Invalid items are filtered out at drop time (or handled via `events.onValidate`).
+   */
+  groupMatch?: TModifierMethod;
   events?: IDroppableEvents;
+  data?: () => unknown;
 }
 
 interface IMakeDroppableReturnType {
@@ -71,8 +80,10 @@ export function makeDroppable(
     provider.entities.droppableMap.set(container, {
       disabled: (options.disabled as boolean) ?? false,
       groups: (options.groups as string[]) ?? [],
+      groupMatch: options.groupMatch ?? 'every',
       events: options.events,
       payload: finalPayload,
+      data: options.data,
       hoveredPlacement: undefined,
     });
   });

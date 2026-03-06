@@ -15,8 +15,8 @@
   >
     <template v-for="[node, draggable] in entities.draggingMap">
       <component
-        v-if="entities.draggableMap.get(node)?.render"
-        :is="entities.draggableMap.get(node)?.render"
+        v-if="draggable.render"
+        :is="draggable.render"
       />
       <component
         v-else

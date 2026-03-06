@@ -38,7 +38,15 @@ export const getRelativeCoordinates = (
 };
 
 /**
- * Returns CSS properties for bounded selection box within container
+ * Returns CSS properties for a bounded selection box within its container.
+ *
+ * Uses position: absolute (not fixed) so the rect is placed correctly even when
+ * an ancestor element has a CSS transform / will-change / filter — any of those
+ * break fixed positioning by creating a new containing block.
+ *
+ * Coordinates are converted from viewport-space (pointer positions) to
+ * container-local space, accounting for the container's own scroll offset so it
+ * also works inside scrollable containers.
  */
 export const getBoundedSelectionArea = (
   start: ICoordinates,
@@ -47,22 +55,28 @@ export const getBoundedSelectionArea = (
 ): CSSProperties => {
   if (!container) return {};
 
-  const containerRect = container.getBoundingClientRect();
+  const rect = container.getBoundingClientRect();
 
-  const left = Math.max(containerRect.left, Math.min(start.x, current.x));
-  const top = Math.max(containerRect.top, Math.min(start.y, current.y));
-  const right = Math.min(containerRect.right, Math.max(start.x, current.x));
-  const bottom = Math.min(containerRect.bottom, Math.max(start.y, current.y));
+  // Clamp selection edges to the container's visible viewport region
+  const vpLeft = Math.max(rect.left, Math.min(start.x, current.x));
+  const vpTop = Math.max(rect.top, Math.min(start.y, current.y));
+  const vpRight = Math.min(rect.right, Math.max(start.x, current.x));
+  const vpBottom = Math.min(rect.bottom, Math.max(start.y, current.y));
 
-  const width = Math.max(0, right - left);
-  const height = Math.max(0, bottom - top);
+  const width = Math.max(0, vpRight - vpLeft);
+  const height = Math.max(0, vpBottom - vpTop);
+
+  // Convert from viewport to container-local coordinates.
+  // container.scrollLeft/Top handles the case where the container itself scrolls.
+  const left = vpLeft - rect.left + container.scrollLeft;
+  const top = vpTop - rect.top + container.scrollTop;
 
   return {
+    position: 'absolute',
     left: `${left}px`,
     top: `${top}px`,
     width: `${width}px`,
     height: `${height}px`,
-    position: 'fixed',
     pointerEvents: 'none',
     border: '1px solid #3b82f6',
     backgroundColor: '#3b82f61a',
@@ -132,9 +146,24 @@ export const updateSelectionByBox = (provider: IDnDProviderInternal): void => {
       rect = el.getBoundingClientRect();
       cache.set(el, rect);
     }
-    checkIntersection(selectionBoxRect, rect)
-      ? provider.entities.selectedSet.add(el)
-      : provider.entities.selectedSet.delete(el);
+    const inBase = provider.entities.selectionBase.has(el);
+    const intersects = checkIntersection(selectionBoxRect, rect);
+
+    // Toggle semantics: the new rect XORs against the previous selection.
+    // Covering a previously-selected element deselects it; not covering it restores it.
+    if (intersects) {
+      if (inBase) {
+        provider.entities.selectedSet.delete(el);
+      } else {
+        provider.entities.selectedSet.add(el);
+      }
+    } else {
+      if (inBase) {
+        provider.entities.selectedSet.add(el);
+      } else {
+        provider.entities.selectedSet.delete(el);
+      }
+    }
   });
 };
 

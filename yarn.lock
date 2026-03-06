@@ -1025,10 +1025,10 @@
   resolved "https://registry.npmjs.org/@vue-dnd-kit/core/-/core-1.7.0.tgz#fd9374db1ce6fa72c3a45905c6b3d886d160e3c3"
   integrity sha512-6Otpo/9Fp/cX5EiUoN6XmIPtm/mOreAXi8clr9HgzVvDHD0sfkgVOFxCUiVbH46yAzr6KBU1Q1tjSWLBqua+5g==
 
-"@vue-dnd-kit/core@^2.0.0-alpha10":
-  version "2.0.0-alpha10"
-  resolved "https://registry.npmjs.org/@vue-dnd-kit/core/-/core-2.0.0-alpha10.tgz#1f96fe82de9545a0e140507e013bfbd838e4007b"
-  integrity sha512-9M0ZaJfaD8SJQFDvyFM4Dsiq/8NZXVAQ/nQG/qxu2AgPNaybhfcXh3BY3a2FTOKJzwms9Y1XS/zIpUnKmIQMqQ==
+"@vue-dnd-kit/core@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.npmjs.org/@vue-dnd-kit/core/-/core-2.1.1.tgz#6f64d3b6e08203a3f24af7dc18a4e8a020db0179"
+  integrity sha512-KOhFWbT71aHwxGkOgv2pmFUT+Cx4Z/C3B5kaBC4RN5HU8oQNpRxmC8vvKQB9tVhY9LxPucb5i4vJf/NNSpTmjQ==
 
 "@vue/compiler-core@3.5.28":
   version "3.5.28"

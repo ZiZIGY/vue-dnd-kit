@@ -79,6 +79,7 @@ export function useDnDProviderState(
 
     draggingMap: new Map(),
     selectedSet: new Set(),
+    selectionBase: new Set(),
 
     allowedDroppableSet: computed(() => {
       if (state.value) {

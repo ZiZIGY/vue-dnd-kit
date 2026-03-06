@@ -29,7 +29,7 @@
       opacity: isDragging ? 0 : 1,
     }"
   >
-    <slot>Drag me {{ isDragging }}</slot>
+    <slot>Drag me</slot>
   </motion.div>
 </template>
 
