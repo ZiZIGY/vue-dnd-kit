@@ -16,29 +16,33 @@ Drag any card to reorder the list. The preview pops in with a spring bounce; ite
 
 The example combines three animation layers:
 
-1. **Preview pop-in** — a `motion.div` inside the `DragPreview` slot animates from `scale: 0.9, opacity: 0` to `scale: 1.06, opacity: 1` with spring physics when drag starts.
+1. **Preview pop-in/out** — `AnimatePresence` from `motion-v` wraps `DragPreview`, enabling spring animations both on mount (drag start) and unmount (drag end) via `:exit`.
 2. **Ghost state** — the original card turns fully transparent (`opacity: 0`) while dragging, hiding the "source" behind the floating preview.
 3. **List reorder** — Vue's `<TransitionGroup>` moves remaining cards into their new positions with a smooth `transform` transition on drop.
 
 ## Custom preview with spring animation
 
-Pass a slot to `DragPreview` to wrap the default content in a `motion.div`:
+The key to animating both drag start and drag end is wrapping `DragPreview` in `AnimatePresence`. This allows motion-v to intercept the unmount (when dragging ends) and play the `:exit` animation before the element is removed from the DOM.
 
 ```vue
 <!-- AnimatedPreview.vue -->
 <script setup lang="ts">
-  import { motion } from 'motion-v';
+  import { motion, AnimatePresence } from 'motion-v';
   import { DragPreview } from '@vue-dnd-kit/core';
 </script>
 
 <template>
-  <DragPreview v-slot="{ draggingMap }">
-    <motion.div
-      :initial="{ scale: 0.9, opacity: 0, rotate: -2 }"
-      :animate="{ scale: 1.06, opacity: 1, rotate: 1.5 }"
-      :transition="{ type: 'spring', stiffness: 480, damping: 26 }"
-    >
-      <template v-for="[node, draggable] in draggingMap" :key="node">
+  <AnimatePresence mode="popLayout">
+    <DragPreview v-slot="{ draggingMap }">
+      <motion.div
+        v-for="[node, draggable] in draggingMap"
+        :key="node"
+        class="preview-wrapper"
+        :initial="{ scale: 0.9, opacity: 0, rotate: -2 }"
+        :animate="{ scale: 1.06, opacity: 1, rotate: 1.5 }"
+        :exit="{ scale: 0.9, opacity: 0, rotate: -2 }"
+        :transition="{ type: 'spring', stiffness: 480, damping: 26 }"
+      >
         <component v-if="draggable.render" :is="draggable.render" />
         <component
           v-else
@@ -49,11 +53,25 @@ Pass a slot to `DragPreview` to wrap the default content in a `motion.div`:
             height: draggable.initialRect.height + 'px',
           }"
         />
-      </template>
-    </motion.div>
-  </DragPreview>
+      </motion.div>
+    </DragPreview>
+  </AnimatePresence>
 </template>
+
+<style scoped>
+  .preview-wrapper {
+    filter: drop-shadow(0 16px 40px rgba(0, 0, 0, 0.22));
+  }
+</style>
 ```
+
+::: tip Why `AnimatePresence` with `mode="popLayout"`?
+`DragPreview` internally uses `v-if` — when dragging ends, it unmounts. Without `AnimatePresence`, the `:exit` animation never plays because the element is removed immediately. `mode="popLayout"` also takes the exiting element out of flow so the list below can animate freely at the same time.
+:::
+
+::: tip Why `v-for` directly on `motion.div`?
+`draggingMap` is a `Map<HTMLElement, DraggableEntity>`. Iterating with `v-for` on the animated element (rather than a wrapper) lets motion-v track each draggable item by its `:key` independently — important for multi-drag where several items may animate in at once.
+:::
 
 Register it via the `#preview` slot on `DnDProvider`:
 
@@ -64,10 +82,6 @@ Register it via the `#preview` slot on `DnDProvider`:
   </template>
 </DnDProvider>
 ```
-
-::: tip Why `rotate` + `scale` on the preview?
-CSS `scale` and `rotate` are standalone properties — they compose with `transform: translate3d(...)` that `DragPreview` uses for cursor tracking. You can freely animate them without interfering with the position.
-:::
 
 ## Ghost effect on the dragged item
 

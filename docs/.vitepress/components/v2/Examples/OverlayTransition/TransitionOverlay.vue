@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { DragPreview } from '@vue-dnd-kit/core';
+  import { makeDroppable } from '@vue-dnd-kit/core';
 </script>
 
 <template>
