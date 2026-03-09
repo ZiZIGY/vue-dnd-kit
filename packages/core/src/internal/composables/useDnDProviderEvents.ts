@@ -1,9 +1,10 @@
 import { onBeforeUnmount, onMounted, watch } from 'vue';
-import { handleKeyboardEvents } from '../logic/keyboard';
+
+import type { IDnDProviderInternal } from '../types/provider';
 import { createPointerHandlers } from '../logic/pointer';
+import { handleKeyboardEvents } from '../logic/keyboard';
 import { handleScrollEvent } from '../logic/scroll';
 import { useViewportAutoScroll } from './useViewportAutoScroll';
-import type { IDnDProviderInternal } from '../types/provider';
 
 export const useDnDProviderEvents = (provider: IDnDProviderInternal) => {
   const handlers = createPointerHandlers(provider);
