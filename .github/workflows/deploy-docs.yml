@@ -25,6 +25,9 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      - name: Install core dependencies
+        run: yarn --cwd packages/core install
+
       - name: Build core package
         run: yarn --cwd packages/core build
 
