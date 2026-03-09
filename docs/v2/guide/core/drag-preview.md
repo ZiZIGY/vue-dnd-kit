@@ -32,6 +32,28 @@ The slot exposes `{ draggingMap }` if you want to render the items yourself:
 </DragPreview>
 ```
 
+## Props
+
+| Prop   | Type                                 | Default     | Description                                                                                                                          |
+| ------ | ------------------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `grid` | `number \| { x: number; y: number }` | `undefined` | Snap the preview position to a grid. Pass a `number` for a uniform grid on both axes, or `{ x, y }` for independent per-axis control. |
+
+## Grid snapping
+
+Use the `grid` prop to snap the floating preview to a pixel grid:
+
+```vue
+<!-- Snap to 20px grid on both axes -->
+<DragPreview :grid="20" />
+
+<!-- Independent per-axis grid -->
+<DragPreview :grid="{ x: 20, y: 40 }" />
+```
+
+::: tip
+Grid snapping affects only the **visual position** of the preview — the underlying pointer coordinates and drop logic remain unchanged.
+:::
+
 ## Basic usage — inside `#preview` slot
 
 ```vue

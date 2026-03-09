@@ -1,6 +1,11 @@
 <script setup lang="ts">
-  import { useTemplateRef, watch } from 'vue';
+  import { computed, useTemplateRef, watch } from 'vue';
   import { useDnDProvider } from '../composables/useDnDProvider';
+
+  const { grid } = defineProps<{
+    /** Snap overlay to a grid. Pass a number for a uniform grid or { x, y } for per-axis control. */
+    grid?: number | { x: number; y: number };
+  }>();
 
   const { state, entities, preview } = useDnDProvider();
 
@@ -13,6 +18,18 @@
       if (rect) preview.size.value = rect;
     }
   );
+
+  const snap = (value: number, step?: number) => {
+    if (!step || step <= 0) return value;
+    return Math.round(value / step) * step;
+  };
+
+  const position = computed(() => {
+    const { x, y } = preview.position.value;
+    const stepX = typeof grid === 'object' ? grid.x : grid;
+    const stepY = typeof grid === 'object' ? grid.y : grid;
+    return { x: snap(x, stepX), y: snap(y, stepY) };
+  });
 </script>
 
 <template>
@@ -21,7 +38,7 @@
     class="dnd-kit-preview"
     ref="contentRef"
     :style="{
-      transform: `translate3d(${preview.position.value.x}px, ${preview.position.value.y}px, 0)`,
+      transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
     }"
   >
     <slot :dragging-map="entities.draggingMap">

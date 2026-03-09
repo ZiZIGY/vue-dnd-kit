@@ -74,3 +74,7 @@ const status = computed(() => {
 - [makeDraggable](/v2/guide/core/make-draggable) — `groups` option
 - [makeDroppable](/v2/guide/core/make-droppable) — `groups` + `isAllowed`
 - [useDnDProvider](/v2/guide/core/use-dnd-provider) — `state` for global drag detection
+
+## Source
+
+- [Example.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/Groups/Example.vue)

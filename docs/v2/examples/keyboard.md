@@ -98,3 +98,7 @@ provider.keyboard.moveFaster = 4; // multiplier when Shift held
 
 - [makeDraggable](/v2/guide/core/make-draggable)
 - [useDnDProvider](/v2/guide/core/use-dnd-provider)
+
+## Source
+
+- [Example.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/Keyboard/Example.vue)

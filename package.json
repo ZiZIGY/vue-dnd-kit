@@ -10,7 +10,8 @@
     "playground:watch:core": "yarn --cwd packages/core start",
     "playground:watch:utilities": "yarn --cwd packages/utilities start",
     "playground:dev": "yarn --cwd playground dev",
-    "playground": "yarn playground:build && concurrently -n core,utils,play -c blue,green,magenta \"yarn playground:watch:core\" \"yarn playground:watch:utilities\" \"yarn playground:dev\""
+    "playground": "yarn playground:build && concurrently -n core,utils,play -c blue,green,magenta \"yarn playground:watch:core\" \"yarn playground:watch:utilities\" \"yarn playground:dev\"",
+    "dev:v2": "yarn --cwd packages/core build && concurrently -n core,play,docs -c blue,magenta,green \"yarn --cwd packages/core start\" \"yarn playground:dev\" \"yarn dev\""
   },
   "keywords": [
     "vue",

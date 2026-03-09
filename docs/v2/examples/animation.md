@@ -156,3 +156,10 @@ makeDroppable(
 - [DragPreview](/v2/guide/core/drag-preview) — slot API and CSS customization.
 - [Overlay Transition](/v2/examples/overlay-transition) — simpler enter/leave transition using `<Transition>`.
 - [Sorting Lists](/v2/examples/sorting-lists) — sorting without custom animations.
+
+## Source
+
+- [Example.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/Animation/Example.vue)
+- [AnimatedCard.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/Animation/AnimatedCard.vue)
+- [AnimatedPreview.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/Animation/AnimatedPreview.vue)
+- [SortableZone.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/Animation/SortableZone.vue)

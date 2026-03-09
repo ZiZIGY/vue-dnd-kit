@@ -81,3 +81,7 @@ Show disabled state visually so users understand why an item is inert:
 - [makeDraggable](/v2/guide/core/make-draggable)
 - [makeDroppable](/v2/guide/core/make-droppable)
 - [Groups](/v2/examples/groups) — restricting drops by group instead of disabling
+
+## Source
+
+- [Example.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/Disabled/Example.vue)

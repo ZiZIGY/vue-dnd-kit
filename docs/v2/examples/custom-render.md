@@ -131,3 +131,7 @@ The `render` option works *inside* the preview. Replacing the preview component 
 - [Changing Overlay](/v2/examples/changing-overlay) — replacing the preview component entirely
 - [makeDraggable](/v2/guide/core/make-draggable) — `render` and `data` options
 - [DnDProvider](/v2/guide/core/dnd-provider) — `#preview` slot
+
+## Source
+
+- [Example.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/CustomOverlay/Example.vue)

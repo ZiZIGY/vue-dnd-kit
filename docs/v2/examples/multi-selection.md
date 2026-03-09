@@ -120,3 +120,9 @@ Default is `{ keys: ['ControlLeft'], method: 'every' }`.
 - [Sorting Lists](/v2/examples/sorting-lists) — multi-list transfer with multi-drag
 - [makeDraggable](/v2/guide/core/make-draggable) — `selected` ref
 - [makeSelectionArea](/v2/guide/core/make-selection-area) — full options reference
+
+## Source
+
+- [Example.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/MultiSelection/Example.vue)
+- [TaskItem.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/MultiSelection/TaskItem.vue)
+- [TaskList.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/MultiSelection/TaskList.vue)

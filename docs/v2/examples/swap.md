@@ -131,3 +131,9 @@ interface ISuggestSwapResult {
 - [Sorting Lists](/v2/examples/sorting-lists) — insert/reorder instead of swapping
 - [Copy](/v2/examples/copy) — duplicate instead of swapping
 - [makeDroppable](/v2/guide/core/make-droppable) — zone configuration
+
+## Source
+
+- [Example.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/Swap/Example.vue)
+- [PlayerCard.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/Swap/PlayerCard.vue)
+- [TeamList.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/Swap/TeamList.vue)

@@ -173,3 +173,9 @@ Entry/exit animations with `TransitionGroup` give the copy action a satisfying f
 - [Sorting Lists](/v2/examples/sorting-lists) — reorder and transfer without copying
 - [Swap](/v2/examples/swap) — exchange items instead of duplicating
 - [makeDroppable](/v2/guide/core/make-droppable) — zone configuration
+
+## Source
+
+- [Example.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/Copy/Example.vue)
+- [BlockItem.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/Copy/BlockItem.vue)
+- [CopyDropZone.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/Copy/CopyDropZone.vue)

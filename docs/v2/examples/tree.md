@@ -119,3 +119,9 @@ The children container uses `v-show`, not `v-if`:
 
 `IPlacement.top = true` → pointer is in the top half → insert before.
 `IPlacement.bottom = true` → pointer is in the bottom half → insert after.
+
+## Source
+
+- [Example.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/Tree/Example.vue)
+- [RootZone.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/Tree/RootZone.vue)
+- [TreeItem.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/Tree/TreeItem.vue)

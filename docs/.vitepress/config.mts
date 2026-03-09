@@ -202,6 +202,9 @@ export default defineConfig({
             { text: 'Draggable Zone', link: '/v2/examples/draggable-zone' },
             { text: 'Overlay Transition', link: '/v2/examples/overlay-transition' },
             { text: 'Drag Animation', link: '/v2/examples/animation' },
+            { text: 'Snap to Grid', link: '/v2/examples/snap-grid' },
+            { text: 'Checkers', link: '/v2/examples/checkers' },
+            { text: 'Chess', link: '/v2/examples/chess' },
           ],
         },
       ],
@@ -268,6 +271,9 @@ export default defineConfig({
             { text: 'Draggable Zone', link: '/v2/examples/draggable-zone' },
             { text: 'Overlay Transition', link: '/v2/examples/overlay-transition' },
             { text: 'Drag Animation', link: '/v2/examples/animation' },
+            { text: 'Snap to Grid', link: '/v2/examples/snap-grid' },
+            { text: 'Checkers', link: '/v2/examples/checkers' },
+            { text: 'Chess', link: '/v2/examples/chess' },
           ],
         },
       ],
@@ -313,7 +319,7 @@ export default defineConfig({
       noExternal: [],
     },
     optimizeDeps: {
-      exclude: ['gsap'],
+      exclude: ['gsap', '@vue-dnd-kit/core'],
     },
     build: {
       rollupOptions: {
@@ -322,6 +328,10 @@ export default defineConfig({
     },
     resolve: {
       alias: {
+        '@vue-dnd-kit/core': resolve(
+          __dirname,
+          '../../packages/core/dist/vue-dnd-kit-core.es.js'
+        ),
         '@components': resolve(__dirname, './components'),
         '@examples': resolve(__dirname, './components/v1/Examples'),
         '@examples-v2': resolve(__dirname, './components/v2/Examples'),

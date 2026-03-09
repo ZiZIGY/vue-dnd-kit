@@ -77,7 +77,7 @@
   </ExampleContainer>
 </template>
 
-<style>
+<style scoped>
   .swap-provider div {
     opacity: 1 !important;
   }

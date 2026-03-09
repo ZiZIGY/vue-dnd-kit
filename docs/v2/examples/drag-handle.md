@@ -56,3 +56,7 @@ Add `touch-action: none` to the handle element so mobile browsers do not interce
 - [Base Drop](/v2/examples/base-drop) — simplest drag without a handle
 - [Multi Selection](/v2/examples/multi-selection) — handle + checkbox selection together
 - [makeDraggable](/v2/guide/core/make-draggable) — full options reference
+
+## Source
+
+- [Example.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/DragHandle/Example.vue)

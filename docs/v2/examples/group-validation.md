@@ -110,3 +110,7 @@ onValidate?: (
   event: IDropValidateEvent
 ) => void | false | IDragItem[] | Promise<void | false | IDragItem[]>;
 ```
+
+## Source
+
+- [Example.vue](https://github.com/zizigy/vue-dnd-kit/blob/master/docs/.vitepress/components/v2/Examples/GroupValidation/Example.vue)
