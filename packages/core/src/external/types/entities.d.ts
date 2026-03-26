@@ -95,9 +95,12 @@ export interface ISelectableAreaEvents {
   onSelected?: (selected: HTMLElement[]) => void;
 }
 
+export type TSelectableAreaStrategy = 'toggle' | 'select';
+
 export interface ISelectableAreaEntity extends IBaseEntity {
   modifier: IModifier;
   events?: ISelectableAreaEvents;
+  strategy?: TSelectableAreaStrategy;
 }
 
 export interface IConstraintsAreaEntity {
@@ -146,7 +149,7 @@ export interface IDroppableEvents {
    * - `Promise<...>` — async (state becomes 'pending' while waiting)
    */
   onValidate?: (
-    event: IDropValidateEvent
+    event: IDropValidateEvent,
   ) => void | false | IDragItem[] | Promise<void | false | IDragItem[]>;
   onDrop?: (event: IDragEvent) => void | boolean | Promise<void | boolean>;
   onLeave?: (event: IDragEvent) => void;
@@ -179,8 +182,6 @@ export interface IDragActivation {
 export type TCondition = 'any' | 'both';
 
 export interface IDraggableEntity extends IBaseEntity {
-  /** Stable id for this draggable — survives element remount during virtualization */
-  id?: string;
   render?: Component;
   events?: IDraggableEvents;
   payload?: TDraggablePayload;

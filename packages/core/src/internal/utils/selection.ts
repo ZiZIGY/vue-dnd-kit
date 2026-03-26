@@ -11,7 +11,11 @@ import type { IDnDProviderInternal } from '../types/provider';
  * Used to determine whether el "belongs" to a nested SelectionArea.
  */
 function getClosestAncestorSelectionArea(el: HTMLElement): HTMLElement | null {
-  return (el.parentElement?.closest(DnDSelectors.SELECT_AREA) as HTMLElement | null) ?? null;
+  return (
+    (el.parentElement?.closest(
+      DnDSelectors.SELECT_AREA,
+    ) as HTMLElement | null) ?? null
+  );
 }
 
 /**
@@ -21,7 +25,7 @@ function getClosestAncestorSelectionArea(el: HTMLElement): HTMLElement | null {
 export const getRelativeCoordinates = (
   event: ICoordinates,
   container: HTMLElement | null,
-  scroll: { x: number; y: number } = { x: 0, y: 0 }
+  scroll: { x: number; y: number } = { x: 0, y: 0 },
 ) => {
   if (!container) {
     return event;
@@ -51,7 +55,7 @@ export const getRelativeCoordinates = (
 export const getBoundedSelectionArea = (
   start: ICoordinates,
   current: ICoordinates,
-  container: HTMLElement | null
+  container: HTMLElement | null,
 ): CSSProperties => {
   if (!container) return {};
 
@@ -88,12 +92,12 @@ export const getBoundedSelectionArea = (
  */
 export const checkIsSelectableArea = (
   event: PointerEvent,
-  container: HTMLElement
+  container: HTMLElement,
 ): boolean => {
   const target = event.target as HTMLElement;
 
   const closestSelectableArea = target.closest(
-    DnDSelectors.SELECT_AREA
+    DnDSelectors.SELECT_AREA,
   ) as HTMLElement | null;
 
   if (closestSelectableArea && closestSelectableArea !== container)
@@ -111,7 +115,7 @@ export const updateSelectionByBox = (provider: IDnDProviderInternal): void => {
   const { selectingArea } = provider.entities;
   const selectionBoxRect = getSelectionBoxRect(
     provider.pointer.value.start,
-    provider.pointer.value.current
+    provider.pointer.value.current,
   );
   const selectionAreaGroups =
     provider.entities.selectableAreaMap.get(selectingArea)?.groups ?? [];
@@ -149,20 +153,23 @@ export const updateSelectionByBox = (provider: IDnDProviderInternal): void => {
     const inBase = provider.entities.selectionBase.has(el);
     const intersects = checkIntersection(selectionBoxRect, rect);
 
-    // Toggle semantics: the new rect XORs against the previous selection.
-    // Covering a previously-selected element deselects it; not covering it restores it.
-    if (intersects) {
-      if (inBase) {
-        provider.entities.selectedSet.delete(el);
-      } else {
-        provider.entities.selectedSet.add(el);
-      }
-    } else {
-      if (inBase) {
-        provider.entities.selectedSet.add(el);
-      } else {
-        provider.entities.selectedSet.delete(el);
-      }
+    const selectionAreaEntity =
+      provider.entities.selectableAreaMap.get(selectingArea);
+    const strategy = selectionAreaEntity?.strategy;
+
+    // Toggle: the new rect XORs against the previous selection.
+    // Select: only currently-intersecting elements are selected
+    switch (strategy) {
+      case 'toggle':
+        if (intersects || inBase) {
+          provider.entities.selectedSet[
+            intersects !== inBase ? 'add' : 'delete'
+          ](el);
+        }
+        break;
+      case 'select':
+        provider.entities.selectedSet[intersects ? 'add' : 'delete'](el);
+        break;
     }
   });
 };
@@ -172,7 +179,7 @@ export const updateSelectionByBox = (provider: IDnDProviderInternal): void => {
  */
 export const getSelectionBoxRect = (
   start: ICoordinates,
-  current: ICoordinates
+  current: ICoordinates,
 ): DOMRect => {
   const left = Math.min(start.x, current.x);
   const top = Math.min(start.y, current.y);
