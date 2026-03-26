@@ -169,6 +169,102 @@ const r = e.helpers.suggestSort('vertical');
 
 No special handling needed — `suggestSort` already accounts for multi-drag.
 
+## `v-model` pattern for nested trees
+
+When building a recursive tree with drag-and-drop, the standard approach is a centralized `applyToTree` + `findAndReplace` at the root that walks the whole tree to locate and replace the right array:
+
+```ts
+// ❌ Recursive walk — O(depth), easy to get wrong
+function applyToTree(oldArr: Node[], newArr: Node[]) {
+  if (oldArr === tree.value) { tree.value = newArr; return; }
+  findAndReplace(tree.value, oldArr, newArr);
+}
+
+function findAndReplace(nodes: Node[], oldArr: Node[], newArr: Node[]): boolean {
+  for (const node of nodes) {
+    if (node.children === oldArr) { node.children = newArr; return true; }
+    if (findAndReplace(node.children, oldArr, newArr)) return true;
+  }
+  return false;
+}
+```
+
+A cleaner alternative: give each `TreeNode` component direct write access to its own slice via `defineModel`. Each node handles only the arrays it owns. No global walk needed.
+
+```ts
+// ✅ TreeNode.vue — each component owns its children slice
+const children = defineModel<Node[]>({ required: true });
+
+function handleDrop(e: IDragEvent) {
+  const r = e.helpers.suggestSort('vertical');
+  if (!r) return;
+
+  const srcArr = e.draggedItems[0]?.items as Node[];
+  const tgtArr = (e.hoveredDraggable?.items ?? e.dropZone?.items) as Node[];
+
+  // Only update the arrays we directly own — O(1) identity checks
+  if (srcArr === children.value)
+    children.value = r.sourceItems as Node[];
+
+  if (!r.sameList && tgtArr === children.value)
+    children.value = r.targetItems as Node[];
+
+  // Bubble up so parent levels can handle their own slice
+  emit('drop', e);
+}
+```
+
+```html
+<!-- TreeNode.vue template -->
+<div class="node">
+  <!-- header, drag handle... -->
+
+  <!-- Pass each child's children array as v-model -->
+  <TreeNode
+    v-for="(child, i) in children"
+    :key="child.id"
+    v-model="child.children"
+    :node="child"
+    :index="i"
+    :siblings="children"
+    @drop="handleDrop"
+  />
+</div>
+```
+
+```ts
+// Root component — same pattern, no applyToTree
+const tree = ref<Node[]>([...]);
+
+function handleDrop(e: IDragEvent) {
+  const r = e.helpers.suggestSort('vertical');
+  if (!r) return;
+
+  const srcArr = e.draggedItems[0]?.items as Node[];
+  const tgtArr = (e.hoveredDraggable?.items ?? e.dropZone?.items) as Node[];
+
+  if (srcArr === tree.value)
+    tree.value = r.sourceItems as Node[];
+
+  if (!r.sameList && tgtArr === tree.value)
+    tree.value = r.targetItems as Node[];
+}
+```
+
+### How it works
+
+The drop event is emitted up through `@drop` → `emit('drop', e)` at every level. Each ancestor runs `handleDrop` and checks via `===` whether the event's source or target array is its own `children.value`. If yes — it updates. If no — it ignores and lets the event continue upward.
+
+| Scenario | Who updates |
+|---|---|
+| Sort within the same level | That level's component (src `===` children) |
+| Move from level 3 → level 2 | Level 3 removes (src `===` its children), Level 2 inserts (tgt `===` its children) |
+| Move from any level → root | Deepest level removes, root inserts |
+
+Every check is O(1). The tree can be arbitrarily deep with no performance penalty.
+
+---
+
 ## `render` vs overlay customization
 
 These are separate concerns:

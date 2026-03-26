@@ -2,8 +2,10 @@
   import { motion } from 'motion-v';
   import { useData, withBase } from 'vitepress';
   import { BackgroundLens } from './BackgroundLens';
+  import { useReadMode } from '../composables/useReadMode';
 
   const { frontmatter, theme } = useData();
+  const { isReadMode } = useReadMode();
 
   const actionHref = (link: string) => {
     return link.startsWith('http') ? link : withBase(link);
@@ -30,7 +32,10 @@
     :animate="{ opacity: 1 }"
     :transition="{ duration: 0.4 }"
   >
-    <BackgroundLens class="fixed! inset-0 -z-20" />
+    <BackgroundLens
+      v-if="!isReadMode"
+      class="fixed! inset-0 -z-20 vdnd-bg"
+    />
     <motion.main
       class="container mx-auto"
       :initial="{ opacity: 0 }"

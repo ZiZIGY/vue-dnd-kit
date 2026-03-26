@@ -249,7 +249,9 @@ export const createPointerHandlers = (provider: IDnDProviderInternal) => {
     document.addEventListener('pointerup', pointerUp);
     document.addEventListener('pointermove', pointerMove);
 
-    const target = event.target as HTMLElement;
+    // composedPath()[0] gives the real target even across shadow root boundaries
+    // (event.target is re-targeted to the host element when leaving a shadow root)
+    const target = ((event.composedPath?.()[0]) ?? event.target) as HTMLElement;
     const closestSelectionArea = target.closest(
       DnDSelectors.SELECT_AREA
     ) as HTMLElement;

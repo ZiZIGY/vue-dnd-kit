@@ -179,6 +179,8 @@ export interface IDragActivation {
 export type TCondition = 'any' | 'both';
 
 export interface IDraggableEntity extends IBaseEntity {
+  /** Stable id for this draggable — survives element remount during virtualization */
+  id?: string;
   render?: Component;
   events?: IDraggableEvents;
   payload?: TDraggablePayload;

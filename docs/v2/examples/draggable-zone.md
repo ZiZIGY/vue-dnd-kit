@@ -10,28 +10,31 @@ import Example from '@examples-v2/DraggableZone/Example.vue';
 
 <Example />
 
-Each row is a dual-role element. The handle (⠿) makes it draggable. The same element is also a droppable. The pointer position decides what happens:
+Each node is a dual-role element. The handle (⠿) makes it draggable. The same element is also a droppable:
 
-- **Top / bottom edge** — purple insert line → sort node among its siblings
-- **Center** — indigo glow → nest node as a child of this folder
+- **Top / bottom edge** — insert line → sort node among its siblings
+- **Center** — colored glow → nest the dragged item inside this node (works even on leaf nodes)
 
 ## How it works
 
 ```ts
-// Same ref for both composables
 const rowRef = useTemplateRef<HTMLElement>('rowRef');
 
-// Draggable with edge zones defined by placementMargins
-const { isDragOver: placement } = makeDraggable(rowRef, {
-  dragHandle: '.drag-handle',
-  placementMargins: { top: 12, bottom: 12 }, // edge = top and bottom 12px
-}, () => [props.index, props.siblings]);
+// Dual-role: edge → sort siblings; center → nest inside this node
+const { isDragging, isDragOver: placement } = makeDraggable(
+  rowRef,
+  {
+    dragHandle: '.drag-handle',
+    placementMargins: { top: 12, bottom: 12 },
+  },
+  () => [props.index, props.siblings]
+);
 
-// Droppable that fires only when pointer is in the center zone
+// Center drop fires when pointer is NOT in the edge margins
 const { isDragOver: isOver } = makeDroppable(
   rowRef,
   { events: { onDrop: (e) => emit('drop', e) } },
-  () => props.node.children,
+  () => props.node.children
 );
 ```
 
@@ -41,21 +44,26 @@ const { isDragOver: isOver } = makeDroppable(
 
 | Pointer position | Active side | `hoveredDraggable` | `dropZone` |
 | --- | --- | --- | --- |
-| Top / bottom edge | Draggable | set to row | `null` |
-| Center | Droppable | `null` | set to row |
+| Top / bottom edge | Draggable | set to node | `null` |
+| Center | Droppable | `null` | set to node |
 
-This means a single drop handler covers both cases with `hoveredDraggable?.items ?? dropZone?.items`:
+### Drop handler (root)
 
 ```ts
+function applyToTree(oldArr: TreeNode[], newArr: TreeNode[]) {
+  if (oldArr === tree.value) {
+    tree.value = newArr;
+  } else {
+    findAndReplace(tree.value, oldArr, newArr);
+  }
+}
+
 function handleDrop(e: IDragEvent) {
   const r = e.helpers.suggestSort('vertical');
   if (!r) return;
 
   const srcArr = e.draggedItems[0]?.items as TreeNode[];
-  // Edge → hoveredDraggable.items = sibling array (sort)
-  // Center → dropZone.items = node.children (nest)
   const tgtArr = (e.hoveredDraggable?.items ?? e.dropZone?.items) as TreeNode[];
-  if (!srcArr || !tgtArr) return;
 
   applyToTree(srcArr, r.sourceItems as TreeNode[]);
   if (!r.sameList) applyToTree(tgtArr, r.targetItems as TreeNode[]);
@@ -70,6 +78,7 @@ function handleDrop(e: IDragEvent) {
 
 ## See also
 
+- [Techniques Guide](/v2/guide/techniques) — Draggable Zone and other patterns explained
 - [makeDraggable](/v2/guide/core/make-draggable) — `placementMargins` option
 - [makeDroppable](/v2/guide/core/make-droppable) — `events.onDrop`
 - [Tree example](/v2/examples/tree) — tree with a separate children droppable per node

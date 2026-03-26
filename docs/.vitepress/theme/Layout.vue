@@ -9,6 +9,7 @@
   import VPSidebar from 'vitepress/dist/client/theme-default/components/VPSidebar.vue';
   import VPSkipLink from 'vitepress/dist/client/theme-default/components/VPSkipLink.vue';
   import CustomVPContent from './components/CustomVPContent.vue';
+  import ReadModeToggle from './components/ReadModeToggle.vue';
   import { useData } from 'vitepress';
   import {
     useCloseSidebarOnEscape,
@@ -64,9 +65,10 @@
       <template #nav-bar-content-before
         ><slot name="nav-bar-content-before"
       /></template>
-      <template #nav-bar-content-after
-        ><slot name="nav-bar-content-after"
-      /></template>
+      <template #nav-bar-content-after>
+        <ReadModeToggle />
+        <slot name="nav-bar-content-after" />
+      </template>
       <template #nav-screen-content-before
         ><slot name="nav-screen-content-before"
       /></template>
@@ -139,3 +141,4 @@
     min-height: 100vh;
   }
 </style>
+

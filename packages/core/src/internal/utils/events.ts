@@ -4,7 +4,7 @@
 
 import type { IDragEvent, IHovered } from '../../external/types/provider';
 
-import { DnDSelectors } from './namespaces';
+import { DnDAttributes, DnDSelectors } from './namespaces';
 import type { IDnDProviderInternal } from '../types/provider';
 import type { IDragItem, TDraggablePayload } from '../../external/types/entities';
 import { createHelpers } from '../logic/operations';
@@ -28,6 +28,26 @@ export const getClosestDraggableFromEvent = (
     DnDSelectors.DRAGGABLE
   ) as HTMLElement | null;
 
+// ─── Stale-element resolution ─────────────────────────────────────────────────
+// When a virtual-list item unmounts and remounts while being dragged, draggingMap
+// is remapped to the new element (in makeDraggable onMounted). The old element
+// stored in initiatingDraggable is detached from the DOM but still carries its
+// data-dnd-kit-draggable attribute with the stable id. We use that id to find
+// the current entry in draggingMap.
+
+function resolveFromDraggingMap(el: HTMLElement, provider: IDnDProviderInternal) {
+  const direct = provider.entities.draggingMap.get(el);
+  if (direct) return direct;
+  // Virtual list: el is a detached remounted element — find the current entry by id
+  // stored in its data-dnd-kit-draggable attribute (written in makeDraggable onMounted)
+  const id = el.getAttribute(DnDAttributes.DRAGGABLE);
+  if (!id) return undefined;
+  for (const [, entity] of provider.entities.draggingMap) {
+    if (entity.id === id) return entity;
+  }
+  return undefined;
+}
+
 // ─── Dragged items builder ─────────────────────────────────────────────────────
 
 function buildDraggedItems(provider: IDnDProviderInternal): IDragItem[] {
@@ -35,7 +55,7 @@ function buildDraggedItems(provider: IDnDProviderInternal): IDragItem[] {
   if (!initiating) return [];
 
   const entity =
-    provider.entities.draggingMap.get(initiating) ??
+    resolveFromDraggingMap(initiating, provider) ??
     provider.entities.draggableMap.get(initiating);
   const payloadFn = entity?.payload as TDraggablePayload | undefined;
 
@@ -163,7 +183,7 @@ export const triggerSelfDragForElement = (
 ): void => {
   if (!element) return;
   const entity =
-    provider.entities.draggingMap.get(element) ??
+    resolveFromDraggingMap(element, provider) ??
     provider.entities.draggableMap.get(element);
   if (!entity || entity.disabled) return;
   entity.events?.[eventName]?.(getDragEvent(provider));

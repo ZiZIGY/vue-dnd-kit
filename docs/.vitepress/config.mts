@@ -175,6 +175,7 @@ export default defineConfig({
           items: [
             { text: 'Patterns & Concepts', link: '/v2/guide/patterns' },
             { text: 'Pitfalls & Best Practices', link: '/v2/guide/pitfalls' },
+            { text: 'Techniques', link: '/v2/guide/techniques' },
           ],
         },
         {
@@ -195,6 +196,7 @@ export default defineConfig({
             { text: 'Changing Overlay', link: '/v2/examples/changing-overlay' },
             { text: 'Async Drop (Promise)', link: '/v2/examples/promise-drop' },
             { text: 'Tree / Nesting', link: '/v2/examples/tree' },
+            { text: 'v-model Group', link: '/v2/examples/v-model-group' },
             { text: 'Constraint Area', link: '/v2/examples/constraint-area' },
             { text: 'Auto Scroll', link: '/v2/examples/auto-scroll' },
             { text: 'Drag Activation', link: '/v2/examples/activation' },
@@ -205,6 +207,18 @@ export default defineConfig({
             { text: 'Snap to Grid', link: '/v2/examples/snap-grid' },
             { text: 'Checkers', link: '/v2/examples/checkers' },
             { text: 'Chess', link: '/v2/examples/chess' },
+          ],
+        },
+        {
+          text: 'Performance',
+          items: [
+            { text: 'Raw vs Virtualized', link: '/v2/examples/performance' },
+          ],
+        },
+        {
+          text: 'Releases',
+          items: [
+            { text: 'Changelog', link: '/v2/guide/changelog' },
           ],
         },
       ],
@@ -244,6 +258,7 @@ export default defineConfig({
           items: [
             { text: 'Patterns & Concepts', link: '/v2/guide/patterns' },
             { text: 'Pitfalls & Best Practices', link: '/v2/guide/pitfalls' },
+            { text: 'Techniques', link: '/v2/guide/techniques' },
           ],
         },
         {
@@ -264,6 +279,7 @@ export default defineConfig({
             { text: 'Changing Overlay', link: '/v2/examples/changing-overlay' },
             { text: 'Async Drop (Promise)', link: '/v2/examples/promise-drop' },
             { text: 'Tree / Nesting', link: '/v2/examples/tree' },
+            { text: 'v-model Group', link: '/v2/examples/v-model-group' },
             { text: 'Constraint Area', link: '/v2/examples/constraint-area' },
             { text: 'Auto Scroll', link: '/v2/examples/auto-scroll' },
             { text: 'Drag Activation', link: '/v2/examples/activation' },
@@ -274,6 +290,18 @@ export default defineConfig({
             { text: 'Snap to Grid', link: '/v2/examples/snap-grid' },
             { text: 'Checkers', link: '/v2/examples/checkers' },
             { text: 'Chess', link: '/v2/examples/chess' },
+          ],
+        },
+        {
+          text: 'Performance',
+          items: [
+            { text: 'Raw vs Virtualized', link: '/v2/examples/performance' },
+          ],
+        },
+        {
+          text: 'Releases',
+          items: [
+            { text: 'Changelog', link: '/v2/guide/changelog' },
           ],
         },
       ],

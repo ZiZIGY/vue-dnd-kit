@@ -8,6 +8,9 @@
   import { computed, watch, onMounted, onUnmounted } from 'vue';
   import { useSidebar } from 'vitepress/dist/client/theme-default/composables/sidebar.js';
   import LiquidEtherBackground from './LiquidBackground';
+  import { useReadMode } from '../composables/useReadMode';
+
+  const { isReadMode } = useReadMode();
 
   const { page, frontmatter } = useData();
   const route = useRoute();
@@ -40,8 +43,8 @@
 
 <template>
   <motion.div
-    v-if="isDoc"
-    class="fixed inset-0 -z-20 pointer-events-none"
+    v-if="isDoc && !isReadMode"
+    class="fixed inset-0 -z-20 pointer-events-none vdnd-bg"
     :initial="{ opacity: 0 }"
     :animate="{ opacity: 1 }"
     :transition="{ duration: 0.6 }"

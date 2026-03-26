@@ -6,6 +6,11 @@
  */
 
 @import './styles/variables.css';
+
+/* Hide animated backgrounds on mobile — always, regardless of read mode */
+@media (max-width: 767px) {
+  .vdnd-bg { display: none !important; }
+}
 @import './styles/utilities.css';
 @import './styles/vitepress.css';
 @import './styles/home.css';

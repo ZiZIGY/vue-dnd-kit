@@ -1,14 +1,14 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import { DnDProvider } from '../../packages/core/src/external/index';
-  import Overlay from './components/Overlay.vue';
-  import SortSection from './sections/SortSection.vue';
   import SwapSection from './sections/SwapSection.vue';
   import CopySection from './sections/CopySection.vue';
   import TreeSection from './sections/TreeSection.vue';
   import KanbanSection from './sections/KanbanSection.vue';
   import ConfirmSection from './sections/ConfirmSection.vue';
   import OverlaySection from './sections/OverlaySection.vue';
+  import ShadowDomSection from './sections/ShadowDomSection.vue';
+  import VirtualSection from './sections/VirtualSection.vue';
 
   type Tab =
     | 'sort'
@@ -17,7 +17,9 @@
     | 'tree'
     | 'kanban'
     | 'confirm'
-    | 'overlay';
+    | 'overlay'
+    | 'shadow-dom'
+    | 'virtual';
 
   const tabs: { id: Tab; label: string; desc: string }[] = [
     { id: 'sort', label: 'Sort & Transfer', desc: 'suggestSort()' },
@@ -35,6 +37,8 @@
       label: 'Changing Overlay',
       desc: 'Test',
     },
+    { id: 'shadow-dom', label: 'Shadow DOM', desc: 'web component bug' },
+    { id: 'virtual', label: 'Virtual List', desc: 'useVirtualList + id' },
   ];
 
   const activeTab = ref<Tab>('sort');
@@ -59,13 +63,14 @@
       </nav>
 
       <section class="section">
-        <SortSection v-if="activeTab === 'sort'" />
-        <SwapSection v-else-if="activeTab === 'swap'" />
+        <SwapSection v-if="activeTab === 'swap'" />
         <CopySection v-else-if="activeTab === 'copy'" />
         <TreeSection v-else-if="activeTab === 'tree'" />
         <KanbanSection v-else-if="activeTab === 'kanban'" />
         <ConfirmSection v-else-if="activeTab === 'confirm'" />
         <OverlaySection v-else-if="activeTab === 'overlay'" />
+        <ShadowDomSection v-else-if="activeTab === 'shadow-dom'" />
+        <VirtualSection v-else-if="activeTab === 'virtual'" />
       </section>
     </div>
   </DnDProvider>

@@ -25,6 +25,10 @@ import { getNode, preventEvent } from '../../internal/utils/dom';
 import { useDnDProviderInternal } from '../../internal/composables/useDnDProviderInternal';
 
 interface IMakeDraggableOptions extends IBaseOptions {
+  /** Stable id for this draggable. Required for correct behavior inside virtual lists
+   *  where items unmount and remount as the user scrolls. If omitted, a random id is
+   *  generated automatically — sufficient for non-virtual usage. */
+  id?: string;
   events?: IDraggableEvents;
   modifier?: IModifierOptions;
   render?: Component;
@@ -69,6 +73,9 @@ export function makeDraggable(
     finalPayload = payload;
   }
 
+  // Stable id: user-provided for virtual lists, otherwise auto-generated once per instance
+  const id = options.id ?? Math.random().toString(36).slice(2);
+
   const selected = computed({
     get() {
       const node = getNode(ref);
@@ -108,11 +115,12 @@ export function makeDraggable(
     container.addEventListener('drag', preventEvent);
     container.addEventListener('dragend', preventEvent);
 
-    container.setAttribute(DnDAttributes.DRAGGABLE, '');
+    container.setAttribute(DnDAttributes.DRAGGABLE, id);
 
     provider.lib.draggableObserver.observe(container);
 
     provider.entities.draggableMap.set(container, {
+      id,
       render: options.render,
       disabled: (options.disabled as boolean) ?? false,
       groups: (options.groups as string[]) ?? [],
@@ -125,6 +133,19 @@ export function makeDraggable(
       placementMargins: options.placementMargins,
       hoveredPlacement: undefined,
     });
+
+    // Virtual list remount: if an element with the same id is still in draggingMap
+    // (scrolled out while being dragged), remap the entry to the new element so
+    // isDragging stays correct and the item is not treated as a hover target
+    if (id) {
+      for (const [oldEl, draggingEntity] of provider.entities.draggingMap) {
+        if (draggingEntity.id === id && oldEl !== container) {
+          provider.entities.draggingMap.delete(oldEl);
+          provider.entities.draggingMap.set(container, draggingEntity);
+          break;
+        }
+      }
+    }
   });
 
   onBeforeUnmount(() => {

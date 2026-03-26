@@ -43,6 +43,7 @@ Extends **base options** (shared with droppable/selection/constraint):
 
 | Option             | Type                    | Description |
 |--------------------|-------------------------|-------------|
+| `id`               | `string`                | Stable identity for this draggable. **Required when using virtual lists** (e.g. `useVirtualList`) — see [Virtual lists](#virtual-lists). Optional everywhere else: if omitted, a random id is generated automatically. |
 | `dragHandle`       | `string \| Ref<string>` | CSS selector for the handle. Only pointer events on this descendant start a drag. If omitted, the whole element is the handle. |
 | `modifier`        | `{ keys: string[], method: 'every' \| 'some' }` or refs | Key(s) that must be pressed to allow drag (e.g. `['AltLeft']` with `method: 'every'`). |
 | `activation`      | `IDragActivationOptions` | When drag starts: **distance** (pixels or `{ x, y, condition }`) and/or **delay** (ms). See [Activation](#activation). |
@@ -187,6 +188,30 @@ Using return values (e.g. for styling and sort indicators):
   </div>
 </template>
 ```
+
+---
+
+## Virtual lists
+
+When using a virtual list (e.g. `useVirtualList` from VueUse), items outside the viewport are **unmounted** and remounted as new DOM elements when they scroll back into view. Without a stable `id`, the library loses track of which element is being dragged — the remounted element gets a fresh registration and can incorrectly appear as a hover target, and dropping after a scroll-away has no effect.
+
+Pass `id` equal to your data item's own identifier:
+
+```ts
+// ❌ Without id — broken in virtual lists
+makeDraggable(el, { groups: ['item'] }, () => [index, items.value])
+
+// ✅ With id — correct in virtual lists
+makeDraggable(el, { id: item.id, groups: ['item'] }, () => [index, items.value])
+```
+
+**How it works:** the `id` is written to the element's `data-dnd-kit-draggable` attribute on mount. When the element remounts, the library finds the matching entry in the drag session by that id and transfers it to the new DOM node. The old detached element still carries the attribute in memory, so even stale references can resolve to the current drag state. As a result:
+
+- `isDragging` stays `true` on the remounted element.
+- The item is not treated as a hover target for other draggables.
+- Dropping after a scroll-away fires `onDrop` correctly.
+
+Outside of virtual lists `id` is optional — a random id is generated automatically per component instance.
 
 ---
 
