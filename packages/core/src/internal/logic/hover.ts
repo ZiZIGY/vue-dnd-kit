@@ -1,21 +1,22 @@
 import {
   getClosestPlacement,
   getPointerBoxFromProvider,
-} from '../utils/placement';
+} from "../utils/placement";
 import {
   getFirstKey,
-  triggerZoneEnterLeave,
   triggerDraggableHoverChange,
-} from '../utils/events';
-import { isDescendant } from '../utils/dom';
-import { getDistanceToRectCenter } from '../utils/hover';
-import type { IDnDProviderInternal } from '../types/provider';
-import type { IHovered } from '../../external/types/provider';
-import type { IPlacement } from '../../external/types/placement';
+  triggerZoneEnterLeave,
+} from "../utils/events";
+
+import type { IDnDProviderInternal } from "../types/provider";
+import type { IHovered } from "../../external/types/provider";
+import type { IPlacement } from "../../external/types/placement";
+import { getDistanceToRectCenter } from "../utils/hover";
+import { isDescendant } from "../utils/dom";
 
 function isSamePlacement(
   a: IPlacement | undefined,
-  b: IPlacement | undefined
+  b: IPlacement | undefined,
 ): boolean {
   if (a === b) return true;
   if (!a || !b) return false;
@@ -30,7 +31,7 @@ function isSamePlacement(
 
 function setHoveredPlacement(
   entity: { hoveredPlacement?: IPlacement },
-  placement: IPlacement | undefined
+  placement: IPlacement | undefined,
 ): void {
   if (!isSamePlacement(entity.hoveredPlacement, placement)) {
     entity.hoveredPlacement = placement;
@@ -39,14 +40,14 @@ function setHoveredPlacement(
 
 const findNestedDraggable = (
   elements: HTMLElement[],
-  zone: HTMLElement
+  zone: HTMLElement,
 ): HTMLElement | undefined =>
   elements.find((el) => el !== zone && isDescendant(zone, el));
 
 export const applyCollisionResultToHovered = (
   provider: IDnDProviderInternal,
   hovered: IHovered,
-  result: { elements: HTMLElement[]; zones: HTMLElement[] }
+  result: { elements: HTMLElement[]; zones: HTMLElement[] },
 ): void => {
   const prevZone = getFirstKey(hovered.droppable);
   const prevElement = getFirstKey(hovered.draggable);
@@ -78,7 +79,7 @@ export const applyCollisionResultToHovered = (
         const nestedRect = nested.getBoundingClientRect();
         hovered.draggable.set(
           nested,
-          getClosestPlacement(pointerBox, nestedRect, undefined)
+          getClosestPlacement(pointerBox, nestedRect, undefined),
         );
       }
     } else {
@@ -91,7 +92,7 @@ export const applyCollisionResultToHovered = (
         const fRect = fallbackZone.getBoundingClientRect();
         hovered.droppable.set(
           fallbackZone,
-          getClosestPlacement(pointerBox, fRect)
+          getClosestPlacement(pointerBox, fRect),
         );
       }
     }
@@ -112,7 +113,7 @@ export const applyCollisionResultToHovered = (
             provider.entities.draggableMap.get(newElement)?.placementMargins;
           hovered.draggable.set(
             newElement,
-            getClosestPlacement(pointerBox, rect, margins)
+            getClosestPlacement(pointerBox, rect, margins),
           );
         } else {
           // Элемент не внутри зоны — выбираем ближайший к курсору
@@ -130,7 +131,7 @@ export const applyCollisionResultToHovered = (
               provider.entities.draggableMap.get(newElement)?.placementMargins;
             hovered.draggable.set(
               newElement,
-              getClosestPlacement(pointerBox, elementRect, margins)
+              getClosestPlacement(pointerBox, elementRect, margins),
             );
           }
           // Иначе зона ближе — зона уже записана выше, элемент не записываем
@@ -142,7 +143,7 @@ export const applyCollisionResultToHovered = (
           provider.entities.draggableMap.get(newElement)?.placementMargins;
         hovered.draggable.set(
           newElement,
-          getClosestPlacement(pointerBox, rect, margins)
+          getClosestPlacement(pointerBox, rect, margins),
         );
       }
     }
@@ -163,7 +164,8 @@ export const applyCollisionResultToHovered = (
   }
   if (finalElement) {
     const entity = provider.entities.draggableMap.get(finalElement);
-    if (entity) setHoveredPlacement(entity, hovered.draggable.get(finalElement));
+    if (entity)
+      setHoveredPlacement(entity, hovered.draggable.get(finalElement));
   }
   if (finalZone) {
     const entity = provider.entities.droppableMap.get(finalZone);

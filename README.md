@@ -138,6 +138,15 @@ For larger changes, please open an issue first to discuss the approach.
 
 ---
 
+## 💛 Support
+
+If vue-dnd-kit saves you time, consider supporting the project — it helps keep development going.
+
+[![Telegram](https://img.shields.io/badge/Telegram_Wallet-ZiZIGY-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/ZiZIGY)
+**WebMoney:** `836516027542`
+
+---
+
 ## License
 
 [MIT](./LICENSE) © 2025 [ZiZIGY](https://github.com/ZiZiGY)
