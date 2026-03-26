@@ -51,8 +51,8 @@
   import {
     makeDraggable,
     makeDroppable,
+    injectionKey,
   } from '../../../packages/core/src/external/index';
-  import { injectionKey } from '../../../packages/core/src/internal/utils/namespaces';
   import type { IDragEvent } from '../../../packages/core/src/external/types';
 
   interface Item {

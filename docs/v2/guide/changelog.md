@@ -29,6 +29,28 @@ const { isDragging } = makeDraggable(el, { id: props.item.id }, () => [
 
 ---
 
+### New export — `injectionKey`
+
+`injectionKey` is now part of the public API:
+
+```ts
+import { injectionKey } from '@vue-dnd-kit/core';
+```
+
+This is the Vue injection key under which `DnDProvider` stores its internal context. It is intended for **advanced or non-standard use cases** — for example:
+
+- Bridging a separately mounted Vue app (e.g. a shadow root) into the same DnD context
+- Building custom integrations that need direct access to the internal provider
+- Exploring or debugging what the library holds internally
+
+For everything standard — reading drag state, pointer position, preview, entities — use `useDnDProvider`. It returns a stable, typed public API and is all you need in 99% of cases.
+
+**`injectionKey` gives you the raw internal provider.** Its shape is not part of the public API contract and may change between minor versions.
+
+→ [injectionKey — advanced use](/v2/guide/core/use-dnd-provider#injectionkey-advanced-use-only)
+
+---
+
 ### Bug fix — drop fails after scrolling away while dragging
 
 **Symptom.** Start dragging an item in a virtual list → scroll so the item unmounts → scroll back so it remounts → try to drop — nothing fires.
@@ -49,9 +71,9 @@ const { isDragging } = makeDraggable(el, { id: props.item.id }, () => [
 
 ---
 
-### Bug fix — drag did not start inside a Shadow DOM
+### Bug fix — full Shadow DOM support
 
-**Two separate bugs were fixed. Together they make full Shadow DOM support work — including cross-boundary drag between a shadow list and a regular list.**
+**Two separate bugs were fixed. Together they enable full Shadow DOM support — including cross-boundary drag between a shadow list and a regular list.**
 
 #### Part 1 — drag never started inside a shadow root
 
@@ -73,10 +95,13 @@ const target = (event.composedPath?.()[0] ?? event.target) as HTMLElement;
 
 **The old approach** wrapped the shadow app in its own `DnDProvider`. This created two completely isolated DnD contexts — drag sessions in the shadow root were invisible to the outer provider and vice versa. Sorting between the two lists was impossible.
 
-**The fix** is to share the outer provider with the inner Vue app via `app.provide`. Since pointer events from inside the shadow root already reach `document` (where the outer provider listens), and `composedPath()[0]` resolves the real element, all that was missing was the elements being registered in the same maps.
+**The fix** is to share the outer provider with the inner Vue app via `app.provide` using the newly exported `injectionKey`. Since pointer events from inside the shadow root already reach `document` (where the outer provider listens), and `composedPath()[0]` resolves the real element, all that was missing was the elements being registered in the same maps.
 
 ```ts
-// Get the outer provider inside the component that mounts the shadow app
+import { inject } from 'vue';
+import { injectionKey } from '@vue-dnd-kit/core';
+
+// Inside a component that is a descendant of the outer DnDProvider:
 const outerProvider = inject(injectionKey);
 
 onMounted(() => {
@@ -84,7 +109,7 @@ onMounted(() => {
   const container = document.createElement('div');
   shadow.appendChild(container);
 
-  // No DnDProvider wrapper — just share the outer provider directly
+  // No DnDProvider wrapper — share the outer provider directly
   createApp({ render: () => h(YourShadowList) })
     .provide(injectionKey, outerProvider)
     .mount(container);
@@ -94,3 +119,22 @@ onMounted(() => {
 Result: shadow DOM elements and regular DOM elements participate in the same drag session. You can sort within each list and drag items across the boundary between them.
 
 ---
+
+## v2.2.0
+
+- Added grid layout example
+- Various stability improvements
+
+## v2.1.0
+
+- `makeSelectionArea` — box-select with multi-drag support
+- `makeAutoScroll` — automatic container scroll during drag
+- Keyboard navigation (Enter / Space / Arrows / Escape)
+
+## v2.0.0
+
+- Full rewrite. Composable-first API: `makeDraggable`, `makeDroppable`, `makeConstraintArea`, `makeSelectionArea`
+- `DnDProvider` as the scope boundary (multiple independent providers on one page)
+- `suggestSort`, `suggestSwap`, `suggestCopy`, `suggestRemove` helpers on `event.helpers`
+- Touch support
+- Zero external dependencies

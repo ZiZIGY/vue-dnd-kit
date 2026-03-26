@@ -12,6 +12,7 @@ export { makeSelectionArea } from './composables/makeSelectionArea';
 export { makeConstraintArea } from './composables/makeConstraintArea';
 export { makeDroppable } from './composables/makeDroppable';
 export { useDnDProvider } from './composables/useDnDProvider';
+export { injectionKey } from '../internal/utils/namespaces';
 export {
   makeAutoScroll,
   type IAutoScrollOptions,

@@ -109,6 +109,45 @@ Reading preview position in a custom preview:
 
 ---
 
+---
+
+## `injectionKey` — advanced use only
+
+`injectionKey` is the Vue injection key under which `DnDProvider` stores its context. It is exported from the public API but **should not be used in normal application code** — `useDnDProvider` covers all typical needs.
+
+Typical use cases:
+
+- Bridging a separately mounted Vue app (e.g. inside a shadow root) into the same DnD context
+- Building custom integrations that need direct access to the internal provider
+- Exploring or debugging what the library holds at runtime
+
+Example — sharing context with a shadow root app:
+
+```ts
+import { inject, createApp, h } from 'vue';
+import { injectionKey } from '@vue-dnd-kit/core';
+
+// Inside a component that is a descendant of DnDProvider:
+const outerProvider = inject(injectionKey);
+
+onMounted(() => {
+  const shadow = host.attachShadow({ mode: 'open' });
+  const container = document.createElement('div');
+  shadow.appendChild(container);
+
+  // Share the outer provider with the inner app — no DnDProvider wrapper needed
+  createApp({ render: () => h(YourComponent) })
+    .provide(injectionKey, outerProvider)
+    .mount(container);
+});
+```
+
+Elements inside the shadow root will register into the same `draggableMap` / `droppableMap` as the outer app and participate in the same drag sessions.
+
+> **Do not** use `injectionKey` + `inject` as a replacement for `useDnDProvider`. The value behind the key is an internal type — its shape is not part of the public API contract and may change between minor versions.
+
+---
+
 ## See also
 
 - [DnDProvider](/v2/guide/core/dnd-provider) — setup and preview slot.
