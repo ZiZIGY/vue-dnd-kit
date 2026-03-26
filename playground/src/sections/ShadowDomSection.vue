@@ -23,10 +23,14 @@
         props.items,
       ]);
       return () =>
-        h('div', { ref: el, class: ['sort-item', isDragging.value && 'sort-item--dragging'] }, [
-          h('span', { class: 'handle' }, '⠿'),
-          props.item.label,
-        ]);
+        h(
+          'div',
+          {
+            ref: el,
+            class: ['sort-item', isDragging.value && 'sort-item--dragging'],
+          },
+          [h('span', { class: 'handle' }, '⠿'), props.item.label]
+        );
     },
   });
 
@@ -34,12 +38,21 @@
 </script>
 
 <script setup lang="ts">
-  import { ref, shallowRef, useTemplateRef, onMounted, createApp, defineComponent, h } from 'vue';
   import {
-    DnDProvider,
+    ref,
+    shallowRef,
+    useTemplateRef,
+    onMounted,
+    createApp,
+    defineComponent,
+    h,
+    inject,
+  } from 'vue';
+  import {
     makeDraggable,
     makeDroppable,
   } from '../../../packages/core/src/external/index';
+  import { injectionKey } from '../../../packages/core/src/internal/utils/namespaces';
   import type { IDragEvent } from '../../../packages/core/src/external/types';
 
   interface Item {
@@ -61,20 +74,24 @@
   makeDroppable(
     normalListRef,
     { groups: ['sd'], events: { onDrop: handleNormalDrop } },
-    () => normalItems.value,
+    () => normalItems.value
   );
 
   function handleNormalDrop(e: IDragEvent) {
     const r = e.helpers.suggestSort('vertical');
-    if (r) normalItems.value = r.sourceItems as Item[];
+    if (!r) return;
+    normalItems.value = r.targetItems as Item[];
+    if (!r.sameList) {
+      const src = e.draggedItems[0].items as Item[];
+      src.splice(0, src.length, ...(r.sourceItems as Item[]));
+    }
   }
 
   // ── Shadow DOM ────────────────────────────────────────────────────────────────
-  // We mount a full Vue app (with its own DnDProvider) inside an attached shadow
-  // root. The shadow root is a separate DOM tree, so events fired inside it get
-  // RETARGETED at the boundary — the library's document-level pointerdown listener
-  // sees the host element (shadowHostRef) instead of the actual draggable, so drag
-  // never starts.
+  // Mount a Vue app inside an attached shadow root and share the OUTER DnDProvider
+  // context with it. A separate createApp is needed because shadow roots are
+  // isolated DOM trees, but we inject the outer provider so all elements register
+  // in the same draggableMap / droppableMap and participate in the same drag session.
 
   const ITEM_STYLE = {
     display: 'flex',
@@ -106,10 +123,14 @@
         props.items,
       ]);
       return () =>
-        h('div', { ref: el, style: { ...ITEM_STYLE, opacity: isDragging.value ? '0.35' : '1' } }, [
-          h('span', { style: 'opacity:0.6' }, '⠿'),
-          props.item.label,
-        ]);
+        h(
+          'div',
+          {
+            ref: el,
+            style: { ...ITEM_STYLE, opacity: isDragging.value ? '0.35' : '1' },
+          },
+          [h('span', { style: 'opacity:0.6' }, '⠿'), props.item.label]
+        );
     },
   });
 
@@ -127,11 +148,16 @@
           events: {
             onDrop(e: IDragEvent) {
               const r = e.helpers.suggestSort('vertical');
-              if (r) items.value = r.sourceItems as Item[];
+              if (!r) return;
+              items.value = r.targetItems as Item[];
+              if (!r.sameList) {
+                const src = e.draggedItems[0].items as Item[];
+                src.splice(0, src.length, ...(r.sourceItems as Item[]));
+              }
             },
           },
         },
-        () => items.value,
+        () => items.value
       );
 
       return () =>
@@ -139,19 +165,15 @@
           'div',
           { ref: listEl, class: 'sort-list' },
           items.value.map((item, i) =>
-            h(ShadowItem, { key: item.id, item, index: i, items: items.value }),
-          ),
+            h(ShadowItem, { key: item.id, item, index: i, items: items.value })
+          )
         );
     },
   });
 
-  // ShadowApp only provides DnDProvider — makeDroppable is NOT called here
-  const ShadowApp = defineComponent({
-    name: 'ShadowApp',
-    setup() {
-      return () => h(DnDProvider, null, () => h(ShadowList));
-    },
-  });
+  // Grab the outer provider so shadow DOM components can share the same DnD context.
+  // inject() works here because ShadowDomSection is a child of the outer DnDProvider.
+  const outerProvider = inject(injectionKey);
 
   const shadowHostRef = useTemplateRef<HTMLElement>('shadowHostRef');
 
@@ -168,16 +190,22 @@
 
     const container = document.createElement('div');
     shadow.appendChild(container);
-    createApp(ShadowApp).mount(container);
+
+    // Mount ShadowList directly — no DnDProvider wrapper.
+    // Provide the outer provider under the same key so makeDraggable/makeDroppable
+    // inside the shadow root register into the same maps and react to the same events.
+    createApp({ render: () => h(ShadowList) })
+      .provide(injectionKey, outerProvider)
+      .mount(container);
   });
 </script>
 
 <template>
   <div>
     <p class="hint">
-      Drag &amp; drop inside a normal DOM vs inside a Shadow DOM
-      (<code>attachShadow({ mode: 'open' })</code>). Both lists use identical code —
-      same items, same DnD setup.
+      Drag &amp; drop inside a normal DOM vs inside a Shadow DOM (<code
+        >attachShadow({ mode: 'open' })</code
+      >). Both lists use identical code — same items, same DnD setup.
     </p>
 
     <div class="panels">
@@ -209,8 +237,9 @@
           <span class="badge badge--ok">✓ fixed</span>
         </h3>
         <p class="panel-note">
-          Fixed via <code>event.composedPath()[0]</code> — returns the real target
-          element even when the event crosses a shadow root boundary.
+          One <code>DnDProvider</code> at the top. Shadow root mounts a separate
+          Vue app but shares the outer provider via
+          <code>app.provide(injectionKey, outerProvider)</code>.
         </p>
 
         <!-- Vue app (with its own DnDProvider) is mounted into this shadow root -->

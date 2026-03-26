@@ -51,6 +51,10 @@ const { isDragging } = makeDraggable(el, { id: props.item.id }, () => [
 
 ### Bug fix — drag did not start inside a Shadow DOM
 
+**Two separate bugs were fixed. Together they make full Shadow DOM support work — including cross-boundary drag between a shadow list and a regular list.**
+
+#### Part 1 — drag never started inside a shadow root
+
 **Symptom.** Draggable elements mounted inside a shadow root (`attachShadow`) could not be dragged at all — pointer events were silently ignored and drag never started.
 
 **Root cause.** The library's pointer event listener reads `event.target` to find the draggable element. When a pointer event crosses a shadow root boundary, the browser **re-targets** it — `event.target` becomes the shadow host element (the outer `<div>`), not the actual element the user touched. The host is not registered as a draggable, so the engine did nothing.
@@ -65,19 +69,28 @@ const target = event.target as HTMLElement;
 const target = (event.composedPath?.()[0] ?? event.target) as HTMLElement;
 ```
 
-Shadow DOM usage requires mounting a dedicated `DnDProvider` inside the shadow root, since the shadow tree is isolated from the outer document:
+#### Part 2 — one provider for both regular DOM and shadow DOM
+
+**The old approach** wrapped the shadow app in its own `DnDProvider`. This created two completely isolated DnD contexts — drag sessions in the shadow root were invisible to the outer provider and vice versa. Sorting between the two lists was impossible.
+
+**The fix** is to share the outer provider with the inner Vue app via `app.provide`. Since pointer events from inside the shadow root already reach `document` (where the outer provider listens), and `composedPath()[0]` resolves the real element, all that was missing was the elements being registered in the same maps.
 
 ```ts
-const ShadowApp = defineComponent({
-  setup: () => () => h(DnDProvider, null, () => h(YourShadowList)),
-});
+// Get the outer provider inside the component that mounts the shadow app
+const outerProvider = inject(injectionKey);
 
 onMounted(() => {
   const shadow = host.attachShadow({ mode: 'open' });
   const container = document.createElement('div');
   shadow.appendChild(container);
-  createApp(ShadowApp).mount(container);
+
+  // No DnDProvider wrapper — just share the outer provider directly
+  createApp({ render: () => h(YourShadowList) })
+    .provide(injectionKey, outerProvider)
+    .mount(container);
 });
 ```
+
+Result: shadow DOM elements and regular DOM elements participate in the same drag session. You can sort within each list and drag items across the boundary between them.
 
 ---
