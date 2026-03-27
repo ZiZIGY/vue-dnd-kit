@@ -1,5 +1,28 @@
 # Changelog
 
+## v2.4.0 <span style="font-size:0.6em;font-weight:400;color:var(--vp-c-text-3);margin-left:0.5rem">2026-03-27</span>
+
+### New option — `strategy` in `makeSelectionArea`
+
+`makeSelectionArea` now accepts a `strategy` option that controls how elements are added to the selection as the user drags the box:
+
+```ts
+makeSelectionArea(el, { strategy: 'toggle' }); // default
+makeSelectionArea(el, { strategy: 'select' });
+```
+
+| Value | Behaviour |
+|-------|-----------|
+| `'toggle'` | **XOR** against the selection at drag start. Dragging back over an already-selected element deselects it — additive/subtractive multi-select. |
+| `'select'` | Only elements **currently inside** the box are selected. Moving the box away immediately deselects them. |
+
+Default is `'toggle'` — same behaviour as before, so existing code is unaffected.
+
+→ [Selection Strategy example](/v2/examples/selection-strategy) — live demo comparing both strategies
+→ [makeSelectionArea — strategy option](/v2/guide/core/make-selection-area#strategy)
+
+---
+
 ## v2.3.0 <span style="font-size:0.6em;font-weight:400;color:var(--vp-c-text-3);margin-left:0.5rem">2026-03-26</span>
 
 ### New feature — stable `id` for virtual lists

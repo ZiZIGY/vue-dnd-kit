@@ -29,10 +29,30 @@ Extends **base options**:
 
 **Selection-area specific:**
 
-| Option     | Type | Description |
-|------------|------|-------------|
-| `modifier` | `{ keys: TModifierKeys \| Ref<TModifierKeys>, method: TModifierMethod \| Ref<TModifierMethod> }` | Key(s) that must be held to start selection. Default: `{ keys: ['ControlLeft'], method: 'every' }`. |
-| `events`   | `ISelectableAreaEvents` | Callback when selection ends. See [Events](#events). |
+| Option     | Type | Default | Description |
+|------------|------|---------|-------------|
+| `modifier` | `{ keys: TModifierKeys \| Ref<TModifierKeys>, method: TModifierMethod \| Ref<TModifierMethod> }` | `{ keys: ['ControlLeft'], method: 'every' }` | Key(s) that must be held to start selection. |
+| `strategy` | `'toggle' \| 'select'` | `'toggle'` | How intersecting elements are added to the selection. See [Strategy](#strategy). |
+| `events`   | `ISelectableAreaEvents` | — | Callback when selection ends. See [Events](#events). |
+
+---
+
+## Strategy
+
+Controls how the selection box updates `selectedSet` as the user drags:
+
+| Value | Behaviour |
+|-------|-----------|
+| `'toggle'` | **XOR** against the selection that existed when the drag started (`selectionBase`). Dragging back over an already-selected element deselects it. Useful for additive / subtractive multi-select. |
+| `'select'` | Only elements **currently inside** the box are selected. Moving the box away from an element immediately deselects it. Clean, non-additive behaviour. |
+
+```ts
+// Additive toggle (default)
+makeSelectionArea(el, { strategy: 'toggle' });
+
+// Simple "only what's in the box right now"
+makeSelectionArea(el, { strategy: 'select' });
+```
 
 ---
 
