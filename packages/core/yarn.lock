@@ -710,11 +710,6 @@
     path-browserify "^1.0.1"
     vscode-uri "^3.0.8"
 
-"@vue-dnd-kit/core@^2.0.0-alpha3":
-  version "2.0.0-alpha3"
-  resolved "https://registry.npmjs.org/@vue-dnd-kit/core/-/core-2.0.0-alpha3.tgz#cae548adf393e2121fb7c09cba5d4222de96e1b1"
-  integrity sha512-F2iUyMnblICNRWfBwaJZYUetZWK9NBr8DNnevliwL/NVlfnKUT6dN7CMLr+YbnJZSzTl1DknBLwij6WlaTSxTw==
-
 "@vue/babel-helper-vue-transform-on@2.0.1":
   version "2.0.1"
   resolved "https://registry.npmjs.org/@vue/babel-helper-vue-transform-on/-/babel-helper-vue-transform-on-2.0.1.tgz#3cadaa769fda53b61f193ab63668ccc5c7dfe244"

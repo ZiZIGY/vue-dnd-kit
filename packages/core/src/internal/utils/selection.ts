@@ -161,11 +161,9 @@ export const updateSelectionByBox = (provider: IDnDProviderInternal): void => {
     // Select: only currently-intersecting elements are selected
     switch (strategy) {
       case 'toggle':
-        if (intersects || inBase) {
-          provider.entities.selectedSet[
-            intersects !== inBase ? 'add' : 'delete'
-          ](el);
-        }
+        provider.entities.selectedSet[intersects !== inBase ? 'add' : 'delete'](
+          el,
+        );
         break;
       case 'select':
         provider.entities.selectedSet[intersects ? 'add' : 'delete'](el);
