@@ -9,6 +9,7 @@ import type {
   TDnDNodeRef,
   TModifierKeys,
   TModifierMethod,
+  TSelectableAreaStrategy,
 } from '../types';
 import { getBoundedSelectionArea } from '../../internal/utils/selection';
 import { useDnDProviderInternal } from '../../internal/composables/useDnDProviderInternal';
@@ -19,11 +20,12 @@ interface ISelectionAreaOptions extends IBaseOptions {
     method: TModifierMethod | Ref<TModifierMethod>;
   };
   events?: ISelectableAreaEvents;
+  strategy?: TSelectableAreaStrategy;
 }
 
 export const makeSelectionArea = (
   nodeRef: TDnDNodeRef,
-  options?: ISelectionAreaOptions
+  options?: ISelectionAreaOptions,
 ) => {
   const provider = useDnDProviderInternal();
 
@@ -47,6 +49,7 @@ export const makeSelectionArea = (
       events: options?.events,
       disabled: (options?.disabled as boolean) ?? false,
       groups: (options?.groups as string[]) ?? [],
+      strategy: options?.strategy ?? 'toggle',
     });
   });
 
