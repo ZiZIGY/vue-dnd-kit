@@ -182,6 +182,7 @@ export interface IDragActivation {
 export type TCondition = 'any' | 'both';
 
 export interface IDraggableEntity extends IBaseEntity {
+  id?: string | number | symbol;
   render?: Component;
   events?: IDraggableEvents;
   payload?: TDraggablePayload;

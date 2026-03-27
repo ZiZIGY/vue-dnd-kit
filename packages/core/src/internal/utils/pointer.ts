@@ -3,6 +3,7 @@ import type {
   IDraggingEntity,
   TPointerState,
 } from '../../external/types';
+
 import type { IDnDProviderInternal } from '../types/provider';
 
 /**
@@ -11,7 +12,7 @@ import type { IDnDProviderInternal } from '../types/provider';
 export function createPointerState(
   event: PointerEvent,
   offsetX: number = 0,
-  offsetY: number = 0
+  offsetY: number = 0,
 ): TPointerState {
   return {
     start: { x: event.clientX, y: event.clientY },
@@ -25,7 +26,7 @@ export function createPointerState(
  */
 export function calculateCursorOffset(
   event: PointerEvent,
-  element: HTMLElement
+  element: HTMLElement,
 ): { x: number; y: number } {
   const rect = element.getBoundingClientRect();
 
@@ -39,7 +40,7 @@ export function calculateCursorOffset(
  */
 export function createDraggingEntity(
   element: HTMLElement,
-  draggableEntity?: IDraggableEntity
+  draggableEntity?: IDraggableEntity,
 ): IDraggingEntity {
   return {
     ...draggableEntity,
@@ -55,7 +56,7 @@ export function createDraggingEntity(
 export function initializeDraggingFromSelection(
   selectedSet: Set<HTMLElement>,
   draggableMap: Map<HTMLElement, IDraggableEntity>,
-  draggingMap: Map<HTMLElement, IDraggingEntity>
+  draggingMap: Map<HTMLElement, IDraggingEntity>,
 ): void {
   selectedSet.forEach((selected) => {
     const draggingEntity = draggableMap.get(selected);
@@ -70,7 +71,7 @@ export function initializeDraggingFromSelection(
 export function initializeDraggingFromElement(
   element: HTMLElement,
   draggableMap: Map<HTMLElement, IDraggableEntity>,
-  draggingMap: Map<HTMLElement, IDraggingEntity>
+  draggingMap: Map<HTMLElement, IDraggingEntity>,
 ): void {
   draggingMap.clear();
   const draggingEntity = draggableMap.get(element);
@@ -87,7 +88,7 @@ export function startDraggingForProvider(provider: IDnDProviderInternal): void {
     provider.entities.initiatingDraggable,
     provider.entities.selectedSet,
     provider.entities.draggableMap,
-    provider.entities.draggingMap
+    provider.entities.draggingMap,
   );
 }
 
@@ -98,7 +99,7 @@ export function initializeDragging(
   initiatingElement: HTMLElement,
   selectedSet: Set<HTMLElement>,
   draggableMap: Map<HTMLElement, IDraggableEntity>,
-  draggingMap: Map<HTMLElement, IDraggingEntity>
+  draggingMap: Map<HTMLElement, IDraggingEntity>,
 ): void {
   if (selectedSet.has(initiatingElement)) {
     initializeDraggingFromSelection(selectedSet, draggableMap, draggingMap);
