@@ -1,6 +1,6 @@
 {
   "name": "@vue-dnd-kit/nuxt",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Nuxt module for Vue DnD Kit — auto-imports and SSR support",
   "author": "ZiZIGY",
   "license": "MIT",

@@ -1,84 +1,91 @@
-<!--
-Get your module up and running quickly.
-
-Find and replace all on all files (CMD+SHIFT+F):
-- Name: My Module
-- Package name: my-module
-- Description: My new Nuxt module
--->
-
-# My Module
+# @vue-dnd-kit/nuxt
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
 
-My new Nuxt module for doing amazing things.
+Official Nuxt module for [Vue DnD Kit](https://zizigy.github.io/vue-dnd-kit/) — a lightweight, high-performance drag and drop library for Vue 3.
 
-- [✨ &nbsp;Release Notes](/CHANGELOG.md)
-<!-- - [🏀 Online playground](https://stackblitz.com/github/your-org/my-module?file=playground%2Fapp.vue) -->
-<!-- - [📖 &nbsp;Documentation](https://example.com) -->
+- [📖 Documentation](https://zizigy.github.io/vue-dnd-kit/v2/guide/nuxt)
+- [✨ Release Notes](./CHANGELOG.md)
 
 ## Features
 
-<!-- Highlight some of the features your module provide here -->
-- ⛰ &nbsp;Foo
-- 🚠 &nbsp;Bar
-- 🌲 &nbsp;Baz
+- Auto-imports all composables (`makeDraggable`, `makeDroppable`, `makeSelectionArea`, and more)
+- Registers `DnDProvider` and `DragPreview` as global components — use them in templates without importing
+- Fully SSR-compatible — no hydration mismatches, content rendered on server
 
 ## Quick Setup
 
-Install the module to your Nuxt application with one command:
-
 ```bash
-npx nuxt module add my-module
+npm install @vue-dnd-kit/nuxt @vue-dnd-kit/core
 ```
 
-That's it! You can now use My Module in your Nuxt app ✨
+Add to `nuxt.config.ts`:
 
+```ts
+export default defineNuxtConfig({
+  modules: ['@vue-dnd-kit/nuxt'],
+})
+```
 
-## Contribution
+## Usage
 
-<details>
-  <summary>Local development</summary>
-  
-  ```bash
-  # Install dependencies
-  npm install
-  
-  # Generate type stubs
-  npm run dev:prepare
-  
-  # Develop with the playground
-  npm run dev
-  
-  # Build the playground
-  npm run dev:build
-  
-  # Run ESLint
-  npm run lint
-  
-  # Run Vitest
-  npm run test
-  npm run test:watch
-  
-  # Release new version
-  npm run release
-  ```
+Wrap your layout with `DnDProvider`, then use composables inside **child components**. `makeDraggable` and other composables rely on `inject` — they must run inside a descendant of `DnDProvider`, not in the same component.
 
-</details>
+```vue
+<!-- layouts/default.vue -->
+<template>
+  <DnDProvider>
+    <slot />
+    <DragPreview />
+  </DnDProvider>
+</template>
+```
+
+```vue
+<!-- components/DraggableItem.vue -->
+<script setup>
+const el = useTemplateRef('el');
+makeDraggable(el, {
+  payload: () => [0, items.value],
+});
+</script>
+
+<template>
+  <div ref="el">Drag me</div>
+</template>
+```
+
+For TypeScript types, import explicitly from the core package:
+
+```ts
+import type { IDragEvent, IDragItem } from '@vue-dnd-kit/core';
+```
+
+## Compatibility
+
+| | Version |
+| --- | --- |
+| Nuxt | `^4.0.0` |
+| `@vue-dnd-kit/core` | `^2.4.0` |
+| Vue | `^3.5.0` |
+
+## License
+
+MIT
 
 
 <!-- Badges -->
-[npm-version-src]: https://img.shields.io/npm/v/my-module/latest.svg?style=flat&colorA=020420&colorB=00DC82
-[npm-version-href]: https://npmjs.com/package/my-module
+[npm-version-src]: https://img.shields.io/npm/v/@vue-dnd-kit/nuxt/latest.svg?style=flat&colorA=020420&colorB=00DC82
+[npm-version-href]: https://npmjs.com/package/@vue-dnd-kit/nuxt
 
-[npm-downloads-src]: https://img.shields.io/npm/dm/my-module.svg?style=flat&colorA=020420&colorB=00DC82
-[npm-downloads-href]: https://npm.chart.dev/my-module
+[npm-downloads-src]: https://img.shields.io/npm/dm/@vue-dnd-kit/nuxt.svg?style=flat&colorA=020420&colorB=00DC82
+[npm-downloads-href]: https://npm.chart.dev/@vue-dnd-kit/nuxt
 
-[license-src]: https://img.shields.io/npm/l/my-module.svg?style=flat&colorA=020420&colorB=00DC82
-[license-href]: https://npmjs.com/package/my-module
+[license-src]: https://img.shields.io/npm/l/@vue-dnd-kit/nuxt.svg?style=flat&colorA=020420&colorB=00DC82
+[license-href]: https://npmjs.com/package/@vue-dnd-kit/nuxt
 
 [nuxt-src]: https://img.shields.io/badge/Nuxt-020420?logo=nuxt
 [nuxt-href]: https://nuxt.com

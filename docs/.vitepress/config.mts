@@ -146,6 +146,7 @@ export default defineConfig({
             { text: 'Introduction', link: '/v2/guide/introduction' },
             { text: 'Installation', link: '/v2/guide/installation' },
             { text: 'Quick Start', link: '/v2/guide/quick-start' },
+            { text: 'Nuxt', link: '/v2/guide/nuxt' },
           ],
         },
         {
@@ -230,6 +231,7 @@ export default defineConfig({
             { text: 'Introduction', link: '/v2/guide/introduction' },
             { text: 'Installation', link: '/v2/guide/installation' },
             { text: 'Quick Start', link: '/v2/guide/quick-start' },
+            { text: 'Nuxt', link: '/v2/guide/nuxt' },
           ],
         },
         {
