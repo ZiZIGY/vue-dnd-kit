@@ -137,8 +137,8 @@ export function useDnDProviderState(
   };
 
   const scrollPosition = reactive<ICoordinates>({
-    x: window.scrollX,
-    y: window.scrollY,
+    x: typeof window !== 'undefined' ? window.scrollX : 0,
+    y: typeof window !== 'undefined' ? window.scrollY : 0,
   });
 
   const delay = reactive<IDelay>({
@@ -169,7 +169,7 @@ export function useDnDProviderState(
 
   const previewRender = ref<Component>();
 
-  const previewSize = shallowRef<DOMRect>(new DOMRect());
+  const previewSize = shallowRef<DOMRect>(typeof DOMRect !== 'undefined' ? new DOMRect() : {} as DOMRect);
 
   const previewStyle = computed(() => {
     scrollPosition.x;

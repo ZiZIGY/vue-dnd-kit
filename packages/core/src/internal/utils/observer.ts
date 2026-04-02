@@ -17,6 +17,10 @@ export interface IObserverWrapper {
 export const createIntersectionObserver = (
   targetSet: Set<HTMLElement>
 ): IObserverWrapper => {
+  if (typeof IntersectionObserver === 'undefined') {
+    return { observe: () => {}, unobserve: () => {}, disconnect: () => {} };
+  }
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       const element = entry.target as HTMLElement;
