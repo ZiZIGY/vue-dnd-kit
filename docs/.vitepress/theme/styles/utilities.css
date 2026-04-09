@@ -18,6 +18,22 @@
   background-clip: text;
 }
 
+@utility wave-text {
+  background: linear-gradient(
+    90deg,
+    var(--text-shimmer-from) 0%,
+    var(--text-shimmer-from) 40%,
+    var(--text-shimmer-to) 50%,
+    var(--text-shimmer-from) 60%,
+    var(--text-shimmer-from) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-shimmer 10s ease-in-out infinite;
+}
+
 @utility glass-card {
   position: relative;
   -webkit-backdrop-filter: blur(12px) saturate(1.1);
@@ -91,11 +107,6 @@
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-}
-
-.glow-border--nav {
-  --glow-border-width: 1px;
-  --glow-duration: 15s;
 }
 
 @utility default-glass-card {
@@ -173,18 +184,6 @@
     -webkit-mask-composite: xor;
     mask-composite: exclude;
   }
-}
-
-:root {
-  --glass-btn-shimmer-1: rgba(255, 255, 255, 0.5);
-  --glass-btn-shimmer-2: rgba(255, 255, 255, 0.75);
-  --glass-btn-shimmer-3: rgba(255, 255, 255, 0.9);
-}
-
-.dark .glass-btn {
-  --glass-btn-shimmer-1: rgba(255, 255, 255, 0.12);
-  --glass-btn-shimmer-2: rgba(255, 255, 255, 0.2);
-  --glass-btn-shimmer-3: rgba(255, 255, 255, 0.28);
 }
 
 @utility glass-btn--primary {
