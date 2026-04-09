@@ -113,36 +113,9 @@
   @apply text-(--vp-c-brand-1);
 }
 
-.VPLink.active {
-  background: linear-gradient(
-    90deg,
-    var(--glow-card-1) 0%,
-    var(--glow-card-2) 25%,
-    var(--glow-card-3) 50%,
-    var(--glow-card-4) 75%,
-    var(--glow-card-1) 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: nav-shimmer 4s linear infinite;
-}
-
-.VPSidebarItem.is-active {
-  background: linear-gradient(
-    90deg,
-    var(--glow-card-1) 0%,
-    var(--glow-card-2) 25%,
-    var(--glow-card-3) 50%,
-    var(--glow-card-4) 75%,
-    var(--glow-card-1) 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: nav-shimmer 4s linear infinite;
+.VPLink.active,
+.VPSidebarItem.is-active .VPLink {
+  @apply rainbow-text;
 }
 
 #local-search {
