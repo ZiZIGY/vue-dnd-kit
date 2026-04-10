@@ -63,9 +63,12 @@
     border-radius: 6px;
     background: var(--vp-c-bg-soft);
     border: 1px solid var(--vp-c-divider);
-    user-select: none;
     transition: opacity 0.1s;
     overflow: hidden;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .item:not(.item--column) {

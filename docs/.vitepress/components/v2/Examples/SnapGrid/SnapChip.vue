@@ -24,14 +24,16 @@
     color: var(--vp-c-bg);
     font-weight: 600;
     font-size: 0.875rem;
-    user-select: none;
-    touch-action: none;
     cursor: grab;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
     transition: box-shadow 0.15s;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .chip:active {

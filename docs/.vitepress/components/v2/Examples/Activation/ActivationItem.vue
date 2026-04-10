@@ -78,10 +78,12 @@
     font-weight: 500;
     font-size: 0.875rem;
     cursor: grab;
-    user-select: none;
-    touch-action: none;
     text-align: center;
     transition: opacity 0.15s;
+    
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .activation-item:active {

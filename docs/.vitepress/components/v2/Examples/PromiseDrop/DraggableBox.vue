@@ -45,13 +45,15 @@
     background-color: var(--vp-c-brand-1);
     color: var(--vp-c-bg);
     cursor: grab;
-    user-select: none;
-    touch-action: none;
     font-weight: 500;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: max-content;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .draggable:active {

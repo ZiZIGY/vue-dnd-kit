@@ -38,14 +38,16 @@
     font-size: 0.875rem;
     font-weight: 500;
     cursor: grab;
-    touch-action: none;
-    user-select: none;
     background-color: rgba(99, 102, 241, 0.15);
     border: 1px solid rgba(99, 102, 241, 0.4);
     color: rgb(165, 180, 252);
     transition: box-shadow 0.15s, background-color 0.15s;
     width: 100%;
     text-align: left;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .item:focus-visible {

@@ -83,7 +83,6 @@
     background-color: var(--vp-c-bg-soft);
     border: 1px solid var(--vp-c-divider);
     transition: background-color 0.15s, border-color 0.15s, opacity 0.15s;
-    user-select: none;
   }
 
   .task--selected {
@@ -120,8 +119,11 @@
     background: transparent;
     color: var(--vp-c-text-3);
     cursor: grab;
-    touch-action: none;
     transition: color 0.15s;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .handle:active {

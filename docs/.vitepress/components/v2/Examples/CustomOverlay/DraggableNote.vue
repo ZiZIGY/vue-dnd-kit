@@ -42,6 +42,8 @@
     font-size: 0.82rem;
     font-weight: 500;
     cursor: grab;
+    
+    /* See Mobile & Touch section */
     touch-action: none;
     user-select: none;
   }

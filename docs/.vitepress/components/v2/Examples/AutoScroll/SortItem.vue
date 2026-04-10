@@ -56,10 +56,12 @@
     font-weight: 500;
     font-size: 0.875rem;
     cursor: move;
-    user-select: none;
-    touch-action: none;
     display: flex;
     align-items: center;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .sort-item.is-dragging {

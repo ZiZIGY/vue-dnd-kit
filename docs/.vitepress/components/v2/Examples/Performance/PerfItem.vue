@@ -56,11 +56,14 @@
     background: var(--vp-c-bg-soft);
     border: 1px solid var(--vp-c-divider);
     cursor: grab;
-    user-select: none;
     font-size: 0.8125rem;
     transition: opacity 0.1s;
     box-sizing: border-box;
     width: 100%;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
   .perf-item.dragging {
     opacity: 0;

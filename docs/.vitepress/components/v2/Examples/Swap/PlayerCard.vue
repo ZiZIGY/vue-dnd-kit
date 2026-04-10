@@ -72,9 +72,11 @@
     background: color-mix(in srgb, var(--accent) 10%, transparent);
     border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
     cursor: grab;
-    user-select: none;
-    touch-action: none;
     transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .player-card:active {

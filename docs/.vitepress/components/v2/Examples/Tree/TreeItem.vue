@@ -125,7 +125,6 @@
 <style scoped>
   .node {
     position: relative;
-    user-select: none;
   }
 
   .node-row {
@@ -152,8 +151,11 @@
     line-height: 1;
     flex-shrink: 0;
     padding: 0 2px;
-    touch-action: none;
     transition: color 0.15s;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .node-row:hover .drag-handle {

@@ -76,8 +76,6 @@
     background-color: var(--vp-c-brand-1);
     color: var(--vp-c-bg);
     font-weight: 500;
-    user-select: none;
-    touch-action: none;
     width: fit-content;
   }
 
@@ -91,9 +89,12 @@
     border: none;
     color: rgba(255, 255, 255, 0.7);
     cursor: grab;
-    touch-action: none;
     flex-shrink: 0;
     transition: color 0.15s;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .drag-handle:active {

@@ -45,7 +45,6 @@
     border-radius: 8px;
     background: var(--vp-c-bg-soft);
     border: 1px solid var(--vp-c-divider);
-    user-select: none;
     transition: background 0.15s, border-color 0.15s, opacity 0.15s;
   }
 
@@ -77,6 +76,10 @@
     cursor: grab;
     font-size: 1rem;
     line-height: 1;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .ind {
