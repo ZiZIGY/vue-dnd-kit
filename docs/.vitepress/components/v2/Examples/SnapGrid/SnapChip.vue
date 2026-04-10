@@ -27,6 +27,7 @@
     cursor: grab;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
     transition: box-shadow 0.15s;

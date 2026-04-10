@@ -40,7 +40,13 @@
           :step-x="40"
           :step-y="40"
         >
-          <SnapChip>Drag me</SnapChip>
+          <SnapChip 
+            :style="{
+              height: '40px',
+              width: '80px'
+          }">
+            Drag
+          </SnapChip>
         </GridCanvas>
       </DnDProvider>
     </div>
@@ -58,7 +64,13 @@
           :step-x="80"
           :step-y="40"
         >
-          <SnapChip>Drag me</SnapChip>
+          <SnapChip 
+            :style="{
+              height: '40px',
+              width: '80px'
+          }">
+            Drag
+          </SnapChip>
         </GridCanvas>
       </DnDProvider>
     </div>
