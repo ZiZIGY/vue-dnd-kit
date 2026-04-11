@@ -38,6 +38,10 @@
     user-select: none;
     font-weight: 500;
     display: inline-block;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .draggable-item:active {

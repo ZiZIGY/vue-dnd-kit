@@ -5,12 +5,10 @@
   import VPDoc from 'vitepress/dist/client/theme-default/components/VPDoc.vue';
   import VPPage from 'vitepress/dist/client/theme-default/components/VPPage.vue';
   import CustomHome from './CustomHome.vue';
-  import { computed, watch, onMounted, onUnmounted } from 'vue';
-  import { useSidebar } from 'vitepress/dist/client/theme-default/composables/sidebar.js';
+  import { computed } from 'vue';
   import LiquidEtherBackground from './LiquidBackground';
   import { useReadMode } from '../composables/useReadMode';
-
-  const { isReadMode } = useReadMode();
+  import { useSidebar } from 'vitepress/theme';
 
   const { page, frontmatter } = useData();
   const route = useRoute();
@@ -23,22 +21,7 @@
   };
 
   const isDoc = computed(() => frontmatter.value.layout !== 'home');
-
-  const DOC_PAGE_CLASS = 'vdnd-doc-page';
-  watch(
-    isDoc,
-    (v) => {
-      if (v) document.documentElement.classList.add(DOC_PAGE_CLASS);
-      else document.documentElement.classList.remove(DOC_PAGE_CLASS);
-    },
-    { immediate: true }
-  );
-  onMounted(() => {
-    if (isDoc.value) document.documentElement.classList.add(DOC_PAGE_CLASS);
-  });
-  onUnmounted(() => {
-    document.documentElement.classList.remove(DOC_PAGE_CLASS);
-  });
+  const { isReadMode } = useReadMode();
 </script>
 
 <template>
@@ -58,8 +41,7 @@
       id="VPContent"
       :class="{
         'has-sidebar': hasSidebar,
-        'is-home': frontmatter.layout === 'home',
-        'is-doc': isDoc,
+        'is-home': frontmatter.layout === 'home'
       }"
       :initial="{ opacity: 0, y: 8 }"
       :animate="{ opacity: 1, y: 0 }"
@@ -138,18 +120,13 @@
     width: 100%;
   }
 
-  .VPContent.is-home {
+  .is-home {
     width: 100%;
     max-width: 100%;
   }
 
-  .VPContent.has-sidebar {
+  .has-sidebar {
     margin: 0;
-  }
-
-  /* Прозрачный фон на страницах доков, чтобы был виден LiquidEther */
-  .VPContent.is-doc {
-    background: transparent;
   }
 
   @media (max-width: 960px) {

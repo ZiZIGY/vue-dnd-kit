@@ -40,14 +40,16 @@
     justify-content: center;
     font-size: 2.2rem;
     cursor: grab;
-    user-select: none;
-    touch-action: none;
     transition:
       opacity 0.15s ease,
       transform 0.08s ease;
     position: relative;
     z-index: 1;
     line-height: 1;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .piece:not(.ghost):hover {

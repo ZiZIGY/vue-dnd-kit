@@ -47,12 +47,14 @@
     font-size: 0.875rem;
     font-weight: 500;
     cursor: grab;
-    touch-action: none;
-    user-select: none;
     background-color: rgba(62, 175, 124, 0.12);
     border: 1px solid rgba(62, 175, 124, 0.35);
     color: rgba(62, 175, 124, 0.9);
     width: 100%;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .item:active {

@@ -11,10 +11,10 @@
   import CustomVPContent from './components/CustomVPContent.vue';
   import ReadModeToggle from './components/ReadModeToggle.vue';
   import { useData } from 'vitepress';
-  import {
-    useCloseSidebarOnEscape,
-    useSidebar,
-  } from 'vitepress/dist/client/theme-default/composables/sidebar.js';
+  // @ts-ignore
+  import { useCloseSidebarOnEscape } from 'vitepress/dist/client/theme-default/composables/sidebar.js';
+  import { useReadMode } from './composables/useReadMode';
+  import { useSidebar } from 'vitepress/theme';
 
   const isHome = computed(() => useData().frontmatter.value?.layout === 'home');
 
@@ -31,6 +31,7 @@
 
   const { frontmatter } = useData();
   const layoutTransition = { duration: 0.35 };
+  const { isReadMode } = useReadMode();
 
   const slots = useSlots();
   const heroImageSlotExists = computed(() => !!slots['home-hero-image']);
@@ -42,7 +43,7 @@
   <motion.div
     v-if="frontmatter.layout !== false"
     class="Layout"
-    :class="frontmatter.pageClass"
+    :class="[frontmatter.pageClass, !isReadMode && 'shiny-active']"
     :initial="isHome ? { opacity: 0 } : undefined"
     :animate="{ opacity: 1 }"
     :transition="layoutTransition"
@@ -56,25 +57,25 @@
       @click="closeSidebar"
     />
     <VPNav class="glass-nav">
-      <template #nav-bar-title-before
-        ><slot name="nav-bar-title-before"
-      /></template>
-      <template #nav-bar-title-after
-        ><slot name="nav-bar-title-after"
-      /></template>
-      <template #nav-bar-content-before
-        ><slot name="nav-bar-content-before"
-      /></template>
+      <template #nav-bar-title-before>
+        <slot name="nav-bar-title-before"/>
+      </template>
+      <template #nav-bar-title-after>
+        <slot name="nav-bar-title-after"/>
+      </template>
+      <template #nav-bar-content-before>
+        <slot name="nav-bar-content-before"/>
+      </template>
       <template #nav-bar-content-after>
         <ReadModeToggle />
         <slot name="nav-bar-content-after" />
       </template>
-      <template #nav-screen-content-before
-        ><slot name="nav-screen-content-before"
-      /></template>
-      <template #nav-screen-content-after
-        ><slot name="nav-screen-content-after"
-      /></template>
+      <template #nav-screen-content-before>
+        <slot name="nav-screen-content-before"/>
+      </template>
+      <template #nav-screen-content-after>
+        <slot name="nav-screen-content-after"/>
+      </template>
     </VPNav>
     <VPLocalNav
       :open="isSidebarOpen"
@@ -82,10 +83,12 @@
     />
 
     <VPSidebar :open="isSidebarOpen">
-      <template #sidebar-nav-before
-        ><slot name="sidebar-nav-before"
-      /></template>
-      <template #sidebar-nav-after><slot name="sidebar-nav-after" /></template>
+      <template #sidebar-nav-before>
+        <slot name="sidebar-nav-before"/>
+      </template>
+      <template #sidebar-nav-after>
+        <slot name="sidebar-nav-after" />
+      </template>
     </VPSidebar>
 
     <CustomVPContent>
@@ -93,24 +96,24 @@
       <template #page-bottom><slot name="page-bottom" /></template>
       <template #not-found><slot name="not-found" /></template>
       <template #home-hero-before><slot name="home-hero-before" /></template>
-      <template #home-hero-info-before
-        ><slot name="home-hero-info-before"
-      /></template>
+      <template #home-hero-info-before>
+        <slot name="home-hero-info-before"/>
+      </template>
       <template #home-hero-info><slot name="home-hero-info" /></template>
-      <template #home-hero-info-after
-        ><slot name="home-hero-info-after"
-      /></template>
-      <template #home-hero-actions-after
-        ><slot name="home-hero-actions-after"
-      /></template>
+      <template #home-hero-info-after>
+        <slot name="home-hero-info-after"/>
+      </template>
+      <template #home-hero-actions-after>
+        <slot name="home-hero-actions-after"/>
+      </template>
       <template #home-hero-image><slot name="home-hero-image" /></template>
       <template #home-hero-after><slot name="home-hero-after" /></template>
-      <template #home-features-before
-        ><slot name="home-features-before"
-      /></template>
-      <template #home-features-after
-        ><slot name="home-features-after"
-      /></template>
+      <template #home-features-before>
+        <slot name="home-features-before"/>
+      </template>
+      <template #home-features-after>
+        <slot name="home-features-after"/>
+      </template>
       <template #doc-footer-before><slot name="doc-footer-before" /></template>
       <template #doc-before><slot name="doc-before" /></template>
       <template #doc-after><slot name="doc-after" /></template>
@@ -118,12 +121,12 @@
       <template #doc-bottom><slot name="doc-bottom" /></template>
       <template #aside-top><slot name="aside-top" /></template>
       <template #aside-bottom><slot name="aside-bottom" /></template>
-      <template #aside-outline-before
-        ><slot name="aside-outline-before"
-      /></template>
-      <template #aside-outline-after
-        ><slot name="aside-outline-after"
-      /></template>
+      <template #aside-outline-before>
+        <slot name="aside-outline-before"/>
+      </template>
+      <template #aside-outline-after>
+        <slot name="aside-outline-after"/>
+      </template>
       <template #aside-ads-before><slot name="aside-ads-before" /></template>
       <template #aside-ads-after><slot name="aside-ads-after" /></template>
     </CustomVPContent>
@@ -139,6 +142,13 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+  }
+
+  .glass-nav {
+    -webkit-backdrop-filter: blur(8px) saturate(1.1);
+    backdrop-filter: blur(8px) saturate(1.1);
+    background: var(--glass-bg-2) !important;
+    box-shadow: var(--vp-nav-shadow);
   }
 </style>
 

@@ -67,14 +67,7 @@
     border-radius: 0.75rem;
     background: color-mix(in srgb, var(--card-color) 10%, var(--vp-c-bg));
     border: 1px solid color-mix(in srgb, var(--card-color) 25%, transparent);
-    cursor: grab;
-    user-select: none;
-    touch-action: none;
     transition: opacity 0.15s ease;
-  }
-
-  .card:active {
-    cursor: grabbing;
   }
 
   .card.is-dragging {
@@ -85,6 +78,15 @@
     color: color-mix(in srgb, var(--card-color) 60%, transparent);
     font-size: 1.1rem;
     flex-shrink: 0;
+    cursor: grab;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
+  }
+
+  .card:active .handle {
+    cursor: grabbing;
   }
 
   .emoji {

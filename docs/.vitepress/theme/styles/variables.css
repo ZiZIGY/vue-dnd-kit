@@ -54,6 +54,9 @@
   --glass-card-1: rgba(240, 248, 235, 0.5);
   --glass-card-2: rgba(251, 251, 251, 0.5);
   --glass-card-3: rgba(236, 246, 230, 0.5);
+  --glass-btn-shimmer-1: rgba(255, 255, 255, 0.5);
+  --glass-btn-shimmer-2: rgba(255, 255, 255, 0.75);
+  --glass-btn-shimmer-3: rgba(255, 255, 255, 0.9);
   --text-shimmer-from: var(--vp-c-text-1);
   --text-shimmer-to: #8b8b92;
   --bg-lens-1: #42b883;
@@ -94,6 +97,9 @@
   --glass-card-1: rgba(11, 17, 9, 0.5);
   --glass-card-2: rgba(17, 17, 17, 0.5);
   --glass-card-3: rgba(10, 15, 8, 0.5);
+  --glass-btn-shimmer-1: rgba(255, 255, 255, 0.12);
+  --glass-btn-shimmer-2: rgba(255, 255, 255, 0.2);
+  --glass-btn-shimmer-3: rgba(255, 255, 255, 0.28);
   --text-shimmer-from: #e4e4e7;
   --text-shimmer-to: #7a7a7a;
   --glow-color: #42b883;

@@ -28,9 +28,11 @@
     font-size: 0.8rem;
     font-weight: 500;
     cursor: grab;
-    user-select: none;
-    touch-action: none;
     transition: opacity 0.15s;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .item:active {

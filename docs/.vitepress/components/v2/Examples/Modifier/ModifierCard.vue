@@ -43,13 +43,15 @@
     font-weight: 500;
     font-size: 0.875rem;
     cursor: grab;
-    user-select: none;
-    touch-action: none;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.25rem;
     text-align: center;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .modifier-card:active {

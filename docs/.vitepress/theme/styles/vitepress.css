@@ -41,52 +41,8 @@
   @apply border-none!;
 }
 
-.VPNav {
-  -webkit-backdrop-filter: blur(8px) saturate(1.1);
-  backdrop-filter: blur(8px) saturate(1.1);
-  background: var(--glass-bg-2) !important;
-  box-shadow: var(--vp-nav-shadow);
-}
-
-.VPNav::before {
-  content: '';
-  @apply absolute bottom-0 left-0 right-0 z-10 pointer-events-none;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    var(--nav-shimmer-base) 0%,
-    var(--nav-shimmer-base) 15%,
-    var(--glow-card-1) 25%,
-    var(--glow-card-2) 40%,
-    var(--glow-card-3) 55%,
-    var(--glow-card-4) 70%,
-    var(--nav-shimmer-base) 85%,
-    var(--nav-shimmer-base) 100%
-  );
-  background-size: 200% 100%;
-  animation: nav-shimmer 4s linear infinite;
-  will-change: background-position;
-}
-
 .menu {
   @apply z-[100];
-}
-
-.vp-doc p,
-.vp-doc li {
-  background: linear-gradient(
-    90deg,
-    var(--text-shimmer-from) 0%,
-    var(--text-shimmer-from) 40%,
-    var(--text-shimmer-to) 50%,
-    var(--text-shimmer-from) 60%,
-    var(--text-shimmer-from) 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: text-shimmer 10s ease-in-out infinite;
 }
 
 .VDndContent.has-sidebar {
@@ -113,36 +69,39 @@
   @apply text-(--vp-c-brand-1);
 }
 
-.VPLink.active {
-  background: linear-gradient(
-    90deg,
-    var(--glow-card-1) 0%,
-    var(--glow-card-2) 25%,
-    var(--glow-card-3) 50%,
-    var(--glow-card-4) 75%,
-    var(--glow-card-1) 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: nav-shimmer 4s linear infinite;
+.shiny-active .VPLink.active,
+.shiny-active .VPSidebarItem.is-active .VPLink {
+  @apply rainbow-text;
 }
 
-.VPSidebarItem.is-active {
+.shiny-active .VPNav.glass-nav::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  pointer-events: none;
+  height: 2px;
   background: linear-gradient(
     90deg,
-    var(--glow-card-1) 0%,
-    var(--glow-card-2) 25%,
-    var(--glow-card-3) 50%,
-    var(--glow-card-4) 75%,
-    var(--glow-card-1) 100%
+    var(--nav-shimmer-base) 0%,
+    var(--nav-shimmer-base) 15%,
+    var(--glow-card-1) 25%,
+    var(--glow-card-2) 40%,
+    var(--glow-card-3) 55%,
+    var(--glow-card-4) 70%,
+    var(--nav-shimmer-base) 85%,
+    var(--nav-shimmer-base) 100%
   );
   background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
   animation: nav-shimmer 4s linear infinite;
+  will-change: background-position;
+}
+
+.shiny-active .VPDoc p,
+.shiny-active .VPDoc li {
+  @apply wave-text;
 }
 
 #local-search {

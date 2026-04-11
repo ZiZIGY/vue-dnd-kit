@@ -72,8 +72,10 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 4px rgba(62, 175, 124, 0.2);
-    user-select: none;
+
+    /* See Mobile & Touch section */
     touch-action: none;
+    user-select: none;
   }
 
   .is-dragging {

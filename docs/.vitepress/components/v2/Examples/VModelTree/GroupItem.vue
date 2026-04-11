@@ -49,9 +49,12 @@
     background: var(--vp-c-bg-soft);
     border: 1px solid var(--vp-c-divider);
     cursor: grab;
-    user-select: none;
     font-size: 0.8rem;
     transition: opacity 0.1s;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .task-item:hover {

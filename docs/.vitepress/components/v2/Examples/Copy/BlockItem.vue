@@ -72,12 +72,14 @@
     background: var(--vp-c-bg);
     border: 1px solid var(--vp-c-divider);
     cursor: grab;
-    user-select: none;
-    touch-action: none;
     transition:
       background 0.15s,
       border-color 0.15s,
       box-shadow 0.15s;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .block-item:active {

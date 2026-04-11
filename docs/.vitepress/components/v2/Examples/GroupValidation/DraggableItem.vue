@@ -58,7 +58,6 @@
     border-radius: 8px;
     font-size: 0.8rem;
     font-weight: 500;
-    user-select: none;
     border: 1px solid transparent;
     transition: border-color 0.15s, background 0.15s;
   }
@@ -119,6 +118,10 @@
     padding: 0 2px;
     touch-action: none;
     transition: opacity 0.12s;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .handle:hover { opacity: 0.8; }

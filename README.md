@@ -149,4 +149,4 @@ If vue-dnd-kit saves you time, consider supporting the project — it helps keep
 
 ## License
 
-[MIT](./LICENSE) © 2025 [ZiZIGY](https://github.com/ZiZiGY)
+[MIT](./LICENSE) © 2026 [ZiZIGY](https://github.com/ZiZiGY)

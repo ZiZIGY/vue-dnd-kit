@@ -47,11 +47,13 @@
     border-radius: 8px;
     font-size: 0.875rem;
     cursor: grab;
-    touch-action: none;
-    user-select: none;
     background: rgba(59, 130, 246, 0.12);
     border: 1px solid rgba(59, 130, 246, 0.3);
     color: rgb(147, 197, 253);
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .task:active { cursor: grabbing; }

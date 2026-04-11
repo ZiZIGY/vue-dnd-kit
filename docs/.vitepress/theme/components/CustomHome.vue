@@ -115,7 +115,6 @@
               :animate="{ opacity: 1, scale: 1 }"
               :transition="{ ...heroTransition, delay: 0.35 }"
             >
-              <div class="VDndHome__logo-glow" />
               <img
                 :src="secondLogoUrl"
                 alt="Vue DnD Kit"

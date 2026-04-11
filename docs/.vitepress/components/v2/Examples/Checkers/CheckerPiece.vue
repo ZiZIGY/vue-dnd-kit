@@ -42,12 +42,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    user-select: none;
-    touch-action: none;
     position: relative;
     transition:
       transform 0.08s ease,
       opacity 0.2s ease;
+
+    /* See Mobile & Touch section */
+    touch-action: none;
+    user-select: none;
   }
 
   .piece:not(.ghost):hover {

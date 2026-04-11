@@ -38,26 +38,6 @@
   @apply relative shrink-0 flex items-center justify-center md:justify-end;
 }
 
-.VDndHome__logo-glow {
-  position: absolute;
-  inset: -20%;
-  border-radius: 50%;
-  background: linear-gradient(
-    90deg,
-    var(--glow-card-1) 0%,
-    var(--glow-card-2) 25%,
-    var(--glow-card-3) 50%,
-    var(--glow-card-4) 75%,
-    var(--glow-card-1) 100%
-  );
-  background-size: 200% 100%;
-  animation: nav-shimmer 6s linear infinite;
-  filter: blur(50px);
-  opacity: 0.2;
-  z-index: 0;
-  pointer-events: none;
-}
-
 .VDndHome__logo-img {
   position: relative;
   z-index: 1;
