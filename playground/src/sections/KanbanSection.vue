@@ -58,8 +58,20 @@
       columns.value = r.sourceItems as KanbanColumn[];
     } else {
       // ── Card move ─────────────────────────────────────────────────────────────
-      // Guard: hovering over a column element (not its cards zone) — skip
-      if (e.hoveredDraggable?.items === columns.value) return;
+      // When hoveredDraggable is a column (DraggableZone dual-role node), suggestSort
+      // would insert the card into the columns array — wrong. Use dropZone instead.
+      if (e.hoveredDraggable?.items === columns.value) {
+        const tgtItems = e.dropZone?.items;
+        if (!tgtItems || tgtItems === srcItems) return;
+        const srcCol = columns.value.find((c) => c.cards === srcItems);
+        const tgtCol = columns.value.find((c) => c.cards === tgtItems);
+        if (!srcCol || !tgtCol) return;
+        const srcIndexes = e.draggedItems.map((d) => d.index);
+        const movedCards = e.draggedItems.map((d) => d.item as KanbanCard);
+        srcCol.cards = e.helpers.removeIndexes(srcCol.cards, srcIndexes) as KanbanCard[];
+        tgtCol.cards = [...tgtCol.cards, ...movedCards];
+        return;
+      }
 
       const r = e.helpers.suggestSort('vertical');
       if (!r) return;

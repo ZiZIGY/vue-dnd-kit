@@ -1,5 +1,37 @@
 # Changelog
 
+## v2.4.5 <span style="font-size:0.6em;font-weight:400;color:var(--vp-c-text-3);margin-left:0.5rem">2026-04-18</span>
+
+### Bug fix — horizontal cursor drift caused items to teleport to list start or end
+
+**Symptom.** Moving the cursor 20–30 px sideways while dragging a vertical list caused the dragged item to jump instantly to the beginning or end of the list instead of staying near the cursor's vertical position.
+
+**Root cause.** Phase 1b of the collision sensor found the containing zone but no draggable overlapping the ghost (because horizontal drift moves the ghost outside the narrow item column). With an empty candidate set, `suggestSort` received no hovered item and defaulted to the start or end of the list.
+
+**Fix.** Phase 1b now has a two-step candidate search. First it tries AABB overlap (existing behaviour). If no overlapping item is found, it falls back to ranking all items in the zone by **distance from cursor to nearest point on each item's bounding box** (`distanceToBox`). This always surfaces the geometrically closest item regardless of whether the ghost overlaps it, so lateral drift never produces a phantom jump.
+
+```ts
+// Before — empty result when ghost doesn't overlap any item
+const overlapping = itemsInZone.filter(hasOverlap).sort(byCenter);
+
+// After — guaranteed nearest item even without overlap
+if (overlapping.length > 0) return overlapping;
+const nearestByDistance = itemsInZone.sort(byDistanceToBox);
+return nearestByDistance;
+```
+
+---
+
+### Bug fix — dragging the last item upward had no collision detection until cursor hit another item
+
+**Symptom.** Starting a drag on the bottom element of a list and moving the cursor upward felt unresponsive — no reorder occurred until the ghost visually overlapped the element above.
+
+**Root cause.** Same as above. While the cursor was still within the bottom item's original bounding box, Phase 1b found no AABB overlap candidate (the ghost was above the item, not over it) and returned an empty set.
+
+**Fix.** Covered by the same `distanceToBox` fallback introduced for the horizontal-drift bug. The nearest item by box distance is always returned, so upward drag from the last element triggers a reorder as soon as the cursor moves toward the item above.
+
+---
+
 ## v2.4.0 <span style="font-size:0.6em;font-weight:400;color:var(--vp-c-text-3);margin-left:0.5rem">2026-03-27</span>
 
 ### New option — `strategy` in `makeSelectionArea`
@@ -11,10 +43,10 @@ makeSelectionArea(el, { strategy: 'toggle' }); // default
 makeSelectionArea(el, { strategy: 'select' });
 ```
 
-| Value | Behaviour |
-|-------|-----------|
+| Value      | Behaviour                                                                                                                                     |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `'toggle'` | **XOR** against the selection at drag start. Dragging back over an already-selected element deselects it — additive/subtractive multi-select. |
-| `'select'` | Only elements **currently inside** the box are selected. Moving the box away immediately deselects them. |
+| `'select'` | Only elements **currently inside** the box are selected. Moving the box away immediately deselects them.                                      |
 
 Default is `'toggle'` — same behaviour as before, so existing code is unaffected.
 

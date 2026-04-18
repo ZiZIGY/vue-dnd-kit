@@ -48,8 +48,11 @@
   // ── As droppable zone: receives items dragged inside ─────────────────────────
   const { isAllowed } = makeDroppable(
     node as any,
-    { events: { onDrop: (e) => emit('drop', e) } },
-    () => [props.zoneItems, props.zoneUserData]
+    {
+      events: { onDrop: (e) => emit('drop', e) },
+      data: () => props.zoneUserData,
+    },
+    () => props.zoneItems
   );
 
   const placement = computed(() => isDragOver.value);

@@ -9,6 +9,7 @@
   import OverlaySection from './sections/OverlaySection.vue';
   import ShadowDomSection from './sections/ShadowDomSection.vue';
   import VirtualSection from './sections/VirtualSection.vue';
+  import ZoneDropSection from './sections/ZoneDropSection.vue';
 
   type Tab =
     | 'sort'
@@ -19,7 +20,8 @@
     | 'confirm'
     | 'overlay'
     | 'shadow-dom'
-    | 'virtual';
+    | 'virtual'
+    | 'zone-drop';
 
   const tabs: { id: Tab; label: string; desc: string }[] = [
     { id: 'sort', label: 'Sort & Transfer', desc: 'suggestSort()' },
@@ -39,6 +41,7 @@
     },
     { id: 'shadow-dom', label: 'Shadow DOM', desc: 'web component bug' },
     { id: 'virtual', label: 'Virtual List', desc: 'useVirtualList + id' },
+    { id: 'zone-drop', label: 'Zone Drop', desc: 'DraggableZone empty' },
   ];
 
   const activeTab = ref<Tab>('sort');
@@ -71,6 +74,7 @@
         <OverlaySection v-else-if="activeTab === 'overlay'" />
         <ShadowDomSection v-else-if="activeTab === 'shadow-dom'" />
         <VirtualSection v-else-if="activeTab === 'virtual'" />
+        <ZoneDropSection v-else-if="activeTab === 'zone-drop'" />
       </section>
     </div>
   </DnDProvider>

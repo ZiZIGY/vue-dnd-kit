@@ -46,7 +46,7 @@ const { isAllowed } = makeDroppable(
       },
     },
   },
-  () => [props.items]
+  () => props.items
 );
 </script>
 

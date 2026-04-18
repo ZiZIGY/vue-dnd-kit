@@ -47,6 +47,21 @@ function pointerDistance(
 }
 
 /**
+ * Distance from pointer to the nearest point ON the box (not center).
+ * Returns 0 when pointer is inside the box.
+ * Used when pointer is outside items (horizontal drift) to find the
+ * nearest item by actual proximity rather than center-to-center distance.
+ */
+function distanceToBox(
+  box: IBoundingBox,
+  pointer: { x: number; y: number }
+): number {
+  const nearestX = Math.max(box.x, Math.min(pointer.x, box.x + box.width));
+  const nearestY = Math.max(box.y, Math.min(pointer.y, box.y + box.height));
+  return Math.hypot(pointer.x - nearestX, pointer.y - nearestY);
+}
+
+/**
  * Phase 1: ancestor-walk from the topmost element under the cursor.
  *
  * document.elementFromPoint (singular) returns the actual hit-tested element —
@@ -108,11 +123,14 @@ export const defaultCollisionDetection: CollisionDetectionFn = (provider) => {
     const containerBox = previewBoxFromStyle(provider);
     const draggableSet = visibleElements(provider) as unknown as Set<HTMLElement>;
 
-    const nearestInZone = [...draggableSet]
+    const itemsInZone = [...draggableSet]
       .filter(
         (el) => zone.contains(el) && filterValidCollisionTarget(el, provider)
       )
-      .map((el) => ({ el, box: getBoundingBox(el) }))
+      .map((el) => ({ el, box: getBoundingBox(el) }));
+
+    // Primary: items whose AABB overlaps with the ghost (pointer in a gap between items).
+    const overlapping = itemsInZone
       .filter(
         ({ box }) =>
           checkCollision(box, containerBox) &&
@@ -121,7 +139,18 @@ export const defaultCollisionDetection: CollisionDetectionFn = (provider) => {
       .sort((a, b) => pointerDistance(a.box, pointer) - pointerDistance(b.box, pointer))
       .map(({ el }) => el);
 
-    return { elements: nearestInZone, zones: cursorResult.zones };
+    if (overlapping.length > 0) {
+      return { elements: overlapping, zones: cursorResult.zones };
+    }
+
+    // Fallback: ghost has no overlap with any item (e.g. pointer drifted horizontally
+    // outside items but cursor is still within the zone's padding area). Use nearest
+    // item by distance-to-box so horizontal drift never causes a jump to list start/end.
+    const nearestByDistance = itemsInZone
+      .sort((a, b) => distanceToBox(a.box, pointer) - distanceToBox(b.box, pointer))
+      .map(({ el }) => el);
+
+    return { elements: nearestByDistance, zones: cursorResult.zones };
   }
 
   // Phase 2: AABB fallback — overlay overlaps element, closest to cursor wins
