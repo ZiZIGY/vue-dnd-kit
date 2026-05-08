@@ -1,4 +1,4 @@
-import { shallowRef, watch } from "vue";
+import { computed, shallowRef, watch } from "vue";
 import type { Ref } from "vue";
 import { useDnDProvider } from "./useDnDProvider";
 import { createAutoScrollController } from "../../internal/utils/auto-scroll";
@@ -7,7 +7,8 @@ import type { IAutoScrollOptions } from "../types";
 export type { IAutoScrollOptions };
 
 /**
- * Auto-scroll when the drag overlay is near container edges. Element scroll only.
+ * Auto-scroll when the drag overlay is near container edges, and the
+ * container is the drop target. Element scroll only.
  *
  * @param container - Ref to the scrollable element
  * @param options - threshold, speed, disabled
@@ -42,11 +43,19 @@ export const makeAutoScroll = (
     isScrolling,
   );
 
+  const isHovered = computed(() => {
+    const element = container.value;
+    return element != null && provider.hovered.droppable.has(element);
+  });
+
   watch(
-    () => provider.state.value,
-    (state) => {
-      if (state === "dragging") controller.run();
-      else controller.stop();
+    [() => provider.state.value, isHovered],
+    ([state, hovered]) => {
+      if (state === "dragging" && hovered) {
+        controller.run();
+      } else {
+        controller.stop();
+      }
     },
   );
 
