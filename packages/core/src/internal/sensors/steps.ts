@@ -108,20 +108,33 @@ export const filterNotDescendantOfDragged: TFilterFn = (node, provider) =>
     return false;
   });
 
-/** Exclude disabled draggedItems and zones (including those inside disabled parents) */
-export const filterNotDisabled: TFilterFn = (node, provider) => {
-  if (provider.entities.draggableMap.has(node))
-    return !isEffectivelyDisabledDraggable(node, provider);
-  if (provider.entities.droppableMap.has(node))
-    return !isEffectivelyDisabledDroppable(node, provider);
-  return true;
-};
+/**
+ * Exclude disabled draggedItems (including those inside disabled parents).
+ * Role-specific: only looks at the node's draggable disabled state, so a node
+ * that is also registered as droppable is unaffected by this check.
+ */
+export const filterNotDisabledDraggable: TFilterFn = (node, provider) =>
+  !isEffectivelyDisabledDraggable(node, provider);
 
-/** Exclude: not dragging, not descendant of dragged, not disabled */
-export const filterValidCollisionTarget: TFilterFn = (node, provider) =>
+/**
+ * Exclude disabled zones (including those inside disabled parents).
+ * Role-specific: only looks at the node's droppable disabled state, so a node
+ * that is also registered as draggable is unaffected by this check.
+ */
+export const filterNotDisabledDroppable: TFilterFn = (node, provider) =>
+  !isEffectivelyDisabledDroppable(node, provider);
+
+/** Exclude: not dragging, not descendant of dragged, not disabled — as a draggable */
+export const filterValidDraggableTarget: TFilterFn = (node, provider) =>
   filterNotDragging(node, provider) &&
   filterNotDescendantOfDragged(node, provider) &&
-  filterNotDisabled(node, provider);
+  filterNotDisabledDraggable(node, provider);
+
+/** Exclude: not dragging, not descendant of dragged, not disabled — as a zone */
+export const filterValidDroppableTarget: TFilterFn = (node, provider) =>
+  filterNotDragging(node, provider) &&
+  filterNotDescendantOfDragged(node, provider) &&
+  filterNotDisabledDroppable(node, provider);
 
 /** AABB overlap check (element vs container) — legacy */
 export const aabbCollision: TCollisionCheckFn = (nodeBox, ctx) =>

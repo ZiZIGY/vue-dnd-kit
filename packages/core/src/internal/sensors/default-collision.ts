@@ -25,7 +25,8 @@ import {
   previewBoxFromStyle,
   visibleElements,
   allowedVisibleZones,
-  filterValidCollisionTarget,
+  filterValidDraggableTarget,
+  filterValidDroppableTarget,
 } from './steps';
 import {
   getBoundingBox,
@@ -87,11 +88,11 @@ export function runCursorPhase(
 
   let el: HTMLElement | null = topEl;
   while (el) {
-    if (draggableSet.has(el) || droppableSet.has(el)) {
-      if (filterValidCollisionTarget(el, provider)) {
-        if (draggableSet.has(el)) elements.push(el);
-        if (droppableSet.has(el)) zones.push(el);
-      }
+    if (draggableSet.has(el) && filterValidDraggableTarget(el, provider)) {
+      elements.push(el);
+    }
+    if (droppableSet.has(el) && filterValidDroppableTarget(el, provider)) {
+      zones.push(el);
     }
     el = el.parentElement;
   }
@@ -125,7 +126,7 @@ export const defaultCollisionDetection: CollisionDetectionFn = (provider) => {
 
     const itemsInZone = [...draggableSet]
       .filter(
-        (el) => zone.contains(el) && filterValidCollisionTarget(el, provider)
+        (el) => zone.contains(el) && filterValidDraggableTarget(el, provider)
       )
       .map((el) => ({ el, box: getBoundingBox(el) }));
 
@@ -157,10 +158,10 @@ export const defaultCollisionDetection: CollisionDetectionFn = (provider) => {
   const containerBox = previewBoxFromStyle(provider);
 
   const allElements = [...visibleElements(provider)].filter((n) =>
-    filterValidCollisionTarget(n, provider)
+    filterValidDraggableTarget(n, provider)
   );
   const allZones = [...allowedVisibleZones(provider)].filter((n) =>
-    filterValidCollisionTarget(n, provider)
+    filterValidDroppableTarget(n, provider)
   );
 
   const aabbElements = allElements
