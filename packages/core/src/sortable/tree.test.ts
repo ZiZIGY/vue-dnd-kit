@@ -10,6 +10,7 @@ import {
   flattenTree,
   getDescendantKeys,
   moveKey,
+  nearestValidSlot,
   offsetDepth,
   parentAt,
   projectDepth,
@@ -176,6 +177,14 @@ describe('depth projection', () => {
     expect(projectDepth(position, 3, maxDepth)).toEqual({ depth: 1, parentKey: 'a' });
   });
 
+  it('reads a position the same with the active key inserted or left out', () => {
+    const position = positionOf(sample(), 'c', 4);
+    const others = position.keys.filter((key) => key !== 'c');
+    const inserted: DraftPosition = { keys: others, index: 4, rows: position.rows, inserted: true };
+    expect(depthRange(inserted)).toEqual(depthRange(position));
+    expect(projectDepth(inserted, 2)).toEqual(projectDepth(position, 2));
+  });
+
   it('returns null when no depth fits the slot', () => {
     // Between a and a1 only depth 1 (child of a) fits.
     const position = positionOf(sample(), 'c', 1);
@@ -213,6 +222,39 @@ describe('depth projection', () => {
   });
 });
 
+describe('nearestValidSlot', () => {
+  // Visible (a2 collapsed): a(0) a1(1) a2(1) b(0) b1(1) c(0); c is dragged up.
+  const roots = sample();
+  const collapsed = new Set<Key>(['a2']);
+  const nodes = flat(roots, collapsed);
+  const keys = nodes.map((n) => n.key);
+  const rows = createFlatTree(nodes).byKey;
+  const from = keys.indexOf('c');
+  // Only the root level is allowed (maxDepth 0).
+  const rootOnly = (depth: number) => depth === 0;
+
+  it('returns the target when it fits', () => {
+    expect(nearestValidSlot(keys, 'c', from, 3, rows)).toBe(3);
+    expect(nearestValidSlot(keys, 'c', from, 3, rows, rootOnly)).toBe(3);
+  });
+
+  it('stops at the last valid slot on the way when the pointer skipped past it', () => {
+    // Slots 1 and 2 (inside a) need depth >= 1; slot 3 (between a2 and b) can be root.
+    expect(keys).toEqual(['a', 'a1', 'a2', 'b', 'b1', 'c']);
+    expect(nearestValidSlot(keys, 'c', from, 1, rows, rootOnly)).toBe(3);
+  });
+
+  it('keeps the slot when nothing on the way fits', () => {
+    // From the end, slot 4 (between b and b1) needs depth 1.
+    expect(nearestValidSlot(keys, 'c', from, 4, rows, rootOnly)).toBeNull();
+  });
+
+  it('only tries the target for an item from another list', () => {
+    expect(nearestValidSlot(keys, 'x', -1, 1, rows, rootOnly)).toBeNull();
+    expect(nearestValidSlot(keys, 'x', -1, 3, rows, rootOnly)).toBe(3);
+  });
+});
+
 describe('projectTreeIndex', () => {
   /** Rows of height 40 stacked from y = 0. */
   const rows = (keys: string[]): ProjectionItem[] =>
@@ -247,6 +289,13 @@ describe('projectTreeIndex', () => {
     expect(project(['g', 'f', 'x'], 'x', 45, ['f'])).toMatchObject({ index: 1, nest: null });
     // Bottom band of f while moving up: stay after f.
     expect(project(['g', 'f', 'x'], 'x', 75, ['f'])).toMatchObject({ index: null, nest: null });
+  });
+
+  it('catches up next to a row when the pointer skipped rows between frames', () => {
+    // From the end straight into the bottom band of f, two rows up: right after f.
+    expect(project(['f', 'g', 'h', 'x'], 'x', 35, ['f'])).toMatchObject({ index: 1, nest: null });
+    // From the top into the top band of h: right before it.
+    expect(project(['x', 'f', 'g', 'h'], 'x', 125, ['h'])).toMatchObject({ index: 2, nest: null });
   });
 
   it('treats rows that refuse children as plain list items', () => {

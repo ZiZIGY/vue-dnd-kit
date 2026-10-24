@@ -104,6 +104,8 @@ export interface DraftPosition {
   keys: readonly Key[];
   index: number;
   rows: ReadonlyMap<Key, TreeRow>;
+  /** `keys` leaves the active key out: it would be inserted at `index` (no copy per candidate slot). */
+  inserted?: boolean;
 }
 
 /** Whether the active node may sit at `depth` under `parentKey` (`canNest`, `maxDepth`). */
@@ -117,7 +119,7 @@ const rowAt = ({ keys, rows }: DraftPosition, index: number): TreeRow | undefine
 /** Depths the active node can take between its neighbours: `[next.depth, prev.depth + 1]`. */
 export function depthRange(position: DraftPosition): { min: number; max: number } {
   const prev = rowAt(position, position.index - 1);
-  const next = rowAt(position, position.index + 1);
+  const next = rowAt(position, position.inserted ? position.index : position.index + 1);
   const max = prev ? prev.depth + 1 : 0;
   return { min: Math.min(next ? next.depth : 0, max), max };
 }
@@ -162,6 +164,31 @@ export function projectDepth(
   for (let d = Math.max(min, Math.min(depth, max)); d >= min; d--) {
     const parentKey = d === 0 ? null : (chain[d - 1] ?? null);
     if (!filter || filter(d, parentKey)) return { depth: d, parentKey };
+  }
+  return null;
+}
+
+/**
+ * The slot to move to when the pointer asks for `target`: the first one from `target`
+ * back towards `from` where some depth fits. The pointer can skip several rows in one
+ * frame; the slot then stops at the last valid one on the way, as it would row by row.
+ * `null` when none fits (keep the current slot). `keys` is the draft with the active
+ * key at `from` (-1: it comes from another list, only `target` is tried).
+ */
+export function nearestValidSlot(
+  keys: readonly Key[],
+  activeKey: Key,
+  from: number,
+  target: number,
+  rows: ReadonlyMap<Key, TreeRow>,
+  filter?: DepthFilter,
+): number | null {
+  const others = from === -1 ? keys : keys.filter((key) => key !== activeKey);
+  const fits = (index: number) => !!projectDepth({ keys: others, index, rows, inserted: true }, Infinity, filter);
+  if (from === -1) return fits(target) ? target : null;
+  const step = target < from ? 1 : -1;
+  for (let index = target; index !== from; index += step) {
+    if (fits(index)) return index;
   }
   return null;
 }

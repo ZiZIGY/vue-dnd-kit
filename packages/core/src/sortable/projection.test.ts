@@ -48,6 +48,16 @@ describe('projectIndex: vertical lists', () => {
     expect(vertical(items, 1, 60)).toBeNull();
   });
 
+  it('catches up when the pointer skips items between frames', () => {
+    // Moving down from 0, the pointer lands in the upper half of item 3: next to it, before it.
+    expect(vertical(items, 0, 125)).toBe(2);
+    // Moving up from 3, it lands in the lower half of item 0: right after it.
+    expect(vertical(items, 3, 35)).toBe(1);
+    // Next to the hovered item already: nothing moves (no oscillation after the catch-up).
+    expect(vertical(column([40, 40, 40, 40], ['k0', 'k1', 'A', 'k3']), 2, 125)).toBeNull();
+    expect(vertical(column([40, 40, 40, 40], ['k0', 'A', 'k2', 'k3']), 1, 35)).toBeNull();
+  });
+
   it('does not swap back with a taller neighbour (no oscillation)', () => {
     // A (40px) is dragged below B (200px).
     expect(vertical(column([40, 200], ['A', 'B']), 0, 141)).toBe(1);

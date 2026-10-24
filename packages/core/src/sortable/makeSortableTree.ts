@@ -25,6 +25,7 @@ import {
   depthRange,
   flattenTree,
   moveKey,
+  nearestValidSlot,
   offsetDepth,
   parentAt,
   projectDepth,
@@ -217,21 +218,26 @@ export function makeSortableTree<T>(
       current.base = { depth: hitRow.depth, x: event.pointer.x, key: hitRow.key };
     }
     if (result.index == null) return null;
-    if (result.nest == null) {
-      // Skip slots where no depth satisfies `canNest` and `maxDepth`.
-      const position: DraftPosition = {
-        keys: moveKey(context.keys, context.activeKey, context.activeIndex, result.index),
-        index: result.index,
-        rows: rows(),
-      };
-      if (!projectDepth(position, Infinity, depthFilter(current))) return null;
-    }
+    // A nest slot always fits. Otherwise stop at the last slot towards the pointer
+    // where some depth satisfies `canNest` and `maxDepth`.
+    const index =
+      result.nest != null
+        ? result.index
+        : nearestValidSlot(
+            context.keys,
+            context.activeKey,
+            context.activeIndex,
+            result.index,
+            rows(),
+            depthFilter(current),
+          );
+    if (index == null) return null;
     if (context.activeIndex === -1 && !hitRow) {
       // Entering an empty tree or a gap between rows: the root level, from here.
       current.base = { depth: 0, x: event.pointer.x, key: null };
       current.hoverDepth = 0;
     }
-    return result.index;
+    return index;
   };
 
   const place = (current: DragState<T>, draftKeys: Key[], index: number, depth: number) => {
