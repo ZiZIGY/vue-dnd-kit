@@ -2303,11 +2303,6 @@
     path-browserify "^1.0.1"
     vscode-uri "^3.0.8"
 
-"@vue-dnd-kit/core@*":
-  version "2.4.3"
-  resolved "https://registry.npmjs.org/@vue-dnd-kit/core/-/core-2.4.3.tgz#c27e4c28d311eeb85623c5d7847bca2647c32231"
-  integrity sha512-G52KSDGxima6netkBvWXOH23rODzyiCjcG9mvlU4ldQWDvYgk1q+6AXLcg/rAh13murAWhIkcdpS4elHxZXeYg==
-
 "@vue-macros/common@^3.1.1":
   version "3.1.2"
   resolved "https://registry.npmjs.org/@vue-macros/common/-/common-3.1.2.tgz#6b5f71ea219732fc955fdcfb15a95a417b87a0fe"
