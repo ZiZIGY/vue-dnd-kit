@@ -6,12 +6,22 @@
   import KanbanDemo from './demos/KanbanDemo.vue';
   import BenchDemo from './demos/BenchDemo.vue';
   import StabilityDemo from './demos/StabilityDemo.vue';
+  import ListsDemo from './demos/ListsDemo.vue';
+  import GridDemo from './demos/GridDemo.vue';
+  import SwapDemo from './demos/SwapDemo.vue';
+  import NestedDemo from './demos/NestedDemo.vue';
+  import TableDemo from './demos/TableDemo.vue';
 
   const demos = {
     sortable: SortableDemo,
     kanban: KanbanDemo,
     bench: BenchDemo,
     stability: StabilityDemo,
+    lists: ListsDemo,
+    grid: GridDemo,
+    swap: SwapDemo,
+    nested: NestedDemo,
+    table: TableDemo,
   };
   type DemoName = keyof typeof demos;
 

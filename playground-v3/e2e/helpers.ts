@@ -39,8 +39,9 @@ export const waitForIdle = async (page: Page): Promise<void> => {
   await expect(page.locator('[data-dnd-placeholder]')).toHaveCount(0);
 };
 
-/** Element of a demo item by id. */
-export const item = (page: Page, id: string): Locator => page.locator(`[data-id="${id}"]`);
+/** Element of a demo item by id (not its copy inside the overlay clone). */
+export const item = (page: Page, id: string): Locator =>
+  page.locator(`[data-id="${id}"]:not([data-dnd-overlay] *)`);
 
 /** Presses on `from` and moves just past the activation distance, without going anywhere yet. */
 export const pickUp = async (page: Page, from: Locator): Promise<Point> => {
