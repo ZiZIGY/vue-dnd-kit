@@ -14,6 +14,7 @@ import type {
   ActivationOptions,
   Active,
   AutoScrollOptions,
+  Announcements,
   BeforeDropResult,
   CollisionCandidate,
   Coordinates,
@@ -23,6 +24,7 @@ import type {
   DnDProviderProps,
   DnDStatus,
   DragItem,
+  DragMode,
   DragSource,
   Key,
   Over,
@@ -105,12 +107,18 @@ export function createDnDManager(props: DnDProviderProps) {
   const overlaySize = shallowRef<Size | null>(null);
   const announcement = shallowRef('');
   const selection = shallowReactive(new Set<Key>());
+  /** What a drop would do, set by the sortable layer (overlay slot `mode`). */
+  const mode = shallowRef<DragMode>('move');
+  /** Key whose element the overlay lands on, when it isn't the active id (copies, external items). */
+  const landingKey = shallowRef<Key | null>(null);
 
   const draggables = new Map<Key, DraggableEntry>();
   const droppables = new Map<Key, DroppableEntry>();
   const draggableIds = new WeakMap<Element, Key>();
   const monitors = new Set<DnDMonitor>();
   const sourceResolvers = new Set<(active: Active) => DragSource | undefined>();
+  /** Integration announcers (sortable positions): after the user's `announcements`, before the defaults. */
+  const announcers = new Set<Partial<Announcements>>();
   const activationAborts = new Set<() => void>();
   const autoScrollEntries = new Set<AutoScrollEntry>();
   /** Cancels the running rubber-band selection (`status === 'selecting'`). */
@@ -190,6 +198,12 @@ export function createDnDManager(props: DnDProviderProps) {
     return () => autoScrollEntries.delete(entry);
   };
 
+  /** Extra announcers (sortable positions): after the provider's own texts, before the defaults. */
+  const addAnnouncer = (announcer: Partial<Announcements>): (() => void) => {
+    announcers.add(announcer);
+    return () => announcers.delete(announcer);
+  };
+
   // ─── Events ──────────────────────────────────────────────────────────────────
 
   const createEvent = (): DnDEvent => {
@@ -226,14 +240,24 @@ export function createDnDManager(props: DnDProviderProps) {
     lastAnnouncement = text;
   };
 
-  const announce = (name: keyof typeof defaultAnnouncements, event: DnDEvent) => {
+  const announce = (name: keyof Announcements, event: DnDEvent = createEvent()) => {
     clearTimeout(announceTimer);
     const custom = props.announcements;
     if (custom === false) return;
+    type Announce = (this: unknown, event: DnDEvent) => string | undefined;
     let text: string | undefined;
     try {
-      const handler = custom?.[name] ? custom : defaultAnnouncements;
-      text = (handler[name] as (this: unknown, event: DnDEvent) => string | undefined).call(handler, event);
+      // The provider's own text wins, then announcers (sortable positions), then defaults.
+      const own = custom?.[name] as Announce | undefined;
+      if (own) {
+        text = own.call(custom, event);
+      } else {
+        for (const announcer of announcers) {
+          text = (announcer[name] as Announce | undefined)?.call(announcer, event);
+          if (text) break;
+        }
+        text ||= (defaultAnnouncements[name] as Announce).call(defaultAnnouncements, event);
+      }
     } catch (error) {
       // A throwing announcement must not break the session (§13).
       console.error(error);
@@ -413,6 +437,8 @@ export function createDnDManager(props: DnDProviderProps) {
     transform.value = { x: 0, y: 0 };
     over.value = null;
     overlaySize.value = null;
+    mode.value = 'move';
+    landingKey.value = null;
     activationProgress.value = 1;
     status.value = 'dragging';
     restoreDocument = markDocumentDragging(sensor);
@@ -465,6 +491,8 @@ export function createDnDManager(props: DnDProviderProps) {
     pointer.value = null;
     transform.value = { x: 0, y: 0 };
     overlaySize.value = null;
+    mode.value = 'move';
+    landingKey.value = null;
     activationProgress.value = 0;
     preview = null;
     previewEnabled = false;
@@ -489,7 +517,7 @@ export function createDnDManager(props: DnDProviderProps) {
       await nextTick();
       await nextFrame();
       if (id !== session) return;
-      const target = draggables.get(current.id)?.getElement();
+      const target = draggables.get(landingKey.value ?? current.id)?.getElement();
       const to = target?.isConnected ? getLayoutRect(target) : null;
       // Fly only to a slot that can be seen: virtualizers keep overscan and pinned
       // rows mounted outside the scroller's visible area. Otherwise fade out.
@@ -596,6 +624,8 @@ export function createDnDManager(props: DnDProviderProps) {
     overlaySize,
     announcement,
     selection,
+    mode,
+    landingKey,
     instructionsId: '',
     monitors,
     activationAborts,
@@ -622,6 +652,8 @@ export function createDnDManager(props: DnDProviderProps) {
     findDraggable,
     addMonitor,
     addSourceResolver,
+    addAnnouncer,
+    announce,
     updateActive,
     start,
     move,

@@ -3,7 +3,7 @@
   import { defaultRangeExtractor, useVirtualizer, type Range } from '@tanstack/vue-virtual';
   import { makeSortableList } from '@vue-dnd-kit/core';
   import VirtualRow from '../components/VirtualRow.vue';
-  import { describeDrop, makeTasks } from '../data';
+  import { describeDrop, makeRows } from '../data';
   import { trackReorders, useBench } from '../bench';
 
   const props = withDefaults(defineProps<{ count?: number; bench?: boolean }>(), {
@@ -13,7 +13,7 @@
 
   const ROW = 40;
   // shallowRef: no deep proxies for thousands of items (rfcs/0001-v3.md §12).
-  const tasks = shallowRef(makeTasks('r', props.count));
+  const tasks = shallowRef(makeRows('r', props.count));
   const lastDrop = shallowRef('');
   const scrollRef = useTemplateRef<HTMLElement>('scroll');
 

@@ -3,10 +3,10 @@
   import { useVirtualList } from '@vueuse/core';
   import { makeSortableList } from '@vue-dnd-kit/core';
   import VirtualRow from '../components/VirtualRow.vue';
-  import { describeDrop, makeTasks } from '../data';
+  import { describeDrop, makeRows } from '../data';
 
   const ROW = 40;
-  const tasks = shallowRef(makeTasks('v', 10_000));
+  const tasks = shallowRef(makeRows('v', 10_000));
   const lastDrop = shallowRef('');
   // The outer element is the sortable container: `containerProps` owns the scroller's ref.
   const listRef = useTemplateRef<HTMLElement>('list');

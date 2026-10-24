@@ -48,25 +48,35 @@ export function makeSortableItem<TData = unknown>(
   });
   onScopeDispose(() => unregister());
 
+  // The slot: the active item, or its copy / the item made for an external draggable.
   // Stays true through the drop animation, until the overlay has landed.
-  const isPlaceholder = computed(() => manager.active.value?.id === key.value);
+  const isPlaceholder = computed(() => {
+    const active = manager.active.value;
+    return !!active && (manager.landingKey.value ?? active.id) === key.value;
+  });
+  // Multi-drag `'gaps'`: the other dragged items stay in place until the drop.
+  const isLeftBehind = computed(() => draggable.isDragging.value && !isPlaceholder.value);
 
   watchEffect(
     () => {
       const element = getElement();
       if (!element) return;
-      if (isPlaceholder.value) element.setAttribute('data-dnd-placeholder', '');
-      else element.removeAttribute('data-dnd-placeholder');
+      element.toggleAttribute('data-dnd-placeholder', isPlaceholder.value);
+      element.toggleAttribute('data-dnd-dragging', isLeftBehind.value);
     },
     { flush: 'post' },
   );
+
+  const indicator = computed(() => {
+    const value = group.indicator.value;
+    return value && value.list === list.id && value.key === key.value ? value.side : null;
+  });
 
   return {
     isDragging: draggable.isDragging,
     isPlaceholder,
     selected: draggable.selected,
-    // Indicator mode lands with the remaining sortable modules (rfcs/0001-v3.md §15, B3).
-    indicator: computed(() => null),
+    indicator,
     index: computed(() => group.indexOf(list, key.value)),
   };
 }

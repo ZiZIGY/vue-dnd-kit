@@ -81,3 +81,32 @@ export const dropAnimationKind = async (page: Page): Promise<'fly' | 'fade'> => 
   });
   return (await handle.jsonValue()) as 'fly' | 'fade';
 };
+/** Element of a demo item by id (not its copy inside the overlay clone). */
+export const item = (page: Page, id: string): Locator =>
+  page.locator(`[data-id="${id}"]:not([data-dnd-overlay] *)`);
+
+/** Presses on `from` and moves just past the activation distance, without going anywhere yet. */
+export const pickUp = async (page: Page, from: Locator): Promise<Point> => {
+  const start = await center(from);
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x, start.y + 8, { steps: 2 });
+  return { x: start.x, y: start.y + 8 };
+};
+
+/** Moves the held pointer to `to` in small steps (one per frame or so). */
+export const glide = async (page: Page, to: Point, steps = 10): Promise<void> => {
+  await page.mouse.move(to.x, to.y, { steps });
+};
+
+/** Lets a couple of frames run (rAF-batched collision, FLIP). */
+export const frames = (page: Page, count = 2): Promise<void> =>
+  page.evaluate(
+    (n) =>
+      new Promise<void>((resolve) => {
+        let left = n;
+        const tick = () => (--left <= 0 ? resolve() : requestAnimationFrame(tick));
+        requestAnimationFrame(tick);
+      }),
+    count,
+  );

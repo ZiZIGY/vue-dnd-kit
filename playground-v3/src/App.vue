@@ -15,6 +15,18 @@
   import VirtualVueUseDemo from './demos/VirtualVueUseDemo.vue';
   import BenchKanbanDemo from './demos/BenchKanbanDemo.vue';
   import BenchVirtualDemo from './demos/BenchVirtualDemo.vue';
+  import StabilityDemo from './demos/StabilityDemo.vue';
+  import ListsDemo from './demos/ListsDemo.vue';
+  import GridDemo from './demos/GridDemo.vue';
+  import SwapDemo from './demos/SwapDemo.vue';
+  import NestedDemo from './demos/NestedDemo.vue';
+  import TableDemo from './demos/TableDemo.vue';
+  import MultiDemo from './demos/MultiDemo.vue';
+  import CopyDemo from './demos/CopyDemo.vue';
+  import TrashDemo from './demos/TrashDemo.vue';
+  import ExternalDemo from './demos/ExternalDemo.vue';
+  import RejectDemo from './demos/RejectDemo.vue';
+  import AnnounceDemo from './demos/AnnounceDemo.vue';
 
   const demos = {
     sortable: SortableDemo,
@@ -30,6 +42,18 @@
     'virtual-vueuse': VirtualVueUseDemo,
     'bench-kanban': BenchKanbanDemo,
     'bench-virtual': BenchVirtualDemo,
+    stability: StabilityDemo,
+    lists: ListsDemo,
+    grid: GridDemo,
+    swap: SwapDemo,
+    nested: NestedDemo,
+    table: TableDemo,
+    multi: MultiDemo,
+    copy: CopyDemo,
+    trash: TrashDemo,
+    external: ExternalDemo,
+    reject: RejectDemo,
+    announce: AnnounceDemo,
   };
   type DemoName = keyof typeof demos;
 
@@ -55,7 +79,10 @@
   </nav>
   <main>
     <DnDProvider>
-      <component :is="demo" :key="current" />
+      <component
+        :is="demo"
+        :key="current"
+      />
     </DnDProvider>
   </main>
 </template>
