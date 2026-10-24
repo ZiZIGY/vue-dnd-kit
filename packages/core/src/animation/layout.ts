@@ -12,7 +12,18 @@ import type {
   Rect,
 } from '../types';
 
-const layoutAnimations = new WeakMap<Element, Animation>();
+interface LayoutAnimationState {
+  animation: Animation;
+  /** Layout rect the animation ends at. */
+  to: Rect;
+  /** From a user function: it may animate more than `translate`. */
+  custom: boolean;
+}
+
+const layoutAnimations = new WeakMap<Element, LayoutAnimationState>();
+
+const isRunning = (animation: Animation) =>
+  animation.playState !== 'finished' && animation.playState !== 'idle';
 
 export const DEFAULT_LAYOUT_ANIMATION: Required<AnimationOptions> = {
   duration: 200,
@@ -34,6 +45,26 @@ export const getRect = (element: Element): Rect =>
 
 export const offsetRect = (rect: Rect, x: number, y: number): Rect =>
   createRect(rect.left + x, rect.top + y, rect.width, rect.height);
+
+/** Overlap of two rects; `null` when they don't overlap. */
+export const intersectRect = (a: Rect, b: Rect): Rect | null => {
+  const left = Math.max(a.left, b.left);
+  const top = Math.max(a.top, b.top);
+  const right = Math.min(a.right, b.right);
+  const bottom = Math.min(a.bottom, b.bottom);
+  return right > left && bottom > top ? createRect(left, top, right - left, bottom - top) : null;
+};
+
+/** Smallest rect containing both. */
+export const unionRect = (a: Rect, b: Rect): Rect => {
+  const left = Math.min(a.left, b.left);
+  const top = Math.min(a.top, b.top);
+  return createRect(left, top, Math.max(a.right, b.right) - left, Math.max(a.bottom, b.bottom) - top);
+};
+
+/** `rect` grown by `x` and `y` on each side. */
+export const expandRect = (rect: Rect, x: number, y: number): Rect =>
+  createRect(rect.left - x, rect.top - y, rect.width + 2 * x, rect.height + 2 * y);
 
 export const containsPoint = (rect: Rect, point: Coordinates): boolean =>
   point.x >= rect.left &&
@@ -58,8 +89,8 @@ const parseTranslate = (value: string): Coordinates => {
 /** Rect of the element without its in-flight layout animation. */
 export const getLayoutRect = (element: Element): Rect => {
   const rect = getRect(element);
-  const animation = layoutAnimations.get(element);
-  if (!animation || animation.playState === 'finished') return rect;
+  const state = layoutAnimations.get(element);
+  if (!state || state.animation.playState === 'finished') return rect;
   const { x, y } = parseTranslate(getComputedStyle(element).translate);
   return offsetRect(rect, -x, -y);
 };
@@ -83,32 +114,51 @@ export const resolveAnimation = <TFn extends (...args: never[]) => unknown>(
   return { options, custom: null };
 };
 
-const cancelTransformTransitions = (element: Element) => {
-  if (typeof CSSTransition === 'undefined' || !canAnimate(element)) return;
-  for (const animation of element.getAnimations()) {
-    if (
-      animation instanceof CSSTransition &&
-      (animation.transitionProperty === 'transform' ||
-        animation.transitionProperty === 'translate')
-    ) {
-      animation.cancel();
+/**
+ * Cancels CSS transitions on `transform`/`translate` of `elements`: they would
+ * distort the measurement. `Element.getAnimations()` scans every animation of the
+ * document, so one call per element is quadratic while many FLIP animations run;
+ * one `getAnimations()` per document or shadow root is linear.
+ */
+const cancelTransformTransitions = (elements: Element[]) => {
+  if (typeof CSSTransition === 'undefined' || !elements.length) return;
+  const targets = new Set<Element | null>(elements);
+  const roots = new Set<Document | ShadowRoot>();
+  for (const element of elements) {
+    const root = element.getRootNode() as Partial<Document | ShadowRoot>;
+    if (typeof root.getAnimations === 'function') roots.add(root as Document | ShadowRoot);
+  }
+  for (const root of roots) {
+    for (const animation of root.getAnimations()) {
+      if (
+        animation instanceof CSSTransition &&
+        (animation.transitionProperty === 'transform' ||
+          animation.transitionProperty === 'translate') &&
+        targets.has((animation.effect as KeyframeEffect | null)?.target ?? null)
+      ) {
+        animation.cancel();
+      }
     }
   }
 };
 
 export const stopLayoutAnimation = (element: Element): void => {
-  layoutAnimations.get(element)?.cancel();
+  layoutAnimations.get(element)?.animation.cancel();
   layoutAnimations.delete(element);
 };
 
-const track = (element: Element, animation: Animation) => {
-  layoutAnimations.set(element, animation);
+const track = (element: Element, animation: Animation, to: Rect, custom: boolean) => {
+  const state = { animation, to, custom };
+  layoutAnimations.set(element, state);
   const release = () => {
-    if (layoutAnimations.get(element) === animation) layoutAnimations.delete(element);
+    if (layoutAnimations.get(element) === state) layoutAnimations.delete(element);
   };
   animation.addEventListener('finish', release);
   animation.addEventListener('cancel', release);
 };
+
+const sameRect = (a: Rect, b: Rect) =>
+  Math.abs(a.left - b.left) < 0.5 && Math.abs(a.top - b.top) < 0.5;
 
 export interface FlipEntry {
   key: Key;
@@ -119,22 +169,27 @@ export interface FlipEntry {
 
 /**
  * Animates elements from their captured rects to their current layout.
- * Reads happen in one pass before any write; interrupted animations restart
- * from where the element visually was.
+ * Reads happen in one pass before any write. An animation still heading to the
+ * same layout rect keeps running; one whose target moved restarts from where the
+ * element visually was.
  */
 export const flip = (
   entries: FlipEntry[],
   option: LayoutAnimation | undefined,
 ): void => {
   const resolved = resolveAnimation(option, DEFAULT_LAYOUT_ANIMATION);
+  // Writes first: whatever the measurement can't see through.
+  cancelTransformTransitions(entries.map((entry) => entry.element));
   for (const { element } of entries) {
-    stopLayoutAnimation(element);
-    cancelTransformTransitions(element);
+    if (!resolved || layoutAnimations.get(element)?.custom) stopLayoutAnimation(element);
   }
   if (!resolved) return;
 
-  const measured = entries.map((entry) => ({ ...entry, last: getRect(entry.element) }));
+  const measured = entries.map((entry) => ({ ...entry, last: getLayoutRect(entry.element) }));
   for (const { key, element, first, last } of measured) {
+    const running = layoutAnimations.get(element);
+    if (running && isRunning(running.animation) && sameRect(running.to, last)) continue;
+    stopLayoutAnimation(element);
     const dx = first.left - last.left;
     const dy = first.top - last.top;
     if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue;
@@ -147,7 +202,7 @@ export const flip = (
         options: resolved.options,
       });
       if (result && typeof (result as Animation).cancel === 'function') {
-        track(element, result as Animation);
+        track(element, result as Animation, last, true);
       }
       continue;
     }
@@ -158,6 +213,8 @@ export const flip = (
         [{ translate: `${dx}px ${dy}px` }, { translate: '0px 0px' }],
         resolved.options,
       ),
+      last,
+      false,
     );
   }
 };

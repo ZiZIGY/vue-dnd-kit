@@ -1,4 +1,4 @@
-import type { CollisionDetection, Coordinates, Rect } from '../types';
+import type { CollisionDetection, Coordinates, Key, Rect } from '../types';
 import { getCenter } from '../animation/layout';
 
 const area = (rect: Rect) => rect.width * rect.height;
@@ -16,14 +16,19 @@ const distance = (a: Coordinates, b: Coordinates) => Math.hypot(a.x - b.x, a.y -
 /** Targets under the pointer, from hit-testing: respects z-order, overlays and shadow roots. */
 export const pointerWithin: CollisionDetection = ({ hits }) => hits;
 
-/** Targets overlapping the overlay, by intersection over union. */
+/** Targets overlapping the overlay: higher priority, then deeper nesting, then intersection over union. */
 export const rectIntersection: CollisionDetection = ({ overlayRect, candidates }) => {
   if (!overlayRect) return [];
   return candidates
-    .map((candidate) => ({ id: candidate.id, ratio: intersectionRatio(overlayRect, candidate.rect) }))
+    .map((candidate) => ({ candidate, ratio: intersectionRatio(overlayRect, candidate.rect) }))
     .filter((entry) => entry.ratio > 0)
-    .sort((a, b) => b.ratio - a.ratio)
-    .map((entry) => entry.id);
+    .sort(
+      (a, b) =>
+        b.candidate.priority - a.candidate.priority ||
+        (b.candidate.depth ?? 0) - (a.candidate.depth ?? 0) ||
+        b.ratio - a.ratio,
+    )
+    .map((entry) => entry.candidate.id);
 };
 
 /** Every target, by distance between centers. */
@@ -58,3 +63,56 @@ export const pointerFirst: CollisionDetection = (args) => {
   const within = pointerWithin(args);
   return within.length ? within : rectIntersection(args);
 };
+
+// ─── Stability (rfcs/0001-v3.md §6) ────────────────────────────────────────────
+
+/** Pointer travel (px) before a target that was just left can win again. */
+export const HYSTERESIS = 10;
+
+export interface StabilizeContext {
+  pointer: Coordinates;
+  /** Current target. */
+  previous: Key | null;
+  /** Best target of this frame by the collision detection. */
+  next: Key | null;
+  /** The target can still be kept (mounted, enabled, visible). */
+  isValid(id: Key): boolean;
+  /** The pointer is over `parent`, between the drop targets nested in it, one of which is `child`. */
+  isGap(parent: Key, child: Key): boolean;
+  /** Input without jitter (keyboard): no hysteresis. */
+  exact?: boolean;
+}
+
+/**
+ * Damps target switches:
+ * - a target that was just left can't win again until the pointer has moved
+ *   `HYSTERESIS` px from where it was left: boundaries don't flicker, and a layout
+ *   shift after a cross-list move can't bounce the item back;
+ * - between nested targets the last one is kept: the gaps of a parent zone don't
+ *   flash the parent.
+ */
+export function createTargetStabilizer() {
+  let recent: { id: Key; point: Coordinates } | null = null;
+
+  return {
+    /** Forgets the hysteresis, e.g. after a scroll moved the content under the pointer. */
+    reset() {
+      recent = null;
+    },
+    resolve(context: StabilizeContext): Key | null {
+      const { pointer, previous, next } = context;
+      if (recent && distance(pointer, recent.point) >= HYSTERESIS) recent = null;
+      if (next === previous) return next;
+      if (previous != null && context.isValid(previous)) {
+        if (next != null && context.isGap(next, previous)) return previous;
+        if (!context.exact && recent?.id === next) return previous;
+      } else if (previous == null && !context.exact && recent?.id === next) {
+        return null;
+      }
+      if (previous != null) recent = { id: previous, point: pointer };
+      return next;
+    },
+  };
+}
+
+export type TargetStabilizer = ReturnType<typeof createTargetStabilizer>;

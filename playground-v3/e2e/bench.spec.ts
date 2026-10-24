@@ -2,6 +2,10 @@ import type { Page } from '@playwright/test';
 import { expect, startRecording, stopRecording, test } from './bench-fixture';
 import { center, scrollElement, waitForIdle, type Point } from './helpers';
 
+// The sweep covers rows 0–20, which must be on screen: rows clipped by the viewport
+// are not drop targets (rfcs/0001-v3.md §6).
+test.use({ viewport: { width: 1200, height: 1200 } });
+
 /**
  * Benchmarks (rfcs/0001-v3.md §12): `yarn bench` (playwright.bench.config.ts), never
  * part of the default run. Each scenario logs `BENCH {…}` with:

@@ -27,6 +27,8 @@
   import ExternalDemo from './demos/ExternalDemo.vue';
   import RejectDemo from './demos/RejectDemo.vue';
   import AnnounceDemo from './demos/AnnounceDemo.vue';
+  import NestedZonesDemo from './demos/NestedZonesDemo.vue';
+  import ShadowDomDemo from './demos/ShadowDomDemo.vue';
 
   const demos = {
     sortable: SortableDemo,
@@ -54,6 +56,8 @@
     external: ExternalDemo,
     reject: RejectDemo,
     announce: AnnounceDemo,
+    'nested-zones': NestedZonesDemo,
+    shadow: ShadowDomDemo,
   };
   type DemoName = keyof typeof demos;
 

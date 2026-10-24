@@ -200,8 +200,11 @@ export type DropAnimation =
 
 export interface CollisionCandidate {
   id: Key;
+  /** Visible part of the target: clipped by its scroll containers and the viewport. */
   rect: Rect;
   priority: number;
+  /** Nesting level among drop targets: 0 at the top, deeper targets have higher values. */
+  depth?: number;
 }
 
 export interface CollisionArgs {

@@ -36,7 +36,6 @@ import type {
 } from '../types';
 import type { DnDManager } from '../core/manager';
 import { fadeIn, flip, getCenter, getLayoutRect, getRect, type FlipEntry } from '../animation/layout';
-import { getVisibleClip, intersects } from '../utils/clip';
 import {
   nextRowIndex,
   pickAdjacent,
@@ -174,7 +173,8 @@ interface Session {
 
 interface Snapshot {
   element: HTMLElement;
-  rect: Rect;
+  /** `null`: far from the viewport, the element jumps instead of animating. */
+  rect: Rect | null;
 }
 
 export interface SortableGroup {
@@ -275,7 +275,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const snapshot = new Map<Key, Snapshot>();
     for (const [key, getElement] of items) {
       const element = getElement();
-      if (element?.isConnected) snapshot.set(key, { element, rect: getRect(element) });
+      if (!element?.isConnected) continue;
+      snapshot.set(key, { element, rect: manager.isNearViewport(element) ? getRect(element) : null });
     }
     return snapshot;
   };
@@ -287,28 +288,37 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const back = returning;
     returning = null;
     for (const [key, getElement] of items) {
+      const before = snapshot.get(key);
+      // Far from the viewport: it jumps instead of animating.
+      if (before && !before.rect) continue;
       const element = getElement();
       if (!element?.isConnected) continue;
       const list = listOfKey(key, true);
       if (!list) continue;
-      let before = snapshot.get(key);
-      if (!before && back?.keys.has(key)) {
+      let first: Rect;
+      let previous: HTMLElement;
+      if (before?.rect) {
+        first = before.rect;
+        previous = before.element;
+      } else if (back?.keys.has(key)) {
         // Multi-drag items coming back out of the overlay.
-        before = { element, rect: back.from };
+        first = back.from;
+        previous = element;
         appearing.push({ element, list });
-      } else if (!before) {
+      } else {
         if (fadeAppearing && key !== landing) fadeIn(element, list.animation());
         continue;
       }
       // The active slot entering another list was recreated: sliding it in from the
       // old list would be clipped by the new scroller, and the overlay shows it anyway.
-      if (key === landing && before.element !== element) continue;
+      if (key === landing && previous !== element) continue;
       const entries = byList.get(list) ?? [];
-      entries.push({ key, element, first: before.rect });
+      entries.push({ key, element, first });
       byList.set(list, entries);
     }
     for (const [list, entries] of byList) flip(entries, list.animation());
     for (const { element, list } of appearing) fadeIn(element, list.animation());
+    manager.invalidateMeasurements();
   };
 
   const bump = () => version.value++;
@@ -613,17 +623,13 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   const collect = (list: ListEntry): ProjectionItem[] => {
     const indices = indexMap(keysOf(list));
     const result: ProjectionItem[] = [];
-    let clip: Rect | undefined;
     for (const [key, getElement] of items) {
       const index = indices.get(key);
       if (index === undefined) continue;
       const element = getElement();
-      if (!element?.isConnected) continue;
-      const rect = getLayoutRect(element);
-      // Items mounted outside the visible area (virtualizer overscan, scrolled away)
-      // can't be hovered; hitting them would move the active item out of view.
-      clip ??= getVisibleClip(element);
-      if (intersects(rect, clip)) result.push({ key, index, rect });
+      // Clipped to the visible area; rows fully clipped (overscan) can't be targeted.
+      const rect = element?.isConnected ? manager.measureVisible(element) : null;
+      if (rect) result.push({ key, index, rect });
     }
     return result.sort((a, b) => a.index - b.index);
   };
