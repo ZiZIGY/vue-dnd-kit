@@ -244,12 +244,31 @@ const measureElement = (element: Element, style: ScrollStyle): Measured | null =
   return { rect: clientRect(element), canScroll: { up, down, left, right } };
 };
 
-const measureWindow = (reverseX: boolean): Measured => {
+/** How the page scrolls, read once per drag. */
+interface PageScroll {
+  x: boolean;
+  y: boolean;
+  reverseX: boolean;
+}
+
+const readPageScroll = (): PageScroll => {
+  const root = getComputedStyle(document.documentElement);
+  const body = getComputedStyle(document.body);
+  // `overflow` on <body> applies to the viewport when <html> leaves it visible.
+  // A page locked with `hidden` (an open modal) can still be scrolled by script: don't.
+  const allowed = (axis: 'overflowX' | 'overflowY') => {
+    const value = root[axis] === 'visible' ? body[axis] : root[axis];
+    return value !== 'hidden' && value !== 'clip';
+  };
+  return { x: allowed('overflowX'), y: allowed('overflowY'), reverseX: root.direction === 'rtl' };
+};
+
+const measureWindow = (page: PageScroll): Measured => {
   const root = document.scrollingElement ?? document.documentElement;
   // The root's client size is the viewport without scrollbars.
   const { clientWidth: width, clientHeight: height } = document.documentElement;
-  const [left, right] = room(window.scrollX, root.scrollWidth - width, reverseX);
-  const [up, down] = room(window.scrollY, root.scrollHeight - height, false);
+  const [left, right] = page.x ? room(window.scrollX, root.scrollWidth - width, page.reverseX) : [false, false];
+  const [up, down] = page.y ? room(window.scrollY, root.scrollHeight - height, false) : [false, false];
   return { rect: createRect(0, 0, width, height), canScroll: { up, down, left, right } };
 };
 
@@ -274,9 +293,12 @@ export const revealElement = (element: Element, margin = 8): void => {
     const delta = getRevealDelta(getRect(element), measured.rect, margin);
     if (delta.x || delta.y) scrollBy(node, delta.x, delta.y);
   }
+  const page = readPageScroll();
   const { clientWidth, clientHeight } = document.documentElement;
   const delta = getRevealDelta(getRect(element), createRect(0, 0, clientWidth, clientHeight), margin);
-  if (delta.x || delta.y) scrollBy(window, delta.x, delta.y);
+  const dx = page.x ? delta.x : 0;
+  const dy = page.y ? delta.y : 0;
+  if (dx || dy) scrollBy(window, dx, dy);
 };
 
 // ─── Loop ──────────────────────────────────────────────────────────────────────
@@ -296,7 +318,7 @@ interface Session {
   remainders: Map<Scroller, Coordinates>;
   /** Elements that scrolled last frame: they keep scrolling while the pointer is past their edge. */
   previous: Element[];
-  rootReverseX: boolean;
+  page: PageScroll;
 }
 
 /** Runs auto-scroll for the provider's pointer drags. Keyboard drags never auto-scroll. */
@@ -375,7 +397,7 @@ export function useAutoScroll(manager: DnDManager): void {
     }
     if (!picked.x || !picked.y) {
       const options = resolveAutoScrollOptions(provider);
-      if (options) consider(window, measureWindow(current.rootReverseX), options);
+      if (options) consider(window, measureWindow(current.page), options);
     }
 
     // Write pass.
@@ -405,7 +427,7 @@ export function useAutoScroll(manager: DnDManager): void {
       overrides: new Map(),
       remainders: new Map(),
       previous: [],
-      rootReverseX: getComputedStyle(document.documentElement).direction === 'rtl',
+      page: readPageScroll(),
     };
     // A list's option applies to its scroll container: the list itself or its closest scrollable ancestor.
     for (const entry of entries) {

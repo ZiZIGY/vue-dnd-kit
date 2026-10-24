@@ -111,7 +111,10 @@ export function useKeyboardSensor(manager: DnDManager): void {
         next = { x: pointer.x + direction.x * step, y: pointer.y + direction.y * step };
       }
     }
-    if (next) manager.move(next);
+    if (!next) return;
+    manager.move(next);
+    // The next key press reads `pointer` and `over`: don't leave them a frame behind.
+    manager.flushFrame();
   };
 
   useEventListener(defaultDocument, 'keydown', async (event: KeyboardEvent) => {

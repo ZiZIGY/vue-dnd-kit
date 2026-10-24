@@ -571,6 +571,8 @@ export function createDnDManager(props: DnDProviderProps) {
     drop,
     cancel,
     scheduleFrame,
+    /** Runs the pending frame now (discrete keyboard moves need `pointer`/`over` updated at once). */
+    flushFrame,
     destroy,
   };
   return manager;

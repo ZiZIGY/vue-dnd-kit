@@ -100,6 +100,9 @@ export const clonePreview = (source: HTMLElement): HTMLElement => {
     transition: 'none',
     pointerEvents: 'none',
   });
+  // A positioned source (a piece on a board) would keep its offsets inside the overlay.
+  // `relative` keeps it a containing block for its own positioned children.
+  if (computed.position !== 'static') Object.assign(clone.style, { position: 'relative', inset: 'auto' });
   clone.setAttribute('aria-hidden', 'true');
   clone.removeAttribute('tabindex');
 
