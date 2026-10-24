@@ -906,9 +906,20 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     for (const [list, draft] of drafts) {
       let keys = draft.filter((key) => !strip.has(key));
       keys = list === target ? keys.flatMap((key) => (key === slot ? insert : [key])) : keys.filter((key) => key !== slot);
-      // Rejected keys fly back to where they started.
+      // Rejected keys fly back to where they started: after their nearest original
+      // predecessor that is still in the list (other keys may have left it).
       for (const { key, source } of back) {
-        if (source.list === list.id && !keys.includes(key)) keys.splice(Math.min(source.index, keys.length), 0, key);
+        if (source.list !== list.id || keys.includes(key)) continue;
+        const original = list.getKeys();
+        let at = 0;
+        for (let index = source.index - 1; index >= 0; index--) {
+          const position = keys.indexOf(original[index]!);
+          if (position !== -1) {
+            at = position + 1;
+            break;
+          }
+        }
+        keys.splice(at, 0, key);
       }
       if (list.hasChanges ? list.hasChanges(keys) : !sameKeys(keys, list.getKeys())) next.set(list, keys);
     }

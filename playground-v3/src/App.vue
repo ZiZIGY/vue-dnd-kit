@@ -12,6 +12,10 @@
   import NestedDemo from './demos/NestedDemo.vue';
   import TableDemo from './demos/TableDemo.vue';
   import MultiDemo from './demos/MultiDemo.vue';
+  import CopyDemo from './demos/CopyDemo.vue';
+  import TrashDemo from './demos/TrashDemo.vue';
+  import ExternalDemo from './demos/ExternalDemo.vue';
+  import RejectDemo from './demos/RejectDemo.vue';
 
   const demos = {
     sortable: SortableDemo,
@@ -24,6 +28,10 @@
     nested: NestedDemo,
     table: TableDemo,
     multi: MultiDemo,
+    copy: CopyDemo,
+    trash: TrashDemo,
+    external: ExternalDemo,
+    reject: RejectDemo,
   };
   type DemoName = keyof typeof demos;
 
