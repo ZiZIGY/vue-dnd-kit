@@ -430,6 +430,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
   const start = (event: DnDEvent) => {
     const activeKey = event.active.id;
+    // Drags that don't involve this group leave it untouched (no snapshot of its lists).
+    if (!listOfKey(activeKey, false) && ![...lists.values()].some((list) => list.create)) return;
     const ordered = orderedLists();
     const snapshot = new Map<Key, unknown>();
     const sources = new Map<Key, { list: Key; index: number }>();

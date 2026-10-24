@@ -118,7 +118,15 @@ export function makeSortableList<T>(
     const order = draft.value;
     return order ? order.map((key) => group.lookup(key) as T) : options.items.value;
   });
-  const activeKey = computed(() => group.session.value?.activeKey ?? null);
+  // The row a virtualizer must keep mounted: in the list holding a copy or an
+  // external item, that row is the copy/item (the slot), not the original.
+  const activeKey = computed(() => {
+    const current = group.session.value;
+    if (!current) return null;
+    return current.slot !== current.activeKey && group.indexOf(entry, current.slot) !== -1
+      ? current.slot
+      : current.activeKey;
+  });
   const activeIndex = computed(() => {
     const key = activeKey.value;
     return key == null ? -1 : group.indexOf(entry, key);
