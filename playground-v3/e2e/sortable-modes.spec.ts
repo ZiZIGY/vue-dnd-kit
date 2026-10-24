@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { center, dragTo, glide, item, pickUp, trackErrors, waitForIdle } from './helpers';
+import { center, dragTo, glide, item, layoutSettled, pickUp, trackErrors, waitForIdle } from './helpers';
 
 const state = (page: Page) => page.getByTestId('state');
 const list = (page: Page, id: string) => page.locator(`[data-testid="${id}"]:not([data-dnd-overlay] *)`);
@@ -61,7 +61,7 @@ test.describe('copy', () => {
   test('taking a copy back over the palette removes it', async ({ page }) => {
     const home = await center(item(page, 'p2'));
     await dragTo(page, item(page, 'p2'), await center(item(page, 't1'), 0.25), { release: false });
-    expect(await order(list(page, 'target'))).toHaveLength(4);
+    await expect.poll(async () => (await order(list(page, 'target'))).length).toBe(4);
     await glide(page, home);
     await expect.poll(() => order(list(page, 'target'))).toEqual(['t1', 't2', 't3']);
     await page.mouse.up();
@@ -84,7 +84,7 @@ test.describe('copy', () => {
     await pickUp(page, item(page, 't2'));
     await glide(page, await center(item(page, 'o2'), 0.25));
     await expect(page.getByTestId('mode')).toHaveText('move');
-    expect(await order(list(page, 'target'))).toEqual(['t1', 't3']);
+    await expect.poll(() => order(list(page, 'target'))).toEqual(['t1', 't3']);
 
     await page.keyboard.down('Alt');
     await expect(page.getByTestId('mode')).toHaveText('copy');
@@ -170,6 +170,8 @@ test.describe('external draggables (createItem)', () => {
     await glide(page, { x: 1100, y: 700 });
     await expect.poll(() => order(list(page, 'inbox'))).toEqual(['n1', 'n2', 'n3']);
 
+    // n2 slides back up (FLIP): measure where it ends, not where it is mid-flight.
+    await layoutSettled(page);
     await glide(page, await center(item(page, 'n2'), 0.25));
     await page.mouse.up();
     await waitForIdle(page);

@@ -12,7 +12,7 @@
 import { onScopeDispose, watch } from 'vue';
 import type { AutoScrollOptions, Coordinates, Rect } from '../types';
 import type { DnDManager } from './manager';
-import { createRect, getRect } from '../animation/layout';
+import { createRect, getLayoutRect } from '../animation/layout';
 import { elementFromPoint, parentOf } from '../utils/dom';
 
 export interface Directions {
@@ -284,18 +284,20 @@ const scrollBy = (scroller: Scroller, left: number, top: number) => {
 /**
  * Scrolls the scrollers around `element` by relative steps until it is visible.
  * Not `scrollIntoView`: it jumps virtual lists and scrolls unrelated ancestors.
- * Runs once per key press, so reading after each write is fine.
+ * Runs once per key press, so reading after each write is fine. Uses the layout
+ * rect: a keyboard-sorted slot is revealed right after its FLIP starts, and the
+ * running `translate` would aim at where it came from.
  */
 export const revealElement = (element: Element, margin = 8): void => {
   for (let node = parentOf(element); node && !isPageRoot(node); node = parentOf(node)) {
     const measured = measureElement(node, readScrollStyle(node));
     if (!measured) continue;
-    const delta = getRevealDelta(getRect(element), measured.rect, margin);
+    const delta = getRevealDelta(getLayoutRect(element), measured.rect, margin);
     if (delta.x || delta.y) scrollBy(node, delta.x, delta.y);
   }
   const page = readPageScroll();
   const { clientWidth, clientHeight } = document.documentElement;
-  const delta = getRevealDelta(getRect(element), createRect(0, 0, clientWidth, clientHeight), margin);
+  const delta = getRevealDelta(getLayoutRect(element), createRect(0, 0, clientWidth, clientHeight), margin);
   const dx = page.x ? delta.x : 0;
   const dy = page.y ? delta.y : 0;
   if (dx || dy) scrollBy(window, dx, dy);

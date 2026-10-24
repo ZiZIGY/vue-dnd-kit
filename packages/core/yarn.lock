@@ -620,7 +620,7 @@
   resolved "https://registry.yarnpkg.com/@size-limit/file/-/file-12.1.0.tgz#3e0740e98cbb5c46c7e53939a37df5de68269fe2"
   integrity sha512-eGwDcIufnNnvJRzv3liDOn6MAOGgmOTUdpeGQ2KuRTlgIgO54AJH1ilvktlJc6PIjNfwpYY0dOGyap1QgM1swQ==
 
-"@size-limit/preset-small-lib@^12":
+"@size-limit/preset-small-lib@^12.1.0":
   version "12.1.0"
   resolved "https://registry.yarnpkg.com/@size-limit/preset-small-lib/-/preset-small-lib-12.1.0.tgz#8457f5e8682bdec19f802f557a94fd33bdb461b5"
   integrity sha512-TVVQ/iuHbaGtHJrjur5s4XKYEyGk0nIwUAqhuzhKPbTyV9nYOH/laDelQ4vg3cGmm8sayRx998wxEdnwM/Yewg==
@@ -1678,7 +1678,7 @@ semver@~7.5.4:
   dependencies:
     lru-cache "^6.0.0"
 
-size-limit@12.1.0, size-limit@^12:
+size-limit@12.1.0, size-limit@^12.1.0:
   version "12.1.0"
   resolved "https://registry.yarnpkg.com/size-limit/-/size-limit-12.1.0.tgz#4e62d95773f3ea86d4dac7727fa6de8478050782"
   integrity sha512-VnDS2fycANrJFVPQwjaD+h+hkISY7EB3LsPsYWje4lBCjQwwsZLxjwwRwVJKHrcj2ZqyG+DdXykWm9mbZklZrw==

@@ -1,11 +1,17 @@
 import { expect, test, type Page } from '@playwright/test';
 import { center, dragTo, frames, item, waitForIdle } from './helpers';
 
-/** Waits for the live region (debounced 500 ms for moves) to say exactly `text`. */
+/**
+ * Waits for the live region (debounced 500 ms for moves) to say exactly `text`. The
+ * manager appends a no-break space when a text repeats, so screen readers speak it again.
+ * The timeout leaves room for the debounce on a loaded machine (three browsers at once).
+ */
 const announced = (page: Page, text: string) =>
-  expect(page.locator('[role="status"]').filter({ hasText: new RegExp(`^${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) })).toHaveCount(1, {
-    timeout: 3000,
-  });
+  expect(
+    page
+      .locator('[role="status"]')
+      .filter({ hasText: new RegExp(`^${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\u00A0?$`) }),
+  ).toHaveCount(1, { timeout: 8000 });
 
 const press = async (page: Page, key: string, times = 1) => {
   for (let i = 0; i < times; i++) {
@@ -24,6 +30,22 @@ test.describe('position-aware announcements (rfcs/0001-v3.md §10)', () => {
     await announced(page, 'Item t1 moved to position 3 of 8 in list list.');
     await press(page, 'Space');
     await announced(page, 'Item t1 dropped at position 3 of 8 in list list.');
+    await waitForIdle(page);
+  });
+
+  test('the pickup text is not replaced by a redundant "moved to" for the same position', async ({ page }) => {
+    // The first frame of a drag finds the origin list as target; announcing that as a
+    // move would overwrite the pickup text 500 ms later with no new information.
+    await page.goto('/#sortable');
+    await page.locator('[data-testid="list"] [data-id="t3"]').focus();
+    await press(page, 'Space');
+    await announced(page, 'Picked up item t3 at position 3 of 8 in list list.');
+    await page.waitForTimeout(900);
+    await announced(page, 'Picked up item t3 at position 3 of 8 in list list.');
+    // A real move is still spoken.
+    await press(page, 'ArrowUp');
+    await announced(page, 'Item t3 moved to position 2 of 8 in list list.');
+    await press(page, 'Escape');
     await waitForIdle(page);
   });
 
