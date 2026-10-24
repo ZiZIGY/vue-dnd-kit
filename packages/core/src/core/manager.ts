@@ -252,9 +252,8 @@ export function createDnDManager(props: DnDProviderProps) {
   };
 
   const announce = (name: keyof Announcements, event: DnDEvent = createEvent()) => {
-    clearTimeout(announceTimer);
     const custom = props.announcements;
-    if (custom === false) return;
+    if (custom === false) return clearTimeout(announceTimer);
     type Announce = (this: unknown, event: DnDEvent) => string | undefined;
     let text: string | undefined;
     try {
@@ -265,15 +264,21 @@ export function createDnDManager(props: DnDProviderProps) {
       } else {
         for (const announcer of announcers) {
           text = (announcer[name] as Announce | undefined)?.call(announcer, event);
-          if (text) break;
+          // `undefined`: not this announcer's business; '' : it has nothing new to say.
+          if (text !== undefined) break;
         }
-        text ||= (defaultAnnouncements[name] as Announce).call(defaultAnnouncements, event);
+        text ??= (defaultAnnouncements[name] as Announce).call(defaultAnnouncements, event);
       }
     } catch (error) {
       // A throwing announcement must not break the session (§13).
+      clearTimeout(announceTimer);
       console.error(error);
       return;
     }
+    // Nothing new (e.g. the first target of a drag is where it started): neither speak
+    // nor cancel what is pending.
+    if (text === '') return;
+    clearTimeout(announceTimer);
     if (!text) return;
     if (name === 'onDragOver') {
       // Debounced: only the target the pointer settles on is spoken, and only if it changed.

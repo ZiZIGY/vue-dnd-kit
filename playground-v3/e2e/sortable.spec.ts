@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { center, dragTo, trackErrors, waitForIdle } from './helpers';
+import { center, dragTo, layoutSettled, trackErrors, waitForIdle } from './helpers';
 
 const INITIAL = 't1,t2,t3,t4,t5,t6,t7,t8';
 
@@ -75,6 +75,13 @@ test.describe('vertical sortable list', () => {
 
   test('moving back up over the upper half of the taller item returns the slot', async ({ page }) => {
     await dragTo(page, row(page, 't2'), await center(row(page, 't3'), 0.75), { release: false });
+    // t3 slides up as t2 passes it: measure where it ends, not where it is mid-FLIP.
+    await expect
+      .poll(() =>
+        page.locator('[data-testid="list"] > [data-id]').evaluateAll((rows) => rows.map((r) => r.getAttribute('data-id'))),
+      )
+      .toEqual(['t1', 't3', 't2', 't4', 't5', 't6', 't7', 't8']);
+    await layoutSettled(page);
     await page.mouse.move(...Object.values(await center(row(page, 't3'), 0.2)) as [number, number], { steps: 5 });
     await page.mouse.up();
     await waitForIdle(page);

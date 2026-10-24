@@ -98,9 +98,13 @@ const projectList = (args: ProjectArgs): Projection => {
 
   const center = (hit.rect[axis.start] + hit.rect[axis.end]) / 2;
   if (activeIndex === -1) return { index: p < center ? hit.index : hit.index + 1, lock: null, key: hit.key };
-  if (hit.index > activeIndex && p > center) return { index: hit.index, lock: null, key: hit.key };
-  if (hit.index < activeIndex && p < center) return { index: hit.index, lock: null, key: hit.key };
-  return keep;
+  // The slot goes to the side of the hovered item the pointer is on. For a direct
+  // neighbour that means "past it once its center is crossed"; a pointer that skipped
+  // whole items within one frame (fast drags, engines that coalesce input) still
+  // lands next to the item it ended up over.
+  const index =
+    hit.index > activeIndex ? (p > center ? hit.index : hit.index - 1) : p < center ? hit.index : hit.index + 1;
+  return index === activeIndex ? keep : { index, lock: null, key: hit.key };
 };
 
 /**

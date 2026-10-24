@@ -56,6 +56,15 @@ describe('projectIndex: vertical lists', () => {
     expect(vertical(moved, 1, 141)).toBeNull();
   });
 
+  it('lands next to the hovered item when the pointer skipped items in one frame', () => {
+    // Down from 0 into the upper half of k3: past k1 and k2, before k3.
+    expect(vertical(items, 0, 125)).toBe(2);
+    // Up from 3 into the lower half of k0: after k0.
+    expect(vertical(items, 3, 30)).toBe(1);
+    // Exactly on the next-but-one center: past the neighbour only.
+    expect(vertical(items, 0, 100)).toBe(1);
+  });
+
   it('keeps sorting while the pointer drifts sideways (band hit)', () => {
     expect(vertical(items, 0, 70, 400)).toBe(1);
   });
