@@ -29,6 +29,7 @@
   import AnnounceDemo from './demos/AnnounceDemo.vue';
   import NestedZonesDemo from './demos/NestedZonesDemo.vue';
   import ShadowDomDemo from './demos/ShadowDomDemo.vue';
+  import { overlayDemos } from './demos/overlay';
 
   const demos = {
     sortable: SortableDemo,
@@ -58,6 +59,7 @@
     announce: AnnounceDemo,
     'nested-zones': NestedZonesDemo,
     shadow: ShadowDomDemo,
+    ...overlayDemos,
   };
   type DemoName = keyof typeof demos;
 
