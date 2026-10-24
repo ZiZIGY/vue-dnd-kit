@@ -36,3 +36,11 @@ export const getVisibleClip = (element: Element): Rect => {
 
 export const intersects = (a: Rect, b: Rect): boolean =>
   a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+
+/** Part of `rect` inside `clip`; `null` when nothing of it is. */
+export const clipRect = (rect: Rect, clip: Rect): Rect | null => {
+  if (!intersects(rect, clip)) return null;
+  const left = Math.max(rect.left, clip.left);
+  const top = Math.max(rect.top, clip.top);
+  return createRect(left, top, Math.min(rect.right, clip.right) - left, Math.min(rect.bottom, clip.bottom) - top);
+};

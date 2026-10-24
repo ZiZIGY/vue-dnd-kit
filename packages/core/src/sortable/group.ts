@@ -36,7 +36,7 @@ import type {
 } from '../types';
 import type { DnDManager } from '../core/manager';
 import { fadeIn, flip, getCenter, getLayoutRect, getRect, type FlipEntry } from '../animation/layout';
-import { getVisibleClip, intersects } from '../utils/clip';
+import { clipRect, getVisibleClip } from '../utils/clip';
 import {
   nextRowIndex,
   pickAdjacent,
@@ -619,11 +619,13 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       if (index === undefined) continue;
       const element = getElement();
       if (!element?.isConnected) continue;
-      const rect = getLayoutRect(element);
-      // Items mounted outside the visible area (virtualizer overscan, scrolled away)
-      // can't be hovered; hitting them would move the active item out of view.
+      // Only the visible part of an item can be hovered (rfcs/0001-v3.md §6): items
+      // mounted outside the visible area (virtualizer overscan, scrolled away) drop
+      // out, and a row half scrolled out of its scroller can't catch a pointer that
+      // is outside the scroller.
       clip ??= getVisibleClip(element);
-      if (intersects(rect, clip)) result.push({ key, index, rect });
+      const rect = clipRect(getLayoutRect(element), clip);
+      if (rect) result.push({ key, index, rect });
     }
     return result.sort((a, b) => a.index - b.index);
   };

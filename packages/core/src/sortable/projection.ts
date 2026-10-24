@@ -81,6 +81,12 @@ const projectEdges = (
  * only once the pointer crosses the neighbour's center in the direction of travel.
  * After the move the neighbour's center is on the other side of the pointer, so
  * items of different sizes can't swap back and forth.
+ *
+ * Generally the slot goes next to the hovered item, on the side of its center the
+ * pointer is on. Frames can be far apart (fast flicks, a busy main thread, WebKit
+ * coalescing input), so the pointer may skip items and land in the near half of one
+ * that isn't adjacent: the slot still catches up. For an adjacent item this is the
+ * crossing rule above.
  */
 const projectList = (args: ProjectArgs): Projection => {
   const axis = axisOf(args.strategy);
@@ -98,9 +104,15 @@ const projectList = (args: ProjectArgs): Projection => {
 
   const center = (hit.rect[axis.start] + hit.rect[axis.end]) / 2;
   if (activeIndex === -1) return { index: p < center ? hit.index : hit.index + 1, lock: null, key: hit.key };
-  if (hit.index > activeIndex && p > center) return { index: hit.index, lock: null, key: hit.key };
-  if (hit.index < activeIndex && p < center) return { index: hit.index, lock: null, key: hit.key };
-  return keep;
+  const index =
+    hit.index < activeIndex
+      ? p < center
+        ? hit.index
+        : hit.index + 1
+      : p > center
+        ? hit.index
+        : hit.index - 1;
+  return index === activeIndex ? keep : { index, lock: null, key: hit.key };
 };
 
 /**

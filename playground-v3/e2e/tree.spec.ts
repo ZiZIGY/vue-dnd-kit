@@ -136,6 +136,27 @@ test.describe('sortable tree', () => {
     await expect(structure(page)).toHaveText('src(components(ui,button),docs(intro,guide),main),assets,package,readme');
   });
 
+  // Flicks: the pointer skips rows between two frames (fast moves, a busy main thread,
+  // WebKit delivering several mouse moves per frame). The slot must still catch up.
+  test('a flick into the edge band of a distant row lands next to it', async ({ page }) => {
+    const target = await at(page, 'docs', 0.85);
+    await pick(page, 'readme');
+    await glide(page, target, 1);
+    await expect(projected(page)).toHaveText('0:root');
+    await drop(page);
+    await expect(structure(page)).toHaveText('src(components(ui,button),main),docs(intro,guide),readme,assets,package');
+  });
+
+  test('a flick into rows the node may not enter stops at the last valid slot', async ({ page }) => {
+    // Every slot inside components/ is too deep for docs/ (it has children): it stops above main.ts.
+    const target = await at(page, 'components', 0.6);
+    await pick(page, 'docs');
+    await glide(page, target, 1);
+    await expect(projected(page)).toHaveText('1:src');
+    await drop(page);
+    await expect(structure(page)).toHaveText('src(components(ui,button),docs(intro,guide),main),assets,package,readme');
+  });
+
   test('a collapsed folder keeps its hidden children', async ({ page }) => {
     const target = await at(page, 'docs', 0.5);
     await pick(page, 'readme');
