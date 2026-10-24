@@ -25,6 +25,7 @@ import type {
 import type { DnDManager } from '../core/manager';
 import { fadeIn, flip, getLayoutRect, getRect, type FlipEntry } from '../animation/layout';
 import { projectIndex, type ProjectionItem } from './projection';
+import { getVisibleClip, intersects } from '../utils/clip';
 
 export interface ListEntry {
   id: Key;
@@ -288,11 +289,17 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   const collect = (list: ListEntry): ProjectionItem[] => {
     const indices = indexMap(keysOf(list));
     const result: ProjectionItem[] = [];
+    let clip: Rect | undefined;
     for (const [key, getElement] of items) {
       const index = indices.get(key);
       if (index === undefined) continue;
       const element = getElement();
-      if (element?.isConnected) result.push({ key, index, rect: getLayoutRect(element) });
+      if (!element?.isConnected) continue;
+      const rect = getLayoutRect(element);
+      // Items mounted outside the visible area (virtualizer overscan, scrolled away)
+      // can't be hovered; hitting them would move the active item out of view.
+      clip ??= getVisibleClip(element);
+      if (intersects(rect, clip)) result.push({ key, index, rect });
     }
     return result.sort((a, b) => a.index - b.index);
   };

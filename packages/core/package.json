@@ -34,21 +34,54 @@
     "typecheck": "vue-tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "yarn typecheck && yarn test && yarn build"
+    "size": "size-limit",
+    "lint:package": "publint --strict --pack npm && attw --pack .",
+    "prepublishOnly": "yarn typecheck && yarn test && yarn build && yarn lint:package && yarn size"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    }
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
-    "README.md",
-    "dist"
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "size-limit": [
+    {
+      "name": "full import",
+      "path": "dist/index.js",
+      "import": "*",
+      "ignore": [
+        "vue",
+        "@vueuse/core"
+      ],
+      "gzip": true,
+      "limit": "20 KB"
+    },
+    {
+      "name": "DnDProvider + makeSortableList + makeSortableItem",
+      "path": "dist/index.js",
+      "import": "{ DnDProvider, makeSortableList, makeSortableItem }",
+      "ignore": [
+        "vue",
+        "@vueuse/core"
+      ],
+      "gzip": true,
+      "limit": "16 KB"
+    }
   ],
   "publishConfig": {
     "access": "public",
@@ -61,10 +94,14 @@
     "@vueuse/core": "^14 || ^15"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@size-limit/preset-small-lib": "^12.1.0",
     "@types/node": "^24.10.0",
     "@vue/tsconfig": "^0.8.1",
     "happy-dom": "^21.0.4",
     "prettier": "^3.8.1",
+    "publint": "^0.3.25",
+    "size-limit": "^12.1.0",
     "typescript": "~5.9.3",
     "vite": "^7.2.2",
     "vite-plugin-dts": "^4.5.4",

@@ -10,6 +10,11 @@
   import FreeDragDemo from './demos/FreeDragDemo.vue';
   import SelectionDemo from './demos/SelectionDemo.vue';
   import A11yDemo from './demos/A11yDemo.vue';
+  import VirtualTanstackDemo from './demos/VirtualTanstackDemo.vue';
+  import VirtualKanbanDemo from './demos/VirtualKanbanDemo.vue';
+  import VirtualVueUseDemo from './demos/VirtualVueUseDemo.vue';
+  import BenchKanbanDemo from './demos/BenchKanbanDemo.vue';
+  import BenchVirtualDemo from './demos/BenchVirtualDemo.vue';
 
   const demos = {
     sortable: SortableDemo,
@@ -20,6 +25,11 @@
     free: FreeDragDemo,
     selection: SelectionDemo,
     a11y: A11yDemo,
+    'virtual-tanstack': VirtualTanstackDemo,
+    'virtual-kanban': VirtualKanbanDemo,
+    'virtual-vueuse': VirtualVueUseDemo,
+    'bench-kanban': BenchKanbanDemo,
+    'bench-virtual': BenchVirtualDemo,
   };
   type DemoName = keyof typeof demos;
 
