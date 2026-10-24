@@ -29,6 +29,10 @@
   import AnnounceDemo from './demos/AnnounceDemo.vue';
   import NestedZonesDemo from './demos/NestedZonesDemo.vue';
   import ShadowDomDemo from './demos/ShadowDomDemo.vue';
+  import TouchListDemo from './demos/touch/TouchListDemo.vue';
+  import TouchHandleDemo from './demos/touch/TouchHandleDemo.vue';
+  import TouchKanbanDemo from './demos/touch/TouchKanbanDemo.vue';
+  import TouchTreeDemo from './demos/touch/TouchTreeDemo.vue';
 
   const demos = {
     sortable: SortableDemo,
@@ -58,6 +62,11 @@
     announce: AnnounceDemo,
     'nested-zones': NestedZonesDemo,
     shadow: ShadowDomDemo,
+    // Phone layouts (open them in a mobile viewport).
+    'touch-list': TouchListDemo,
+    'touch-handle': TouchHandleDemo,
+    'touch-kanban': TouchKanbanDemo,
+    'touch-tree': TouchTreeDemo,
   };
   type DemoName = keyof typeof demos;
 
