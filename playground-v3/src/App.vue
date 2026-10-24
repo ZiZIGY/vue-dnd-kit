@@ -31,6 +31,7 @@
   import ShadowDomDemo from './demos/ShadowDomDemo.vue';
   // Example apps (each brings its own DnDProvider).
   import BoardApp from './demos/apps/BoardApp.vue';
+  import FilesApp from './demos/apps/FilesApp.vue';
 
   const demos = {
     sortable: SortableDemo,
@@ -61,6 +62,7 @@
     'nested-zones': NestedZonesDemo,
     shadow: ShadowDomDemo,
     'app-board': BoardApp,
+    'app-files': FilesApp,
   };
   type DemoName = keyof typeof demos;
 
