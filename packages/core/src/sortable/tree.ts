@@ -1,0 +1,328 @@
+/**
+ * Pure tree logic for `makeSortableTree`: flattening, depth projection, hover-to-nest
+ * and applying a move to the user's data.
+ *
+ * The draft of a tree is the flat list of visible keys (depth-first order). A node's
+ * depth and parent follow from its neighbours in that list, so a move is a new index
+ * in the draft plus a projected depth.
+ */
+
+import type { Coordinates, FlatNode, Key, TreeProjection } from '../types';
+import { projectIndex, type ProjectionItem } from './projection';
+
+export interface TreeAccessors<T> {
+  getKey: (node: T) => Key;
+  getChildren: (node: T) => readonly T[] | undefined;
+  setChildren: (node: T, children: T[]) => void;
+}
+
+/** What the projection needs to know about a visible node. */
+export type TreeRow = Pick<FlatNode<unknown>, 'key' | 'depth' | 'parentKey' | 'index'>;
+
+export interface FlatTree<T> {
+  nodes: FlatNode<T>[];
+  byKey: Map<Key, FlatNode<T>>;
+}
+
+// ─── Flattening ─────────────────────────────────────────────────────────────────
+
+/** Visible nodes in depth-first order; children of collapsed nodes are skipped. O(N). */
+export function flattenTree<T>(
+  nodes: readonly T[],
+  getKey: (node: T) => Key,
+  getChildren: (node: T) => readonly T[] | undefined,
+  collapsed?: ReadonlySet<Key>,
+): FlatNode<T>[] {
+  const result: FlatNode<T>[] = [];
+  // Iterative, so deep trees can't overflow the stack.
+  const stack: Array<{ siblings: readonly T[]; index: number; depth: number; parentKey: Key | null }> = [
+    { siblings: nodes, index: 0, depth: 0, parentKey: null },
+  ];
+  while (stack.length) {
+    const frame = stack[stack.length - 1]!;
+    if (frame.index >= frame.siblings.length) {
+      stack.pop();
+      continue;
+    }
+    const index = frame.index++;
+    const item = frame.siblings[index]!;
+    const key = getKey(item);
+    const children = getChildren(item);
+    const isCollapsed = !!collapsed?.has(key);
+    result.push({
+      key,
+      item,
+      depth: frame.depth,
+      parentKey: frame.parentKey,
+      index,
+      hasChildren: !!children?.length,
+      collapsed: isCollapsed,
+    });
+    if (children?.length && !isCollapsed) {
+      stack.push({ siblings: children, index: 0, depth: frame.depth + 1, parentKey: key });
+    }
+  }
+  return result;
+}
+
+export function createFlatTree<T>(nodes: FlatNode<T>[]): FlatTree<T> {
+  return { nodes, byKey: new Map(nodes.map((node) => [node.key, node])) };
+}
+
+/** End (exclusive) of the visible subtree of the node at `index` in a flat list. */
+export function subtreeEnd(nodes: readonly Pick<TreeRow, 'depth'>[], index: number): number {
+  const depth = nodes[index]!.depth;
+  let end = index + 1;
+  while (end < nodes.length && nodes[end]!.depth > depth) end++;
+  return end;
+}
+
+/** Keys of the visible descendants of the node at `index` in a flat list. */
+export function getDescendantKeys(nodes: readonly TreeRow[], index: number): Key[] {
+  return nodes.slice(index + 1, subtreeEnd(nodes, index)).map((node) => node.key);
+}
+
+/** Levels below `node`, collapsed children included (0 for a leaf). Used against `maxDepth`. */
+export function subtreeHeight<T>(node: T, getChildren: (node: T) => readonly T[] | undefined): number {
+  let height = 0;
+  const stack: Array<{ node: T; level: number }> = [{ node, level: 0 }];
+  while (stack.length) {
+    const { node: current, level } = stack.pop()!;
+    if (level > height) height = level;
+    for (const child of getChildren(current) ?? []) stack.push({ node: child, level: level + 1 });
+  }
+  return height;
+}
+
+// ─── Depth projection ───────────────────────────────────────────────────────────
+
+/**
+ * Draft context: visible keys with the active key at `index`, and the rows of every
+ * other key. The active key itself is never looked up (it may come from another list).
+ */
+export interface DraftPosition {
+  keys: readonly Key[];
+  index: number;
+  rows: ReadonlyMap<Key, TreeRow>;
+}
+
+/** Whether the active node may sit at `depth` under `parentKey` (`canNest`, `maxDepth`). */
+export type DepthFilter = (depth: number, parentKey: Key | null) => boolean;
+
+const rowAt = ({ keys, rows }: DraftPosition, index: number): TreeRow | undefined => {
+  const key = keys[index];
+  return key === undefined ? undefined : rows.get(key);
+};
+
+/** Depths the active node can take between its neighbours: `[next.depth, prev.depth + 1]`. */
+export function depthRange(position: DraftPosition): { min: number; max: number } {
+  const prev = rowAt(position, position.index - 1);
+  const next = rowAt(position, position.index + 1);
+  const max = prev ? prev.depth + 1 : 0;
+  return { min: Math.min(next ? next.depth : 0, max), max };
+}
+
+/**
+ * Ancestors before the active slot by depth: `chain[d]` is the nearest preceding node
+ * with depth `d`, i.e. the parent the active node gets at depth `d + 1`. Walks back
+ * only until the root level is found.
+ */
+const ancestorChain = (position: DraftPosition): Key[] => {
+  const chain: Key[] = [];
+  let want = Infinity;
+  for (let i = position.index - 1; i >= 0 && want > 0; i--) {
+    const row = rowAt(position, i);
+    if (!row || row.depth >= want) continue;
+    chain[row.depth] = row.key;
+    want = row.depth;
+  }
+  return chain;
+};
+
+/** Parent of the active node at its draft position with the given depth. */
+export function parentAt(position: DraftPosition, depth: number): Key | null {
+  return depth <= 0 ? null : (ancestorChain(position)[depth - 1] ?? null);
+}
+
+/** Depth from the horizontal drag offset, relative to a base depth. */
+export const offsetDepth = (baseDepth: number, offsetX: number, indentation: number): number =>
+  baseDepth + Math.round(offsetX / indentation);
+
+/**
+ * Clamps `depth` between the neighbours, then lowers it while `filter` rejects it.
+ * `null` when no depth fits at this position (the position itself is invalid).
+ */
+export function projectDepth(
+  position: DraftPosition,
+  depth: number,
+  filter?: DepthFilter,
+): TreeProjection | null {
+  const { min, max } = depthRange(position);
+  const chain = ancestorChain(position);
+  for (let d = Math.max(min, Math.min(depth, max)); d >= min; d--) {
+    const parentKey = d === 0 ? null : (chain[d - 1] ?? null);
+    if (!filter || filter(d, parentKey)) return { depth: d, parentKey };
+  }
+  return null;
+}
+
+/**
+ * Index the active node gets among its new siblings. `origin` is where it was before
+ * the drag (`null` when it comes from another list): leaving an earlier slot of the
+ * same parent shifts the later siblings up by one.
+ */
+export function siblingIndexAt(
+  position: DraftPosition,
+  projection: TreeProjection,
+  origin: { parentKey: Key | null; index: number } | null,
+): number {
+  for (let i = position.index - 1; i >= 0; i--) {
+    const row = rowAt(position, i);
+    if (!row || row.depth > projection.depth) continue;
+    if (row.depth < projection.depth) return 0;
+    const shift = origin && origin.parentKey === projection.parentKey && origin.index < row.index ? 1 : 0;
+    return row.index + 1 - shift;
+  }
+  return 0;
+}
+
+// ─── Index projection ───────────────────────────────────────────────────────────
+
+/** Middle band of a row, as a fraction of its height: hovering it nests into the row. */
+export const NEST_BAND = { start: 0.25, end: 0.75 } as const;
+
+export interface TreeIndexArgs {
+  pointer: Coordinates;
+  /** Mounted rows in draft order with layout rects (may include the active row). */
+  items: ProjectionItem[];
+  activeKey: Key;
+  /** Index of the active key in the draft, -1 when it comes from another list. */
+  activeIndex: number;
+  /** Draft length. */
+  length: number;
+  /** Hover-to-nest: whether the active node may become a child of `key`. Omit to disable. */
+  canNestInto?: (key: Key) => boolean;
+}
+
+export interface TreeIndexProjection {
+  /** New draft index of the active key; `null` keeps it. */
+  index: number | null;
+  /** Row whose middle band is hovered and that accepts the active node as a child. */
+  nest: Key | null;
+  /** Row under the pointer (not the active one), if any. */
+  hit: ProjectionItem | null;
+}
+
+/**
+ * Hover-to-nest on top of the list projection. The middle band of a row that accepts
+ * the active node places it right after that row (as its first child). Everything
+ * else follows the vertical list rule (cross a neighbour's center to pass it), so the
+ * slot is stable after the layout shifts. The edge bands therefore mean before/after.
+ */
+export function projectTreeIndex(args: TreeIndexArgs): TreeIndexProjection {
+  const { pointer, items, activeKey, activeIndex, length, canNestInto } = args;
+  const hit =
+    items.find((item) => item.key !== activeKey && pointer.y >= item.rect.top && pointer.y <= item.rect.bottom) ??
+    null;
+  if (hit && canNestInto && hit.rect.height > 0) {
+    const ratio = (pointer.y - hit.rect.top) / hit.rect.height;
+    if (ratio >= NEST_BAND.start && ratio <= NEST_BAND.end && canNestInto(hit.key)) {
+      // Right after the row: removing the active slot above it shifts the row up by one.
+      const index = activeIndex !== -1 && activeIndex < hit.index ? hit.index : hit.index + 1;
+      return { index: index === activeIndex ? null : index, nest: hit.key, hit };
+    }
+  }
+  const { index } = projectIndex({
+    strategy: 'vertical',
+    pointer,
+    items,
+    activeKey,
+    activeIndex,
+    length,
+    lock: null,
+  });
+  return { index, nest: null, hit };
+}
+
+/** The draft with `key` moved from `from` to `to` (or inserted at `to` when `from` is -1). */
+export function moveKey(keys: readonly Key[], key: Key, from: number, to: number): Key[] {
+  const next = [...keys];
+  if (from !== -1) next.splice(from, 1);
+  next.splice(Math.max(0, Math.min(to, next.length)), 0, key);
+  return next;
+}
+
+// ─── Applying a move ────────────────────────────────────────────────────────────
+
+interface Located<T> {
+  node: T;
+  parent: T | null;
+  index: number;
+}
+
+/** Depth-first search for `key`; O(N). */
+export function findTreeNode<T>(
+  roots: readonly T[],
+  key: Key,
+  { getKey, getChildren }: Pick<TreeAccessors<T>, 'getKey' | 'getChildren'>,
+): Located<T> | null {
+  const stack: Array<{ siblings: readonly T[]; parent: T | null }> = [{ siblings: roots, parent: null }];
+  while (stack.length) {
+    const { siblings, parent } = stack.pop()!;
+    for (let index = 0; index < siblings.length; index++) {
+      const node = siblings[index]!;
+      if (getKey(node) === key) return { node, parent, index };
+      const children = getChildren(node);
+      if (children?.length) stack.push({ siblings: children, parent: node });
+    }
+  }
+  return null;
+}
+
+export interface TreeMove<T> {
+  key: Key;
+  /** Node to insert when `key` isn't in the tree yet (it comes from another list). */
+  node?: T;
+  /** Destination; `null` removes the node (it left for another list). */
+  to: { parentKey: Key | null; index: number } | null;
+}
+
+/**
+ * Moves one node (with its whole subtree) and returns the new root array. Children
+ * arrays that change are replaced through `setChildren`; nodes are never copied, so
+ * collapsed subtrees and the moved node's own children stay as they are. The root
+ * array is always a new array, so `shallowRef` sources update too. Invalid moves (an
+ * unknown parent, or a parent inside the moved subtree) return `roots` unchanged.
+ */
+export function applyTreeMove<T>(roots: readonly T[], move: TreeMove<T>, accessors: TreeAccessors<T>): T[] {
+  const { getChildren, setChildren } = accessors;
+  const located = findTreeNode(roots, move.key, accessors);
+  const node = located?.node ?? move.node;
+  if (node === undefined) return [...roots];
+
+  let parent: T | null = null;
+  if (move.to && move.to.parentKey != null) {
+    parent = findTreeNode(roots, move.to.parentKey, accessors)?.node ?? null;
+    if (parent === null || parent === node) return [...roots];
+    if (findTreeNode([node], move.to.parentKey, accessors)) return [...roots];
+  }
+
+  let nextRoots: T[] = [...roots];
+  const childrenOf = (owner: T | null): readonly T[] => (owner === null ? nextRoots : (getChildren(owner) ?? []));
+  const write = (owner: T | null, children: T[]) => {
+    if (owner === null) nextRoots = children;
+    else setChildren(owner, children);
+  };
+
+  if (located) {
+    const siblings = [...childrenOf(located.parent)];
+    siblings.splice(located.index, 1);
+    write(located.parent, siblings);
+  }
+  if (move.to) {
+    const siblings = [...childrenOf(parent)];
+    siblings.splice(Math.max(0, Math.min(move.to.index, siblings.length)), 0, node);
+    write(parent, siblings);
+  }
+  return nextRoots;
+}

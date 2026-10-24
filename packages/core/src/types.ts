@@ -522,6 +522,16 @@ export interface TreeProjection {
   parentKey: Key | null;
 }
 
+/**
+ * Drop event of a tree. `index` is the position among the siblings under `parentKey`
+ * (`from`: before the move; `to`: after it, with the node already removed from its
+ * old place). `from.parentKey` is `null` for root nodes and for items from another list.
+ */
+export interface SortableTreeDropEvent<T = unknown> extends SortableDropEvent<T> {
+  from: { list: Key | null; index: number; parentKey: Key | null };
+  to: { list: Key; index: number; parentKey: Key | null };
+}
+
 export interface SortableTreeOptions<T> {
   items: Ref<T[]>;
   getKey?: (node: T) => Key;
@@ -531,22 +541,26 @@ export interface SortableTreeOptions<T> {
   group?: string | SortableGroupOptions;
   /** Pixels of horizontal offset per depth level. Default 24. */
   indentation?: number;
+  /** How the depth is chosen: horizontal offset, hovering the middle of a row, or both (default). */
   nesting?: TreeNesting;
+  /** Deepest allowed depth (roots are 0). The dragged node's own descendants count. */
   maxDepth?: number;
   canNest?: (node: T, parent: T) => boolean;
   collapsed?: Ref<Set<Key>>;
   animation?: LayoutAnimation;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
   onBeforeDrop?: (
-    event: SortableDropEvent<T>,
+    event: SortableTreeDropEvent<T>,
   ) => MaybePromise<BeforeDropResult>;
-  onDrop?: (event: SortableDropEvent<T>) => void;
+  /** Called after the result was written to `items`. */
+  onDrop?: (event: SortableTreeDropEvent<T>) => void;
 }
 
 export interface SortableTreeReturn<T> {
   id: Key;
   /** Visible nodes in draft order; the active node carries its projected depth. */
   items: ComputedRef<FlatNode<T>[]>;
+  /** Where the active node would land, `null` when it isn't in this tree. */
   projected: ComputedRef<TreeProjection | null>;
   isOver: ComputedRef<boolean>;
   activeKey: ComputedRef<Key | null>;
