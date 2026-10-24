@@ -55,6 +55,9 @@ interface Entry {
 const ROOT: Chain = { scrollers: [], window: true, volatile: false };
 const FIXED: Chain = { scrollers: [], window: false, volatile: false };
 
+// DOM emulations (happy-dom, jsdom) report unset longhands as ''.
+const clipsOverflow = (value: string) => value !== 'visible' && value !== '';
+
 export interface Measurer {
   /** Starts caching for a drag session. */
   begin(): void;
@@ -114,8 +117,8 @@ export function createMeasurer(): Measurer {
       const style = getComputedStyle(element);
       const paint = /paint|strict|content/.test(style.contain ?? '');
       result = {
-        clipX: paint || style.overflowX !== 'visible',
-        clipY: paint || style.overflowY !== 'visible',
+        clipX: paint || clipsOverflow(style.overflowX),
+        clipY: paint || clipsOverflow(style.overflowY),
         fixed: style.position === 'fixed',
         sticky: style.position === 'sticky',
       };
