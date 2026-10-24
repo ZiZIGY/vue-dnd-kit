@@ -165,16 +165,17 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const byList = new Map<ListEntry, FlipEntry[]>();
     const activeKey = manager.active.value?.id;
     for (const [key, getElement] of items) {
+      const before = snapshot.get(key);
+      // Far from the viewport: it jumps instead of animating.
+      if (before && !before.rect) continue;
       const element = getElement();
       if (!element?.isConnected) continue;
       const list = listOfKey(key, true);
       if (!list) continue;
-      const before = snapshot.get(key);
-      if (!before) {
+      if (!before?.rect) {
         if (fadeAppearing && key !== activeKey) fadeIn(element, list.animation());
         continue;
       }
-      if (!before.rect) continue;
       // The active slot entering another list was recreated: sliding it in from the
       // old list would be clipped by the new scroller, and the overlay shows it anyway.
       if (key === activeKey && before.element !== element) continue;
