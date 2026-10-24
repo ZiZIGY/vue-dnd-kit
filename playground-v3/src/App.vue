@@ -32,6 +32,7 @@
   // Example apps (each brings its own DnDProvider).
   import BoardApp from './demos/apps/BoardApp.vue';
   import FilesApp from './demos/apps/FilesApp.vue';
+  import FormApp from './demos/apps/FormApp.vue';
 
   const demos = {
     sortable: SortableDemo,
@@ -63,6 +64,7 @@
     shadow: ShadowDomDemo,
     'app-board': BoardApp,
     'app-files': FilesApp,
+    'app-form': FormApp,
   };
   type DemoName = keyof typeof demos;
 
