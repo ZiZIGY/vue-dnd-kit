@@ -484,6 +484,11 @@ export function createDnDManager(props: DnDProviderProps) {
       announce('onDragOver', event);
     }
     emit('onDragMove', event);
+    // The move may have reordered (sortable): fit the slot once that rendered, even if
+    // the pointer stops here and no further frame runs.
+    void nextTick(() => {
+      if (status.value === 'dragging' && active.value === current) updateFitSize(current);
+    });
   };
 
   const requestFrame = () => {
