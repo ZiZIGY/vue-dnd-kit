@@ -8,6 +8,8 @@
   import VirtualTanstackDemo from './demos/VirtualTanstackDemo.vue';
   import VirtualKanbanDemo from './demos/VirtualKanbanDemo.vue';
   import VirtualVueUseDemo from './demos/VirtualVueUseDemo.vue';
+  import BenchKanbanDemo from './demos/BenchKanbanDemo.vue';
+  import BenchVirtualDemo from './demos/BenchVirtualDemo.vue';
 
   const demos = {
     sortable: SortableDemo,
@@ -16,6 +18,8 @@
     'virtual-tanstack': VirtualTanstackDemo,
     'virtual-kanban': VirtualKanbanDemo,
     'virtual-vueuse': VirtualVueUseDemo,
+    'bench-kanban': BenchKanbanDemo,
+    'bench-virtual': BenchVirtualDemo,
   };
   type DemoName = keyof typeof demos;
 

@@ -6,7 +6,7 @@
     "dev": "vite",
     "typecheck": "vue-tsc --noEmit",
     "e2e": "playwright test",
-    "bench": "playwright test e2e/bench.spec.ts --reporter=list"
+    "bench": "playwright test -c playwright.bench.config.ts"
   },
   "dependencies": {
     "@vueuse/core": "^15.0.0",
