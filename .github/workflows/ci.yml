@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: [master, v3, 'v3-*']
+  pull_request:
+    branches: [master, v3, 'v3-*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Node 22, not 20: vitest 5 (core devDependency) requires ^22.12, and Yarn 1
+  # refuses to install on an engines mismatch. Node 20 is end-of-life anyway.
+  NODE_VERSION: 22
+
+jobs:
+  core:
+    name: Core (typecheck, test, build, package checks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: packages/core
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: packages/core/yarn.lock
+
+      - name: Install
+        run: yarn install --frozen-lockfile
+
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Unit tests
+        run: yarn test
+
+      - name: Build
+        run: yarn build
+
+      - name: publint + arethetypeswrong
+        run: yarn lint:package
+
+      - name: Size limit
+        run: yarn size
+
+  e2e:
+    name: E2E (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # `mobile` (Chromium with touch) runs only specs tagged @touch.
+          - browser: chromium
+            projects: --project=chromium --project=mobile
+          - browser: firefox
+            projects: --project=firefox
+          - browser: webkit
+            projects: --project=webkit
+    defaults:
+      run:
+        working-directory: playground-v3
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: |
+            packages/core/yarn.lock
+            playground-v3/yarn.lock
+
+      # The playground imports the core from source (Vite alias).
+      - name: Install core
+        run: yarn --cwd ../packages/core install --frozen-lockfile
+
+      - name: Install playground
+        run: yarn install --frozen-lockfile
+
+      - name: Typecheck playground
+        if: matrix.browser == 'chromium'
+        run: yarn typecheck
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: E2E
+        run: npx playwright test ${{ matrix.projects }}
+
+      - name: Upload report and traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-${{ matrix.browser }}
+          path: |
+            playground-v3/playwright-report
+            playground-v3/test-results
+          retention-days: 7
