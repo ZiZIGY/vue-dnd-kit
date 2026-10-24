@@ -9,7 +9,7 @@
  * - items are identified by id, never by element: elements may be recreated mid-drag.
  */
 
-import { nextTick, shallowReactive, shallowRef } from 'vue';
+import { nextTick, shallowReactive, shallowRef, type Component } from 'vue';
 import type {
   ActivationOptions,
   Active,
@@ -60,7 +60,8 @@ export interface DraggableEntry {
   isDisabled(): boolean;
   activation?: ActivationOptions;
   canDrag?: (event: PointerEvent | KeyboardEvent) => boolean;
-  overlay: boolean;
+  /** `false`: no overlay; `true`: the provider's slot or the clone; a component (`markRaw`): rendered instead. */
+  overlay: boolean | Component;
   /** Arrow keys in free keyboard drags: move by pixels (default) or jump between accepting drop targets. */
   keyboard?: 'pixels' | 'droppables';
   /** Sortable integration: the item object behind this draggable. */
@@ -134,6 +135,8 @@ export function createDnDManager(props: DnDProviderProps) {
   let frame = 0;
   let preview: HTMLElement | null = null;
   let previewEnabled = false;
+  /** Overlay component of the drag, taken at start: the source may unmount mid-drag. */
+  let overlayComponent: Component | null = null;
   let restoreDocument: (() => void) | null = null;
   let session = 0;
   let announceTimer: ReturnType<typeof setTimeout> | undefined;
@@ -532,6 +535,11 @@ export function createDnDManager(props: DnDProviderProps) {
         ? [id, ...[...selection].filter((key) => key !== id)]
         : [id];
     const items = buildItems(ids);
+    const overlay = entry.overlay;
+    previewEnabled = overlay !== false;
+    overlayComponent = typeof overlay === 'boolean' ? null : overlay;
+    // Taken synchronously, before the placeholder re-renders. A component never needs it.
+    preview = overlay === true ? clonePreview(element) : null;
     active.value = {
       id,
       ids,
@@ -542,8 +550,6 @@ export function createDnDManager(props: DnDProviderProps) {
       rect: getLayoutRect(element),
       sensor,
     };
-    previewEnabled = entry.overlay;
-    preview = entry.overlay ? clonePreview(element) : null;
     const container = entry.getContainer?.() ?? element.parentElement;
     containerRect = container ? getRect(container) : null;
     origin = coordinates;
@@ -620,6 +626,7 @@ export function createDnDManager(props: DnDProviderProps) {
     activationProgress.value = 0;
     preview = null;
     previewEnabled = false;
+    overlayComponent = null;
     containerRect = null;
     status.value = 'idle';
   };
@@ -764,6 +771,10 @@ export function createDnDManager(props: DnDProviderProps) {
     },
     get hasOverlay() {
       return previewEnabled;
+    },
+    /** The dragged item's overlay component (its own, else its list's); `null`: slot or clone. */
+    get overlayComponent() {
+      return overlayComponent;
     },
     getDraggable: (id: Key) => draggables.get(id),
     /** Every registered draggable, e.g. for selection hit-testing. */

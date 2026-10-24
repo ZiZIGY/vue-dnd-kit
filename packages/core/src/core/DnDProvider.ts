@@ -74,6 +74,10 @@ export const DnDProvider = defineComponent({
   },
   slots: Object as SlotsType<{
     default?: () => VNode[];
+    /**
+     * Overlay for drags without an `overlay` component of their own (item, list or
+     * tree option). Rendering nothing (`v-if`) falls back to the clone.
+     */
     overlay?: (props: OverlaySlotProps) => VNode[];
   }>,
   setup(props, { slots, emit }) {

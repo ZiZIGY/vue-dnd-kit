@@ -1,12 +1,17 @@
 import {
+  Comment,
   computed,
   defineComponent,
+  Fragment,
   h,
+  isVNode,
   onMounted,
   shallowRef,
   watch,
+  type Component,
   type SlotsType,
   type VNode,
+  type VNodeArrayChildren,
 } from 'vue';
 import { useResizeObserver } from '@vueuse/core';
 import type { OverlaySlotProps } from '../types';
@@ -57,6 +62,30 @@ const DefaultPreview = defineComponent({
     };
   },
 });
+
+/** Slot output that renders nothing: comments (`v-if`) and empty fragments only. */
+const isEmpty = (nodes: VNodeArrayChildren): boolean =>
+  nodes.every((node) =>
+    isVNode(node)
+      ? node.type === Comment || (node.type === Fragment && isEmpty(node.children as VNodeArrayChildren))
+      : node == null || typeof node === 'boolean' || (Array.isArray(node) && isEmpty(node)),
+  );
+
+/**
+ * Overlay content by precedence: the drag's component (the item's `overlay`, else its
+ * list's), the provider's `#overlay` slot, the clone. A slot that renders nothing for
+ * this drag (`v-if` on the item type) falls back to the clone.
+ */
+export const renderOverlay = (
+  component: Component | null,
+  slot: ((props: OverlaySlotProps) => VNode[]) | undefined,
+  props: OverlaySlotProps,
+  fallback: Component,
+): VNode | VNode[] => {
+  if (component) return h(component, props);
+  const content = slot?.(props);
+  return content && !isEmpty(content) ? content : h(fallback);
+};
 
 /** Floating element that follows the pointer; rendered by DnDProvider. */
 export const DragOverlay = defineComponent({
@@ -122,7 +151,7 @@ export const DragOverlay = defineComponent({
       return h(
         'div',
         { ref: element, style: style.value, 'data-dnd-overlay': '' },
-        slots.default ? slots.default(props) : h(DefaultPreview),
+        renderOverlay(manager.overlayComponent, slots.default, props, DefaultPreview),
       );
     };
   },
