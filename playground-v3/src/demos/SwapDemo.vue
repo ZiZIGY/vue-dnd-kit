@@ -20,6 +20,7 @@
         <DemoList
           :list="list"
           :options="{ behavior: 'swap' }"
+          selectable
         />
       </section>
       <section>

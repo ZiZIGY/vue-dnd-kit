@@ -11,6 +11,7 @@
   import SwapDemo from './demos/SwapDemo.vue';
   import NestedDemo from './demos/NestedDemo.vue';
   import TableDemo from './demos/TableDemo.vue';
+  import MultiDemo from './demos/MultiDemo.vue';
 
   const demos = {
     sortable: SortableDemo,
@@ -22,6 +23,7 @@
     swap: SwapDemo,
     nested: NestedDemo,
     table: TableDemo,
+    multi: MultiDemo,
   };
   type DemoName = keyof typeof demos;
 

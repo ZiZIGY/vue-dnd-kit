@@ -762,26 +762,30 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     if (current.external && current.list != null) removeSlot();
   };
 
+  /** Extension hook: runs on every move over a valid target, guarded or not (trees update depth here). */
+  const afterMove = (current: Session, event: DnDEvent) => {
+    if (current.list != null) lists.get(current.list)?.afterMove?.(event);
+  };
+
   const move = (event: DnDEvent) => {
     const current = session.value;
     if (!current || current.activeKey !== event.active.id) return;
-    // Keyboard drags move the slot in getKeyboardCoordinates; trees project their own depth.
+    // Keyboard drags move the slot in getKeyboardCoordinates. Trees (`project`) answer
+    // the keyboard themselves and keep the pointer path below.
     if (event.active.sensor === 'keyboard' && !current.external) {
       const list = current.list == null ? undefined : lists.get(current.list);
-      if (!list?.project) return;
+      if (!list?.project) return afterMove(current, event);
     }
     syncCopy(current);
-    // One frame after a cross-list move the layout is still settling (stability guard).
-    if (current.settling) {
-      current.settling = false;
-      return;
-    }
+    // One frame after a cross-list move the layout is still settling: nothing moves (stability guard).
+    const settling = current.settling;
+    current.settling = false;
     current.hysteresis = settleHysteresis(current.hysteresis, event.pointer);
 
     const over = event.over;
     if (!over) {
       // Last valid target: a pointer a few pixels past a list boundary keeps it.
-      if (current.target && distance(event.pointer, current.target.at) < HYSTERESIS) return;
+      if (current.target && distance(event.pointer, current.target.at) < HYSTERESIS) return afterMove(current, event);
       current.target = null;
       return leave(current);
     }
@@ -791,10 +795,12 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       return leave(current);
     }
     // The list the slot just left can't take it back until the pointer moves on.
-    if (target.id !== current.list && blocksList(current.hysteresis, target.id)) return;
-    current.target = { list: target.id, at: event.pointer };
+    const blocked = settling || (target.id !== current.list && blocksList(current.hysteresis, target.id));
+    // Lists with `project` (trees) keep projecting while blocked: depth changes without a reorder.
+    if (blocked && !target.project) return afterMove(current, event);
+    if (!blocked) current.target = { list: target.id, at: event.pointer };
 
-    if (current.external) {
+    if (current.external && !blocked) {
       // Each list makes its own item for the external draggable.
       const created = createdIn(target, current);
       if (created == null) return leave(current);
@@ -804,15 +810,26 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       }
     }
 
-    if (target.placeholder() === 'indicator') return updateIndicator(target, event);
+    if (target.placeholder() === 'indicator') {
+      updateIndicator(target, event);
+      return afterMove(current, event);
+    }
     setIndicator(null);
-    if (isSwapping(current, target)) return updateSwap(target, event);
+    if (isSwapping(current, target)) {
+      updateSwap(target, event);
+      return afterMove(current, event);
+    }
     if (current.swap != null) applySwap(null, null);
 
     const sameList = target.id === current.list;
+    // `sort: false`: items can enter the list but not move inside it; back over its
+    // own origin list the item returns to where it started (palettes).
     if (!target.canSort()) {
-      if (sameList) return;
-      if (target.id === current.origin.list) return returnToOrigin(event.pointer);
+      if (!sameList && target.id === current.origin.list) {
+        if (!blocked) returnToOrigin(event.pointer);
+        return afterMove(current, event);
+      }
+      if (sameList && !target.project) return afterMove(current, event);
     }
 
     const keys = keysOf(target);
@@ -822,6 +839,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     let trigger: Key | null = null;
     if (target.project) {
       index = target.project(event, { keys, items: projectionItems, activeKey: current.slot, activeIndex });
+      // A list that can't sort still projects (tree depth), but keeps its order.
+      if (sameList && !target.canSort()) index = null;
     } else {
       const projection = projectIndex({
         strategy: target.strategy(),
@@ -836,8 +855,10 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       index = projection.index;
       trigger = projection.key;
     }
-    if (index != null && !blocksKey(current.hysteresis, trigger)) moveActive(target, index, event.pointer);
-    if (current.list != null) lists.get(current.list)?.afterMove?.(event);
+    if (index != null && !blocked && !blocksKey(current.hysteresis, trigger)) {
+      moveActive(target, index, event.pointer);
+    }
+    afterMove(current, event);
   };
 
   // ─── Drop ────────────────────────────────────────────────────────────────────
