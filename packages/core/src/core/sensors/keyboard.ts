@@ -69,7 +69,20 @@ const visibleCenter = (rect: Rect): Coordinates => {
 export function useKeyboardSensor(manager: DnDManager): void {
   const options = () => (manager.props.keyboard === false ? null : (manager.props.keyboard ?? {}));
   const keys = () => ({ ...DEFAULT_KEYS, ...options()?.keys });
-  let moving = false;
+
+  // Moves may await monitors (sortable resolves the next slot after a render), so key
+  // presses are serialized: a quick "arrow, arrow, Space" moves twice and then drops.
+  let queue: Promise<void> = Promise.resolve();
+  let queued = 0;
+  const enqueue = (task: () => unknown) => {
+    queued++;
+    queue = queue
+      .then(async () => {
+        await task();
+      })
+      .catch((error: unknown) => console.error(error))
+      .finally(() => queued--);
+  };
 
   /** Next accepting drop target in `direction`, scrolled into view; `undefined` when there is none. */
   const jumpToDroppable = (
@@ -133,20 +146,16 @@ export function useKeyboardSensor(manager: DnDManager): void {
       if (current.sensor !== 'keyboard') return;
       if (matches(bindings.drop, event)) {
         event.preventDefault();
-        if (!event.repeat) void manager.drop();
+        if (!event.repeat) enqueue(() => void manager.drop());
         return;
       }
       const direction = DIRECTIONS.get(event.key) ?? DIRECTIONS.get(event.code);
       if (!direction) return;
       event.preventDefault();
-      // Held arrows repeat (pixel moves glide); a move still resolving swallows them.
-      if (moving) return;
-      moving = true;
-      try {
-        await moveByKey(event, current, direction);
-      } finally {
-        moving = false;
-      }
+      // A held arrow repeats (pixel moves glide), but repeats don't pile up behind a
+      // move that is still resolving. Separate presses are never dropped.
+      if (event.repeat && queued > 0) return;
+      enqueue(() => moveByKey(event, current, direction));
       return;
     }
 

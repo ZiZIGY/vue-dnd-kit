@@ -20,6 +20,8 @@
   const { items, activeIndex, captureLayout } = makeSortableList(scrollRef, {
     id: 'tanstack',
     items: tasks,
+    // `?noautoscroll`: tests that park the pointer past the list edge on purpose.
+    autoScroll: !new URLSearchParams(location.search).has('noautoscroll'),
     onDrop: (event) => (lastDrop.value = describeDrop(tasks.value, event.keys[0])),
   });
 

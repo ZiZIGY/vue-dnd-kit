@@ -125,6 +125,8 @@ test.describe('auto-scroll', () => {
 
 test.describe('touch', () => {
   test.use({ hasTouch: true });
+  // Touch input is driven through CDP (Input.dispatchTouchEvent), which only Chromium has.
+  test.skip(({ browserName }) => browserName !== 'chromium', 'CDP touch events are Chromium-only');
 
   test('a long press drags, and touchmove is prevented while dragging', async ({ page }) => {
     await page.goto('/#autoscroll');
@@ -339,7 +341,9 @@ test.describe('keyboard free drag', () => {
     expect(x! % 20).toBe(0);
     expect(y! % 20).toBe(0);
     expect(x).toBeGreaterThanOrEqual(70);
-    expect(y).toBeGreaterThanOrEqual(170);
+    // The piece starts at y=150, exactly half a 20px cell: subpixel layout differences
+    // make browsers round the start to 140 or 160, so only require one cell down.
+    expect(y).toBeGreaterThanOrEqual(160);
     await expect(page.locator('[data-id="free"]')).toBeFocused();
   });
 

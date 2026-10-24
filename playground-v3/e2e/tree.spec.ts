@@ -127,7 +127,8 @@ test.describe('sortable tree', () => {
 
   test('maxDepth counts the descendants of the dragged folder', async ({ page }) => {
     // docs/ has children: inside components/ they would be at depth 3, so it stops above main.ts.
-    const target = await at(page, 'components', 0.5);
+    // 0.6, not 0.5: the exact center is the sort boundary and subpixel layout differs per browser.
+    const target = await at(page, 'components', 0.6);
     await pick(page, 'docs');
     await glide(page, target, 40);
     await expect(projected(page)).toHaveText('1:src');

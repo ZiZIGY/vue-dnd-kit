@@ -131,6 +131,9 @@ test.describe('TanStack Virtual list (10k rows)', () => {
   });
 
   test('overscan rows outside the visible area are not sorting targets', async ({ page }) => {
+    // The pointer ends just above the list: that is the auto-scroll edge zone, and
+    // scrolling would bring the overscan rows into view. This test is about clipping.
+    await page.goto('/?noautoscroll#virtual-tanstack');
     const check = guard(page);
     const scroller = page.getByTestId('tanstack-scroller');
     const point = await grab(page, row(page, 'r2'));
