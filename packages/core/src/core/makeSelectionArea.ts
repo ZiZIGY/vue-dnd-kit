@@ -417,10 +417,13 @@ export function makeSelectionArea(
     useEventListener(defaultWindow, 'blur', () => pressed.clear());
   }
 
+  // Tracked separately: the template ref may already be cleared when the scope is disposed.
+  let registered: Element | null = null;
   watch(
     getElement,
-    (element, previous) => {
-      if (previous) areas.delete(previous);
+    (element) => {
+      if (registered) areas.delete(registered);
+      registered = element;
       if (element) areas.add(element);
       if (band && band.element !== element) cancel();
     },
@@ -436,8 +439,8 @@ export function makeSelectionArea(
   onScopeDispose(() => {
     cancel();
     manager.selectionAborts.delete(cancel);
-    const element = getElement();
-    if (element) areas.delete(element);
+    if (registered) areas.delete(registered);
+    registered = null;
   });
 
   const style = computed((): Record<string, string> => {

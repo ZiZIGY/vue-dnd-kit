@@ -201,7 +201,7 @@ export function createDnDManager(props: DnDProviderProps) {
   const setAnnouncement = (text: string) => {
     // Screen readers only speak changes: repeating the same text needs a different string.
     announcement.value =
-      text === lastAnnouncement && announcement.value === text ? `${text} ` : text;
+      text === lastAnnouncement && announcement.value === text ? `${text}\u00A0` : text;
     lastAnnouncement = text;
   };
 
