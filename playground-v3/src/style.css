@@ -69,3 +69,218 @@ pre {
   font-size: 12px;
   color: #6b7280;
 }
+
+nav {
+  flex-wrap: wrap;
+}
+
+section + section {
+  margin-top: 24px;
+}
+
+.demo-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.list[data-accepting] {
+  outline: 2px dashed #93c5fd;
+}
+
+.list[data-over]:not([data-accepting]) {
+  outline: 2px solid #fca5a5;
+}
+
+.row.selected {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px #bfdbfe;
+}
+
+/* Multi-drag 'gaps': the other dragged items stay put, dimmed. */
+.row[data-dnd-dragging] {
+  opacity: 0.35;
+}
+
+/* ─── Stability ─── */
+.touching {
+  display: flex;
+}
+
+.touching .list {
+  width: 220px;
+  border-radius: 0;
+}
+
+.touching .list + .list {
+  background: #d1d5db;
+}
+
+.stacked {
+  display: flex;
+  flex-direction: column;
+  margin-top: 24px;
+}
+
+.stacked .list {
+  border-radius: 0;
+}
+
+.stacked .list + .list {
+  background: #d1d5db;
+}
+
+/* ─── Horizontal ─── */
+.list.horizontal {
+  flex-direction: row;
+  width: auto;
+  max-width: 100%;
+}
+
+.list.horizontal .row {
+  width: 90px;
+  text-align: center;
+}
+
+/* ─── Indicator line ─── */
+.list.indicator .row {
+  position: relative;
+}
+
+.list.indicator .row[data-indicator]::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 2px;
+  background: #2563eb;
+  pointer-events: none;
+}
+
+.list.indicator .row[data-indicator='before']::after {
+  top: -5px;
+}
+
+.list.indicator .row[data-indicator='after']::after {
+  bottom: -5px;
+}
+
+/* ─── Custom placeholder ─── */
+.list.custom-placeholder .row[data-dnd-placeholder] {
+  opacity: 1;
+  background: repeating-linear-gradient(45deg, #e0e7ff, #e0e7ff 6px, #c7d2fe 6px, #c7d2fe 12px);
+  border-style: dashed;
+  color: transparent;
+}
+
+/* ─── Grids ─── */
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, 80px);
+  grid-auto-rows: 80px;
+  gap: 8px;
+  background: #e5e7eb;
+  border-radius: 8px;
+  width: max-content;
+}
+
+.grid .row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid.masonry {
+  grid-auto-rows: 36px;
+}
+
+/* ─── Tables ─── */
+table.sortable-table {
+  border-collapse: collapse;
+  background: #fff;
+}
+
+table.sortable-table th,
+table.sortable-table td {
+  border: 1px solid #d1d5db;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+table.sortable-table tr.row {
+  padding: 0;
+  border-radius: 0;
+}
+
+/* ─── Trash and zones ─── */
+.zone {
+  width: 160px;
+  height: 120px;
+  border: 2px dashed #9ca3af;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+}
+
+.zone[data-over] {
+  border-color: #dc2626;
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+.chip {
+  display: inline-block;
+  padding: 8px 12px;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  cursor: grab;
+}
+
+/* ─── Nested kanban ─── */
+.columns {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: #e5e7eb;
+  border-radius: 8px;
+  width: max-content;
+}
+
+.column {
+  width: 220px;
+  min-height: 160px;
+  padding: 8px;
+  background: #f9fafb;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.column header {
+  font-weight: 600;
+  cursor: grab;
+  padding: 4px;
+}
+
+.column ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}

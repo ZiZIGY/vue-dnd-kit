@@ -30,6 +30,8 @@ const defaultGetKey = (item: unknown): Key =>
     ? ((item as { id: Key }).id)
     : (item as Key);
 
+let warnedClone = false;
+
 /**
  * Makes a container a sortable list. Render the returned `items` (the draft order);
  * the result is written back to `options.items` on drop.
@@ -63,13 +65,36 @@ export function makeSortableList<T>(
     animation: () => options.animation ?? manager.props.animation,
     isDisabled: () => !!read(options.disabled),
     canSort: () => options.sort !== false,
-    pull: () => groupOptions?.pull ?? true,
+    pull: () => {
+      const pull = groupOptions?.pull ?? true;
+      if (pull === 'clone' && !options.clone) {
+        if (!warnedClone) console.warn('[vue-dnd-kit] group.pull: \'clone\' needs a `clone` option; items stay in the list.');
+        warnedClone = true;
+        return false;
+      }
+      return pull;
+    },
     canPut: (context) => {
       const put = groupOptions?.put ?? true;
       return typeof put === 'function' ? put(context) : put;
     },
     dropOutside: () =>
       options.dropOutside ?? (options.placeholder === 'indicator' ? 'cancel' : 'placeholder'),
+    behavior: () => options.behavior ?? 'sort',
+    multiple: () => options.multiple ?? 'stack',
+    acceptMode: () => options.acceptMode ?? 'all',
+    clone: options.clone
+      ? (item) => {
+          const copy = options.clone!(item as T);
+          return { key: getKey(copy), item: copy };
+        }
+      : undefined,
+    create: options.createItem
+      ? (active) => {
+          const item = options.createItem!(active);
+          return item === undefined ? undefined : { key: getKey(item), item };
+        }
+      : undefined,
     commit: (next, lookup) => {
       options.items.value = next.map((key) => lookup(key) as T);
     },
@@ -80,7 +105,10 @@ export function makeSortableList<T>(
 
   const droppable = createDroppable(
     target,
-    { id, disabled: options.disabled },
+    // Lists the current drag can never enter are not drop targets at all: in nested
+    // sortables a column dragged over another column must reach the columns list,
+    // not stop at the inner card list it happens to be over.
+    { id, disabled: () => !!read(options.disabled) || group.isInert(entry) },
     { accepts: (active) => group.accepts(entry, active) },
   );
 
@@ -96,14 +124,17 @@ export function makeSortableList<T>(
     return key == null ? -1 : group.indexOf(entry, key);
   });
   const activeSize = computed(() => group.session.value?.size ?? null);
+  const indicator = computed(() => {
+    const value = group.indicator.value;
+    return value?.list === id ? value : null;
+  });
 
   return {
     id,
     items,
     isOver: droppable.isOver,
     isAccepting: droppable.isAccepting,
-    // Indicator mode lands with the remaining sortable modules (rfcs/0001-v3.md §15, B3).
-    indicator: computed(() => null),
+    indicator,
     activeKey,
     activeIndex,
     activeSize,

@@ -31,6 +31,8 @@ export interface Projection {
   /** New index of the active item in the target draft; `null` keeps the current position. */
   index: number | null;
   lock: Key | null;
+  /** Item whose crossing triggered the move (`null` for edges): hysteresis applies to it. */
+  key: Key | null;
 }
 
 const AXES = {
@@ -39,6 +41,11 @@ const AXES = {
 } as const;
 
 type Axis = (typeof AXES)[keyof typeof AXES];
+
+const axisOf = (strategy: SortableStrategy): Axis =>
+  AXES[strategy === 'horizontal' ? 'horizontal' : 'vertical'];
+
+const inBand = (rect: Rect, p: number, { start, end }: Axis) => p >= rect[start] && p <= rect[end];
 
 /** Pointer outside every item: before the first, after the last, or (cross-list) in a gap. */
 const projectEdges = (
@@ -76,19 +83,24 @@ const projectEdges = (
  * items of different sizes can't swap back and forth.
  */
 const projectList = (args: ProjectArgs): Projection => {
-  const axis = AXES[args.strategy === 'horizontal' ? 'horizontal' : 'vertical'];
+  const axis = axisOf(args.strategy);
   const { pointer, items, activeKey, activeIndex, length } = args;
   const p = pointer[axis.axis];
-  const hit = items.find(
-    (item) => item.key !== activeKey && p >= item.rect[axis.start] && p <= item.rect[axis.end],
-  );
-  if (!hit) return { index: projectEdges(p, items, axis, activeIndex, length), lock: null };
+  const keep: Projection = { index: null, lock: null, key: null };
+  let hit: ProjectionItem | undefined;
+  for (const item of items) {
+    if (!inBand(item.rect, p, axis)) continue;
+    // After a reorder the active slot itself is the target: nothing moves while the pointer is on it.
+    if (item.key === activeKey) return keep;
+    hit ??= item;
+  }
+  if (!hit) return { index: projectEdges(p, items, axis, activeIndex, length), lock: null, key: null };
 
   const center = (hit.rect[axis.start] + hit.rect[axis.end]) / 2;
-  if (activeIndex === -1) return { index: p < center ? hit.index : hit.index + 1, lock: null };
-  if (hit.index > activeIndex && p > center) return { index: hit.index, lock: null };
-  if (hit.index < activeIndex && p < center) return { index: hit.index, lock: null };
-  return { index: null, lock: null };
+  if (activeIndex === -1) return { index: p < center ? hit.index : hit.index + 1, lock: null, key: hit.key };
+  if (hit.index > activeIndex && p > center) return { index: hit.index, lock: null, key: hit.key };
+  if (hit.index < activeIndex && p < center) return { index: hit.index, lock: null, key: hit.key };
+  return keep;
 };
 
 /**
@@ -103,24 +115,29 @@ const projectGrid = (args: ProjectArgs): Projection => {
     const locked = items.find((item) => item.key === lock);
     if (!locked || !containsPoint(locked.rect, pointer)) lock = null;
   }
-  const hit = items.find((item) => item.key !== activeKey && containsPoint(item.rect, pointer));
+  let hit: ProjectionItem | undefined;
+  for (const item of items) {
+    if (!containsPoint(item.rect, pointer)) continue;
+    if (item.key === activeKey) return { index: null, lock, key: null };
+    hit ??= item;
+  }
   if (hit) {
-    if (hit.key === lock) return { index: null, lock };
+    if (hit.key === lock) return { index: null, lock, key: null };
     if (activeIndex === -1) {
       const before = pointer.x < getCenter(hit.rect).x;
-      return { index: before ? hit.index : hit.index + 1, lock: hit.key };
+      return { index: before ? hit.index : hit.index + 1, lock: hit.key, key: hit.key };
     }
-    return { index: hit.index, lock: hit.key };
+    return { index: hit.index, lock: hit.key, key: hit.key };
   }
-  if (!items.length) return { index: activeIndex === -1 ? 0 : null, lock };
+  if (!items.length) return { index: activeIndex === -1 ? 0 : null, lock, key: null };
   const last = items[items.length - 1]!;
   const afterLast =
     pointer.y > last.rect.bottom ||
     (pointer.y >= last.rect.top && pointer.x > last.rect.right);
   if (afterLast && last.index === length - 1 && activeIndex !== length - 1) {
-    return { index: activeIndex === -1 ? length : length - 1, lock };
+    return { index: activeIndex === -1 ? length : length - 1, lock, key: null };
   }
-  return { index: null, lock };
+  return { index: null, lock, key: null };
 };
 
 export const projectIndex = (args: ProjectArgs): Projection =>
@@ -141,7 +158,10 @@ export const projectIndicator = (
   args: Omit<ProjectArgs, 'lock' | 'activeIndex'>,
 ): IndicatorProjection | null | undefined => {
   const { strategy, pointer, items, activeKey, length } = args;
-  const hit = items.find((item) => containsPoint(item.rect, pointer));
+  const hit =
+    strategy === 'grid'
+      ? items.find((item) => containsPoint(item.rect, pointer))
+      : items.find((item) => inBand(item.rect, pointer[axisOf(strategy).axis], axisOf(strategy)));
   const alongX = strategy !== 'vertical';
   if (hit) {
     if (hit.key === activeKey) return null;
@@ -159,4 +179,79 @@ export const projectIndicator = (
   const beforeFirst = alongX ? pointer.x < first.rect.left && pointer.y <= first.rect.bottom : pointer.y < first.rect.top;
   if (beforeFirst && first.index === 0) return { index: 0, key: first.key, side: 'before' };
   return undefined;
+};
+
+export interface SwapArgs {
+  strategy: SortableStrategy;
+  pointer: Coordinates;
+  items: ProjectionItem[];
+  activeKey: Key;
+  /** Item the active one is currently exchanged with. */
+  partner: Key | null;
+}
+
+/**
+ * Swap behaviour: hovering an item exchanges it with the active one. The current
+ * partner sits in the active item's original slot, so hovering it reverts the swap.
+ * `partner: undefined` keeps the current state (pointer on the active slot or in a gap).
+ */
+export const projectSwap = ({ strategy, pointer, items, activeKey, partner }: SwapArgs): {
+  partner: Key | null | undefined;
+  key: Key | null;
+} => {
+  const axis = axisOf(strategy);
+  const hit = items.find((item) =>
+    strategy === 'grid' ? containsPoint(item.rect, pointer) : inBand(item.rect, pointer[axis.axis], axis),
+  );
+  if (!hit || hit.key === activeKey) return { partner: undefined, key: null };
+  return { partner: hit.key === partner ? null : hit.key, key: hit.key };
+};
+
+// ─── Keyboard ──────────────────────────────────────────────────────────────────
+
+/**
+ * Grids: index of the nearest item (by center x) in the next row above or below
+ * the active item. `null` when there is no row in that direction.
+ */
+export const nextRowIndex = (items: ProjectionItem[], active: Rect, direction: 1 | -1): number | null => {
+  const x = getCenter(active).x;
+  let row: number | null = null;
+  let best: ProjectionItem | null = null;
+  for (const item of items) {
+    const ahead = direction > 0 ? item.rect.top >= active.bottom - 1 : item.rect.bottom <= active.top + 1;
+    if (!ahead) continue;
+    const edge = direction > 0 ? item.rect.top : -item.rect.bottom;
+    // Items in the same row share their leading edge (within a pixel); masonry rows don't, so take the closest edge.
+    if (row === null || edge < row - 1) {
+      row = edge;
+      best = item;
+    } else if (edge <= row + 1) {
+      const center = getCenter(item.rect).x;
+      if (!best || Math.abs(center - x) < Math.abs(getCenter(best.rect).x - x)) best = item;
+    }
+  }
+  return best?.index ?? null;
+};
+
+/** Closest container in the arrow's direction, by center distance (cross-axis offsets weigh double). */
+export const pickAdjacent = <T extends { rect: Rect }>(
+  from: Rect,
+  candidates: T[],
+  direction: Coordinates,
+): T | null => {
+  const origin = getCenter(from);
+  let best: T | null = null;
+  let score = Infinity;
+  for (const candidate of candidates) {
+    const center = getCenter(candidate.rect);
+    const along = (center.x - origin.x) * direction.x + (center.y - origin.y) * direction.y;
+    if (along <= 1) continue;
+    const across = Math.abs((center.x - origin.x) * direction.y) + Math.abs((center.y - origin.y) * direction.x);
+    const value = along + across * 2;
+    if (value < score) {
+      score = value;
+      best = candidate;
+    }
+  }
+  return best;
 };

@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { createRect } from '../animation/layout';
-import { projectIndex, projectIndicator, type ProjectionItem } from './projection';
+import {
+  nextRowIndex,
+  pickAdjacent,
+  projectIndex,
+  projectIndicator,
+  projectSwap,
+  type ProjectionItem,
+} from './projection';
 
 /** Vertical stack of items with the given heights, starting at y = 0. */
 const column = (heights: number[], keys = heights.map((_, i) => `k${i}`)): ProjectionItem[] => {
@@ -81,12 +88,163 @@ describe('projectIndex: grids', () => {
     projectIndex({ strategy: 'grid', pointer, items: grid, activeKey: 'a', activeIndex: 0, length: 4, lock });
 
   it('moves to the hovered cell and locks it', () => {
-    expect(project({ x: 150, y: 150 })).toEqual({ index: 3, lock: 'd' });
+    expect(project({ x: 150, y: 150 })).toEqual({ index: 3, lock: 'd', key: 'd' });
   });
 
   it('ignores the locked cell until the pointer leaves it', () => {
-    expect(project({ x: 150, y: 150 }, 'd')).toEqual({ index: null, lock: 'd' });
-    expect(project({ x: 150, y: 50 }, 'd')).toEqual({ index: 1, lock: 'b' });
+    expect(project({ x: 150, y: 150 }, 'd')).toEqual({ index: null, lock: 'd', key: null });
+    expect(project({ x: 150, y: 50 }, 'd')).toEqual({ index: 1, lock: 'b', key: 'b' });
+  });
+
+  it('keeps the slot while the pointer is on the active cell', () => {
+    expect(project({ x: 50, y: 50 }, 'b')).toEqual({ index: null, lock: null, key: null });
+  });
+
+  it('moves to the end from the empty space after the last cell', () => {
+    expect(project({ x: 150, y: 250 })).toEqual({ index: 3, lock: null, key: null });
+  });
+
+  it('does not ping-pong between cells of different sizes (masonry)', () => {
+    // a (1 column) is dragged onto b, which spans 2 columns.
+    const pointer = { x: 150, y: 50 };
+    const before = [cell('a', 0, 0, 0), { key: 'b', index: 1, rect: createRect(100, 0, 200, 100) }];
+    const first = projectIndex({ strategy: 'grid', pointer, items: before, activeKey: 'a', activeIndex: 0, length: 2, lock: null });
+    expect(first).toEqual({ index: 1, lock: 'b', key: 'b' });
+    // Reflowed: b now covers columns 1-2 and is still under the pointer.
+    const after = [{ key: 'b', index: 0, rect: createRect(0, 0, 200, 100) }, cell('a', 1, 200, 0)];
+    const project = (lock: string | null) =>
+      projectIndex({ strategy: 'grid', pointer, items: after, activeKey: 'a', activeIndex: 1, length: 2, lock }).index;
+    // Without the lock it would move straight back.
+    expect(project(null)).toBe(0);
+    expect(project(first.lock as string)).toBeNull();
+  });
+});
+
+describe('projectIndex: horizontal lists', () => {
+  const row = [0, 1, 2, 3].map((index) => ({
+    key: `h${index}`,
+    index,
+    rect: createRect(index * 100, 0, 90, 40),
+  }));
+  const horizontal = (activeIndex: number, x: number, y = 20) =>
+    projectIndex({
+      strategy: 'horizontal',
+      pointer: { x, y },
+      items: row,
+      activeKey: row[activeIndex]!.key,
+      activeIndex,
+      length: row.length,
+      lock: null,
+    }).index;
+
+  it('moves along x after crossing the neighbour center', () => {
+    expect(horizontal(0, 120)).toBeNull();
+    expect(horizontal(0, 150)).toBe(1);
+    expect(horizontal(3, 140)).toBe(1);
+  });
+
+  it('keeps sorting when the pointer drifts off the row vertically', () => {
+    expect(horizontal(0, 150, 300)).toBe(1);
+  });
+
+  it('keeps the slot in the gaps between items', () => {
+    expect(horizontal(0, 95)).toBeNull();
+  });
+});
+
+describe('projectIndex: the active slot is the target after a reorder', () => {
+  it('reports the hovered item that triggered the move', () => {
+    const items = column([40, 40, 40]);
+    const projection = projectIndex({
+      strategy: 'vertical',
+      pointer: { x: 50, y: 70 },
+      items,
+      activeKey: 'k0',
+      activeIndex: 0,
+      length: 3,
+      lock: null,
+    });
+    expect(projection).toEqual({ index: 1, lock: null, key: 'k1' });
+  });
+
+  it('does nothing while the pointer is on the active item, even across a band overlap', () => {
+    // A wide active item overlapping its neighbour's band must win.
+    const items = [
+      { key: 'a', index: 0, rect: createRect(0, 0, 100, 60) },
+      { key: 'b', index: 1, rect: createRect(0, 50, 100, 40) },
+    ];
+    const projection = projectIndex({
+      strategy: 'vertical',
+      pointer: { x: 50, y: 55 },
+      items,
+      activeKey: 'a',
+      activeIndex: 0,
+      length: 2,
+      lock: null,
+    });
+    expect(projection.index).toBeNull();
+  });
+});
+
+describe('projectSwap', () => {
+  const items = column([40, 40, 40, 40], ['a', 'b', 'c', 'd']);
+  const swap = (y: number, partner: string | null) =>
+    projectSwap({ strategy: 'vertical', pointer: { x: 50, y }, items, activeKey: 'a', partner }).partner;
+
+  it('exchanges with the hovered item', () => {
+    expect(swap(100, null)).toBe('c');
+    expect(swap(140, 'c')).toBe('d');
+  });
+
+  it('reverts when the pointer is back over the active item original slot', () => {
+    // After swapping a with c, c sits where a was.
+    const swapped = column([40, 40, 40, 40], ['c', 'b', 'a', 'd']);
+    expect(
+      projectSwap({ strategy: 'vertical', pointer: { x: 50, y: 20 }, items: swapped, activeKey: 'a', partner: 'c' })
+        .partner,
+    ).toBeNull();
+  });
+
+  it('keeps the state over the active item and in gaps', () => {
+    expect(swap(20, 'c')).toBeUndefined();
+    const gapped = items.map((item, index) => ({ ...item, rect: createRect(0, index * 50, 100, 40) }));
+    expect(
+      projectSwap({ strategy: 'vertical', pointer: { x: 50, y: 45 }, items: gapped, activeKey: 'a', partner: 'c' })
+        .partner,
+    ).toBeUndefined();
+  });
+});
+
+describe('keyboard geometry', () => {
+  const cell = (key: string, index: number, x: number, y: number, h = 100): ProjectionItem => ({
+    key,
+    index,
+    rect: createRect(x, y, 100, h),
+  });
+
+  it('nextRowIndex finds the nearest item by x in the next row', () => {
+    const items = [cell('b', 1, 100, 0), cell('c', 2, 200, 0), cell('d', 3, 0, 100), cell('e', 4, 100, 100), cell('f', 5, 200, 100)];
+    const active = createRect(100, 0, 100, 100);
+    expect(nextRowIndex(items, active, 1)).toBe(4);
+    expect(nextRowIndex(items, createRect(200, 100, 100, 100), -1)).toBe(2);
+    expect(nextRowIndex(items, createRect(0, 100, 100, 100), 1)).toBeNull();
+  });
+
+  it('nextRowIndex takes the closest row in masonry layouts', () => {
+    const items = [cell('b', 1, 100, 0, 150), cell('c', 2, 0, 120, 60), cell('d', 3, 100, 160, 60)];
+    expect(nextRowIndex(items, createRect(0, 0, 100, 100), 1)).toBe(2);
+  });
+
+  it('pickAdjacent picks the closest container in the arrow direction', () => {
+    const lists = [
+      { id: 'left', rect: createRect(0, 0, 100, 400) },
+      { id: 'right', rect: createRect(240, 0, 100, 400) },
+      { id: 'far', rect: createRect(360, 0, 100, 400) },
+    ];
+    const from = createRect(120, 0, 100, 400);
+    expect(pickAdjacent(from, lists, { x: 1, y: 0 })?.id).toBe('right');
+    expect(pickAdjacent(from, lists, { x: -1, y: 0 })?.id).toBe('left');
+    expect(pickAdjacent(from, lists, { x: 0, y: 1 })).toBeNull();
   });
 });
 

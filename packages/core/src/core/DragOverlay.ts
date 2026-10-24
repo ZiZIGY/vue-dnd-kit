@@ -90,7 +90,7 @@ export const DragOverlay = defineComponent({
         over: manager.over.value,
         accepted: manager.over.value?.accepted ?? false,
         status: manager.status.value,
-        mode: 'move',
+        mode: manager.mode.value,
       };
       return h(
         'div',

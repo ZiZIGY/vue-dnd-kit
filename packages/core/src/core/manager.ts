@@ -12,6 +12,7 @@ import { nextTick, shallowReactive, shallowRef } from 'vue';
 import type {
   ActivationOptions,
   Active,
+  Announcements,
   BeforeDropResult,
   CollisionCandidate,
   Coordinates,
@@ -21,6 +22,7 @@ import type {
   DnDProviderProps,
   DnDStatus,
   DragItem,
+  DragMode,
   DragSource,
   Key,
   Over,
@@ -94,12 +96,18 @@ export function createDnDManager(props: DnDProviderProps) {
   const overlaySize = shallowRef<Size | null>(null);
   const announcement = shallowRef('');
   const selection = shallowReactive(new Set<Key>());
+  /** What a drop would do, set by the sortable layer (overlay slot `mode`). */
+  const mode = shallowRef<DragMode>('move');
+  /** Key whose element the overlay lands on, when it isn't the active id (copies, external items). */
+  const landingKey = shallowRef<Key | null>(null);
 
   const draggables = new Map<Key, DraggableEntry>();
   const droppables = new Map<Key, DroppableEntry>();
   const draggableIds = new WeakMap<Element, Key>();
   const monitors = new Set<DnDMonitor>();
   const sourceResolvers = new Set<(active: Active) => DragSource | undefined>();
+  /** Integration announcers (sortable positions): after the user's `announcements`, before the defaults. */
+  const announcers = new Set<Partial<Announcements>>();
   const activationAborts = new Set<() => void>();
 
   let origin: Coordinates = { x: 0, y: 0 };
@@ -165,6 +173,11 @@ export function createDnDManager(props: DnDProviderProps) {
     return () => sourceResolvers.delete(resolver);
   };
 
+  const addAnnouncer = (announcer: Partial<Announcements>): (() => void) => {
+    announcers.add(announcer);
+    return () => announcers.delete(announcer);
+  };
+
   // ─── Events ──────────────────────────────────────────────────────────────────
 
   const createEvent = (): DnDEvent => {
@@ -194,11 +207,18 @@ export function createDnDManager(props: DnDProviderProps) {
     }
   };
 
-  const announce = (name: keyof typeof defaultAnnouncements, event: DnDEvent) => {
+  const announce = (name: keyof Announcements, event: DnDEvent = createEvent()) => {
     if (props.announcements === false) return;
-    const custom = props.announcements?.[name] as ((event: DnDEvent) => string | undefined) | undefined;
-    const fallback = defaultAnnouncements[name] as (event: DnDEvent) => string | undefined;
-    const text = (custom ?? fallback)(event);
+    type Announce = (event: DnDEvent) => string | undefined;
+    const custom = props.announcements?.[name] as Announce | undefined;
+    let text = custom?.(event);
+    if (!custom) {
+      for (const announcer of announcers) {
+        text = (announcer[name] as Announce | undefined)?.(event);
+        if (text) break;
+      }
+      text ||= (defaultAnnouncements[name] as Announce)(event);
+    }
     clearTimeout(announceTimer);
     if (!text) return;
     if (name === 'onDragOver') {
@@ -369,6 +389,8 @@ export function createDnDManager(props: DnDProviderProps) {
     transform.value = { x: 0, y: 0 };
     over.value = null;
     overlaySize.value = null;
+    mode.value = 'move';
+    landingKey.value = null;
     activationProgress.value = 1;
     status.value = 'dragging';
     restoreDocument = markDocumentDragging(sensor);
@@ -399,6 +421,8 @@ export function createDnDManager(props: DnDProviderProps) {
     pointer.value = null;
     transform.value = { x: 0, y: 0 };
     overlaySize.value = null;
+    mode.value = 'move';
+    landingKey.value = null;
     activationProgress.value = 0;
     preview = null;
     previewEnabled = false;
@@ -423,7 +447,7 @@ export function createDnDManager(props: DnDProviderProps) {
       await nextTick();
       await nextFrame();
       if (id !== session) return;
-      const target = draggables.get(current.id)?.getElement();
+      const target = draggables.get(landingKey.value ?? current.id)?.getElement();
       const to = target?.isConnected ? getLayoutRect(target) : null;
       await runDropAnimation(props.dropAnimation, {
         overlay,
@@ -522,6 +546,8 @@ export function createDnDManager(props: DnDProviderProps) {
     overlaySize,
     announcement,
     selection,
+    mode,
+    landingKey,
     instructionsId: '',
     monitors,
     activationAborts,
@@ -540,6 +566,8 @@ export function createDnDManager(props: DnDProviderProps) {
     findDraggable,
     addMonitor,
     addSourceResolver,
+    addAnnouncer,
+    announce,
     updateActive,
     start,
     move,
