@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "jsx": "preserve",
+    "types": ["vite/client", "node"],
+    "paths": {
+      "@vue-dnd-kit/core": ["../packages/core/src/index.ts"],
+      "vue": ["./node_modules/vue"],
+      "@vueuse/core": ["./node_modules/@vueuse/core"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue", "e2e/**/*.ts", "*.config.ts"]
+}

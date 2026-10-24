@@ -1,0 +1,40 @@
+import { expect, type Locator, type Page } from '@playwright/test';
+
+export type Point = { x: number; y: number };
+
+/** Collects uncaught errors and console errors for the whole test. */
+export const trackErrors = (page: Page): string[] => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  return errors;
+};
+
+export const center = async (locator: Locator, yRatio = 0.5): Promise<Point> => {
+  const box = await locator.boundingBox();
+  if (!box) throw new Error('Element is not visible');
+  return { x: box.x + box.width / 2, y: box.y + box.height * yRatio };
+};
+
+/** Presses on `from`, moves past the activation distance, then glides to `to`. */
+export const dragTo = async (
+  page: Page,
+  from: Locator,
+  to: Point,
+  { steps = 20, release = true }: { steps?: number; release?: boolean } = {},
+): Promise<void> => {
+  const start = await center(from);
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x, start.y + 8, { steps: 2 });
+  await page.mouse.move(to.x, to.y, { steps });
+  if (release) await page.mouse.up();
+};
+
+/** Waits until the drop/return animation finished and the session is idle. */
+export const waitForIdle = async (page: Page): Promise<void> => {
+  await expect(page.locator('[data-dnd-overlay]')).toHaveCount(0);
+  await expect(page.locator('[data-dnd-placeholder]')).toHaveCount(0);
+};

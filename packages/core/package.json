@@ -1,26 +1,26 @@
 {
   "name": "@vue-dnd-kit/core",
-  "version": "2.4.7",
-  "description": "Core functionality for Vue DnD Kit - a lightweight Vue 3 library for building performant and accessible drag and drop interfaces",
+  "version": "3.0.0",
+  "description": "Drag and drop for Vue 3: sortable lists, kanban boards, trees, multi-drag and animations out of the box",
   "author": "ZiZIGY",
   "license": "MIT",
   "type": "module",
+  "sideEffects": false,
   "keywords": [
     "vue",
+    "vue3",
     "dnd",
     "drag",
     "drop",
     "drag and drop",
-    "drag and drop library",
-    "vue dnd",
+    "sortable",
+    "kanban",
+    "tree",
+    "multi-drag",
+    "virtual list",
     "vue drag and drop",
-    "vue drag and drop library",
     "vue dnd kit",
-    "vue dnd kit core",
-    "dnd-kit",
-    "dnd-kit core",
     "vue-dnd-kit",
-    "vue-dnd-kit core",
     "@vue-dnd-kit/core"
   ],
   "repository": {
@@ -29,27 +29,25 @@
     "directory": "packages/core"
   },
   "scripts": {
-    "dev": "vite",
-    "start": "vite build --config vite.config.ts --watch",
-    "build": "vite build --config vite.config.ts",
-    "build:app": "vue-tsc -b && vite build",
-    "preview": "vite preview",
-    "prepublishOnly": "yarn build"
+    "build": "vite build",
+    "start": "vite build --watch",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "yarn typecheck && yarn test && yarn build"
   },
-  "main": "dist/vue-dnd-kit-core.cjs.js",
-  "module": "dist/vue-dnd-kit-core.es.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/vue-dnd-kit-core.es.js",
-      "require": "./dist/vue-dnd-kit-core.cjs.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "files": [
     "README.md",
-    "CHANGELOG.md",
-    "LICENSE",
     "dist"
   ],
   "publishConfig": {
@@ -57,18 +55,20 @@
     "registry": "https://registry.npmjs.org/"
   },
   "peerDependencies": {
-    "vue": "^3.5.13"
+    "vue": "^3.5.0"
+  },
+  "dependencies": {
+    "@vueuse/core": "^14 || ^15"
   },
   "devDependencies": {
     "@types/node": "^24.10.0",
-    "@vitejs/plugin-vue": "^6.0.1",
-    "@vitejs/plugin-vue-jsx": "^5.1.4",
     "@vue/tsconfig": "^0.8.1",
+    "happy-dom": "^21.0.4",
     "prettier": "^3.8.1",
     "typescript": "~5.9.3",
     "vite": "^7.2.2",
-    "vite-plugin-css-injected-by-js": "^3.5.2",
     "vite-plugin-dts": "^4.5.4",
+    "vitest": "^5.0.5",
     "vue": "^3.5.24",
     "vue-tsc": "^3.1.3"
   }

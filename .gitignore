@@ -28,3 +28,6 @@ docs/.vitepress/cache
 *.njsproj
 *.sln
 *.sw?
+# Playwright
+test-results
+playwright-report
