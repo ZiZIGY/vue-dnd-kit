@@ -646,7 +646,7 @@ export function createDnDManager(props: DnDProviderProps) {
     measureVisible: measurer.measureVisible,
     /** Whether FLIP should animate the element (near its scroll container's visible area). */
     isNearViewport: measurer.isNearViewport,
-    /** Call after layout changes the library caused (draft changes): drops cached rects. */
+    /** Call after layout changes the library caused (draft changes): cached rects go stale. */
     invalidateMeasurements: measurer.invalidate,
   };
   return manager;
