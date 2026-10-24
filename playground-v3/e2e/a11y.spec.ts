@@ -239,7 +239,8 @@ test.describe('focus restore after keyboard drags (kanban)', () => {
 
   test('focus returns to the recreated card after a cancel across columns', async ({ page }) => {
     await pickUp(card(page, 'todo', 'a1'));
-    await moveRight(page, 3);
+    // Sortable keyboard: a perpendicular arrow moves the slot to the adjacent column.
+    await moveRight(page, 1);
     // The slot moved to the next column: the focused element was destroyed.
     await expect(page.locator('[data-testid="doing"] [data-dnd-placeholder]')).toHaveAttribute('data-id', 'a1');
     await expect(card(page, 'todo', 'a1')).toHaveCount(0);
@@ -252,7 +253,8 @@ test.describe('focus restore after keyboard drags (kanban)', () => {
 
   test('focus follows the card into the column it was dropped in', async ({ page }) => {
     await pickUp(card(page, 'todo', 'a1'));
-    await moveRight(page, 3);
+    // Sortable keyboard: a perpendicular arrow moves the slot to the adjacent column.
+    await moveRight(page, 1);
     await expect(page.locator('[data-testid="doing"] [data-dnd-placeholder]')).toHaveAttribute('data-id', 'a1');
     await page.keyboard.press('Space');
     await waitForIdle(page);

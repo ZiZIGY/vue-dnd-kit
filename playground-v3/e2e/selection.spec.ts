@@ -224,10 +224,23 @@ test.describe('selection area', () => {
     await expect(page.getByTestId('status')).toHaveText('idle');
     await page.mouse.up();
 
+    // The mouse's pointerId differs per browser (Chromium 1, Firefox 0): cancel the real one.
+    await page.evaluate(() =>
+      document.addEventListener(
+        'pointerdown',
+        (event) => ((window as unknown as { __pointerId: number }).__pointerId = event.pointerId),
+        { once: true, capture: true },
+      ),
+    );
     await band(page, from, to, { release: false });
     await expect(selected(page)).toHaveText('c2,c5,c6');
     await page.evaluate(() =>
-      document.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 1, isPrimary: true })),
+      document.dispatchEvent(
+        new PointerEvent('pointercancel', {
+          pointerId: (window as unknown as { __pointerId: number }).__pointerId,
+          isPrimary: true,
+        }),
+      ),
     );
     await expect(page.getByTestId('band')).toHaveCount(0);
     await expect(selected(page)).toHaveText('c1');
