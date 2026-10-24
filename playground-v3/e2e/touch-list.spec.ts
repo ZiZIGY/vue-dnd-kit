@@ -117,11 +117,14 @@ test.describe('touch: long list @touch', () => {
     const scrolled = await windowScrollY(page);
     await page.waitForTimeout(200);
     expect(await windowScrollY(page)).toBe(scrolled);
-    const under = await page.evaluate(
-      ({ x, y }) => document.elementFromPoint(x, y)?.closest('[data-id]')?.getAttribute('data-id'),
-      finger.position,
-    );
-    expect(under).toBe('t1');
+    // Targets were hit-tested against the scrolled page: the slot is at the finger, at
+    // most one row away (over a neighbour's half, the slot goes next to that neighbour).
+    await expect
+      .poll(async () => {
+        const slot = (await item(page, 't1').boundingBox())!;
+        return Math.abs(slot.y + slot.height / 2 - finger.position.y) / (slot.height + 8);
+      })
+      .toBeLessThanOrEqual(1);
     await finger.up();
     await waitForIdle(page);
     const result = await ids(page);
@@ -142,7 +145,8 @@ test.describe('touch: long list @touch', () => {
     expect(target).toMatch(/^t\d+$/);
     const start = await longPress(page, finger, item(page, target!));
     await finger.move({ x: start.x, y: 6 }, { steps: 20 });
-    await expect.poll(() => windowScrollY(page), { timeout: 15_000 }).toBe(0);
+    // Auto-scroll keeps 1px of slack for fractional offsets (device pixel ratio 2.625).
+    await expect.poll(() => windowScrollY(page), { timeout: 15_000 }).toBeLessThanOrEqual(1);
     await finger.up();
     await waitForIdle(page);
     expect((await ids(page)).indexOf(target!)).toBeLessThan(3);
