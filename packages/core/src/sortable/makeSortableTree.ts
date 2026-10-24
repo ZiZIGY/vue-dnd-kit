@@ -68,9 +68,17 @@ interface DragState<T> {
   /** Levels below the active node (collapsed ones included), checked against `maxDepth`. */
   height: number;
   /**
-   * Row whose middle band was hovered last, and the pointer x at that moment. From
-   * then on the offset rule counts from that row's child depth, so the nested
-   * placeholder doesn't jump back while the pointer rests on it.
+   * Origin of the offset rule. Nodes of this tree: the start depth and pointer x (x is
+   * filled by the first move). Items from another list have no meaningful start here:
+   * the last hovered row's level, from the pointer x when that row was entered.
+   */
+  base: { depth: number; x: number | null; key: Key | null };
+  /** The active item entered from another list (possibly coming back): anchor on rows. */
+  followRows: boolean;
+  /**
+   * Row whose middle band was hovered last, and the pointer x at that moment. Until
+   * the pointer hovers another row, the offset rule counts from that row's child
+   * depth, so the nested placeholder doesn't jump back while the pointer rests on it.
    */
   nest: { key: Key; x: number } | null;
   /** `nesting: 'hover'`: level asked for by the last hovered edge band. */
@@ -149,6 +157,8 @@ export function makeSortableTree<T>(
         origin: null,
         startDepth: 0,
         height: item == null ? 0 : subtreeHeight(item, accessors.getChildren),
+        base: { depth: 0, x: null, key: null },
+        followRows: true,
         nest: null,
         hoverDepth: 0,
         pending: null,
@@ -162,6 +172,8 @@ export function makeSortableTree<T>(
       origin: { parentKey: node.parentKey, index: node.index },
       startDepth: node.depth,
       height: subtreeHeight(node.item, accessors.getChildren),
+      base: { depth: node.depth, x: null, key: null },
+      followRows: false,
       nest: null,
       hoverDepth: node.depth,
       pending: null,
@@ -191,22 +203,35 @@ export function makeSortableTree<T>(
       length: context.keys.length,
       canNestInto: nesting() === 'offset' ? undefined : (key) => canNestInto(current, key),
     });
+    const hitRow = result.hit ? rows().get(result.hit.key) : undefined;
     if (result.nest != null) {
       current.nest = { key: result.nest, x: event.pointer.x };
-      return result.index;
-    }
-    if (result.hit) {
+    } else if (hitRow) {
       current.nest = null;
-      current.hoverDepth = rows().get(result.hit.key)?.depth ?? current.hoverDepth;
+      current.hoverDepth = hitRow.depth;
+    }
+    // The drag start in another list says nothing about depth here: re-anchor the
+    // offset rule on every newly hovered row, at that row's level.
+    if (context.activeIndex === -1) current.followRows = true;
+    if (current.followRows && hitRow && hitRow.key !== current.base.key) {
+      current.base = { depth: hitRow.depth, x: event.pointer.x, key: hitRow.key };
     }
     if (result.index == null) return null;
-    // Skip slots where no depth satisfies `canNest` and `maxDepth`.
-    const position: DraftPosition = {
-      keys: moveKey(context.keys, context.activeKey, context.activeIndex, result.index),
-      index: result.index,
-      rows: rows(),
-    };
-    return projectDepth(position, Infinity, depthFilter(current)) ? result.index : null;
+    if (result.nest == null) {
+      // Skip slots where no depth satisfies `canNest` and `maxDepth`.
+      const position: DraftPosition = {
+        keys: moveKey(context.keys, context.activeKey, context.activeIndex, result.index),
+        index: result.index,
+        rows: rows(),
+      };
+      if (!projectDepth(position, Infinity, depthFilter(current))) return null;
+    }
+    if (context.activeIndex === -1 && !hitRow) {
+      // Entering an empty tree or a gap between rows: the root level, from here.
+      current.base = { depth: 0, x: event.pointer.x, key: null };
+      current.hoverDepth = 0;
+    }
+    return result.index;
   };
 
   const place = (current: DragState<T>, draftKeys: Key[], index: number, depth: number) => {
@@ -244,12 +269,14 @@ export function makeSortableTree<T>(
       }
     } else {
       const nestRow = current.nest ? rows().get(current.nest.key) : undefined;
+      const base = current.base;
+      base.x ??= event.pointer.x - event.delta.x;
       if (nesting() === 'hover') {
         depth = nestRow ? nestRow.depth + 1 : current.hoverDepth;
       } else if (nestRow) {
         depth = offsetDepth(nestRow.depth + 1, event.pointer.x - current.nest!.x, indentation());
       } else {
-        depth = offsetDepth(current.startDepth, event.delta.x, indentation());
+        depth = offsetDepth(base.depth, event.pointer.x - base.x, indentation());
       }
     }
     place(current, draftKeys, index, depth);

@@ -5,11 +5,13 @@
   import SortableDemo from './demos/SortableDemo.vue';
   import KanbanDemo from './demos/KanbanDemo.vue';
   import BenchDemo from './demos/BenchDemo.vue';
+  import TreeDemo from './demos/TreeDemo.vue';
 
   const demos = {
     sortable: SortableDemo,
     kanban: KanbanDemo,
     bench: BenchDemo,
+    tree: TreeDemo,
   };
   type DemoName = keyof typeof demos;
 
