@@ -225,6 +225,22 @@ describe('measuring service', () => {
     expect(measurer.measure(b.element).top).toBe(60);
   });
 
+  it('lets the FLIP estimate reuse stale rects while exact reads re-measure', () => {
+    const list = scroller([0, 0, 300, 200]);
+    const far = box([0, 1000, 100, 40], list.element);
+    measurer.begin();
+    expect(measurer.isNearViewport(far.element)).toBe(false);
+    far.move([0, 300, 100, 40]);
+    measurer.invalidate();
+    // Estimate: the stale rect, no read.
+    expect(measurer.isNearViewport(far.element)).toBe(false);
+    expect(far.read).toHaveBeenCalledTimes(1);
+    // Exact: re-measured, and the estimate now uses the fresh rect.
+    expect(measurer.measure(far.element).top).toBe(300);
+    expect(measurer.isNearViewport(far.element)).toBe(true);
+    expect(far.read).toHaveBeenCalledTimes(2);
+  });
+
   it('invalidates on window resize and drops the cache at the end of the session', () => {
     const item = box([0, 0, 100, 40]);
     measurer.begin();

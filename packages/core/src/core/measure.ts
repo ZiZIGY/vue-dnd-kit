@@ -48,6 +48,8 @@ interface Entry {
   /** Scroll offsets at measure time: x and y of each scroller, then of the window. */
   offsets: number[];
   frame: number;
+  /** Invalidation generation at measure time: older entries are stale. */
+  generation: number;
   /** Padding box relative to the border box, read when the element clips others. */
   client?: Rect;
 }
@@ -69,9 +71,18 @@ export interface Measurer {
   measure(element: Element): Rect;
   /** `measure()` clipped by scroll containers and the viewport; `null` when fully clipped. */
   measureVisible(element: Element): Rect | null;
-  /** Whether the element is within `margin` sizes of its scroll container's visible area. */
+  /**
+   * Whether the element is within `margin` sizes of its scroll container's visible
+   * area. An estimate: it may use a rect made stale by `invalidate()`.
+   */
   isNearViewport(element: Element, margin?: number): boolean;
-  /** Forgets cached rects: of `elements`, or all of them (draft changes, resizes). */
+  /**
+   * After layout changes (draft changes): cached rects of `elements`, or all of
+   * them, go stale. Exact reads re-measure them; `isNearViewport()` may still use
+   * them, because a draft change moves items by a few item sizes at most, well
+   * within its margin, and re-measuring thousands of far items for FLIP would cost
+   * more than the animation saves.
+   */
   invalidate(elements?: Iterable<Element>): void;
   /** Invalidates the cache when `element` resizes during the session. */
   observe(element: Element): void;
@@ -88,6 +99,7 @@ export interface MeasurerOptions {
 export function createMeasurer(options: MeasurerOptions = {}): Measurer {
   let active = false;
   let frame = 0;
+  let generation = 0;
   // Computed styles barely change during a drag: read them once per session.
   let flags = new WeakMap<Element, Flags>();
   const entries = new Map<Element, Entry>();
@@ -97,6 +109,7 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
   // Per frame.
   const scroll = new Map<Element, Coordinates>();
   const clips = new Map<Element, Rect | null>();
+  const nearRegions = new Map<Element, Rect | null>();
   let windowScroll: Coordinates | null = null;
   let viewport: Rect | null = null;
 
@@ -116,6 +129,7 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
   const clearFrame = () => {
     scroll.clear();
     clips.clear();
+    nearRegions.clear();
     windowScroll = null;
     viewport = null;
   };
@@ -209,22 +223,33 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
       const { x, y } = windowOffset();
       offsets.push(x, y);
     }
-    const entry: Entry = { rect: getLayoutRect(element), chain, offsets, frame };
+    const entry: Entry = { rect: getLayoutRect(element), chain, offsets, frame, generation };
     entries.set(element, entry);
     return entry;
   };
 
-  const entryOf = (element: Element): Entry => {
+  /** `exact: false` accepts a stale rect (estimates). */
+  const entryOf = (element: Element, exact = true): Entry => {
     const entry = entries.get(element);
-    if (entry && !(entry.chain.volatile && entry.frame !== frame)) return entry;
+    if (
+      entry &&
+      (!exact || entry.generation === generation) &&
+      !(entry.chain.volatile && entry.frame !== frame)
+    ) {
+      return entry;
+    }
     return record(element);
   };
 
-  /** Cached rect moved by the scroll that happened since it was measured. */
-  const rectOf = (entry: Entry): Rect => {
+  // Scroll delta of the last `measureDelta()`; plain variables keep hot loops allocation-free.
+  let dx = 0;
+  let dy = 0;
+
+  /** Scroll since the entry was measured, into `dx`/`dy`. */
+  const measureDelta = (entry: Entry) => {
     const { chain, offsets } = entry;
-    let dx = 0;
-    let dy = 0;
+    dx = 0;
+    dy = 0;
     let index = 0;
     for (const scroller of chain.scrollers) {
       const now = scrollOf(scroller);
@@ -236,6 +261,11 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
       dx += offsets[index++]! - now.x;
       dy += offsets[index]! - now.y;
     }
+  };
+
+  /** Cached rect moved by the scroll that happened since it was measured. */
+  const rectOf = (entry: Entry): Rect => {
+    measureDelta(entry);
     return dx || dy ? offsetRect(entry.rect, dx, dy) : entry.rect;
   };
 
@@ -289,26 +319,56 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
     return clip && intersectRect(rectOf(entry), clip);
   };
 
+  /** Visible area of the chain's nearest scroller grown by `margin` of its size; per frame. */
+  const nearRegionOf = (chain: Chain, margin: number): Rect | null => {
+    const key = chain.scrollers[0] ?? document.documentElement;
+    if (margin === NEAR_VIEWPORT) {
+      const cached = nearRegions.get(key);
+      if (cached !== undefined) return cached;
+    }
+    const clip = clipOf(chain);
+    const region = clip && expandRect(clip, clip.width * margin, clip.height * margin);
+    if (margin === NEAR_VIEWPORT) nearRegions.set(key, region);
+    return region;
+  };
+
+  // Called for every item of a group on each draft change: no allocations.
   const isNearViewport = (element: Element, margin = NEAR_VIEWPORT): boolean => {
     prepare();
-    const entry = entryOf(element);
-    const clip = clipOf(entry.chain);
-    if (!clip) return false;
-    return !!intersectRect(rectOf(entry), expandRect(clip, clip.width * margin, clip.height * margin));
+    const entry = entryOf(element, false);
+    const region = nearRegionOf(entry.chain, margin);
+    if (!region) return false;
+    measureDelta(entry);
+    const { left, top, right, bottom } = entry.rect;
+    return (
+      right + dx > region.left &&
+      left + dx < region.right &&
+      bottom + dy > region.top &&
+      top + dy < region.bottom
+    );
   };
 
   const invalidate = (elements?: Iterable<Element>) => {
     if (elements) {
       for (const element of elements) entries.delete(element);
     } else {
-      entries.clear();
+      generation++;
       chains.clear();
     }
     // Clip rects derive from the containers' entries.
     clips.clear();
+    nearRegions.clear();
   };
 
-  const onResize = () => invalidate();
+  /** Resizes reflow anything: not even estimates survive. */
+  const reset = () => {
+    entries.clear();
+    chains.clear();
+    clips.clear();
+    nearRegions.clear();
+  };
+
+  const onResize = () => reset();
 
   const observe = (element: Element) => {
     if (!active || sizes.has(element) || typeof ResizeObserver === 'undefined') return;
@@ -321,7 +381,7 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
         sizes.set(target, size);
       }
       // No new frame: the target follows the pointer, never a layout shift alone.
-      if (changed) invalidate();
+      if (changed) reset();
     });
     sizes.set(element, '');
     observer.observe(element);
