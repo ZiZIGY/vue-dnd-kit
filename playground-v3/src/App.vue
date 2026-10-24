@@ -5,11 +5,17 @@
   import SortableDemo from './demos/SortableDemo.vue';
   import KanbanDemo from './demos/KanbanDemo.vue';
   import BenchDemo from './demos/BenchDemo.vue';
+  import VirtualTanstackDemo from './demos/VirtualTanstackDemo.vue';
+  import VirtualKanbanDemo from './demos/VirtualKanbanDemo.vue';
+  import VirtualVueUseDemo from './demos/VirtualVueUseDemo.vue';
 
   const demos = {
     sortable: SortableDemo,
     kanban: KanbanDemo,
     bench: BenchDemo,
+    'virtual-tanstack': VirtualTanstackDemo,
+    'virtual-kanban': VirtualKanbanDemo,
+    'virtual-vueuse': VirtualVueUseDemo,
   };
   type DemoName = keyof typeof demos;
 

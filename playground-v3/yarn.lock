@@ -304,6 +304,18 @@
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.65.0.tgz#4e24b35aee8d6c29f4a99fb650bed372371f8141"
   integrity sha512-wPWi++K4Bs1VR4XihOhfGi4IGX6Cub7FlerTf8X2v+2BtDHddgSqWCXwGD+h2yAe4/niIhNDwAltioOC+wEogQ==
 
+"@tanstack/virtual-core@3.19.7":
+  version "3.19.7"
+  resolved "https://registry.yarnpkg.com/@tanstack/virtual-core/-/virtual-core-3.19.7.tgz#6e88e87174108789637527ce9d4e5e1b9bda00f7"
+  integrity sha512-gxy5SvH0mFRJ0YujtrflB/1HAu9Wn1KGvL0bjZfQkYVVMsIpQiwcf1mR06/ViN4NjllUb4HNCjqE9FGwgTvMCQ==
+
+"@tanstack/vue-virtual@^3.13.48":
+  version "3.13.48"
+  resolved "https://registry.yarnpkg.com/@tanstack/vue-virtual/-/vue-virtual-3.13.48.tgz#4ec0dcb6c5b04f37c4974ee1e4632aced4341cf8"
+  integrity sha512-exH0/lELoCW9D6x8V1Uq61XY4zrN1AeDH4rDKUMTOJ93ndkeEVIY8zo366IBM13HSjhULpuWPdPhJ+ccidg58A==
+  dependencies:
+    "@tanstack/virtual-core" "3.19.7"
+
 "@types/estree@1.0.9":
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.9.tgz#cf3f0e876d7bee15a93ab925b82bf570a3904a24"

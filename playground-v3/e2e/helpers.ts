@@ -38,3 +38,46 @@ export const waitForIdle = async (page: Page): Promise<void> => {
   await expect(page.locator('[data-dnd-overlay]')).toHaveCount(0);
   await expect(page.locator('[data-dnd-placeholder]')).toHaveCount(0);
 };
+
+/** Collects `[Vue warn]` messages (duplicate keys, failed renders) for the whole test. */
+export const trackVueWarnings = (page: Page): string[] => {
+  const warnings: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'warning' && message.text().startsWith('[Vue warn]')) {
+      warnings.push(message.text());
+    }
+  });
+  return warnings;
+};
+
+/** Resolves after `count` animation frames: lets scroll events and virtualizers settle. */
+export const nextFrames = (page: Page, count = 2): Promise<void> =>
+  page.evaluate(
+    (frames) =>
+      new Promise<void>((resolve) => {
+        const tick = (left: number) =>
+          left ? requestAnimationFrame(() => tick(left - 1)) : resolve();
+        tick(frames);
+      }),
+    count,
+  );
+
+/** Scrolls an element programmatically (no wheel events), then waits for a re-render. */
+export const scrollElement = async (locator: Locator, top: number): Promise<void> => {
+  await locator.evaluate((element, value) => (element.scrollTop = value), top);
+  await nextFrames(locator.page(), 3);
+};
+
+/**
+ * Waits for the overlay's drop animation and tells whether it flies to the dropped
+ * item or fades out (the item isn't rendered or is scrolled out of view).
+ */
+export const dropAnimationKind = async (page: Page): Promise<'fly' | 'fade'> => {
+  const handle = await page.waitForFunction(() => {
+    const animation = document.querySelector('[data-dnd-overlay]')?.getAnimations()[0];
+    if (!animation) return null;
+    const frames = (animation.effect as KeyframeEffect | null)?.getKeyframes() ?? [];
+    return frames.some((frame) => frame.opacity !== undefined) ? 'fade' : 'fly';
+  });
+  return (await handle.jsonValue()) as 'fly' | 'fade';
+};
