@@ -77,6 +77,9 @@ export function makeSortableList<T>(
     afterDrop: options.onDrop as ((event: SortableDropEvent) => void) | undefined,
   };
   onScopeDispose(group.addList(entry));
+  if (options.autoScroll !== undefined) {
+    onScopeDispose(manager.registerAutoScroll(entry.getElement, options.autoScroll));
+  }
 
   const droppable = createDroppable(
     target,

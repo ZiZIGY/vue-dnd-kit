@@ -69,3 +69,95 @@ pre {
   font-size: 12px;
   color: #6b7280;
 }
+
+pre.order {
+  width: 320px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.scroller {
+  height: 300px;
+  overflow: auto;
+  border-radius: 8px;
+}
+
+.free {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+/* No border: snapping is relative to the board's border box. */
+.free-board {
+  position: relative;
+  width: 400px;
+  height: 300px;
+  background-color: #fff;
+  background-image: linear-gradient(#e5e7eb 1px, transparent 1px),
+    linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
+  background-size: 20px 20px;
+  outline: 1px solid #d1d5db;
+}
+
+.piece {
+  width: 80px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #9ca3af;
+  border-radius: 6px;
+  cursor: grab;
+}
+
+.piece.placed {
+  position: absolute;
+}
+
+.piece.red {
+  background: #fee2e2;
+  border-color: #ef4444;
+}
+
+.piece.blue {
+  background: #dbeafe;
+  border-color: #3b82f6;
+}
+
+.piece.dragging {
+  opacity: 0.4;
+}
+
+.zones {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.zone {
+  width: 180px;
+  min-height: 80px;
+  padding: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-content: flex-start;
+  background: #e5e7eb;
+  border-radius: 8px;
+  outline: 2px dashed transparent;
+}
+
+.zone strong {
+  width: 100%;
+}
+
+.zone.accepting {
+  outline-color: #10b981;
+}
+
+.zone.over {
+  background: #d1fae5;
+}

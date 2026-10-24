@@ -45,6 +45,7 @@ export function createDraggable<TData>(
     overlay: options.overlay !== false,
     activation: options.activation,
     canDrag: options.canDrag,
+    keyboard: options.keyboard,
     getElement,
     getHandle: () => (typeof options.handle === 'string' ? options.handle : getHandleElement()),
     getFocusTarget: () => getHandleElement() ?? getElement(),

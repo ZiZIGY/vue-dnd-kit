@@ -6,12 +6,16 @@
   import KanbanDemo from './demos/KanbanDemo.vue';
   import BenchDemo from './demos/BenchDemo.vue';
   import TreeDemo from './demos/TreeDemo.vue';
+  import AutoScrollDemo from './demos/AutoScrollDemo.vue';
+  import FreeDragDemo from './demos/FreeDragDemo.vue';
 
   const demos = {
     sortable: SortableDemo,
     kanban: KanbanDemo,
     bench: BenchDemo,
     tree: TreeDemo,
+    autoscroll: AutoScrollDemo,
+    free: FreeDragDemo,
   };
   type DemoName = keyof typeof demos;
 

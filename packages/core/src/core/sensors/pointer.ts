@@ -1,6 +1,6 @@
 import { defaultDocument, defaultWindow, useEventListener } from '@vueuse/core';
 import { onScopeDispose } from 'vue';
-import type { ActivationConstraint, Coordinates, PointerKind } from '../../types';
+import type { ActivationConstraint, ActivationOptions, Coordinates, PointerKind } from '../../types';
 import type { DnDManager, DraggableEntry } from '../manager';
 import { isInsideInteractive } from '../../utils/dom';
 
@@ -10,8 +10,53 @@ const DEFAULT_ACTIVATION: Record<PointerKind, ActivationConstraint> = {
   touch: { delay: 200, tolerance: 5 },
 };
 
+/** Default `tolerance` of a delay without a distance. */
+const DEFAULT_TOLERANCE = 5;
+
+/** How long the click suppressor waits for the click that follows a drop. */
+const CLICK_SUPPRESS_MS = 100;
+
 const pointerKind = (event: PointerEvent): PointerKind =>
   event.pointerType === 'touch' || event.pointerType === 'pen' ? event.pointerType : 'mouse';
+
+/**
+ * Activation constraint for a press: the item's option, then the provider's, then the
+ * defaults (mouse/pen 4px, touch 200ms with 5px tolerance). A mouse press on an
+ * explicit handle starts at once unless something was configured.
+ */
+export const resolveActivation = (
+  kind: PointerKind,
+  item: ActivationOptions | undefined,
+  provider: ActivationOptions | undefined,
+  onHandle: boolean,
+): ActivationConstraint =>
+  item?.[kind] ?? provider?.[kind] ?? (onHandle && kind === 'mouse' ? {} : DEFAULT_ACTIVATION[kind]);
+
+/**
+ * State of a pending activation after the pointer moved `distance` px in `elapsed` ms:
+ * `'start'`, `'abort'` or the progress (0–1). Distance and delay have OR semantics,
+ * whichever is met first; moving past `tolerance` while a delay runs aborts, so the
+ * page can scroll. No constraint at all starts immediately.
+ */
+export const checkActivation = (
+  constraint: ActivationConstraint,
+  distance: number,
+  elapsed: number,
+): 'start' | 'abort' | number => {
+  const required = constraint.distance ?? 0;
+  const delay = constraint.delay ?? 0;
+  if (required <= 0 && delay <= 0) return 'start';
+  if (required > 0 && distance >= required) return 'start';
+  if (delay > 0) {
+    if (elapsed >= delay) return 'start';
+    const tolerance = constraint.tolerance ?? (required > 0 ? Infinity : DEFAULT_TOLERANCE);
+    if (distance > tolerance) return 'abort';
+  }
+  return Math.min(
+    Math.max(required > 0 ? distance / required : 0, delay > 0 ? elapsed / delay : 0),
+    1,
+  );
+};
 
 /** True when the drag may start from `target`: on the handle, or anywhere but interactive children. */
 const canStartFrom = (entry: DraggableEntry, element: HTMLElement, target: Element) => {
@@ -23,13 +68,24 @@ const canStartFrom = (entry: DraggableEntry, element: HTMLElement, target: Eleme
   return !isInsideInteractive(target, element);
 };
 
+/**
+ * Swallows the click that follows a drag (with capture on <body> it lands on a
+ * common ancestor). Removed by that click, by the next press, or after a moment.
+ */
 const suppressNextClick = () => {
   const stop = (event: Event) => {
     event.preventDefault();
     event.stopPropagation();
+    cleanup();
   };
-  window.addEventListener('click', stop, { capture: true, once: true });
-  setTimeout(() => window.removeEventListener('click', stop, { capture: true }), 0);
+  const cleanup = () => {
+    clearTimeout(timer);
+    window.removeEventListener('click', stop, true);
+    window.removeEventListener('pointerdown', cleanup, true);
+  };
+  window.addEventListener('click', stop, true);
+  window.addEventListener('pointerdown', cleanup, true);
+  const timer = setTimeout(cleanup, CLICK_SUPPRESS_MS);
 };
 
 interface PendingSession {
@@ -41,6 +97,8 @@ interface PendingSession {
   timer?: ReturnType<typeof setTimeout>;
   progressFrame?: number;
   startedAt: number;
+  /** The press turned into a drag (even if it was cancelled since): its click is swallowed. */
+  dragged: boolean;
   stops: Array<() => void>;
 }
 
@@ -75,6 +133,7 @@ export function usePointerSensor(manager: DnDManager): void {
     if (session.progressFrame) cancelAnimationFrame(session.progressFrame);
     manager.status.value = 'idle';
     if (!manager.start(session.id, session.origin, 'pointer')) return abort();
+    session.dragged = true;
     // Capture on <body>, not on the item: the item may be recreated mid-drag.
     try {
       document.body.setPointerCapture(session.pointerId);
@@ -84,13 +143,28 @@ export function usePointerSensor(manager: DnDManager): void {
     manager.move(session.current);
   };
 
-  const trackDelayProgress = () => {
-    if (!session?.constraint.delay) return;
-    const delay = session.constraint.delay;
+  /** Re-evaluates a pending activation; returns false when it ended (started or aborted). */
+  const evaluate = (): boolean => {
+    if (!session || manager.status.value !== 'activating') return false;
+    const { constraint, origin, current, startedAt } = session;
+    const distance = Math.hypot(current.x - origin.x, current.y - origin.y);
+    const state = checkActivation(constraint, distance, performance.now() - startedAt);
+    if (state === 'start') activate();
+    else if (state === 'abort') abort();
+    else {
+      manager.activationProgress.value = state;
+      return true;
+    }
+    return false;
+  };
+
+  const trackDelay = () => {
+    const delay = session?.constraint.delay;
+    if (!session || !delay) return;
+    session.timer = setTimeout(evaluate, delay);
+    // Progress for the UI (e.g. a long-press ring), once per frame.
     const tick = () => {
-      if (!session || manager.status.value !== 'activating') return;
-      manager.activationProgress.value = Math.min((performance.now() - session.startedAt) / delay, 1);
-      session.progressFrame = requestAnimationFrame(tick);
+      if (session && evaluate()) session.progressFrame = requestAnimationFrame(tick);
     };
     session.progressFrame = requestAnimationFrame(tick);
   };
@@ -98,36 +172,24 @@ export function usePointerSensor(manager: DnDManager): void {
   const onPointerMove = (event: PointerEvent) => {
     if (!session || event.pointerId !== session.pointerId) return;
     session.current = { x: event.clientX, y: event.clientY };
-    if (manager.status.value === 'activating') {
-      const { constraint, origin, current } = session;
-      const distance = Math.hypot(current.x - origin.x, current.y - origin.y);
-      if (constraint.delay) {
-        if (distance > (constraint.tolerance ?? 5)) abort();
-        return;
-      }
-      const required = constraint.distance ?? 0;
-      manager.activationProgress.value = required ? Math.min(distance / required, 1) : 1;
-      if (distance >= required) activate();
-      return;
-    }
-    if (manager.status.value === 'dragging') manager.move(session.current);
+    if (manager.status.value === 'activating') evaluate();
+    else if (session.dragged && manager.status.value === 'dragging') manager.move(session.current);
   };
 
   const onPointerUp = (event: PointerEvent) => {
     if (!session || event.pointerId !== session.pointerId) return;
-    const dragging = manager.status.value === 'dragging';
+    const { dragged } = session;
+    const dropping = dragged && manager.status.value === 'dragging';
     abort();
-    if (dragging) {
-      suppressNextClick();
-      void manager.drop();
-    }
+    if (dragged) suppressNextClick();
+    if (dropping) void manager.drop();
   };
 
   const onPointerCancel = (event: PointerEvent) => {
     if (!session || event.pointerId !== session.pointerId) return;
-    const dragging = manager.status.value === 'dragging';
+    const cancelling = session.dragged && manager.status.value === 'dragging';
     abort();
-    if (dragging) manager.cancel();
+    if (cancelling) manager.cancel();
   };
 
   const preventWhileActive = (event: Event) => {
@@ -146,10 +208,12 @@ export function usePointerSensor(manager: DnDManager): void {
     if (entry.canDrag && !entry.canDrag(event)) return;
 
     const kind = pointerKind(event);
-    const configured = entry.activation?.[kind] ?? manager.props.activation?.[kind];
-    // A mouse press on an explicit handle starts immediately.
-    const onHandle = kind === 'mouse' && entry.getHandle() != null;
-    const constraint = configured ?? (onHandle ? {} : DEFAULT_ACTIVATION[kind]);
+    const constraint = resolveActivation(
+      kind,
+      entry.activation,
+      manager.props.activation,
+      entry.getHandle() != null,
+    );
     const origin = { x: event.clientX, y: event.clientY };
 
     session = {
@@ -159,6 +223,7 @@ export function usePointerSensor(manager: DnDManager): void {
       current: origin,
       constraint,
       startedAt: performance.now(),
+      dragged: false,
       stops: [
         useEventListener(document, 'pointermove', onPointerMove),
         useEventListener(document, 'pointerup', onPointerUp),
@@ -169,22 +234,21 @@ export function usePointerSensor(manager: DnDManager): void {
     };
     manager.status.value = 'activating';
     manager.activationProgress.value = 0;
-
-    if (constraint.delay) {
-      session.timer = setTimeout(activate, constraint.delay);
-      trackDelayProgress();
-    } else if (!constraint.distance) {
-      activate();
-    }
+    if (evaluate()) trackDelay();
   });
 
   // iOS Safari honours preventDefault() on touchmove only when a non-passive
-  // listener exists before the gesture starts.
+  // listener exists before the gesture starts. While activating, the page must
+  // still scroll (a quick swipe is a scroll, not a drag).
   useEventListener(
     defaultWindow,
     'touchmove',
     (event: TouchEvent) => {
-      if (manager.status.value === 'dragging' && manager.active.value?.sensor === 'pointer') {
+      if (
+        event.cancelable &&
+        manager.status.value === 'dragging' &&
+        manager.active.value?.sensor === 'pointer'
+      ) {
         event.preventDefault();
       }
     },
