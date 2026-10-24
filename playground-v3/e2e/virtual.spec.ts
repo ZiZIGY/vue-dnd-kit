@@ -2,11 +2,11 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import {
   center,
   dragTo,
-  dropAnimationKind,
   nextFrames,
   scrollElement,
   trackErrors,
   trackVueWarnings,
+  watchDropAnimation,
   waitForIdle,
   type Point,
 } from './helpers';
@@ -122,8 +122,9 @@ test.describe('TanStack Virtual list (10k rows)', () => {
     // r2 leaves the visible area but stays in the overscan, so it stays mounted after drop.
     await scrollElement(scroller, 5 * ROW);
     await expect(row(page, 'r2')).not.toBeInViewport();
+    const dropKind = await watchDropAnimation(page);
     await page.mouse.up();
-    expect(await dropAnimationKind(page)).toBe('fade');
+    expect(await dropKind()).toBe('fade');
     await waitForIdle(page);
     await expect(row(page, 'r2')).toHaveCount(1);
     await expect(page.getByTestId('tanstack-order')).toHaveText(HEAD_10('r'));
@@ -161,8 +162,9 @@ test.describe('TanStack Virtual list (10k rows)', () => {
   test('the overlay flies to a visible dropped row', async ({ page }) => {
     const check = guard(page);
     await dragTo(page, row(page, 'r1'), await center(row(page, 'r3'), 0.8), { release: false });
+    const dropKind = await watchDropAnimation(page);
     await page.mouse.up();
-    expect(await dropAnimationKind(page)).toBe('fly');
+    expect(await dropKind()).toBe('fly');
     await waitForIdle(page);
     check();
   });
@@ -241,8 +243,9 @@ test.describe('VueUse useVirtualList (10k rows)', () => {
     await scrollElement(scroller, 100 * ROW);
     await expect(row(page, 'v2')).toHaveCount(0);
     // Dropped outside every list: the item stays in its slot (dropOutside: 'placeholder').
+    const dropKind = await watchDropAnimation(page);
     await page.mouse.up();
-    expect(await dropAnimationKind(page)).toBe('fade');
+    expect(await dropKind()).toBe('fade');
     await waitForIdle(page);
     await expect(page.getByTestId('vueuse-order')).toHaveText(HEAD_10('v'));
     check();
@@ -333,12 +336,60 @@ test.describe('virtual kanban (3 TanStack columns × 2k cards)', () => {
     await scrollElement(doing, 500 * CARD);
     await expect(card(page, 'a1')).toHaveCount(1);
     await expect(card(page, 'a1')).not.toBeInViewport();
-    // Back down to the lower part of the 6th visible slot: a1 follows the pointer there.
-    await page.mouse.move(box.x + box.width / 2, box.y + 5.8 * CARD, { steps: 10 });
+    // Straight to the lower part of the 6th visible slot: a1 follows the pointer there.
+    // One jump, not a glide: moving up above unlocked upward auto-scroll, and a glide
+    // through the column's top edge zone would scroll it by a frame-rate dependent amount.
+    await page.mouse.move(box.x + box.width / 2, box.y + 5.8 * CARD);
+    await expect(page.locator('[data-testid="column-doing"] [data-dnd-placeholder]')).toHaveAttribute(
+      'data-id',
+      'a1',
+    );
+    expect(await doing.evaluate((element) => element.scrollTop)).toBe(500 * CARD);
     await page.mouse.up();
     await waitForIdle(page);
     // [b0, a1, b1, …] scrolled by 500 slots: slot 5 is index 505.
     await expect(page.getByTestId('virtual-board-drop')).toHaveText('doing:a1@505:b504,a1,b505');
+    check();
+  });
+
+  test('a drop in the frame right after a cross-column move lands under the pointer', async ({ page }) => {
+    const check = guard(page);
+    type PointerWindow = Window & { __pointerId?: number };
+    await page.evaluate(() =>
+      document.addEventListener(
+        'pointerdown',
+        (event) => ((window as PointerWindow).__pointerId = event.pointerId),
+        { capture: true, once: true },
+      ),
+    );
+    const point = await grab(page, card(page, 'a1'));
+    const doing = (await column(page, 'doing').boundingBox())!;
+    const done = (await column(page, 'done').boundingBox())!;
+    // A frame moves a1 into `doing`; before the next frame the pointer reaches `done`
+    // and is released. Synthetic events: real input can't be pinned between frames.
+    await page.evaluate(
+      ({ y, through, to }) =>
+        new Promise<void>((resolve) => {
+          const pointerId = (window as PointerWindow).__pointerId!;
+          const fire = (type: string, x: number) =>
+            document.dispatchEvent(
+              new PointerEvent(type, { clientX: x, clientY: y, pointerId, isPrimary: true, pointerType: 'mouse' }),
+            );
+          fire('pointermove', through);
+          requestAnimationFrame(() => {
+            fire('pointermove', to);
+            fire('pointerup', to);
+            resolve();
+          });
+        }),
+      { y: point.y, through: doing.x + doing.width / 2, to: done.x + done.width / 2 },
+    );
+    await waitForIdle(page);
+    await page.mouse.up();
+    await expect(page.getByTestId('virtual-board-drop')).toHaveText('done:a1@1:c0,a1,c1');
+    await expect(page.getByTestId('virtual-board')).toHaveText(
+      'todo(1999):a0,a2,a3,a4,a5 | doing(2000):b0,b1,b2,b3,b4 | done(2001):c0,a1,c1,c2,c3',
+    );
     check();
   });
 

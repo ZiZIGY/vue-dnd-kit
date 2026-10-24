@@ -792,10 +792,13 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       if (!list?.project) return afterMove(current, event);
     }
     syncCopy(current);
-    // One frame after a cross-list move the layout is still settling: nothing moves (stability guard).
-    const settling = current.settling;
-    current.settling = false;
+    // One frame after a cross-list move the layout is still settling: nothing moves
+    // (stability guard). Only while the pointer is still near the move, though: one
+    // that travelled on is real movement (a release right after flicking across a
+    // column must land under the pointer, not in the column it passed through).
     current.hysteresis = settleHysteresis(current.hysteresis, event.pointer);
+    const settling = current.settling && current.hysteresis != null;
+    current.settling = false;
 
     const over = event.over;
     if (!over) {

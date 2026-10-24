@@ -68,18 +68,34 @@ export const scrollElement = async (locator: Locator, top: number): Promise<void
   await nextFrames(locator.page(), 3);
 };
 
+type DropKind = 'fly' | 'fade';
+type DropWatchWindow = Window & { __dropKind?: DropKind | null; __dropWatch?: boolean };
+
 /**
- * Waits for the overlay's drop animation and tells whether it flies to the dropped
- * item or fades out (the item isn't rendered or is scrolled out of view).
+ * Call before releasing. Records the overlay's drop animation as it starts (it flies
+ * to the dropped item, or fades out when the item isn't rendered or is scrolled out
+ * of view); the returned function waits for it. Hooking `animate()` instead of
+ * polling `getAnimations()` can't miss a short animation on a slow, loaded browser.
  */
-export const dropAnimationKind = async (page: Page): Promise<'fly' | 'fade'> => {
-  const handle = await page.waitForFunction(() => {
-    const animation = document.querySelector('[data-dnd-overlay]')?.getAnimations()[0];
-    if (!animation) return null;
-    const frames = (animation.effect as KeyframeEffect | null)?.getKeyframes() ?? [];
-    return frames.some((frame) => frame.opacity !== undefined) ? 'fade' : 'fly';
+export const watchDropAnimation = async (page: Page): Promise<() => Promise<DropKind>> => {
+  await page.evaluate(() => {
+    const win = window as DropWatchWindow;
+    win.__dropKind = null;
+    if (win.__dropWatch) return;
+    win.__dropWatch = true;
+    const animate = Element.prototype.animate;
+    Element.prototype.animate = function (this: Element, keyframes, options) {
+      if (this.hasAttribute('data-dnd-overlay') && keyframes) {
+        const frames = Array.isArray(keyframes) ? keyframes : [keyframes];
+        win.__dropKind = frames.some((frame) => 'opacity' in frame) ? 'fade' : 'fly';
+      }
+      return animate.call(this, keyframes, options);
+    };
   });
-  return (await handle.jsonValue()) as 'fly' | 'fade';
+  return async () => {
+    const handle = await page.waitForFunction(() => (window as DropWatchWindow).__dropKind);
+    return (await handle.jsonValue()) as DropKind;
+  };
 };
 /** Element of a demo item by id (not its copy inside the overlay clone). */
 export const item = (page: Page, id: string): Locator =>
