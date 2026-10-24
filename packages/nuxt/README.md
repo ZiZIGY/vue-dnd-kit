@@ -5,72 +5,134 @@
 [![License][license-src]][license-href]
 [![Nuxt][nuxt-src]][nuxt-href]
 
-Official Nuxt module for [Vue DnD Kit](https://zizigy.github.io/vue-dnd-kit/) — a lightweight, high-performance drag and drop library for Vue 3.
+Official Nuxt module for [Vue DnD Kit](https://zizigy.github.io/vue-dnd-kit/) v3: drag and drop for Vue with sortable lists, kanban boards, trees, multi-drag, rubber-band selection and animations.
 
-- [📖 Documentation](https://zizigy.github.io/vue-dnd-kit/v2/guide/nuxt)
+- [📖 Documentation](https://zizigy.github.io/vue-dnd-kit/)
 - [✨ Release Notes](./CHANGELOG.md)
 
 ## Features
 
-- Auto-imports all composables (`makeDraggable`, `makeDroppable`, `makeSelectionArea`, and more)
-- Registers `DnDProvider` and `DragPreview` as global components — use them in templates without importing
-- Fully SSR-compatible — no hydration mismatches, content rendered on server
+- Registers `<DnDProvider>` as a global component (with an optional prefix).
+- Auto-imports the composables: `makeDraggable`, `makeDroppable`, `makeSortableList`, `makeSortableItem`, `makeSortableTree`, `makeSelectionArea`, `useDnD`, `useDnDMonitor`.
+- Auto-imports the main option and event types (`SortableListOptions`, `SortableDropEvent`, `DnDEvent`, …) as type-only imports.
+- Modifiers and collision helpers are opt-in, because their names (`snapToGrid`, `restrictToParent`, `closestCenter`) are generic.
+- SSR-safe: lists render on the server; the overlay, the screen reader instructions and the live region mount on the client.
 
-## Quick Setup
+## Quick setup
 
 ```bash
 npm install @vue-dnd-kit/nuxt @vue-dnd-kit/core
 ```
 
-Add to `nuxt.config.ts`:
-
 ```ts
+// nuxt.config.ts
 export default defineNuxtConfig({
   modules: ['@vue-dnd-kit/nuxt'],
-})
+});
 ```
 
 ## Usage
 
-Wrap your layout with `DnDProvider`, then use composables inside **child components**. `makeDraggable` and other composables rely on `inject` — they must run inside a descendant of `DnDProvider`, not in the same component.
+Wrap your layout (or a page) in `DnDProvider`. The composables use `inject`, so call them in **child components** of the provider, not in the component that renders it.
 
 ```vue
 <!-- layouts/default.vue -->
 <template>
   <DnDProvider>
     <slot />
-    <DragPreview />
+    <!-- Optional: a custom overlay instead of the default clone. -->
+    <template #overlay="{ items }">
+      <TaskCard v-if="items.length === 1" :task="items[0].item" />
+      <TaskStack v-else :tasks="items.map((entry) => entry.item)" />
+    </template>
   </DnDProvider>
 </template>
 ```
 
 ```vue
-<!-- components/DraggableItem.vue -->
-<script setup>
-const el = useTemplateRef('el');
-makeDraggable(el, {
-  payload: () => [0, items.value],
+<!-- components/TaskList.vue -->
+<script setup lang="ts">
+const tasks = ref([
+  { id: 1, title: 'Write the RFC' },
+  { id: 2, title: 'Ship v3' },
+]);
+
+const { items } = makeSortableList(useTemplateRef('list'), {
+  items: tasks, // the library writes the new order here on drop
+  onDrop: (event: SortableDropEvent) => console.log(event.from, event.to),
 });
 </script>
 
 <template>
-  <div ref="el">Drag me</div>
+  <ul ref="list">
+    <TaskItem v-for="task in items" :key="task.id" :task="task" />
+  </ul>
 </template>
 ```
 
-For TypeScript types, import explicitly from the core package:
+```vue
+<!-- components/TaskItem.vue -->
+<script setup lang="ts">
+const props = defineProps<{ task: { id: number; title: string } }>();
+makeSortableItem(useTemplateRef('item'), { id: () => props.task.id });
+</script>
+
+<template>
+  <li ref="item">{{ task.title }}</li>
+</template>
+```
+
+## Options
 
 ```ts
-import type { IDragEvent, IDragItem } from '@vue-dnd-kit/core';
+export default defineNuxtConfig({
+  modules: ['@vue-dnd-kit/nuxt'],
+  vueDndKit: {
+    // Component name prefix: 'Dnd' registers <DndDnDProvider>. Default: none.
+    prefix: '',
+    // Register <DnDProvider> globally. Default: true.
+    components: true,
+    // `false` turns all auto-imports off.
+    autoImports: {
+      composables: true, // makeDraggable, makeSortableList, useDnD, …
+      types: true, // type-only imports of the option and event types
+      modifiers: false, // restrictToVerticalAxis, snapToGrid, …
+      collision: false, // pointerFirst, closestCenter, …
+    },
+  },
+});
 ```
+
+`useDnDContext` and `provideDnDContext` (sharing a provider with a shadow root or another Vue app) are never auto-imported; import them from `@vue-dnd-kit/core`. The same goes for generic type names such as `Key`, `Active` or `Modifier`:
+
+```ts
+import type { Key } from '@vue-dnd-kit/core';
+```
+
+## Migrating from 1.x (Vue DnD Kit v2)
+
+- Requires `@vue-dnd-kit/core` v3. See the core migration guide for the API changes.
+- `DragPreview` is gone: the provider renders the overlay itself; use its `#overlay` slot to customize it.
+- `makeAutoScroll`, `makeConstraintArea`, `useDnDProvider` and `injectionKey` are no longer exported or auto-imported. Auto-scroll is built in; use modifiers (`restrictToParent`, `restrictToElement`) instead of constraint areas, and `useDnD()` instead of `useDnDProvider()`.
+- Types are auto-imported now, so explicit `import type` lines can go (except for the generic names above).
 
 ## Compatibility
 
 | | Version |
 | --- | --- |
 | Nuxt | `^4.0.0` |
-| `@vue-dnd-kit/core` | `^2.4.0` |
+| `@vue-dnd-kit/core` | `^3.0.0` |
 | Vue | `^3.5.0` |
+
+## Development
+
+```bash
+yarn install
+yarn test # prepares .nuxt types, then checks the export manifest against packages/core/src/index.ts
+yarn prepack # builds dist/
+```
+
+The list of exports lives in `src/manifest.ts`. When core gains or loses an export, `test/manifest.test.ts` fails until the manifest is updated.
 
 ## License
 

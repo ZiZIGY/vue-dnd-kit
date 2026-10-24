@@ -8,6 +8,8 @@
   import TreeDemo from './demos/TreeDemo.vue';
   import AutoScrollDemo from './demos/AutoScrollDemo.vue';
   import FreeDragDemo from './demos/FreeDragDemo.vue';
+  import SelectionDemo from './demos/SelectionDemo.vue';
+  import A11yDemo from './demos/A11yDemo.vue';
 
   const demos = {
     sortable: SortableDemo,
@@ -16,6 +18,8 @@
     tree: TreeDemo,
     autoscroll: AutoScrollDemo,
     free: FreeDragDemo,
+    selection: SelectionDemo,
+    a11y: A11yDemo,
   };
   type DemoName = keyof typeof demos;
 

@@ -1,5 +1,6 @@
 /**
- * The drag session state machine: idle → activating → dragging → dropping → idle.
+ * The drag session state machine: idle → activating → dragging → dropping → idle,
+ * plus idle → selecting → idle while a selection area draws its rubber band.
  *
  * Invariants (rfcs/0001-v3.md §13):
  * - one session per provider; input during `dropping` is ignored;
@@ -111,6 +112,8 @@ export function createDnDManager(props: DnDProviderProps) {
   const sourceResolvers = new Set<(active: Active) => DragSource | undefined>();
   const activationAborts = new Set<() => void>();
   const autoScrollEntries = new Set<AutoScrollEntry>();
+  /** Cancels the running rubber-band selection (`status === 'selecting'`). */
+  const selectionAborts = new Set<() => void>();
 
   let origin: Coordinates = { x: 0, y: 0 };
   let raw: Coordinates = { x: 0, y: 0 };
@@ -121,6 +124,7 @@ export function createDnDManager(props: DnDProviderProps) {
   let restoreDocument: (() => void) | null = null;
   let session = 0;
   let announceTimer: ReturnType<typeof setTimeout> | undefined;
+  let lastAnnouncement = '';
 
   // ─── Registration ────────────────────────────────────────────────────────────
 
@@ -214,17 +218,34 @@ export function createDnDManager(props: DnDProviderProps) {
     }
   };
 
+  const setAnnouncement = (text: string) => {
+    // Screen readers only speak changes: repeating the same text needs a different string.
+    announcement.value =
+      text === lastAnnouncement && announcement.value === text ? `${text}\u00A0` : text;
+    lastAnnouncement = text;
+  };
+
   const announce = (name: keyof typeof defaultAnnouncements, event: DnDEvent) => {
-    if (props.announcements === false) return;
-    const custom = props.announcements?.[name] as ((event: DnDEvent) => string | undefined) | undefined;
-    const fallback = defaultAnnouncements[name] as (event: DnDEvent) => string | undefined;
-    const text = (custom ?? fallback)(event);
     clearTimeout(announceTimer);
+    const custom = props.announcements;
+    if (custom === false) return;
+    let text: string | undefined;
+    try {
+      const handler = custom?.[name] ? custom : defaultAnnouncements;
+      text = (handler[name] as (this: unknown, event: DnDEvent) => string | undefined).call(handler, event);
+    } catch (error) {
+      // A throwing announcement must not break the session (§13).
+      console.error(error);
+      return;
+    }
     if (!text) return;
     if (name === 'onDragOver') {
-      announceTimer = setTimeout(() => (announcement.value = text), OVER_ANNOUNCE_DELAY);
+      // Debounced: only the target the pointer settles on is spoken, and only if it changed.
+      announceTimer = setTimeout(() => {
+        if (text !== lastAnnouncement) setAnnouncement(text);
+      }, OVER_ANNOUNCE_DELAY);
     } else {
-      announcement.value = text;
+      setAnnouncement(text);
     }
   };
 
@@ -359,7 +380,9 @@ export function createDnDManager(props: DnDProviderProps) {
   };
 
   const start = (id: Key, coordinates: Coordinates, sensor: SensorType): boolean => {
-    if (status.value === 'dragging' || status.value === 'dropping') return false;
+    if (status.value === 'dragging' || status.value === 'dropping' || status.value === 'selecting') {
+      return false;
+    }
     const entry = draggables.get(id);
     const element = entry?.getElement();
     if (!entry || !element || entry.isDisabled()) return false;
@@ -405,15 +428,37 @@ export function createDnDManager(props: DnDProviderProps) {
     scheduleFrame();
   };
 
+  /**
+   * Gives focus back to the dragged item after a keyboard drag. Looked up by id once
+   * the result has rendered: moving between lists recreates the element, and the old
+   * one took the focus with it. Focus the user moved elsewhere is left alone.
+   */
+  const restoreFocus = (id: Key) => {
+    const attempt = () => {
+      const target = draggables.get(id)?.getFocusTarget();
+      if (!target?.isConnected) return false;
+      const focused = document.activeElement;
+      const lost =
+        !focused ||
+        focused === document.body ||
+        focused === document.documentElement ||
+        !focused.isConnected;
+      if (lost) target.focus({ preventScroll: true });
+      return true;
+    };
+    void nextTick(() => {
+      // Virtualizers may mount the row a frame later.
+      if (!attempt()) requestAnimationFrame(attempt);
+    });
+  };
+
   const settle = (current: Active) => {
     session++;
     restoreDocument?.();
     restoreDocument = null;
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
-    if (current.sensor === 'keyboard') {
-      draggables.get(current.id)?.getFocusTarget()?.focus({ preventScroll: true });
-    }
+    if (current.sensor === 'keyboard') restoreFocus(current.id);
     active.value = null;
     over.value = null;
     pointer.value = null;
@@ -460,6 +505,10 @@ export function createDnDManager(props: DnDProviderProps) {
   const cancel = () => {
     if (status.value === 'activating') {
       activationAborts.forEach((abort) => abort());
+      return;
+    }
+    if (status.value === 'selecting') {
+      selectionAborts.forEach((abort) => abort());
       return;
     }
     if (status.value !== 'dragging' || !active.value) return;
@@ -523,6 +572,7 @@ export function createDnDManager(props: DnDProviderProps) {
 
   const destroy = () => {
     if (status.value === 'activating') activationAborts.forEach((abort) => abort());
+    if (status.value === 'selecting') selectionAborts.forEach((abort) => abort());
     const current = active.value;
     if (current && status.value === 'dragging') emit('onDragCancel', createEvent());
     if (current) settle(current);
@@ -545,6 +595,7 @@ export function createDnDManager(props: DnDProviderProps) {
     instructionsId: '',
     monitors,
     activationAborts,
+    selectionAborts,
     get preview() {
       return previewEnabled ? preview : null;
     },
@@ -552,6 +603,8 @@ export function createDnDManager(props: DnDProviderProps) {
       return previewEnabled;
     },
     getDraggable: (id: Key) => draggables.get(id),
+    /** Every registered draggable, e.g. for selection hit-testing. */
+    getDraggables: (): IterableIterator<DraggableEntry> => draggables.values(),
     getDroppable: (id: Key) => droppables.get(id),
     getDroppables: () => droppables.values(),
     /** Pointer position as the sensor reported it, before modifiers. */

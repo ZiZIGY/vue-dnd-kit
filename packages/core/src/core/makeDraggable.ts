@@ -14,17 +14,55 @@ export interface DraggableInternals {
 
 const preventNativeDrag = (event: Event) => event.preventDefault();
 
-const applyAttributes = (element: HTMLElement, instructionsId: string, roleDescription: string) => {
-  if (!element.hasAttribute('tabindex') && !isNativelyFocusable(element)) {
-    element.setAttribute('tabindex', '0');
-  }
-  if (!element.hasAttribute('role')) element.setAttribute('role', 'button');
-  if (!element.hasAttribute('aria-roledescription')) {
-    element.setAttribute('aria-roledescription', roleDescription);
-  }
-  if (instructionsId && !element.hasAttribute('aria-describedby')) {
-    element.setAttribute('aria-describedby', instructionsId);
-  }
+// ─── Attributes ────────────────────────────────────────────────────────────────
+// The library only ever touches attributes it added itself: anything already on the
+// element belongs to the user and is never overwritten (rfcs/0001-v3.md §10).
+
+/** Attribute name → the value the library set, per element. */
+const ownedAttributes = new WeakMap<Element, Map<string, string>>();
+
+/** True when the attribute is (still) the library's: absent, or exactly what it set. */
+const ownsAttribute = (element: Element, name: string): boolean => {
+  const current = element.getAttribute(name);
+  if (current === null) return true;
+  const ours = ownedAttributes.get(element)?.get(name);
+  if (ours === current) return true;
+  // Set by the user from the start, or changed by them (e.g. a binding) since.
+  ownedAttributes.get(element)?.delete(name);
+  return false;
+};
+
+const setOwnAttribute = (element: Element, name: string, value: string) => {
+  if (!ownsAttribute(element, name)) return;
+  let owned = ownedAttributes.get(element);
+  if (!owned) ownedAttributes.set(element, (owned = new Map()));
+  owned.set(name, value);
+  if (element.getAttribute(name) !== value) element.setAttribute(name, value);
+};
+
+const removeOwnAttribute = (element: Element, name: string) => {
+  const owned = ownedAttributes.get(element);
+  if (!owned?.has(name)) return;
+  if (ownsAttribute(element, name)) element.removeAttribute(name);
+  owned.delete(name);
+};
+
+const releaseAttributes = (element: Element) => {
+  const owned = ownedAttributes.get(element);
+  if (!owned) return;
+  for (const name of [...owned.keys()]) removeOwnAttribute(element, name);
+  ownedAttributes.delete(element);
+};
+
+const hasButtonRole = (element: Element) =>
+  (element.getAttribute('role') ?? (element.tagName === 'BUTTON' ? 'button' : null)) === 'button';
+
+const applyStaticAttributes = (element: HTMLElement, instructionsId: string, roleDescription: string) => {
+  if (!isNativelyFocusable(element)) setOwnAttribute(element, 'tabindex', '0');
+  // A native <button> already has the role.
+  if (element.tagName !== 'BUTTON') setOwnAttribute(element, 'role', 'button');
+  setOwnAttribute(element, 'aria-roledescription', roleDescription);
+  if (instructionsId) setOwnAttribute(element, 'aria-describedby', instructionsId);
 };
 
 export function createDraggable<TData>(
@@ -37,8 +75,13 @@ export function createDraggable<TData>(
   const id = computed<Key>(() => read(options.id) ?? fallbackId);
 
   const getElement = () => toElement(target);
-  const getHandleElement = () =>
-    options.handle == null || typeof options.handle === 'string' ? null : toElement(options.handle);
+  /** Handle element; a selector resolves to the first match inside the draggable. */
+  const getHandleElement = (): HTMLElement | null => {
+    const handle = options.handle;
+    if (handle == null) return null;
+    if (typeof handle === 'string') return getElement()?.querySelector<HTMLElement>(handle) ?? null;
+    return toElement(handle);
+  };
 
   const entry: DraggableEntry = {
     id: id.value,
@@ -72,27 +115,38 @@ export function createDraggable<TData>(
   };
 
   watch(
-    [getElement, getHandleElement, id],
-    ([element, handle, currentId]) => {
+    [getElement, id],
+    ([element, currentId]) => {
       unbind();
       if (!element) return;
       manager.bindDraggableElement(element, currentId);
       element.addEventListener('dragstart', preventNativeDrag);
       bound = { element, id: currentId };
-      if (options.attributes !== false) {
-        applyAttributes(handle ?? element, manager.instructionsId, internals.roleDescription ?? 'draggable');
-      }
     },
     { immediate: true, flush: 'post' },
   );
 
+  // Attributes go on the focus target (the handle when there is one). One effect, so
+  // moving them to a new target and updating the dynamic ones can't race.
+  let attributeTarget: HTMLElement | null = null;
   if (options.attributes !== false) {
+    const roleDescription = internals.roleDescription ?? 'draggable';
     watchEffect(
       () => {
         const element = getHandleElement() ?? getElement();
+        if (element !== attributeTarget) {
+          if (attributeTarget) releaseAttributes(attributeTarget);
+          attributeTarget = element;
+        }
         if (!element) return;
-        element.setAttribute('aria-disabled', String(entry.isDisabled()));
-        element.setAttribute('aria-pressed', String(manager.active.value?.id === id.value));
+        applyStaticAttributes(element, manager.instructionsId, roleDescription);
+        setOwnAttribute(element, 'aria-disabled', String(entry.isDisabled()));
+        // `aria-pressed` only means something on a button, and only while dragging.
+        if (manager.active.value?.id === id.value && hasButtonRole(element)) {
+          setOwnAttribute(element, 'aria-pressed', 'true');
+        } else {
+          removeOwnAttribute(element, 'aria-pressed');
+        }
       },
       { flush: 'post' },
     );
@@ -102,6 +156,8 @@ export function createDraggable<TData>(
   onScopeDispose(() => {
     unbind();
     unregister();
+    if (attributeTarget) releaseAttributes(attributeTarget);
+    attributeTarget = null;
   });
 
   const isDragging = computed(() => manager.active.value?.ids.includes(id.value) ?? false);

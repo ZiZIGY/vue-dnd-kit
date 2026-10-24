@@ -5,6 +5,7 @@ export { useDnD, useDnDMonitor, useDnDContext, provideDnDContext } from './core/
 export { makeSortableList } from './sortable/makeSortableList';
 export { makeSortableItem } from './sortable/makeSortableItem';
 export { makeSortableTree } from './sortable/makeSortableTree';
+export { makeSelectionArea } from './core/makeSelectionArea';
 
 export {
   pointerFirst,
