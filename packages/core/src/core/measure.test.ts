@@ -289,6 +289,22 @@ describe('measuring service', () => {
     expect(measurer.isNearViewport(page.element, 2)).toBe(true);
   });
 
+  it('reports scrolling inside shadow roots, whose scroll events never reach the document', () => {
+    const onShadowScroll = vi.fn();
+    const shadowMeasurer = createMeasurer({ onShadowScroll });
+    const host = box([0, 0, 300, 600]);
+    const root = host.element.attachShadow({ mode: 'open' });
+    const list = scroller([0, 0, 300, 200], root as unknown as Element);
+    const item = box([0, 50, 100, 40], list.element);
+    shadowMeasurer.begin();
+    shadowMeasurer.measure(item.element);
+    list.element.dispatchEvent(new Event('scroll'));
+    expect(onShadowScroll).toHaveBeenCalledTimes(1);
+    shadowMeasurer.end();
+    list.element.dispatchEvent(new Event('scroll'));
+    expect(onShadowScroll).toHaveBeenCalledTimes(1);
+  });
+
   it('measures through open shadow roots', () => {
     const list = scroller([0, 0, 300, 200]);
     const host = box([0, 0, 300, 600], list.element);

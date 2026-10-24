@@ -115,7 +115,7 @@ export function createDnDManager(props: DnDProviderProps) {
   let session = 0;
   let announceTimer: ReturnType<typeof setTimeout> | undefined;
 
-  const measurer = createMeasurer();
+  const measurer = createMeasurer({ onShadowScroll: () => scheduleFrame() });
   const stabilizer = createTargetStabilizer();
   /** Nesting depth of drop target elements among drop targets, per session. */
   let nesting = new WeakMap<Element, number>();

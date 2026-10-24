@@ -77,7 +77,15 @@ export interface Measurer {
   observe(element: Element): void;
 }
 
-export function createMeasurer(): Measurer {
+export interface MeasurerOptions {
+  /**
+   * A scroll container inside a shadow root scrolled during the session. Its `scroll`
+   * event isn't composed, so document listeners never see it.
+   */
+  onShadowScroll?: () => void;
+}
+
+export function createMeasurer(options: MeasurerOptions = {}): Measurer {
   let active = false;
   let frame = 0;
   // Computed styles barely change during a drag: read them once per session.
@@ -94,6 +102,16 @@ export function createMeasurer(): Measurer {
 
   let observer: ResizeObserver | null = null;
   const sizes = new Map<Element, string>();
+  const shadowRoots = new Set<ShadowRoot>();
+
+  const onShadowScroll = () => options.onShadowScroll?.();
+
+  const watchShadowRoot = (element: Element) => {
+    const root = element.getRootNode();
+    if (!active || !(root instanceof ShadowRoot) || shadowRoots.has(root)) return;
+    shadowRoots.add(root);
+    root.addEventListener('scroll', onShadowScroll, { capture: true, passive: true });
+  };
 
   const clearFrame = () => {
     scroll.clear();
@@ -147,7 +165,9 @@ export function createMeasurer(): Measurer {
     if (chain) return chain;
     const own = flagsOf(container);
     const outer = own.fixed ? FIXED : chainBelow(parentOf(container));
-    chain = clipsContent(container)
+    const clipping = clipsContent(container);
+    if (clipping) watchShadowRoot(container);
+    chain = clipping
       ? {
           scrollers: [container, ...outer.scrollers],
           window: outer.window,
@@ -311,6 +331,10 @@ export function createMeasurer(): Measurer {
     observer?.disconnect();
     observer = null;
     sizes.clear();
+    for (const root of shadowRoots) {
+      root.removeEventListener('scroll', onShadowScroll, { capture: true });
+    }
+    shadowRoots.clear();
     flags = new WeakMap();
     entries.clear();
     chains.clear();
