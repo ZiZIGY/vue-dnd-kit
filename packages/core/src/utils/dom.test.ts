@@ -42,3 +42,18 @@ describe('shadow-aware DOM helpers', () => {
     expect(target).toBe(item);
   });
 });
+
+describe('toElement', () => {
+  it('resolves elements, getters and the first element of a fragment anchor', async () => {
+    const { toElement } = await import('./dom');
+    const parent = document.createElement('div');
+    const anchor = document.createTextNode('');
+    const first = document.createElement('span');
+    parent.append(anchor, first);
+    expect(toElement(first)).toBe(first);
+    expect(toElement(() => first)).toBe(first);
+    // A fragment-root component: `$el` is the anchor text node.
+    expect(toElement({ $el: anchor } as never)).toBe(first);
+    expect(toElement(null)).toBeNull();
+  });
+});

@@ -107,6 +107,8 @@ export function createDnDManager(props: DnDProviderProps) {
   const isAutoScrolling = shallowRef(false);
   const overlayElement = shallowRef<HTMLElement | null>(null);
   const overlaySize = shallowRef<Size | null>(null);
+  /** Size the overlay box takes while dragging (see `updateFitSize`). */
+  const fitSize = shallowRef<Size | null>(null);
   const announcement = shallowRef('');
   const selection = shallowReactive(new Set<Key>());
   /** What a drop would do, set by the sortable layer (overlay slot `mode`). */
@@ -412,10 +414,39 @@ export function createDnDManager(props: DnDProviderProps) {
 
   // ─── Frame loop ──────────────────────────────────────────────────────────────
 
+  /** A placeholder styled smaller than this share of the source (a drop line) keeps the source size on that axis. */
+  const FIT_MIN_RATIO = 0.25;
+
+  /**
+   * `overlayFit: 'slot'`: the overlay takes the size of the slot the item will land in,
+   * so it matches the items of the list it hovers. Layout sizes (`offset*`) ignore
+   * FLIP translates; each axis is taken on its own, so a thin custom placeholder
+   * still passes its width.
+   */
+  const updateFitSize = (current: Active) => {
+    if (props.overlayFit === 'source') return;
+    const slot = draggables.get(landingKey.value ?? current.id)?.getElement();
+    if (!slot?.isConnected) return;
+    const size =
+      slot instanceof HTMLElement
+        ? { width: slot.offsetWidth, height: slot.offsetHeight }
+        : getLayoutRect(slot);
+    const { width: sourceWidth, height: sourceHeight } = current.rect;
+    const width = size.width >= sourceWidth * FIT_MIN_RATIO ? size.width : sourceWidth;
+    const height = size.height >= sourceHeight * FIT_MIN_RATIO ? size.height : sourceHeight;
+    const previous = fitSize.value;
+    if (previous && Math.abs(previous.width - width) < 0.5 && Math.abs(previous.height - height) < 0.5) {
+      return;
+    }
+    fitSize.value = { width, height };
+  };
+
   const runFrame = () => {
     frame = 0;
     const current = active.value;
     if (status.value !== 'dragging' || !current) return;
+    // Reorders render between frames: the slot may have moved into another list.
+    updateFitSize(current);
     const refresh = refreshRequested;
     refreshRequested = false;
     const offset = applyModifiers(current, { x: raw.x - origin.x, y: raw.y - origin.y });
@@ -516,6 +547,7 @@ export function createDnDManager(props: DnDProviderProps) {
     transform.value = { x: 0, y: 0 };
     over.value = null;
     overlaySize.value = null;
+    fitSize.value = { width: active.value.rect.width, height: active.value.rect.height };
     mode.value = 'move';
     landingKey.value = null;
     activationProgress.value = 1;
@@ -577,6 +609,7 @@ export function createDnDManager(props: DnDProviderProps) {
     pointer.value = null;
     transform.value = { x: 0, y: 0 };
     overlaySize.value = null;
+    fitSize.value = null;
     mode.value = 'move';
     landingKey.value = null;
     activationProgress.value = 0;
@@ -712,6 +745,7 @@ export function createDnDManager(props: DnDProviderProps) {
     isAutoScrolling,
     overlayElement,
     overlaySize,
+    fitSize,
     announcement,
     selection,
     mode,

@@ -19,8 +19,9 @@ const settle = async (result: Animation | Promise<unknown> | void) => {
 };
 
 /**
- * Flies the overlay to the final rect of the dropped item (scaling to its size),
- * or fades it out when the item isn't rendered.
+ * Flies the overlay to the final rect of the dropped item, or fades it out when the
+ * item isn't rendered. The size is animated as width/height, not `scale()`: the
+ * content re-lays out at the target size instead of being stretched.
  */
 export const runDropAnimation = async (
   option: DropAnimation | undefined,
@@ -35,11 +36,15 @@ export const runDropAnimation = async (
 
   const keyframes: Keyframe[] = to
     ? [
-        { transform: `translate3d(${from.left}px, ${from.top}px, 0)` },
         {
-          transform: `translate3d(${to.left}px, ${to.top}px, 0) scale(${
-            to.width / from.width || 1
-          }, ${to.height / from.height || 1})`,
+          transform: `translate3d(${from.left}px, ${from.top}px, 0)`,
+          width: `${from.width}px`,
+          height: `${from.height}px`,
+        },
+        {
+          transform: `translate3d(${to.left}px, ${to.top}px, 0)`,
+          width: `${to.width}px`,
+          height: `${to.height}px`,
         },
       ]
     : [

@@ -29,7 +29,16 @@ const BADGE_STYLE = {
   boxSizing: 'border-box',
 } as const;
 
-/** Default overlay content: the clone taken at drag start, plus a count badge for multi-drag. */
+const FILL = { width: '100%', height: '100%' } as const;
+
+/** Overlay box resizes (target list with other item sizes) glide instead of jumping. */
+const RESIZE_TRANSITION = 'width 150ms ease, height 150ms ease';
+
+/**
+ * Default overlay content: the clone taken at drag start, plus a count badge for
+ * multi-drag. The clone fills the overlay box, so a resize re-lays it out instead of
+ * stretching it.
+ */
 const DefaultPreview = defineComponent({
   name: 'DnDDefaultPreview',
   setup() {
@@ -41,8 +50,8 @@ const DefaultPreview = defineComponent({
     });
     return () => {
       const count = manager.active.value?.ids.length ?? 0;
-      return h('div', { 'aria-hidden': 'true' }, [
-        h('div', { ref: host }),
+      return h('div', { 'aria-hidden': 'true', style: FILL }, [
+        h('div', { ref: host, style: FILL }),
         count > 1 ? h('span', { style: BADGE_STYLE }, String(count)) : null,
       ]);
     };
@@ -74,12 +83,15 @@ export const DragOverlay = defineComponent({
     const transition = computed(() => {
       if (manager.status.value !== 'dragging' || prefersReducedMotion()) return undefined;
       const smooth = getOverlaySmoothing(manager.props.modifiers);
-      return smooth ? `transform ${smooth.duration}ms ${smooth.easing}` : undefined;
+      return [smooth && `transform ${smooth.duration}ms ${smooth.easing}`, RESIZE_TRANSITION]
+        .filter(Boolean)
+        .join(', ');
     });
 
     const style = computed(() => {
       const current = manager.active.value!;
       const offset = manager.transform.value;
+      const size = manager.fitSize.value ?? current.rect;
       return {
         position: 'fixed',
         top: '0',
@@ -88,6 +100,9 @@ export const DragOverlay = defineComponent({
         pointerEvents: 'none',
         transformOrigin: '0 0',
         willChange: 'transform',
+        boxSizing: 'border-box',
+        width: `${size.width}px`,
+        height: `${size.height}px`,
         transform: `translate3d(${current.rect.left + offset.x}px, ${current.rect.top + offset.y}px, 0)`,
         transition: transition.value,
       } as const;

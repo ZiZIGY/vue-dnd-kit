@@ -60,6 +60,7 @@ export const DnDProvider = defineComponent({
     keyboard: { type: [Boolean, Object] as PropType<KeyboardOptions | false>, default: undefined },
     copyModifier: { type: String as PropType<string | null>, default: 'Alt' },
     overlayTo: { type: [String, Object] as PropType<string | HTMLElement>, default: 'body' },
+    overlayFit: { type: String as PropType<'slot' | 'source'>, default: 'slot' },
     announcements: { type: [Boolean, Object] as PropType<Partial<Announcements> | false>, default: undefined },
     screenReaderInstructions: String,
     defaultStyles: { type: Boolean, default: true },

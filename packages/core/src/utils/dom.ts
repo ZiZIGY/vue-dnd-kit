@@ -7,12 +7,19 @@ export const createId = (prefix: string): string => `${prefix}-${++uid}`;
 
 export const isClient = typeof window !== 'undefined';
 
-/** Resolves an element, component ref or getter to a DOM element. */
-export const toElement = (target: MaybeElementRef): HTMLElement | null =>
-  (unrefElement(target as Parameters<typeof unrefElement>[0]) as
-    | HTMLElement
-    | null
-    | undefined) ?? null;
+const ELEMENT_NODE = 1;
+
+/**
+ * Resolves an element, component ref or getter to a DOM element. A component with
+ * several root nodes (a fragment, common in UI kits) exposes an anchor text node as
+ * `$el`: its first element is used instead.
+ */
+export const toElement = (target: MaybeElementRef): HTMLElement | null => {
+  const node = unrefElement(target as Parameters<typeof unrefElement>[0]) as Node | null | undefined;
+  if (!node) return null;
+  if (node.nodeType === ELEMENT_NODE) return node as HTMLElement;
+  return ((node as CharacterData).nextElementSibling as HTMLElement | null) ?? null;
+};
 
 /**
  * Parent in the flat tree: slotted elements go to their slot, shadow roots to their

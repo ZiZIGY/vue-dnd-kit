@@ -273,6 +273,13 @@ export interface DnDProviderProps {
   /** Key (KeyboardEvent.key) that turns a move into a copy. Default `'Alt'`; `null` disables. */
   copyModifier?: string | null;
   overlayTo?: string | HTMLElement;
+  /**
+   * Overlay size while dragging. `'slot'` (default): it follows the slot the item will
+   * land in, so over another list it takes the size of that list's items, and the drop
+   * needs no resize. `'source'`: it keeps the dragged element's size. The default
+   * overlay content re-lays out at the new size; it is never scaled.
+   */
+  overlayFit?: 'slot' | 'source';
   announcements?: Partial<Announcements> | false;
   screenReaderInstructions?: string;
   /** Inject zero-specificity default styles (placeholder opacity, no text selection while dragging). */

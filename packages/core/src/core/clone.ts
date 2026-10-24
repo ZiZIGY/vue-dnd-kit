@@ -56,7 +56,8 @@ const wrapTableRow = (row: HTMLElement, source: HTMLElement): HTMLElement => {
   const table = document.createElement('table');
   const body = document.createElement('tbody');
   table.style.borderCollapse = 'collapse';
-  table.style.width = `${source.getBoundingClientRect().width}px`;
+  table.style.width = '100%';
+  table.style.height = '100%';
   const sourceCells = source.children;
   Array.from(row.children).forEach((cell, index) => {
     const width = sourceCells[index]?.getBoundingClientRect().width;
@@ -69,7 +70,6 @@ const wrapTableRow = (row: HTMLElement, source: HTMLElement): HTMLElement => {
 
 export const clonePreview = (source: HTMLElement): HTMLElement => {
   const clone = source.cloneNode(true) as HTMLElement;
-  const rect = source.getBoundingClientRect();
   const computed = getComputedStyle(source);
 
   for (const element of [clone, ...clone.querySelectorAll('*')]) {
@@ -90,9 +90,11 @@ export const clonePreview = (source: HTMLElement): HTMLElement => {
       clone.style.setProperty(property, computed.getPropertyValue(property));
     }
   }
+  // The clone fills the overlay box: when the box takes the size of another list's
+  // items, the content re-lays out at that size instead of being scaled.
   Object.assign(clone.style, {
-    width: `${rect.width}px`,
-    height: `${rect.height}px`,
+    width: '100%',
+    height: '100%',
     margin: '0',
     boxSizing: 'border-box',
     transform: 'none',

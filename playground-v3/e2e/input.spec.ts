@@ -373,14 +373,15 @@ test.describe('snap to grid', () => {
     const board = (await page.getByTestId('board').boundingBox())!;
     const start = await center(page.locator('[data-id="free"]'));
     await dragTo(page, page.locator('[data-id="free"]'), { x: start.x + 33, y: start.y + 47 }, { release: false });
-    await expect(overlay(page)).toHaveCSS('transition-property', 'transform');
+    // Alongside the width/height transition the overlay always has (overlayFit: 'slot').
+    await expect(overlay(page)).toHaveCSS('transition-property', /(^|, )transform(,|$)/);
     await page.waitForTimeout(150);
     const box = (await overlay(page).boundingBox())!;
     expect(Math.round(box.x - board.x) % 20).toBe(0);
     expect(Math.round(box.y - board.y) % 20).toBe(0);
     await page.mouse.up();
     // The glide is gone before the drop animation starts.
-    await expect(overlay(page)).not.toHaveCSS('transition-property', 'transform');
+    await expect(overlay(page)).not.toHaveCSS('transition-property', /(^|, )transform(,|$)/);
     await waitForIdle(page);
     await expect(page.getByTestId('free-state')).toHaveText(/free:60,200/);
   });
