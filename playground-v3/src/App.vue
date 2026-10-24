@@ -29,6 +29,8 @@
   import AnnounceDemo from './demos/AnnounceDemo.vue';
   import NestedZonesDemo from './demos/NestedZonesDemo.vue';
   import ShadowDomDemo from './demos/ShadowDomDemo.vue';
+  // Example apps (each brings its own DnDProvider).
+  import BoardApp from './demos/apps/BoardApp.vue';
 
   const demos = {
     sortable: SortableDemo,
@@ -58,6 +60,7 @@
     announce: AnnounceDemo,
     'nested-zones': NestedZonesDemo,
     shadow: ShadowDomDemo,
+    'app-board': BoardApp,
   };
   type DemoName = keyof typeof demos;
 
