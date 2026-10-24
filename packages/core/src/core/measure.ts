@@ -133,10 +133,12 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
     let result = flags.get(element);
     if (!result) {
       const style = getComputedStyle(element);
-      const paint = /paint|strict|content/.test(style.contain ?? '');
+      // Overflow and containment don't apply without a box of their own.
+      const boxed = style.display !== 'contents' && style.display !== 'inline';
+      const paint = boxed && /paint|strict|content/.test(style.contain ?? '');
       result = {
-        clipX: paint || clipsOverflow(style.overflowX),
-        clipY: paint || clipsOverflow(style.overflowY),
+        clipX: paint || (boxed && clipsOverflow(style.overflowX)),
+        clipY: paint || (boxed && clipsOverflow(style.overflowY)),
         fixed: style.position === 'fixed',
         sticky: style.position === 'sticky',
       };

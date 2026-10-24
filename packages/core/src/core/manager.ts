@@ -511,11 +511,17 @@ export function createDnDManager(props: DnDProviderProps) {
       await nextFrame();
       if (id !== session) return;
       const target = draggables.get(current.id)?.getElement();
-      const to = target?.isConnected ? getLayoutRect(target) : null;
+      // The commit changed the layout since the last frame: read afresh.
+      measurer.invalidate();
+      measurer.nextFrame();
+      const to = target?.isConnected ? measurer.measure(target) : null;
+      // Fly only to a slot that can be seen: virtualizers keep overscan rows mounted
+      // outside the scroller, and the slot may be scrolled away. Otherwise fade out.
+      const visible = !!to && to.width > 0 && !!measurer.measureVisible(target!);
       await runDropAnimation(props.dropAnimation, {
         overlay,
         from: getRect(overlay),
-        to: to && to.width > 0 ? to : null,
+        to: visible ? to : null,
         reason,
         active: current,
       });

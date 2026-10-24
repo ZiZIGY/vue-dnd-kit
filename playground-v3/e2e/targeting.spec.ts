@@ -212,6 +212,25 @@ test.describe('shadow DOM', () => {
     await expect(order(page)).toHaveText('s2,s3,s4,s1,s5,s6,s7,s8,s9,s10,s11,s12');
   });
 
+  test('dropping onto a slot scrolled out of view fades the overlay instead of flying', async ({ page }) => {
+    const scroller = await box(page.getByTestId('shadow-scroller'));
+    const start = await grab(page, row(page, 's1'));
+    // Off the list (no target: the item stays in its slot), then scroll that slot away.
+    await page.mouse.move(scroller.x + scroller.width + 200, start.y, { steps: 6 });
+    await page.getByTestId('shadow-scroller').evaluate((element) => (element.scrollTop = 300));
+    await expect(row(page, 's1')).toHaveAttribute('data-dnd-placeholder', '');
+
+    await page.mouse.up();
+    const samples = await recordOverlay(page);
+    await waitForIdle(page);
+    await expect(order(page)).toHaveText(INITIAL);
+    // The overlay faded where it was dropped (it would fly up to the hidden slot).
+    const [first] = samples;
+    for (const [left, top] of samples) {
+      expect(Math.hypot(left - first![0], top - first![1])).toBeLessThan(2);
+    }
+  });
+
   test('rows clipped by the scroll container are not targeted', async ({ page }) => {
     const scroller = await box(page.getByTestId('shadow-scroller'));
     // A hidden row far enough below the scroller that the overlay (one row tall)
