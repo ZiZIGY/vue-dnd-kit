@@ -40,6 +40,7 @@ import { defaultAnnouncements } from './a11y';
 import { markDocumentDragging } from './styles';
 import { clonePreview } from './clone';
 import { elementFromPoint, nextFrame, parentOf } from '../utils/dom';
+import { getVisibleClip, intersects } from '../utils/clip';
 
 export interface DraggableEntry {
   id: Key;
@@ -425,10 +426,13 @@ export function createDnDManager(props: DnDProviderProps) {
       if (id !== session) return;
       const target = draggables.get(current.id)?.getElement();
       const to = target?.isConnected ? getLayoutRect(target) : null;
+      // Fly only to a slot that can be seen: virtualizers keep overscan and pinned
+      // rows mounted outside the scroller's visible area. Otherwise fade out.
+      const visible = !!to && to.width > 0 && intersects(to, getVisibleClip(target!));
       await runDropAnimation(props.dropAnimation, {
         overlay,
         from: getRect(overlay),
-        to: to && to.width > 0 ? to : null,
+        to: visible ? to : null,
         reason,
         active: current,
       });
