@@ -35,6 +35,26 @@ export const getRect = (element: Element): Rect =>
 export const offsetRect = (rect: Rect, x: number, y: number): Rect =>
   createRect(rect.left + x, rect.top + y, rect.width, rect.height);
 
+/** Overlap of two rects; `null` when they don't overlap. */
+export const intersectRect = (a: Rect, b: Rect): Rect | null => {
+  const left = Math.max(a.left, b.left);
+  const top = Math.max(a.top, b.top);
+  const right = Math.min(a.right, b.right);
+  const bottom = Math.min(a.bottom, b.bottom);
+  return right > left && bottom > top ? createRect(left, top, right - left, bottom - top) : null;
+};
+
+/** Smallest rect containing both. */
+export const unionRect = (a: Rect, b: Rect): Rect => {
+  const left = Math.min(a.left, b.left);
+  const top = Math.min(a.top, b.top);
+  return createRect(left, top, Math.max(a.right, b.right) - left, Math.max(a.bottom, b.bottom) - top);
+};
+
+/** `rect` grown by `x` and `y` on each side. */
+export const expandRect = (rect: Rect, x: number, y: number): Rect =>
+  createRect(rect.left - x, rect.top - y, rect.width + 2 * x, rect.height + 2 * y);
+
 export const containsPoint = (rect: Rect, point: Coordinates): boolean =>
   point.x >= rect.left &&
   point.x <= rect.right &&

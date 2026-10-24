@@ -23,7 +23,7 @@ import type {
   SortableStrategy,
 } from '../types';
 import type { DnDManager } from '../core/manager';
-import { fadeIn, flip, getLayoutRect, getRect, type FlipEntry } from '../animation/layout';
+import { fadeIn, flip, getRect, type FlipEntry } from '../animation/layout';
 import { projectIndex, type ProjectionItem } from './projection';
 
 export interface ListEntry {
@@ -90,7 +90,8 @@ interface Session {
 
 interface Snapshot {
   element: HTMLElement;
-  rect: Rect;
+  /** `null`: far from the viewport, the element jumps instead of animating. */
+  rect: Rect | null;
 }
 
 export interface SortableGroup {
@@ -154,7 +155,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const snapshot = new Map<Key, Snapshot>();
     for (const [key, getElement] of items) {
       const element = getElement();
-      if (element?.isConnected) snapshot.set(key, { element, rect: getRect(element) });
+      if (!element?.isConnected) continue;
+      snapshot.set(key, { element, rect: manager.isNearViewport(element) ? getRect(element) : null });
     }
     return snapshot;
   };
@@ -172,6 +174,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         if (fadeAppearing && key !== activeKey) fadeIn(element, list.animation());
         continue;
       }
+      if (!before.rect) continue;
       // The active slot entering another list was recreated: sliding it in from the
       // old list would be clipped by the new scroller, and the overlay shows it anyway.
       if (key === activeKey && before.element !== element) continue;
@@ -180,6 +183,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       byList.set(list, entries);
     }
     for (const [list, entries] of byList) flip(entries, list.animation());
+    manager.invalidateMeasurements();
   };
 
   scope.run(() => {
@@ -292,7 +296,9 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       const index = indices.get(key);
       if (index === undefined) continue;
       const element = getElement();
-      if (element?.isConnected) result.push({ key, index, rect: getLayoutRect(element) });
+      // Clipped to the visible area; rows fully clipped (overscan) can't be targeted.
+      const rect = element?.isConnected ? manager.measureVisible(element) : null;
+      if (rect) result.push({ key, index, rect });
     }
     return result.sort((a, b) => a.index - b.index);
   };

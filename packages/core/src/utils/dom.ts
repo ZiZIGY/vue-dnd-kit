@@ -14,11 +14,31 @@ export const toElement = (target: MaybeElementRef): HTMLElement | null =>
     | null
     | undefined) ?? null;
 
-/** Parent element, crossing shadow root boundaries. */
+/**
+ * Parent in the flat tree: slotted elements go to their slot, shadow roots to their
+ * host. This is the tree that lays out, clips and scrolls an element, and the one
+ * hit-testing walks.
+ */
 export const parentOf = (element: Element): Element | null =>
+  element.assignedSlot ??
   element.parentElement ??
   ((element.getRootNode() as ShadowRoot).host as Element | undefined) ??
   null;
+
+/** `ancestor.contains(node)` across shadow roots and slots. */
+export const containsComposed = (ancestor: Element, node: Element): boolean => {
+  if (ancestor.contains(node)) return true;
+  // In the same tree, a flat-tree ancestor is always a DOM ancestor too.
+  if (ancestor.getRootNode() === node.getRootNode()) return false;
+  for (let element = parentOf(node); element; element = parentOf(element)) {
+    if (element === ancestor) return true;
+  }
+  return false;
+};
+
+/** Real event target, not retargeted to a shadow host (open shadow roots). */
+export const getEventTarget = (event: Event): EventTarget | null =>
+  event.composedPath?.()[0] ?? event.target;
 
 /** Topmost element at a point, descending into open shadow roots. */
 export const elementFromPoint = (x: number, y: number): Element | null => {

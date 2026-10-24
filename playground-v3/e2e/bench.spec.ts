@@ -12,6 +12,10 @@ const stats = (values: number[]) => {
   };
 };
 
+// The sweep covers rows 0–20, which must be on screen: rows clipped by the viewport
+// are not drop targets (rfcs/0001-v3.md §6).
+test.use({ viewport: { width: 1200, height: 1200 } });
+
 /**
  * Go/no-go for the draft-order design (rfcs/0001-v3.md §15, phase A): 500 rows,
  * the active row swept up and down across ~20 neighbours, i.e. hundreds of reorders,

@@ -29,17 +29,20 @@ import type {
   Size,
 } from '../types';
 import {
+  containsPoint,
   createRect,
   getLayoutRect,
   getRect,
   getWindowRect,
+  unionRect,
 } from '../animation/layout';
 import { runDropAnimation } from '../animation/drop';
-import { pointerFirst } from './collision';
+import { createTargetStabilizer, pointerFirst } from './collision';
+import { createMeasurer } from './measure';
 import { defaultAnnouncements } from './a11y';
 import { markDocumentDragging } from './styles';
 import { clonePreview } from './clone';
-import { elementFromPoint, nextFrame, parentOf } from '../utils/dom';
+import { containsComposed, elementFromPoint, nextFrame, parentOf } from '../utils/dom';
 
 export interface DraggableEntry {
   id: Key;
@@ -111,6 +114,15 @@ export function createDnDManager(props: DnDProviderProps) {
   let restoreDocument: (() => void) | null = null;
   let session = 0;
   let announceTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const measurer = createMeasurer();
+  const stabilizer = createTargetStabilizer();
+  /** Nesting depth of drop target elements among drop targets, per session. */
+  let nesting = new WeakMap<Element, number>();
+  /** Pointer of the last target detection. */
+  let detectedAt: Coordinates | null = null;
+  /** Scroll, resize or an external request since the last frame: detect even if the pointer stood still. */
+  let refreshRequested = false;
 
   // ─── Registration ────────────────────────────────────────────────────────────
 
@@ -232,6 +244,10 @@ export function createDnDManager(props: DnDProviderProps) {
     return result;
   };
 
+  /**
+   * Drop targets under the point: the topmost element (shadow roots included) and its
+   * flat-tree ancestors. Higher priority first, then the deepest.
+   */
   const hitTest = (point: Coordinates, byElement: Map<Element, DroppableEntry>): Key[] => {
     const hits: DroppableEntry[] = [];
     for (
@@ -242,11 +258,25 @@ export function createDnDManager(props: DnDProviderProps) {
       const entry = byElement.get(element);
       if (entry) hits.push(entry);
     }
-    // Innermost first; a higher priority wins over nesting depth.
     return hits
       .map((entry, depth) => ({ entry, depth }))
       .sort((a, b) => b.entry.priority - a.entry.priority || a.depth - b.depth)
       .map(({ entry }) => entry.id);
+  };
+
+  const depthOf = (element: Element, byElement: Map<Element, DroppableEntry>): number => {
+    let depth = nesting.get(element);
+    if (depth === undefined) {
+      depth = 0;
+      for (let parent = parentOf(element); parent; parent = parentOf(parent)) {
+        if (byElement.has(parent)) {
+          depth = depthOf(parent, byElement) + 1;
+          break;
+        }
+      }
+      nesting.set(element, depth);
+    }
+    return depth;
   };
 
   const detectOver = (current: Active, point: Coordinates): Over | null => {
@@ -258,28 +288,59 @@ export function createDnDManager(props: DnDProviderProps) {
       const element = entry.getElement();
       if (!element?.isConnected) continue;
       // Never drop an item into itself or its own descendants.
-      if (current.element.isConnected && current.element.contains(element)) continue;
+      if (current.element.isConnected && containsComposed(current.element, element)) continue;
       byElement.set(element, entry);
       elements.set(entry.id, element);
-      candidates.push({ id: entry.id, rect: getLayoutRect(element), priority: entry.priority });
+      measurer.observe(element);
     }
+    for (const [element, entry] of byElement) {
+      // Fully clipped by a scroll container or the viewport: not hittable.
+      const rect = measurer.measureVisible(element);
+      if (rect) {
+        candidates.push({ id: entry.id, rect, priority: entry.priority, depth: depthOf(element, byElement) });
+      }
+    }
+    const hits = hitTest(point, byElement);
     const detect = props.collision ?? pointerFirst;
-    const [id] = detect({
+    const ranked = detect({
       pointer: point,
       overlayRect: getOverlayRect(current, transform.value),
       candidates,
-      hits: hitTest(point, byElement),
+      hits,
+    });
+
+    const visible = new Set<Key>(hits);
+    for (const candidate of candidates) visible.add(candidate.id);
+    const id = stabilizer.resolve({
+      pointer: point,
+      previous: over.value?.id ?? null,
+      next: ranked.find((key) => elements.has(key)) ?? null,
+      exact: current.sensor === 'keyboard',
+      isValid: (key) => visible.has(key),
+      isGap: (parent, child) => {
+        const parentElement = elements.get(parent)!;
+        const childElement = elements.get(child);
+        if (!childElement || parentElement === childElement) return false;
+        if (!containsComposed(parentElement, childElement)) return false;
+        // The pointer is within the bounds of the targets nested in `parent`, but over none.
+        let bounds: Rect | null = null;
+        for (const candidate of candidates) {
+          const element = elements.get(candidate.id)!;
+          if (element === parentElement || !containsComposed(parentElement, element)) continue;
+          if (containsPoint(candidate.rect, point)) return false;
+          bounds = bounds ? unionRect(bounds, candidate.rect) : candidate.rect;
+        }
+        return !!bounds && containsPoint(bounds, point);
+      },
     });
     if (id == null) return null;
-    const entry = droppables.get(id);
-    const element = elements.get(id);
-    const candidate = candidates.find((item) => item.id === id);
-    if (!entry || !element || !candidate) return null;
+    const entry = droppables.get(id)!;
+    const element = elements.get(id)!;
     return {
       id,
       data: entry.getData(),
       element,
-      rect: candidate.rect,
+      rect: measurer.measure(element),
       accepted: entry.accepts(current),
     };
   };
@@ -290,10 +351,20 @@ export function createDnDManager(props: DnDProviderProps) {
     frame = 0;
     const current = active.value;
     if (status.value !== 'dragging' || !current) return;
+    const refresh = refreshRequested;
+    refreshRequested = false;
     const offset = applyModifiers(current, { x: raw.x - origin.x, y: raw.y - origin.y });
-    transform.value = offset;
     const point = { x: origin.x + offset.x, y: origin.y + offset.y };
+    // The target follows the pointer, scrolling and resizing, never a layout shift
+    // alone: a frame where none of them changed (a repeated pointermove) does nothing.
+    if (!refresh && detectedAt && point.x === detectedAt.x && point.y === detectedAt.y) return;
+    detectedAt = point;
+    transform.value = offset;
     pointer.value = point;
+    measurer.nextFrame();
+    // Scrolling moves the content under the pointer: the hysteresis, which measures
+    // pointer travel, no longer applies.
+    if (refresh) stabilizer.reset();
 
     const previous = over.value;
     const next = detectOver(current, point);
@@ -311,12 +382,21 @@ export function createDnDManager(props: DnDProviderProps) {
     emit('onDragMove', event);
   };
 
-  const scheduleFrame = () => {
+  const requestFrame = () => {
     if (!frame && status.value === 'dragging') frame = requestAnimationFrame(runFrame);
   };
 
+  /** Re-detects the target on the next frame even if the pointer stands still (scroll, resize). */
+  const scheduleFrame = () => {
+    if (status.value !== 'dragging') return;
+    refreshRequested = true;
+    requestFrame();
+  };
+
+  /** Runs a pending frame now. Without one, the target is already up to date. */
   const flushFrame = () => {
-    if (frame) cancelAnimationFrame(frame);
+    if (!frame) return;
+    cancelAnimationFrame(frame);
     runFrame();
   };
 
@@ -370,6 +450,11 @@ export function createDnDManager(props: DnDProviderProps) {
     over.value = null;
     overlaySize.value = null;
     activationProgress.value = 1;
+    measurer.begin();
+    stabilizer.reset();
+    nesting = new WeakMap();
+    detectedAt = null;
+    refreshRequested = false;
     status.value = 'dragging';
     restoreDocument = markDocumentDragging(sensor);
 
@@ -382,7 +467,7 @@ export function createDnDManager(props: DnDProviderProps) {
 
   const move = (coordinates: Coordinates) => {
     raw = coordinates;
-    scheduleFrame();
+    requestFrame();
   };
 
   const settle = (current: Active) => {
@@ -391,6 +476,8 @@ export function createDnDManager(props: DnDProviderProps) {
     restoreDocument = null;
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
+    measurer.end();
+    detectedAt = null;
     if (current.sensor === 'keyboard') {
       draggables.get(current.id)?.getFocusTarget()?.focus({ preventScroll: true });
     }
@@ -547,6 +634,14 @@ export function createDnDManager(props: DnDProviderProps) {
     cancel,
     scheduleFrame,
     destroy,
+    /** Layout rect without in-flight FLIP translates; cached during a drag, scroll-aware. */
+    measure: measurer.measure,
+    /** `measure()` clipped by scroll containers and the viewport; `null` when fully clipped. */
+    measureVisible: measurer.measureVisible,
+    /** Whether FLIP should animate the element (near its scroll container's visible area). */
+    isNearViewport: measurer.isNearViewport,
+    /** Call after layout changes the library caused (draft changes): drops cached rects. */
+    invalidateMeasurements: measurer.invalidate,
   };
   return manager;
 }

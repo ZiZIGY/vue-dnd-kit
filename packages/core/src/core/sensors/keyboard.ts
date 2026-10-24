@@ -2,7 +2,7 @@ import { defaultDocument, useEventListener } from '@vueuse/core';
 import type { Coordinates } from '../../types';
 import type { DnDManager } from '../manager';
 import { getCenter, getRect } from '../../animation/layout';
-import { isEditable } from '../../utils/dom';
+import { getEventTarget, isEditable } from '../../utils/dom';
 
 const DEFAULT_KEYS = {
   start: ['Space', 'Enter'],
@@ -58,7 +58,7 @@ export function useKeyboardSensor(manager: DnDManager): void {
 
     if (status !== 'idle' || !options() || event.repeat) return;
     if (!bindings.start.includes(event.code)) return;
-    const target = event.target;
+    const target = getEventTarget(event);
     if (!(target instanceof Element) || isEditable(target)) return;
     const found = manager.findDraggable(target);
     if (!found || found.entry.isDisabled()) return;
