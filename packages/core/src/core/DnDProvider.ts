@@ -4,6 +4,7 @@ import {
   onMounted,
   onScopeDispose,
   provide,
+  shallowRef,
   Teleport,
   useId,
   type PropType,
@@ -93,22 +94,33 @@ export const DnDProvider = defineComponent({
     useEventListener(defaultDocument, 'scroll', refresh, { capture: true, passive: true });
     useEventListener(defaultWindow, 'resize', refresh, { passive: true });
 
+    // The teleported part renders on the client only: SSR can't place it into <body>
+    // (hydration mismatch in Nuxt), and nothing in it is needed before a drag.
+    const mounted = shallowRef(false);
     onMounted(() => {
+      mounted.value = true;
       if (props.defaultStyles) injectDefaultStyles();
     });
     onScopeDispose(manager.destroy);
 
     return () => [
       slots.default?.(),
-      h(Teleport, { to: props.overlayTo }, [
-        h(DragOverlay, null, slots.overlay ? { default: slots.overlay } : undefined),
-        h(
-          'div',
-          { id: manager.instructionsId, style: { display: 'none' } },
-          props.screenReaderInstructions ?? DEFAULT_INSTRUCTIONS,
-        ),
-        h(LiveRegion),
-      ]),
+      mounted.value
+        ? h(Teleport, { to: props.overlayTo }, [
+            // A visual copy of the dragged item: hidden from assistive tech and focus.
+            h(
+              DragOverlay,
+              { inert: true, 'aria-hidden': 'true' },
+              slots.overlay ? { default: slots.overlay } : undefined,
+            ),
+            h(
+              'div',
+              { id: manager.instructionsId, style: { display: 'none' } },
+              props.screenReaderInstructions ?? DEFAULT_INSTRUCTIONS,
+            ),
+            h(LiveRegion),
+          ])
+        : null,
     ];
   },
 });

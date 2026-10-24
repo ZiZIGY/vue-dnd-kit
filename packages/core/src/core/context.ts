@@ -24,7 +24,8 @@ export const provideDnDContext = (app: App, manager: DnDManager): void => {
   app.provide(DND_CONTEXT, manager);
 };
 
-const createSelection = (set: Set<Key>): DnDSelection => ({
+/** Id-based selection over the provider's reactive set: per-id updates, survives unmounts. */
+export const createSelection = (set: Set<Key>): DnDSelection => ({
   get ids() {
     return set;
   },
@@ -36,8 +37,10 @@ const createSelection = (set: Set<Key>): DnDSelection => ({
     else set.delete(id);
   },
   set: (ids) => {
-    set.clear();
-    for (const id of ids) set.add(id);
+    // Copy first: `ids` may be this very set (or a view of it).
+    const next = new Set(ids);
+    for (const id of [...set]) if (!next.has(id)) set.delete(id);
+    for (const id of next) set.add(id);
   },
   clear: () => set.clear(),
 });

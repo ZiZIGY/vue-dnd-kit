@@ -4,6 +4,7 @@ export { makeDroppable } from './core/makeDroppable';
 export { useDnD, useDnDMonitor, useDnDContext, provideDnDContext } from './core/context';
 export { makeSortableList } from './sortable/makeSortableList';
 export { makeSortableItem } from './sortable/makeSortableItem';
+export { makeSelectionArea } from './core/makeSelectionArea';
 
 export {
   pointerFirst,
