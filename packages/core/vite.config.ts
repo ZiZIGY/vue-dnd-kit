@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
+import { copyFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -12,6 +13,14 @@ export default defineConfig({
       tsconfigPath: resolve(__dirname, 'tsconfig.json'),
       include: [resolve(__dirname, 'src')],
       exclude: ['**/*.test.ts'],
+      // One self-contained index.d.ts (only `vue` and `@vueuse/core` imports): no
+      // extensionless relative imports, which `node16`/`nodenext` can't resolve.
+      rollupTypes: true,
+      // The same declarations as .d.cts for the `require` condition: a .d.ts is
+      // ESM in a `"type": "module"` package (publint, arethetypeswrong).
+      afterBuild: () => {
+        copyFileSync(resolve(__dirname, 'dist/index.d.ts'), resolve(__dirname, 'dist/index.d.cts'));
+      },
     }),
   ],
   build: {
