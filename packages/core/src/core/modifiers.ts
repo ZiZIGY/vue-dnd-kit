@@ -1,4 +1,4 @@
-import type { Coordinates, MaybeElementRef, Modifier, Rect } from '../types';
+import type { AnimationOptions, Coordinates, MaybeElementRef, Modifier, Rect } from '../types';
 import { getRect } from '../animation/layout';
 import { toElement } from '../utils/dom';
 
@@ -28,7 +28,10 @@ export const restrictToHorizontalAxis: Modifier = ({ transform }) => ({ x: trans
 export const restrictToWindowEdges: Modifier = ({ transform, overlayRect, windowRect }) =>
   restrictToRect(transform, baseRect(overlayRect, transform), windowRect);
 
-/** Keeps the overlay inside the sortable list (or parent element) the drag started in. */
+/**
+ * Keeps the overlay inside the container the drag started in: the sortable list
+ * (not its DOM parent) or, for plain draggables, the parent element.
+ */
 export const restrictToParent: Modifier = ({ transform, overlayRect, containerRect }) =>
   containerRect ? restrictToRect(transform, baseRect(overlayRect, transform), containerRect) : transform;
 
@@ -46,11 +49,18 @@ const isScrollable = (element: Element) => {
   return /(auto|scroll|overlay)/.test(style.overflow + style.overflowX + style.overflowY);
 };
 
+// Modifiers run every frame: resolve the ancestor once per dragged element.
+const scrollableAncestors = new WeakMap<Element, Element | null>();
+
 /** Keeps the overlay inside the first scrollable ancestor of the dragged element. */
 export const restrictToFirstScrollableAncestor: Modifier = ({ transform, overlayRect, active }) => {
-  let element = active.element.parentElement;
-  while (element && !isScrollable(element)) element = element.parentElement;
-  return element
+  let element = scrollableAncestors.get(active.element);
+  if (element === undefined) {
+    element = active.element.parentElement;
+    while (element && !isScrollable(element)) element = element.parentElement;
+    scrollableAncestors.set(active.element, element);
+  }
+  return element?.isConnected
     ? restrictToRect(transform, baseRect(overlayRect, transform), getRect(element))
     : transform;
 };
@@ -58,15 +68,53 @@ export const restrictToFirstScrollableAncestor: Modifier = ({ transform, overlay
 export interface SnapToGridOptions {
   x: number;
   y: number;
+  /**
+   * `'container'` (default): the overlay's top-left lands on grid lines drawn from the
+   * container's top-left (`containerRect`: the sortable list or the parent element).
+   * `'delta'`: the drag offset is rounded, keeping where the item started off-grid.
+   */
+  origin?: 'container' | 'delta';
+  /**
+   * Glide the overlay between snapped positions (default 80ms). Collision still
+   * uses the snapped position at once.
+   */
+  smooth?: boolean | AnimationOptions;
 }
 
-/** Snaps the drag offset to a grid (rounding to the nearest cell). */
+/** Marker read by the overlay: glide between the positions this modifier produces. */
+export type SmoothModifier = Modifier & { smooth?: Required<AnimationOptions> };
+
+const DEFAULT_SMOOTH: Required<AnimationOptions> = { duration: 80, easing: 'ease-out' };
+
+const snap = (value: number, size: number) => (size > 0 ? Math.round(value / size) * size : value);
+
+/** Snaps the overlay to a grid (rounding to the nearest cell). */
 export const snapToGrid = (size: number | SnapToGridOptions): Modifier => {
-  const { x: sx, y: sy } = typeof size === 'number' ? { x: size, y: size } : size;
-  return ({ transform }) => ({
-    x: sx > 0 ? Math.round(transform.x / sx) * sx : transform.x,
-    y: sy > 0 ? Math.round(transform.y / sy) * sy : transform.y,
-  });
+  const options: SnapToGridOptions = typeof size === 'number' ? { x: size, y: size } : size;
+  const { x: sx, y: sy, origin = 'container' } = options;
+  const modifier: Modifier = ({ transform, overlayRect, containerRect }) => {
+    if (origin === 'delta' || !containerRect) {
+      return { x: snap(transform.x, sx), y: snap(transform.y, sy) };
+    }
+    const left = overlayRect.left - containerRect.left;
+    const top = overlayRect.top - containerRect.top;
+    return { x: transform.x + snap(left, sx) - left, y: transform.y + snap(top, sy) - top };
+  };
+  const smooth = options.smooth;
+  if (!smooth) return modifier;
+  const resolved = { ...DEFAULT_SMOOTH, ...(smooth === true ? {} : smooth) };
+  return resolved.duration > 0 ? Object.assign(modifier, { smooth: resolved }) : modifier;
+};
+
+/** The glide the overlay should apply between modifier outputs, if any modifier asks for one. */
+export const getOverlaySmoothing = (
+  modifiers: readonly Modifier[] | undefined,
+): Required<AnimationOptions> | null => {
+  for (const modifier of modifiers ?? []) {
+    const smooth = (modifier as SmoothModifier).smooth;
+    if (smooth) return smooth;
+  }
+  return null;
 };
 
 /** Centers the overlay under the pointer instead of keeping the grab offset. */

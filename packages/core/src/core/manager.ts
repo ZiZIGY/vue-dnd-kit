@@ -12,6 +12,7 @@ import { nextTick, shallowReactive, shallowRef } from 'vue';
 import type {
   ActivationOptions,
   Active,
+  AutoScrollOptions,
   BeforeDropResult,
   CollisionCandidate,
   Coordinates,
@@ -54,6 +55,8 @@ export interface DraggableEntry {
   activation?: ActivationOptions;
   canDrag?: (event: PointerEvent | KeyboardEvent) => boolean;
   overlay: boolean;
+  /** Arrow keys in free keyboard drags: move by pixels (default) or jump between accepting drop targets. */
+  keyboard?: 'pixels' | 'droppables';
   /** Sortable integration: the item object behind this draggable. */
   getItem?(): unknown;
   /** Sortable integration: container used by `restrictToParent`. */
@@ -71,6 +74,12 @@ export interface DroppableEntry {
   onDragLeave?(event: DnDEvent): void;
   onBeforeDrop?(event: DnDEvent): BeforeDropResult | Promise<BeforeDropResult>;
   onDrop?(event: DnDEvent): void;
+}
+
+/** Per-container auto-scroll override (e.g. `SortableListOptions.autoScroll`). */
+export interface AutoScrollEntry {
+  getElement(): Element | null;
+  options: boolean | AutoScrollOptions;
 }
 
 type MonitorHandler = Exclude<keyof DnDMonitor, 'onBeforeDrop' | 'getKeyboardCoordinates'>;
@@ -101,6 +110,7 @@ export function createDnDManager(props: DnDProviderProps) {
   const monitors = new Set<DnDMonitor>();
   const sourceResolvers = new Set<(active: Active) => DragSource | undefined>();
   const activationAborts = new Set<() => void>();
+  const autoScrollEntries = new Set<AutoScrollEntry>();
 
   let origin: Coordinates = { x: 0, y: 0 };
   let raw: Coordinates = { x: 0, y: 0 };
@@ -163,6 +173,16 @@ export function createDnDManager(props: DnDProviderProps) {
   const addSourceResolver = (resolver: (active: Active) => DragSource | undefined) => {
     sourceResolvers.add(resolver);
     return () => sourceResolvers.delete(resolver);
+  };
+
+  /** Overrides auto-scroll for the scroll container of `getElement()` (the element or its closest scrollable ancestor). */
+  const registerAutoScroll = (
+    getElement: () => Element | null,
+    options: boolean | AutoScrollOptions,
+  ): (() => void) => {
+    const entry: AutoScrollEntry = { getElement, options };
+    autoScrollEntries.add(entry);
+    return () => autoScrollEntries.delete(entry);
   };
 
   // ─── Events ──────────────────────────────────────────────────────────────────
@@ -533,6 +553,11 @@ export function createDnDManager(props: DnDProviderProps) {
     },
     getDraggable: (id: Key) => draggables.get(id),
     getDroppable: (id: Key) => droppables.get(id),
+    getDroppables: () => droppables.values(),
+    /** Pointer position as the sensor reported it, before modifiers. */
+    getRawPointer: (): Coordinates => raw,
+    autoScrollEntries,
+    registerAutoScroll,
     registerDraggable,
     registerDroppable,
     bindDraggableElement,

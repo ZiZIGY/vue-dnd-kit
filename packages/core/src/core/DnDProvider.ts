@@ -29,6 +29,7 @@ import { createDnDManager } from './manager';
 import { DND_CONTEXT, useDnDContext } from './context';
 import { usePointerSensor } from './sensors/pointer';
 import { useKeyboardSensor } from './sensors/keyboard';
+import { useAutoScroll } from './autoscroll';
 import { DragOverlay } from './DragOverlay';
 import { DEFAULT_INSTRUCTIONS, VISUALLY_HIDDEN } from './a11y';
 import { injectDefaultStyles } from './styles';
@@ -88,6 +89,7 @@ export const DnDProvider = defineComponent({
 
     usePointerSensor(manager);
     useKeyboardSensor(manager);
+    useAutoScroll(manager);
 
     const refresh = () => manager.scheduleFrame();
     useEventListener(defaultDocument, 'scroll', refresh, { capture: true, passive: true });

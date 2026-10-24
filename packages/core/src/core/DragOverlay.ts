@@ -11,6 +11,8 @@ import {
 import { useResizeObserver } from '@vueuse/core';
 import type { OverlaySlotProps } from '../types';
 import { useDnDContext } from './context';
+import { getOverlaySmoothing } from './modifiers';
+import { prefersReducedMotion } from '../animation/layout';
 
 const BADGE_STYLE = {
   position: 'absolute',
@@ -66,6 +68,15 @@ export const DragOverlay = defineComponent({
       return !!manager.active.value && manager.hasOverlay && (status === 'dragging' || status === 'dropping');
     });
 
+    // Smooth snapping glides between snapped positions while dragging. The transition
+    // goes away with `dragging`: a running CSS transition would override the WAAPI
+    // drop animation (transitions sit above animations in the cascade).
+    const transition = computed(() => {
+      if (manager.status.value !== 'dragging' || prefersReducedMotion()) return undefined;
+      const smooth = getOverlaySmoothing(manager.props.modifiers);
+      return smooth ? `transform ${smooth.duration}ms ${smooth.easing}` : undefined;
+    });
+
     const style = computed(() => {
       const current = manager.active.value!;
       const offset = manager.transform.value;
@@ -78,6 +89,7 @@ export const DragOverlay = defineComponent({
         transformOrigin: '0 0',
         willChange: 'transform',
         transform: `translate3d(${current.rect.left + offset.x}px, ${current.rect.top + offset.y}px, 0)`,
+        transition: transition.value,
       } as const;
     });
 
