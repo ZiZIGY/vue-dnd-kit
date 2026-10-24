@@ -69,3 +69,115 @@ pre {
   font-size: 12px;
   color: #6b7280;
 }
+
+/* Selection */
+
+.toolbar {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.selection-area {
+  position: relative;
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  height: 320px;
+  overflow: auto;
+  padding: 24px;
+  background: #e5e7eb;
+  border-radius: 8px;
+}
+
+.card-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 96px);
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 64px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: grab;
+}
+
+.card.small {
+  width: 64px;
+  height: 48px;
+}
+
+.card.selected {
+  background: #dbeafe;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px #2563eb;
+}
+
+.nested pre {
+  margin: 4px 0 0;
+}
+
+.nested-area {
+  position: relative;
+  width: 200px;
+  padding: 16px;
+  background: #f9fafb;
+  border: 1px dashed #9ca3af;
+  border-radius: 8px;
+}
+
+.nested-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.selection-band {
+  background: rgb(37 99 235 / 0.12);
+  border: 1px solid #2563eb;
+}
+
+.page-spacer {
+  height: 1200px;
+}
+
+/* Accessibility */
+
+.a11y-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.chip {
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+
+.zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 160px;
+  height: 96px;
+  background: #e5e7eb;
+  border: 2px dashed #9ca3af;
+  border-radius: 8px;
+}
+
+.zone.over {
+  border-color: #2563eb;
+}
