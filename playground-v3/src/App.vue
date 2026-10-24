@@ -33,6 +33,7 @@
   import BoardApp from './demos/apps/BoardApp.vue';
   import FilesApp from './demos/apps/FilesApp.vue';
   import FormApp from './demos/apps/FormApp.vue';
+  import PlaylistApp from './demos/apps/PlaylistApp.vue';
 
   const demos = {
     sortable: SortableDemo,
@@ -65,6 +66,7 @@
     'app-board': BoardApp,
     'app-files': FilesApp,
     'app-form': FormApp,
+    'app-playlist': PlaylistApp,
   };
   type DemoName = keyof typeof demos;
 

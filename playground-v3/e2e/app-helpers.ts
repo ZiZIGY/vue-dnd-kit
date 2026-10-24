@@ -23,9 +23,8 @@ export const at = async (locator: Locator, xRatio: number, yRatio: number): Prom
 
 /**
  * Glides the held pointer through `path` and comes to rest like a hand does: one
- * more pixel at the end. Sortable lists skip the frame right after a cross-list move
- * (the layout settles), so a pointer that stops dead in that frame would leave the
- * slot one step behind until it moves again.
+ * more pixel at the end, a couple of frames apart, so the last position is surely
+ * processed before the next step of the test.
  */
 export const glideTo = async (page: Page, path: Point | Point[], steps = 16): Promise<void> => {
   const points = Array.isArray(path) ? path : [path];
