@@ -110,6 +110,22 @@ export const pickUp = async (page: Page, from: Locator): Promise<Point> => {
   return { x: start.x, y: start.y + 8 };
 };
 
+/**
+ * Waits until no layout animation (FLIP `translate`) runs on list items. Measure a
+ * target after this when the layout just changed: a running FLIP offsets
+ * `boundingBox()` from where the element really is.
+ */
+export const layoutSettled = (page: Page): Promise<unknown> =>
+  page.waitForFunction(() =>
+    document
+      .getAnimations()
+      .every(
+        (animation) =>
+          animation.playState !== 'running' ||
+          !(animation.effect as KeyframeEffect | null)?.getKeyframes().some((frame) => 'translate' in frame),
+      ),
+  );
+
 /** Moves the held pointer to `to` in small steps (one per frame or so). */
 export const glide = async (page: Page, to: Point, steps = 10): Promise<void> => {
   await page.mouse.move(to.x, to.y, { steps });

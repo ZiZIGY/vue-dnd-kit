@@ -7,8 +7,11 @@
 
 const STYLE_ID = 'vue-dnd-kit-styles';
 
+// `[data-dnd-dragging]` on an item: dragged along but left in place (multi-drag 'gaps').
+// <html> carries the same attribute for the whole drag, hence `:not(html)`.
 const CSS = `
 :where([data-dnd-placeholder]) { opacity: 0.4; }
+:where([data-dnd-dragging]:not(html)) { opacity: 0.4; }
 :where(html[data-dnd-dragging]),
 :where(html[data-dnd-dragging] *) { user-select: none !important; -webkit-user-select: none !important; overflow-anchor: none !important; }
 :where(html[data-dnd-dragging="pointer"]),

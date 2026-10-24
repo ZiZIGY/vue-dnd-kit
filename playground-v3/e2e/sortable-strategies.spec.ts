@@ -96,10 +96,9 @@ test.describe('swap', () => {
   test('exchanges the active item with the hovered one; the rest stay put', async ({ page }) => {
     await dragTo(page, item(page, 's1'), await center(item(page, 's4')), { release: false });
     // Live preview: the DOM shows the exchange before the drop.
-    const order = await page.locator('[data-testid="swap-list"] > *').evaluateAll((rows) =>
-      rows.map((row) => row.getAttribute('data-id')),
-    );
-    expect(order).toEqual(['s4', 's2', 's3', 's1', 's5', 's6']);
+    const order = () =>
+      page.locator('[data-testid="swap-list"] > *').evaluateAll((rows) => rows.map((row) => row.getAttribute('data-id')));
+    await expect.poll(order).toEqual(['s4', 's2', 's3', 's1', 's5', 's6']);
     await page.mouse.up();
     await waitForIdle(page);
     await expect(state(page)).toContainText('swap-list:s4,s2,s3,s1,s5,s6');

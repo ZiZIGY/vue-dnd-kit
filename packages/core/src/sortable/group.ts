@@ -56,7 +56,7 @@ import {
 } from './stability';
 import { collapseIntoOverlay } from './multiple';
 import { trackCopyModifier } from './modifier';
-import { revealElement } from './keyboard';
+import { revealElement } from '../core/autoscroll';
 import { sortableTexts, type SortableSpot, type SortableSubject } from './announcements';
 
 /** An item made by a list: a copy (`clone`) or an item for an external draggable (`createItem`). */
@@ -163,8 +163,6 @@ interface Session {
   /** Indicator the drop commits at, decided in `onBeforeDrop`. */
   marker: SortableIndicator | null;
   hysteresis: Hysteresis | null;
-  /** A cross-list move just happened: the next frame is skipped while the layout settles. */
-  settling: boolean;
   /** Last valid target and the pointer there: bridges one-frame gaps at list boundaries. */
   target: { list: Key; at: Coordinates } | null;
   /** A trash zone or `dropOutside: 'remove'` asked to remove the dragged items. */
@@ -229,6 +227,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   let returning: { keys: Set<Key>; from: Rect } | null = null;
   /** Text for the end or cancel announcement, computed while the session still existed. */
   let announced: { key: Key; text: string | undefined } | null = null;
+  /** Last position announced (or picked up at), so an unchanged position isn't spoken again. */
+  let spokenSpot: string | null = null;
 
   const keysOf = (list: ListEntry) => list.draft.value ?? list.getKeys();
 
@@ -465,7 +465,6 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       indicator: null,
       marker: null,
       hysteresis: null,
-      settling: false,
       target: null,
       removed: false,
     };
@@ -480,6 +479,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         list.draft.value = list.prepareDraft?.(draft, { activeKey, keys: [activeKey] }) ?? draft;
         base.set(list.id, list.draft.value);
       }
+      spokenSpot = null;
       session.value = {
         ...common,
         keys: [activeKey],
@@ -540,6 +540,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       copying: false,
     };
     session.value = current;
+    // The pickup announcement names this position: the first target of the drag doesn't repeat it.
+    spokenSpot = spotKey({ list: origin.list, index: origin.index, length: originList.getKeys().length });
 
     const copy = wantsCopy(current) ? copyOf(current, activeKey) : null;
     if (copy != null) {
@@ -589,7 +591,6 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       keys.splice(at, 0, slot);
       target.draft.value = keys;
       current.list = target.id;
-      current.settling = true;
     }
     current.hysteresis = pointer
       ? { keys: passed, list: from && from !== target ? from.id : null, at: pointer }
@@ -792,13 +793,13 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       if (!list?.project) return afterMove(current, event);
     }
     syncCopy(current);
-    // One frame after a cross-list move the layout is still settling: nothing moves
-    // (stability guard). Only while the pointer is still near the move, though: one
-    // that travelled on is real movement (a release right after flicking across a
-    // column must land under the pointer, not in the column it passed through).
+    // No frame is ever skipped: the target follows pointer movement only, so a skipped
+    // frame that carried the final position would leave the slot stale until the
+    // pointer moves again (WebKit delivers a whole glide within a frame or two). The
+    // frame after a cross-list move is safe without a guard: the FLIP pass invalidates
+    // measurements post-flush, and the manager's target stabilizer plus the list
+    // hysteresis below keep a layout shift from bouncing the item back.
     current.hysteresis = settleHysteresis(current.hysteresis, event.pointer);
-    const settling = current.settling && current.hysteresis != null;
-    current.settling = false;
 
     const over = event.over;
     if (!over) {
@@ -813,7 +814,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       return leave(current);
     }
     // The list the slot just left can't take it back until the pointer moves on.
-    const blocked = settling || (target.id !== current.list && blocksList(current.hysteresis, target.id));
+    const blocked = target.id !== current.list && blocksList(current.hysteresis, target.id);
     // Lists with `project` (trees) keep projecting while blocked: depth changes without a reorder.
     if (blocked && !target.project) return afterMove(current, event);
     if (!blocked) current.target = { list: target.id, at: event.pointer };
@@ -1244,11 +1245,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         index = null;
       }
     }
-    if (index !== null) {
-      moveActive(target, index, null);
-      // The keyboard decides every move: no layout-settling frame to skip.
-      current.settling = false;
-    }
+    if (index !== null) moveActive(target, index, null);
 
     await nextTick();
     if (session.value !== current) return;
@@ -1260,6 +1257,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   };
 
   // ─── Announcements ───────────────────────────────────────────────────────────
+
+  const spotKey = ({ list, index, length }: SortableSpot) => `${String(list)}\u0000${index}\u0000${length}`;
 
   const spotOf = (current: Session): SortableSpot | null => {
     const shown = indicator.value;
@@ -1294,7 +1293,12 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     onDragOver: (event) => {
       const current = ours(event);
       const spot = current && spotOf(current);
-      return spot ? sortableTexts.over(subjectOf(current), spot) : undefined;
+      if (!spot) return undefined;
+      // '' tells the manager there is nothing new, without cancelling a pending text.
+      const key = spotKey(spot);
+      if (key === spokenSpot) return '';
+      spokenSpot = key;
+      return sortableTexts.over(subjectOf(current), spot);
     },
     onDragEnd: (event) => (announced?.key === event.active.id ? announced.text : undefined),
     onDragCancel: (event) => (announced?.key === event.active.id ? announced.text : undefined),

@@ -48,6 +48,9 @@ test.describe('stability guards (rfcs/0001-v3.md §6)', () => {
     await pickUp(page, item(page, 'l1'));
     await glide(page, { x: boundary - 30, y });
     await glide(page, { x: boundary + 4, y }, 6);
+    // A frame must have seen the pointer in the right list: WebKit can deliver the
+    // whole glide and the move back within one frame, and then no crossing happened.
+    await expect(right.locator('[data-dnd-placeholder]')).toHaveAttribute('data-id', 'l1');
     await page.mouse.move(boundary - 3, y);
     await page.mouse.up();
     await waitForIdle(page);
@@ -77,6 +80,81 @@ test.describe('stability guards (rfcs/0001-v3.md §6)', () => {
     await waitForIdle(page);
     await expect(page.getByTestId('state')).toHaveText(
       'left:l1,l2,l3,l4 | right:r1,r2,r3,r4 | top:u1,u2 | bottom:u3,d1,d2,d3',
+    );
+  });
+
+  test('the frame right after a cross-list move is not dropped when the pointer stops there', async ({ page }) => {
+    // Some engines (WebKit) deliver a whole pointer glide within a frame or two. If the
+    // frame after a cross-list move carries the final position and is skipped, nothing
+    // re-evaluates it: the target only follows pointer movement.
+    await page.evaluate(() => {
+      document.addEventListener(
+        'pointerdown',
+        (event) => ((window as unknown as { __pointerId: number }).__pointerId = event.pointerId),
+        { capture: true, once: true },
+      );
+    });
+    await pickUp(page, item(page, 'l1'));
+    const entry = await center(item(page, 'r1'), 0.3);
+    const final = await center(item(page, 'r3'), 0.8);
+    await page.evaluate(
+      async ({ entry, final }) => {
+        const pointerId = (window as unknown as { __pointerId: number }).__pointerId;
+        const move = (x: number, y: number) =>
+          document.dispatchEvent(
+            new PointerEvent('pointermove', { pointerId, clientX: x, clientY: y, bubbles: true, isPrimary: true, pointerType: 'mouse' }),
+          );
+        const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+        // Frame N: the item enters the right list.
+        move(entry.x, entry.y);
+        await frame();
+        // Frame N+1: the final position, in one burst; the pointer then stays still.
+        move(final.x, (entry.y + final.y) / 2);
+        move(final.x, final.y);
+        await frame();
+        await frame();
+      },
+      { entry, final },
+    );
+    await expect(page.locator('[data-testid="right"] [data-dnd-placeholder]')).toHaveAttribute('data-id', 'l1');
+    // `final` was measured before l1 entered at the top and pushed the rows down one
+    // slot, so it is now in r2's lower half: l1 follows to after r2. Had frame N+1
+    // been dropped, l1 would still be first.
+    const order = await page
+      .locator('[data-testid="right"] > [data-id]')
+      .evaluateAll((rows) => rows.map((row) => row.getAttribute('data-id')));
+    expect(order).toEqual(['r1', 'r2', 'l1', 'r3', 'r4']);
+    await page.mouse.up();
+    await waitForIdle(page);
+    await expect(page.getByTestId('state')).toHaveText(
+      'left:l2,l3,l4 | right:r1,r2,l1,r3,r4 | top:u1,u2,u3 | bottom:d1,d2,d3',
+    );
+  });
+
+  test('a pointer that skips items within one frame still lands next to the hovered item', async ({ page }) => {
+    await page.evaluate(() => {
+      document.addEventListener(
+        'pointerdown',
+        (event) => ((window as unknown as { __pointerId: number }).__pointerId = event.pointerId),
+        { capture: true, once: true },
+      );
+    });
+    const target = await center(item(page, 'l1'), 0.75);
+    await pickUp(page, item(page, 'l4'));
+    await page.evaluate(async (to) => {
+      const pointerId = (window as unknown as { __pointerId: number }).__pointerId;
+      const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+      // The whole upward glide arrives before the next frame (as in WebKit).
+      document.dispatchEvent(
+        new PointerEvent('pointermove', { pointerId, clientX: to.x, clientY: to.y, bubbles: true, isPrimary: true, pointerType: 'mouse' }),
+      );
+      await frame();
+      await frame();
+    }, target);
+    await page.mouse.up();
+    await waitForIdle(page);
+    await expect(page.getByTestId('state')).toHaveText(
+      'left:l1,l4,l2,l3 | right:r1,r2,r3,r4 | top:u1,u2,u3 | bottom:d1,d2,d3',
     );
   });
 
