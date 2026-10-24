@@ -180,6 +180,49 @@ test.describe('sortable tree', () => {
     await expect(row(page, 'ui')).toHaveAttribute('data-depth', '2');
   });
 
+  test('a rejected drop restores the tree', async ({ page }) => {
+    await page.getByTestId('reject').check();
+    const start = await pick(page, 'package');
+    await glide(page, { x: start.x + 34, y: start.y });
+    await expect(projected(page)).toHaveText('1:assets');
+    await drop(page);
+    await expect(structure(page)).toHaveText(INITIAL);
+    await expect(row(page, 'package')).toHaveAttribute('data-depth', '0');
+    await expect(projected(page)).toHaveText('');
+    await expect(page.getByTestId('drop')).toHaveText('');
+  });
+
+  test("nesting 'hover': the offset is ignored, rows decide the level", async ({ page }) => {
+    await page.getByTestId('nesting-hover').check();
+    const start = await pick(page, 'package');
+    await glide(page, { x: start.x + 60, y: start.y });
+    await expect(projected(page)).toHaveText('0:root');
+    await glide(page, await at(page, 'assets', 0.5), 10);
+    await expect(projected(page)).toHaveText('1:assets');
+    await drop(page);
+    await expect(structure(page)).toHaveText('src(components(ui,button),main),docs(intro,guide),assets(package),readme');
+  });
+
+  test("nesting 'hover': the edge band of the next row un-nests", async ({ page }) => {
+    await page.getByTestId('nesting-hover').check();
+    const target = await at(page, 'docs', 0.15);
+    await pick(page, 'main');
+    await glide(page, target, 10);
+    await expect(projected(page)).toHaveText('0:root');
+    await drop(page);
+    await expect(structure(page)).toHaveText('src(components(ui,button)),main,docs(intro,guide),assets,package,readme');
+  });
+
+  test("nesting 'offset': hovering the middle of a folder does not nest", async ({ page }) => {
+    await page.getByTestId('nesting-offset').check();
+    const target = await at(page, 'assets', 0.6);
+    await pick(page, 'readme');
+    await glide(page, target);
+    await expect(projected(page)).toHaveText('0:root');
+    await drop(page);
+    await expect(structure(page)).toHaveText('src(components(ui,button),main),docs(intro,guide),assets,readme,package');
+  });
+
   test('keyboard: up/down move by rows, right nests', async ({ page }) => {
     const errors = trackErrors(page);
     await row(page, 'readme').focus();
