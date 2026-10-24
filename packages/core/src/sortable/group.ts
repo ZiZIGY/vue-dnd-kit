@@ -1049,10 +1049,12 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       if (result) text = sortableTexts.removed(who, result.event.to.list);
     } else if (result && result.event.to.index >= 0) {
       const list = lists.get(result.event.to.list);
+      // The committed keys: a `defineModel` ref only shows the new array after the parent re-renders.
+      const committed = list ? (result.next.get(list) ?? list.getKeys()) : [];
       text = sortableTexts.end(who, {
         list: result.event.to.list,
         index: result.event.to.index,
-        length: list ? list.getKeys().length : 0,
+        length: committed.length,
       });
     } else if (!result && !isForeign(event) && !current.copying && current.origin.list != null) {
       const list = lists.get(current.origin.list);

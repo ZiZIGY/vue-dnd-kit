@@ -16,6 +16,7 @@
   import TrashDemo from './demos/TrashDemo.vue';
   import ExternalDemo from './demos/ExternalDemo.vue';
   import RejectDemo from './demos/RejectDemo.vue';
+  import AnnounceDemo from './demos/AnnounceDemo.vue';
 
   const demos = {
     sortable: SortableDemo,
@@ -32,6 +33,7 @@
     trash: TrashDemo,
     external: ExternalDemo,
     reject: RejectDemo,
+    announce: AnnounceDemo,
   };
   type DemoName = keyof typeof demos;
 

@@ -30,7 +30,7 @@ const where = ({ list, index, length }: SortableSpot) =>
 
 export const sortableTexts = {
   start: (who: SortableSubject, spot: SortableSpot) =>
-    `Picked up ${subject({ ...who, copy: false }, false)}. It is in ${where(spot)}.`,
+    `Picked up ${subject({ ...who, copy: false }, false)} at ${where(spot)}.`,
   over: (who: SortableSubject, spot: SortableSpot) => `${subject(who)} moved to ${where(spot)}.`,
   end: (who: SortableSubject, spot: SortableSpot) => `${subject(who)} dropped at ${where(spot)}.`,
   removed: (who: SortableSubject, list: Key) => `${subject(who)} removed from list ${list}.`,
