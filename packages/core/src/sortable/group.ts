@@ -1090,6 +1090,13 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const keys = keysOf(target);
     const element = target.getElement();
     const center = getCenter(from);
+    const strategy = target.strategy();
+    if (strategy !== 'grid') {
+      // Before the first item whose center is level with or past the slot's (rows that line up tie).
+      const axis = strategy === 'vertical' ? 'y' : 'x';
+      const next = collect(target).find((item) => getCenter(item.rect)[axis] >= center[axis] - 1);
+      return next ? next.index : keys.length;
+    }
     let pointer = center;
     if (element) {
       const box = getLayoutRect(element);
