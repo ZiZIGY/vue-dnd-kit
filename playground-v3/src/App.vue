@@ -5,11 +5,15 @@
   import SortableDemo from './demos/SortableDemo.vue';
   import KanbanDemo from './demos/KanbanDemo.vue';
   import BenchDemo from './demos/BenchDemo.vue';
+  import NestedZonesDemo from './demos/NestedZonesDemo.vue';
+  import ShadowDomDemo from './demos/ShadowDomDemo.vue';
 
   const demos = {
     sortable: SortableDemo,
     kanban: KanbanDemo,
     bench: BenchDemo,
+    nested: NestedZonesDemo,
+    shadow: ShadowDomDemo,
   };
   type DemoName = keyof typeof demos;
 
