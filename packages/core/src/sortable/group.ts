@@ -991,9 +991,42 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     if (current.list != null) lists.get(current.list)?.afterMove?.(event);
   };
 
+  /** Pointer of the last move, and the projections run again for it (`followBlock`). */
+  let movedAt: Coordinates | null = null;
+  let followed = 0;
+  /** A pending `followBlock` pass: the drop waits for it. */
+  let following: Promise<void> | null = null;
+
+  /**
+   * A block that moved can leave the pointer over one of its members (items of other
+   * sizes passed, the end of a list): project again once it has rendered, as the pointer
+   * may not move again (WebKit delivers a whole glide within a frame or two, and a
+   * release right after it runs the last frame inside the drop). Each pass steps toward
+   * the pointer, so it ends within a pass per member.
+   */
+  const followBlock = (current: Session, event: DnDEvent) => {
+    if (current.block.length < 2 || followed++ > current.block.length) return;
+    const pass: Promise<void> = nextTick(() => {
+      if (following === pass) following = null;
+      if (session.value === current && manager.status.value !== 'idle' && manager.pointer.value === event.pointer) {
+        move(event);
+      }
+    });
+    following = pass;
+  };
+
+  /** Resolves once no `followBlock` pass is pending. */
+  const settleBlock = async () => {
+    while (following) await following;
+  };
+
   const move = (event: DnDEvent) => {
     const current = session.value;
     if (!current || current.activeKey !== event.active.id) return;
+    if (event.pointer !== movedAt) {
+      movedAt = event.pointer;
+      followed = 0;
+    }
     // Keyboard drags move the slot in getKeyboardCoordinates. Trees (`project`) answer
     // the keyboard themselves and keep the pointer path below.
     if (event.active.sensor === 'keyboard' && !current.external) {
@@ -1084,6 +1117,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     }
     if (index != null && !blocked && !blocksKey(current.hysteresis, trigger)) {
       moveActive(target, index, event.pointer);
+      followBlock(current, event);
     }
     afterMove(current, event);
   };
@@ -1220,6 +1254,12 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   const beforeDrop = (event: DnDEvent): MaybePromise<BeforeDropResult> => {
     const current = session.value;
     if (!current || current.activeKey !== event.active.id || isForeign(event)) return;
+    // The last move may still be lining the block up with the overlay.
+    return following ? settleBlock().then(() => decide(current, event)) : decide(current, event);
+  };
+
+  const decide = (current: Session, event: DnDEvent): MaybePromise<BeforeDropResult> => {
+    if (session.value !== current) return;
     // A refusing list cancels the drop in the manager; don't ask the user about it.
     if (event.over && !event.over.accepted) return;
     const outside = isOutside(current, event);

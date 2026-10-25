@@ -320,6 +320,35 @@ test.describe("multi-drag 'group'", () => {
     check();
   });
 
+  test('Alt copies the whole block; releasing it moves the originals in its place', async ({ page }) => {
+    const check = guard(page);
+    await select(page, 'a1', 'a3');
+    await pickUp(page, item(page, 'a1'));
+    await layoutSettled(page);
+    await page.keyboard.down('Alt');
+    await glide(page, await center(item(page, 'b2'), 0.3));
+    // Copying: the originals stay where they are; two copies travel together.
+    await expect.poll(() => order(list(page, 'group-a'))).toEqual(['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8']);
+    await expect.poll(async () => (await order(list(page, 'group-b'))).length).toBe(5);
+    const copies = await placeholders(page);
+    expect(copies.contiguous).toBe(true);
+    expect(copies.ids).toHaveLength(2);
+    expect(copies.ids.every((id) => /^a[13]-\d+$/.test(id!))).toBe(true);
+    await expect(item(page, 'a1')).not.toHaveAttribute('data-dnd-dragging');
+    // Moving again: the originals take the copies' place.
+    await page.keyboard.up('Alt');
+    await expect.poll(() => order(list(page, 'group-b'))).toEqual(['b1', 'a1', 'a3', 'b2', 'b3']);
+    await expect.poll(() => order(list(page, 'group-a'))).toEqual(['a2', 'a4', 'a5', 'a6', 'a7', 'a8']);
+    await page.keyboard.down('Alt');
+    await expect.poll(() => order(list(page, 'group-a'))).toEqual(['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8']);
+    await page.mouse.up();
+    await page.keyboard.up('Alt');
+    await waitForIdle(page);
+    await expect(state(page)).toContainText('group-a:a1,a2,a3,a4,a5,a6,a7,a8 |');
+    await expect(state(page)).toHaveText(/group-b:b1,a1-\d+,a3-\d+,b2,b3 \|/);
+    check();
+  });
+
   test('big selections clone five items and count the rest; those fade in instead of popping', async ({ page }) => {
     const check = guard(page);
     await select(page, 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7');

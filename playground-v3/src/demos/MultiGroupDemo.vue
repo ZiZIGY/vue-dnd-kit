@@ -2,8 +2,11 @@
   import { reactive, ref } from 'vue';
   import { useDnD, type SortableDropEvent } from '@vue-dnd-kit/core';
   import DemoList from '../components/DemoList.vue';
-  import { describeLists, makeTasks } from '../data';
+  import { describeLists, makeTasks, nextId } from '../data';
   import type { Task } from '../types';
+
+  // Alt copies (the provider's copyModifier): the whole block as copies.
+  const clone = (task: Task): Task => ({ ...task, id: nextId(task.id) });
 
   // `multiple` is left at its default, 'group': the other selected items leave their
   // places and travel with the dragged one, so the list shows the drop result while hovering.
@@ -29,12 +32,12 @@
     <div class="demo-row">
       <DemoList
         :list="lists.a"
-        :options="{ group: 'group', onDrop: record }"
+        :options="{ group: 'group', clone, onDrop: record }"
         selectable
       />
       <DemoList
         :list="lists.b"
-        :options="{ group: 'group', onDrop: record }"
+        :options="{ group: 'group', clone, onDrop: record }"
         selectable
       />
       <DemoList
