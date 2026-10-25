@@ -1,0 +1,49 @@
+<script setup lang="ts">
+  import { useTemplateRef } from 'vue';
+  import { makeDroppable, type DnDEvent } from '@vue-dnd-kit/core';
+  import { DAY_START, SLOT_MINUTES, isWeekend, type SlotData } from './calendar';
+
+  const props = defineProps<{ day: number; slot: number }>();
+  const emit = defineEmits<{ drop: [event: DnDEvent, slot: SlotData] }>();
+  const el = useTemplateRef<HTMLElement>('el');
+
+  const data: SlotData = { day: props.day, minutes: DAY_START + props.slot * SLOT_MINUTES };
+  const { isOver, isAccepting } = makeDroppable(el, {
+    id: `slot-${props.day}-${props.slot}`,
+    data,
+    // The accept rule: weekends stay free. Hovering them still shows why the drop is refused.
+    accept: isWeekend(props.day) ? () => false : 'event',
+    onDrop: (event) => emit('drop', event, data),
+  });
+</script>
+
+<template>
+  <div
+    ref="el"
+    class="cal-slot"
+    :class="{ hour: slot % 2 === 0, weekend: isWeekend(day), over: isOver, refused: isOver && !isAccepting }"
+  />
+</template>
+
+<style scoped>
+  .cal-slot {
+    border-right: 1px solid #e2e8f0;
+    border-top: 1px dashed #f1f5f9;
+  }
+
+  .cal-slot.hour {
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .cal-slot.weekend {
+    background: repeating-linear-gradient(-45deg, #f8fafc, #f8fafc 6px, #f1f5f9 6px, #f1f5f9 12px);
+  }
+
+  .cal-slot.over {
+    background: #dbeafe;
+  }
+
+  .cal-slot.refused {
+    background: #fee2e2;
+  }
+</style>
