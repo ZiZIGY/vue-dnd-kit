@@ -6,7 +6,7 @@
 
 import { defineComponent, h, onMounted, shallowRef } from 'vue';
 import type { Key, Size } from '../types';
-import { useDnDContext } from '../core/context';
+import { useManager } from '../core/context';
 import { DragPreview } from '../core/DragPreview';
 import { BADGE_STYLE, FILL } from '../core/DragOverlay';
 import { DEFAULT_LAYOUT_ANIMATION, canAnimate, getRect, resolveAnimation } from '../animation/layout';
@@ -55,7 +55,7 @@ export const layoutColumn = (
 export const ColumnPreview = /* @__PURE__ */ defineComponent({
   name: 'DnDColumnPreview',
   setup() {
-    const manager = useDnDContext();
+    const manager = useManager();
     const root = shallowRef<HTMLElement | null>(null);
     const cells = new Map<Key, HTMLElement>();
 

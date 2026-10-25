@@ -2,7 +2,7 @@ import { createApp, defineComponent, effectScope, ref } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Key } from '../types';
 import { createDnDManager } from './manager';
-import { provideDnDContext } from './context';
+import { DND_CONTEXT } from './context';
 import { makeDraggable } from './makeDraggable';
 import { makeDroppable } from './makeDroppable';
 import { makeSortableList } from '../sortable/makeSortableList';
@@ -11,7 +11,7 @@ import { createId } from '../utils/dom';
 /** Runs `fn` in a detached effect scope of an app that has a provider bridged in: no component instance. */
 const runDetached = <T>(fn: () => T): T => {
   const app = createApp({ render: () => null });
-  provideDnDContext(app, createDnDManager({}));
+  app.provide(DND_CONTEXT, createDnDManager({}));
   return app.runWithContext(() => effectScope(true).run(fn)!);
 };
 

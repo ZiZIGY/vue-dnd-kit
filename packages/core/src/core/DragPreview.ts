@@ -1,6 +1,6 @@
 import { defineComponent, h, onBeforeUnmount, onMounted, shallowRef, watch, type PropType } from 'vue';
 import type { DragPreviewProps, Key } from '../types';
-import { useDnDContext } from './context';
+import { useManager } from './context';
 
 /**
  * The default clone of one dragged item (see `DragPreviewProps`). Custom overlays use
@@ -12,7 +12,7 @@ export const DragPreview = /* @__PURE__ */ defineComponent({
     id: { type: [String, Number] as PropType<DragPreviewProps['id']>, required: true },
   },
   setup(props, { slots }) {
-    const manager = useDnDContext();
+    const manager = useManager();
     const host = shallowRef<HTMLElement | null>(null);
     let shown: HTMLElement | null = null;
     /** This preview as the overlay clone of its item, which lands on the item's slot. */

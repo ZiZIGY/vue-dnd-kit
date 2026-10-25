@@ -2,7 +2,7 @@ import { createApp, defineComponent, h, ref, useTemplateRef, type Component, typ
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SortableItemOptions } from '../types';
 import { DnDProvider } from '../core/DnDProvider';
-import { useDnDContext } from '../core/context';
+import { useManager } from '../core/context';
 import type { DnDManager } from '../core/manager';
 import { makeSortableItem } from './makeSortableItem';
 import { makeSortableList } from './makeSortableList';
@@ -51,7 +51,7 @@ const renderList = (
         default: () =>
           h({
             setup() {
-              manager = useDnDContext();
+              manager = useManager();
               const target = useTemplateRef<HTMLElement>('list');
               const source = { items: ref(tasks), getKey: list.getKey };
               const items = list.tree

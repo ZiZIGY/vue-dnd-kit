@@ -12,7 +12,7 @@ import type {
   SortableTreeReturn,
   TreeProjection,
 } from '../types';
-import { useDnDContext } from '../core/context';
+import { useManager } from '../core/context';
 import { createDroppable } from '../core/makeDroppable';
 import { revealElement } from '../core/autoscroll';
 import { getLayoutRect } from '../animation/layout';
@@ -122,7 +122,7 @@ export function makeSortableTree<T>(
   target: MaybeElementRef,
   options: SortableTreeOptions<T>,
 ): SortableTreeReturn<T> {
-  const manager = useDnDContext();
+  const manager = useManager();
   const id = options.id ?? createId('tree');
   const groupOptions = typeof options.group === 'string' ? { name: options.group } : options.group;
   const group = useSortableGroup(manager, groupOptions?.name ?? `sortable:${id}`);

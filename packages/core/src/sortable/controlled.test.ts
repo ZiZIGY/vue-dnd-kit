@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DnDEvent, DropAnimationContext, Key, SortableDropEvent, SortableListOptions } from '../types';
 import { containsPoint, createRect } from '../animation/layout';
 import { DnDProvider } from '../core/DnDProvider';
-import { useDnDContext, useDnDMonitor } from '../core/context';
+import { useDnDMonitor, useManager } from '../core/context';
 import type { DnDManager } from '../core/manager';
 import { makeDraggable } from '../core/makeDraggable';
 import { makeDroppable } from '../core/makeDroppable';
@@ -88,7 +88,7 @@ const mount = (lists: { a: SortableListOptions<Item>; b?: SortableListOptions<It
           default: () => [
             h({
               setup() {
-                manager = useDnDContext();
+                manager = useManager();
                 // Registered before the lists: told after they wrote the drop all the same.
                 useDnDMonitor({ onDragEnd: () => notified.push(rows(container, 'a').join(',')) });
                 return () => null;

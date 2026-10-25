@@ -13,7 +13,7 @@ import {
   type VNodeArrayChildren,
 } from 'vue';
 import type { OverlaySlotProps } from '../types';
-import { useDnDContext } from './context';
+import { useManager } from './context';
 import { getOverlaySmoothing } from './modifiers';
 import { DragPreview } from './DragPreview';
 import { prefersReducedMotion } from '../animation/layout';
@@ -44,7 +44,7 @@ export const FILL = { width: '100%', height: '100%' } as const;
 const DefaultPreview = /* @__PURE__ */ defineComponent({
   name: 'DnDDefaultPreview',
   setup() {
-    const manager = useDnDContext();
+    const manager = useManager();
     return () => {
       const current = manager.active.value;
       if (!current) return null;
@@ -88,7 +88,7 @@ export const DragOverlay = /* @__PURE__ */ defineComponent({
   name: 'DnDDragOverlay',
   slots: Object as SlotsType<{ default?: (props: OverlaySlotProps) => VNode[] }>,
   setup(_, { slots }) {
-    const manager = useDnDContext();
+    const manager = useManager();
     const element = shallowRef<HTMLElement | null>(null);
 
     watch(element, (value) => (manager.overlayElement.value = value));

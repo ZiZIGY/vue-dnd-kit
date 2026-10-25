@@ -28,5 +28,102 @@ export {
   type SnapToGridOptions,
 } from './core/modifiers';
 
-export type * from './types';
-export type { DnDManager } from './core/manager';
+// Public types, listed one by one: a type added to `types.ts` is internal until it is
+// exported here. Every type a public one refers to is public too.
+export type {
+  // Primitives and option values
+  Key,
+  Coordinates,
+  Size,
+  Rect,
+  MaybePromise,
+  MaybeReadonlyRefOrGetter,
+  MaybeReadonlyRef,
+  MaybeElement,
+  MaybeElementRef,
+  DnDStatus,
+  SensorType,
+  PointerKind,
+  ActivationConstraint,
+  ActivationOptions,
+  KeyboardOptions,
+  AutoScrollOptions,
+
+  // Drag state and events
+  DragItem,
+  Active,
+  Over,
+  DragSource,
+  DragMode,
+  DnDEvent,
+  DnDEndEvent,
+  BeforeDropResult,
+  DnDMonitor,
+  KeyboardMoveContext,
+  DnDState,
+  DnDSelection,
+  Announcements,
+
+  // Accept rules
+  AcceptContext,
+  AcceptRule,
+  AcceptMode,
+
+  // Animations
+  AnimationOptions,
+  LayoutAnimation,
+  LayoutAnimationContext,
+  DropAnimation,
+  DropAnimationContext,
+
+  // Collision detection and modifiers
+  CollisionDetection,
+  CollisionArgs,
+  CollisionCandidate,
+  Modifier,
+  ModifierArgs,
+
+  // Provider, context and overlay
+  DnDProviderProps,
+  DnDContext,
+  OverlaySlotProps,
+  OverlayProps,
+  DragPreviewProps,
+
+  // makeDraggable, makeDroppable
+  DraggableOptions,
+  DraggableReturn,
+  DroppableOptions,
+  DroppableReturn,
+  Placement,
+
+  // makeSortableList, makeSortableItem
+  SortableListOptions,
+  SortableListReturn,
+  SortableItems,
+  SortableItemOptions,
+  SortableItemReturn,
+  SortableStrategy,
+  SortableBehavior,
+  SortablePlaceholder,
+  MultipleMode,
+  DropOutside,
+  SortableGroupOptions,
+  SortablePutContext,
+  SortableDropEvent,
+  SortableIndicator,
+
+  // makeSortableTree
+  SortableTreeOptions,
+  SortableTreeReturn,
+  SortableTreeDropEvent,
+  TreeNesting,
+  FlatNode,
+  TreeProjection,
+
+  // makeSelectionArea
+  SelectionAreaOptions,
+  SelectionAreaReturn,
+  SelectionStrategy,
+  SelectionModifier,
+} from './types';

@@ -2,7 +2,7 @@ import { createApp, defineComponent, h, nextTick, ref, shallowRef, useTemplateRe
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Announcements } from '../types';
 import { DnDProvider } from './DnDProvider';
-import { useDnDContext } from './context';
+import { useManager } from './context';
 import type { DnDManager } from './manager';
 import { makeDraggable } from './makeDraggable';
 import { makeDroppable } from './makeDroppable';
@@ -22,7 +22,7 @@ const Row = defineComponent({
 
 const List = defineComponent({
   setup() {
-    manager = useDnDContext();
+    manager = useManager();
     const { items } = makeSortableList(useTemplateRef<HTMLElement>('list'), {
       id: 'l',
       items: ref([{ id: 'a' }, { id: 'b' }, { id: 'c' }]),
@@ -131,7 +131,7 @@ describe('aria-describedby', () => {
   const mountProbe = (element: HTMLElement, shown: ShallowRef<boolean>) => {
     const Probe = defineComponent({
       setup() {
-        manager = useDnDContext();
+        manager = useManager();
         makeDraggable(() => element, { id: 'probe' });
         return () => null;
       },

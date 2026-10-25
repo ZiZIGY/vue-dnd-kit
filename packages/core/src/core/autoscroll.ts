@@ -465,7 +465,12 @@ export function useAutoScroll(manager: DnDManager): void {
 
   const start = () => {
     const provider = manager.props.autoScroll;
-    const entries = [...manager.autoScrollEntries];
+    // Lists' options are read once per drag; `undefined` leaves the provider's.
+    const entries: Array<{ element: Element | null; options: boolean | AutoScrollOptions }> = [];
+    for (const entry of manager.autoScrollEntries) {
+      const options = entry.getOptions();
+      if (options !== undefined) entries.push({ element: entry.getElement(), options });
+    }
     if (provider === false && !entries.some((entry) => entry.options !== false)) return;
     const current: Session = {
       last: 0,
@@ -479,7 +484,7 @@ export function useAutoScroll(manager: DnDManager): void {
     };
     // A list's option applies to its scroll container: the list itself or its closest scrollable ancestor.
     for (const entry of entries) {
-      let node = entry.getElement();
+      let node = entry.element;
       while (node && !isPageRoot(node) && !isScrollContainer(current, node)) node = parentOf(node);
       if (node && !isPageRoot(node) && !current.overrides.has(node)) {
         current.overrides.set(node, entry.options);

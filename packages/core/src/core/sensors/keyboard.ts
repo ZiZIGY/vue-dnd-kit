@@ -108,7 +108,7 @@ export function useKeyboardSensor(manager: DnDManager): void {
     }
     if (manager.status.value !== 'dragging' || manager.active.value?.id !== current.id) return;
     if (!next) {
-      if (manager.getDraggable(current.id)?.keyboard === 'droppables') {
+      if (manager.getDraggable(current.id)?.getKeyboard?.() === 'droppables') {
         next = jumpToDroppable(current, pointer, direction);
       } else {
         const step = (options()?.step ?? DEFAULT_STEP) * (event.shiftKey ? FAST_STEP_FACTOR : 1);

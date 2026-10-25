@@ -63,14 +63,14 @@ export interface DraggableEntry {
   getData(): unknown;
   getTypes(): string[];
   isDisabled(): boolean;
-  activation?: ActivationOptions;
+  getActivation?(): ActivationOptions | undefined;
   canDrag?: (event: PointerEvent | KeyboardEvent) => boolean;
   /** `false`: no overlay; `true`: the provider's slot or the clone; a component (`markRaw`): rendered instead. */
-  overlay: boolean | Component;
+  getOverlay(): boolean | Component;
   /** Modifiers of this draggable (or its list), applied after the provider's. */
   getModifiers?(): Modifier[] | undefined;
   /** Arrow keys in free keyboard drags: move by pixels (default) or jump between accepting drop targets. */
-  keyboard?: 'pixels' | 'droppables';
+  getKeyboard?(): 'pixels' | 'droppables' | undefined;
   /** Sortable integration: the item object behind this draggable. */
   getItem?(): unknown;
   /** Sortable integration: container used by `restrictToParent`. */
@@ -83,7 +83,7 @@ export interface DroppableEntry {
   getData(): unknown;
   isDisabled(): boolean;
   accepts(active: Active): boolean;
-  priority: number;
+  getPriority(): number;
   /** A sortable list or tree: what drops on it is shown in it, as a slot. */
   sortable?: boolean;
   onDragEnter?(event: DnDEvent): void;
@@ -123,7 +123,8 @@ export type TargetRule = (entry: DroppableEntry, element: HTMLElement, point: Co
 /** Per-container auto-scroll override (e.g. `SortableListOptions.autoScroll`). */
 export interface AutoScrollEntry {
   getElement(): Element | null;
-  options: boolean | AutoScrollOptions;
+  /** Read when the drag starts; `undefined`: no override. */
+  getOptions(): boolean | AutoScrollOptions | undefined;
 }
 
 type MonitorHandler = Exclude<keyof DnDMonitor, 'onBeforeDrop' | 'getKeyboardCoordinates'>;
@@ -304,9 +305,9 @@ export function createDnDManager(props: DnDProviderProps) {
   /** Overrides auto-scroll for the scroll container of `getElement()` (the element or its closest scrollable ancestor). */
   const registerAutoScroll = (
     getElement: () => Element | null,
-    options: boolean | AutoScrollOptions,
+    getOptions: () => boolean | AutoScrollOptions | undefined,
   ): (() => void) => {
-    const entry: AutoScrollEntry = { getElement, options };
+    const entry: AutoScrollEntry = { getElement, getOptions };
     autoScrollEntries.add(entry);
     return () => autoScrollEntries.delete(entry);
   };
@@ -434,9 +435,9 @@ export function createDnDManager(props: DnDProviderProps) {
       if (entry) hits.push(entry);
     }
     return hits
-      .map((entry, depth) => ({ entry, depth }))
-      .sort((a, b) => b.entry.priority - a.entry.priority || a.depth - b.depth)
-      .map(({ entry }) => entry.id);
+      .map((entry, depth) => ({ id: entry.id, priority: entry.getPriority(), depth }))
+      .sort((a, b) => b.priority - a.priority || a.depth - b.depth)
+      .map(({ id }) => id);
   };
 
   const depthOf = (element: Element, byElement: Map<Element, DroppableEntry>): number => {
@@ -493,7 +494,7 @@ export function createDnDManager(props: DnDProviderProps) {
       // Fully clipped by a scroll container or the viewport: not hittable.
       const rect = measurer.measureVisible(element);
       if (rect) {
-        candidates.push({ id: entry.id, rect, priority: entry.priority, depth: depthOf(element, all) });
+        candidates.push({ id: entry.id, rect, priority: entry.getPriority(), depth: depthOf(element, all) });
       }
     }
     const hits = hitTest(point, byElement);
@@ -729,7 +730,7 @@ export function createDnDManager(props: DnDProviderProps) {
         ? [id, ...[...selection].filter((key) => key !== id)]
         : [id];
     const items = buildItems(ids);
-    const overlay = entry.overlay;
+    const overlay = entry.getOverlay();
     previewEnabled = overlay !== false;
     overlayComponent = typeof overlay === 'boolean' ? null : overlay;
     sourceModifiers = entry.getModifiers?.() ?? [];
