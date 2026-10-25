@@ -9,6 +9,7 @@ export type * from './drag';
 export type * from './animation';
 export type * from './collision';
 export type * from './provider';
+export type * from './sensor';
 export type * from './draggable';
 export type * from './sortable';
 export type * from './tree';

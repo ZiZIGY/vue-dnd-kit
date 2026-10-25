@@ -62,6 +62,10 @@ export type DnDStatus =
   | 'dragging'
   | 'dropping'
   | 'selecting';
+/**
+ * How a drag moves, whichever sensor drives it (`SensorActivation.type`): `'pointer'`
+ * follows points, `'keyboard'` moves by items.
+ */
 export type SensorType = 'pointer' | 'keyboard';
 export type PointerKind = 'mouse' | 'touch' | 'pen';
 

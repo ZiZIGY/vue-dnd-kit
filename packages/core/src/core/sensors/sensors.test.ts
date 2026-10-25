@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createRect } from '../../animation/layout';
-import { checkActivation, makeSelectableForPress, resolveActivation } from './pointer';
-import { pickInDirection } from './keyboard';
+import { checkActivation, resolveActivation } from './activation';
+import { makeSelectableForPress } from './pointer';
+import { pickInDirection } from './steps';
 
 describe('makeSelectableForPress', () => {
   it('leaves selectable elements alone', () => {

@@ -1,0 +1,7 @@
+# Internal implementation - not for consumers
+dist/internal
+
+# Dev files
+src/
+*.config.*
+node_modules/

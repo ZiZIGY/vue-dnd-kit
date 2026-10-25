@@ -59,6 +59,7 @@ const groups = {
   composables: manifest.composables,
   modifiers: manifest.modifiers,
   collision: manifest.collision,
+  sensors: manifest.sensors,
   advanced: manifest.advanced,
 } as const;
 
