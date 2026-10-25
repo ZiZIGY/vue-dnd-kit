@@ -151,6 +151,10 @@ export interface SensorContext {
  * inside an effect scope that ends with the provider (or when the sensor leaves
  * `sensors`, or the component that called `useSensor` unmounts). Register listeners
  * with `useEventListener` or return a cleanup; a drag still running then is cancelled.
+ *
+ * To wrap a sensor, run its `setup` with a context of your own. `Object.create(context, {
+ * activate: { value: … } })` keeps the live getters (`status`, `drag`, `props`): a spread
+ * would freeze them.
  */
 export interface Sensor {
   /** For debugging. */

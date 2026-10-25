@@ -1,6 +1,6 @@
 import { createApp, defineComponent, h, nextTick, shallowRef, useTemplateRef, type PropType, type VNodeChild } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { DnDProviderProps, DraggableOptions, Sensor, SensorContext, SensorDrag } from '../../types';
+import type { DnDProviderProps, DraggableOptions, Sensor, SensorActivation, SensorContext, SensorDrag } from '../../types';
 import { DnDProvider } from '../DnDProvider';
 import { useManager } from '../context';
 import type { DnDManager } from '../manager';
@@ -392,6 +392,31 @@ describe('sensors come and go', () => {
     expect(manager.status.value).toBe('activating');
     expect(context.drag?.state).toBe('pending');
     context.cancel();
+  });
+
+  it('a built-in sensor can be wrapped: here the pointer drags only with Alt held', async () => {
+    const altPointer = defineSensor({
+      name: 'alt-pointer',
+      // Object.create keeps the context's live getters (`status`, `drag`, `props`).
+      setup: (ctx) =>
+        pointerSensor.setup(
+          Object.create(ctx, {
+            activate: { value: (activation: SensorActivation) => ((activation.event as PointerEvent | undefined)?.altKey ? ctx.activate(activation) : null) },
+          }),
+        ),
+    });
+    const container = mount(() => h(Card, { cardId: 'card' }), { sensors: [altPointer, probe] });
+    await nextTick();
+    const press = (altKey: boolean) =>
+      card(container, 'card').dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true, composed: true, isPrimary: true, button: 0, pointerType: 'mouse', altKey }),
+      );
+    press(false);
+    expect(manager.status.value).toBe('idle');
+    press(true);
+    expect(manager.status.value).toBe('activating');
+    document.dispatchEvent(new PointerEvent('pointerup', { pointerId: 0, bubbles: true }));
+    expect(manager.status.value).toBe('idle');
   });
 
   it('a hidden tab cancels the drag', async () => {
