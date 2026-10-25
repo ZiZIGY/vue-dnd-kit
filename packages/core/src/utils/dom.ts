@@ -112,5 +112,17 @@ const FOCUSABLE =
 export const isNativelyFocusable = (element: Element): boolean =>
   element.matches(FOCUSABLE);
 
+/** Frames stop in hidden tabs and can stall on a busy compositor: wait at most this long. */
+const FRAME_TIMEOUT = 100;
+
+/** Resolves on the next animation frame, or after `FRAME_TIMEOUT` ms when frames stall. */
 export const nextFrame = (): Promise<void> =>
-  new Promise((resolve) => requestAnimationFrame(() => resolve()));
+  new Promise((resolve) => {
+    const done = () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+      resolve();
+    };
+    const frame = requestAnimationFrame(done);
+    const timer = setTimeout(done, FRAME_TIMEOUT);
+  });
