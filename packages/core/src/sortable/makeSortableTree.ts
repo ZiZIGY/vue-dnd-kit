@@ -1,4 +1,4 @@
-import { computed, onScopeDispose, shallowRef, unref, watch } from 'vue';
+import { computed, onScopeDispose, shallowRef, unref } from 'vue';
 import type {
   Coordinates,
   DnDEvent,
@@ -12,7 +12,7 @@ import type {
   SortableTreeReturn,
   TreeProjection,
 } from '../types';
-import { useDnDContext } from '../core/context';
+import { useManager } from '../core/context';
 import { createDroppable } from '../core/makeDroppable';
 import { revealElement } from '../core/autoscroll';
 import { getLayoutRect } from '../animation/layout';
@@ -123,7 +123,7 @@ export function makeSortableTree<T>(
   target: MaybeElementRef,
   options: SortableTreeOptions<T>,
 ): SortableTreeReturn<T> {
-  const manager = useDnDContext();
+  const manager = useManager();
   const id = options.id ?? createId('tree');
   const groupOptions = typeof options.group === 'string' ? { name: options.group } : options.group;
   const group = useSortableGroup(manager, groupOptions?.name ?? `sortable:${id}`);
@@ -743,14 +743,8 @@ export function makeSortableTree<T>(
     { accepts: (active) => group.accepts(entry, active) },
   );
 
-  // Registered while set; the scroller reads it when a drag starts.
-  watch(
-    () => read(options.autoScroll),
-    (value, _, onCleanup) => {
-      if (value !== undefined) onCleanup(manager.registerAutoScroll(entry.getElement, value));
-    },
-    { immediate: true },
-  );
+  // Read when a drag starts; `undefined` leaves the provider's.
+  onScopeDispose(manager.registerAutoScroll(entry.getElement, () => read(options.autoScroll)));
 
   provideSortableContext(group, entry, accessors.getKey, options.overlay, () => read(options.modifiers));
 

@@ -8,7 +8,7 @@ import type {
   Placement,
 } from '../types';
 import type { DroppableEntry } from './manager';
-import { useDnDContext } from './context';
+import { useManager } from './context';
 import { matchesRule } from './accept';
 import { createId, toElement } from '../utils/dom';
 import { read } from '../utils/read';
@@ -24,7 +24,7 @@ export function createDroppable<TData>(
   options: DroppableOptions<TData>,
   internals: DroppableInternals = {},
 ): DroppableReturn {
-  const manager = useDnDContext();
+  const manager = useManager();
   const fallbackId = createId('droppable');
   const id = computed<Key>(() => read(options.id) ?? fallbackId);
 
@@ -34,12 +34,12 @@ export function createDroppable<TData>(
       matchesRule(
         unref(options.accept),
         { active, items: active.items, types: active.items.flatMap((item) => item.type) },
-        options.acceptMode,
+        read(options.acceptMode),
       ));
 
   const entry: DroppableEntry = {
     id: id.value,
-    priority: options.priority ?? 0,
+    getPriority: () => read(options.priority) ?? 0,
     // Lists and trees accept by group rules.
     sortable: !!internals.accepts,
     getElement: () => toElement(target),

@@ -27,7 +27,7 @@ import type {
   OverlaySlotProps,
 } from '../types';
 import { createDnDManager } from './manager';
-import { DND_CONTEXT, useDnDContext } from './context';
+import { DND_CONTEXT, useManager } from './context';
 import { usePointerSensor } from './sensors/pointer';
 import { useKeyboardSensor } from './sensors/keyboard';
 import { useAutoScroll } from './autoscroll';
@@ -38,7 +38,7 @@ import { injectDefaultStyles } from './styles';
 const LiveRegion = /* @__PURE__ */ defineComponent({
   name: 'DnDLiveRegion',
   setup() {
-    const manager = useDnDContext();
+    const manager = useManager();
     return () =>
       h(
         'div',

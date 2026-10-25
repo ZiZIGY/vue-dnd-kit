@@ -1,6 +1,16 @@
-import { computed, defineComponent, ref, type ShallowRef } from 'vue';
+import { computed, createApp, defineComponent, ref, type ShallowRef } from 'vue';
 import { describe, expect, it } from 'vitest';
-import type { Key, MaybeElementRef, MaybeReadonlyRefOrGetter } from './types';
+import * as library from './index';
+import { provideDnDContext, useDnDContext } from './index';
+import type * as Public from './index';
+import type {
+  DnDContext,
+  DraggableOptions,
+  Key,
+  MaybeElementRef,
+  MaybeReadonlyRefOrGetter,
+  SortableItemOptions,
+} from './index';
 
 /** A component with typed emits, like most UI kit components (`<v-list-item>`, `<UTooltip>`). */
 const KitComponent = defineComponent({
@@ -12,6 +22,136 @@ const KitComponent = defineComponent({
 // Compile-time checks (run by `yarn typecheck`): the refs users actually have must
 // be accepted by option types.
 const accepts = <T>(value: T): T => value;
+
+/** `true` when `A` and `B` are the same type. */
+type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
+const assertType = <_T extends true>() => {};
+
+describe('public exports', () => {
+  it('values', () => {
+    expect(Object.keys(library).sort()).toEqual(
+      [
+        'DnDProvider',
+        'DragPreview',
+        'makeDraggable',
+        'makeDroppable',
+        'makeSortableList',
+        'makeSortableItem',
+        'makeSortableTree',
+        'makeSelectionArea',
+        'useDnD',
+        'useDnDMonitor',
+        'useDnDContext',
+        'provideDnDContext',
+        'pointerFirst',
+        'pointerWithin',
+        'rectIntersection',
+        'closestCenter',
+        'closestCorners',
+        'restrictToVerticalAxis',
+        'restrictToHorizontalAxis',
+        'restrictToWindowEdges',
+        'restrictToParent',
+        'restrictToElement',
+        'restrictToFirstScrollableAncestor',
+        'snapToGrid',
+        'snapCenterToCursor',
+      ].sort(),
+    );
+  });
+
+  it('types: what users write, and everything those types refer to (compile-time)', () => {
+    type Exported = [
+      // Primitives and option values
+      Public.Key,
+      Public.Coordinates,
+      Public.Size,
+      Public.Rect,
+      Public.MaybePromise<boolean>,
+      Public.MaybeReadonlyRefOrGetter<boolean>,
+      Public.MaybeReadonlyRef<boolean>,
+      Public.MaybeElement,
+      Public.MaybeElementRef,
+      Public.DnDStatus,
+      Public.SensorType,
+      Public.PointerKind,
+      Public.ActivationConstraint,
+      Public.ActivationOptions,
+      Public.KeyboardOptions,
+      Public.AutoScrollOptions,
+      // Drag state and events
+      Public.DragItem,
+      Public.Active,
+      Public.Over,
+      Public.DragSource,
+      Public.DragMode,
+      Public.DnDEvent,
+      Public.DnDEndEvent,
+      Public.BeforeDropResult,
+      Public.DnDMonitor,
+      Public.KeyboardMoveContext,
+      Public.DnDState,
+      Public.DnDSelection,
+      Public.Announcements,
+      // Accept rules
+      Public.AcceptContext,
+      Public.AcceptRule,
+      Public.AcceptMode,
+      // Animations
+      Public.AnimationOptions,
+      Public.LayoutAnimation,
+      Public.LayoutAnimationContext,
+      Public.DropAnimation,
+      Public.DropAnimationContext,
+      // Collision detection and modifiers (custom ones need their argument types)
+      Public.CollisionDetection,
+      Public.CollisionArgs,
+      Public.CollisionCandidate,
+      Public.Modifier,
+      Public.ModifierArgs,
+      Public.SnapToGridOptions,
+      // Provider, context and overlay
+      Public.DnDProviderProps,
+      Public.DnDContext,
+      Public.OverlaySlotProps,
+      Public.OverlayProps,
+      Public.DragPreviewProps,
+      // Composables
+      Public.DraggableOptions,
+      Public.DraggableReturn,
+      Public.DroppableOptions,
+      Public.DroppableReturn,
+      Public.Placement,
+      Public.SortableListOptions<unknown>,
+      Public.SortableListReturn<unknown>,
+      Public.SortableItemOptions,
+      Public.SortableItemReturn,
+      Public.SortableStrategy,
+      Public.SortableBehavior,
+      Public.SortablePlaceholder,
+      Public.MultipleMode,
+      Public.DropOutside,
+      Public.SortableGroupOptions,
+      Public.SortablePutContext,
+      Public.SortableDropEvent,
+      Public.SortableIndicator,
+      Public.SortableTreeOptions<unknown>,
+      Public.SortableTreeReturn<unknown>,
+      Public.SortableTreeDropEvent,
+      Public.TreeNesting,
+      Public.FlatNode<unknown>,
+      Public.TreeProjection,
+      Public.SelectionAreaOptions,
+      Public.SelectionAreaReturn,
+      Public.SelectionStrategy,
+      Public.SelectionModifier,
+    ];
+    accepts<Exported | undefined>(undefined);
+    // @ts-expect-error The manager is internal: `useDnDContext()` gives an opaque `DnDContext`.
+    accepts<Public.DnDManager | undefined>(undefined);
+    expect(true).toBe(true);
+  });
+});
 
 describe('public option types', () => {
   it('accept readonly template refs, narrower refs, computeds and getters', () => {
@@ -29,5 +169,29 @@ describe('public option types', () => {
     accepts<MaybeElementRef>(componentRef);
     accepts<MaybeElementRef>(() => componentRef.value);
     expect(true).toBe(true);
+  });
+
+  it('sortable items take `canDrag` and `attributes` as draggables do, but no `keyboard`', () => {
+    accepts<SortableItemOptions>({ id: 'a', canDrag: (event) => event.shiftKey, attributes: ref(false) });
+    assertType<Equal<SortableItemOptions['canDrag'], DraggableOptions['canDrag']>>();
+    assertType<Equal<SortableItemOptions['attributes'], DraggableOptions['attributes']>>();
+    // @ts-expect-error The keyboard moves sortable items by slots.
+    accepts<SortableItemOptions>({ id: 'a', keyboard: 'pixels' });
+    expect(true).toBe(true);
+  });
+});
+
+describe('DnDContext', () => {
+  it('is opaque: no public members, and only what useDnDContext() returns fits provideDnDContext()', () => {
+    assertType<Equal<ReturnType<typeof useDnDContext>, DnDContext>>();
+    assertType<Equal<Extract<keyof DnDContext, string | number>, never>>();
+    assertType<Equal<Parameters<typeof provideDnDContext>[1], DnDContext>>();
+    const check = (context: DnDContext) => {
+      // @ts-expect-error The manager's members are internal.
+      void context.status;
+      // @ts-expect-error Nothing else can be passed off as a provider.
+      provideDnDContext(createApp({}), { status: ref('idle') });
+    };
+    expect(check).toBeTypeOf('function');
   });
 });

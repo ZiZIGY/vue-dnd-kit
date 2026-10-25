@@ -2,7 +2,7 @@ import { createApp, defineComponent, h, nextTick, shallowRef, useTemplateRef } f
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Modifier } from '../types';
 import { DnDProvider } from './DnDProvider';
-import { useDnDContext } from './context';
+import { useManager } from './context';
 import type { DnDManager } from './manager';
 import { makeDraggable } from './makeDraggable';
 import { restrictToVerticalAxis } from './modifiers';
@@ -17,7 +17,7 @@ const mount = (own: () => Modifier[] | undefined, provider?: Modifier[]) => {
   const Card = defineComponent({
     props: { id: { type: String, required: true }, modifiers: Function },
     setup(props) {
-      manager = useDnDContext();
+      manager = useManager();
       makeDraggable(useTemplateRef<HTMLElement>('el'), {
         id: props.id,
         modifiers: props.modifiers as (() => Modifier[] | undefined) | undefined,

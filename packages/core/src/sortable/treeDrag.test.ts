@@ -11,7 +11,7 @@ import type {
 } from '../types';
 import { createRect } from '../animation/layout';
 import { DnDProvider } from '../core/DnDProvider';
-import { useDnDContext } from '../core/context';
+import { useManager } from '../core/context';
 import type { DnDManager } from '../core/manager';
 import { makeDraggable } from '../core/makeDraggable';
 import { restrictToVerticalAxis } from '../core/modifiers';
@@ -174,7 +174,7 @@ const renderTree = (options: Partial<SortableTreeOptions<Node>> = {}, extra: () 
     setup: () => () =>
       h(DnDProvider, { animation: false, dropAnimation: false }, {
         default: () => [
-          h({ setup: () => () => ((manager = useDnDContext()), null) }),
+          h({ setup: () => () => ((manager = useManager()), null) }),
           h(Tree, {
             roots,
             options: { onDrop: (event: SortableTreeDropEvent<Node>) => drops.push(event), ...options },
@@ -478,7 +478,7 @@ describe('keyboard into indicator lists: only the line moves', () => {
       setup: () => () =>
         h(DnDProvider, { animation: false, dropAnimation: false }, {
           default: () => [
-            h({ setup: () => () => ((manager = useDnDContext()), null) }),
+            h({ setup: () => () => ((manager = useManager()), null) }),
             h(List, { listId: 'source', tasks: source, column: 0 }),
             target === 'list'
               ? h(List, { listId: 'lines', tasks: lines, column: 1, indicator: true })
@@ -711,14 +711,13 @@ describe('tree options as lists have them', () => {
     const { container } = renderTree({ autoScroll });
     await settle();
     const element = container.querySelector('[data-col="1"]');
-    const entries = () => [...manager.autoScrollEntries].map((entry) => [entry.getElement(), entry.options]);
+    // Read when a drag starts: what the scroller would take now.
+    const entries = () => [...manager.autoScrollEntries].map((entry) => [entry.getElement(), entry.getOptions()]);
     expect(entries()).toEqual([[element, false]]);
     autoScroll.value = { maxSpeed: 5 };
-    await nextTick();
     expect(entries()).toEqual([[element, { maxSpeed: 5 }]]);
     autoScroll.value = undefined;
-    await nextTick();
-    expect(entries()).toEqual([]);
+    expect(entries()).toEqual([[element, undefined]]);
   });
 
   it("dropOutside: 'cancel' keeps the nodes, 'remove' takes them out with their subtrees; read at the drop", async () => {

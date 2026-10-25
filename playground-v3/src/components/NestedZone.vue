@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, inject, useTemplateRef } from 'vue';
+  import { computed, inject, toRef, useTemplateRef } from 'vue';
   import { makeDroppable, useDnD, type AcceptRule } from '@vue-dnd-kit/core';
   import NestedPiece from './NestedPiece.vue';
   import { ZONE_STORE } from './zones';
@@ -9,8 +9,8 @@
   const el = useTemplateRef<HTMLElement>('el');
   const { isOver } = makeDroppable(el, {
     id: props.id,
-    accept: props.accept,
-    priority: props.priority,
+    accept: toRef(props, 'accept'),
+    priority: () => props.priority,
     onDrop: (event) => (store.location[event.active.id] = props.id),
   });
   const { over } = useDnD();

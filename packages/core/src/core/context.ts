@@ -6,13 +6,13 @@ import {
   type App,
   type InjectionKey,
 } from 'vue';
-import type { DnDMonitor, DnDSelection, DnDState, Key } from '../types';
+import type { DnDContext, DnDMonitor, DnDSelection, DnDState, Key } from '../types';
 import type { DnDManager } from './manager';
 
 export const DND_CONTEXT: InjectionKey<DnDManager> = Symbol('vue-dnd-kit');
 
-/** The provider's manager. Advanced API: also used to bridge shadow roots and separate apps. */
-export const useDnDContext = (): DnDManager => {
+/** The provider's manager: what the library itself works with. */
+export const useManager = (): DnDManager => {
   const manager = inject(DND_CONTEXT, null);
   if (!manager) {
     throw new Error('[vue-dnd-kit] No <DnDProvider> found above this component.');
@@ -20,9 +20,15 @@ export const useDnDContext = (): DnDManager => {
   return manager;
 };
 
-/** Shares a provider with another Vue app (e.g. one mounted inside a shadow root). */
-export const provideDnDContext = (app: App, manager: DnDManager): void => {
-  app.provide(DND_CONTEXT, manager);
+/**
+ * The provider above this component, as an opaque handle for `provideDnDContext`: it
+ * bridges the provider into shadow roots and separate Vue apps.
+ */
+export const useDnDContext = (): DnDContext => useManager() as unknown as DnDContext;
+
+/** Shares a provider (from `useDnDContext()`) with another Vue app, e.g. one mounted inside a shadow root. */
+export const provideDnDContext = (app: App, context: DnDContext): void => {
+  app.provide(DND_CONTEXT, context as unknown as DnDManager);
 };
 
 /** Id-based selection over the provider's reactive set: per-id updates, survives unmounts. */
@@ -48,7 +54,7 @@ export const createSelection = (set: Set<Key>): DnDSelection => ({
 
 /** Read-only drag state for custom UI (valid-target highlighting, spinners, progress). */
 export const useDnD = (): DnDState => {
-  const manager = useDnDContext();
+  const manager = useManager();
   return {
     status: readonly(manager.status),
     // The overlay keeps its item for the drop animation; the drag itself is over.
@@ -64,6 +70,6 @@ export const useDnD = (): DnDState => {
 
 /** Subscribes to drag events for the lifetime of the calling scope. */
 export const useDnDMonitor = (monitor: DnDMonitor): void => {
-  const manager = useDnDContext();
+  const manager = useManager();
   onScopeDispose(manager.addMonitor(monitor));
 };

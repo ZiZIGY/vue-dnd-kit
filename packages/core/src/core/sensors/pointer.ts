@@ -275,7 +275,7 @@ export function usePointerSensor(manager: DnDManager): void {
     const kind = pointerKind(event);
     const constraint = resolveActivation(
       kind,
-      entry.activation,
+      entry.getActivation?.(),
       manager.props.activation,
       entry.getHandle() != null,
     );
