@@ -371,33 +371,24 @@ interface Located<T> {
   index: number;
 }
 
-/** Depth-first search for `keys`, until all are found; O(N). */
-export function findTreeNodes<T>(
+/** Depth-first search for `key`; O(N). */
+export function findTreeNode<T>(
   roots: readonly T[],
-  keys: ReadonlySet<Key>,
+  key: Key,
   { getKey, getChildren }: Pick<TreeAccessors<T>, 'getKey' | 'getChildren'>,
-): Map<Key, Located<T>> {
-  const found = new Map<Key, Located<T>>();
+): Located<T> | null {
   const stack: Array<{ siblings: readonly T[]; parent: T | null }> = [{ siblings: roots, parent: null }];
-  while (stack.length && found.size < keys.size) {
+  while (stack.length) {
     const { siblings, parent } = stack.pop()!;
     for (let index = 0; index < siblings.length; index++) {
       const node = siblings[index]!;
-      const key = getKey(node);
-      if (keys.has(key) && !found.has(key)) found.set(key, { node, parent, index });
+      if (getKey(node) === key) return { node, parent, index };
       const children = getChildren(node);
       if (children?.length) stack.push({ siblings: children, parent: node });
     }
   }
-  return found;
+  return null;
 }
-
-/** Depth-first search for `key`; O(N). */
-export const findTreeNode = <T>(
-  roots: readonly T[],
-  key: Key,
-  accessors: Pick<TreeAccessors<T>, 'getKey' | 'getChildren'>,
-): Located<T> | null => findTreeNodes(roots, new Set([key]), accessors).get(key) ?? null;
 
 export interface TreeMove<T> {
   /** Moved nodes in drop order, each with its subtree. */
@@ -422,12 +413,11 @@ export interface TreeMove<T> {
  */
 export function applyTreeMove<T>(roots: readonly T[], move: TreeMove<T>, accessors: TreeAccessors<T>): T[] {
   const { getChildren, setChildren } = accessors;
-  const located = findTreeNodes(roots, new Set(move.keys), accessors);
-  const nodes: T[] = [];
-  for (const key of move.keys) {
-    const node = located.get(key)?.node ?? move.node?.(key);
-    if (node !== undefined) nodes.push(node);
-  }
+  // Found before anything moves: a moved node may sit inside another one.
+  const located = move.keys.map((key) => findTreeNode(roots, key, accessors));
+  const nodes = move.keys
+    .map((key, i) => located[i]?.node ?? move.node?.(key))
+    .filter((node): node is T => node !== undefined);
   if (!nodes.length) return [...roots];
 
   let parent: T | null = null;
@@ -445,7 +435,7 @@ export function applyTreeMove<T>(roots: readonly T[], move: TreeMove<T>, accesso
 
   // Every parent drops all its moved children at once: the order of nested moves doesn't matter.
   const moved = new Set(nodes);
-  for (const owner of new Set([...located.values()].map((place) => place.parent))) {
+  for (const owner of new Set(located.flatMap((place) => (place ? [place.parent] : [])))) {
     write(owner, childrenOf(owner).filter((child) => !moved.has(child)));
   }
   if (move.to) {

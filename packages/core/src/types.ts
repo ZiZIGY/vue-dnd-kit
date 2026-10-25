@@ -721,8 +721,9 @@ export interface SortableTreeOptions<T> {
    * you draw the line. Dropping outside then cancels.
    */
   placeholder?: SortablePlaceholder;
-  /** Deepest allowed depth (roots are 0). The dragged node's own descendants count. */
+  /** Deepest allowed depth (roots are 0). The dragged nodes' own descendants count. */
   maxDepth?: number;
+  /** Whether `node` may go under `parent`; a multi-drag asks for every dragged node. */
   canNest?: (node: T, parent: T) => boolean;
   collapsed?: Ref<Set<Key>>;
   animation?: LayoutAnimation;
