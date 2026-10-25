@@ -54,8 +54,11 @@ export function makeSortableItem<TData = unknown>(
     const active = manager.active.value;
     return !!active && (manager.landingKey.value ?? active.id) === key.value;
   });
-  // Multi-drag `'gaps'`: the other dragged items stay in place until the drop.
-  const isLeftBehind = computed(() => draggable.isDragging.value && !isPlaceholder.value);
+  // Multi-drag `'gaps'`: the other dragged items stay in place until the drop. Copied
+  // items don't leave at all, so they aren't marked (the default style dims the mark).
+  const isLeftBehind = computed(
+    () => draggable.isDragging.value && !isPlaceholder.value && manager.mode.value !== 'copy',
+  );
 
   watchEffect(
     () => {

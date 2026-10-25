@@ -94,10 +94,9 @@ test.describe('multi-drag', () => {
     await dragTo(page, item(page, 'g1'), await center(item(page, 'g5'), 0.8), { release: false });
     await expect(item(page, 'g3')).toHaveAttribute('data-dnd-dragging', '');
     await expect(item(page, 'g1')).toHaveAttribute('data-dnd-placeholder', '');
-    const order = await page
-      .locator('[data-testid="gaps-a"] > [data-id]')
-      .evaluateAll((rows) => rows.map((row) => row.getAttribute('data-id')));
-    expect(order).toEqual(['g2', 'g3', 'g4', 'g5', 'g1', 'g6']);
+    const order = () =>
+      page.locator('[data-testid="gaps-a"] > [data-id]').evaluateAll((rows) => rows.map((row) => row.getAttribute('data-id')));
+    await expect.poll(order).toEqual(['g2', 'g3', 'g4', 'g5', 'g1', 'g6']);
     await page.mouse.up();
     // g3 slides to its new slot (FLIP), it isn't recreated.
     expect(await flyIn(page, 'g3')).not.toBeNull();
