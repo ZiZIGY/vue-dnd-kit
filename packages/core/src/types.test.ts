@@ -1,4 +1,4 @@
-import { computed, createApp, defineComponent, ref, type ShallowRef } from 'vue';
+import { computed, createApp, defineComponent, readonly, ref, type ShallowRef } from 'vue';
 import { describe, expect, it } from 'vitest';
 import * as library from './index';
 import { provideDnDContext, useDnDContext } from './index';
@@ -10,6 +10,7 @@ import type {
   MaybeElementRef,
   MaybeReadonlyRefOrGetter,
   SortableItemOptions,
+  SortableItems,
 } from './index';
 
 /** A component with typed emits, like most UI kit components (`<v-list-item>`, `<UTooltip>`). */
@@ -124,6 +125,7 @@ describe('public exports', () => {
       Public.Placement,
       Public.SortableListOptions<unknown>,
       Public.SortableListReturn<unknown>,
+      Public.SortableItems<unknown>,
       Public.SortableItemOptions,
       Public.SortableItemReturn,
       Public.SortableStrategy,
@@ -177,6 +179,15 @@ describe('public option types', () => {
     assertType<Equal<SortableItemOptions['attributes'], DraggableOptions['attributes']>>();
     // @ts-expect-error The keyboard moves sortable items by slots.
     accepts<SortableItemOptions>({ id: 'a', keyboard: 'pixels' });
+    expect(true).toBe(true);
+  });
+
+  it('sortable items: a writable ref, or a read-only source the user applies drops to', () => {
+    const tasks = ref<Array<{ id: string }>>([]);
+    accepts<SortableItems<{ id: string }>>(tasks);
+    accepts<SortableItems<{ id: string }>>(computed(() => tasks.value));
+    accepts<SortableItems<{ id: string }>>(readonly(tasks));
+    accepts<SortableItems<{ id: string }>>(() => Object.freeze([...tasks.value]));
     expect(true).toBe(true);
   });
 });

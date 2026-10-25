@@ -38,7 +38,8 @@
     {
       id: 'virtual-table',
       items: rows,
-      onDrop: (event) => (lastDrop.value = describeDrop(rows.value, event.keys[0])),
+      // Before the write: the new order is in `result`.
+      onDrop: (event) => (lastDrop.value = describeDrop(event.result.get(event.to.list) ?? rows.value, event.keys[0])),
     },
   );
 

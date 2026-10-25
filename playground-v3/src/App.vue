@@ -30,6 +30,7 @@
   import CombineDemo from './demos/CombineDemo.vue';
   import ExternalDemo from './demos/ExternalDemo.vue';
   import RejectDemo from './demos/RejectDemo.vue';
+  import ControlledDemo from './demos/ControlledDemo.vue';
   import AnnounceDemo from './demos/AnnounceDemo.vue';
   import NestedZonesDemo from './demos/NestedZonesDemo.vue';
   import ShadowDomDemo from './demos/ShadowDomDemo.vue';
@@ -76,6 +77,7 @@
     combine: CombineDemo,
     external: ExternalDemo,
     reject: RejectDemo,
+    controlled: ControlledDemo,
     announce: AnnounceDemo,
     'nested-zones': NestedZonesDemo,
     shadow: ShadowDomDemo,

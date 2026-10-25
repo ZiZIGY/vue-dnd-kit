@@ -3,6 +3,11 @@
  * during a drag, projects the pointer onto it, commits the result on drop, and runs
  * FLIP for every change it causes.
  *
+ * A drop is computed once, as the new items of every list it changes (`result`), and
+ * goes through `onBeforeDrop`, then `onDrop`, then the write (the default action, which
+ * `preventDefault()` skips: the user applies `result`), then the reset of the drafts.
+ * The FLIP pass of that reset animates whatever the sources hold by then.
+ *
  * The active slot is a key in the drafts. Usually it is the active item itself; when
  * copying it is the item's copy, and for a plain draggable from outside it is the
  * item `createItem` made. Projection, commit and FLIP only ever deal with that key.
@@ -101,9 +106,18 @@ export interface ListEntry {
   pull(): boolean | 'clone';
   canPut(context: SortablePutContext): boolean;
   dropOutside(): DropOutside;
-  /** Writes the new order. `inserted`: the keys the drop puts at the slot, when this list is the target. */
-  commit(keys: Key[], lookup: (key: Key) => unknown, inserted: readonly Key[]): void;
+  /** The source can't be written (a getter, a readonly ref, a computed): drops are the user's to apply. */
+  isReadonly(): boolean;
+  /**
+   * The new items for the order `keys`, built without touching the source: the drop's
+   * `result` for this list. `inserted`: the keys the drop puts at the slot, when this list
+   * is the target.
+   */
+  build(keys: Key[], lookup: (key: Key) => unknown, inserted: readonly Key[]): unknown[];
+  /** Writes the drop, the default action. `built`: what `build` returned for the same arguments. */
+  commit(built: unknown[], keys: Key[], lookup: (key: Key) => unknown, inserted: readonly Key[]): void;
   beforeDrop?(event: SortableDropEvent): MaybePromise<BeforeDropResult>;
+  /** The user's `onDrop`: before the write, which `event.preventDefault()` skips. */
   afterDrop?(event: SortableDropEvent): void;
 
   // Optional features; lists that don't implement them get the defaults.
@@ -150,10 +164,15 @@ export interface ProjectContext {
 
 interface DropResult {
   next: Map<ListEntry, Key[]>;
+  /** The new items of each list in `next` (`build`): the event's `result`, what the write puts. */
+  built: Map<ListEntry, unknown[]>;
   /** Keys put at the slot of the target list (`event.to.list`). */
   inserted: Key[];
   event: SortableDropEvent;
 }
+
+/** A drop event before its list results are built. */
+type DropFacts = Omit<SortableDropEvent, 'result' | 'preventDefault' | 'defaultPrevented'>;
 
 interface Session {
   activeKey: Key;
@@ -203,6 +222,8 @@ interface Session {
   target: { list: Key; at: Coordinates } | null;
   /** A trash zone or `dropOutside: 'remove'` asked to remove the dragged items. */
   removed: boolean;
+  /** `event.preventDefault()` in `onBeforeDrop` or `onDrop`: the drop isn't written. */
+  prevented: boolean;
   /** Keyboard: resting on a drop target in the item `key`, reached with the arrow `direction`. */
   stop: { key: Key; direction: Coordinates } | null;
 }
@@ -233,6 +254,9 @@ export interface SortableGroup {
   isInert(list: ListEntry): boolean;
   captureLayout(): void;
 }
+
+/** Bundlers replace it: development builds keep the warnings, production drops them. */
+declare const process: { env: { NODE_ENV?: string } };
 
 const registries = new WeakMap<DnDManager, Map<string, SortableGroup>>();
 
@@ -731,6 +755,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       hysteresis: null,
       target: null,
       removed: false,
+      prevented: false,
       stop: null,
     };
 
@@ -1311,6 +1336,26 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   // ─── Drop ────────────────────────────────────────────────────────────────────
 
   /**
+   * Builds the new items of every list in `next` (what the write would put there) and
+   * the drop event around them: its `result`, and `preventDefault()` for the session.
+   */
+  const dropResult = (current: Session, next: Map<ListEntry, Key[]>, inserted: Key[], facts: DropFacts): DropResult => {
+    const built = new Map<ListEntry, unknown[]>();
+    for (const [list, keys] of next) built.set(list, list.build(keys, lookup, list.id === facts.to.list ? inserted : []));
+    const event: SortableDropEvent = {
+      ...facts,
+      result: new Map([...built].map(([list, items]) => [list.id, items])),
+      preventDefault: () => {
+        current.prevented = true;
+      },
+      get defaultPrevented() {
+        return current.prevented;
+      },
+    };
+    return { next, built, inserted, event };
+  };
+
+  /**
    * The new order of every list that changes. `accepted` limits the moved keys
    * (partial accept); `marker` is the indicator to insert at (`placeholder: 'indicator'`).
    */
@@ -1374,24 +1419,23 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     if (current.external) mode = 'insert';
     else if (current.copying) mode = 'copy';
     else if (current.swap != null) mode = 'swap';
-    return {
-      next,
-      inserted: insert,
-      event: {
-        keys: current.keys,
-        items: current.keys.map((key) => lookup(inserted(key))),
-        accepted: moved,
-        rejected,
-        from: { ...current.origin },
-        to: { list: target.id, index: insert.length ? finalKeys.indexOf(insert[0]!) : -1 },
-        sameList: current.origin.list === target.id,
-        mode,
-        ...(mode === 'swap' && { partner: partnerOf(current, current.swap!) }),
-      },
-    };
+    return dropResult(current, next, insert, {
+      keys: current.keys,
+      items: current.keys.map((key) => lookup(inserted(key))),
+      accepted: moved,
+      rejected,
+      from: { ...current.origin },
+      to: { list: target.id, index: insert.length ? finalKeys.indexOf(insert[0]!) : -1 },
+      sameList: current.origin.list === target.id,
+      mode,
+      ...(mode === 'swap' && { partner: partnerOf(current, current.swap!) }),
+    });
   };
 
-  /** Trash zones and `dropOutside: 'remove'`: the dragged items leave their lists (those the zone accepted). */
+  /**
+   * Trash zones, `e.source.remove()` and `dropOutside: 'remove'`: the dragged items (those
+   * accepted) leave their lists. The event goes to the list the drag started in.
+   */
   const computeRemoval = (accepted: readonly Key[]): DropResult | null => {
     const current = session.value!;
     if (current.copying || current.external || current.origin.list == null) return null;
@@ -1403,20 +1447,36 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       if (list.hasChanges ? list.hasChanges(keys, []) : keys.length !== source.length) next.set(list, keys);
     }
     if (!next.size) return null;
-    return {
-      next,
-      inserted: [],
-      event: {
-        keys: current.keys,
-        items: current.keys.map(lookup),
-        accepted: current.keys,
-        rejected: [],
-        from: { ...current.origin },
-        to: { list: current.origin.list, index: -1 },
-        sameList: true,
-        mode: 'move',
-      },
-    };
+    return dropResult(current, next, [], {
+      keys: current.keys,
+      items: current.keys.map(lookup),
+      accepted: current.keys.filter((key) => gone.has(key)),
+      rejected: current.keys.filter((key) => !gone.has(key)),
+      from: { ...current.origin },
+      to: { list: current.origin.list, index: -1 },
+      sameList: true,
+      mode: 'move',
+    });
+  };
+
+  /**
+   * The default action of a drop: every list it changes takes its new items. All or
+   * none: a read-only source among them (one the user didn't take the drop for, with
+   * `preventDefault()`) blocks the others too, or items would be lost or duplicated.
+   */
+  const write = (result: DropResult) => {
+    const blocked = [...result.next.keys()].filter((list) => list.isReadonly());
+    if (blocked.length) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(
+          `[vue-dnd-kit] A drop wasn't written: \`items\` is read-only (a getter, a readonly ref or a computed) in ${blocked.map((list) => `"${String(list.id)}"`).join(', ')}. Call \`event.preventDefault()\` in onBeforeDrop or onDrop and apply \`event.result\` yourself.`,
+        );
+      }
+      return;
+    }
+    for (const [list, keys] of result.next) {
+      list.commit(result.built.get(list)!, keys, lookup, list.id === result.event.to.list ? result.inserted : []);
+    }
   };
 
   const reset = () => {
@@ -1455,16 +1515,17 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     // A refusing list cancels the drop in the manager; don't ask the user about it.
     if (event.over && !event.over.accepted) return;
     const outside = isOutside(current, event);
-    if (outside) {
-      const rule = listOf(current.list ?? current.origin.list)?.dropOutside();
-      if (rule === 'cancel') return false;
-      if (rule === 'remove') {
-        current.removed = true;
-        return;
-      }
+    const rule = outside ? listOf(current.list ?? current.origin.list)?.dropOutside() : undefined;
+    if (rule === 'cancel') return false;
+    let result: DropResult | null;
+    if (rule === 'remove') {
+      // The list the items leave is asked, as for any drop of its own.
+      current.removed = true;
+      result = computeRemoval(current.keys);
+    } else {
+      current.marker = indicator.value ?? (outside ? current.indicator : null);
+      result = computeResult(null, current.marker);
     }
-    current.marker = indicator.value ?? (outside ? current.indicator : null);
-    const result = computeResult(null, current.marker);
     current.result = result;
     if (!result) return;
     const partial = result.event.rejected.length ? result.event.accepted : undefined;
@@ -1482,18 +1543,23 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const current = session.value;
     if (!current || current.activeKey !== event.active.id) return;
     let result: DropResult | null = null;
+    // The result `onBeforeDrop` saw holds unless it accepted fewer keys.
+    const kept = new Set(event.accepted);
+    const prepared = current.result;
+    const unchanged = !!prepared && sameKeys(prepared.event.accepted, current.keys.filter((key) => kept.has(key)));
     if (current.removed) {
-      result = computeRemoval(event.accepted);
+      result = unchanged ? prepared : computeRemoval(event.accepted);
     } else if (!isForeign(event)) {
-      const accepted = new Set(event.accepted);
-      const prepared = current.result;
-      result =
-        prepared && sameKeys(prepared.event.accepted, current.keys.filter((key) => accepted.has(key)))
-          ? prepared
-          : computeResult(accepted, current.marker);
+      result = unchanged ? prepared : computeResult(kept, current.marker);
     }
     if (result) {
-      for (const [list, keys] of result.next) list.commit(keys, lookup, list.id === result.event.to.list ? result.inserted : []);
+      // `onDrop` comes first: the sources still hold the old order, `result` the new one.
+      try {
+        lists.get(result.event.to.list)?.afterDrop?.(result.event);
+      } catch (error) {
+        console.error(error);
+      }
+      if (!current.prevented) write(result);
     }
     // Where the overlay's clones land: the accepted items on their slots (copies when
     // copying); the rest on their own elements, back where they started.
@@ -1527,7 +1593,6 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     }
     announced = { key: current.activeKey, text };
     reset();
-    if (result && !current.removed) lists.get(result.event.to.list)?.afterDrop?.(result.event);
   };
 
   const cancel = (event: DnDEvent) => {
@@ -1846,14 +1911,18 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
   // ─── Wiring ──────────────────────────────────────────────────────────────────
 
-  const removeMonitor = manager.addMonitor({
-    onDragStart: start,
-    onDragMove: move,
-    onBeforeDrop: beforeDrop,
-    onDragEnd: end,
-    onDragCancel: cancel,
-    getKeyboardCoordinates,
-  });
+  // An integration: the drop is written before the user's monitors hear `onDragEnd`.
+  const removeMonitor = manager.addMonitor(
+    {
+      onDragStart: start,
+      onDragMove: move,
+      onBeforeDrop: beforeDrop,
+      onDragEnd: end,
+      onDragCancel: cancel,
+      getKeyboardCoordinates,
+    },
+    true,
+  );
   const removeAnnouncer = manager.addAnnouncer(announcer);
   const removeRule = manager.addTargetRule(targetRule);
   // `e.source.remove()` in a trash zone's onDrop marks the dragged items for removal.

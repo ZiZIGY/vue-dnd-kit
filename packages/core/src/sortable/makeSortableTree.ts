@@ -1,4 +1,4 @@
-import { computed, onScopeDispose, shallowRef } from 'vue';
+import { computed, isReadonly, isRef, onScopeDispose, shallowRef, type Ref } from 'vue';
 import type {
   Coordinates,
   DnDEvent,
@@ -25,6 +25,7 @@ import {
   applyTreeMove,
   blockFilter,
   blockHeight,
+  buildTreeMove,
   createFlatTree,
   depthRange,
   flattenTree,
@@ -41,6 +42,7 @@ import {
   type DepthFilter,
   type DraftPosition,
   type TreeAccessors,
+  type TreeMove,
 } from './tree';
 
 const DEFAULT_INDENTATION = 24;
@@ -113,7 +115,8 @@ interface DropInfo {
 /**
  * Makes a container a sortable tree. Render the returned `items` (visible nodes in
  * draft order, indented by `depth`) with a row component that calls `makeSortableItem`.
- * On drop, the moved nodes (with their subtrees) are written into `options.items`.
+ * On drop, after `onDrop`, the moved nodes (with their subtrees) are written into
+ * `options.items`, unless `event.preventDefault()` leaves `event.result` to you.
  */
 export function makeSortableTree<T>(
   target: MaybeElementRef,
@@ -128,6 +131,15 @@ export function makeSortableTree<T>(
     getChildren: (options.getChildren ?? defaultGetChildren) as (node: T) => T[] | undefined,
     setChildren: (options.setChildren ?? defaultSetChildren) as (node: T, children: T[]) => void,
   };
+  // A shallow copy that `setChildren` gives the children: `{ ...node, children }` by default.
+  const withChildren =
+    options.withChildren ??
+    ((node: T, children: T[]): T => {
+      const copy = { ...node };
+      accessors.setChildren(copy, children);
+      return copy;
+    });
+  const source = () => read<readonly T[]>(options.items);
   const indentation = () => options.indentation ?? DEFAULT_INDENTATION;
   const nesting = () => options.nesting ?? 'both';
   // The tree stays as it is; the line shows the drop (read live, like the other options).
@@ -136,7 +148,7 @@ export function makeSortableTree<T>(
   // Flattened only when the data or the collapsed set changes.
   const flat = computed(() =>
     createFlatTree(
-      flattenTree(options.items.value, accessors.getKey, accessors.getChildren, options.collapsed?.value),
+      flattenTree(source(), accessors.getKey, accessors.getChildren, options.collapsed?.value),
     ),
   );
   const keys = computed(() => flat.value.nodes.map((node) => node.key));
@@ -461,20 +473,34 @@ export function makeSortableTree<T>(
     );
   };
 
-  const commit = (next: Key[], lookup: (key: Key) => unknown, inserted: readonly Key[]) => {
-    const current = state;
-    if (!current) return;
+  /** The move a drop's `next` makes here; the event's `from` and `to` come with it. */
+  let prepared: { next: Key[]; move: TreeMove<T> } | null = null;
+
+  const moveOf = (current: DragState<T>, next: Key[], lookup: (key: Key) => unknown, inserted: readonly Key[]) => {
     const { landing, removed, to } = outcome(current, next, inserted);
     dropInfo = { from: current.origin, to };
-    options.items.value = applyTreeMove(
-      options.items.value,
-      {
-        keys: to ? landing : removed,
-        node: (key) => lookup(key) as T | undefined,
-        to: to && { parentKey: to.parentKey, index: to.index },
-      },
-      accessors,
-    );
+    const move: TreeMove<T> = {
+      keys: to ? landing : removed,
+      node: (key) => lookup(key) as T | undefined,
+      to: to && { parentKey: to.parentKey, index: to.index },
+    };
+    prepared = { next, move };
+    return move;
+  };
+
+  /** The drop's `result` here: a new tree, the user's nodes untouched. */
+  const build = (next: Key[], lookup: (key: Key) => unknown, inserted: readonly Key[]): unknown[] => {
+    const current = state;
+    if (!current) return [...source()];
+    return buildTreeMove(source(), moveOf(current, next, lookup, inserted), { ...accessors, withChildren });
+  };
+
+  /** The default write: the same move, through `setChildren`. */
+  const commit = (_items: unknown[], next: Key[], lookup: (key: Key) => unknown, inserted: readonly Key[]) => {
+    const current = state;
+    if (!current) return;
+    const move = prepared?.next === next ? prepared.move : moveOf(current, next, lookup, inserted);
+    (options.items as Ref<T[]>).value = applyTreeMove(source(), move, accessors);
   };
 
   /** Turns the group's flat indices into indices among siblings, plus parent keys. */
@@ -493,6 +519,7 @@ export function makeSortableTree<T>(
   const reset = () => {
     state = null;
     spot = null;
+    prepared = null;
     placement.value = null;
   };
 
@@ -521,8 +548,11 @@ export function makeSortableTree<T>(
     indicateAt,
     afterMove,
     hasChanges,
+    isReadonly: () => !isRef(options.items) || isReadonly(options.items),
+    build,
     commit,
-    beforeDrop: (event) => options.onBeforeDrop?.(toTreeEvent(event, liveDropInfo())),
+    // `result` was built for this event: its `from` and `to` go with it.
+    beforeDrop: (event) => options.onBeforeDrop?.(toTreeEvent(event, dropInfo ?? liveDropInfo())),
     afterDrop: (event) => {
       const info = dropInfo;
       dropInfo = null;

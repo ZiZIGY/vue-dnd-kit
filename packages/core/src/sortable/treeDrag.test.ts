@@ -1,4 +1,17 @@
-import { createApp, defineComponent, h, nextTick, ref, useTemplateRef, type Component, type PropType, type Ref } from 'vue';
+import {
+  computed,
+  createApp,
+  defineComponent,
+  h,
+  nextTick,
+  ref,
+  shallowRef,
+  toRaw,
+  useTemplateRef,
+  type Component,
+  type PropType,
+  type Ref,
+} from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FlatNode, Key, Rect, SortableTreeDropEvent, SortableTreeOptions, SortableTreeReturn } from '../types';
 import { createRect } from '../animation/layout';
@@ -459,5 +472,95 @@ describe('keyboard into indicator lists: only the line moves', () => {
     await drop();
     expect(source.value.map((n) => n.id)).toEqual(['l1', 'l2']);
     expect(shape(roots.value)).toBe('a(a1,a2(l3,a2x)),b(b1),c');
+  });
+});
+
+describe('controlled tree drops', () => {
+  const ids = (nodes: readonly Node[] | undefined) => (nodes ?? []).map((n) => n.id);
+
+  /** Moves c into b (after b1) with the keyboard and drops it. */
+  const nestC = async (container: HTMLElement) => {
+    select();
+    await start(container, 'c', 'keyboard');
+    await press('ArrowRight');
+    await drop();
+  };
+
+  it('onDrop sees the old tree, result a new one; prevented, nothing is written or mutated', async () => {
+    const seen: string[] = [];
+    let result: Node[] = [];
+    const { container, roots } = renderTree({
+      onDrop: (event) => {
+        seen.push(shape(roots.value));
+        result = event.result.get('tree')!;
+        event.preventDefault();
+      },
+    });
+    await settle();
+    const before = roots.value;
+    const [a, b, c] = before as [Node, Node, Node];
+    const bChildren = b.children;
+    await nestC(container);
+    expect(seen).toEqual(['a(a1,a2(a2x)),b(b1),c']);
+    expect(shape(result)).toBe('a(a1,a2(a2x)),b(b1,c)');
+    expect(roots.value).toBe(before);
+    expect(b.children).toBe(bChildren);
+    expect(ids(b.children)).toEqual(['b1']);
+    expect(depthOf(container, 'c')).toBe('0');
+    // Only b, which got new children, is a copy.
+    expect(result[0]).toBe(a);
+    expect(result[1]).not.toBe(b);
+    expect(result[1]!.children![1]).toBe(c);
+  });
+
+  it('the result applied in onDrop renders; withChildren makes the copies', async () => {
+    const copies = new WeakSet<object>();
+    const { container, roots } = renderTree({
+      withChildren: (n, children) => {
+        const copy = { ...n, children };
+        copies.add(copy);
+        return copy;
+      },
+      onDrop: (event) => {
+        event.preventDefault();
+        roots.value = event.result.get('tree')!;
+      },
+    });
+    await settle();
+    const b = roots.value[1]!;
+    await nestC(container);
+    expect(shape(roots.value)).toBe('a(a1,a2(a2x)),b(b1,c)');
+    expect(depthOf(container, 'c')).toBe('1');
+    expect(copies.has(toRaw(roots.value[0]!))).toBe(false);
+    expect(copies.has(toRaw(roots.value[1]!))).toBe(true);
+    expect(ids(b.children)).toEqual(['b1']);
+  });
+
+  it('the default write goes through setChildren after onDrop; the result was built on a copy', async () => {
+    const calls: string[] = [];
+    let original: Node | null = null;
+    const { container, roots } = renderTree({
+      setChildren: (n, children) => {
+        calls.push(`set:${n.id}:${n === original ? 'original' : 'copy'}`);
+        n.children = children;
+      },
+      onDrop: () => void calls.push('onDrop'),
+    });
+    await settle();
+    original = roots.value[1]!;
+    await nestC(container);
+    expect(calls).toEqual(['set:b:copy', 'onDrop', 'set:b:original']);
+    expect(shape(roots.value)).toBe('a(a1,a2(a2x)),b(b1,c)');
+  });
+
+  it('a read-only source is not written: development builds warn', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const store = shallowRef(sample());
+    const { container } = renderTree({ items: computed(() => store.value) });
+    await settle();
+    await nestC(container);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(shape(store.value)).toBe('a(a1,a2(a2x)),b(b1),c');
+    expect(depthOf(container, 'c')).toBe('0');
   });
 });
