@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FlatNode, Key, Rect, SortableTreeDropEvent, SortableTreeOptions, SortableTreeReturn } from '../types';
 import { createRect } from '../animation/layout';
 import { DnDProvider } from '../core/DnDProvider';
-import { useDnDContext } from '../core/context';
+import { useManager } from '../core/context';
 import type { DnDManager } from '../core/manager';
 import { makeSortableItem } from './makeSortableItem';
 import { makeSortableList } from './makeSortableList';
@@ -151,7 +151,7 @@ const renderTree = (options: Partial<SortableTreeOptions<Node>> = {}, extra: () 
     setup: () => () =>
       h(DnDProvider, { animation: false, dropAnimation: false }, {
         default: () => [
-          h({ setup: () => () => ((manager = useDnDContext()), null) }),
+          h({ setup: () => () => ((manager = useManager()), null) }),
           h(Tree, {
             roots,
             options: { onDrop: (event: SortableTreeDropEvent<Node>) => drops.push(event), ...options },
@@ -409,7 +409,7 @@ describe('keyboard into indicator lists: only the line moves', () => {
       setup: () => () =>
         h(DnDProvider, { animation: false, dropAnimation: false }, {
           default: () => [
-            h({ setup: () => () => ((manager = useDnDContext()), null) }),
+            h({ setup: () => () => ((manager = useManager()), null) }),
             h(List, { listId: 'source', tasks: source, column: 0 }),
             target === 'list'
               ? h(List, { listId: 'lines', tasks: lines, column: 1, indicator: true })

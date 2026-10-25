@@ -4,7 +4,7 @@ import type { MultipleMode, OverlayProps, SortableDropEvent, SortableListOptions
 import { containsPoint, createRect } from '../animation/layout';
 import { DnDProvider } from '../core/DnDProvider';
 import { DragPreview } from '../core/DragPreview';
-import { useDnDContext } from '../core/context';
+import { useManager } from '../core/context';
 import type { DnDManager } from '../core/manager';
 import { makeDraggable } from '../core/makeDraggable';
 import { layoutColumn } from './column';
@@ -31,7 +31,7 @@ const mountList = (ids: string[], options: { multiple?: MultipleMode; overlay?: 
         default: () =>
           h({
             setup() {
-              manager = useDnDContext();
+              manager = useManager();
               const { items } = makeSortableList(useTemplateRef<HTMLElement>('list'), {
                 items: ref(ids.map((id) => ({ id }))),
                 ...options,
@@ -153,7 +153,7 @@ describe('keyboard: a plain draggable over a list with createItem', () => {
           default: () => [
             h({
               setup() {
-                manager = useDnDContext();
+                manager = useManager();
                 const { items } = makeSortableList(useTemplateRef<HTMLElement>('list'), {
                   id: 'inbox',
                   items: ref(['n1', 'n2', 'n3'].map((id) => ({ id }))),
@@ -291,7 +291,7 @@ describe('swap between two lists of a group', () => {
           default: () => [
             h({
               setup() {
-                manager = useDnDContext();
+                manager = useManager();
                 return () => null;
               },
             }),

@@ -11,7 +11,7 @@
     id: () => props.piece.id,
     type: () => props.piece.type,
     data: () => props.piece,
-    keyboard: props.piece.keyboard,
+    keyboard: () => props.piece.keyboard,
     // Keyboard drags stay available; pointer drags need Shift held.
     canDrag: props.piece.shift ? (event) => event instanceof KeyboardEvent || event.shiftKey : undefined,
   });

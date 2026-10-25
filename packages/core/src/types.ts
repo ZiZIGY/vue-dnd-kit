@@ -24,6 +24,13 @@ export type Key = string | number;
 export type MaybeReadonlyRefOrGetter<T> = T | Readonly<Ref<T>> | (() => T);
 
 /**
+ * A value or any ref, for options where a function is a value of its own (an overlay
+ * component, an accept rule, a custom animation), so a getter can't be told apart.
+ * Hold components in a `shallowRef` (or a computed): Vue must not make them reactive.
+ */
+export type MaybeReadonlyRef<T> = T | Readonly<Ref<T>>;
+
+/**
  * A component instance as a template ref gives it. Only `$el` is read: Vue's full
  * `ComponentPublicInstance` would reject every component that declares typed emits
  * (its `$emit` takes any event name), which is most UI kit components.
@@ -318,6 +325,17 @@ export interface DnDProviderProps {
   defaultStyles?: boolean;
 }
 
+declare const dndContext: unique symbol;
+
+/**
+ * A provider as `useDnDContext()` returns it, to hand to `provideDnDContext()`: another
+ * Vue app (e.g. one mounted in a shadow root) then works with the same provider. Opaque:
+ * it has no public members, so it never changes with the library's internals.
+ */
+export interface DnDContext {
+  readonly [dndContext]: true;
+}
+
 /**
  * What the overlay shows: the props of the provider's `#overlay` slot and of overlay
  * components (`overlay` option of draggables, sortable items, lists and trees).
@@ -424,6 +442,11 @@ export interface DnDState {
 
 // ─── Draggable / droppable ─────────────────────────────────────────────────────
 
+/**
+ * Options of `makeDraggable`. Every option but `canDrag` takes a value, a ref or a
+ * getter (`overlay`: a value or a ref) and is read when it is needed, so a change
+ * applies to the next drag at the latest.
+ */
 export interface DraggableOptions<TData = unknown> {
   /**
    * Stable id. Pass a getter in virtual lists, where elements are recycled. Default:
@@ -434,32 +457,38 @@ export interface DraggableOptions<TData = unknown> {
   data?: MaybeReadonlyRefOrGetter<TData>;
   type?: MaybeReadonlyRefOrGetter<string | string[] | undefined>;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
-  /** Element (ref) or selector inside the draggable that starts the drag. */
-  handle?: MaybeElementRef | string;
-  activation?: ActivationOptions;
+  /** Element or selector inside the draggable that starts the drag (and gets the attributes). */
+  handle?: MaybeReadonlyRefOrGetter<MaybeElement | string>;
+  /** Overrides the provider's `activation`. Read when a press starts. */
+  activation?: MaybeReadonlyRefOrGetter<ActivationOptions | undefined>;
   /** Extra gate, e.g. drag only while a key is held. */
   canDrag?: (event: PointerEvent | KeyboardEvent) => boolean;
   /**
    * `true` (default): an overlay follows the pointer, rendered by the provider's
    * `#overlay` slot or as a clone of the element. A component: the overlay renders it
    * with `OverlayProps`, before the slot. `false`: no overlay, the element itself moves
-   * via the returned `transform`.
+   * via the returned `transform`. A value or a ref (a function is a functional
+   * component), read when the drag starts.
    */
-  overlay?: boolean | Component;
+  overlay?: MaybeReadonlyRef<boolean | Component | undefined>;
   /**
    * Modifiers for drags that start here, applied after the provider's `modifiers`: e.g.
    * `[restrictToVerticalAxis]` for one element on a page where other drags move freely.
    * Read when the drag starts.
    */
   modifiers?: MaybeReadonlyRefOrGetter<Modifier[] | undefined>;
-  /** Arrow keys in free drags: move by pixels or jump between accepting drop targets. */
-  keyboard?: 'pixels' | 'droppables';
   /**
-   * Set role/tabindex/aria-* attributes, never overriding the user's own. The provider's
-   * instructions id joins an existing `aria-describedby` as one more token (a UI kit
-   * tooltip on the same element keeps its own), and only that token is ever removed.
+   * Arrow keys in free drags: move by pixels (default) or jump between accepting drop
+   * targets. Read on every arrow press.
    */
-  attributes?: boolean;
+  keyboard?: MaybeReadonlyRefOrGetter<'pixels' | 'droppables' | undefined>;
+  /**
+   * Set role/tabindex/aria-* attributes (default `true`), never overriding the user's
+   * own. The provider's instructions id joins an existing `aria-describedby` as one more
+   * token (a UI kit tooltip on the same element keeps its own), and only that token is
+   * ever removed. Live: turning it off removes what the library set.
+   */
+  attributes?: MaybeReadonlyRefOrGetter<boolean | undefined>;
 }
 
 export interface DraggableReturn {
@@ -489,17 +518,24 @@ export interface Placement {
  * keyboard stops on such a target before moving past its item. A target is never one of
  * its own drag: not in (or on) any dragged item, nor in the slot one lands in. To move the
  * items out of their list in `onDrop`, call `e.source.remove()`.
+ *
+ * Every option but the callbacks takes a value, a ref or a getter (`accept`: a value or a
+ * ref) and is read live, while a drag looks for its target.
  */
 export interface DroppableOptions<TData = unknown> {
   /** Default: `useId()`, stable between server and client render. */
   id?: MaybeReadonlyRefOrGetter<Key>;
   data?: MaybeReadonlyRefOrGetter<TData>;
-  /** What this target takes. Inside a sortable item, one that refuses the drag lets the list sort over it. */
-  accept?: AcceptRule | Ref<AcceptRule>;
-  acceptMode?: AcceptMode;
+  /**
+   * What this target takes. Inside a sortable item, one that refuses the drag lets the
+   * list sort over it. A value or a ref: a function is a rule.
+   */
+  accept?: MaybeReadonlyRef<AcceptRule | undefined>;
+  /** Default `'all'`. */
+  acceptMode?: MaybeReadonlyRefOrGetter<AcceptMode | undefined>;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
-  /** Higher wins when targets overlap without nesting. Sortable items beat containers. */
-  priority?: number;
+  /** Higher wins when targets overlap without nesting (default 0). Sortable items beat containers. */
+  priority?: MaybeReadonlyRefOrGetter<number | undefined>;
   onDragEnter?(event: DnDEvent): void;
   onDragLeave?(event: DnDEvent): void;
   onBeforeDrop?(event: DnDEvent): MaybePromise<BeforeDropResult>;
@@ -588,42 +624,52 @@ export interface SortableIndicator {
  * Options of `makeSortableList`. One list (or tree) per component: it provides the
  * context its items read, so a second one in the same component would take the first
  * one's items (development builds warn about it).
+ *
+ * Options take a value, a ref or a getter (`overlay`, `animation`: a value or a ref) and
+ * are read when the list needs them, so a change applies to the next drag at the latest.
+ * Exceptions: `id` and `group` are read once, when the list is created; `items` is the
+ * model itself; functions (`getKey`, `clone`, `createItem`, the callbacks) are passed as
+ * they are.
  */
 export interface SortableListOptions<T> {
   /** Source of truth; the library writes the new array here on drop. */
   items: Ref<T[]>;
   /** Default: `item.id`, or the item itself for primitives. Also keys `makeSortableItem({ item })`. */
   getKey?: (item: T) => Key;
-  /** Default: `useId()`, stable between server and client render. */
+  /** Default: `useId()`, stable between server and client render. Read once. */
   id?: Key;
   /**
    * Overlay component for this list's items (an item's own `overlay` wins). It receives
-   * `OverlayProps` and is kept for the whole drag, also over other lists.
+   * `OverlayProps` and is kept for the whole drag, also over other lists. Read when the
+   * drag starts.
    */
-  overlay?: Component;
+  overlay?: MaybeReadonlyRef<Component | undefined>;
   /**
    * Modifiers for drags of this list's items, applied after the provider's `modifiers`
    * (an item's own `modifiers` win): e.g. `[restrictToVerticalAxis]` to keep a vertical
    * list's items on their axis. Read when the drag starts.
    */
   modifiers?: MaybeReadonlyRefOrGetter<Modifier[] | undefined>;
-  /** Lists with the same group name exchange items. Default: a group of its own. */
+  /** Lists with the same group name exchange items. Default: a group of its own. Read once. */
   group?: string | SortableGroupOptions;
-  acceptMode?: AcceptMode;
-  strategy?: SortableStrategy;
+  /** Multi-drag of items of several types: `'all'` (default) or `'some'` must be accepted (`group.put`). */
+  acceptMode?: MaybeReadonlyRefOrGetter<AcceptMode | undefined>;
+  /** Default `'vertical'`. */
+  strategy?: MaybeReadonlyRefOrGetter<SortableStrategy | undefined>;
   /**
    * `'swap'`: the dragged item exchanges places with the hovered one, live; moving back
    * onto it or off the lists reverts. Lists of one group that both swap exchange items
    * between them: the hovered item moves into the dragged one's place, so it must be
    * able to leave its list (`group.pull: true`) and enter the dragged item's
-   * (`group.put`). Multi-drag sorts instead.
+   * (`group.put`). Multi-drag sorts instead. Default `'sort'`.
    */
-  behavior?: SortableBehavior;
-  placeholder?: SortablePlaceholder;
-  /** Multi-drag mode of drags that start in this list. Default `'group'`. */
-  multiple?: MultipleMode;
+  behavior?: MaybeReadonlyRefOrGetter<SortableBehavior | undefined>;
+  /** `'indicator'`: the list doesn't move, `indicator` says where the drop goes. Default `'item'`. */
+  placeholder?: MaybeReadonlyRefOrGetter<SortablePlaceholder | undefined>;
+  /** Multi-drag mode of drags that start in this list. Default `'group'`. Read when the drag starts. */
+  multiple?: MaybeReadonlyRefOrGetter<MultipleMode | undefined>;
   /** `false`: items can't be reordered inside this list (palettes). */
-  sort?: boolean;
+  sort?: MaybeReadonlyRefOrGetter<boolean | undefined>;
   /** Creates copies (`pull: 'clone'`, copy modifier key). Required for copying. */
   clone?: (item: T) => T;
   /**
@@ -632,9 +678,16 @@ export interface SortableListOptions<T> {
    * lists go), and the created item then moves by slots like any other.
    */
   createItem?: (active: Active) => T | undefined;
-  dropOutside?: DropOutside;
-  animation?: LayoutAnimation;
-  autoScroll?: boolean | AutoScrollOptions;
+  /**
+   * A drop outside every target: keep the items where the placeholder is, cancel, or
+   * remove them. Default `'placeholder'` (`'cancel'` with `placeholder: 'indicator'`).
+   * Read at the drop.
+   */
+  dropOutside?: MaybeReadonlyRefOrGetter<DropOutside | undefined>;
+  /** FLIP animation of this list; default: the provider's `animation`. A value or a ref (a function is a custom animation). */
+  animation?: MaybeReadonlyRef<LayoutAnimation | undefined>;
+  /** Overrides the provider's `autoScroll` for this list's scroll container. Read when the drag starts. */
+  autoScroll?: MaybeReadonlyRefOrGetter<boolean | AutoScrollOptions | undefined>;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
   onBeforeDrop?: (
     event: SortableDropEvent<T>,
@@ -662,6 +715,10 @@ export interface SortableListReturn<T> {
  * Pass `id` or `item` (`id` wins when both are given). Sortable keys must come from the
  * data: an automatic id would change whenever the component is recreated (moved to
  * another list, recycled by a virtual list), and the drag would lose the item.
+ *
+ * Options but `canDrag` take a value, a ref or a getter (`overlay`: a value or a ref) and
+ * mean what they mean on `makeDraggable`. There is no `keyboard`: the keyboard moves a
+ * sortable item by slots.
  */
 export interface SortableItemOptions<TData = unknown> {
   /** Key of the item in its list. A getter keeps it current in virtual lists. */
@@ -671,15 +728,24 @@ export interface SortableItemOptions<TData = unknown> {
    * owning list's (or tree's) `getKey`, by default `item.id`.
    */
   item?: MaybeReadonlyRefOrGetter<unknown>;
-  /** Overlay component for this item; wins over the list's `overlay`. */
-  overlay?: Component;
+  /** Overlay component for this item; wins over the list's `overlay`. Read when the drag starts. */
+  overlay?: MaybeReadonlyRef<Component | undefined>;
   /** Modifiers for drags of this item, after the provider's; win over the list's `modifiers`. */
   modifiers?: MaybeReadonlyRefOrGetter<Modifier[] | undefined>;
-  handle?: MaybeElementRef | string;
+  /** Element or selector inside the item that starts the drag (and gets the attributes). */
+  handle?: MaybeReadonlyRefOrGetter<MaybeElement | string>;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
   type?: MaybeReadonlyRefOrGetter<string | string[] | undefined>;
   data?: MaybeReadonlyRefOrGetter<TData>;
-  activation?: ActivationOptions;
+  /** Overrides the provider's `activation`. Read when a press starts. */
+  activation?: MaybeReadonlyRefOrGetter<ActivationOptions | undefined>;
+  /** Extra gate, e.g. drag only while a key is held. */
+  canDrag?: (event: PointerEvent | KeyboardEvent) => boolean;
+  /**
+   * Set role/tabindex/aria-* attributes (default `true`), never overriding the user's
+   * own. Live: turning it off removes what the library set.
+   */
+  attributes?: MaybeReadonlyRefOrGetter<boolean | undefined>;
 }
 
 export interface SortableItemReturn {
@@ -790,12 +856,34 @@ export interface SortableTreeReturn<T> {
 
 // ─── Selection area ────────────────────────────────────────────────────────────
 
+/**
+ * - `'toggle'`: items the band crosses flip their state from before the band;
+ * - `'select'`: only the items inside the band are selected.
+ */
+export type SelectionStrategy = 'toggle' | 'select';
+
+/**
+ * Keys (`KeyboardEvent.key` or `.code`) that must be held for a press to draw a band:
+ * every one of them, or `'some'` of them.
+ */
+export interface SelectionModifier {
+  keys: string[];
+  method: 'every' | 'some';
+}
+
+/**
+ * Options of `makeSelectionArea`. `modifier`, `strategy`, `accept` and `disabled` take a
+ * value, a ref or a getter (`accept`: a value or a ref, a function is a rule) and are
+ * read when a press starts a band; turning `disabled` on also cancels a running one.
+ */
 export interface SelectionAreaOptions {
   /** Defaults to the provider's selection. */
   selection?: Ref<Set<Key>>;
-  modifier?: { keys: string[]; method: 'every' | 'some' };
-  strategy?: 'toggle' | 'select';
-  accept?: AcceptRule;
+  modifier?: MaybeReadonlyRefOrGetter<SelectionModifier | undefined>;
+  /** Default `'toggle'`. */
+  strategy?: MaybeReadonlyRefOrGetter<SelectionStrategy | undefined>;
+  /** Which draggables the band selects; the matcher of drop targets. */
+  accept?: MaybeReadonlyRef<AcceptRule | undefined>;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
   onSelected?: (ids: Key[]) => void;
 }

@@ -10,7 +10,7 @@
     id: props.list.id,
     items: toRef(props.list, 'entries'),
     group: props.list.id,
-    strategy: props.strategy,
+    strategy: () => props.strategy,
   });
 
   // Dropped into a group: the tasks leave the list (`e.source.remove()`, as for a trash

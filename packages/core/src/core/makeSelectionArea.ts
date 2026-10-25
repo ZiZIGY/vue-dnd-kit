@@ -8,9 +8,10 @@
  * the area, which needs a non-static `position` (e.g. `relative`).
  */
 
-import { computed, isReactive, onScopeDispose, shallowRef, watch } from 'vue';
+import { computed, isReactive, onScopeDispose, shallowRef, unref, watch } from 'vue';
 import { defaultWindow, useEventListener } from '@vueuse/core';
 import type {
+  AcceptRule,
   Active,
   Coordinates,
   DragItem,
@@ -19,16 +20,15 @@ import type {
   Rect,
   SelectionAreaOptions,
   SelectionAreaReturn,
+  SelectionModifier,
+  SelectionStrategy,
 } from '../types';
 import type { DnDManager, DraggableEntry } from './manager';
-import { useDnDContext } from './context';
+import { useManager } from './context';
 import { matchesRule } from './accept';
 import { createRect, getLayoutRect, intersects, offsetRect } from '../animation/layout';
 import { isInsideInteractive, parentOf, toElement } from '../utils/dom';
 import { read } from '../utils/read';
-
-export type SelectionStrategy = NonNullable<SelectionAreaOptions['strategy']>;
-export type SelectionModifier = NonNullable<SelectionAreaOptions['modifier']>;
 
 // ─── Geometry and strategies (pure) ────────────────────────────────────────────
 
@@ -199,6 +199,7 @@ interface Band {
   /** Latest pointer position in the viewport. */
   pointer: Coordinates;
   strategy: SelectionStrategy;
+  accept: AcceptRule | undefined;
   base: Set<Key>;
   hits: Map<Key, boolean>;
   moved: boolean;
@@ -214,7 +215,7 @@ export function makeSelectionArea(
   target: MaybeElementRef,
   options: SelectionAreaOptions = {},
 ): SelectionAreaReturn {
-  const manager = useDnDContext();
+  const manager = useManager();
   const areas = areasOf(manager);
   const getElement = () => toElement(target);
 
@@ -235,8 +236,7 @@ export function makeSelectionArea(
     else selection.value = new Set(next);
   };
 
-  const accepts = (entry: DraggableEntry, element: HTMLElement, itemRect: Rect): boolean => {
-    const rule = options.accept;
+  const accepts = (rule: AcceptRule | undefined, entry: DraggableEntry, element: HTMLElement, itemRect: Rect): boolean => {
     if (rule == null || rule === '*') return true;
     const item: DragItem = { id: entry.id, data: undefined, type: entry.getTypes() };
     // Only a function rule reads data; skip the lookups for type rules.
@@ -275,7 +275,7 @@ export function makeSelectionArea(
       if (entry.isDisabled()) continue;
       const itemRect = getLayoutRect(element);
       if (!itemRect.width && !itemRect.height) continue;
-      if (!accepts(entry, element, itemRect)) continue;
+      if (!accepts(current.accept, entry, element, itemRect)) continue;
       current.hits.set(entry.id, intersects(viewportBand, itemRect));
     }
 
@@ -354,7 +354,8 @@ export function makeSelectionArea(
       anchor: toContentPoint(point, measureContentBox(area)),
       origin: point,
       pointer: point,
-      strategy: options.strategy ?? 'toggle',
+      strategy: read(options.strategy) ?? 'toggle',
+      accept: unref(options.accept),
       base: new Set(readSelection()),
       hits: new Map(),
       moved: false,
@@ -396,7 +397,7 @@ export function makeSelectionArea(
     if (found && isWithin(found.element, area)) return;
     if (isInsideInteractive(origin, area)) return;
     if (origin === area && isOnScrollbar(area, event)) return;
-    if (!matchesModifier(options.modifier, (key) => isKeyHeld(key, event, pressed))) return;
+    if (!matchesModifier(read(options.modifier), (key) => isKeyHeld(key, event, pressed))) return;
     begin(area, event);
   };
 
