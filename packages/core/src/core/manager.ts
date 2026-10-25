@@ -134,6 +134,12 @@ export function createDnDManager(props: DnDProviderProps) {
   const active = shallowRef<Active | null>(null);
   const over = shallowRef<Over | null>(null);
   const pointer = shallowRef<Coordinates | null>(null);
+  /**
+   * The drop is decided (committed or cancelled) and only the overlay animation is left.
+   * The drag state is over: `over` and `pointer` are cleared, accept rules stop running
+   * (the data has already changed under them), and `useDnD().active` reads `null`.
+   */
+  const settling = shallowRef(false);
   const transform = shallowRef<Coordinates>({ x: 0, y: 0 });
   const activationProgress = shallowRef(0);
   const isAutoScrolling = shallowRef(false);
@@ -746,6 +752,7 @@ export function createDnDManager(props: DnDProviderProps) {
     active.value = null;
     over.value = null;
     pointer.value = null;
+    settling.value = false;
     transform.value = { x: 0, y: 0 };
     fitSize.value = null;
     resize = null;
@@ -803,6 +810,11 @@ export function createDnDManager(props: DnDProviderProps) {
     const current = event.active;
     const id = session;
     status.value = 'dropping';
+    // The commit (or the cancel) happened in this same tick: nothing has rendered against
+    // the changed data with the drag state still live.
+    settling.value = true;
+    over.value = null;
+    pointer.value = null;
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
     restoreDocument?.();
@@ -918,6 +930,7 @@ export function createDnDManager(props: DnDProviderProps) {
     active,
     over,
     pointer,
+    settling,
     transform,
     activationProgress,
     isAutoScrolling,

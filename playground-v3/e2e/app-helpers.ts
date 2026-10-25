@@ -72,5 +72,43 @@ export const settled = async (page: Page): Promise<void> => {
   await expect(page.locator('[data-dnd-placeholder]')).toHaveCount(0);
 };
 
+type CommitWatchWindow = Window & { __afterCommit?: { frames: number; seen: string[] } };
+
+/**
+ * Call before releasing. From the frame the drop commits (the text of `state` changes)
+ * until the overlay is gone, records the elements matching `feedback`: drag feedback
+ * that would be computed against the data the drop has just changed. Returns how many
+ * such frames ran and what was seen.
+ */
+export const watchAfterCommit = async (
+  page: Page,
+  state: string,
+  feedback: string,
+): Promise<() => Promise<{ frames: number; seen: string[] }>> => {
+  await page.evaluate(
+    ([state, feedback]) => {
+      const win = window as CommitWatchWindow;
+      const record = (win.__afterCommit = { frames: 0, seen: [] as string[] });
+      const before = document.querySelector(state)?.textContent;
+      const tick = () => {
+        const committed = document.querySelector(state)?.textContent !== before;
+        const flying = !!document.querySelector('[data-dnd-overlay]');
+        if (committed && !flying) return;
+        if (committed) {
+          record.frames++;
+          for (const element of document.querySelectorAll(feedback)) record.seen.push(element.outerHTML.slice(0, 120));
+        }
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    },
+    [state, feedback] as const,
+  );
+  return async () => {
+    await expect(page.locator('[data-dnd-overlay]')).toHaveCount(0);
+    return page.evaluate(() => (window as CommitWatchWindow).__afterCommit!);
+  };
+};
+
 /** Text of the live region of the provider that holds `within` (or the only one with text). */
 export const liveRegion = (page: Page): Locator => page.locator('[role="status"][aria-live]');

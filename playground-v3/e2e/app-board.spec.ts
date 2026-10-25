@@ -1,6 +1,18 @@
 import { expect, test, type Page } from '@playwright/test';
 import { trackErrors } from './helpers';
-import { at, beside, byId, byTestId, ctrlClick, drag, glideTo, hold, press, settled } from './app-helpers';
+import {
+  at,
+  beside,
+  byId,
+  byTestId,
+  ctrlClick,
+  drag,
+  glideTo,
+  hold,
+  press,
+  settled,
+  watchAfterCommit,
+} from './app-helpers';
 
 const INITIAL = 'backlog:c1,c2 | todo:c3,c4,c5 | doing:c6,c7 | review:c8,c9 | done:c10';
 const state = (page: Page) => page.getByTestId('board-state');
@@ -36,6 +48,24 @@ test.describe('app: trello board', () => {
     await expect(byTestId(page, 'count-doing')).toHaveText('3 / 3');
   });
 
+  test('filling a column to its limit shows no refusal while the card lands', async ({ page }) => {
+    // 2 of 3 in "In progress": the third card fits, and the drop makes the column full.
+    await hold(page, byId(page, 'c5'), await at(cards(page, 'doing'), 0.5, 0.85));
+    await expect(cards(page, 'doing')).toHaveAttribute('data-accepting');
+    const afterCommit = await watchAfterCommit(
+      page,
+      '[data-testid="board-state"]',
+      '[data-refusing], [data-testid^="limit-"], [data-dnd-overlay] [data-refused]',
+    );
+    await page.mouse.up();
+    const { frames, seen } = await afterCommit();
+    // The full column must not judge the card it has just taken.
+    expect(frames).toBeGreaterThan(0);
+    expect(seen).toEqual([]);
+    await settled(page);
+    await expect(byTestId(page, 'count-doing')).toHaveText('3 / 3');
+  });
+
   test('Ctrl/Cmd+click selects cards; WIP limits (group.put) count the whole selection', async ({ page }) => {
     await ctrlClick(byId(page, 'c3'), byId(page, 'c5'));
     await expect(page.getByTestId('selection')).toContainText('2 cards selected');
@@ -64,6 +94,9 @@ test.describe('app: trello board', () => {
     // The drop is pending: nothing is committed yet and the overlay waits in place.
     await expect(state(page)).toHaveText(INITIAL);
     await expect(overlay(page)).toBeVisible();
+    // The column still accepts the card it is asked about.
+    await expect(cards(page, 'done')).toHaveAttribute('data-accepting');
+    await expect(cards(page, 'done')).not.toHaveAttribute('data-refusing');
     await page.getByTestId('confirm-accept').click();
     await settled(page);
     await expect(dialog).toHaveCount(0);

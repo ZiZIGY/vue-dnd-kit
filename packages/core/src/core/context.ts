@@ -1,4 +1,5 @@
 import {
+  computed,
   inject,
   onScopeDispose,
   readonly,
@@ -50,7 +51,8 @@ export const useDnD = (): DnDState => {
   const manager = useDnDContext();
   return {
     status: readonly(manager.status),
-    active: readonly(manager.active) as DnDState['active'],
+    // The overlay keeps its item for the drop animation; the drag itself is over.
+    active: computed(() => (manager.settling.value ? null : manager.active.value)),
     over: readonly(manager.over) as DnDState['over'],
     pointer: readonly(manager.pointer),
     activation: { progress: readonly(manager.activationProgress) },

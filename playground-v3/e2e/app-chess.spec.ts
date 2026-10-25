@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { trackErrors, trackVueWarnings } from './helpers';
-import { at, byId, drag, hold, press, settled } from './app-helpers';
+import { at, byId, drag, hold, press, settled, watchAfterCommit } from './app-helpers';
 
 const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
 const fen = (page: Page) => page.getByTestId('chess-fen');
@@ -40,6 +40,19 @@ test.describe('app: chess', () => {
     await expect(page.locator('[data-legal]')).toHaveCount(0);
     await expect(page.getByTestId('chess-status')).toHaveText('Black to move');
     await expect(page.getByTestId('chess-moves')).toHaveText('e2-e4');
+  });
+
+  test('while the piece lands, the board shows no moves from its new square', async ({ page }) => {
+    await hold(page, square(page, 'e2'), await at(square(page, 'e4'), 0.4, 0.6));
+    expect(await legalSquares(page)).toEqual(['e3', 'e4']);
+    const afterCommit = await watchAfterCommit(page, '[data-testid="chess-fen"]', '[data-legal], .refused');
+    await page.mouse.up();
+    const { frames, seen } = await afterCommit();
+    // The pawn is on e4 now: legal squares from there (e5) or a "refused" e4 would be the next move.
+    expect(frames).toBeGreaterThan(0);
+    expect(seen).toEqual([]);
+    await settled(page);
+    await expect(fen(page)).toHaveText('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b');
   });
 
   test('an illegal move flies back, and the side not to move cannot drag', async ({ page }) => {
