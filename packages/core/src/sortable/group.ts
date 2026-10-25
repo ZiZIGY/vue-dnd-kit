@@ -694,9 +694,11 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
   /**
    * Moves the slot to `index` of `target`'s draft (counted as `viewOf` counts it),
-   * removing it from the list that held it. A block moves along as one unit.
+   * removing it from the list that held it. A block moves along as one unit; entering a
+   * list, the members before the slot go before `index`, so the block lines up with the
+   * overlay's column around the pointer. `blockStart`: `index` is where the block starts.
    */
-  const moveActive = (target: ListEntry, index: number, pointer: Coordinates | null) => {
+  const moveActive = (target: ListEntry, index: number, pointer: Coordinates | null, blockStart = false) => {
     const current = session.value!;
     const slot = current.slot;
     const from = current.list == null ? undefined : lists.get(current.list);
@@ -715,12 +717,17 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       const leaving = new Set(old);
       // Keys put back while another list didn't take them join the block again.
       const joining = new Set(block.filter((key) => !leaving.has(key)));
-      const target0 = keysOf(target);
-      // The block goes before the key at `index`; keys about to join don't count.
+      const before = keysOf(target);
+      // Keys about to join don't count: the block starts `members before the slot` keys
+      // ahead of `index`, before the first key from there that stays.
+      let start = Math.min(index, before.length);
+      for (let skip = blockStart ? 0 : block.indexOf(slot); skip > 0 && start > 0; ) {
+        if (!joining.has(before[--start]!)) skip--;
+      }
       let anchor: Key | null = null;
-      for (let i = Math.min(index, target0.length); i < target0.length; i++) {
-        if (!joining.has(target0[i]!)) {
-          anchor = target0[i]!;
+      for (let i = start; i < before.length; i++) {
+        if (!joining.has(before[i]!)) {
+          anchor = before[i]!;
           break;
         }
       }
@@ -794,7 +801,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const anchor = base.slice(start + 1).find((key) => !members.has(key));
     const keys = keysOf(origin);
     const index = anchor === undefined ? -1 : keys.indexOf(anchor);
-    moveActive(origin, index === -1 ? keys.length : index, pointer);
+    moveActive(origin, index === -1 ? keys.length : index, pointer, true);
   };
 
   /**

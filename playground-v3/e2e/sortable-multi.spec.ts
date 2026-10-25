@@ -57,7 +57,9 @@ test.describe('multi-drag', () => {
     await pickUp(page, item(page, 'a2'));
     await expect(item(page, 'a4')).toHaveCount(0);
     expect(await ghosts(page)).toBe(1);
+    // One card and a count, no column.
     await expect(page.locator('[data-dnd-overlay]')).toContainText('2');
+    await expect(page.locator('[data-dnd-overlay] [data-dnd-overlay-item]')).toHaveCount(0);
     await glide(page, await center(item(page, 'a5'), 0.8));
     await page.mouse.up();
     await waitForIdle(page);
@@ -94,6 +96,14 @@ test.describe('multi-drag', () => {
     await dragTo(page, item(page, 'g1'), await center(item(page, 'g5'), 0.8), { release: false });
     await expect(item(page, 'g3')).toHaveAttribute('data-dnd-dragging', '');
     await expect(item(page, 'g1')).toHaveAttribute('data-dnd-placeholder', '');
+    // The overlay shows both, in a column: g3 below the grabbed g1.
+    const column = page.locator('[data-dnd-overlay] [data-dnd-overlay-item]');
+    await expect(column).toHaveCount(1);
+    await expect(column.locator('[data-id]')).toHaveAttribute('data-id', 'g3');
+    const box = (await page.locator('[data-dnd-overlay]').boundingBox())!;
+    const clone = (await column.boundingBox())!;
+    expect(clone.y).toBeGreaterThan(box.y + box.height);
+    expect(Math.abs(clone.x - box.x)).toBeLessThan(1);
     const order = () =>
       page.locator('[data-testid="gaps-a"] > [data-id]').evaluateAll((rows) => rows.map((row) => row.getAttribute('data-id')));
     await expect.poll(order).toEqual(['g2', 'g3', 'g4', 'g5', 'g1', 'g6']);
@@ -129,6 +139,7 @@ test.describe('multi-drag with swap', () => {
     await glide(page, await center(item(page, 's5'), 0.8));
     await page.mouse.up();
     await waitForIdle(page);
-    await expect(state(page)).toContainText('swap-list:s2,s4,s5,s1,s3,s6');
+    // Multi-drag 'group' (the default): s3 travels with s1, which lands under the pointer.
+    await expect(state(page)).toContainText('swap-list:s2,s4,s5,s6,s1,s3');
   });
 });
