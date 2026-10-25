@@ -1,7 +1,8 @@
 /**
  * The state of one provider's manager. `createDnDManager` builds a `ManagerContext` and
  * hands it to each of its modules; what a module alone needs stays in its closure.
- * Nothing lives at module level: providers on one page stay independent.
+ * No provider's state lives at module level, so providers on one page stay independent
+ * (`owners` in `registry.ts` is shared on purpose: it tells their elements apart).
  */
 
 import { shallowReactive, shallowRef, type Component } from 'vue';
