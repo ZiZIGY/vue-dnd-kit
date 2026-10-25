@@ -63,7 +63,7 @@ export const moveActive = (
         if (keys.some((key) => joining.has(key))) list.draft.value = keys.filter((key) => !joining.has(key));
       }
     }
-    if (current.mode.moves) {
+    if (current.mode.name !== 'copy') {
       // Keys this list doesn't take go back to where they started (copies just leave).
       const moving = new Set(block);
       const dropped = old
