@@ -31,7 +31,8 @@
         label="Plain draggable"
         data-testid="plain"
       />
-      <!-- Everything set here must survive: the library never overrides user attributes. -->
+      <!-- Everything set here must survive: the library never overrides user attributes.
+           The instructions join aria-describedby as one more id. -->
       <A11yItem
         item-id="custom"
         label="Custom attributes"

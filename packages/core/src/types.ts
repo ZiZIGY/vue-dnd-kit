@@ -441,7 +441,11 @@ export interface DraggableOptions<TData = unknown> {
   modifiers?: MaybeReadonlyRefOrGetter<Modifier[] | undefined>;
   /** Arrow keys in free drags: move by pixels or jump between accepting drop targets. */
   keyboard?: 'pixels' | 'droppables';
-  /** Set role/tabindex/aria-* attributes (never overriding the user's own). */
+  /**
+   * Set role/tabindex/aria-* attributes, never overriding the user's own. The provider's
+   * instructions id joins an existing `aria-describedby` as one more token (a UI kit
+   * tooltip on the same element keeps its own), and only that token is ever removed.
+   */
   attributes?: boolean;
 }
 

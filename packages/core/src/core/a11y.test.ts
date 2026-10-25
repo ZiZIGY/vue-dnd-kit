@@ -1,4 +1,4 @@
-import { createApp, defineComponent, h, nextTick, ref, useTemplateRef } from 'vue';
+import { createApp, defineComponent, h, nextTick, ref, shallowRef, useTemplateRef, type ShallowRef } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Announcements } from '../types';
 import { DnDProvider } from './DnDProvider';
@@ -119,5 +119,74 @@ describe('announcements', () => {
     expect(manager.announcement.value).toBe('Picked up draggable item free.');
     await vi.waitFor(() => expect(manager.announcement.value).toBe('Over away.'), { timeout: 2000 });
     await cancel();
+  });
+});
+
+describe('aria-describedby', () => {
+  afterEach(() => {
+    mounted.splice(0).forEach((unmount) => unmount());
+  });
+
+  /** Makes `element` (outside the app, so it outlives the draggable) draggable while `shown` is true. */
+  const mountProbe = (element: HTMLElement, shown: ShallowRef<boolean>) => {
+    const Probe = defineComponent({
+      setup() {
+        manager = useDnDContext();
+        makeDraggable(() => element, { id: 'probe' });
+        return () => null;
+      },
+    });
+    const container = document.createElement('div');
+    document.body.append(container, element);
+    const app = createApp({ setup: () => () => h(DnDProvider, null, { default: () => (shown.value ? h(Probe) : null) }) });
+    app.mount(container);
+    mounted.push(() => {
+      app.unmount();
+      container.remove();
+      element.remove();
+    });
+  };
+
+  const describedBy = (element: Element) => element.getAttribute('aria-describedby');
+
+  it("the instructions id joins the user's ids as a token, is restored after a rewrite, and is all that cleanup removes", async () => {
+    const element = document.createElement('div');
+    element.setAttribute('aria-describedby', 'help  extra');
+    const shown = shallowRef(true);
+    mountProbe(element, shown);
+    await nextTick();
+    const id = manager.instructionsId;
+    expect(id).toBeTruthy();
+    expect(describedBy(element)).toBe(`help extra ${id}`);
+
+    // A binding (a kit tooltip opening, then closing) rewrites the attribute.
+    element.setAttribute('aria-describedby', 'tooltip');
+    await vi.waitFor(() => expect(describedBy(element)).toBe(`tooltip ${id}`));
+    element.removeAttribute('aria-describedby');
+    await vi.waitFor(() => expect(describedBy(element)).toBe(id));
+    element.setAttribute('aria-describedby', `${id} mine`);
+    await nextTick();
+    expect(describedBy(element)).toBe(`${id} mine`);
+
+    // Cleanup removes the library's token only.
+    shown.value = false;
+    await nextTick();
+    expect(describedBy(element)).toBe('mine');
+    element.setAttribute('aria-describedby', 'later');
+    await nextTick();
+    expect(describedBy(element)).toBe('later');
+  });
+
+  it('an attribute the library created goes away with its token', async () => {
+    const element = document.createElement('div');
+    const shown = shallowRef(true);
+    mountProbe(element, shown);
+    await nextTick();
+    expect(describedBy(element)).toBe(manager.instructionsId);
+    shown.value = false;
+    await nextTick();
+    expect(element.hasAttribute('aria-describedby')).toBe(false);
+    // Like the library's other attributes.
+    expect(element.hasAttribute('role')).toBe(false);
   });
 });

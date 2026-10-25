@@ -6,7 +6,8 @@ const DEFAULT_INSTRUCTIONS =
 
 /** The live region of the provider that describes `item`: it follows the instructions element. */
 const liveRegionOf = async (page: Page, item: Locator): Promise<Locator> => {
-  const id = await item.getAttribute('aria-describedby');
+  // The instructions id is the last token of `aria-describedby`.
+  const id = (await item.getAttribute('aria-describedby'))?.split(' ').pop();
   expect(id).toBeTruthy();
   return page.locator(`[id="${id}"] + [role="status"]`);
 };
@@ -48,17 +49,22 @@ test.describe('accessibility attributes', () => {
     await expect(fixture(page, 'locked')).toHaveAttribute('aria-disabled', 'true');
   });
 
-  test('attributes provided by the user are never overridden', async ({ page }) => {
+  test('attributes provided by the user are never overridden; the instructions join aria-describedby', async ({
+    page,
+  }) => {
     const custom = fixture(page, 'custom');
+    const instructions = await fixture(page, 'plain').getAttribute('aria-describedby');
+    expect(instructions).toMatch(/^dnd-kit-instructions-/);
     const expectUserAttributes = async () => {
       await expect(custom).toHaveAttribute('role', 'option');
       await expect(custom).toHaveAttribute('tabindex', '-1');
       await expect(custom).toHaveAttribute('aria-roledescription', 'custom card');
-      await expect(custom).toHaveAttribute('aria-describedby', 'custom-help');
+      // A list of ids: the user's comes first, the instructions are one more token.
+      await expect(custom).toHaveAttribute('aria-describedby', `custom-help ${instructions}`);
       await expect(custom).toHaveAttribute('aria-disabled', 'true');
     };
     await expectUserAttributes();
-    await expect(custom).toHaveAccessibleDescription('Custom help text');
+    await expect(custom).toHaveAccessibleDescription(`Custom help text ${DEFAULT_INSTRUCTIONS}`);
 
     // Not a button: no aria-pressed while it is being dragged.
     await pickUp(custom);
