@@ -33,16 +33,13 @@ import type {
   Rect,
   SortableDropEvent,
   SortableIndicator,
-  SortablePutContext,
 } from '../types';
-import type { DnDManager, TargetRule } from '../core/manager';
+import type { DnDManager } from '../core/manager';
 import {
-  containsPoint,
   createRect,
   getCenter,
   getLayoutRect,
   getRect,
-  stopLayoutAnimation,
 } from '../animation/layout';
 import {
   createContext,
@@ -85,7 +82,16 @@ import { trackCopyModifier } from './modifier';
 import { revealElement } from '../core/autoscroll';
 import { isFocusLost } from '../utils/dom';
 import { sortableTexts, type SortableSpot, type SortableSubject } from './announcements';
-import { dropBand, dropBandPoint } from './combine';
+import { bandsAt as bandsIn, intoPoint as intoPointIn, isInto as isIntoIn, targetRule } from './combine';
+import {
+  accepts as acceptsIn,
+  canSwap as canSwapIn,
+  createdIn,
+  isInert,
+  isSwapping as isSwappingIn,
+  itemTypes,
+  partition as partitionIn,
+} from './accept';
 
 export interface DropResult {
   next: Map<ListEntry, Key[]>;
@@ -166,126 +172,18 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   const listOfKey = (key: Key, useDraft: boolean) => listOfKeyIn(g, key, useDraft);
   const orderedLists = () => orderedIn(g);
   const bump = () => bumpFlip(g);
+  const partition = (list: ListEntry, current: Session) => partitionIn(g, list, current);
+  const accepts = (list: ListEntry, active: Active) => acceptsIn(g, list, active);
+  const isSwapping = (current: Session, list: ListEntry | undefined) => isSwappingIn(g, current, list);
+  const canSwap = (current: Session, list: ListEntry, partner: Key) => canSwapIn(g, current, list, partner);
+  const bandsAt = (event: DnDEvent) => bandsIn(g, event);
+  const isInto = (event: DnDEvent) => isIntoIn(g, event);
+  const intoPoint = (key: Key, list: ListEntry, active: Active) => intoPointIn(g, key, list, active);
 
   scope.run(() => {
     watchLayout(g);
     g.copyHeld = trackCopyModifier(manager, () => manager.scheduleFrame());
   });
-
-  // ─── Accepting ───────────────────────────────────────────────────────────────
-
-  const itemTypes = (key: Key): string[] => manager.getDraggable(key)?.getTypes() ?? [name];
-
-  const createdIn = (list: ListEntry, current: Session): Key | null => {
-    if (!list.create) return null;
-    if (!current.created.has(list.id)) {
-      const active = manager.active.value;
-      const made = active ? list.create(active) : undefined;
-      current.created.set(list.id, made ? made.key : null);
-      if (made) current.items.set(made.key, made.item);
-    }
-    return current.created.get(list.id) ?? null;
-  };
-
-  /** Which dragged keys `list` takes: `group.put` per key with `acceptMode: 'some'`, all or none otherwise. */
-  const partition = (list: ListEntry, current: Session): { accepted: Key[]; rejected: Key[] } => {
-    const all = { accepted: current.keys, rejected: [] as Key[] };
-    const none = { accepted: [] as Key[], rejected: current.keys };
-    if (list.isDisabled()) return none;
-    if (current.external) {
-      const created = createdIn(list, current);
-      if (created == null) return none;
-      const context: SortablePutContext = {
-        keys: current.keys,
-        items: [lookup(created)],
-        types: manager.active.value?.type ?? [],
-        from: null,
-        to: list.id,
-      };
-      return list.canPut(context) ? all : none;
-    }
-    if (list.id === current.origin.list) return all;
-    if (listOf(current.origin.list)?.pull() === false) return none;
-    const context = (keys: Key[]): SortablePutContext => ({
-      keys,
-      items: keys.map(lookup),
-      types: [...new Set(keys.flatMap(itemTypes))],
-      from: current.origin.list,
-      to: list.id,
-    });
-    if ((list.acceptMode?.() ?? 'all') === 'all') return list.canPut(context(current.keys)) ? all : none;
-    const accepted: Key[] = [];
-    const rejected: Key[] = [];
-    for (const key of current.keys) (list.canPut(context([key])) ? accepted : rejected).push(key);
-    return { accepted, rejected };
-  };
-
-  const accepts = (list: ListEntry, active: Active) => {
-    const current = session.value;
-    if (!current || current.activeKey !== active.id) return false;
-    const { accepted, rejected } = partition(list, current);
-    return (list.acceptMode?.() ?? 'all') === 'some' ? accepted.length > 0 : !rejected.length;
-  };
-
-  const isInert = (list: ListEntry) => {
-    const active = manager.active.value;
-    if (!active) return false;
-    const current = session.value;
-    if (!current || current.activeKey !== active.id) return true;
-    return current.external && !list.create;
-  };
-
-  // ─── Drop into an item ───────────────────────────────────────────────────────
-
-  /** The bands for projecting `event`: of its own target detection. */
-  const bandsAt = (event: DnDEvent) => (g.targets.at === event.pointer ? g.targets.bands : undefined);
-
-  /**
-   * A drop target inside an item of a list that takes the drag (rfcs/0001-v3.md §6)
-   * counts only while the pointer is in the item's middle: the drop goes into the item
-   * there, and at its edges the list sorts as usual. A target that doesn't take the drag
-   * is left out, so the list sorts over it like over any item. Nested lists are lists.
-   */
-  const targetRule: TargetRule = (entry, element, point, active) => {
-    const current = session.value;
-    if (!current || current.activeKey !== active.id || entry.sortable) return true;
-    const found = manager.findDraggable(element);
-    const key = found?.entry.id;
-    const list = key != null && items.get(key)?.() === found!.element ? listOfKey(key, true) : undefined;
-    if (!list || !accepts(list, active)) return true;
-    if (!entry.accepts(active)) return false;
-    if (g.targets.at !== point) g.targets ={ at: point, bands: new Map(), ids: new Set() };
-    // Layout rects, as projection uses: an item still sliding into place counts where it lands.
-    const band = dropBand(manager.measure(found!.element), list.strategy());
-    g.targets.bands.set(key!, band);
-    if (!containsPoint(band, point)) return false;
-    g.targets.ids.add(entry.id);
-    return true;
-  };
-
-  /** The drag is over a drop target inside an item: dropping goes into that item. */
-  const isInto = (event: DnDEvent) => !!event.over && g.targets.at === event.pointer && g.targets.ids.has(event.over.id);
-
-  /** Keyboard: where the pointer drops into item `key`, on a target in its middle that takes the drag; `null` without one. */
-  const intoPoint = (key: Key, list: ListEntry, active: Active): Coordinates | null => {
-    const element = items.get(key)?.();
-    if (!element?.isConnected) return null;
-    let rect: Rect | null = null;
-    for (const entry of manager.getDroppables()) {
-      const target = entry.getElement();
-      if (!target?.isConnected || entry.sortable || entry.isDisabled() || manager.isOwned(target, active)) continue;
-      if (manager.findDraggable(target)?.element !== element || !entry.accepts(active)) continue;
-      if (!rect) {
-        // The hit test sees the item where it lands: a passed item may still be sliding there.
-        stopLayoutAnimation(element);
-        revealElement(element);
-        rect = getRect(element);
-      }
-      const point = dropBandPoint(rect, getRect(target), list.strategy());
-      if (point) return point;
-    }
-    return null;
-  };
 
   // ─── Session ─────────────────────────────────────────────────────────────────
 
@@ -302,36 +200,6 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const origin = listOf(current.origin.list);
     if (current.external || !origin?.clone) return false;
     return origin.pull() === 'clone' || g.copyHeld();
-  };
-
-  const isSwapping = (current: Session, list: ListEntry | undefined) =>
-    // Swap is a single-item exchange; multi-drag falls back to sorting (rfcs/0001-v3.md §6, §14 item 6).
-    // Between lists both must swap: the partner takes the active item's place in its list.
-    list?.behavior?.() === 'swap' &&
-    listOf(current.origin.list)?.behavior?.() === 'swap' &&
-    current.keys.length === 1 &&
-    !current.external &&
-    !current.copying;
-
-  /**
-   * Whether `partner`, an item of `list`, can take the active item's place. From another
-   * list it leaves `list` and enters the origin list, under the rules any item entering
-   * it follows: `list` must let it go, the origin must take it.
-   */
-  const canSwap = (current: Session, list: ListEntry, partner: Key): boolean => {
-    const origin = listOf(current.origin.list)!;
-    return (
-      list === origin ||
-      (list.pull() === true &&
-        !origin.isDisabled() &&
-        origin.canPut({
-          keys: [partner],
-          items: [lookup(partner)],
-          types: itemTypes(partner),
-          from: list.id,
-          to: origin.id,
-        }))
-    );
   };
 
   /** Dragged key a slot stands for: the original of a copy, otherwise the key itself. */
@@ -564,7 +432,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         id: key,
         item: snapshot.get(key),
         data: manager.getDraggable(key)?.getData(),
-        type: itemTypes(key),
+        type: itemTypes(g, key),
       }));
       manager.updateActive({ ids, items: dragItems });
     }
@@ -955,7 +823,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   /** An external draggable's slot becomes the item `target` makes for it; `false` when it makes none. */
   const enter = (current: Session, target: ListEntry): boolean => {
     if (!current.external) return true;
-    const created = createdIn(target, current);
+    const created = createdIn(g, target, current);
     if (created == null) return false;
     if (current.slot !== created) {
       if (current.list != null) removeSlot();
@@ -1691,7 +1559,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     true,
   );
   const removeAnnouncer = manager.addAnnouncer(announcer);
-  const removeRule = manager.addTargetRule(targetRule);
+  const removeRule = manager.addTargetRule(targetRule(g));
   // `e.source.remove()` in a trash zone's onDrop marks the dragged items for removal.
   const removeSource = manager.addSourceResolver((active) => {
     const current = session.value;
@@ -1735,7 +1603,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     viewOf: (list) => (session.value ? viewOf(list, session.value) : keysOf(list)),
     indexOf,
     accepts,
-    isInert,
+    isInert: (list) => isInert(g, list),
     leadOffset: () => (session.value ? leadOffset(session.value) : NO_OFFSET),
     captureLayout: () => captureLayout(g),
   };
