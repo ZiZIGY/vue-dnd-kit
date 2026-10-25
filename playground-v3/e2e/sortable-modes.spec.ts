@@ -1,5 +1,15 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { center, dragTo, glide, item, layoutSettled, pickUp, trackErrors, waitForIdle } from './helpers';
+import {
+  center,
+  dragTo,
+  glide,
+  item,
+  layoutSettled,
+  pickUp,
+  trackErrors,
+  waitForIdle,
+  watchDropAnimation,
+} from './helpers';
 
 const state = (page: Page) => page.getByTestId('state');
 const list = (page: Page, id: string) => page.locator(`[data-testid="${id}"]:not([data-dnd-overlay] *)`);
@@ -197,26 +207,16 @@ test.describe('reject and partial accept', () => {
 
   test('an async onBeforeDrop returning false flies the item back', async ({ page }) => {
     const errors = trackErrors(page);
-    await dragTo(page, item(page, 'r1'), await center(list(page, 'confirm')));
+    await dragTo(page, item(page, 'r1'), await center(list(page, 'confirm')), { release: false });
+    const dropAnimation = await watchDropAnimation(page);
+    await page.mouse.up();
     // The drop waits for the promise: the overlay stays, the data is untouched.
     await expect(page.getByTestId('status')).toHaveText('dropping');
     await expect(page.locator('[data-dnd-overlay]')).toHaveCount(1);
     await expect(state(page)).toHaveText('source:r1,r2,r3,r4 | confirm: | bugs: | first:');
-    // Then the overlay animates back to the item's original slot.
-    const animated = await page.evaluate(
-      () =>
-        new Promise<boolean>((resolve) => {
-          const started = performance.now();
-          const check = () => {
-            const overlay = document.querySelector('[data-dnd-overlay]');
-            if (overlay?.getAnimations().some((animation) => animation.playState === 'running')) return resolve(true);
-            if (!overlay || performance.now() - started > 2000) return resolve(false);
-            requestAnimationFrame(check);
-          };
-          check();
-        }),
-    );
-    expect(animated).toBe(true);
+    // Then the overlay flies back to the item's original slot (recorded as it starts,
+    // so a loaded browser finishing it before this line can't make the check miss it).
+    expect(await dropAnimation()).toBe('fly');
     await waitForIdle(page);
     await expect(page.getByTestId('status')).toHaveText('idle');
     await expect(state(page)).toHaveText('source:r1,r2,r3,r4 | confirm: | bugs: | first:');
