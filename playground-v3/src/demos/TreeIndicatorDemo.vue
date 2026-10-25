@@ -27,9 +27,8 @@
     // The tree stays still; each row draws the line from its `indicator` (TreeLineRow).
     placeholder: 'indicator',
     indentation: INDENTATION,
-    get nesting() {
-      return nesting.value;
-    },
+    // A ref: the radio buttons switch the mode live.
+    nesting,
     maxDepth: 2,
     collapsed,
     canNest: (_node, parent) => parent.type === 'folder',

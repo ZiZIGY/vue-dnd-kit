@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { center, trackErrors, waitForIdle, type Point } from './helpers';
 
 // Visible rows: src(0) components(1) ui(2) button(2) main(1) docs(0, collapsed) assets(0) package(0) readme(0).
@@ -357,5 +357,87 @@ test.describe('sortable tree and a list in one group', () => {
     await page.mouse.up();
     await expect(structure(page)).toHaveText(INITIAL);
     await expect(clipboard(page)).toHaveText('notes');
+  });
+});
+
+test.describe('sortable tree: copies, a plain draggable, a locked axis', () => {
+  const template = (page: Page, id: string) => page.locator(`[data-testid="palette-list"] [data-id="${id}"]`);
+
+  /**
+   * Picks `element` (left of the tree) and enters the tree over package.json, as the
+   * clipboard tests do: the node that appears there moves the rows below it.
+   */
+  const enterWith = async (page: Page, element: Locator, key: string) => {
+    const from = await center(element);
+    const entry = await at(page, 'package', 0.3);
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    await page.mouse.move(from.x, from.y + 6, { steps: 2 });
+    await glide(page, entry, 30);
+    await expect(row(page, key)).toHaveCount(1);
+    await settle(page);
+  };
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/#tree');
+    await expect(structure(page)).toHaveText(INITIAL);
+  });
+
+  test('a template folder is copied into a folder with its subtree; the template stays', async ({ page }) => {
+    const errors = trackErrors(page);
+    // The copy (keys of its own, from `clone`) is in the tree while hovering.
+    await enterWith(page, template(page, 'tpl-folder'), 'tpl-folder-1');
+    await glide(page, await at(page, 'assets', 0.5), 10);
+    await expect(projected(page)).toHaveText('1:assets');
+    await drop(page);
+    await expect(structure(page)).toHaveText(
+      'src(components(ui,button),main),docs(intro,guide),assets(tpl-folder-1(tpl-readme-2)),package,readme',
+    );
+    await expect(row(page, 'tpl-readme-2')).toHaveAttribute('data-depth', '2');
+    await expect(template(page, 'tpl-folder')).toHaveCount(1);
+    await expect(page.getByTestId('drop')).toHaveText('copy tpl-folder templates:root[1] -> assets[0]');
+    expect(errors).toEqual([]);
+  });
+
+  test('Alt copies a node within the tree; the original stays', async ({ page }) => {
+    await pick(page, 'readme');
+    await page.keyboard.down('Alt');
+    await expect(row(page, 'readme-1')).toHaveCount(1);
+    await settle(page);
+    await glide(page, await at(page, 'package', 0.2), 20);
+    await expect(projected(page)).toHaveText('0:root');
+    await drop(page);
+    await page.keyboard.up('Alt');
+    await expect(structure(page)).toHaveText('src(components(ui,button),main),docs(intro,guide),assets,readme-1,package,readme');
+    await expect(page.getByTestId('drop')).toHaveText('copy readme tree:root[4] -> root[3]');
+  });
+
+  test('a plain draggable becomes a node at the projected place (createItem)', async ({ page }) => {
+    const errors = trackErrors(page);
+    await enterWith(page, page.locator('.ext-chip[data-id="chip-note"]'), 'chip-note-1');
+    // The middle of a folder: into it, as any node.
+    await glide(page, await at(page, 'assets', 0.5), 10);
+    await expect(projected(page)).toHaveText('1:assets');
+    await drop(page);
+    await expect(structure(page)).toHaveText(
+      'src(components(ui,button),main),docs(intro,guide),assets(chip-note-1),package,readme',
+    );
+    await expect(page.getByTestId('drop')).toHaveText('insert chip-note outside:root[-1] -> assets[0]');
+    expect(errors).toEqual([]);
+  });
+
+  test('a locked axis (modifiers): the overlay stays in line, folders still nest by hovering', async ({ page }) => {
+    await page.getByTestId('lock-axis').check();
+    const before = (await row(page, 'package').boundingBox())!;
+    const start = await pick(page, 'package');
+    // Sideways would be one level in (see 'nests into a folder by horizontal offset').
+    await glide(page, { x: start.x + 60, y: start.y });
+    await expect(projected(page)).toHaveText('0:root');
+    const overlay = (await page.locator('[data-dnd-overlay]').boundingBox())!;
+    expect(Math.abs(overlay.x - before.x)).toBeLessThan(1);
+    await glide(page, await at(page, 'assets', 0.5), 10);
+    await expect(projected(page)).toHaveText('1:assets');
+    await drop(page);
+    await expect(structure(page)).toHaveText('src(components(ui,button),main),docs(intro,guide),assets(package),readme');
   });
 });

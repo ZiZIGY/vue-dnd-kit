@@ -43,8 +43,10 @@
     <h2>Tree multi-drag</h2>
     <p class="hint">
       Ctrl/Cmd+click to select several nodes. They travel as one block, each with its subtree, and land side by side at
-      one level, in document order. A node inside another selected one rides along in its subtree. Max depth 2 counts
-      the deepest descendant of the block; docs/ takes only Markdown files.
+      one level, in document order. A node inside another selected one rides along in its subtree, also the one you
+      grab (as in VS Code): select a folder and a file in it, drag the file, and the folder moves with the file inside,
+      shown above it in the overlay. Max depth 2 counts the deepest descendant of the block; docs/ takes only Markdown
+      files.
     </p>
     <div class="layout">
       <div>

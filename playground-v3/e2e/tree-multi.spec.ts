@@ -268,6 +268,31 @@ test.describe('tree multi-drag', () => {
     check();
   });
 
+  test('a grabbed node inside a selected folder stays in it: the folder moves with its subtree (VS Code)', async ({ page }) => {
+    const check = guard(page);
+    await select(page, 'components', 'button');
+    await pick(page, 'button');
+    // components carries button (and ui): its subtree leaves the rows, components is the placeholder.
+    await expect(row(page, 'button')).toHaveCount(0);
+    await expect(row(page, 'ui')).toHaveCount(0);
+    expect(await placeholders(page)).toEqual({ ids: ['components'], contiguous: true });
+    // The grabbed row stays in the overlay's box under the pointer; components shows above it.
+    expect(await columnIds(page)).toEqual(['components']);
+    const box = (await overlay(page).locator('[data-id="button"]').boundingBox())!;
+    const lead = (await overlay(page).locator('[data-dnd-overlay-item] [data-id="components"]').boundingBox())!;
+    expect(lead.y + lead.height).toBeLessThanOrEqual(box.y + 1);
+    await layoutSettled(page);
+    // The pointer a row into readme: components, a row above it, goes before package.json, inside assets/.
+    await glide(page, await at(page, 'readme', 0.2));
+    await expect(projected(page)).toHaveText('1:assets');
+    await page.mouse.up();
+    await waitForIdle(page);
+    await expect(structure(page)).toHaveText('src(main),docs(intro,guide),assets(components(ui,button)),package,readme');
+    await expect(page.getByTestId('drop')).toHaveText('components -> assets[0]');
+    await expect(row(page, 'button')).toHaveAttribute('data-depth', '2');
+    check();
+  });
+
   test('the block leaves for a list with its subtrees, in document order', async ({ page }) => {
     const check = guard(page);
     await select(page, 'components', 'package');

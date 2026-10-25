@@ -375,6 +375,23 @@ describe('projectTreeIndex', () => {
     // The middle of g nests into it.
     expect(project(100)).toMatchObject({ index: 1, nest: 'g' });
   });
+
+  it('keeps the slot over a still row (the original of a copy): no nesting into it, no step past it', () => {
+    const project = (y: number, still?: Set<string>) =>
+      projectTreeIndex({
+        pointer: { x: 50, y },
+        items: rows(['f', 'g']),
+        activeKey: 'copy',
+        activeIndex: -1,
+        length: 2,
+        canNestInto: () => true,
+        still,
+      });
+    expect(project(20, new Set(['f']))).toMatchObject({ index: null, nest: null, hit: { key: 'f' } });
+    expect(project(20)).toMatchObject({ index: 1, nest: 'f' });
+    // The rows around it still take the copy.
+    expect(project(60, new Set(['f']))).toMatchObject({ index: 2, nest: 'g' });
+  });
 });
 
 describe('indicator projection', () => {

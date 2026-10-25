@@ -17,6 +17,7 @@ import type {
   MaybeReadonlyRef,
   Modifier,
   SortableDropEvent,
+  SortableGroupOptions,
   SortableListOptions,
   SortableListReturn,
 } from '../types';
@@ -82,6 +83,17 @@ export const provideSortableContext = (
 
 let warnedClone = false;
 
+/** `group.pull` of a list or tree: `'clone'` needs a `clone` option, without one the items stay (with a warning). */
+export const pullOf = (group: SortableGroupOptions | undefined, canClone: boolean): boolean | 'clone' => {
+  const pull = group?.pull ?? true;
+  if (pull === 'clone' && !canClone) {
+    if (!warnedClone) console.warn('[vue-dnd-kit] group.pull: \'clone\' needs a `clone` option; items stay in the list.');
+    warnedClone = true;
+    return false;
+  }
+  return pull;
+};
+
 /**
  * Makes a container a sortable list. Render the returned `items` (the draft order);
  * the result is written back to `options.items` on drop, after `onDrop`, unless
@@ -117,15 +129,7 @@ export function makeSortableList<T>(
     animation: () => unref(options.animation) ?? manager.props.animation,
     isDisabled: () => !!read(options.disabled),
     canSort: () => read(options.sort) !== false,
-    pull: () => {
-      const pull = groupOptions?.pull ?? true;
-      if (pull === 'clone' && !options.clone) {
-        if (!warnedClone) console.warn('[vue-dnd-kit] group.pull: \'clone\' needs a `clone` option; items stay in the list.');
-        warnedClone = true;
-        return false;
-      }
-      return pull;
-    },
+    pull: () => pullOf(groupOptions, !!options.clone),
     canPut: (context) => {
       const put = groupOptions?.put ?? true;
       return typeof put === 'function' ? put(context) : put;
