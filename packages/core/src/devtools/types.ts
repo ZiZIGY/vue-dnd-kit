@@ -276,6 +276,7 @@ export interface DevtoolsListener {
   added?(provider: DevtoolsProvider): void;
   /** The provider unmounted. */
   removed?(provider: DevtoolsProvider): void;
+  /** A listener with this handler makes the bridge follow the providers (until then they are only recorded). */
   event?(provider: DevtoolsProvider, event: DevtoolsEvent): void;
 }
 

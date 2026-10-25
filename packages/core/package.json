@@ -109,6 +109,16 @@
       ],
       "gzip": true,
       "limit": "17 KB"
+    },
+    {
+      "name": "devtools bridge (@vue-dnd-kit/core/devtools)",
+      "path": "dist/devtools.js",
+      "import": "*",
+      "ignore": [
+        "vue"
+      ],
+      "gzip": true,
+      "limit": "3.5 KB"
     }
   ],
   "publishConfig": {

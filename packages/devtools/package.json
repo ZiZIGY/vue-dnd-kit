@@ -1,0 +1,126 @@
+{
+  "name": "@vue-dnd-kit/devtools",
+  "version": "3.0.0",
+  "description": "Vue DevTools plugin for Vue DnD Kit: an inspector of providers, draggables, drop targets, sortable lists and the drag session, and a timeline of drags",
+  "author": "ZiZIGY",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "./dist/auto.js",
+    "./dist/auto.cjs"
+  ],
+  "keywords": [
+    "vue",
+    "vue3",
+    "devtools",
+    "vue devtools",
+    "dnd",
+    "drag and drop",
+    "vue-dnd-kit",
+    "@vue-dnd-kit/devtools"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zizigy/vue-dnd-kit.git",
+    "directory": "packages/devtools"
+  },
+  "scripts": {
+    "build": "vite build",
+    "start": "vite build --watch",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "size": "size-limit",
+    "lint:package": "publint --strict --pack npm && attw --pack .",
+    "prepublishOnly": "yarn typecheck && yarn test && yarn build && yarn lint:package && yarn size"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./auto": {
+      "import": {
+        "types": "./dist/auto.d.ts",
+        "default": "./dist/auto.js"
+      },
+      "require": {
+        "types": "./dist/auto.d.cts",
+        "default": "./dist/auto.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "auto": [
+        "./dist/auto.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "size-limit": [
+    {
+      "name": "app.use(DnDDevtools) in production (the plugin and @vue/devtools-api are dropped)",
+      "path": "dist/index.js",
+      "import": "{ DnDDevtools }",
+      "ignore": [
+        "vue",
+        "@vue-dnd-kit/core"
+      ],
+      "gzip": true,
+      "limit": "300 B"
+    },
+    {
+      "name": "@vue-dnd-kit/devtools/auto in production",
+      "path": "dist/auto.js",
+      "import": "*",
+      "ignore": [
+        "vue",
+        "@vue-dnd-kit/core"
+      ],
+      "gzip": true,
+      "limit": "100 B"
+    }
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "peerDependencies": {
+    "@vue-dnd-kit/core": "^3.0.0",
+    "vue": "^3.5.0"
+  },
+  "dependencies": {
+    "@vue/devtools-api": "^8.2.1"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@size-limit/preset-small-lib": "^12.1.0",
+    "@types/node": "^24.10.0",
+    "@vue/tsconfig": "^0.8.1",
+    "@vueuse/core": "^15.0.0",
+    "happy-dom": "^21.0.4",
+    "publint": "^0.3.25",
+    "size-limit": "^12.1.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.2.2",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^5.0.5",
+    "vue": "^3.5.24",
+    "vue-tsc": "^3.1.3"
+  }
+}

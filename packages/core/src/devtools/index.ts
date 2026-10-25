@@ -5,8 +5,8 @@
  *
  * `connectDevtools()` puts the hook (`core/devtoolsHook.ts`) on `globalThis`; providers
  * set up from then on report to it, and so do their sortable groups. Connect before the
- * app mounts: providers set up earlier aren't seen. Until something subscribes, a
- * provider is only recorded; then it is followed. The bridge reads (snapshots) and
+ * app mounts: providers set up earlier aren't seen. Until a listener subscribes to the
+ * events, a provider is only recorded; then it is followed. The bridge reads (snapshots) and
  * listens (events); the only things it changes are the explicit actions of a provider
  * (`cancel`, `clearSelection`). Providers shared with other apps through
  * `provideDnDContext` (shadow roots) are one provider: their items are in it.
@@ -63,12 +63,15 @@ export function connectDevtools(): DevtoolsBridge {
     }
   };
 
+  /** Someone listens to the events: providers are followed (a monitor, a few watchers) from then on. */
+  const following = () => [...listeners].some((listener) => listener.event);
+
   const hook: DevtoolsHook = {
     provider(manager) {
       if (records.has(manager)) return;
       const record = createProviderRecord(manager, (provider, event) => tell((listener) => listener.event?.(provider, event)));
       records.set(manager, record);
-      if (listeners.size) record.follow();
+      if (following()) record.follow();
       // Called in the provider's setup: its scope ends when it unmounts.
       if (getCurrentScope()) {
         onScopeDispose(() => {
@@ -90,8 +93,7 @@ export function connectDevtools(): DevtoolsBridge {
     providers: () => [...records.values()],
     subscribe(listener) {
       listeners.add(listener);
-      // Providers are followed (a monitor, a few watchers) only from the first listener on.
-      for (const record of records.values()) record.follow();
+      if (listener.event) for (const record of records.values()) record.follow();
       return () => {
         listeners.delete(listener);
       };
