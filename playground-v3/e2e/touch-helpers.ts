@@ -103,6 +103,8 @@ export const overlay = (page: Page): Locator => page.locator('[data-dnd-overlay]
 
 /** Puts the finger on `target` and holds it still until the drag has started. */
 export const longPress = async (page: Page, finger: Finger, target: Locator | Point): Promise<Point> => {
+  // A touch only lands inside the viewport (the playground nav can push rows below the fold).
+  if (!('x' in target)) await target.scrollIntoViewIfNeeded();
   const point = 'x' in target ? target : await center(target);
   await finger.down(point);
   await expect(overlay(page)).toHaveCount(1);
