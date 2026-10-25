@@ -3,30 +3,28 @@ import type { Key } from '../types';
 import { createRect } from '../animation/layout';
 import type { ProjectionItem } from './projection';
 import {
-  applyTreeMove,
-  blockFilter,
   blockHeight,
-  buildTreeMove,
   createFlatTree,
-  depthRange,
-  findTreeNode,
   flattenTree,
-  gapPosition,
   getDescendantKeys,
+  subtreeEnd,
+  subtreeHeight,
+  type TreeAccessors,
+} from './tree/flatten';
+import {
+  blockFilter,
+  depthRange,
+  gapPosition,
   moveKey,
   nearestValidSlot,
   offsetDepth,
   parentAt,
   projectDepth,
-  projectTreeIndex,
-  projectTreeIndicator,
   siblingIndexAt,
-  subtreeEnd,
-  subtreeHeight,
   type DraftPosition,
-  type TreeAccessors,
-  type TreeMove,
-} from './tree';
+} from './tree/depth';
+import { projectTreeIndex, projectTreeIndicator } from './tree/projection';
+import { applyTreeMove, buildTreeMove, findTreeNode, type TreeMove } from './tree/move';
 
 interface Node {
   id: string;

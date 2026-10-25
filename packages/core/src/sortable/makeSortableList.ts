@@ -25,7 +25,9 @@ import { useManager } from '../core/context';
 import { createDroppable } from '../core/makeDroppable';
 import { createId, toElement } from '../utils/dom';
 import { read } from '../utils/read';
-import { useSortableGroup, type ListEntry, type SortableGroup } from './group';
+import { useSortableGroup, type SortableGroup } from './group';
+import type { ListEntry } from './entry';
+import { flatLayout } from './layout';
 import { changedRun } from './draft';
 
 /** What a list (or tree) gives its items. */
@@ -124,6 +126,7 @@ export function makeSortableList<T>(
     getElement: () => toElement(target),
     getKeys: () => keys.value,
     getItem: (key) => byKey.value.get(key),
+    layout: flatLayout,
     strategy: () => read(options.strategy) ?? 'vertical',
     placeholder: () => read(options.placeholder) ?? 'item',
     animation: () => unref(options.animation) ?? manager.props.animation,
