@@ -886,6 +886,11 @@ export function createDnDManager(props: DnDProviderProps) {
     flushFrame();
     const id = session;
     status.value = 'dropping';
+    // `onBeforeDrop` may wait for the user (a confirmation dialog): the page stops being
+    // in drag mode now, with its own cursor and text selection. The drag state and the
+    // overlay stay as they are until the drop is decided.
+    restoreDocument?.();
+    restoreDocument = null;
     const event = createEvent();
     const target = event.over;
 

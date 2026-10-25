@@ -387,7 +387,9 @@ export interface DnDSelection {
  * The drag state ends when the drop is decided: `active`, `over` and `pointer` read
  * `null` (and droppables stop accepting) while the overlay still animates into place
  * (`status` stays `'dropping'`). Derived UI never mixes the old drag with the new data.
- * While an async `onBeforeDrop` decides, the state is kept as it was at release.
+ * While an async `onBeforeDrop` decides, the state is kept as it was at release, but the
+ * page is out of drag mode: its own cursor and text selection are back (a confirmation
+ * dialog works normally), and the overlay waits where it was dropped.
  */
 export interface DnDState {
   status: Readonly<Ref<DnDStatus>>;
