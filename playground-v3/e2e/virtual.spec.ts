@@ -333,6 +333,10 @@ test.describe('virtual kanban (3 TanStack columns × 2k cards)', () => {
     // scroll the pinned card out of range.
     const box = (await doing.boundingBox())!;
     await page.mouse.move(box.x + box.width / 2, box.y - 2 * CARD, { steps: 6 });
+    // Let collision drop the column first: while it is still the target, the pointer
+    // above its top edge auto-scrolls it (upward intent), and the scroll set next would
+    // already be moving on a loaded browser.
+    await nextFrames(page, 3);
     await scrollElement(doing, 500 * CARD);
     await expect(card(page, 'a1')).toHaveCount(1);
     await expect(card(page, 'a1')).not.toBeInViewport();

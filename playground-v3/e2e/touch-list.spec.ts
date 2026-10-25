@@ -17,6 +17,16 @@ const order = (page: Page) => page.getByTestId('touch-list-order');
 const status = (page: Page) => page.getByTestId('status');
 const ids = async (page: Page) => (await order(page).textContent())!.split(',');
 
+/**
+ * Scrolls the page so the list starts near the top of the screen and returns the
+ * scroll position. Targets a few rows down then stay out of the bottom auto-scroll
+ * zone, however tall the playground nav above the demo grows.
+ */
+const listNearTop = async (page: Page): Promise<number> => {
+  await item(page, 't1').evaluate((element) => window.scrollBy(0, element.getBoundingClientRect().top - 120));
+  return windowScrollY(page);
+};
+
 test.describe('touch: long list @touch', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/#touch-list');
@@ -57,6 +67,7 @@ test.describe('touch: long list @touch', () => {
       });
     });
     await touchmoves;
+    const scrolled = await listNearTop(page);
     const finger = (await touchscreen(page)).finger();
     await longPress(page, finger, item(page, 't1'));
     await finger.move(await center(item(page, 't4'), 0.8), { steps: 12 });
@@ -65,7 +76,7 @@ test.describe('touch: long list @touch', () => {
     await waitForIdle(page);
 
     await expect(order(page)).toHaveText(/^t2,t3,t4,t1,t5,/);
-    expect(await windowScrollY(page)).toBe(0);
+    expect(await windowScrollY(page)).toBe(scrolled);
     const prevented = await page.evaluate(() => (window as unknown as { __touchmoves: boolean[] }).__touchmoves);
     expect(prevented.length).toBeGreaterThan(0);
     expect(prevented.every(Boolean)).toBe(true);
@@ -73,6 +84,7 @@ test.describe('touch: long list @touch', () => {
   });
 
   test('a finger trembling within the tolerance still picks the item up', async ({ page }) => {
+    const scrolled = await listNearTop(page);
     const finger = (await touchscreen(page)).finger();
     const start = await center(item(page, 't2'));
     await finger.down(start);
@@ -85,7 +97,7 @@ test.describe('touch: long list @touch', () => {
     await finger.up();
     await waitForIdle(page);
     await expect(order(page)).toHaveText(/^t1,t3,t4,t5,t2,t6,/);
-    expect(await windowScrollY(page)).toBe(0);
+    expect(await windowScrollY(page)).toBe(scrolled);
   });
 
   test('a quick swipe scrolls the page and does not drag', async ({ page }) => {
