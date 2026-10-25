@@ -84,6 +84,8 @@ describe('public exports', () => {
       Public.ActivationOptions,
       Public.KeyboardOptions,
       Public.AutoScrollOptions,
+      Public.HapticsOptions,
+      Public.HapticPattern,
       // Sensors
       Public.Sensor,
       Public.SensorContext,

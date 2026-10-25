@@ -51,6 +51,8 @@ export type {
   ActivationOptions,
   KeyboardOptions,
   AutoScrollOptions,
+  HapticsOptions,
+  HapticPattern,
 
   // Sensors
   Sensor,

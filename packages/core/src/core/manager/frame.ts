@@ -7,6 +7,7 @@
 import { nextTick } from 'vue';
 import type { Coordinates } from '../../types';
 import type { ManagerContext } from './state';
+import { vibrate } from '../haptics';
 
 export type FrameLoop = ReturnType<typeof createFrameLoop>;
 
@@ -57,7 +58,10 @@ export function createFrameLoop(ctx: ManagerContext) {
       if (previous) ctx.droppables.get(previous.id)?.onDragLeave?.(event);
       if (next) ctx.droppables.get(next.id)?.onDragEnter?.(event);
       events.emit('onDragOver', event);
-      if (!pickup) events.announce('onDragOver', event);
+      if (!pickup) {
+        events.announce('onDragOver', event);
+        if (next?.accepted) vibrate(ctx.props.haptics, 'enter', ctx.touch);
+      }
     }
     events.emit('onDragMove', event);
     // The move may have reordered (sortable): fit the slot once that rendered, even if
