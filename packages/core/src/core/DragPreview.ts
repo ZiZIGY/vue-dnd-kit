@@ -6,7 +6,7 @@ import { useDnDContext } from './context';
  * The default clone of one dragged item (see `DragPreviewProps`). Custom overlays use
  * it to lay out several items themselves; the default overlay shows a multi-drag with it.
  */
-export const DragPreview = defineComponent({
+export const DragPreview = /* @__PURE__ */ defineComponent({
   name: 'DragPreview',
   props: {
     id: { type: [String, Number] as PropType<DragPreviewProps['id']>, required: true },

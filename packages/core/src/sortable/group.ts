@@ -60,6 +60,8 @@ import {
   type Hysteresis,
 } from './stability';
 import { collapseIntoOverlay } from './multiple';
+import { ColumnPreview } from './column';
+import { landOverlayItems } from '../animation/drop';
 import { trackCopyModifier } from './modifier';
 import { revealElement } from '../core/autoscroll';
 import { sortableTexts, type SortableSpot, type SortableSubject } from './announcements';
@@ -503,7 +505,14 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     if (!list || list.id === columnList) return;
     columnList = list.id;
     const axis = list.strategy() === 'vertical' ? 'y' : 'x';
-    manager.overlayColumn.value = { ids: current.keys, axis, gap: gapOf(list, axis), animation: list.animation() };
+    manager.overlayColumn.value = {
+      ids: current.keys,
+      axis,
+      gap: gapOf(list, axis),
+      animation: list.animation(),
+      preview: ColumnPreview,
+      land: landOverlayItems,
+    };
   };
 
   /** Mirrors the session into the manager: overlay `mode`, where the overlay lands, the placeholders of a block. */

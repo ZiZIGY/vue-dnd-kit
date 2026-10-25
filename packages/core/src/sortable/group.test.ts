@@ -3,9 +3,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { MultipleMode, OverlayProps } from '../types';
 import { DnDProvider } from '../core/DnDProvider';
 import { DragPreview } from '../core/DragPreview';
-import { layoutColumn } from '../core/DragOverlay';
 import { useDnDContext } from '../core/context';
 import type { DnDManager } from '../core/manager';
+import { layoutColumn } from './column';
 import { makeSortableItem } from './makeSortableItem';
 import { makeSortableList } from './makeSortableList';
 

@@ -81,6 +81,17 @@
       ],
       "gzip": true,
       "limit": "16 KB"
+    },
+    {
+      "name": "DnDProvider + makeDraggable + makeDroppable",
+      "path": "dist/index.js",
+      "import": "{ DnDProvider, makeDraggable, makeDroppable }",
+      "ignore": [
+        "vue",
+        "@vueuse/core"
+      ],
+      "gzip": true,
+      "limit": "16 KB"
     }
   ],
   "publishConfig": {

@@ -45,7 +45,7 @@ import {
   resizeAround,
   unionRect,
 } from '../animation/layout';
-import { fadeInPlace, landOverlayItems, runDropAnimation, type OverlayItemLanding } from '../animation/drop';
+import { fadeInPlace, runDropAnimation, type landOverlayItems, type OverlayItemLanding } from '../animation/drop';
 import { createTargetStabilizer, pointerFirst } from './collision';
 import { createMeasurer } from './measure';
 import { defaultAnnouncements } from './a11y';
@@ -106,6 +106,10 @@ export interface OverlayColumn {
   gap: number;
   /** The list's layout animation: the clones gather into the column with it. */
   animation?: LayoutAnimation;
+  /** Renders the column in the default overlay. The sortable layer brings it: plain drags don't bundle it. */
+  preview: Component;
+  /** Lands the column's clones (`overlayItems`) on their slots with the drop. */
+  land: typeof landOverlayItems;
 }
 
 /** Per-container auto-scroll override (e.g. `SortableListOptions.autoScroll`). */
@@ -827,7 +831,8 @@ export function createDnDManager(props: DnDProviderProps) {
       items.push({ element: clone, from: getRect(clone), to: visible ? to : null });
     }
     fades = fadeInPlace(props.dropAnimation, resting);
-    return landOverlayItems(props.dropAnimation, items, box);
+    // Clones exist only in the sortable layer's column.
+    return overlayColumn.value?.land(props.dropAnimation, items, box) ?? Promise.resolve();
   };
 
   /** Plays the drop or return animation, then ends the session. */
