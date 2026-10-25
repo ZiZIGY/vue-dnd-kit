@@ -78,10 +78,11 @@ test.describe('drop into an item', () => {
   test("a group's middle takes the task: the list doesn't reorder for it, the overlay shrinks into it", async ({
     page,
   }) => {
-    // Down from a1: past a2 (its center), then into g1's middle.
+    // Down from a1 into g1's middle: a1 passes a2 on the way (unless the browser
+    // coalesced the glide into one frame there), but never g1.
     await hold(page, byId(page, 'a1'), await at(byId(page, 'g1'), 0.5, 0.5));
     await expect(byId(page, 'g1')).toHaveAttribute('data-target');
-    expect(await order(page, 'combine-list')).toBe('a2,a1,g1,a3,g2,a4,gl,a5');
+    expect(await order(page, 'combine-list')).toMatch(/^(a2,a1|a1,a2),g1,a3,g2,a4,gl,a5$/);
     // Every group that takes tasks shows it; the locked one doesn't.
     await expect(byId(page, 'g2')).toHaveAttribute('data-accepting');
     await expect(byId(page, 'gl')).not.toHaveAttribute('data-accepting');

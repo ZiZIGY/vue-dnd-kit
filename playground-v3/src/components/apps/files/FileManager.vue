@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import { computed, provide, reactive, ref, shallowRef, useTemplateRef } from 'vue';
-  import { useDnD, type DnDEvent } from '@vue-dnd-kit/core';
+  import { computed, provide, ref, shallowRef, useTemplateRef } from 'vue';
+  import { useDnD, type DnDEvent, type DragItem } from '@vue-dnd-kit/core';
   import FolderTree from './FolderTree.vue';
   import FileGrid from './FileGrid.vue';
   import FolderButton from './FolderButton.vue';
@@ -8,31 +8,47 @@
   import {
     FILE_MANAGER,
     HOME,
-    createFiles,
-    createFolders,
+    createRoot,
+    entryId,
+    findFolder,
     findPath,
-    folderIds,
+    isFolder,
+    mergeFolders,
     serializeFolders,
-    type FileItem,
+    subfolders,
+    takeEntries,
+    walk,
+    type Entry,
     type FileManagerContext,
     type FolderNode,
+    type FolderPlace,
   } from './fs';
 
-  const folders = ref<FolderNode[]>(createFolders());
-  const files = reactive<Record<string, FileItem[]>>(createFiles());
+  const root = ref<FolderNode>(createRoot());
   const current = shallowRef('documents');
   const lastAction = shallowRef('');
-  const { selection, active } = useDnD();
+  const { selection } = useDnD();
 
-  const nameOf = (id: string) => (id === HOME ? 'Home' : (findPath(folders.value, id).at(-1)?.name ?? id));
-  const plural = (count: number) => (count === 1 ? '1 file' : `${count} files`);
-
-  const currentFiles = computed<FileItem[]>({
-    get: () => files[current.value] ?? [],
-    set: (next) => (files[current.value] = next),
+  const folderOf = (id: string) => findFolder(root.value, id);
+  const nameOf = (id: string) => folderOf(id)?.name ?? id;
+  /** Folder that holds each entry. */
+  const parents = computed(() => {
+    const map = new Map<string, string>();
+    for (const node of walk(root.value)) for (const entry of node.children) map.set(entry.id, node.id);
+    return map;
   });
-  const path = computed(() => (current.value === HOME ? [] : findPath(folders.value, current.value)));
-  const selectedCount = computed(() => currentFiles.value.filter((file) => selection.has(file.id)).length);
+
+  const openFolder = computed(() => folderOf(current.value) ?? root.value);
+  const currentEntries = computed<Entry[]>({
+    get: () => openFolder.value.children,
+    set: (next) => (openFolder.value.children = next),
+  });
+  const folders = computed<FolderNode[]>({
+    get: () => subfolders(root.value),
+    set: (next) => (root.value.children = mergeFolders(root.value.children, next)),
+  });
+  const path = computed(() => findPath(folders.value, current.value));
+  const selectedCount = computed(() => currentEntries.value.filter((entry) => selection.has(entry.id)).length);
 
   const open = (folderId: string) => {
     if (folderId === current.value) return;
@@ -40,39 +56,60 @@
     selection.clear();
   };
 
+  const canMove = (item: DragItem, folderId: string, place: FolderPlace) => {
+    const id = entryId(item);
+    // The tree nests its own rows: its rows are no targets for its own drags.
+    if (place === 'row' && item.type.includes('tree')) return false;
+    // Never into the folder it is already in...
+    if (parents.value.get(id) === folderId) return false;
+    // ...nor a folder into itself or one of its own sub-folders.
+    const moved = folderOf(id);
+    return !moved || ![...walk(moved)].some((node) => node.id === folderId);
+  };
+
+  const plural = (count: number, noun: string) => (count === 1 ? `1 ${noun}` : `${count} ${noun}s`);
+
   const moveInto = (event: DnDEvent, folderId: string) => {
-    const ids = new Set(event.active.ids);
-    // In the order they had in the folder, not in the order they were selected.
-    const moved = currentFiles.value.filter((file) => ids.has(file.id));
+    const target = folderOf(folderId);
+    if (!target) return;
+    // Out of wherever they are (the open folder, or the tree), in tree order...
+    const moved = takeEntries(root.value, new Set(event.active.items.map(entryId)));
     if (!moved.length) return;
-    // The grid drops them from the open folder once the drop is committed...
-    event.source?.remove();
-    // ...and they are appended to the target folder.
-    files[folderId] = [...(files[folderId] ?? []), ...moved];
-    selection.delete(...moved.map((file) => file.id));
-    lastAction.value = `Moved ${moved.length === 1 ? moved[0]!.name : plural(moved.length)} to ${nameOf(folderId)}`;
+    // ...and appended to the target folder.
+    target.children = [...target.children, ...moved];
+    selection.delete(...moved.map((entry) => entry.id));
+    const kinds = new Set(moved.map((entry) => entry.kind));
+    const what = moved.length === 1 ? moved[0]!.name : plural(moved.length, kinds.size > 1 ? 'item' : moved[0]!.kind);
+    lastAction.value = `Moved ${what} to ${nameOf(folderId)}`;
   };
 
   const context: FileManagerContext = {
+    root,
     folders,
-    files,
-    currentFiles,
+    currentEntries,
     current,
     lastAction,
     nameOf,
     open,
+    canMove,
     moveInto,
-    draggingFiles: computed(() => active.value?.type.includes('file') ?? false),
   };
   provide(FILE_MANAGER, context);
 
   const home = useTemplateRef<HTMLElement>('home');
   const { isOver: overHome, isAccepting: homeAccepting } = useFolderDrop(home, () => HOME, 'sidebar', context);
 
-  // Data dump for the specs: one `folder:file,file` line per folder.
+  const summary = computed(() => {
+    const entries = currentEntries.value;
+    const count = entries.filter(isFolder).length;
+    const parts = [count && plural(count, 'folder'), plural(entries.length - count, 'file')].filter(Boolean);
+    return parts.join(', ');
+  });
+
+  // Data dump for the specs: one `folder:entry,folder/,…` line per folder (sub-folders end with `/`).
   const describeFiles = computed(() =>
-    [HOME, ...folderIds(folders.value)]
-      .map((id) => `${id}:${(files[id] ?? []).map((file) => file.id).join(',')}`)
+    [...walk(root.value)]
+      .map((node) => `${node.id}:${node.children.map((entry) => (isFolder(entry) ? `${entry.id}/` : entry.id)).join(',')}`)
       .join('\n'),
   );
 </script>
@@ -85,6 +122,7 @@
         class="fm-home"
         :class="{ current: current === HOME, accepting: homeAccepting, target: overHome && homeAccepting }"
         data-testid="sidebar-home"
+        :data-target="(overHome && homeAccepting) || undefined"
         @click="open(HOME)"
       >
         <span aria-hidden="true">⌂</span> Home
@@ -107,7 +145,6 @@
           <FolderButton
             :folder-id="HOME"
             name="Home"
-            variant="crumb"
           />
           <template
             v-for="(folder, index) in path"
@@ -123,7 +160,6 @@
               v-else
               :folder-id="folder.id"
               :name="folder.name"
-              variant="crumb"
             />
           </template>
         </template>
@@ -131,7 +167,7 @@
       <FileGrid />
       <footer class="fm-status">
         <span data-testid="fs-summary"
-          >{{ plural(currentFiles.length) }}<template v-if="selectedCount"> · {{ selectedCount }} selected</template></span
+          >{{ summary }}<template v-if="selectedCount"> · {{ selectedCount }} selected</template></span
         >
         <span data-testid="fs-last">{{ lastAction }}</span>
       </footer>
