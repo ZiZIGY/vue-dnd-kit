@@ -26,7 +26,7 @@
   const { items } = makeSortableList(listRef, {
     items: tasks,
     id: props.id,
-    autoScroll: props.autoScroll,
+    autoScroll: () => props.autoScroll,
   });
 </script>
 
