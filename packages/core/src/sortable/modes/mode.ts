@@ -53,6 +53,10 @@ export interface SortableMode {
   enterByKey?(g: GroupContext, current: Session, context: KeyboardMoveContext): Promise<Coordinates | undefined>;
 }
 
+/** The drag enters `target` (see `SortableMode.enter`); `false` when it can have no slot there. */
+export const enters = (g: GroupContext, current: Session, target: ListEntry): boolean =>
+  current.mode.enter?.(g, current, target) ?? true;
+
 /** The steps of the modes in which the dragged items themselves move (`sort`, `swap`). */
 export const moving = {
   moves: true,

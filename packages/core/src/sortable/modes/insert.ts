@@ -4,11 +4,15 @@
  * the lists the drag is the plain draggable it is.
  */
 
+import { nextTick } from 'vue';
 import type { Key, SortablePutContext } from '../../types';
+import { createRect } from '../../animation/layout';
 import { lookup, type GroupContext, type Session, type SessionStart } from '../context';
 import type { ListEntry } from '../entry';
-import { removeSlot } from '../slot';
-import type { SortableMode } from './mode';
+import { moveActive, removeSlot } from '../slot';
+import { indicateAt } from '../indicator';
+import { adjacentList, insertionIndex, slotCenter } from '../keyboard';
+import { enters, type SortableMode } from './mode';
 import { sortOver } from './sort';
 
 /** The item `list` makes for the drag, once per session; `null` when it makes none. */
@@ -84,4 +88,20 @@ export const insert: SortableMode = {
   },
   inserted: (_g, current, keys) => (keys.length ? [current.slot] : []),
   placed: (current) => current.slot,
+  /**
+   * Outside the lists, the arrow takes the drag into the closest list in its direction,
+   * at the position level with the drag, as moves between lists do. Without one that
+   * way it moves as the plain draggable it is (pixels, droppables).
+   */
+  enterByKey: async (g, current, { active, pointer, direction }) => {
+    const from = createRect(pointer.x, pointer.y, 0, 0);
+    const target = adjacentList(g, null, active, direction, from);
+    if (!target || !enters(g, current, target)) return undefined;
+    const index = insertionIndex(g, target, from, current);
+    if (target.placeholder() === 'indicator') return indicateAt(g, target, index) ?? pointer;
+    moveActive(g, target, index, null);
+    await nextTick();
+    if (g.session.value !== current) return undefined;
+    return slotCenter(g, current, false) ?? pointer;
+  },
 };
