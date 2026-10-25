@@ -28,3 +28,19 @@ export interface Column {
   title: string;
   tasks: Task[];
 }
+
+/** An entry of the drop-into demo: a group (it has `children`) takes the tasks dropped into it. */
+export interface Entry {
+  id: string;
+  title: string;
+  children?: Task[];
+  /** A group that takes nothing: the list sorts over it like over a task. */
+  locked?: boolean;
+  /** Most children a group holds: a drop that would overflow it is refused (`onBeforeDrop`). */
+  limit?: number;
+}
+
+export interface EntryList {
+  id: string;
+  entries: Entry[];
+}

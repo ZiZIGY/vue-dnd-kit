@@ -194,20 +194,7 @@ describe('drop into an item', () => {
     expect(data()).toBe('g-x,a1,a2');
   });
 
-  it('a multi-drag goes in whole', async () => {
-    const container = mount(['a1', 'g1', 'a2', 'g2', 'a3']);
-    await nextTick();
-    await pickUp('a1', ['a2']);
-    expect(rows(container)).toEqual(['a1', 'a2', 'g1', 'g2', 'a3']);
-    // Over g2's middle (120–160 → 130–150).
-    await moveTo(140);
-    expect(manager.over.value?.id).toBe('group:g2');
-    await drop();
-    expect(drops).toEqual(['a1+a2>g2']);
-    expect(data()).toBe('g1,g2,a3');
-  });
-
-  it('never into an item the drag carries: the others of a multi-drag are no targets either', async () => {
+  it('a multi-drag goes in whole, never into an item it carries', async () => {
     const container = mount(['g1', 'a1', 'g2', 'a2']);
     await nextTick();
     // g2 travels with a1 ('group' block a1, g2 right after the active item).

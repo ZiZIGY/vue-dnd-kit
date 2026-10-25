@@ -31,9 +31,10 @@ export interface ProjectArgs {
   /** Grid only: the item that just moved under the pointer, ignored until the pointer leaves it. */
   lock: Key | null;
   /**
-   * Grid only: items holding a drop target for this drag. Their middle drops into them,
-   * so their edges put the active item before or after them, as in lists, instead of
-   * taking their cell: an item that moved to the next cell would run from the pointer.
+   * Items holding a drop target for this drag: their middle drops into them, so only the
+   * pointer itself moves past them. In grids their edges put the active item before or
+   * after them, as in lists, instead of taking their cell (they would run from the
+   * pointer), and a multi-drag block never steps past them ahead of the pointer.
    */
   targets?: ReadonlySet<Key>;
 }
@@ -110,7 +111,7 @@ const stepList = (args: ProjectArgs, side: -1 | 1, { axis, start, end }: Axis): 
   const { items, activeIndex } = args;
   const neighbour = items.find((item) => item.index === activeIndex + side);
   const block = blockOf(items, activeIndex);
-  if (!neighbour || !block.length) return { index: null, lock: null, key: null };
+  if (!neighbour || !block.length || args.targets?.has(neighbour.key)) return { index: null, lock: null, key: null };
   const size = neighbour.rect[end] - neighbour.rect[start];
   // After the step the neighbour starts where the block starts (forward) or ends where it ends.
   const center =
@@ -130,7 +131,7 @@ const stepGrid = (args: ProjectArgs, side: -1 | 1, lock: Key | null): Projection
   const neighbour = items.find((item) => item.index === activeIndex + side);
   const block = blockOf(items, activeIndex);
   const cell = side > 0 ? block[0] : block[block.length - 1];
-  if (!neighbour || !cell) return { index: null, lock, key: null };
+  if (!neighbour || !cell || args.targets?.has(neighbour.key)) return { index: null, lock, key: null };
   const landing = createRect(cell.rect.left, cell.rect.top, neighbour.rect.width, neighbour.rect.height);
   return containsPoint(landing, args.pointer)
     ? { index: null, lock, key: null }

@@ -25,6 +25,7 @@
   import MultiGroupDemo from './demos/MultiGroupDemo.vue';
   import CopyDemo from './demos/CopyDemo.vue';
   import TrashDemo from './demos/TrashDemo.vue';
+  import CombineDemo from './demos/CombineDemo.vue';
   import ExternalDemo from './demos/ExternalDemo.vue';
   import RejectDemo from './demos/RejectDemo.vue';
   import AnnounceDemo from './demos/AnnounceDemo.vue';
@@ -67,6 +68,7 @@
     'multi-group': MultiGroupDemo,
     copy: CopyDemo,
     trash: TrashDemo,
+    combine: CombineDemo,
     external: ExternalDemo,
     reject: RejectDemo,
     announce: AnnounceDemo,

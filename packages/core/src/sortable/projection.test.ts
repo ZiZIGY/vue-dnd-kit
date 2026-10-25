@@ -120,6 +120,31 @@ describe('projectIndex: vertical lists', () => {
     expect(project(245)).toBe(2);
   });
 
+  it('a block never steps past an item you can drop into ahead of the pointer', () => {
+    // 40px rows: k0 | m1 S | k3 — the block (m1, S) counts once, at index 1.
+    const rows: ProjectionItem[] = ['k0', 'm1', 'S', 'k3'].map((key, i) => ({
+      key,
+      index: [0, 1, 1, 2][i]!,
+      rect: createRect(0, i * 40, 100, 40),
+      ...(key === 'm1' && { side: -1 as const }),
+    }));
+    const project = (targets?: Set<string>) =>
+      projectIndex({
+        strategy: 'vertical',
+        pointer: { x: 50, y: 50 },
+        items: rows,
+        activeKey: 'S',
+        activeIndex: 1,
+        length: 3,
+        lock: null,
+        targets,
+      }).index;
+    // The pointer is over m1, the block's leading member: it steps past k0...
+    expect(project()).toBe(0);
+    // ...unless k0 takes the drag: the pointer has to get there itself.
+    expect(project(new Set(['k0']))).toBeNull();
+  });
+
   it('inserts an item from another list before or after the hovered one', () => {
     expect(vertical(items, -1, 45)).toBe(1);
     expect(vertical(items, -1, 75)).toBe(2);

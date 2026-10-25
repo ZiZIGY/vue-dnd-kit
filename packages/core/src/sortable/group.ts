@@ -39,7 +39,17 @@ import type {
   SortableStrategy,
 } from '../types';
 import type { DnDManager, TargetRule } from '../core/manager';
-import { containsPoint, createRect, fadeIn, flip, getCenter, getLayoutRect, getRect, type FlipEntry } from '../animation/layout';
+import {
+  containsPoint,
+  createRect,
+  fadeIn,
+  flip,
+  getCenter,
+  getLayoutRect,
+  getRect,
+  stopLayoutAnimation,
+  type FlipEntry,
+} from '../animation/layout';
 import {
   nextRowIndex,
   pickAdjacent,
@@ -486,8 +496,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     if (!entry.accepts(active)) return false;
     if (targets.at !== point) targets = { at: point, keys: new Set(), ids: new Set() };
     targets.keys.add(key!);
-    // Visual rects, as the hit test sees them (a FLIP may still move the item).
-    if (!containsPoint(dropBand(getRect(found!.element), list.strategy()), point)) return false;
+    // Layout rects, as projection uses: an item still sliding into place counts where it lands.
+    if (!containsPoint(dropBand(manager.measure(found!.element), list.strategy()), point)) return false;
     targets.ids.add(entry.id);
     return true;
   };
@@ -505,6 +515,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       if (!target?.isConnected || entry.sortable || entry.isDisabled() || manager.isOwned(target, active)) continue;
       if (manager.findDraggable(target)?.element !== element || !entry.accepts(active)) continue;
       if (!rect) {
+        // The hit test sees the item where it lands: a passed item may still be sliding there.
+        stopLayoutAnimation(element);
         revealElement(element);
         rect = getRect(element);
       }
