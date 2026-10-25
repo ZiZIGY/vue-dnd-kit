@@ -579,6 +579,24 @@ describe('tree copies (clone)', () => {
     expect(shape(roots.value)).toBe('a(a1,a2(a2x)),b(b1),c,a+(a1+,a2+(a2x+))');
   });
 
+  it('copying with the grabbed node inside a selected one copies that node; both clones land on the copy', async () => {
+    const { container, roots, drops } = renderTree({ clone: copyOf });
+    await settle();
+    select('a2', 'a2x');
+    await start(container, 'a2x', 'pointer');
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt', bubbles: true }));
+    manager.flushFrame();
+    await settle();
+    // The originals keep their rows; the copy of a2 (a2x's copy inside) takes a2's place.
+    expect(rowsOf(container)).toEqual(['a', 'a1', 'a2+', 'a2', 'a2x', 'b', 'b1', 'c']);
+    expect(manager.landingKey.value).toBe('a2+');
+    expect([...manager.landings.value]).toEqual([['a2+', 'a2']]);
+    await drop();
+    document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Alt', bubbles: true }));
+    expect(shape(roots.value)).toBe('a(a1,a2+(a2x+),a2(a2x)),b(b1),c');
+    expect(drops[0]).toMatchObject({ mode: 'copy', keys: ['a2'], to: { parentKey: 'a', index: 1 } });
+  });
+
   it('a palette list copies into the tree at the projected depth', async () => {
     const palette = ref([node('p1'), node('pf', [node('pf1')])]);
     const { container, roots, drops } = renderTree({ group: 'shared' }, () => [

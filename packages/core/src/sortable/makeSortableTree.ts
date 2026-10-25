@@ -163,9 +163,9 @@ export function makeSortableTree<T>(
   const movingRows = (current: DragState): KeySet => (copying() ? NO_ROWS : current.moving);
 
   /**
-   * Rows hovering doesn't place the slot on, into or next to: the travelling ones; while
-   * copying, the originals (a copy doesn't go into its own original because the drag
-   * started over it; their subtrees take it).
+   * Rows the line never goes on (indicator mode): the travelling ones; while copying, the
+   * originals, so a copy doesn't go into its own original just because the drag started
+   * over it (the rows inside it take the copy).
    */
   const stillRows = (current: DragState): KeySet => (copying() ? current.origins : current.moving);
 
@@ -297,6 +297,7 @@ export function makeSortableTree<T>(
       activeIndex: context.activeIndex,
       length: context.keys.length,
       canNestInto: nesting() === 'offset' ? undefined : canNestInto,
+      // Copying, the originals hold the slot as the active row does (see `stillRows`).
       still: copying() ? current.origins : undefined,
     });
     const hitRow = result.hit ? rows().get(result.hit.key) : undefined;
