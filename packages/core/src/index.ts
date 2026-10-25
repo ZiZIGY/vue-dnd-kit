@@ -100,6 +100,7 @@ export type {
   // makeSortableList, makeSortableItem
   SortableListOptions,
   SortableListReturn,
+  SortableItems,
   SortableItemOptions,
   SortableItemReturn,
   SortableStrategy,

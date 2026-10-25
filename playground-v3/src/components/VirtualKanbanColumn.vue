@@ -17,8 +17,11 @@
     id: props.column.id,
     items: props.column.tasks,
     group: 'board',
+    // Before the write: the new order is in `result`.
     onDrop: (event) =>
-      props.onDropped?.(`${props.column.id}:${describeDrop(props.column.tasks.value, event.keys[0])}`),
+      props.onDropped?.(
+        `${props.column.id}:${describeDrop(event.result.get(event.to.list) ?? props.column.tasks.value, event.keys[0])}`,
+      ),
   });
 
   const virtualizer = useVirtualizer(

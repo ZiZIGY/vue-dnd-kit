@@ -1,4 +1,17 @@
-import { createApp, defineComponent, h, nextTick, ref, useTemplateRef, type Component, type PropType, type Ref } from 'vue';
+import {
+  computed,
+  createApp,
+  defineComponent,
+  h,
+  nextTick,
+  ref,
+  shallowRef,
+  toRaw,
+  useTemplateRef,
+  type Component,
+  type PropType,
+  type Ref,
+} from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type {
   FlatNode,
@@ -728,12 +741,16 @@ describe('tree options as lists have them', () => {
     await pointTo({ x: 900, y: 600 });
     await drop();
     expect(shape(roots.value)).toBe(shape(sample()));
+    expect(drops).toHaveLength(0);
     rule.value = 'remove';
     await start(container, 'a2', 'pointer');
     await pointTo({ x: 900, y: 600 });
     await drop();
     expect(shape(roots.value)).toBe('a(a1),b(b1),c');
-    expect(drops).toHaveLength(0);
+    // The tree the nodes leave is told, with the tree they leave behind.
+    expect(drops).toHaveLength(1);
+    expect(drops[0]).toMatchObject({ keys: ['a2'], to: { list: 'tree', index: -1 } });
+    expect(shape(drops[0]!.result.get('tree')!)).toBe('a(a1),b(b1),c');
   });
 
   it("dropOutside: 'placeholder' in indicator mode drops at the last line", async () => {
@@ -836,5 +853,184 @@ describe('tree options take refs and getters', () => {
     expect(rowsOf(container)).toEqual(['a', 'a1', 'a2', 'a2x', 'b', 'b1', 'c']);
     expect(tree().indicator.value).toMatchObject({ key: 'b1', side: 'before', depth: 1, parentKey: 'b' });
     await cancel();
+  });
+});
+
+describe('controlled tree drops', () => {
+  const ids = (nodes: readonly Node[] | undefined) => (nodes ?? []).map((n) => n.id);
+
+  /** Moves c into b (after b1) with the keyboard and drops it. */
+  const nestC = async (container: HTMLElement) => {
+    select();
+    await start(container, 'c', 'keyboard');
+    await press('ArrowRight');
+    await drop();
+  };
+
+  it('onDrop sees the old tree, result a new one; prevented, nothing is written or mutated', async () => {
+    const seen: string[] = [];
+    let result: Node[] = [];
+    const { container, roots } = renderTree({
+      onDrop: (event) => {
+        seen.push(shape(roots.value));
+        result = event.result.get('tree')!;
+        event.preventDefault();
+      },
+    });
+    await settle();
+    const before = roots.value;
+    const [a, b, c] = before as [Node, Node, Node];
+    const bChildren = b.children;
+    await nestC(container);
+    expect(seen).toEqual(['a(a1,a2(a2x)),b(b1),c']);
+    expect(shape(result)).toBe('a(a1,a2(a2x)),b(b1,c)');
+    expect(roots.value).toBe(before);
+    expect(b.children).toBe(bChildren);
+    expect(ids(b.children)).toEqual(['b1']);
+    expect(depthOf(container, 'c')).toBe('0');
+    // Only b, which got new children, is a copy.
+    expect(result[0]).toBe(a);
+    expect(result[1]).not.toBe(b);
+    expect(result[1]!.children![1]).toBe(c);
+  });
+
+  it('the result applied in onDrop renders; withChildren makes the copies', async () => {
+    const copies = new WeakSet<object>();
+    const { container, roots } = renderTree({
+      withChildren: (n, children) => {
+        const copy = { ...n, children };
+        copies.add(copy);
+        return copy;
+      },
+      onDrop: (event) => {
+        event.preventDefault();
+        roots.value = event.result.get('tree')!;
+      },
+    });
+    await settle();
+    const b = roots.value[1]!;
+    await nestC(container);
+    expect(shape(roots.value)).toBe('a(a1,a2(a2x)),b(b1,c)');
+    expect(depthOf(container, 'c')).toBe('1');
+    expect(copies.has(toRaw(roots.value[0]!))).toBe(false);
+    expect(copies.has(toRaw(roots.value[1]!))).toBe(true);
+    expect(ids(b.children)).toEqual(['b1']);
+  });
+
+  it('the default write goes through setChildren after onDrop; the result was built on a copy', async () => {
+    const calls: string[] = [];
+    let original: Node | null = null;
+    const { container, roots } = renderTree({
+      setChildren: (n, children) => {
+        calls.push(`set:${n.id}:${n === original ? 'original' : 'copy'}`);
+        n.children = children;
+      },
+      onDrop: () => void calls.push('onDrop'),
+    });
+    await settle();
+    original = roots.value[1]!;
+    await nestC(container);
+    expect(calls).toEqual(['set:b:copy', 'onDrop', 'set:b:original']);
+    expect(shape(roots.value)).toBe('a(a1,a2(a2x)),b(b1,c)');
+  });
+
+  it('a copy is in the result with its subtree; prevented, the tree stays as it was', async () => {
+    let result: Node[] = [];
+    const { container, roots } = renderTree({
+      group: { name: 'shared', pull: 'clone' },
+      clone: copyOf,
+      onDrop: (event) => {
+        result = event.result.get('tree')!;
+        event.preventDefault();
+      },
+    });
+    await settle();
+    const before = roots.value;
+    await start(container, 'a2', 'pointer');
+    await pointTo({ x: 400, y: centerOf(container, 'c').y - 15 });
+    await drop();
+    expect(shape(result)).toBe('a(a1,a2(a2x)),b(b1),a2+(a2x+),c');
+    expect(roots.value).toBe(before);
+    expect(shape(roots.value)).toBe(shape(sample()));
+    expect(rowsOf(container)).toEqual(['a', 'a1', 'a2', 'a2x', 'b', 'b1', 'c']);
+    // Applied by hand, it renders.
+    roots.value = result;
+    await settle();
+    expect(rowsOf(container)).toEqual(['a', 'a1', 'a2', 'a2x', 'b', 'b1', 'a2+', 'a2x+', 'c']);
+  });
+
+  it('a created node is in the result at its place; prevented, nothing is written', async () => {
+    let result: Node[] = [];
+    const { container, roots } = renderTree(
+      {
+        createItem: () => node('new'),
+        onDrop: (event) => {
+          result = event.result.get('tree')!;
+          event.preventDefault();
+        },
+      },
+      () => [h(Chip)],
+    );
+    await settle();
+    manager.start('chip', { x: 100, y: 20 }, 'pointer');
+    await settle();
+    await pointTo(centerOf(container, 'b'));
+    await drop();
+    expect(shape(result)).toBe('a(a1,a2(a2x)),b(new,b1),c');
+    expect(shape(roots.value)).toBe(shape(sample()));
+    expect(rowsOf(container)).toEqual(['a', 'a1', 'a2', 'a2x', 'b', 'b1', 'c']);
+  });
+
+  it('copies and created nodes into a read-only tree are not written; the result has them', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const store = shallowRef(sample());
+    const results: string[] = [];
+    const { container } = renderTree(
+      {
+        items: computed(() => store.value),
+        group: { name: 'shared', pull: 'clone' },
+        clone: copyOf,
+        createItem: () => node('new'),
+        onDrop: (event) => void results.push(shape(event.result.get('tree')!)),
+      },
+      () => [h(Chip)],
+    );
+    await settle();
+    await start(container, 'c', 'pointer');
+    await pointTo(centerOf(container, 'b'));
+    await drop();
+    manager.start('chip', { x: 100, y: 20 }, 'pointer');
+    await settle();
+    await pointTo(centerOf(container, 'b'));
+    await drop();
+    expect(results).toEqual(['a(a1,a2(a2x)),b(c+,b1),c', 'a(a1,a2(a2x)),b(new,b1),c']);
+    expect(warn).toHaveBeenCalledTimes(2);
+    expect(shape(store.value)).toBe(shape(sample()));
+  });
+
+  it('the VS Code rule: the result moves the lead with the grabbed node inside', async () => {
+    let result: Node[] = [];
+    const { container } = renderTree({
+      onDrop: (event) => {
+        result = event.result.get('tree')!;
+      },
+    });
+    await settle();
+    select('a2', 'a2x');
+    await start(container, 'a2x', 'keyboard');
+    await press('ArrowDown');
+    await drop();
+    expect(shape(result)).toBe('a(a1),b(a2(a2x),b1),c');
+  });
+
+  it('a read-only source is not written: development builds warn', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const store = shallowRef(sample());
+    const { container } = renderTree({ items: computed(() => store.value) });
+    await settle();
+    await nestC(container);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(shape(store.value)).toBe('a(a1,a2(a2x)),b(b1),c');
+    expect(depthOf(container, 'c')).toBe('0');
   });
 });

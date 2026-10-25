@@ -14,7 +14,8 @@
   const { items } = makeSortableList(listRef, {
     id: 'vueuse',
     items: tasks,
-    onDrop: (event) => (lastDrop.value = describeDrop(tasks.value, event.keys[0])),
+    // Before the write: the new order is in `result`.
+    onDrop: (event) => (lastDrop.value = describeDrop(event.result.get(event.to.list) ?? tasks.value, event.keys[0])),
   });
 
   // A number keeps VueUse's offset math O(1); it must equal the real row height,

@@ -6,6 +6,7 @@ import {
   applyTreeMove,
   blockFilter,
   blockHeight,
+  buildTreeMove,
   createFlatTree,
   depthRange,
   findTreeNode,
@@ -24,6 +25,7 @@ import {
   subtreeHeight,
   type DraftPosition,
   type TreeAccessors,
+  type TreeMove,
 } from './tree';
 
 interface Node {
@@ -566,6 +568,87 @@ describe('applyTreeMove with a block', () => {
   it('refuses a parent inside any moved subtree', () => {
     const next = applyTreeMove(sample(), { keys: ['c', 'a'], to: { parentKey: 'a2x', index: 0 } }, accessors);
     expect(shape(next)).toBe(shape(sample()));
+  });
+});
+
+describe('buildTreeMove', () => {
+  const copying = { getKey, getChildren, withChildren: (n: Node, children: Node[]): Node => ({ ...n, children }) };
+  const ids = (nodes: readonly Node[] | undefined) => (nodes ?? []).map(getKey);
+
+  it('builds what applyTreeMove writes, leaving the tree as it is', () => {
+    const moves: TreeMove<Node>[] = [
+      { keys: ['c'], to: { parentKey: null, index: 0 } },
+      { keys: ['a2'], to: { parentKey: 'b', index: 1 } },
+      { keys: ['a1'], to: { parentKey: 'a2', index: 0 } },
+      { keys: ['a2x'], to: { parentKey: null, index: 3 } },
+      { keys: ['a2'], to: null },
+      { keys: ['new'], node: (key) => node(String(key)), to: { parentKey: 'a2', index: 1 } },
+      { keys: ['a2', 'c'], to: { parentKey: 'b', index: 1 } },
+      { keys: ['a2', 'a2x'], to: { parentKey: null, index: 3 } },
+      { keys: ['a1', 'b', 'a2x'], to: null },
+      // Invalid: into a moved subtree.
+      { keys: ['c', 'a'], to: { parentKey: 'a2x', index: 0 } },
+    ];
+    for (const move of moves) {
+      const roots = sample();
+      const before = JSON.stringify(roots);
+      const built = buildTreeMove(roots, move, copying);
+      expect(JSON.stringify(roots)).toBe(before);
+      expect(shape(built)).toBe(shape(applyTreeMove(sample(), move, accessors)));
+      expect(built).not.toBe(roots);
+    }
+  });
+
+  it('copies the nodes on the changed paths and shares the rest', () => {
+    const roots = sample();
+    const [a, b, c] = roots as [Node, Node, Node];
+    const [a1, a2] = a.children as [Node, Node];
+    const built = buildTreeMove(roots, { keys: ['a1'], to: { parentKey: 'a2', index: 0 } }, copying);
+    expect(shape(built)).toBe('a(a2(a1,a2x)),b(b1),c');
+    // a and a2 got new children: copies. The moved node, a2x and the other roots are shared.
+    const nextA = built[0]!;
+    const nextA2 = nextA.children![0]!;
+    expect(nextA).not.toBe(a);
+    expect(nextA2).not.toBe(a2);
+    expect(nextA2.children![0]).toBe(a1);
+    expect(nextA2.children![1]).toBe(a2.children![0]);
+    expect(built[1]).toBe(b);
+    expect(built[2]).toBe(c);
+    // The user's nodes keep their children.
+    expect([ids(a.children), ids(a2.children)]).toEqual([['a1', 'a2'], ['a2x']]);
+  });
+
+  it('copies a moved node whose own children changed, in its new place', () => {
+    // a2x leaves a2, a2 leaves a; a lands deeper, under b: built bottom-up in the new shape.
+    const roots = sample();
+    const built = buildTreeMove(roots, { keys: ['a', 'a2x'], to: { parentKey: 'b', index: 1 } }, copying);
+    expect(shape(built)).toBe('b(b1,a(a1,a2),a2x),c');
+    const movedA = built[0]!.children![1]!;
+    expect(movedA).not.toBe(roots[0]);
+    expect(movedA.children![1]).not.toBe(roots[0]!.children![1]);
+    expect(movedA.children![0]).toBe(roots[0]!.children![0]);
+    expect(shape(roots)).toBe(shape(sample()));
+  });
+
+  it('keeps class instances with withChildren', () => {
+    class TreeNode implements Node {
+      constructor(
+        public id: string,
+        public children?: TreeNode[],
+      ) {}
+      with(children: TreeNode[]) {
+        return new TreeNode(this.id, children);
+      }
+    }
+    const roots = [new TreeNode('a', [new TreeNode('a1'), new TreeNode('a2')]), new TreeNode('b', [])];
+    const built = buildTreeMove(
+      roots,
+      { keys: ['a2'], to: { parentKey: 'b', index: 0 } },
+      { getKey: (n) => n.id, getChildren: (n) => n.children, withChildren: (n, children) => n.with(children) },
+    );
+    expect(shape(built)).toBe('a(a1),b(a2)');
+    expect(built.every((n) => n instanceof TreeNode)).toBe(true);
+    expect(roots[1]!.children).toEqual([]);
   });
 });
 
