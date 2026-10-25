@@ -1,4 +1,4 @@
-import { computed, markRaw, onScopeDispose, watch, watchEffect, type Component } from 'vue';
+import { computed, markRaw, onScopeDispose, unref, watch, watchEffect, type Component } from 'vue';
 import type { DraggableOptions, DraggableReturn, Key, MaybeElementRef } from '../types';
 import type { DraggableEntry } from './manager';
 import { useDnDContext } from './context';
@@ -10,6 +10,8 @@ import { read } from '../utils/read';
 export interface DraggableInternals {
   getItem?: () => unknown;
   getContainer?: () => HTMLElement | null;
+  /** Overlay when the option has none (a sortable item: its list's). */
+  getOverlay?: () => Component | undefined;
 }
 
 /**
@@ -131,7 +133,7 @@ export function createDraggable<TData>(
   const getElement = () => toElement(target);
   /** Handle element; a selector resolves to the first match inside the draggable. */
   const getHandleElement = (): HTMLElement | null => {
-    const handle = options.handle;
+    const handle = read(options.handle);
     if (handle == null) return null;
     if (typeof handle === 'string') return getElement()?.querySelector<HTMLElement>(handle) ?? null;
     return toElement(handle);
@@ -139,13 +141,16 @@ export function createDraggable<TData>(
 
   const entry: DraggableEntry = {
     id: id.value,
-    overlay: toOverlay(options.overlay),
+    getOverlay: () => toOverlay(unref(options.overlay) ?? internals.getOverlay?.()),
     getModifiers: () => read(options.modifiers),
-    activation: options.activation,
+    getActivation: () => read(options.activation),
     canDrag: options.canDrag,
-    keyboard: options.keyboard,
+    getKeyboard: () => read(options.keyboard),
     getElement,
-    getHandle: () => (typeof options.handle === 'string' ? options.handle : getHandleElement()),
+    getHandle: () => {
+      const handle = read(options.handle);
+      return typeof handle === 'string' ? handle : getHandleElement();
+    },
     getFocusTarget: () => getHandleElement() ?? getElement(),
     getData: () => read(options.data),
     getTypes: () => normalizeTypes(read(options.type)),
@@ -182,30 +187,28 @@ export function createDraggable<TData>(
   );
 
   // Attributes go on the focus target (the handle when there is one). One effect, so
-  // moving them to a new target and updating the dynamic ones can't race.
+  // moving them to a new target, updating the dynamic ones and turning them off can't race.
   let attributeTarget: HTMLElement | null = null;
-  if (options.attributes !== false) {
-    const roleDescription = internals.roleDescription ?? 'draggable';
-    watchEffect(
-      () => {
-        const element = getHandleElement() ?? getElement();
-        if (element !== attributeTarget) {
-          if (attributeTarget) releaseAttributes(attributeTarget);
-          attributeTarget = element;
-        }
-        if (!element) return;
-        applyStaticAttributes(element, manager.instructionsId, roleDescription);
-        setOwnAttribute(element, 'aria-disabled', String(entry.isDisabled()));
-        // `aria-pressed` only means something on a button, and only while dragging.
-        if (manager.active.value?.id === id.value && hasButtonRole(element)) {
-          setOwnAttribute(element, 'aria-pressed', 'true');
-        } else {
-          removeOwnAttribute(element, 'aria-pressed');
-        }
-      },
-      { flush: 'post' },
-    );
-  }
+  const roleDescription = internals.roleDescription ?? 'draggable';
+  watchEffect(
+    () => {
+      const element = read(options.attributes) === false ? null : (getHandleElement() ?? getElement());
+      if (element !== attributeTarget) {
+        if (attributeTarget) releaseAttributes(attributeTarget);
+        attributeTarget = element;
+      }
+      if (!element) return;
+      applyStaticAttributes(element, manager.instructionsId, roleDescription);
+      setOwnAttribute(element, 'aria-disabled', String(entry.isDisabled()));
+      // `aria-pressed` only means something on a button, and only while dragging.
+      if (manager.active.value?.id === id.value && hasButtonRole(element)) {
+        setOwnAttribute(element, 'aria-pressed', 'true');
+      } else {
+        removeOwnAttribute(element, 'aria-pressed');
+      }
+    },
+    { flush: 'post' },
+  );
 
   // The selection is keyed by id, so it survives unmounts (virtual lists).
   onScopeDispose(() => {
@@ -216,8 +219,9 @@ export function createDraggable<TData>(
   });
 
   const isDragging = computed(() => manager.active.value?.ids.includes(id.value) ?? false);
+  // The overlay as the drag took it at its start.
   const transform = computed(() =>
-    !entry.overlay && manager.active.value?.id === id.value ? manager.transform.value : null,
+    manager.active.value?.id === id.value && !manager.hasOverlay ? manager.transform.value : null,
   );
   const selected = computed({
     get: () => manager.selection.has(id.value),

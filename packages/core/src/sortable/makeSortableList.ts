@@ -1,16 +1,17 @@
 import {
   computed,
   getCurrentInstance,
-  markRaw,
   onScopeDispose,
   provide,
   shallowRef,
+  unref,
   type Component,
   type InjectionKey,
 } from 'vue';
 import type {
   Key,
   MaybeElementRef,
+  MaybeReadonlyRef,
   Modifier,
   SortableDropEvent,
   SortableListOptions,
@@ -30,7 +31,7 @@ export interface SortableContext {
   /** The list's `getKey`: keys `makeSortableItem({ item })`. */
   getKey: (item: unknown) => Key;
   /** The list's `overlay` component, used when the item has none. */
-  overlay?: Component;
+  getOverlay: () => Component | undefined;
   /** The list's `modifiers`, used when the item has none. */
   getModifiers?: () => Modifier[] | undefined;
 }
@@ -53,7 +54,7 @@ export const provideSortableContext = (
   group: SortableGroup,
   list: ListEntry,
   getKey: (item: never) => Key,
-  overlay: Component | undefined,
+  overlay: MaybeReadonlyRef<Component | undefined>,
   getModifiers?: () => Modifier[] | undefined,
 ): void => {
   if (process.env.NODE_ENV !== 'production') {
@@ -71,7 +72,7 @@ export const provideSortableContext = (
     group,
     list,
     getKey: getKey as (item: unknown) => Key,
-    overlay: overlay && markRaw(overlay),
+    getOverlay: () => unref(overlay),
     getModifiers,
   });
 };
@@ -106,11 +107,11 @@ export function makeSortableList<T>(
     getElement: () => toElement(target),
     getKeys: () => keys.value,
     getItem: (key) => byKey.value.get(key),
-    strategy: () => options.strategy ?? 'vertical',
-    placeholder: () => options.placeholder ?? 'item',
-    animation: () => options.animation ?? manager.props.animation,
+    strategy: () => read(options.strategy) ?? 'vertical',
+    placeholder: () => read(options.placeholder) ?? 'item',
+    animation: () => unref(options.animation) ?? manager.props.animation,
     isDisabled: () => !!read(options.disabled),
-    canSort: () => options.sort !== false,
+    canSort: () => read(options.sort) !== false,
     pull: () => {
       const pull = groupOptions?.pull ?? true;
       if (pull === 'clone' && !options.clone) {
@@ -125,10 +126,10 @@ export function makeSortableList<T>(
       return typeof put === 'function' ? put(context) : put;
     },
     dropOutside: () =>
-      options.dropOutside ?? (options.placeholder === 'indicator' ? 'cancel' : 'placeholder'),
-    behavior: () => options.behavior ?? 'sort',
-    multiple: () => options.multiple ?? 'group',
-    acceptMode: () => options.acceptMode ?? 'all',
+      read(options.dropOutside) ?? (read(options.placeholder) === 'indicator' ? 'cancel' : 'placeholder'),
+    behavior: () => read(options.behavior) ?? 'sort',
+    multiple: () => read(options.multiple) ?? 'group',
+    acceptMode: () => read(options.acceptMode) ?? 'all',
     clone: options.clone
       ? (item) => {
           const copy = options.clone!(item as T);
@@ -148,9 +149,7 @@ export function makeSortableList<T>(
     afterDrop: options.onDrop as ((event: SortableDropEvent) => void) | undefined,
   };
   onScopeDispose(group.addList(entry));
-  if (options.autoScroll !== undefined) {
-    onScopeDispose(manager.registerAutoScroll(entry.getElement, options.autoScroll));
-  }
+  onScopeDispose(manager.registerAutoScroll(entry.getElement, () => read(options.autoScroll)));
 
   const droppable = createDroppable(
     target,

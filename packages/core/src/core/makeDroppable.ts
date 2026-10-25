@@ -34,12 +34,12 @@ export function createDroppable<TData>(
       matchesRule(
         unref(options.accept),
         { active, items: active.items, types: active.items.flatMap((item) => item.type) },
-        options.acceptMode,
+        read(options.acceptMode),
       ));
 
   const entry: DroppableEntry = {
     id: id.value,
-    priority: options.priority ?? 0,
+    getPriority: () => read(options.priority) ?? 0,
     // Lists and trees accept by group rules.
     sortable: !!internals.accepts,
     getElement: () => toElement(target),
