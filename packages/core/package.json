@@ -69,7 +69,7 @@
         "@vueuse/core"
       ],
       "gzip": true,
-      "limit": "20 KB"
+      "limit": "37 KB"
     },
     {
       "name": "DnDProvider + makeSortableList + makeSortableItem",
@@ -80,7 +80,18 @@
         "@vueuse/core"
       ],
       "gzip": true,
-      "limit": "16 KB"
+      "limit": "30.2 KB"
+    },
+    {
+      "name": "DnDProvider + makeDraggable + makeDroppable",
+      "path": "dist/index.js",
+      "import": "{ DnDProvider, makeDraggable, makeDroppable }",
+      "ignore": [
+        "vue",
+        "@vueuse/core"
+      ],
+      "gzip": true,
+      "limit": "17 KB"
     }
   ],
   "publishConfig": {

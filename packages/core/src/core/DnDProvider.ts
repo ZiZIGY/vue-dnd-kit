@@ -35,7 +35,7 @@ import { DragOverlay } from './DragOverlay';
 import { DEFAULT_INSTRUCTIONS, VISUALLY_HIDDEN } from './a11y';
 import { injectDefaultStyles } from './styles';
 
-const LiveRegion = defineComponent({
+const LiveRegion = /* @__PURE__ */ defineComponent({
   name: 'DnDLiveRegion',
   setup() {
     const manager = useDnDContext();
@@ -48,7 +48,7 @@ const LiveRegion = defineComponent({
   },
 });
 
-export const DnDProvider = defineComponent({
+export const DnDProvider = /* @__PURE__ */ defineComponent({
   name: 'DnDProvider',
   props: {
     collision: Function as PropType<CollisionDetection>,

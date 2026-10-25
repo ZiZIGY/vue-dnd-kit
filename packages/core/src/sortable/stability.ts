@@ -5,6 +5,9 @@
  */
 
 import type { Coordinates, Key } from '../types';
+import { distance } from '../animation/layout';
+
+export { distance };
 
 /** Pixels the pointer must travel before a key the slot just passed can trigger again. */
 export const HYSTERESIS = 10;
@@ -20,8 +23,6 @@ export interface Hysteresis {
   /** Pointer position at the move. */
   at: Coordinates;
 }
-
-export const distance = (a: Coordinates, b: Coordinates): number => Math.hypot(a.x - b.x, a.y - b.y);
 
 /** Keys that change index when the item at `from` moves to `to` (same list). */
 export const passedKeys = (keys: readonly Key[], from: number, to: number): Set<Key> => {

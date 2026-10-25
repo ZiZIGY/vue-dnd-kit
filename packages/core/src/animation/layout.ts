@@ -56,6 +56,10 @@ export const intersectRect = (a: Rect, b: Rect): Rect | null => {
   return right > left && bottom > top ? createRect(left, top, right - left, bottom - top) : null;
 };
 
+/** Overlap test: touching edges don't count, a zero-width rect crossing the other does. */
+export const intersects = (a: Rect, b: Rect): boolean =>
+  a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+
 /** Smallest rect containing both. */
 export const unionRect = (a: Rect, b: Rect): Rect => {
   const left = Math.min(a.left, b.left);
@@ -77,6 +81,8 @@ export const getCenter = (rect: Rect): Coordinates => ({
   x: rect.left + rect.width / 2,
   y: rect.top + rect.height / 2,
 });
+
+export const distance = (a: Coordinates, b: Coordinates): number => Math.hypot(a.x - b.x, a.y - b.y);
 
 export const getWindowRect = (): Rect =>
   createRect(0, 0, window.innerWidth, window.innerHeight);

@@ -4,10 +4,10 @@ import type { MultipleMode, OverlayProps } from '../types';
 import { createRect } from '../animation/layout';
 import { DnDProvider } from '../core/DnDProvider';
 import { DragPreview } from '../core/DragPreview';
-import { layoutColumn } from '../core/DragOverlay';
 import { useDnDContext } from '../core/context';
 import type { DnDManager } from '../core/manager';
 import { makeDraggable } from '../core/makeDraggable';
+import { layoutColumn } from './column';
 import { makeSortableItem } from './makeSortableItem';
 import { makeSortableList } from './makeSortableList';
 

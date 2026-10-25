@@ -45,7 +45,7 @@ import {
   resizeAround,
   unionRect,
 } from '../animation/layout';
-import { fadeInPlace, landOverlayItems, runDropAnimation, type OverlayItemLanding } from '../animation/drop';
+import { fadeInPlace, runDropAnimation, type landOverlayItems, type OverlayItemLanding } from '../animation/drop';
 import { createTargetStabilizer, pointerFirst } from './collision';
 import { createMeasurer } from './measure';
 import { defaultAnnouncements } from './a11y';
@@ -106,6 +106,10 @@ export interface OverlayColumn {
   gap: number;
   /** The list's layout animation: the clones gather into the column with it. */
   animation?: LayoutAnimation;
+  /** Renders the column in the default overlay. The sortable layer brings it: plain drags don't bundle it. */
+  preview: Component;
+  /** Lands the column's clones (`overlayItems`) on their slots with the drop. */
+  land: typeof landOverlayItems;
 }
 
 /** Per-container auto-scroll override (e.g. `SortableListOptions.autoScroll`). */
@@ -210,6 +214,11 @@ export function createDnDManager(props: DnDProviderProps) {
   let nesting = new WeakMap<Element, number>();
   /** Pointer of the last target detection. */
   let detectedAt: Coordinates | null = null;
+  /**
+   * Topmost element under the pointer at the last target detection, for auto-scroll;
+   * `null` while a modifier moves the point away from the pointer.
+   */
+  let pointerElement: Element | null = null;
   /** Scroll, resize or an external request since the last frame: detect even if the pointer stood still. */
   let refreshRequested = false;
 
@@ -390,11 +399,9 @@ export function createDnDManager(props: DnDProviderProps) {
    */
   const hitTest = (point: Coordinates, byElement: Map<Element, DroppableEntry>): Key[] => {
     const hits: DroppableEntry[] = [];
-    for (
-      let element = elementFromPoint(point.x, point.y);
-      element;
-      element = parentOf(element)
-    ) {
+    const top = elementFromPoint(point.x, point.y);
+    pointerElement = point.x === raw.x && point.y === raw.y ? top : null;
+    for (let element = top; element; element = parentOf(element)) {
       const entry = byElement.get(element);
       if (entry) hits.push(entry);
     }
@@ -561,6 +568,9 @@ export function createDnDManager(props: DnDProviderProps) {
     refreshRequested = false;
     const offset = applyModifiers(current, { x: raw.x - origin.x, y: raw.y - origin.y });
     const point = { x: origin.x + offset.x, y: origin.y + offset.y };
+    // A modifier moved the point off the pointer (it may hold it while the pointer moves on).
+    if (point.x !== raw.x || point.y !== raw.y) pointerElement = null;
+
     // The target follows the pointer, scrolling and resizing, never a layout shift
     // alone: a frame where none of them changed (a repeated pointermove) does nothing.
     if (!refresh && detectedAt && point.x === detectedAt.x && point.y === detectedAt.y) return;
@@ -761,6 +771,7 @@ export function createDnDManager(props: DnDProviderProps) {
     frame = 0;
     measurer.end();
     detectedAt = null;
+    pointerElement = null;
     if (current.sensor === 'keyboard') restoreFocus(current.id);
     active.value = null;
     over.value = null;
@@ -817,7 +828,8 @@ export function createDnDManager(props: DnDProviderProps) {
       items.push({ element: clone, from: getRect(clone), to: visible ? to : null });
     }
     fades = fadeInPlace(props.dropAnimation, resting);
-    return landOverlayItems(props.dropAnimation, items, box);
+    // Clones exist only in the sortable layer's column.
+    return overlayColumn.value?.land(props.dropAnimation, items, box) ?? Promise.resolve();
   };
 
   /** Plays the drop or return animation, then ends the session. */
@@ -990,6 +1002,11 @@ export function createDnDManager(props: DnDProviderProps) {
     getDroppables: () => droppables.values(),
     /** Pointer position as the sensor reported it, before modifiers. */
     getRawPointer: (): Coordinates => raw,
+    /**
+     * Topmost element under the pointer at the last target detection (at most a frame
+     * old); `null` when unknown, e.g. while a modifier moves the point off the pointer.
+     */
+    getPointerElement: (): Element | null => pointerElement,
     /** The overlay box for a drag offset, as the overlay, collision and modifiers see it. */
     getOverlayRect,
     autoScrollEntries,
