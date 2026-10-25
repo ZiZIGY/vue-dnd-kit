@@ -75,9 +75,17 @@ const projectEdges = (
     if (next) return next.index;
     return last.index === length - 1 ? length : null;
   }
-  // Same list, pointer in a gap or beside the items: keep the position. Moving to
-  // the nearest edge here is what made v2 items "teleport" on lateral drift.
-  return null;
+  // Same list, pointer in the gap between two items: it is past the center of both,
+  // so the slot goes between them. A frame can jump from the far half of an item
+  // straight into the gap beyond it (fast swipes, coalesced input), which must not
+  // leave the slot an item behind. Beyond mounted items (virtual lists) the position
+  // stays: moving to the nearest edge is what made v2 items "teleport".
+  const after = items.findIndex((item) => p < item.rect[start]);
+  const next = items[after];
+  const previous = items[after - 1];
+  if (!next || !previous || next.index === activeIndex || previous.index === activeIndex) return null;
+  const index = next.index > activeIndex ? next.index - 1 : next.index;
+  return index === activeIndex ? null : index;
 };
 
 /** Mounted items of the block holding the slot (the slot and its `side` members), in draft order. */
