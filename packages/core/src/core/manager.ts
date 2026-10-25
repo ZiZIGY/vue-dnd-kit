@@ -27,6 +27,7 @@ import type {
   DragMode,
   DragSource,
   Key,
+  LayoutAnimation,
   Over,
   Rect,
   SensorType,
@@ -40,7 +41,7 @@ import {
   getWindowRect,
   unionRect,
 } from '../animation/layout';
-import { runDropAnimation } from '../animation/drop';
+import { fadeInPlace, landOverlayItems, runDropAnimation, type OverlayItemLanding } from '../animation/drop';
 import { createTargetStabilizer, pointerFirst } from './collision';
 import { createMeasurer } from './measure';
 import { defaultAnnouncements } from './a11y';
@@ -83,6 +84,24 @@ export interface DroppableEntry {
   onDrop?(event: DnDEvent): void;
 }
 
+/** A clone taken at pickup and the rect of its source then (`DragPreview`). */
+export interface PreviewSource {
+  element: HTMLElement;
+  rect: Rect;
+}
+
+/**
+ * Multi-drag layout of the default overlay, set by the sortable layer: every dragged id
+ * in drop order, along `axis`, `gap` apart.
+ */
+export interface OverlayColumn {
+  ids: Key[];
+  axis: 'x' | 'y';
+  gap: number;
+  /** The list's layout animation: the clones gather into the column with it. */
+  animation?: LayoutAnimation;
+}
+
 /** Per-container auto-scroll override (e.g. `SortableListOptions.autoScroll`). */
 export interface AutoScrollEntry {
   getElement(): Element | null;
@@ -95,6 +114,15 @@ type MonitorHandler = Exclude<keyof DnDMonitor, 'onBeforeDrop' | 'getKeyboardCoo
 const owners = new WeakMap<Element, object>();
 
 const OVER_ANNOUNCE_DELAY = 500;
+
+/**
+ * Most items cloned at pickup: the grabbed one and the others next to it in drop order.
+ * Cloning reads computed styles, the most expensive part of a pickup, and a column of
+ * more clones covers most of the screen; the overlay counts the rest instead.
+ */
+const MAX_PREVIEWS = 5;
+
+const NO_LANDINGS: ReadonlyMap<Key, Key> = new Map();
 
 export type DnDManager = ReturnType<typeof createDnDManager>;
 
@@ -116,6 +144,16 @@ export function createDnDManager(props: DnDProviderProps) {
   const mode = shallowRef<DragMode>('move');
   /** Key whose element the overlay lands on, when it isn't the active id (copies, external items). */
   const landingKey = shallowRef<Key | null>(null);
+  /**
+   * Multi-drag, set by the sortable layer: slot key → id of the dragged item (other than
+   * the active one) that lands there. While dragging: the placeholders of a `'group'`
+   * block; after the commit: where each accepted item went (copies included).
+   */
+  const landings = shallowRef<ReadonlyMap<Key, Key>>(NO_LANDINGS);
+  /** Multi-drag layout of the default overlay; `null`: the active item with a count. */
+  const overlayColumn = shallowRef<OverlayColumn | null>(null);
+  /** Clones of the other items in the default overlay's column, by id: each lands on its own slot. */
+  const overlayItems = new Map<Key, HTMLElement>();
 
   const draggables = new Map<Key, DraggableEntry>();
   const droppables = new Map<Key, DroppableEntry>();
@@ -133,8 +171,12 @@ export function createDnDManager(props: DnDProviderProps) {
   let raw: Coordinates = { x: 0, y: 0 };
   let containerRect: Rect | null = null;
   let frame = 0;
-  let preview: HTMLElement | null = null;
+  /** Clones taken at pickup by id (`DragPreview`), and the ids that have one, in drop order. */
+  let previews = new Map<Key, PreviewSource>();
+  let previewIds: Key[] = [];
   let previewEnabled = false;
+  /** Fades of items without a clone, kept until their placeholder marks are gone. */
+  let fades: Animation[] = [];
   /** Overlay component of the drag, taken at start: the source may unmount mid-drag. */
   let overlayComponent: Component | null = null;
   let restoreDocument: (() => void) | null = null;
@@ -527,6 +569,32 @@ export function createDnDManager(props: DnDProviderProps) {
     if (active.value) active.value = { ...active.value, ...patch };
   };
 
+  const takePreview = (id: Key): PreviewSource | null => {
+    const entry = draggables.get(id);
+    const element = entry?.getElement();
+    if (!entry || !element?.isConnected) return null;
+    // Sortable items (they have a container) stay opaque: their background is often the list's.
+    return { element: clonePreview(element, { opaque: !!entry.getContainer }), rect: getRect(element) };
+  };
+
+  /**
+   * Clones of the other dragged items, next to the active one in drop order (the overlay
+   * column's order, else `ids`). Runs right after `onDragStart`: the sortable layer has
+   * set the order, and the DOM hasn't re-rendered yet.
+   */
+  const takePreviews = (current: Active) => {
+    const order = overlayColumn.value?.ids ?? current.ids;
+    const at = Math.max(order.indexOf(current.id), 0);
+    const from = Math.max(0, Math.min(at - ((MAX_PREVIEWS - 1) >> 1), order.length - MAX_PREVIEWS));
+    const ids = order.slice(from, from + MAX_PREVIEWS);
+    for (const id of ids) {
+      if (previews.has(id)) continue;
+      const preview = takePreview(id);
+      if (preview) previews.set(id, preview);
+    }
+    previewIds = ids.filter((id) => previews.has(id));
+  };
+
   const start = (id: Key, coordinates: Coordinates, sensor: SensorType): boolean => {
     if (status.value === 'dragging' || status.value === 'dropping' || status.value === 'selecting') {
       return false;
@@ -543,9 +611,14 @@ export function createDnDManager(props: DnDProviderProps) {
     const overlay = entry.overlay;
     previewEnabled = overlay !== false;
     overlayComponent = typeof overlay === 'boolean' ? null : overlay;
-    // Taken synchronously, before the placeholder re-renders; a component never needs it.
-    // Sortable items (they have a container) stay opaque: their background is often the list's.
-    preview = overlay === true ? clonePreview(element, { opaque: !!entry.getContainer }) : null;
+    // Taken synchronously, before the placeholder re-renders. Overlay components get it
+    // too: they may show it (`DragPreview`).
+    const preview = previewEnabled ? takePreview(id) : null;
+    previews = new Map(preview ? [[id, preview]] : []);
+    previewIds = [];
+    overlayColumn.value = null;
+    landings.value = NO_LANDINGS;
+    overlayItems.clear();
     active.value = {
       id,
       ids,
@@ -578,6 +651,7 @@ export function createDnDManager(props: DnDProviderProps) {
 
     const event = createEvent();
     emit('onDragStart', event);
+    if (previewEnabled && active.value) takePreviews(active.value);
     announce('onDragStart', event);
     runFrame();
     return true;
@@ -629,12 +703,51 @@ export function createDnDManager(props: DnDProviderProps) {
     fitSize.value = null;
     mode.value = 'move';
     landingKey.value = null;
+    landings.value = NO_LANDINGS;
+    overlayColumn.value = null;
+    overlayItems.clear();
     activationProgress.value = 0;
-    preview = null;
+    previews = new Map();
+    previewIds = [];
     previewEnabled = false;
     overlayComponent = null;
     containerRect = null;
     status.value = 'idle';
+    // Faded-in items keep full opacity until their placeholder marks are gone (post-flush).
+    const faded = fades;
+    fades = [];
+    if (faded.length) void nextTick(() => faded.forEach((animation) => animation.cancel()));
+  };
+
+  /**
+   * Multi-drag: the default overlay's clones of the other items land on their own slots
+   * with the box; items without a clone (past the cap, custom overlays) fade in where
+   * they are, instead of popping to full opacity when the drop ends.
+   */
+  const landItems = (current: Active, box: { from: Rect; to: Rect | null }): Promise<void> => {
+    if (current.ids.length < 2) return Promise.resolve();
+    const slotOf = new Map<Key, Key>();
+    for (const [slot, id] of landings.value) slotOf.set(id, slot);
+    const elementOf = (id: Key) => {
+      const element = draggables.get(slotOf.get(id) ?? id)?.getElement();
+      return element?.isConnected ? element : null;
+    };
+    const items: OverlayItemLanding[] = [];
+    const resting: HTMLElement[] = [];
+    for (const id of current.ids) {
+      if (id === current.id) continue;
+      const clone = overlayItems.get(id);
+      const target = elementOf(id);
+      if (!clone?.isConnected) {
+        if (target) resting.push(target);
+        continue;
+      }
+      const to = target ? measurer.measure(target) : null;
+      const visible = !!to && to.width > 0 && !!measurer.measureVisible(target!);
+      items.push({ element: clone, from: getRect(clone), to: visible ? to : null });
+    }
+    fades = fadeInPlace(props.dropAnimation, resting);
+    return landOverlayItems(props.dropAnimation, items, box);
   };
 
   /** Plays the drop or return animation, then ends the session. */
@@ -663,13 +776,12 @@ export function createDnDManager(props: DnDProviderProps) {
       // Fly only to a slot that can be seen: virtualizers keep overscan rows mounted
       // outside the scroller, and the slot may be scrolled away. Otherwise fade out.
       const visible = !!to && to.width > 0 && !!measurer.measureVisible(target!);
-      await runDropAnimation(props.dropAnimation, {
-        overlay,
-        from: getRect(overlay),
-        to: visible ? to : null,
-        reason,
-        active: current,
-      });
+      const from = getRect(overlay);
+      const landing = visible ? to : null;
+      await Promise.all([
+        runDropAnimation(props.dropAnimation, { overlay, from, to: landing, reason, active: current }),
+        landItems(current, { from, to: landing }),
+      ]);
       if (id !== session) return;
     }
     settle(current);
@@ -768,12 +880,18 @@ export function createDnDManager(props: DnDProviderProps) {
     selection,
     mode,
     landingKey,
+    landings,
+    overlayColumn,
+    overlayItems,
     instructionsId: '',
     monitors,
     activationAborts,
     selectionAborts,
-    get preview() {
-      return previewEnabled ? preview : null;
+    /** Clone of a dragged item taken at pickup (`DragPreview`); none past the cap or for unrendered items. */
+    getPreview: (id: Key): PreviewSource | undefined => previews.get(id),
+    /** Ids that have a clone, in drop order: what the default overlay's column shows. */
+    get previewIds(): readonly Key[] {
+      return previewIds;
     },
     get hasOverlay() {
       return previewEnabled;

@@ -6,6 +6,10 @@
  * The active slot is a key in the drafts. Usually it is the active item itself; when
  * copying it is the item's copy, and for a plain draggable from outside it is the
  * item `createItem` made. Projection, commit and FLIP only ever deal with that key.
+ *
+ * Multi-drag `'group'`: the other dragged items travel with the slot as a block,
+ * contiguous in the draft and in drop order. Projection and keyboard moves count the
+ * block once (`viewOf`), and every move takes the whole block along.
  */
 
 import { effectScope, nextTick, shallowRef, watch, type ShallowRef } from 'vue';
@@ -88,7 +92,7 @@ export interface ListEntry {
   // Optional features; lists that don't implement them get the defaults.
   /** Default `'sort'`. */
   behavior?(): SortableBehavior;
-  /** Default `'stack'`. */
+  /** Default `'stack'` (trees); sortable lists default to `'group'`. */
   multiple?(): MultipleMode;
   /** Default `'all'`. */
   acceptMode?(): AcceptMode;
@@ -148,6 +152,13 @@ interface Session {
   sources: Map<Key, { list: Key; index: number }>;
   /** Multi-drag `'stack'`: the others are collapsed out of the drafts. */
   stacked: boolean;
+  /** Multi-drag `'group'`: the others travel with the slot in the drafts. */
+  grouped: boolean;
+  /**
+   * Keys travelling with the slot, in drop order, the slot included: contiguous in the
+   * draft of `list`. The slot alone unless `grouped`.
+   */
+  block: Key[];
   /** Move-mode drafts at drag start; swaps and copy toggles rebuild from them. */
   base: Map<Key, Key[]>;
   external: boolean;
@@ -209,6 +220,10 @@ const placeAt = (keys: Key[], slot: Key, index: number): Key[] => {
   return result;
 };
 
+/** `view` (a draft counting the block once, as `slot`) with the whole block in the slot's place. */
+const expand = (view: Key[], slot: Key, block: Key[]): Key[] =>
+  block.length > 1 ? view.flatMap((key) => (key === slot ? block : [key])) : view;
+
 const sameIndicator = (a: SortableIndicator | null, b: SortableIndicator | null) =>
   a === b ||
   (!!a && !!b && a.list === b.list && a.index === b.index && a.key === b.key && a.side === b.side);
@@ -225,6 +240,10 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   const scope = effectScope(true);
   /** Others of a finished `'stack'` drag: they fly out of the overlay into their slots. */
   let returning: { keys: Set<Key>; from: Rect } | null = null;
+  /** The next FLIP pass is the pickup of a `'group'` drag: the others travel into the block, from other lists too. */
+  let gathering = false;
+  /** List whose strategy and gap the overlay column follows. */
+  let columnList: Key | null = null;
   /** Text for the end or cancel announcement, computed while the session still existed. */
   let announced: { key: Key; text: string | undefined } | null = null;
   /** Last position announced (or picked up at), so an unchanged position isn't spoken again. */
@@ -287,6 +306,10 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const landing = manager.landingKey.value ?? manager.active.value?.id;
     const back = returning;
     returning = null;
+    const pickup = gathering;
+    gathering = false;
+    // The overlay carries a clone of the item landing on `key` (multi-drag column).
+    const carried = (key: Key) => key === landing || manager.overlayItems.has(manager.landings.value.get(key) ?? key);
     for (const [key, getElement] of items) {
       const before = snapshot.get(key);
       // Far from the viewport: it jumps instead of animating.
@@ -311,7 +334,9 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       }
       // The active slot entering another list was recreated: sliding it in from the
       // old list would be clipped by the new scroller, and the overlay shows it anyway.
-      if (key === landing && previous !== element) continue;
+      // The same goes for the items whose clones the overlay carries, except at pickup,
+      // where the others visibly travel into the block.
+      if (previous !== element && !pickup && carried(key)) continue;
       const entries = byList.get(list) ?? [];
       entries.push({ key, element, first });
       byList.set(list, entries);
@@ -425,18 +450,103 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     // Swap is a single-item exchange; multi-drag falls back to sorting (rfcs/0001-v3.md §6, §14 item 6).
     list?.behavior?.() === 'swap' && current.keys.length === 1 && !current.external && !current.copying;
 
-  /** Mirrors the session into the manager: overlay `mode` and where the overlay lands. */
+  /** Dragged key a slot stands for: the original of a copy, otherwise the key itself. */
+  const originalOf = (current: Session, key: Key): Key => {
+    if (current.copying) for (const [original, copy] of current.copies) if (copy === key) return original;
+    return key;
+  };
+
+  /** Sets where the other dragged items land (slot → dragged id), keeping the map when nothing changed. */
+  const setLandings = (entries: Array<[Key, Key]>) => {
+    const previous = manager.landings.value;
+    if (previous.size === entries.length && entries.every(([slot, id]) => previous.get(slot) === id)) return;
+    manager.landings.value = new Map(entries);
+  };
+
+  /** Spacing between items of `list` along `axis`, from its CSS `gap`. */
+  const gapOf = (list: ListEntry, axis: 'x' | 'y'): number => {
+    const element = list.getElement();
+    if (!element) return 0;
+    const style = getComputedStyle(element);
+    return parseFloat(axis === 'y' ? style.rowGap : style.columnGap) || 0;
+  };
+
+  /**
+   * The default overlay of a multi-drag that isn't `'stack'`: every item in drop order,
+   * in a column along the list holding the slot (a row in horizontal lists and grids:
+   * consecutive grid items sit side by side), with that list's gap.
+   */
+  const syncColumn = (current: Session) => {
+    if (current.stacked || current.keys.length < 2) return;
+    const list = lists.get(current.list ?? current.origin.list ?? '');
+    if (!list || list.id === columnList) return;
+    columnList = list.id;
+    const axis = list.strategy() === 'vertical' ? 'y' : 'x';
+    manager.overlayColumn.value = { ids: current.keys, axis, gap: gapOf(list, axis), animation: list.animation() };
+  };
+
+  /** Mirrors the session into the manager: overlay `mode`, where the overlay lands, the placeholders of a block. */
   const syncManager = () => {
     const current = session.value;
     if (!current) return;
     const placed = current.list != null;
     manager.landingKey.value = placed && current.slot !== current.activeKey ? current.slot : null;
+    setLandings(
+      placed && current.grouped
+        ? current.block.filter((key) => key !== current.slot).map((key) => [key, originalOf(current, key)])
+        : [],
+    );
+    syncColumn(current);
     const list = placed ? lists.get(current.list!) : undefined;
     let mode: DragMode = 'move';
     if (current.external) mode = placed ? 'insert' : 'move';
     else if (current.copying) mode = 'copy';
     else if (isSwapping(current, list)) mode = 'swap';
     manager.mode.value = mode;
+  };
+
+  /**
+   * What travels with the slot into `target`: the slot alone, or in multi-drag `'group'`
+   * every dragged key in drop order. A list taking only some of them (`group.put` with
+   * `acceptMode: 'some'`) gets those, if the active item is one: the rest stay where
+   * they started, as the drop would leave them. Copies when copying.
+   */
+  const blockFor = (current: Session, target: ListEntry | undefined): Key[] => {
+    if (!current.grouped) return [current.slot];
+    let keys = current.keys;
+    if (target) {
+      const { accepted } = partition(target, current);
+      if (accepted.length < keys.length && accepted.includes(current.activeKey)) keys = accepted;
+    }
+    if (!current.copying) return keys;
+    return keys.map((key) => copyOf(current, key)).filter((key): key is Key => key != null);
+  };
+
+  /** `list`'s draft as projection and keyboard moves count it: a block once, as the slot. */
+  const viewOf = (list: ListEntry, current: Session): Key[] => {
+    const keys = keysOf(list);
+    if (current.block.length < 2 || current.list !== list.id) return keys;
+    const members = new Set(current.block);
+    return keys.filter((key) => key === current.slot || !members.has(key));
+  };
+
+  /**
+   * Inserts the dragged `key` into `keys` (a draft of its source `list`) where it started:
+   * after its nearest original predecessor that is there and isn't in `moving`.
+   */
+  const putBack = (keys: Key[], list: ListEntry, key: Key, index: number, moving: ReadonlySet<Key>) => {
+    const original = list.getKeys();
+    let at = 0;
+    for (let i = index - 1; i >= 0; i--) {
+      const previous = original[i]!;
+      if (moving.has(previous)) continue;
+      const position = keys.indexOf(previous);
+      if (position !== -1) {
+        at = position + 1;
+        break;
+      }
+    }
+    keys.splice(at, 0, key);
   };
 
   const start = (event: DnDEvent) => {
@@ -480,6 +590,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         base.set(list.id, list.draft.value);
       }
       spokenSpot = null;
+      columnList = null;
       session.value = {
         ...common,
         keys: [activeKey],
@@ -488,6 +599,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         list: null,
         others: new Set(),
         stacked: false,
+        grouped: false,
+        block: [activeKey],
         base,
         external: true,
         copying: false,
@@ -517,14 +630,16 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     }
 
     const others = new Set(keys.filter((key) => key !== activeKey));
-    const stacked =
-      others.size > 0 &&
-      (originList.multiple?.() ?? 'stack') === 'stack' &&
-      originList.placeholder() === 'item';
+    // Indicator lists don't move: their others stay in place whatever the mode.
+    const multiple = others.size > 0 && originList.placeholder() === 'item' ? (originList.multiple?.() ?? 'stack') : null;
+    const stacked = multiple === 'stack';
+    const grouped = multiple === 'group';
     const base = new Map<Key, Key[]>();
     for (const list of lists.values()) {
       const source = list.getKeys();
-      const draft = stacked ? source.filter((key) => !others.has(key)) : [...source];
+      let draft = stacked || grouped ? source.filter((key) => !others.has(key)) : [...source];
+      // The block forms around the active item: the others leave their places and join it in drop order.
+      if (grouped && list === originList) draft = expand(draft, activeKey, keys);
       base.set(list.id, list.prepareDraft?.(draft, { activeKey, keys }) ?? draft);
     }
     const current: Session = {
@@ -535,13 +650,19 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       list: origin.list,
       others,
       stacked,
+      grouped,
+      block: grouped ? keys : [activeKey],
       base,
       external: false,
       copying: false,
     };
     session.value = current;
+    columnList = null;
     // The pickup announcement names this position: the first target of the drag doesn't repeat it.
-    spokenSpot = spotKey({ list: origin.list, index: origin.index, length: originList.getKeys().length });
+    const formed = base.get(origin.list)!;
+    spokenSpot = grouped
+      ? spotKey({ list: origin.list, index: formed.indexOf(keys[0]!), length: formed.length })
+      : spotKey({ list: origin.list, index: origin.index, length: originList.getKeys().length });
 
     const copy = wantsCopy(current) ? copyOf(current, activeKey) : null;
     if (copy != null) {
@@ -549,6 +670,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       current.copying = true;
       current.slot = copy;
       current.list = null;
+      current.block = blockFor(current, undefined);
       for (const list of lists.values()) list.draft.value = copyBase(list, current);
     } else {
       if (stacked) {
@@ -557,6 +679,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
           .filter((element): element is HTMLElement => !!element?.isConnected);
         collapseIntoOverlay(elements, event.active.rect, originList.animation());
       }
+      gathering = grouped;
       for (const list of lists.values()) list.draft.value = base.get(list.id)!;
     }
     syncManager();
@@ -569,27 +692,66 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     return list.prepareDraft?.(draft, { activeKey: current.activeKey, keys: current.keys }) ?? draft;
   };
 
-  /** Moves the slot to `index` of `target`'s draft, removing it from the list that held it. */
+  /**
+   * Moves the slot to `index` of `target`'s draft (counted as `viewOf` counts it),
+   * removing it from the list that held it. A block moves along as one unit.
+   */
   const moveActive = (target: ListEntry, index: number, pointer: Coordinates | null) => {
     const current = session.value!;
     const slot = current.slot;
     const from = current.list == null ? undefined : lists.get(current.list);
     let passed: Set<Key>;
     if (from === target) {
-      const keys = [...keysOf(from)];
-      const position = keys.indexOf(slot);
+      const view = [...viewOf(from, current)];
+      const position = view.indexOf(slot);
       if (position === -1 || position === index) return;
-      passed = passedKeys(keys, position, index);
-      keys.splice(position, 1);
-      keys.splice(index, 0, slot);
-      from.draft.value = keys;
+      passed = passedKeys(view, position, index);
+      view.splice(position, 1);
+      view.splice(index, 0, slot);
+      from.draft.value = expand(view, slot, current.block);
     } else {
-      if (from) from.draft.value = keysOf(from).filter((key) => key !== slot);
+      const old = current.block;
+      const block = blockFor(current, target);
+      const leaving = new Set(old);
+      // Keys put back while another list didn't take them join the block again.
+      const joining = new Set(block.filter((key) => !leaving.has(key)));
+      const target0 = keysOf(target);
+      // The block goes before the key at `index`; keys about to join don't count.
+      let anchor: Key | null = null;
+      for (let i = Math.min(index, target0.length); i < target0.length; i++) {
+        if (!joining.has(target0[i]!)) {
+          anchor = target0[i]!;
+          break;
+        }
+      }
+      if (from) from.draft.value = keysOf(from).filter((key) => !leaving.has(key));
+      if (joining.size) {
+        for (const list of lists.values()) {
+          const keys = keysOf(list);
+          if (keys.some((key) => joining.has(key))) list.draft.value = keys.filter((key) => !joining.has(key));
+        }
+      }
+      if (!current.copying) {
+        // Keys this list doesn't take go back to where they started (copies just leave).
+        const moving = new Set(block);
+        const dropped = old
+          .filter((key) => !moving.has(key))
+          .map((key) => ({ key, source: current.sources.get(key) }))
+          .sort((a, b) => (a.source?.index ?? 0) - (b.source?.index ?? 0));
+        for (const { key, source } of dropped) {
+          const list = source && lists.get(source.list);
+          if (!list) continue;
+          const keys = [...keysOf(list)];
+          putBack(keys, list, key, source.index, moving);
+          list.draft.value = keys;
+        }
+      }
       const keys = [...keysOf(target)];
-      const at = Math.min(index, keys.length);
+      const at = anchor == null ? keys.length : keys.indexOf(anchor);
       passed = neighbourKeys(keys, at);
-      keys.splice(at, 0, slot);
+      keys.splice(at, 0, ...block);
       target.draft.value = keys;
+      current.block = block;
       current.list = target.id;
     }
     current.hysteresis = pointer
@@ -601,38 +763,71 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     manager.announce('onDragOver');
   };
 
-  /** Takes the slot out of every draft (a copy over its palette, an external item leaving). */
+  /** Takes the slot (and its block) out of every draft (a copy over its palette, an external item leaving). */
   const removeSlot = () => {
     const current = session.value!;
     const list = current.list == null ? undefined : lists.get(current.list);
     if (!list) return;
-    list.draft.value = keysOf(list).filter((key) => key !== current.slot);
+    const block = new Set(current.block);
+    list.draft.value = keysOf(list).filter((key) => !block.has(key));
     current.list = null;
     syncManager();
     bump();
   };
 
-  /** Over a list that can't be sorted: the active item goes back to where it started. */
+  /** Over a list that can't be sorted: the active item (and its block) goes back to where it started. */
   const returnToOrigin = (pointer: Coordinates | null) => {
     const current = session.value!;
     if (current.slot !== current.activeKey) return removeSlot();
     const origin = current.origin.list == null ? undefined : lists.get(current.origin.list);
-    const index = origin ? (current.base.get(origin.id)?.indexOf(current.activeKey) ?? -1) : -1;
-    if (origin && index >= 0) moveActive(origin, index, pointer);
+    const base = origin && current.base.get(origin.id);
+    const start = base ? base.indexOf(current.activeKey) : -1;
+    if (!origin || !base || start < 0) return;
+    const members = new Set(current.grouped ? current.keys : []);
+    members.delete(current.activeKey);
+    if (current.list === origin.id) {
+      // Counted as `viewOf` counts it: the block once.
+      moveActive(origin, base.slice(0, start).filter((key) => !members.has(key)).length, pointer);
+      return;
+    }
+    // From another list: before the key that followed the block at the start.
+    const anchor = base.slice(start + 1).find((key) => !members.has(key));
+    const keys = keysOf(origin);
+    const index = anchor === undefined ? -1 : keys.indexOf(anchor);
+    moveActive(origin, index === -1 ? keys.length : index, pointer);
   };
 
+  /**
+   * Mounted items of `list` with layout rects, in draft order. The block holding the
+   * slot counts once (see `viewOf`): its other members share the slot's index and are
+   * tagged with their side of it.
+   */
   const collect = (list: ListEntry): ProjectionItem[] => {
     const indices = indexMap(keysOf(list));
-    const result: ProjectionItem[] = [];
+    const current = session.value;
+    const block = current && current.block.length > 1 && current.list === list.id ? current.block : null;
+    const first = block ? (indices.get(block[0]!) ?? -1) : -1;
+    const slot = block ? (indices.get(current!.slot) ?? -1) : -1;
+    const found: Array<[number, ProjectionItem]> = [];
     for (const [key, getElement] of items) {
-      const index = indices.get(key);
-      if (index === undefined) continue;
+      const at = indices.get(key);
+      if (at === undefined) continue;
       const element = getElement();
       // Clipped to the visible area; rows fully clipped (overscan) can't be targeted.
       const rect = element?.isConnected ? manager.measureVisible(element) : null;
-      if (rect) result.push({ key, index, rect });
+      if (!rect) continue;
+      let index = at;
+      let side: -1 | 1 | undefined;
+      if (first !== -1 && at >= first) {
+        if (at >= first + block!.length) index = at - block!.length + 1;
+        else {
+          index = first;
+          if (at !== slot) side = at < slot ? -1 : 1;
+        }
+      }
+      found.push([at, side ? { key, index, rect, side } : { key, index, rect }]);
     }
-    return result.sort((a, b) => a.index - b.index);
+    return found.sort((a, b) => a[0] - b[0]).map(([, item]) => item);
   };
 
   // ─── Indicator ───────────────────────────────────────────────────────────────
@@ -721,7 +916,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
   /**
    * Switches between moving and copying mid-drag (copy modifier pressed or released).
-   * The new slot takes the old slot's place: after the nearest key that stays put.
+   * The new slot (and block) takes the old one's place: after the nearest key that stays put.
    */
   const switchCopy = (copying: boolean) => {
     const current = session.value!;
@@ -732,7 +927,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     if (from) {
       const keys = keysOf(from);
       let after: Key | null = null;
-      for (let i = keys.indexOf(current.slot) - 1; i >= 0; i--) {
+      for (let i = keys.indexOf(current.block[0]!) - 1; i >= 0; i--) {
         const key = keys[i]!;
         if (key !== current.activeKey && !current.others.has(key)) {
           after = key;
@@ -741,19 +936,25 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       }
       anchor = { list: from, after };
     }
-    for (const list of lists.values()) {
-      let draft = copying ? copyBase(list, current) : (current.base.get(list.id) ?? [...list.getKeys()]);
-      if (!copying && anchor) draft = draft.filter((key) => key !== slot);
-      list.draft.value = draft;
-    }
     current.copying = copying;
     current.slot = slot;
     current.swap = null;
     current.hysteresis = null;
+    const origin = current.origin.list == null ? undefined : lists.get(current.origin.list);
+    current.block = blockFor(current, anchor?.list ?? (copying ? undefined : origin));
+    const moving = new Set(current.block);
+    for (const list of lists.values()) {
+      let draft: Key[];
+      if (copying) draft = copyBase(list, current);
+      else if (!anchor) draft = current.base.get(list.id) ?? [...list.getKeys()];
+      // A block's keys leave their sources; the ones the list doesn't take stay there.
+      else draft = (current.grouped ? list.getKeys() : (current.base.get(list.id) ?? list.getKeys())).filter((key) => !moving.has(key));
+      list.draft.value = draft;
+    }
     if (anchor) {
       const keys = [...keysOf(anchor.list)];
       const at = anchor.after == null ? 0 : keys.indexOf(anchor.after) + 1;
-      keys.splice(at, 0, slot);
+      keys.splice(at, 0, ...current.block);
       anchor.list.draft.value = keys;
       current.list = anchor.list.id;
     } else {
@@ -851,9 +1052,9 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       if (sameList && !target.project) return afterMove(current, event);
     }
 
-    const keys = keysOf(target);
+    const keys = viewOf(target, current);
     const projectionItems = collect(target);
-    const activeIndex = sameList ? indexOf(target, current.slot) : -1;
+    const activeIndex = sameList ? keys.indexOf(current.slot) : -1;
     let index: number | null;
     let trigger: Key | null = null;
     if (target.project) {
@@ -913,33 +1114,26 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     if (current.external) insert = moved.length ? [slot] : [];
     else if (current.copying) insert = moved.map((key) => copyOf(current, key)).filter((key): key is Key => key != null);
     else insert = moved;
-    // Moved keys leave their places (in 'gaps' mode and indicator lists they are still in the drafts).
-    const strip = moving ? new Set(moved.filter((key) => key !== slot)) : new Set<Key>();
+    // Everything but the slot leaves its place: the rest of a block, and when moving every
+    // dragged key (in 'gaps' mode and indicator lists they are still where they started).
+    // The slot then makes room for what is inserted; rejected keys go back below.
+    const strip = new Set(current.block);
+    if (moving) for (const key of current.keys) strip.add(key);
+    strip.delete(slot);
     const back = moving
       ? rejected
           .map((key) => ({ key, source: current.sources.get(key)! }))
           .sort((a, b) => a.source.index - b.source.index)
       : [];
+    const settled = new Set(moved);
 
     const next = new Map<ListEntry, Key[]>();
     for (const [list, draft] of drafts) {
       let keys = draft.filter((key) => !strip.has(key));
       keys = list === target ? keys.flatMap((key) => (key === slot ? insert : [key])) : keys.filter((key) => key !== slot);
       // Rejected keys fly back to where they started: after their nearest original
-      // predecessor that is still in the list (other keys may have left it).
-      for (const { key, source } of back) {
-        if (source.list !== list.id || keys.includes(key)) continue;
-        const original = list.getKeys();
-        let at = 0;
-        for (let index = source.index - 1; index >= 0; index--) {
-          const position = keys.indexOf(original[index]!);
-          if (position !== -1) {
-            at = position + 1;
-            break;
-          }
-        }
-        keys.splice(at, 0, key);
-      }
+      // predecessor that is still in the list and stays (other keys may have left it).
+      for (const { key, source } of back) if (source.list === list.id) putBack(keys, list, key, source.index, settled);
       if (list.hasChanges ? list.hasChanges(keys) : !sameKeys(keys, list.getKeys())) next.set(list, keys);
     }
     if (!next.size) return null;
@@ -1061,6 +1255,15 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
           : computeResult(accepted, current.marker);
     }
     if (result) for (const [list, keys] of result.next) list.commit(keys, lookup);
+    // Where the overlay's clones land: the accepted items on their slots (copies when
+    // copying); the rest on their own elements, back where they started.
+    const accepted = result && !current.removed ? result.event.accepted : [];
+    if (result && !accepted.includes(current.activeKey)) manager.landingKey.value = null;
+    setLandings(
+      accepted
+        .filter((key) => key !== current.activeKey)
+        .map((key) => [current.copying ? (current.copies.get(key) ?? key) : key, key]),
+    );
 
     const who = subjectOf(current);
     let text: string | undefined;
@@ -1090,6 +1293,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
   const cancel = (event: DnDEvent) => {
     const current = session.value;
+    // Copies vanish: their clones fly back to the originals. Moved block members stay placeholders until the overlay is home.
+    if (current?.copying && current.activeKey === event.active.id) setLandings([]);
     if (current && current.activeKey === event.active.id && current.origin.list != null) {
       const list = lists.get(current.origin.list);
       announced = {
@@ -1209,7 +1414,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     if (list.placeholder() === 'indicator') return keyboardIndicator(current, list, active, direction) ?? center();
 
     const strategy = list.strategy();
-    const keys = keysOf(list);
+    // A block moves by items as one unit.
+    const keys = viewOf(list, current);
     const position = keys.indexOf(current.slot);
     const slot = items.get(current.slot)?.();
     if (position === -1 || !slot?.isConnected) return center();
@@ -1219,7 +1425,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     let index: number | null = null;
     let across = false;
     if (strategy === 'grid' && direction.y) {
-      const others = collect(list).filter((item) => item.key !== current.slot);
+      const others = collect(list).filter((item) => item.index !== position);
       index = nextRowIndex(others, slotRect, direction.y > 0 ? 1 : -1);
       across = index === null;
     } else {
@@ -1271,7 +1477,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     }
     if (current.list == null) return null;
     const keys = keysOf(lists.get(current.list)!);
-    return { list: current.list, index: keys.indexOf(current.slot), length: keys.length };
+    // A block is placed where it starts.
+    return { list: current.list, index: keys.indexOf(current.block[0]!), length: keys.length };
   };
 
   const ours = (event: DnDEvent) => {
