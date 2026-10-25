@@ -1,7 +1,7 @@
-import { createApp, defineComponent, h, nextTick, ref, useTemplateRef, type Component } from 'vue';
+import { createApp, defineComponent, h, nextTick, ref, useTemplateRef, type Component, type Ref } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { MultipleMode, OverlayProps } from '../types';
-import { createRect } from '../animation/layout';
+import type { MultipleMode, OverlayProps, SortableDropEvent, SortableListOptions } from '../types';
+import { containsPoint, createRect } from '../animation/layout';
 import { DnDProvider } from '../core/DnDProvider';
 import { DragPreview } from '../core/DragPreview';
 import { useDnDContext } from '../core/context';
@@ -124,9 +124,13 @@ describe('multi-drag modes', () => {
     const previews = [...overlay()!.querySelectorAll('.preview')];
     expect(previews.map((preview) => preview.querySelector('[data-id]')?.getAttribute('data-id'))).toEqual(['x2', 'x3']);
     expect(overlay()!.querySelectorAll('.fallback')).toHaveLength(1);
-    // A component overlay gets no column: the box flies alone.
-    expect(manager.overlayItems.size).toBe(0);
+    // The other item's preview is its clone in the overlay: it lands on its own slot. The
+    // grabbed one rides in the box.
+    expect([...manager.overlayItems.keys()]).toEqual(['x3']);
+    expect(manager.overlayItems.get('x3')).toBe(previews[1]);
+    expect(previews.map((preview) => preview.hasAttribute('data-dnd-overlay-item'))).toEqual([false, true]);
     await cancel();
+    expect(manager.overlayItems.size).toBe(0);
   });
 });
 
@@ -241,6 +245,168 @@ describe('keyboard: a plain draggable over a list with createItem', () => {
     expect(manager.pointer.value).toEqual({ x: 100, y: 345 });
     expect(rows(container)).toEqual(['n1', 'n2', 'n3']);
     await cancel();
+  });
+});
+
+describe('swap between two lists of a group', () => {
+  const ROW = 40;
+  /** Left edge of each list: `a` and `b` side by side, 200px wide, 40px rows. */
+  const LEFT: Record<string, number> = { a: 0, b: 300 };
+  type Item = { id: string };
+  let data: Record<string, Ref<Item[]>>;
+  let drops: SortableDropEvent[];
+
+  const List = defineComponent({
+    props: { listId: { type: String, required: true }, options: { type: Object, default: () => ({}) } },
+    setup(props) {
+      const { items } = makeSortableList(useTemplateRef<HTMLElement>('list'), {
+        id: props.listId,
+        items: data[props.listId]!,
+        behavior: 'swap',
+        group: 'pair',
+        onDrop: (event) => drops.push(event),
+        ...(props.options as Partial<SortableListOptions<Item>>),
+      });
+      return () =>
+        h('ul', { ref: 'list', 'data-list': props.listId }, items.value.map((task) => h(Row, { key: task.id, rowId: task.id })));
+    },
+  });
+
+  const rectOf = (element: Element) => {
+    const list = element.closest('[data-list]');
+    if (!list || element.closest('[data-dnd-overlay]')) return createRect(0, 0, 0, 0);
+    const left = LEFT[list.getAttribute('data-list')!]!;
+    if (element === list) return createRect(left, 0, 200, list.children.length * ROW);
+    return createRect(left, [...list.children].indexOf(element) * ROW, 200, ROW);
+  };
+
+  const mountPair = (a: Partial<SortableListOptions<Item>> = {}, b: Partial<SortableListOptions<Item>> = {}) => {
+    data = { a: ref(['a1', 'a2', 'a3'].map((id) => ({ id }))), b: ref(['b1', 'b2', 'b3'].map((id) => ({ id }))) };
+    drops = [];
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const app = createApp({
+      setup: () => () =>
+        h(DnDProvider, { dropAnimation: false, animation: false }, {
+          default: () => [
+            h({
+              setup() {
+                manager = useDnDContext();
+                return () => null;
+              },
+            }),
+            h(List, { listId: 'a', options: a }),
+            h(List, { listId: 'b', options: b }),
+          ],
+        }),
+    });
+    app.mount(container);
+    unmount = () => {
+      app.unmount();
+      container.remove();
+    };
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+      return rectOf(this) as DOMRect;
+    });
+    vi.spyOn(document, 'elementFromPoint').mockImplementation((x, y) => {
+      const candidates = [...container.querySelectorAll('[data-list] > li'), ...container.querySelectorAll('[data-list]')];
+      return candidates.find((element) => containsPoint(rectOf(element), { x, y })) ?? null;
+    });
+    return container;
+  };
+
+  const keys = (container: HTMLElement, list: string) =>
+    [...container.querySelectorAll(`[data-list="${list}"] > li`)].map((row) => row.getAttribute('data-id'));
+  const at = (list: string, index: number) => ({ x: LEFT[list]! + 100, y: index * ROW + ROW / 2 });
+  const moveTo = async (point: { x: number; y: number }) => {
+    manager.move(point);
+    manager.flushFrame();
+    await nextTick();
+  };
+  const drop = async () => {
+    await manager.drop();
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+    await nextTick();
+  };
+
+  afterEach(() => {
+    unmount?.();
+    unmount = null;
+    vi.restoreAllMocks();
+  });
+
+  it('exchanges with the hovered item of the other list, reverts over the partner; the drop writes both lists', async () => {
+    const container = mountPair();
+    await nextTick();
+    expect(manager.start('a1', at('a', 0), 'pointer')).toBe(true);
+    await nextTick();
+    await moveTo(at('b', 1));
+    expect(keys(container, 'a')).toEqual(['b2', 'a2', 'a3']);
+    expect(keys(container, 'b')).toEqual(['b1', 'a1', 'b3']);
+    expect(manager.mode.value).toBe('swap');
+    // b2 now sits where a1 started: hovering it undoes the exchange.
+    await moveTo(at('a', 0));
+    expect(keys(container, 'a')).toEqual(['a1', 'a2', 'a3']);
+    expect(keys(container, 'b')).toEqual(['b1', 'b2', 'b3']);
+    await moveTo(at('b', 2));
+    expect(keys(container, 'a')).toEqual(['b3', 'a2', 'a3']);
+    expect(keys(container, 'b')).toEqual(['b1', 'b2', 'a1']);
+    await drop();
+    expect(data.a!.value.map((item) => item.id)).toEqual(['b3', 'a2', 'a3']);
+    expect(data.b!.value.map((item) => item.id)).toEqual(['b1', 'b2', 'a1']);
+    expect(drops).toHaveLength(1);
+    expect(drops[0]).toMatchObject({
+      keys: ['a1'],
+      from: { list: 'a', index: 0 },
+      to: { list: 'b', index: 2 },
+      sameList: false,
+      mode: 'swap',
+      partner: { key: 'b3', item: { id: 'b3' }, from: { list: 'b', index: 2 }, to: { list: 'a', index: 0 } },
+    });
+  });
+
+  it("an item the dragged item's list refuses (group.put) is not swapped in; another one is", async () => {
+    const container = mountPair({ group: { name: 'pair', put: ({ keys: incoming }) => !incoming.includes('b2') } });
+    await nextTick();
+    manager.start('a1', at('a', 0), 'pointer');
+    await nextTick();
+    await moveTo(at('b', 1));
+    expect(keys(container, 'a')).toEqual(['a1', 'a2', 'a3']);
+    expect(keys(container, 'b')).toEqual(['b1', 'b2', 'b3']);
+    expect(manager.over.value?.accepted).toBe(true);
+    await moveTo(at('b', 0));
+    expect(keys(container, 'a')).toEqual(['b1', 'a2', 'a3']);
+    // Moving on to the refused item reverts the exchange.
+    await moveTo(at('b', 1));
+    expect(keys(container, 'a')).toEqual(['a1', 'a2', 'a3']);
+    expect(keys(container, 'b')).toEqual(['b1', 'b2', 'b3']);
+    await drop();
+    expect(drops).toEqual([]);
+  });
+
+  it("items of a list they can't leave (group.pull: false) are not swapped out", async () => {
+    const container = mountPair({}, { group: { name: 'pair', pull: false } });
+    await nextTick();
+    manager.start('a2', at('a', 1), 'pointer');
+    await nextTick();
+    await moveTo(at('b', 0));
+    expect(keys(container, 'a')).toEqual(['a1', 'a2', 'a3']);
+    expect(keys(container, 'b')).toEqual(['b1', 'b2', 'b3']);
+    await cancel();
+  });
+
+  it('a list that only sorts sends its items into a swap list by insertion, not exchange', async () => {
+    const container = mountPair({ behavior: 'sort' });
+    await nextTick();
+    manager.start('a1', at('a', 0), 'pointer');
+    await nextTick();
+    await moveTo({ x: 400, y: 25 });
+    expect(keys(container, 'a')).toEqual(['a2', 'a3']);
+    expect(keys(container, 'b')).toEqual(['b1', 'a1', 'b2', 'b3']);
+    expect(manager.mode.value).toBe('move');
+    await drop();
+    expect(drops[0]).toMatchObject({ mode: 'move', to: { list: 'b', index: 1 } });
+    expect(drops[0]!.partner).toBeUndefined();
   });
 });
 
