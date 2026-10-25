@@ -9,13 +9,15 @@ const STYLE_ID = 'vue-dnd-kit-styles';
 
 // `[data-dnd-dragging]` on an item: dragged along but left in place (multi-drag 'gaps').
 // <html> carries the same attribute for the whole drag, hence `:not(html)`.
+// A touch drag starts (200ms) before iOS shows its link callout and magnifier (~500ms),
+// and WebKit reads `-webkit-touch-callout` when it recognises that long press.
 const CSS = `
 :where([data-dnd-placeholder]) { opacity: 0.4; }
 :where([data-dnd-dragging]:not(html)) { opacity: 0.4; }
 :where(html[data-dnd-dragging]),
 :where(html[data-dnd-dragging] *) { user-select: none !important; -webkit-user-select: none !important; overflow-anchor: none !important; }
 :where(html[data-dnd-dragging="pointer"]),
-:where(html[data-dnd-dragging="pointer"] *) { cursor: grabbing !important; }
+:where(html[data-dnd-dragging="pointer"] *) { cursor: grabbing !important; -webkit-touch-callout: none !important; }
 `;
 
 export const injectDefaultStyles = (): void => {
