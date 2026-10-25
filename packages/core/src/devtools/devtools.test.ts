@@ -190,6 +190,19 @@ describe('the devtools hook', () => {
     expect(removed).toHaveBeenCalledWith(provider);
     expect(bridge.providers()).toEqual([]);
   });
+
+  it('only records a provider until someone listens', async () => {
+    bridge = connectDevtools();
+    mount();
+    await nextTick();
+    const monitors = manager.monitors.size;
+    const event = vi.fn();
+    bridge.subscribe({ event });
+    expect(manager.monitors.size).toBe(monitors + 1);
+    manager.selection.add('a1');
+    await nextTick();
+    expect(event).toHaveBeenCalledWith(bridge.providers()[0], { type: 'selection', ids: ['a1'] });
+  });
 });
 
 describe('snapshots', () => {

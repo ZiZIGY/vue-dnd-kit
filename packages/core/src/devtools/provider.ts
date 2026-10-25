@@ -1,21 +1,24 @@
 /**
- * A provider as the devtools bridge follows it. It listens the way the library's own
- * layers do: a monitor for the drag events and watchers on the manager's state, in a
- * scope of its own that ends when the provider unmounts. The verdict of `onBeforeDrop`
- * is told by how the drag ends after a release; the drop of a sortable list by the
- * group's session, read as the session ends.
+ * A provider as the devtools bridge knows it. Registering one only records it; it is
+ * followed once someone listens (`follow`), the way the library's own layers listen: a
+ * monitor for the drag events and watchers on the manager's state, in a scope of its
+ * own that ends when the provider unmounts. The verdict of `onBeforeDrop` is told by how
+ * the drag ends after a release; the drop of a sortable list by the group's session,
+ * read as the session ends.
  */
 
-import { effectScope, getCurrentInstance, watch, type ComponentInternalInstance } from 'vue';
-import type { DnDEvent, Key } from '../types';
+import { effectScope, getCurrentInstance, watch, type ComponentInternalInstance, type EffectScope } from 'vue';
+import type { DnDEvent, DnDMonitor, Key } from '../types';
 import type { DnDManager } from '../core/manager';
 import type { GroupContext } from '../sortable/context';
 import { snapshotActive, snapshotOver, snapshotProvider, snapshotSortableDrop } from './snapshot';
 import type { CancelReason, DevtoolsEvent, DevtoolsProvider, SortableDropSnapshot } from './types';
 
 export interface ProviderRecord extends DevtoolsProvider {
-  /** Follows a sortable group of this provider. */
+  /** A sortable group of this provider was created. */
   addGroup(g: GroupContext): void;
+  /** Starts telling its events (idempotent). */
+  follow(): void;
   /** Stops following the provider. */
   stop(): void;
 }
@@ -29,15 +32,17 @@ const labelOf = (instance: ComponentInternalInstance | null): string => {
   return name ? `DnDProvider · ${name}` : 'DnDProvider';
 };
 
-/** Follows `manager`; called in the provider's `setup`. `emit` gets every event. */
+/** Records `manager`; called in the provider's `setup`. Once followed, `emit` gets every event. */
 export function createProviderRecord(
   manager: DnDManager,
   emit: (provider: DevtoolsProvider, event: DevtoolsEvent) => void,
 ): ProviderRecord {
   const instance = getCurrentInstance();
-  const scope = effectScope(true);
-  /** Followed groups, with the stop of their watcher. */
-  const groups = new Map<GroupContext, () => void>();
+  /** Sortable groups, with the stop of their watcher once followed. */
+  const groups = new Map<GroupContext, (() => void) | null>();
+  /** Set while followed. */
+  let scope: EffectScope | null = null;
+  let removeMonitor: (() => void) | null = null;
 
   // The current drag: its number, the target it is over, when it was released (the
   // `onBeforeDrop` hooks run from then on) and the drops its sortable groups made.
@@ -45,6 +50,19 @@ export function createProviderRecord(
   let over: Key | null = null;
   let releasedAt: number | null = null;
   let drops: SortableDropSnapshot[] = [];
+
+  /** The session is set when a drag starts and cleared when it ends: what it held then is the drop it made (or prepared before a rejection). */
+  const watchGroup = (g: GroupContext) =>
+    scope!.run(() =>
+      watch(
+        g.session,
+        (_next, previous) => {
+          const drop = previous && snapshotSortableDrop(g, previous);
+          if (drop) drops.push(drop);
+        },
+        { flush: 'sync' },
+      ),
+    )!;
 
   const record: ProviderRecord = {
     id: `provider-${++providers}`,
@@ -54,7 +72,7 @@ export function createProviderRecord(
       // Released groups (their last list unmounted) are done.
       for (const [g, stop] of groups) {
         if (g.lists.size) continue;
-        stop();
+        stop?.();
         groups.delete(g);
       }
       return snapshotProvider(manager, groups.keys());
@@ -62,24 +80,19 @@ export function createProviderRecord(
     cancel: () => manager.cancel(),
     clearSelection: () => manager.selection.clear(),
     addGroup(g) {
-      if (groups.has(g)) return;
-      // The session is set when a drag starts and cleared when it ends: what it held then
-      // is the drop it made (or prepared before a rejection).
-      const stop = scope.run(() =>
-        watch(
-          g.session,
-          (_next, previous) => {
-            const drop = previous && snapshotSortableDrop(g, previous);
-            if (drop) drops.push(drop);
-          },
-          { flush: 'sync' },
-        ),
-      )!;
-      groups.set(g, stop);
+      if (!groups.has(g)) groups.set(g, scope && watchGroup(g));
+    },
+    follow() {
+      if (scope) return;
+      scope = effectScope(true);
+      removeMonitor = manager.addMonitor(monitor);
+      for (const g of groups.keys()) groups.set(g, watchGroup(g));
+      scope.run(watchState);
     },
     stop() {
-      scope.stop();
-      removeMonitor();
+      scope?.stop();
+      removeMonitor?.();
+      scope = removeMonitor = null;
       groups.clear();
     },
   };
@@ -105,7 +118,7 @@ export function createProviderRecord(
   };
 
   // An ordinary monitor: it hears the drop after the sortable groups wrote it.
-  const removeMonitor = manager.addMonitor({
+  const monitor: DnDMonitor = {
     onDragStart(event) {
       drag++;
       ended();
@@ -149,9 +162,9 @@ export function createProviderRecord(
       send({ type: 'cancel', drag, reason, over: snapshotOver(event.over), waited: waited(), sortable: takeDrops() });
       ended();
     },
-  });
+  };
 
-  scope.run(() => {
+  const watchState = () => {
     const sync = { flush: 'sync' } as const;
     watch(manager.status, (status) => send({ type: 'status', status }), sync);
     watch(manager.isAutoScrolling, (scrolling) => send({ type: 'autoScroll', scrolling }), sync);
@@ -168,7 +181,7 @@ export function createProviderRecord(
       () => [...manager.selection],
       (ids) => send({ type: 'selection', ids }),
     );
-  });
+  };
 
   return record;
 }
