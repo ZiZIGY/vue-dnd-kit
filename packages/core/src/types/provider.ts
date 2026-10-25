@@ -2,7 +2,7 @@
 
 import type { ActivationOptions, DnDStatus, Key } from './primitives';
 import type { Active, DnDEndEvent, DnDEvent, DragItem, DragMode, Over } from './drag';
-import type { DropAnimation, LayoutAnimation } from './animation';
+import type { AutoAnimation, DropAnimation, LayoutAnimation } from './animation';
 import type { CollisionDetection, Modifier } from './collision';
 
 // ─── Provider ──────────────────────────────────────────────────────────────────
@@ -40,6 +40,8 @@ export interface DnDProviderProps {
   /** Default FLIP animation for sortable lists. */
   animation?: LayoutAnimation;
   dropAnimation?: DropAnimation;
+  /** Default `animate` of sortable lists and trees: changes of their items that no drag made. Off by default. */
+  animate?: AutoAnimation;
   autoScroll?: boolean | AutoScrollOptions;
   activation?: ActivationOptions;
   keyboard?: KeyboardOptions | false;

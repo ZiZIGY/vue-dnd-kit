@@ -75,6 +75,12 @@ export type {
   LayoutAnimationContext,
   DropAnimation,
   DropAnimationContext,
+  AutoAnimation,
+  AutoAnimationOptions,
+  EnterAnimation,
+  EnterAnimationContext,
+  LeaveAnimation,
+  LeaveAnimationContext,
 
   // Collision detection and modifiers
   CollisionDetection,

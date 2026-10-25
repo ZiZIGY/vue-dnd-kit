@@ -11,7 +11,7 @@ import type {
   Size,
 } from './primitives';
 import type { AcceptMode, Active, BeforeDropResult, DragMode } from './drag';
-import type { LayoutAnimation } from './animation';
+import type { AutoAnimation, LayoutAnimation } from './animation';
 import type { Modifier } from './collision';
 import type { AutoScrollOptions } from './provider';
 
@@ -191,6 +191,12 @@ export interface SortableListOptions<T> {
   dropOutside?: MaybeReadonlyRefOrGetter<DropOutside | undefined>;
   /** FLIP animation of this list; default: the provider's `animation`. A value or a ref (a function is a custom animation). */
   animation?: MaybeReadonlyRef<LayoutAnimation | undefined>;
+  /**
+   * Animates changes of `items` that no drag made: added, removed, moved and filtered
+   * items (see `AutoAnimation`). Default: the provider's `animate`, off unless set there.
+   * Read when `items` changes.
+   */
+  animate?: MaybeReadonlyRefOrGetter<AutoAnimation | undefined>;
   /** Overrides the provider's `autoScroll` for this list's scroll container. Read when the drag starts. */
   autoScroll?: MaybeReadonlyRefOrGetter<boolean | AutoScrollOptions | undefined>;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;

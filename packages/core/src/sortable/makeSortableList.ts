@@ -130,6 +130,7 @@ export function makeSortableList<T>(
     strategy: () => read(options.strategy) ?? 'vertical',
     placeholder: () => read(options.placeholder) ?? 'item',
     animation: () => unref(options.animation) ?? manager.props.animation,
+    animate: () => read(options.animate) ?? manager.props.animate,
     isDisabled: () => !!read(options.disabled),
     canSort: () => read(options.sort) !== false,
     pull: () => pullOf(groupOptions, !!options.clone),
@@ -164,6 +165,7 @@ export function makeSortableList<T>(
     afterDrop: options.onDrop as ((event: SortableDropEvent) => void) | undefined,
   };
   onScopeDispose(group.addList(entry));
+  group.animateChanges(entry);
   onScopeDispose(manager.registerAutoScroll(entry.getElement, () => read(options.autoScroll)));
 
   const droppable = createDroppable(

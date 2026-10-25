@@ -4,6 +4,7 @@ import * as library from './index';
 import { provideDnDContext, useDnDContext } from './index';
 import type * as Public from './index';
 import type {
+  AutoAnimation,
   DnDContext,
   DraggableOptions,
   Key,
@@ -11,6 +12,8 @@ import type {
   MaybeReadonlyRefOrGetter,
   SortableItemOptions,
   SortableItems,
+  SortableListOptions,
+  SortableTreeOptions,
 } from './index';
 
 /** A component with typed emits, like most UI kit components (`<v-list-item>`, `<UTooltip>`). */
@@ -104,6 +107,12 @@ describe('public exports', () => {
       Public.LayoutAnimationContext,
       Public.DropAnimation,
       Public.DropAnimationContext,
+      Public.AutoAnimation,
+      Public.AutoAnimationOptions,
+      Public.EnterAnimation,
+      Public.EnterAnimationContext,
+      Public.LeaveAnimation,
+      Public.LeaveAnimationContext,
       // Collision detection and modifiers (custom ones need their argument types)
       Public.CollisionDetection,
       Public.CollisionArgs,
@@ -179,6 +188,26 @@ describe('public option types', () => {
     assertType<Equal<SortableItemOptions['attributes'], DraggableOptions['attributes']>>();
     // @ts-expect-error The keyboard moves sortable items by slots.
     accepts<SortableItemOptions>({ id: 'a', keyboard: 'pixels' });
+    expect(true).toBe(true);
+  });
+
+  it('`animate`: a value, a ref or a getter; per kind `true`, options, `false` or a function', () => {
+    type Animate = SortableListOptions<{ id: string }>['animate'];
+    accepts<Animate>(true);
+    accepts<Animate>(ref<AutoAnimation>({ duration: 300 }));
+    accepts<Animate>(() => false);
+    accepts<SortableTreeOptions<{ id: string }>['animate']>(computed(() => true));
+    accepts<AutoAnimation>({
+      easing: 'ease-out',
+      move: ({ element, from, to, signal }) => {
+        signal.addEventListener('abort', () => element.getAnimations().forEach((animation) => animation.cancel()));
+        return element.animate([{ translate: `${from.left - to.left}px ${from.top - to.top}px` }, { translate: '0 0' }], 200);
+      },
+      enter: { duration: 150 },
+      leave: ({ element }) => new Promise<void>((resolve) => element.animate({ opacity: [1, 0] }, 150).addEventListener('finish', () => resolve())),
+    });
+    // @ts-expect-error A function stands for one kind of change, never for `animate` as a whole.
+    accepts<AutoAnimation>(() => undefined);
     expect(true).toBe(true);
   });
 
