@@ -123,12 +123,12 @@ export function makeSortableList<T>(
   });
   // The row a virtualizer must keep mounted: in the list holding a copy or an
   // external item, that row is the copy/item (the slot), not the original.
+  // The session is mutated in place, so the slot is read from its reactive mirror.
   const activeKey = computed(() => {
     const current = group.session.value;
     if (!current) return null;
-    return current.slot !== current.activeKey && group.indexOf(entry, current.slot) !== -1
-      ? current.slot
-      : current.activeKey;
+    const slot = manager.landingKey.value;
+    return slot != null && group.indexOf(entry, slot) !== -1 ? slot : current.activeKey;
   });
   const activeIndex = computed(() => {
     const key = activeKey.value;

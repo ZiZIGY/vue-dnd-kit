@@ -7,7 +7,7 @@
   const player = inject(PLAYER)!;
   const el = useTemplateRef<HTMLElement>('el');
 
-  const { items, isAccepting } = makeSortableList(el, {
+  const { items, isAccepting, activeIndex } = makeSortableList(el, {
     id: 'queue',
     items: player.queue,
     group: 'queue',
@@ -34,9 +34,8 @@
   useDnDMonitor({
     getKeyboardCoordinates(_event, { active, direction }) {
       if (!active.type.includes(TRACK_TYPE)) return undefined;
-      // Workaround (reported): the list's `activeIndex` stays -1 for an item made by
-      // createItem, so the slot is looked up by the id the player gave it.
-      const index = items.value.findIndex((entry) => entry.id === player.pendingEntry());
+      // The entry createItem made for the track, once it's in the queue.
+      const index = activeIndex.value;
       if (index === -1) {
         if (direction.y >= 0) return undefined;
         const last = entryElement(items.value.length - 1)?.getBoundingClientRect();

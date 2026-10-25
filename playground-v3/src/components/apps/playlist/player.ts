@@ -172,8 +172,6 @@ export function createPlayer() {
     log,
     trackOf,
     createEntry,
-    /** Id of the entry made for the library track being dragged, if any. */
-    pendingEntry: () => pending,
     add,
     remove,
     announcements,
