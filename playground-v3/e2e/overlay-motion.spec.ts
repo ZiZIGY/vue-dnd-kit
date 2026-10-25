@@ -28,11 +28,14 @@ test.describe('motion-v recipe (overlay-motion)', () => {
     await expect(drops(page)).toHaveText('1');
     await expect(state(page)).toHaveText(/^motion-todo:t2,t3,t4 \| motion-doing:[\w,]*t1[\w,]*$/);
 
-    // Cancelling runs the same hook (the overlay flies back).
+    // Cancelling runs the same hook (the overlay flies back). The hook waits on motion's
+    // frame loop, which a loaded Firefox runs slowly: allow it more time than usual.
     await pickUp(page, item(page, 't2'));
     await page.keyboard.press('Escape');
-    await waitForIdle(page);
+    await page.mouse.up();
+    await expect(page.locator('[data-dnd-overlay]')).toHaveCount(0, { timeout: 15_000 });
     await expect(drops(page)).toHaveText('2');
+    await expect(state(page)).toHaveText(/^motion-todo:t2,t3,t4 \| /);
     expect(errors).toEqual([]);
     expect(warnings).toEqual([]);
   });

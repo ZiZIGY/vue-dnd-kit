@@ -26,24 +26,30 @@ test.describe('overlay per source (overlay-types)', () => {
     await expect(state(page)).toHaveText(INITIAL);
   });
 
-  test('item option > list option > provider slot > clone', async ({ page }) => {
-    const errors = trackErrors(page);
-    const warnings = trackVueWarnings(page);
-    // Mixed has no list overlay: notes and photos have their own, tasks use the
-    // provider slot, links get nothing from the slot and fall back to the clone.
-    expect(await overlayOf(page, 'm1')).toBe('note');
-    expect(await overlayOf(page, 'm2')).toBe('photo');
-    expect(await overlayOf(page, 'm3')).toBe('slot');
-    expect(await overlayOf(page, 'm4')).toBe('clone');
-    // Pinned has a list overlay; the item option still wins.
-    expect(await overlayOf(page, 'p1')).toBe('list');
-    expect(await overlayOf(page, 'p2')).toBe('list');
-    expect(await overlayOf(page, 'p3')).toBe('note');
-    expect(await overlayOf(page, 'p4')).toBe('photo');
-    await expect(state(page)).toHaveText(INITIAL);
-    expect(errors).toEqual([]);
-    expect(warnings).toEqual([]);
-  });
+  // Precedence: item option > list option > provider slot > clone. Mixed has no list
+  // overlay: notes and photos have their own, tasks use the provider slot, links get
+  // nothing from the slot and fall back to the clone. Pinned has a list overlay; the
+  // item option still wins there.
+  const cases: Array<[source: string, id: string, overlay: string]> = [
+    ['an item option', 'm1', 'note'],
+    ['an item option', 'm2', 'photo'],
+    ['the provider slot', 'm3', 'slot'],
+    ['the clone (empty slot)', 'm4', 'clone'],
+    ['the list option', 'p1', 'list'],
+    ['the list option', 'p2', 'list'],
+    ['an item option over the list option', 'p3', 'note'],
+    ['an item option over the list option', 'p4', 'photo'],
+  ];
+  for (const [source, id, expected] of cases) {
+    test(`${id}: ${source} (${expected})`, async ({ page }) => {
+      const errors = trackErrors(page);
+      const warnings = trackVueWarnings(page);
+      expect(await overlayOf(page, id)).toBe(expected);
+      await expect(state(page)).toHaveText(INITIAL);
+      expect(errors).toEqual([]);
+      expect(warnings).toEqual([]);
+    });
+  }
 
   test('the overlay chosen at drag start stays over another list, where the row is recreated', async ({ page }) => {
     await pickUp(page, item(page, 'p1'));
