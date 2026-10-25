@@ -34,6 +34,7 @@
   import FilesApp from './demos/apps/FilesApp.vue';
   import FormApp from './demos/apps/FormApp.vue';
   import PlaylistApp from './demos/apps/PlaylistApp.vue';
+  import CalendarApp from './demos/apps/CalendarApp.vue';
 
   const demos = {
     sortable: SortableDemo,
@@ -67,6 +68,7 @@
     'app-files': FilesApp,
     'app-form': FormApp,
     'app-playlist': PlaylistApp,
+    'app-calendar': CalendarApp,
   };
   type DemoName = keyof typeof demos;
 
