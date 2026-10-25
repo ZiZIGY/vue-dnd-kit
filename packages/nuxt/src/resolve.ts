@@ -1,4 +1,4 @@
-import { collision, components, composables, CORE_PACKAGE, modifiers, types } from './manifest';
+import { collision, components, composables, CORE_PACKAGE, modifiers, sensors, types } from './manifest';
 
 export interface AutoImportOptions {
   /** `makeDraggable`, `makeSortableList`, `makeSelectionArea`, `useDnD`, … Default `true`. */
@@ -7,6 +7,8 @@ export interface AutoImportOptions {
   modifiers?: boolean;
   /** `pointerFirst`, `closestCenter`, … Default `false`. */
   collision?: boolean;
+  /** `defineSensor`, `useSensor`, `pointerSensor`, `keyboardSensor`. Default `false`. */
+  sensors?: boolean;
   /** Type-only imports of the option, return and event types. Default `true`. */
   types?: boolean;
 }
@@ -45,6 +47,7 @@ export const resolveImports = (options: ModuleOptions): ImportEntry[] => {
     ...(auto?.composables === false ? [] : composables),
     ...(auto?.modifiers ? modifiers : []),
     ...(auto?.collision ? collision : []),
+    ...(auto?.sensors ? sensors : []),
   ];
   const imports: ImportEntry[] = names.map((name) => ({ name, from: CORE_PACKAGE }));
   if (auto?.types !== false) {
