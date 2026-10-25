@@ -1,4 +1,4 @@
-import { computed, onScopeDispose, watch, watchEffect } from 'vue';
+import { computed, markRaw, onScopeDispose, watch, watchEffect, type Component } from 'vue';
 import type { DraggableOptions, DraggableReturn, Key, MaybeElementRef } from '../types';
 import type { DraggableEntry } from './manager';
 import { useDnDContext } from './context';
@@ -11,6 +11,13 @@ export interface DraggableInternals {
   getItem?: () => unknown;
   getContainer?: () => HTMLElement | null;
 }
+
+/**
+ * The `overlay` option as the manager keeps it: on/off, or a component. Components
+ * are never made reactive (rfcs/0001-v3.md §13), wherever the options came from.
+ */
+export const toOverlay = (overlay: boolean | Component | undefined): boolean | Component =>
+  overlay == null || overlay === true ? true : overlay && markRaw(overlay);
 
 const preventNativeDrag = (event: Event) => event.preventDefault();
 
@@ -85,7 +92,7 @@ export function createDraggable<TData>(
 
   const entry: DraggableEntry = {
     id: id.value,
-    overlay: options.overlay !== false,
+    overlay: toOverlay(options.overlay),
     activation: options.activation,
     canDrag: options.canDrag,
     keyboard: options.keyboard,

@@ -3,6 +3,8 @@
  * before the placeholder re-renders, and detached from page-level side effects.
  */
 
+import { parentOf } from '../utils/dom';
+
 const INHERITED = [
   'font-family',
   'font-size',
@@ -68,7 +70,29 @@ const wrapTableRow = (row: HTMLElement, source: HTMLElement): HTMLElement => {
   return table;
 };
 
-export const clonePreview = (source: HTMLElement): HTMLElement => {
+/** `transparent`, `rgba(…, 0)` and the `… / 0)` forms (oklch, color()) of a zero alpha. */
+export const isTransparent = (color: string): boolean =>
+  !color || color === 'transparent' || /^rgba\(.*,\s*0(?:\.0*)?\)$|\/\s*0(?:\.0*)?\)$/.test(color);
+
+/** Background painted behind `element`: the first ancestor (flat tree) that has one. */
+const findBackdrop = (element: Element): string | null => {
+  for (let parent = parentOf(element); parent; parent = parentOf(parent)) {
+    const color = getComputedStyle(parent).backgroundColor;
+    if (!isTransparent(color)) return color;
+  }
+  return null;
+};
+
+export interface CloneOptions {
+  /**
+   * A source without a background of its own gets the one painted behind it. List
+   * items and table rows (UI kits' in particular) take their color from the list or
+   * table; a transparent clone floating over other items would let them show through.
+   */
+  opaque?: boolean;
+}
+
+export const clonePreview = (source: HTMLElement, { opaque = false }: CloneOptions = {}): HTMLElement => {
   const clone = source.cloneNode(true) as HTMLElement;
   const computed = getComputedStyle(source);
 
@@ -83,6 +107,11 @@ export const clonePreview = (source: HTMLElement): HTMLElement => {
 
   for (const property of [...INHERITED, ...OWN]) {
     clone.style.setProperty(property, computed.getPropertyValue(property));
+  }
+  const hasImage = !!computed.backgroundImage && computed.backgroundImage !== 'none';
+  if (opaque && !hasImage && isTransparent(computed.backgroundColor)) {
+    const backdrop = findBackdrop(source);
+    if (backdrop) clone.style.setProperty('background-color', backdrop);
   }
   for (let index = 0; index < computed.length; index++) {
     const property = computed.item(index);

@@ -1,8 +1,10 @@
 import {
   computed,
+  markRaw,
   onScopeDispose,
   provide,
   shallowRef,
+  type Component,
   type InjectionKey,
 } from 'vue';
 import type {
@@ -18,17 +20,36 @@ import { createId, toElement } from '../utils/dom';
 import { read } from '../utils/read';
 import { useSortableGroup, type ListEntry, type SortableGroup } from './group';
 
+/** What a list (or tree) gives its items. */
 export interface SortableContext {
   group: SortableGroup;
   list: ListEntry;
+  /** The list's `getKey`: keys `makeSortableItem({ item })`. */
+  getKey: (item: unknown) => Key;
+  /** The list's `overlay` component, used when the item has none. */
+  overlay?: Component;
 }
 
 export const SORTABLE_CONTEXT: InjectionKey<SortableContext> = Symbol('vue-dnd-kit-sortable');
 
-const defaultGetKey = (item: unknown): Key =>
+/** `item.id`, or the item itself for primitives (lists and trees). */
+export const defaultGetKey = (item: unknown): Key =>
   item !== null && typeof item === 'object' && 'id' in item
     ? ((item as { id: Key }).id)
     : (item as Key);
+
+export const provideSortableContext = (
+  group: SortableGroup,
+  list: ListEntry,
+  getKey: (item: never) => Key,
+  overlay: Component | undefined,
+): void =>
+  provide(SORTABLE_CONTEXT, {
+    group,
+    list,
+    getKey: getKey as (item: unknown) => Key,
+    overlay: overlay && markRaw(overlay),
+  });
 
 let warnedClone = false;
 
@@ -115,7 +136,7 @@ export function makeSortableList<T>(
     { accepts: (active) => group.accepts(entry, active) },
   );
 
-  provide(SORTABLE_CONTEXT, { group, list: entry });
+  provideSortableContext(group, entry, getKey, options.overlay);
 
   const items = computed<T[]>(() => {
     const order = draft.value;
@@ -123,12 +144,12 @@ export function makeSortableList<T>(
   });
   // The row a virtualizer must keep mounted: in the list holding a copy or an
   // external item, that row is the copy/item (the slot), not the original.
+  // The session is mutated in place, so the slot is read from its reactive mirror.
   const activeKey = computed(() => {
     const current = group.session.value;
     if (!current) return null;
-    return current.slot !== current.activeKey && group.indexOf(entry, current.slot) !== -1
-      ? current.slot
-      : current.activeKey;
+    const slot = manager.landingKey.value;
+    return slot != null && group.indexOf(entry, slot) !== -1 ? slot : current.activeKey;
   });
   const activeIndex = computed(() => {
     const key = activeKey.value;

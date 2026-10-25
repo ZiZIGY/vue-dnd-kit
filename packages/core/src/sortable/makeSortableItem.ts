@@ -1,5 +1,5 @@
 import { computed, inject, onScopeDispose, watch, watchEffect } from 'vue';
-import type { MaybeElementRef, SortableItemOptions, SortableItemReturn } from '../types';
+import type { Key, MaybeElementRef, SortableItemOptions, SortableItemReturn } from '../types';
 import { createDraggable } from '../core/makeDraggable';
 import { toElement } from '../utils/dom';
 import { read } from '../utils/read';
@@ -8,6 +8,7 @@ import { SORTABLE_CONTEXT } from './makeSortableList';
 /**
  * Makes an element an item of the closest sortable list. Must be called in a
  * component rendered inside the component that called `makeSortableList`.
+ * Identify the item with `id` or `item` (keyed by the list's `getKey`).
  */
 export function makeSortableItem<TData = unknown>(
   target: MaybeElementRef,
@@ -19,9 +20,16 @@ export function makeSortableItem<TData = unknown>(
       '[vue-dnd-kit] makeSortableItem() must be used inside a component rendered by a list that called makeSortableList().',
     );
   }
-  const { group, list } = context;
+  const { group, list, getKey } = context;
+  if (options.id == null && options.item == null) {
+    throw new Error(
+      '[vue-dnd-kit] makeSortableItem() needs `id` or `item`. Sortable keys must come from your data: ' +
+        'an automatic id would change when the component is recreated (moved to another list, recycled ' +
+        'by a virtual list), and the drag would lose the item.',
+    );
+  }
   const manager = group.manager;
-  const key = computed(() => read(options.id));
+  const key = computed<Key>(() => (options.id != null ? read(options.id) : getKey(read(options.item))));
   const getElement = () => toElement(target);
 
   const draggable = createDraggable(
@@ -33,6 +41,7 @@ export function makeSortableItem<TData = unknown>(
       type: () => read(options.type) ?? group.name,
       data: options.data,
       activation: options.activation,
+      overlay: options.overlay ?? context.overlay,
     },
     {
       getItem: () => group.lookup(key.value),

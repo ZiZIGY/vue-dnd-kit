@@ -29,6 +29,14 @@
   import AnnounceDemo from './demos/AnnounceDemo.vue';
   import NestedZonesDemo from './demos/NestedZonesDemo.vue';
   import ShadowDomDemo from './demos/ShadowDomDemo.vue';
+  import { overlayDemos } from './demos/overlay';
+  // Example apps (each brings its own DnDProvider).
+  import BoardApp from './demos/apps/BoardApp.vue';
+  import FilesApp from './demos/apps/FilesApp.vue';
+  import FormApp from './demos/apps/FormApp.vue';
+  import PlaylistApp from './demos/apps/PlaylistApp.vue';
+  import CalendarApp from './demos/apps/CalendarApp.vue';
+  import ChessApp from './demos/apps/ChessApp.vue';
   import TouchListDemo from './demos/touch/TouchListDemo.vue';
   import TouchHandleDemo from './demos/touch/TouchHandleDemo.vue';
   import TouchKanbanDemo from './demos/touch/TouchKanbanDemo.vue';
@@ -62,6 +70,13 @@
     announce: AnnounceDemo,
     'nested-zones': NestedZonesDemo,
     shadow: ShadowDomDemo,
+    ...overlayDemos,
+    'app-board': BoardApp,
+    'app-files': FilesApp,
+    'app-form': FormApp,
+    'app-playlist': PlaylistApp,
+    'app-calendar': CalendarApp,
+    'app-chess': ChessApp,
     // Phone layouts (open them in a mobile viewport).
     'touch-list': TouchListDemo,
     'touch-handle': TouchHandleDemo,
@@ -89,6 +104,13 @@
       :class="{ active: current === name }"
       >{{ name }}</a
     >
+    <!-- UI kits run as separate pages: their global CSS stays out of this one. -->
+    <a
+      href="/kits/vuetify.html"
+      class="kit"
+      >vuetify ↗</a
+    >
+    <a href="/kits/nuxt-ui.html">nuxt-ui ↗</a>
   </nav>
   <main>
     <DnDProvider>
@@ -99,3 +121,9 @@
     </DnDProvider>
   </main>
 </template>
+
+<style scoped>
+  .kit {
+    margin-left: auto;
+  }
+</style>
