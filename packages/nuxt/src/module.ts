@@ -18,6 +18,7 @@ export default defineNuxtModule<ModuleOptions>({
       composables: true,
       modifiers: false,
       collision: false,
+      sensors: false,
       types: true,
     },
   },

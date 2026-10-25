@@ -4,6 +4,7 @@ import type { ActivationOptions, DnDStatus, Key } from './primitives';
 import type { Active, DnDEndEvent, DnDEvent, DragItem, DragMode, Over } from './drag';
 import type { DropAnimation, LayoutAnimation } from './animation';
 import type { CollisionDetection, Modifier } from './collision';
+import type { Sensor } from './sensor';
 
 // ─── Provider ──────────────────────────────────────────────────────────────────
 
@@ -34,6 +35,27 @@ export interface AutoScrollOptions {
   acceleration?: number;
 }
 
+/**
+ * A vibration (`navigator.vibrate`): its length in ms or an on/off pattern. `true` is the
+ * default one (10ms; `[20, 40, 20]` for `refuse`), `false` or `0` none.
+ */
+export type HapticPattern = boolean | number | number[];
+
+/**
+ * When touch drags vibrate. Only drags started by touch do; where the browser can't
+ * vibrate (iOS Safari) or blocks it (no tap on the page yet), nothing happens.
+ */
+export interface HapticsOptions {
+  /** The drag starts, after the long press. Default `true`. */
+  start?: HapticPattern;
+  /** The drag enters a drop target (a list, a zone) that accepts it. Default `false`. */
+  enter?: HapticPattern;
+  /** The drop goes through. Default `false`. */
+  drop?: HapticPattern;
+  /** The drop is refused (by a target or `onBeforeDrop`) and the items fly back. Default `false`. */
+  refuse?: HapticPattern;
+}
+
 export interface DnDProviderProps {
   collision?: CollisionDetection;
   modifiers?: Modifier[];
@@ -43,6 +65,18 @@ export interface DnDProviderProps {
   autoScroll?: boolean | AutoScrollOptions;
   activation?: ActivationOptions;
   keyboard?: KeyboardOptions | false;
+  /**
+   * What turns input into drags. Default `[pointerSensor, keyboardSensor]`: leave one out,
+   * wrap or replace it, or add your own (`defineSensor`). The keyboard sensor also cancels
+   * any drag with Escape; `keyboard: false` turns its drags off but keeps that. The list
+   * may change at any time: sensors that leave it stop, cancelling their drag.
+   */
+  sensors?: Sensor[];
+  /**
+   * Vibration for touch drags. Default: a short one when a drag starts after the long
+   * press; an object adds others (`enter`, `drop`, `refuse`); `false` turns them all off.
+   */
+  haptics?: boolean | HapticsOptions;
   /** Key (KeyboardEvent.key) that turns a move into a copy. Default `'Alt'`; `null` disables. */
   copyModifier?: string | null;
   overlayTo?: string | HTMLElement;

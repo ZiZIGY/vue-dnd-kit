@@ -41,6 +41,12 @@ describe('module options', () => {
     expect(imported).not.toContain('useDnDContext');
   });
 
+  it('opts into the sensors', () => {
+    expect(names({})).not.toContain('defineSensor');
+    const imported = names({ autoImports: { sensors: true } });
+    for (const name of ['defineSensor', 'useSensor', 'pointerSensor', 'keyboardSensor']) expect(imported).toContain(name);
+  });
+
   it('adds type-only imports unless turned off', () => {
     expect(names({}, true)).toContain('SortableListOptions');
     expect(resolveImports({}).every((entry) => entry.from === '@vue-dnd-kit/core')).toBe(true);

@@ -45,6 +45,9 @@ export const collision = [
   'closestCorners',
 ] as const;
 
+/** Sensors (`sensors` prop, custom sensors): auto-imported only with `autoImports.sensors`. */
+export const sensors = ['defineSensor', 'useSensor', 'pointerSensor', 'keyboardSensor'] as const;
+
 /** Advanced bridge API (shadow roots, separate Vue apps): never auto-imported. */
 export const advanced = ['useDnDContext', 'provideDnDContext'] as const;
 
