@@ -69,7 +69,10 @@ function createHost(manager: DnDManager): Host {
       // sensors can drive it (the keyboard moves keyboard drags, whoever started them).
       onDragStart: () => {
         const active = manager.active.value;
-        if (current || !active) return;
+        // A sensor's drag starting.
+        if (current?.drag.state === 'dragging' || !active) return;
+        // Started elsewhere while a press still waited: that press is over.
+        current?.abort();
         const control: DragControl = track(
           createSensorDrag({
             manager,

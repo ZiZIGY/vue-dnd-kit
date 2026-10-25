@@ -308,6 +308,14 @@ describe('the drag', () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     await vi.waitFor(() => expect(drag.state).toBe('ended'));
     expect(context.drag).toBeNull();
+    await settle();
+
+    // A press still waiting is over when a drag starts elsewhere.
+    const pending = context.activate({ target: 'card', activation: { delay: 1000 } })!;
+    manager.start('card', { x: 50, y: 50 }, 'pointer');
+    expect(pending.state).toBe('ended');
+    expect(context.drag?.state).toBe('dragging');
+    expect(context.drag).not.toBe(pending);
   });
 });
 
