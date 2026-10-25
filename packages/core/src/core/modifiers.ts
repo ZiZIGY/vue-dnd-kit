@@ -1,5 +1,5 @@
 import type { AnimationOptions, Coordinates, MaybeElementRef, Modifier, Rect } from '../types';
-import { getRect } from '../animation/layout';
+import { getCenter, getRect } from '../animation/layout';
 import { toElement } from '../utils/dom';
 
 /** Keeps `rect` moved by `transform` inside `bounds`. */
@@ -118,7 +118,11 @@ export const getOverlaySmoothing = (
 };
 
 /** Centers the overlay under the pointer instead of keeping the grab offset. */
-export const snapCenterToCursor: Modifier = ({ transform, activeRect, overlayRect, origin }) => ({
-  x: transform.x + origin.x - activeRect.left - overlayRect.width / 2,
-  y: transform.y + origin.y - activeRect.top - overlayRect.height / 2,
-});
+export const snapCenterToCursor: Modifier = ({ transform, overlayRect, origin }) => {
+  // Moves the box by the distance from its center to the pointer (`origin + transform`).
+  const center = getCenter(overlayRect);
+  return {
+    x: transform.x + origin.x + transform.x - center.x,
+    y: transform.y + origin.y + transform.y - center.y,
+  };
+};
