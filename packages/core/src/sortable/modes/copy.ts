@@ -6,7 +6,8 @@
 
 import type { Key } from '../../types';
 import { keysOf, listOf, lookup, type GroupContext, type Session } from '../context';
-import type { DraftContext, ListEntry } from '../entry';
+import type { ListEntry } from '../entry';
+import type { DraftContext } from '../layout';
 import { partitionMoved } from '../accept';
 import { blockFor, withoutBlock } from '../block';
 import { setLandings, syncManager } from '../landing';
@@ -40,7 +41,7 @@ export const draftContext = (current: Session): DraftContext => ({
 /** Drafts while copying: every source as it is (nothing leaves). */
 const copyBase = (list: ListEntry, current: Session) => {
   const draft = [...list.getKeys()];
-  return list.prepareDraft?.(draft, draftContext(current)) ?? draft;
+  return list.layout.prepareDraft(draft, draftContext(current));
 };
 
 /** The drag starts copying when its list copies or the modifier is held; `false` when it moves. */
@@ -89,7 +90,7 @@ const switchCopy = (g: GroupContext, copying: boolean) => {
       // A block's keys leave their sources; the ones the list doesn't take stay there.
       draft = withoutBlock(current, list, moving);
       // Moving again: a tree hides the subtrees that travel.
-      draft = list.prepareDraft?.(draft, draftContext(current)) ?? draft;
+      draft = list.layout.prepareDraft(draft, draftContext(current));
     }
     list.draft.value = draft;
   }

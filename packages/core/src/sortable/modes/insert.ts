@@ -33,7 +33,7 @@ export const startInsert = (g: GroupContext, common: SessionStart): Session => {
   const base = new Map<Key, Key[]>();
   for (const list of g.lists.values()) {
     const draft = [...list.getKeys()];
-    list.draft.value = list.prepareDraft?.(draft, { lead: activeKey, keys: [activeKey], copying: false }) ?? draft;
+    list.draft.value = list.layout.prepareDraft(draft, { lead: activeKey, keys: [activeKey], copying: false });
     base.set(list.id, list.draft.value);
   }
   return {

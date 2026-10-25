@@ -93,7 +93,7 @@ const leave = (g: GroupContext, current: Session) => {
 
 /** Extension hook: runs on every move over a valid target, guarded or not (trees update depth here). */
 const afterMove = (g: GroupContext, current: Session, event: DnDEvent) => {
-  listOf(g, current.list)?.afterMove?.(event);
+  listOf(g, current.list)?.layout.afterMove(event);
 };
 
 /**
@@ -127,13 +127,13 @@ export const move = (g: GroupContext, event: DnDEvent) => {
     g.movedAt = event.pointer;
     g.followed = 0;
   }
-  // Keyboard drags move the slot in getKeyboardCoordinates. Trees (`project`) answer
+  // Keyboard drags move the slot in getKeyboardCoordinates. Trees (`nested`) answer
   // the keyboard themselves and keep the pointer path below (in indicator mode they
   // move the line themselves), and so does an external item (no origin) outside the
   // lists: its own keyboard moves (pixels, droppables) may take it in.
   if (event.active.sensor === 'keyboard' && (current.origin.list != null || current.list != null || g.indicator.value)) {
     const list = current.list == null ? undefined : lists.get(current.list);
-    if (!list?.project || list.placeholder() === 'indicator' || g.indicator.value) return afterMove(g, current, event);
+    if (!list?.layout.nested || list.placeholder() === 'indicator' || g.indicator.value) return afterMove(g, current, event);
   }
   syncCopy(g, current);
   // No frame is ever skipped: the target follows pointer movement only, so a skipped
@@ -158,8 +158,8 @@ export const move = (g: GroupContext, event: DnDEvent) => {
   }
   // The list the slot just left can't take it back until the pointer moves on.
   const blocked = target.id !== current.list && blocksList(current.hysteresis, target.id);
-  // Lists with `project` (trees) keep projecting while blocked: depth changes without a reorder.
-  if (blocked && !target.project) return afterMove(g, current, event);
+  // Trees keep projecting while blocked: depth changes without a reorder.
+  if (blocked && !target.layout.nested) return afterMove(g, current, event);
   if (!blocked) current.target = { list: target.id, at: event.pointer };
 
   // Each list makes its own item for an external draggable.

@@ -8,7 +8,6 @@ import { getCenter, getLayoutRect } from '../animation/layout';
 import { revealElement } from '../core/autoscroll';
 import { keysOf, type GroupContext } from './context';
 import type { ListEntry } from './entry';
-import { projectIndicator, type IndicatorProjection } from './projection';
 import { collect } from './block';
 import { keepSlotHome } from './slot';
 import { atLead } from './landing';
@@ -37,28 +36,21 @@ export const updateIndicator = (g: GroupContext, target: ListEntry, event: DnDEv
   const current = g.session.value!;
   keepSlotHome(g, current);
   const items = collect(g, target);
-  const lead = atLead(g, current, event);
-  const result = target.indicate
-    ? target.indicate(lead, items)
-    : projectIndicator({
-        strategy: target.strategy(),
-        pointer: lead.pointer,
-        items,
-        activeKey: current.slot,
-        length: keysOf(target).length,
-        targets: bandsAt(g, event),
-      });
+  const result = target.layout.indicate(atLead(g, current, event), {
+    keys: keysOf(target),
+    items,
+    activeKey: current.slot,
+    activeIndex: -1,
+    strategy: target.strategy(),
+    lock: null,
+    targets: bandsAt(g, event),
+  });
   if (result !== undefined) showIndicator(g, result && { list: target.id, ...result });
 };
 
 /** Keyboard: shows the insertion line at `index` of `target`; returns where the overlay goes. */
 export const indicateAt = (g: GroupContext, target: ListEntry, index: number): Coordinates | undefined => {
-  const keys = keysOf(target);
-  const line: IndicatorProjection | null = target.indicateAt
-    ? target.indicateAt(index)
-    : index < keys.length
-      ? { index, key: keys[index]!, side: 'before' }
-      : { index, key: keys[keys.length - 1] ?? null, side: 'after' };
+  const line = target.layout.indicateAt(keysOf(target), index);
   if (!line) return undefined;
   showIndicator(g, { list: target.id, ...line });
   const element = (line.key == null ? null : g.items.get(line.key)?.()) ?? target.getElement();

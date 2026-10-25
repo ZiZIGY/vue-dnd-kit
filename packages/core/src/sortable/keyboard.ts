@@ -156,7 +156,7 @@ export const getKeyboardCoordinates = async (
   const list = marker ? lists.get(marker.list) : current.list == null ? undefined : lists.get(current.list);
   if (!list) return current.mode.enterByKey?.(g, current, context);
   // Trees navigate depth themselves; copies over their palette have no slot to move.
-  if (list.project) return;
+  if (list.layout.nested) return;
   // Staying put still answers, so the sensor doesn't fall back to pixel steps.
   const center = () => {
     const element = items.get(current.slot)?.() ?? items.get(current.activeKey)?.();

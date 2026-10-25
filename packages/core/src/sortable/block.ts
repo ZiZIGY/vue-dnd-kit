@@ -44,7 +44,7 @@ export const pickUp = (
   // own. The grabbed one too (as in VS Code): the node it rides in leads the drag, and
   // the grabbed node stays inside it, under the pointer.
   const ridesIn = new Map<Key, Key>();
-  for (const list of ordered) list.carried?.(keys).forEach((carrier, key) => ridesIn.set(key, carrier));
+  for (const list of ordered) list.layout.carried(keys).forEach((carrier, key) => ridesIn.set(key, carrier));
   if (ridesIn.size) keys = keys.filter((key) => !ridesIn.has(key));
   const lead = ridesIn.get(activeKey) ?? activeKey;
   const origin = sources.get(lead)!;
@@ -73,7 +73,7 @@ export const pickUp = (
     let draft = stacked || grouped ? source.filter((key) => !others.has(key)) : [...source];
     // The block forms around the lead: the others leave their places and join it in drop order.
     if (grouped && list === originList) draft = expand(draft, lead, keys);
-    base.set(list.id, list.prepareDraft?.(draft, { lead, keys, copying: false }) ?? draft);
+    base.set(list.id, list.layout.prepareDraft(draft, { lead, keys, copying: false }));
   }
   return { lead, keys, origin, others, stacked, grouped, block: grouped ? keys : [lead], base };
 };

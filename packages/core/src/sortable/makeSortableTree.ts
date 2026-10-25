@@ -19,7 +19,8 @@ import { getLayoutRect } from '../animation/layout';
 import { createId, toElement } from '../utils/dom';
 import { read } from '../utils/read';
 import { useSortableGroup } from './group';
-import type { DraftContext, ListEntry, ProjectContext } from './entry';
+import type { ListEntry } from './entry';
+import type { DraftContext, ProjectContext } from './layout';
 import { defaultGetKey, provideSortableContext, pullOf } from './makeSortableList';
 import type { IndicatorProjection, ProjectionItem } from './projection';
 import {
@@ -593,6 +594,17 @@ export function makeSortableTree<T>(
     getElement: () => toElement(target),
     getKeys: () => keys.value,
     getItem: (key) => rows().get(key)?.item,
+    layout: {
+      nested: true,
+      carried,
+      prepareDraft: start,
+      project: (event, context) => ({ index: project(event, context), lock: context.lock, key: null }),
+      indicate: (event, context) => indicate(event, context.items),
+      indicateAt: (_keys, index) => indicateAt(index),
+      afterMove,
+      hasChanges,
+      reset,
+    },
     strategy: () => 'vertical',
     placeholder: () => read(options.placeholder) ?? 'item',
     animation: () => unref(options.animation) ?? manager.props.animation,
@@ -619,13 +631,6 @@ export function makeSortableTree<T>(
           return node === undefined ? undefined : { key: accessors.getKey(node), item: node };
         }
       : undefined,
-    carried,
-    prepareDraft: start,
-    project,
-    indicate,
-    indicateAt,
-    afterMove,
-    hasChanges,
     isReadonly: () => !isRef(options.items) || isReadonly(options.items),
     build,
     commit,
@@ -636,7 +641,6 @@ export function makeSortableTree<T>(
       dropInfo = null;
       options.onDrop?.(toTreeEvent(event, info));
     },
-    reset,
   };
   onScopeDispose(group.addList(entry));
 

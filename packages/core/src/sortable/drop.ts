@@ -124,10 +124,7 @@ const computeResult = (
     // Rejected keys fly back to where they started: after their nearest original
     // predecessor that is still in the list and stays (other keys may have left it).
     for (const { key, source } of back) if (source.list === list.id) putBack(keys, list, key, source.index, settled);
-    const changed = list.hasChanges
-      ? list.hasChanges(keys, list === target ? insert : [])
-      : !sameKeys(keys, list.getKeys());
-    if (changed) next.set(list, keys);
+    if (list.layout.hasChanges(keys, list === target ? insert : [], list.getKeys())) next.set(list, keys);
   }
   if (!next.size) return null;
   const finalKeys = next.get(target) ?? target.getKeys();
@@ -156,7 +153,7 @@ const computeRemoval = (g: GroupContext, accepted: readonly Key[]): DropResult |
   for (const list of g.lists.values()) {
     const source = list.getKeys();
     const keys = source.filter((key) => !gone.has(key));
-    if (list.hasChanges ? list.hasChanges(keys, []) : keys.length !== source.length) next.set(list, keys);
+    if (list.layout.hasChanges(keys, [], source)) next.set(list, keys);
   }
   if (!next.size) return null;
   return dropResult(g, current, next, [], {
@@ -199,7 +196,7 @@ const reset = (g: GroupContext) => {
   scatter(g, current);
   for (const list of g.lists.values()) {
     list.draft.value = null;
-    list.reset?.();
+    list.layout.reset();
   }
   g.session.value = null;
   setIndicator(g, null);

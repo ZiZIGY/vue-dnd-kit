@@ -4,10 +4,9 @@
  * (`sortOver`); only the item itself can be exchanged instead, over a list that swaps.
  */
 
-import type { DnDEvent, Key } from '../../types';
+import type { DnDEvent } from '../../types';
 import type { GroupContext, Session } from '../context';
 import type { ListEntry } from '../entry';
-import { projectIndex } from '../projection';
 import { blocksKey } from '../stability';
 import { isSwapping, partitionMoved } from '../accept';
 import { collect, viewOf } from '../block';
@@ -33,35 +32,25 @@ export const sortOver = (
       if (!blocked) returnToOrigin(g, event.pointer);
       return false;
     }
-    if (sameList && !target.project) return false;
+    if (sameList && !target.layout.nested) return false;
   }
 
   const keys = viewOf(target, current);
-  const projectionItems = collect(g, target);
+  const items = collect(g, target);
   const activeIndex = sameList ? keys.indexOf(current.slot) : -1;
-  const lead = atLead(g, current, event);
-  let index: number | null;
-  let trigger: Key | null = null;
-  if (target.project) {
-    index = target.project(lead, { keys, items: projectionItems, activeKey: current.slot, activeIndex });
-    // A list that can't sort still projects (tree depth), but keeps its order.
-    if (sameList && !target.canSort()) index = null;
-  } else {
-    const projection = projectIndex({
-      strategy: target.strategy(),
-      pointer: lead.pointer,
-      items: projectionItems,
-      activeKey: current.slot,
-      activeIndex,
-      length: keys.length,
-      lock: current.lock,
-      targets: bandsAt(g, event),
-    });
-    current.lock = projection.lock;
-    index = projection.index;
-    trigger = projection.key;
-  }
-  if (index == null || blocked || blocksKey(current.hysteresis, trigger)) return false;
+  const projection = target.layout.project(atLead(g, current, event), {
+    keys,
+    items,
+    activeKey: current.slot,
+    activeIndex,
+    strategy: target.strategy(),
+    lock: current.lock,
+    targets: bandsAt(g, event),
+  });
+  current.lock = projection.lock;
+  // A list that can't sort still projects (tree depth), but keeps its order.
+  const index = sameList && !target.canSort() ? null : projection.index;
+  if (index == null || blocked || blocksKey(current.hysteresis, projection.key)) return false;
   moveActive(g, target, index, event.pointer);
   return true;
 };
