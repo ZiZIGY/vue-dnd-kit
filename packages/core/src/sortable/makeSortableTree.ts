@@ -23,30 +23,23 @@ import type { ListEntry } from './entry';
 import type { DraftContext, ProjectContext } from './layout';
 import { defaultGetKey, provideSortableContext, pullOf } from './makeSortableList';
 import type { IndicatorProjection, ProjectionItem } from './projection';
+import { blockHeight, createFlatTree, flattenTree, subtreeEnd, type TreeAccessors } from './tree/flatten';
 import {
-  applyTreeMove,
   blockFilter,
-  blockHeight,
-  buildTreeMove,
-  createFlatTree,
   depthRange,
-  flattenTree,
   gapPosition,
   moveKey,
   nearestValidSlot,
   offsetDepth,
   parentAt,
   projectDepth,
-  projectTreeIndex,
-  projectTreeIndicator,
   siblingIndexAt,
-  subtreeEnd,
   type DepthFilter,
   type DraftPosition,
   type KeySet,
-  type TreeAccessors,
-  type TreeMove,
-} from './tree';
+} from './tree/depth';
+import { projectTreeIndex, projectTreeIndicator } from './tree/projection';
+import { applyTreeMove, buildTreeMove, type TreeMove } from './tree/move';
 
 const DEFAULT_INDENTATION = 24;
 

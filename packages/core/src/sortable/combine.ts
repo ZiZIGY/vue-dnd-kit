@@ -17,7 +17,7 @@ import { revealElement } from '../core/autoscroll';
 import { listOfKey, type GroupContext } from './context';
 import type { ListEntry } from './entry';
 import { accepts } from './accept';
-import { NEST_BAND } from './tree';
+import { NEST_BAND } from './tree/projection';
 
 /** The middle band of an item: across the whole item, `NEST_BAND` of it along the main axis. */
 export const dropBand = (item: Rect, strategy: SortableStrategy): Rect => {
