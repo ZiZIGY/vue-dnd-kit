@@ -129,16 +129,21 @@ test.describe('drop into an item', () => {
     await expect(state(page)).toHaveText(`combine-list:a1,a2,a3,g2[],g1[],a4,a5,gl[] | ${GRID}`);
   });
 
-  test('a selection goes in whole, in list order', async ({ page }) => {
-    await ctrlClick(byId(page, 'a5'), byId(page, 'a2'));
-    // The selection gathers at a5 on pickup: aim at g1 once the list has settled.
-    await hold(page, byId(page, 'a5'), await at(byId(page, 'a5'), 0.5, 0.2));
+  test('a selection goes in whole, in list order; its block waits for the pointer at a group', async ({ page }) => {
+    await ctrlClick(byId(page, 'a4'), byId(page, 'a3'));
+    // The selection gathers at a4 on pickup, right below g2: a3 leads the block upward.
+    await hold(page, byId(page, 'a4'), await at(byId(page, 'a4'), 0.5, 0.4));
     await layoutSettled(page);
-    await glideTo(page, await at(byId(page, 'g1'), 0.5, 0.5));
-    await expect(byId(page, 'g1')).toHaveAttribute('data-target');
+    expect(await order(page, 'combine-list')).toBe('a1,a2,g1,g2,a3,a4,gl,a5');
+    // On a3, the block's leading member: it would step past an item, but g2 can be
+    // dropped into, so the block waits for the pointer to get there.
+    await glideTo(page, await at(byId(page, 'a3'), 0.5, 0.5));
+    expect(await order(page, 'combine-list')).toBe('a1,a2,g1,g2,a3,a4,gl,a5');
+    await glideTo(page, await at(byId(page, 'g2'), 0.5, 0.5));
+    await expect(byId(page, 'g2')).toHaveAttribute('data-target');
     await page.mouse.up();
     await settled(page);
-    await expect(state(page)).toHaveText(`combine-list:a1,g1[a2,a5],a3,g2[],a4,gl[] | ${GRID}`);
+    await expect(state(page)).toHaveText(`combine-list:a1,a2,g1[],g2[a3,a4],gl[],a5 | ${GRID}`);
   });
 
   test('cancelling over a group, or a group refusing the drop, flies the task back', async ({ page }) => {
@@ -151,8 +156,13 @@ test.describe('drop into an item', () => {
     await settled(page);
     await expect(state(page)).toHaveText(`${LIST} | ${GRID}`);
 
-    // H2 holds one task: a second one is refused on drop.
-    await drag(page, byId(page, 'b1'), await at(byId(page, 'h2'), 0.5, 0.5));
+    // H2 holds one task: a second one is refused on drop. On the way b4 slides from the
+    // second row up to the first, across H2: the target shows once it has passed.
+    await hold(page, byId(page, 'b1'), await at(byId(page, 'h2'), 0.5, 0.5));
+    await layoutSettled(page);
+    await glideTo(page, await at(byId(page, 'h2'), 0.5, 0.55));
+    await expect(byId(page, 'h2')).toHaveAttribute('data-target');
+    await page.mouse.up();
     await settled(page);
     await expect(state(page)).toContainText('combine-grid:b2,h1[],b3,b4,h2[b1],b5,b6');
     await hold(page, byId(page, 'b6'), await at(byId(page, 'h2'), 0.5, 0.5));

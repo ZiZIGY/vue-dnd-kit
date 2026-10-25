@@ -476,9 +476,16 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
   /**
    * Drop targets inside items, as of the target detection at `at` (that frame's pointer):
-   * `keys` of the items holding one that takes the drag, `ids` of those that counted.
+   * the middle band of each item holding one that takes the drag, by key, and the `ids`
+   * of the targets that counted.
    */
-  let targets: { at: Coordinates | null; keys: Set<Key>; ids: Set<Key> } = { at: null, keys: new Set(), ids: new Set() };
+  let targets: { at: Coordinates | null; bands: Map<Key, Rect>; ids: Set<Key> } = {
+    at: null,
+    bands: new Map(),
+    ids: new Set(),
+  };
+  /** The bands for projecting `event`: of its own target detection. */
+  const bandsAt = (event: DnDEvent) => (targets.at === event.pointer ? targets.bands : undefined);
 
   /**
    * A drop target inside an item of a list that takes the drag (rfcs/0001-v3.md §6)
@@ -494,10 +501,11 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const list = key != null && items.get(key)?.() === found!.element ? listOfKey(key, true) : undefined;
     if (!list || !accepts(list, active)) return true;
     if (!entry.accepts(active)) return false;
-    if (targets.at !== point) targets = { at: point, keys: new Set(), ids: new Set() };
-    targets.keys.add(key!);
+    if (targets.at !== point) targets = { at: point, bands: new Map(), ids: new Set() };
     // Layout rects, as projection uses: an item still sliding into place counts where it lands.
-    if (!containsPoint(dropBand(manager.measure(found!.element), list.strategy()), point)) return false;
+    const band = dropBand(manager.measure(found!.element), list.strategy());
+    targets.bands.set(key!, band);
+    if (!containsPoint(band, point)) return false;
     targets.ids.add(entry.id);
     return true;
   };
@@ -969,6 +977,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       items: collect(target),
       activeKey: current.slot,
       length: keysOf(target).length,
+      targets: bandsAt(event),
     });
     if (result !== undefined) showIndicator(result && { list: target.id, ...result });
   };
@@ -1219,7 +1228,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         activeIndex,
         length: keys.length,
         lock: current.lock,
-        targets: targets.at === event.pointer ? targets.keys : undefined,
+        targets: bandsAt(event),
       });
       current.lock = projection.lock;
       index = projection.index;

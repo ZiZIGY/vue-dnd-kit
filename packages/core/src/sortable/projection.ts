@@ -31,13 +31,21 @@ export interface ProjectArgs {
   /** Grid only: the item that just moved under the pointer, ignored until the pointer leaves it. */
   lock: Key | null;
   /**
-   * Items holding a drop target for this drag: their middle drops into them, so only the
-   * pointer itself moves past them. In grids their edges put the active item before or
-   * after them, as in lists, instead of taking their cell (they would run from the
-   * pointer), and a multi-drag block never steps past them ahead of the pointer.
+   * Items holding a drop target for this drag, with their middle band, where the drop
+   * goes into the item: nothing moves while the pointer is there (should a sibling still
+   * sliding into place cover the target from the hit test). Only the pointer moves past
+   * them: in grids their edges put the active item before or after them, as in lists,
+   * instead of taking their cell (it would run from the pointer), and a multi-drag block
+   * never steps past them ahead of the pointer.
    */
-  targets?: ReadonlySet<Key>;
+  targets?: ReadonlyMap<Key, Rect>;
 }
+
+/** The pointer is in the middle band of an item you can drop into. */
+const inTarget = (args: Pick<ProjectArgs, 'pointer' | 'targets'>, item: ProjectionItem) => {
+  const band = args.targets?.get(item.key);
+  return !!band && containsPoint(band, args.pointer);
+};
 
 export interface Projection {
   /** New index of the active item in the target draft; `null` keeps the current position. */
@@ -165,6 +173,7 @@ const projectList = (args: ProjectArgs): Projection => {
     hit ??= item;
   }
   if (!hit) return { index: projectEdges(p, items, axis, activeIndex, length), lock: null, key: null };
+  if (inTarget(args, hit)) return keep;
 
   const center = (hit.rect[axis.start] + hit.rect[axis.end]) / 2;
   if (activeIndex === -1) return { index: p < center ? hit.index : hit.index + 1, lock: null, key: hit.key };
@@ -198,7 +207,7 @@ const projectGrid = (args: ProjectArgs): Projection => {
     hit ??= item;
   }
   if (hit) {
-    if (hit.key === lock) return { index: null, lock, key: null };
+    if (hit.key === lock || inTarget(args, hit)) return { index: null, lock, key: null };
     if (activeIndex !== -1 && !args.targets?.has(hit.key)) return { index: hit.index, lock: hit.key, key: hit.key };
     // Before or after the item, by the side of its center the pointer is on. Passing it
     // leaves the slot under the pointer, so it needs no lock (an entering item does).
@@ -242,7 +251,7 @@ export const projectIndicator = (
       : items.find((item) => inBand(item.rect, pointer[axisOf(strategy).axis], axisOf(strategy)));
   const alongX = strategy !== 'vertical';
   if (hit) {
-    if (hit.key === activeKey) return null;
+    if (hit.key === activeKey || inTarget(args, hit)) return null;
     const center = getCenter(hit.rect);
     const before = alongX ? pointer.x < center.x : pointer.y < center.y;
     return { index: before ? hit.index : hit.index + 1, key: hit.key, side: before ? 'before' : 'after' };
