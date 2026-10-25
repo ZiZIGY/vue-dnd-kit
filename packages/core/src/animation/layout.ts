@@ -9,12 +9,15 @@ import type {
   Coordinates,
   Key,
   LayoutAnimation,
+  LayoutAnimationContext,
   Rect,
   Size,
 } from '../types';
 
 interface LayoutAnimationState {
-  animation: Animation;
+  /** Ends it early: cancels the animation, aborts a custom function's signal. */
+  stop(): void;
+  running(): boolean;
   /** Layout rect the animation ends at. */
   to: Rect;
   /** From a user function: it may animate more than `translate`. */
@@ -27,6 +30,42 @@ const layoutAnimations = new WeakMap<Element, LayoutAnimationState>();
 
 const isRunning = (animation: Animation) =>
   animation.playState !== 'finished' && animation.playState !== 'idle';
+
+/** What a custom animation function returned is a WAAPI `Animation` (or acts like one). */
+const isAnimation = (value: unknown): value is Animation =>
+  !!value &&
+  typeof (value as Animation).cancel === 'function' &&
+  typeof (value as Animation).addEventListener === 'function';
+
+const noop = () => {};
+
+/**
+ * Settles when what an animation function returned has ended: an `Animation` finished
+ * or cancelled, a promise (or a thenable, e.g. a GSAP tween) settled, anything with a
+ * `finished` promise (motion's controls) done; at once for anything else. Never rejects.
+ */
+const ended = (result: unknown): Promise<void> => {
+  const finished = (result as { finished?: unknown } | null | undefined)?.finished;
+  const done = finished && typeof (finished as PromiseLike<unknown>).then === 'function' ? finished : result;
+  return Promise.resolve(done).then(noop, noop);
+};
+
+/** Margin over an animation's duration after which it counts as ended anyway. */
+export const STALL_MARGIN = 1000;
+
+/**
+ * Waits for an animation (see `ended`), but never longer than `timeout`: one that never
+ * settles (a stalled compositor, a custom function that never resolves) must not hold
+ * up what waits for it, such as a drop (rfcs/0001-v3.md §13).
+ */
+export const settle = async (result: unknown, timeout: number): Promise<void> => {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await Promise.race([ended(result), new Promise((resolve) => (timer = setTimeout(resolve, timeout)))]);
+  } finally {
+    clearTimeout(timer);
+  }
+};
 
 export const DEFAULT_LAYOUT_ANIMATION: Required<AnimationOptions> = {
   duration: 200,
@@ -114,7 +153,7 @@ const parseTranslate = (value: string): Coordinates => {
 export const getLayoutRect = (element: Element): Rect => {
   const rect = getRect(element);
   const state = layoutAnimations.get(element);
-  if (!state || state.animation.playState === 'finished') return rect;
+  if (!state?.running()) return rect;
   const { x, y } = parseTranslate(getComputedStyle(element).translate);
   return offsetRect(rect, -x, -y);
 };
@@ -166,24 +205,68 @@ const cancelTransformTransitions = (elements: Element[]) => {
   }
 };
 
-export const stopLayoutAnimation = (element: Element): void => {
-  const state = layoutAnimations.get(element);
-  state?.animation.cancel();
+const release = (element: HTMLElement, state: LayoutAnimationState) => {
+  if (layoutAnimations.get(element) !== state) return;
   layoutAnimations.delete(element);
-  if (state?.crossing) (element as HTMLElement).style.pointerEvents = '';
+  if (state.crossing) element.style.pointerEvents = '';
 };
 
-const track = (element: HTMLElement, animation: Animation, to: Rect, custom: boolean, crossing?: boolean) => {
-  const state = { animation, to, custom, crossing };
+export const stopLayoutAnimation = (element: Element): void => {
+  const state = layoutAnimations.get(element);
+  if (!state) return;
+  release(element as HTMLElement, state);
+  state.stop();
+};
+
+const track = (element: HTMLElement, state: LayoutAnimationState) => {
   layoutAnimations.set(element, state);
-  if (crossing) element.style.pointerEvents = 'none';
-  const release = () => {
-    if (layoutAnimations.get(element) !== state) return;
-    layoutAnimations.delete(element);
-    if (crossing) element.style.pointerEvents = '';
+  if (state.crossing) element.style.pointerEvents = 'none';
+};
+
+/** Keeps a WAAPI animation of `element` (ours, or a custom function's) until it ends. */
+const trackAnimation = (
+  element: HTMLElement,
+  animation: Animation,
+  state: Omit<LayoutAnimationState, 'stop' | 'running'>,
+  abort?: AbortController,
+) => {
+  const tracked: LayoutAnimationState = {
+    ...state,
+    stop: () => {
+      animation.cancel();
+      abort?.abort();
+    },
+    running: () => isRunning(animation),
   };
-  animation.addEventListener('finish', release);
-  animation.addEventListener('cancel', release);
+  track(element, tracked);
+  animation.addEventListener('finish', () => release(element, tracked));
+  animation.addEventListener('cancel', () => release(element, tracked));
+};
+
+/**
+ * Keeps what a custom function returned until it ends (see `ended`): an `Animation`, or
+ * a promise whose animation only the function's `signal` can stop.
+ */
+const trackCustom = (
+  element: HTMLElement,
+  result: unknown,
+  abort: AbortController,
+  state: Omit<LayoutAnimationState, 'stop' | 'running' | 'custom'>,
+) => {
+  if (isAnimation(result)) return trackAnimation(element, result, { ...state, custom: true }, abort);
+  if (!result || typeof result !== 'object') return;
+  let settled = false;
+  const tracked: LayoutAnimationState = {
+    ...state,
+    custom: true,
+    stop: () => abort.abort(),
+    running: () => !settled,
+  };
+  track(element, tracked);
+  void ended(result).then(() => {
+    settled = true;
+    release(element, tracked);
+  });
 };
 
 const sameRect = (a: Rect, b: Rect) =>
@@ -201,59 +284,58 @@ export interface FlipEntry {
   crossing?: boolean;
 }
 
-/**
- * Animates elements from their captured rects to their current layout.
- * Reads happen in one pass before any write. An animation still heading to the
- * same layout rect keeps running; one whose target moved restarts from where the
- * element visually was.
- */
-export const flip = (
-  entries: FlipEntry[],
-  option: LayoutAnimation | undefined,
-): void => {
-  const resolved = resolveAnimation(option, DEFAULT_LAYOUT_ANIMATION);
-  // Writes first: whatever the measurement can't see through.
-  cancelTransformTransitions(entries.map((entry) => entry.element));
-  for (const { element } of entries) {
-    if (!resolved || layoutAnimations.get(element)?.custom) stopLayoutAnimation(element);
-  }
-  if (!resolved) return;
+/** Entries animated with one option: the items of one list. */
+export interface FlipBatch {
+  entries: FlipEntry[];
+  option: LayoutAnimation | undefined;
+  /** Timing for `true` and for custom functions. Default `DEFAULT_LAYOUT_ANIMATION`. */
+  defaults?: Required<AnimationOptions>;
+}
 
-  const measured = entries.map((entry) => ({ ...entry, last: getLayoutRect(entry.element) }));
-  for (const { key, element, first, last, crossing } of measured) {
-    const running = layoutAnimations.get(element);
-    if (running && isRunning(running.animation) && sameRect(running.to, last)) continue;
-    // Interrupted on its way in from another list, it keeps ignoring the pointer.
-    const passing = crossing || (!!running?.crossing && isRunning(running.animation));
-    stopLayoutAnimation(element);
-    const dx = first.left - last.left;
-    const dy = first.top - last.top;
-    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue;
-    if (resolved.custom) {
-      const result = resolved.custom({
-        key,
-        element,
-        from: first,
-        to: last,
-        options: resolved.options,
-      });
-      if (result && typeof (result as Animation).cancel === 'function') {
-        track(element, result as Animation, last, true, passing);
-      }
-      continue;
+/**
+ * Animates elements from their captured rects to their current layout, a batch per list.
+ * Every layout read happens in one pass before any animation starts. An animation still
+ * heading to the same layout rect keeps running; one whose target moved restarts from
+ * where the element visually was. A custom function's animation restarts every time:
+ * its offset in flight can't be told apart from the layout.
+ */
+export const flip = (batches: FlipBatch[], reason: LayoutAnimationContext['reason'] = 'drag'): void => {
+  // Writes first: whatever the measurement can't see through.
+  cancelTransformTransitions(batches.flatMap(({ entries }) => entries.map((entry) => entry.element)));
+  const runs = batches.map(({ entries, option, defaults }) => {
+    const resolved = resolveAnimation(option, defaults ?? DEFAULT_LAYOUT_ANIMATION);
+    for (const { element } of entries) {
+      if (!resolved || layoutAnimations.get(element)?.custom) stopLayoutAnimation(element);
     }
-    if (!canAnimate(element)) continue;
-    track(
-      element,
-      element.animate(
-        [{ translate: `${dx}px ${dy}px` }, { translate: '0px 0px' }],
-        resolved.options,
-      ),
-      last,
-      false,
-      passing,
-    );
-  }
+    return resolved && { resolved, entries };
+  });
+  const measured = runs.map((run) => run?.entries.map((entry) => getLayoutRect(entry.element)));
+
+  runs.forEach((run, index) => {
+    if (!run) return;
+    const { resolved, entries } = run;
+    entries.forEach(({ key, element, first, crossing }, at) => {
+      const last = measured[index]![at]!;
+      const running = layoutAnimations.get(element);
+      if (running?.running() && sameRect(running.to, last)) return;
+      // Interrupted on its way in from another list, it keeps ignoring the pointer.
+      const passing = !!crossing || (!!running?.crossing && running.running());
+      stopLayoutAnimation(element);
+      const dx = first.left - last.left;
+      const dy = first.top - last.top;
+      if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
+      if (resolved.custom) {
+        const abort = new AbortController();
+        const { options } = resolved;
+        const result = resolved.custom({ key, element, from: first, to: last, options, reason, signal: abort.signal });
+        trackCustom(element, result, abort, { to: last, crossing: passing });
+        return;
+      }
+      if (!canAnimate(element)) return;
+      const animation = element.animate([{ translate: `${dx}px ${dy}px` }, { translate: '0px 0px' }], resolved.options);
+      trackAnimation(element, animation, { to: last, custom: false, crossing: passing });
+    });
+  });
 };
 
 /** Fade for elements that appear because of a drag change (returned multi-drag items, copies). */

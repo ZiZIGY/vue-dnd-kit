@@ -12,6 +12,8 @@ import type { DropResult } from './drop';
 import type { Hysteresis } from './stability';
 import type { SortableSpot } from './announcements';
 import type { SortableMode } from './modes/mode';
+import type { NearSet } from './flip';
+import type { AutoPass } from './autoAnimate';
 import { patchIndexMap } from './draft';
 
 export interface Session {
@@ -104,6 +106,18 @@ export interface GroupContext {
   returning: { keys: Set<Key>; from: Rect } | null;
   /** The next FLIP pass is the pickup of a `'group'` drag: the others travel into the block, from other lists too. */
   gathering: boolean;
+  /** Items worth a FLIP during a drag: those near the visible area (see `flip.ts`). */
+  near: NearSet | null;
+  /** Keys registered while a FLIP pass waits for its render: the items that render creates. */
+  fresh: Set<Key> | null;
+  /** A drag's FLIP pass waits for its render: changes of the sources it renders are the drag's. */
+  dragPass: boolean;
+
+  // Changes no drag made (autoAnimate.ts)
+  /** Lists whose items changed, measured before the change renders. */
+  auto: AutoPass | null;
+  /** Copies of items that left, still animating out, by key. */
+  leaving: Map<Key, () => void>;
 
   /** List whose strategy and gap the overlay column follows. */
   columnList: Key | null;
@@ -140,6 +154,11 @@ export const createContext = (manager: DnDManager, name: string): GroupContext =
   version: shallowRef(0),
   returning: null,
   gathering: false,
+  near: null,
+  fresh: null,
+  dragPass: false,
+  auto: null,
+  leaving: new Map(),
   columnList: null,
   targets: { at: null, bands: new Map(), ids: new Set() },
   movedAt: null,

@@ -135,7 +135,8 @@ describe('measuring service', () => {
     styles.set(item.element, { translate: '0px 25px' });
     // A custom layout animation that is still running.
     const running = { playState: 'running', cancel() {}, addEventListener() {} } as unknown as Animation;
-    flip([{ key: 'a', element: item.element, first: { left: 0, top: 125, width: 100, height: 40, right: 100, bottom: 165 } }], () => running);
+    const first = { left: 0, top: 125, width: 100, height: 40, right: 100, bottom: 165 };
+    flip([{ entries: [{ key: 'a', element: item.element, first }], option: () => running }]);
     item.move([0, 125, 100, 40]);
     expect(measurer.measure(item.element).top).toBe(100);
   });

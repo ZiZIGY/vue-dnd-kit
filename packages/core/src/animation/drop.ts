@@ -1,36 +1,13 @@
 import type { AnimationOptions, DropAnimation, DropAnimationContext, Rect } from '../types';
-import { canAnimate, getCenter, prefersReducedMotion, resolveAnimation } from './layout';
+import { STALL_MARGIN, canAnimate, getCenter, prefersReducedMotion, resolveAnimation, settle } from './layout';
 
 export const DEFAULT_DROP_ANIMATION: Required<AnimationOptions> = {
   duration: 250,
   easing: 'ease',
 };
 
-/** Margin over the animation duration after which the drop ends anyway. */
-const STALL_MARGIN = 1000;
-
 /** Scale at which an overlay going `into` a zone vanishes, centered on it. */
 const INTO_SCALE = 0.25;
-
-/**
- * Waits for the drop animation, but never longer than `timeout`: an animation that
- * never settles (a stalled compositor, a custom hook that never resolves) must not
- * leave the session stuck in `dropping` (rfcs/0001-v3.md §13).
- */
-const settle = async (result: Animation | Promise<unknown> | void, timeout: number) => {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const done =
-    result && typeof (result as Animation).finished === 'object'
-      ? (result as Animation).finished
-      : Promise.resolve(result);
-  try {
-    await Promise.race([done, new Promise((resolve) => (timer = setTimeout(resolve, timeout)))]);
-  } catch {
-    // A cancelled animation still ends the drop.
-  } finally {
-    clearTimeout(timer);
-  }
-};
 
 /**
  * Flies the overlay to the final rect of the dropped item, or fades it out when the
