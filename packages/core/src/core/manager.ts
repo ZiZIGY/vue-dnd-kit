@@ -543,7 +543,8 @@ export function createDnDManager(props: DnDProviderProps) {
       sensor,
     };
     previewEnabled = entry.overlay;
-    preview = entry.overlay ? clonePreview(element) : null;
+    // Sortable items (they have a container) stay opaque: their background is often the list's.
+    preview = entry.overlay ? clonePreview(element, { opaque: !!entry.getContainer }) : null;
     const container = entry.getContainer?.() ?? element.parentElement;
     containerRect = container ? getRect(container) : null;
     origin = coordinates;

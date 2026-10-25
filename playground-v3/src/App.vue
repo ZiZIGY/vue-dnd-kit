@@ -80,6 +80,13 @@
       :class="{ active: current === name }"
       >{{ name }}</a
     >
+    <!-- UI kits run as separate pages: their global CSS stays out of this one. -->
+    <a
+      href="/kits/vuetify.html"
+      class="kit"
+      >vuetify ↗</a
+    >
+    <a href="/kits/nuxt-ui.html">nuxt-ui ↗</a>
   </nav>
   <main>
     <DnDProvider>
@@ -90,3 +97,9 @@
     </DnDProvider>
   </main>
 </template>
+
+<style scoped>
+  .kit {
+    margin-left: auto;
+  }
+</style>
