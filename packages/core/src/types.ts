@@ -24,6 +24,12 @@ export type Key = string | number;
 export type MaybeReadonlyRefOrGetter<T> = T | Readonly<Ref<T>> | (() => T);
 
 /**
+ * A value or any ref, for options where a function is a value of its own (an overlay
+ * component, an accept rule, a custom animation), so a getter can't be told apart.
+ */
+export type MaybeReadonlyRef<T> = T | Readonly<Ref<T>>;
+
+/**
  * A component instance as a template ref gives it. Only `$el` is read: Vue's full
  * `ComponentPublicInstance` would reject every component that declares typed emits
  * (its `$emit` takes any event name), which is most UI kit components.
@@ -726,7 +732,10 @@ export interface TreeProjection {
  * (`from`: before the move; `to`: after it, with the node already removed from its
  * old place). `from.parentKey` is `null` for root nodes and for items from another list.
  * A multi-drag moves `keys` (each with its subtree) side by side: `from` is where the
- * dragged node was, `to` where the first of them lands.
+ * node leading the drag was (the grabbed one, or the selected node it rides in), `to`
+ * where the first of them lands. A copy (`mode: 'copy'`) leaves the nodes where they are
+ * and inserts `items`, their copies; a plain draggable (`mode: 'insert'`) the node
+ * `createItem` made.
  */
 export interface SortableTreeDropEvent<T = unknown> extends SortableDropEvent<T> {
   from: { list: Key | null; index: number; parentKey: Key | null };
@@ -736,37 +745,78 @@ export interface SortableTreeDropEvent<T = unknown> extends SortableDropEvent<T>
 /**
  * Options of `makeSortableTree`. A multi-drag moves the selected nodes as one block, each
  * with its subtree, to one place and depth (in document order); a selected node inside
- * another selected one rides along in its subtree. `canNest` and `maxDepth` apply to
+ * another selected one rides along in its subtree. That goes for the grabbed node too
+ * (as in VS Code): it stays inside the selected node it is in, which moves with its
+ * subtree, while the overlay stays on the grabbed row. `canNest` and `maxDepth` apply to
  * the whole block.
+ *
+ * The other options mean what they mean on `makeSortableList`. They take a value, a ref
+ * or a getter (`overlay`, `animation`: a value or a ref) and are read when the tree needs
+ * them; `id` and `group` are read once, when the tree is created. Functions (`getKey`,
+ * `getChildren`, `setChildren`, `canNest`, `clone`, `createItem`, the callbacks) are
+ * passed as they are.
  */
 export interface SortableTreeOptions<T> {
   items: Ref<T[]>;
-  /** Default: `node.id`. Also keys `makeSortableItem({ item })`. */
+  /** Default: `node.id`. Also keys `makeSortableItem({ item })`, copies and created nodes. */
   getKey?: (node: T) => Key;
   getChildren?: (node: T) => T[] | undefined;
   setChildren?: (node: T, children: T[]) => void;
-  /** Default: `useId()`, stable between server and client render. */
+  /** Default: `useId()`, stable between server and client render. Read once. */
   id?: Key;
   /** Overlay component for this tree's rows (a row's own `overlay` wins). */
   overlay?: Component;
+  /**
+   * Modifiers for drags of this tree's rows, applied after the provider's `modifiers` (a
+   * row's own `modifiers` win): e.g. `[restrictToVerticalAxis]`. Read when the drag starts.
+   * A locked axis still nests: the depth then comes from hovering the middle of a row.
+   */
+  modifiers?: MaybeReadonlyRefOrGetter<Modifier[] | undefined>;
+  /** Lists and trees with the same group name exchange items. Default: a group of its own. Read once. */
   group?: string | SortableGroupOptions;
+  /** Multi-drag of items of several types: `'all'` (default) or `'some'` must be accepted (`group.put`). */
+  acceptMode?: MaybeReadonlyRefOrGetter<AcceptMode | undefined>;
   /** Pixels of horizontal offset per depth level. Default 24. */
-  indentation?: number;
+  indentation?: MaybeReadonlyRefOrGetter<number | undefined>;
   /** How the depth is chosen: horizontal offset, hovering the middle of a row, or both (default). */
-  nesting?: TreeNesting;
+  nesting?: MaybeReadonlyRefOrGetter<TreeNesting | undefined>;
   /**
    * `'item'` (default): the dragged node moves through the rows at its projected depth.
    * `'indicator'`: the tree doesn't move; `indicator` (on the tree and on each row's
    * `makeSortableItem`) says where the drop goes, with its `depth` and `parentKey`, and
    * you draw the line. Dropping outside then cancels.
    */
-  placeholder?: SortablePlaceholder;
+  placeholder?: MaybeReadonlyRefOrGetter<SortablePlaceholder | undefined>;
   /** Deepest allowed depth (roots are 0). The dragged nodes' own descendants count. */
-  maxDepth?: number;
+  maxDepth?: MaybeReadonlyRefOrGetter<number | undefined>;
   /** Whether `node` may go under `parent`; a multi-drag asks for every dragged node. */
   canNest?: (node: T, parent: T) => boolean;
-  collapsed?: Ref<Set<Key>>;
-  animation?: LayoutAnimation;
+  /** Keys of the nodes whose children are hidden. */
+  collapsed?: MaybeReadonlyRefOrGetter<ReadonlySet<Key> | undefined>;
+  /**
+   * Creates copies (`group.pull: 'clone'`, the copy modifier key). Required for copying.
+   * Return the copy with its whole subtree: a copied folder keeps its children. The copy
+   * and each of its descendants need keys of their own (read with `getKey`), as every
+   * node of a tree does.
+   */
+  clone?: (node: T) => T;
+  /**
+   * Accepts plain draggables from outside: creates the node to insert, at the projected
+   * position and depth (`canNest` and `maxDepth` apply to it). With the keyboard, an arrow
+   * toward the tree takes the draggable in, level with the row it goes before, and the
+   * arrow keys then move the node like any other.
+   */
+  createItem?: (active: Active) => T | undefined;
+  /**
+   * A drop outside every target: keep the nodes where the placeholder is, cancel, or
+   * remove them. Default `'placeholder'` (`'cancel'` with `placeholder: 'indicator'`).
+   * Read at the drop.
+   */
+  dropOutside?: MaybeReadonlyRefOrGetter<DropOutside | undefined>;
+  /** FLIP animation of this tree; default: the provider's `animation`. A value or a ref (a function is a custom animation). */
+  animation?: MaybeReadonlyRef<LayoutAnimation | undefined>;
+  /** Overrides the provider's `autoScroll` for this tree's scroll container. Read when the drag starts. */
+  autoScroll?: MaybeReadonlyRefOrGetter<boolean | AutoScrollOptions | undefined>;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
   onBeforeDrop?: (
     event: SortableTreeDropEvent<T>,
@@ -784,7 +834,18 @@ export interface SortableTreeReturn<T> {
   /** Indicator mode: where the drop goes, with its `depth` and `parentKey`; `null` when not here. */
   indicator: ComputedRef<SortableIndicator | null>;
   isOver: ComputedRef<boolean>;
+  /** Something is being dragged and this tree takes it. */
+  isAccepting: ComputedRef<boolean>;
+  /**
+   * The row a virtualizer must keep mounted: the slot while it is in this tree (the
+   * dragged node, the selected node the grabbed one rides in, a copy, a created node),
+   * otherwise the dragged node.
+   */
   activeKey: ComputedRef<Key | null>;
+  /** Index of `activeKey` in `items`, -1 when it isn't here. */
+  activeIndex: ComputedRef<number>;
+  /** Size of the dragged row at drag start. */
+  activeSize: ComputedRef<Size | null>;
   captureLayout(): void;
 }
 

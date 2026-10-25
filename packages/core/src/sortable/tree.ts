@@ -286,6 +286,8 @@ export interface TreeIndexArgs {
   length: number;
   /** Hover-to-nest: whether the active node may become a child of `key`. Omit to disable. */
   canNestInto?: (key: Key) => boolean;
+  /** Rows that keep the slot where it is while hovered, as the active row does (the originals of a copy). */
+  still?: KeySet;
 }
 
 export interface TreeIndexProjection {
@@ -303,11 +305,13 @@ export interface TreeIndexProjection {
  * else follows the vertical list rule (cross a neighbour's center to pass it), so the
  * slot is stable after the layout shifts. The edge bands therefore mean before/after.
  * The other members of a multi-drag block are never nested into: over them the block
- * steps as in lists.
+ * steps as in lists. Over a `still` row (the original of a copy) nothing moves: a copy
+ * doesn't go into its own original just because the drag started over it.
  */
 export function projectTreeIndex(args: TreeIndexArgs): TreeIndexProjection {
-  const { pointer, items, activeKey, activeIndex, length, canNestInto } = args;
+  const { pointer, items, activeKey, activeIndex, length, canNestInto, still } = args;
   const hit = rowUnder(items, pointer, activeKey);
+  if (hit && still?.has(hit.key)) return { index: null, nest: null, hit };
   if (hit && canNestInto && inNestBand(hit, pointer) && canNestInto(hit.key)) {
     // Right after the row: removing the active slot above it shifts the row up by one.
     const index = activeIndex !== -1 && activeIndex < hit.index ? hit.index : hit.index + 1;
@@ -332,7 +336,7 @@ export interface TreeIndicatorArgs {
   activeKey: Key;
   /** Draft length. */
   length: number;
-  /** Rows that travel with the drag (the dragged nodes and their subtrees): no line on them. */
+  /** Rows that travel with the drag (the dragged nodes and their subtrees; the originals of a copy): no line on them. */
   moving: KeySet;
   /** Hover-to-nest, as in `projectTreeIndex`. */
   canNestInto?: (key: Key) => boolean;
