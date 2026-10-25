@@ -10,11 +10,11 @@ import { indexMap, lookup, type GroupContext, type Session } from '../context';
 import type { ListEntry } from '../entry';
 import { projectSwap } from '../projection';
 import { blocksKey, passedKeys } from '../stability';
-import { canSwap } from '../accept';
+import { canSwap, partitionMoved } from '../accept';
 import { collect } from '../block';
 import { syncManager } from '../landing';
 import { bump } from '../flip';
-import { moving, type SortableMode } from './mode';
+import { asItself, itself, movingDragMode, type SortableMode } from './mode';
 
 /**
  * Restores the drafts to the drag start, then exchanges the active item with `partner`:
@@ -80,11 +80,15 @@ const updateSwap = (g: GroupContext, current: Session, target: ListEntry, event:
 };
 
 export const swap: SortableMode = {
-  ...moving,
   name: 'swap',
+  moves: true,
+  dragMode: movingDragMode,
+  partition: partitionMoved,
   over: updateSwap,
   // Off the lists, or over a list that sorts: the exchange is undone.
   leave: (g) => applySwap(g, null, null),
+  inserted: itself,
+  placed: asItself,
   facts: (g, current) => ({ partner: partnerOf(g, current, current.swap!) }),
 };
 

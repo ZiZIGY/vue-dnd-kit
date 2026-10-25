@@ -9,12 +9,12 @@ import type { GroupContext, Session } from '../context';
 import type { ListEntry } from '../entry';
 import { projectIndex } from '../projection';
 import { blocksKey } from '../stability';
-import { isSwapping } from '../accept';
+import { isSwapping, partitionMoved } from '../accept';
 import { collect, viewOf } from '../block';
 import { moveActive, returnToOrigin } from '../slot';
 import { atLead } from '../landing';
 import { bandsAt } from '../combine';
-import { moving, type SortableMode } from './mode';
+import { asItself, itself, movingDragMode, type SortableMode } from './mode';
 import { swap } from './swap';
 
 /** The slot goes to the index the pointer projects in `target` (see `SortableMode.over`). */
@@ -67,8 +67,10 @@ export const sortOver = (
 };
 
 export const sort: SortableMode = {
-  ...moving,
   name: 'move',
+  moves: true,
+  dragMode: movingDragMode,
+  partition: partitionMoved,
   over: (g, current, target, event, blocked) => {
     // A list that swaps (as the origin does) exchanges the item instead; over one that
     // sorts, an exchange made there is undone.
@@ -76,4 +78,6 @@ export const sort: SortableMode = {
     if (current.swap != null) swap.leave!(g, current);
     return sortOver(g, current, target, event, blocked);
   },
+  inserted: itself,
+  placed: asItself,
 };

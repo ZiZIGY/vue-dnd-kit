@@ -12,7 +12,7 @@ import type { Coordinates, DnDEvent, DragMode, Key, KeyboardMoveContext } from '
 import { listOf, type GroupContext, type Session } from '../context';
 import type { ListEntry } from '../entry';
 import type { DropFacts } from '../drop';
-import { isSwapping, partitionMoved, type Partition } from '../accept';
+import { isSwapping, type Partition } from '../accept';
 
 export interface SortableMode {
   /** The drop event's `mode`. */
@@ -57,13 +57,15 @@ export interface SortableMode {
 export const enters = (g: GroupContext, current: Session, target: ListEntry): boolean =>
   current.mode.enter?.(g, current, target) ?? true;
 
-/** The steps of the modes in which the dragged items themselves move (`sort`, `swap`). */
-export const moving = {
-  moves: true,
-  // In a list that swaps (as the origin does), the drop exchanges.
-  dragMode: (g: GroupContext, current: Session): DragMode =>
-    isSwapping(g, current, listOf(g, current.list)) ? 'swap' : 'move',
-  partition: partitionMoved,
-  inserted: (_g: GroupContext, _current: Session, keys: Key[]) => keys,
-  placed: (_current: Session, key: Key) => key,
-};
+// Steps of the modes in which the dragged items themselves move (`sort`, `swap`). Each
+// mode lists them: a spread would keep the modes from being tree-shaken.
+
+/** In a list that swaps (as the origin does), the drop exchanges. */
+export const movingDragMode = (g: GroupContext, current: Session): DragMode =>
+  isSwapping(g, current, listOf(g, current.list)) ? 'swap' : 'move';
+
+/** The dragged keys themselves travel and land. */
+export const itself = (_g: GroupContext, _current: Session, keys: Key[]) => keys;
+
+/** A dragged key lands as itself. */
+export const asItself = (_current: Session, key: Key) => key;
