@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { frames, item, trackErrors, waitForIdle } from './helpers';
+import { frames, item, trackErrors, trackVueWarnings, waitForIdle } from './helpers';
 
 /** Presses `key` `times` times, letting the async keyboard move and the frame run in between. */
 const press = async (page: Page, key: string, times = 1) => {
@@ -114,6 +114,36 @@ test.describe('keyboard sorting by items (rfcs/0001-v3.md §10)', () => {
     await press(page, 'Space');
     await waitForIdle(page);
     await expect(page.getByTestId('state')).toContainText('indicator:i2,i3,i1,i4,i5,i6');
+  });
+
+  test('into an indicator list only the line moves; back out, the list takes the item again', async ({ page }) => {
+    const errors = trackErrors(page);
+    const warnings = trackVueWarnings(page);
+    const order = (list: string) =>
+      page.locator(`[data-testid="${list}"]:not([data-dnd-overlay] *) > [data-id]`).evaluateAll((rows) => rows.map((row) => row.getAttribute('data-id')));
+    await page.goto('/#lists');
+    await item(page, 'm2').focus();
+    await press(page, 'Space');
+    await press(page, 'ArrowRight');
+    // Level with m2: before s2. The indicator list doesn't move, and m2 stays home.
+    await expect(item(page, 's2')).toHaveAttribute('data-indicator', 'before');
+    expect(await order('still')).toEqual(['s1', 's2', 's3', 's4']);
+    expect(await order('moving')).toEqual(['m1', 'm2', 'm3', 'm4']);
+    await press(page, 'ArrowDown');
+    await expect(item(page, 's3')).toHaveAttribute('data-indicator', 'before');
+    expect(await order('still')).toEqual(['s1', 's2', 's3', 's4']);
+    // Left: the list that moves takes the item, level with the line; the line goes away.
+    await press(page, 'ArrowLeft');
+    await expect(page.locator('[data-indicator]')).toHaveCount(0);
+    await expect.poll(() => order('moving')).toEqual(['m1', 'm3', 'm2', 'm4']);
+    expect(await focused(page)).toBe('m2');
+    await press(page, 'ArrowRight');
+    await expect(item(page, 's3')).toHaveAttribute('data-indicator', 'before');
+    await press(page, 'Space');
+    await waitForIdle(page);
+    await expect(page.getByTestId('mixed-state')).toHaveText('moving:m1,m3,m4 | still:s1,s2,m2,s3,s4');
+    expect(errors).toEqual([]);
+    expect(warnings).toEqual([]);
   });
 
   test('a kanban column moves by keyboard from its handle', async ({ page }) => {
