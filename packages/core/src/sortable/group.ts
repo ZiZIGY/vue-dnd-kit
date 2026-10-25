@@ -17,9 +17,8 @@
  * block once (`viewOf`), and every move takes the whole block along.
  */
 
-import { effectScope, nextTick, shallowRef, watch, type ShallowRef } from 'vue';
+import { effectScope, nextTick, type ShallowRef } from 'vue';
 import type {
-  AcceptMode,
   Active,
   Announcements,
   BeforeDropResult,
@@ -28,33 +27,39 @@ import type {
   DnDEvent,
   DragItem,
   DragMode,
-  DropOutside,
   Key,
   KeyboardMoveContext,
-  LayoutAnimation,
   MaybePromise,
-  MultipleMode,
   Rect,
-  Size,
-  SortableBehavior,
   SortableDropEvent,
   SortableIndicator,
-  SortablePlaceholder,
   SortablePutContext,
-  SortableStrategy,
 } from '../types';
 import type { DnDManager, TargetRule } from '../core/manager';
 import {
   containsPoint,
   createRect,
-  fadeIn,
-  flip,
   getCenter,
   getLayoutRect,
   getRect,
   stopLayoutAnimation,
-  type FlipEntry,
 } from '../animation/layout';
+import {
+  createContext,
+  indexMap as mapOf,
+  indexOf as indexIn,
+  indicesOf as indicesIn,
+  keysOf,
+  listOf as listIn,
+  listOfKey as listOfKeyIn,
+  lookup as lookupIn,
+  orderedLists as orderedIn,
+  sameKeys,
+  spotIn as spotInCtx,
+  type Session,
+} from './context';
+import type { DraftContext, ListEntry } from './entry';
+import { bump as bumpFlip, captureLayout, watchLayout } from './flip';
 import {
   nextRowIndex,
   pickAdjacent,
@@ -64,7 +69,6 @@ import {
   type IndicatorProjection,
   type ProjectionItem,
 } from './projection';
-import { patchIndexMap } from './draft';
 import {
   HYSTERESIS,
   blocksKey,
@@ -73,7 +77,6 @@ import {
   neighbourKeys,
   passedKeys,
   settleHysteresis,
-  type Hysteresis,
 } from './stability';
 import { collapseIntoOverlay } from './multiple';
 import { ColumnPreview, layoutColumn } from './column';
@@ -84,99 +87,7 @@ import { isFocusLost } from '../utils/dom';
 import { sortableTexts, type SortableSpot, type SortableSubject } from './announcements';
 import { dropBand, dropBandPoint } from './combine';
 
-/** An item made by a list: a copy (`clone`) or an item for an external draggable (`createItem`). */
-export interface CreatedItem {
-  key: Key;
-  item: unknown;
-}
-
-export interface ListEntry {
-  id: Key;
-  getElement(): HTMLElement | null;
-  /** Keys of the source items, in order. */
-  getKeys(): Key[];
-  getItem(key: Key): unknown;
-  /** Draft order during a drag, `null` when idle. */
-  draft: ShallowRef<Key[] | null>;
-  strategy(): SortableStrategy;
-  placeholder(): SortablePlaceholder;
-  animation(): LayoutAnimation | undefined;
-  isDisabled(): boolean;
-  canSort(): boolean;
-  pull(): boolean | 'clone';
-  canPut(context: SortablePutContext): boolean;
-  dropOutside(): DropOutside;
-  /** The source can't be written (a getter, a readonly ref, a computed): drops are the user's to apply. */
-  isReadonly(): boolean;
-  /**
-   * The new items for the order `keys`, built without touching the source: the drop's
-   * `result` for this list. `inserted`: the keys the drop puts at the slot, when this list
-   * is the target.
-   */
-  build(keys: Key[], lookup: (key: Key) => unknown, inserted: readonly Key[]): unknown[];
-  /** Writes the drop, the default action. `built`: what `build` returned for the same arguments. */
-  commit(built: unknown[], keys: Key[], lookup: (key: Key) => unknown, inserted: readonly Key[]): void;
-  beforeDrop?(event: SortableDropEvent): MaybePromise<BeforeDropResult>;
-  /** The user's `onDrop`: before the write, which `event.preventDefault()` skips. */
-  afterDrop?(event: SortableDropEvent): void;
-
-  // Optional features; lists that don't implement them get the defaults.
-  /** Default `'sort'`. */
-  behavior?(): SortableBehavior;
-  /** Default `'stack'`; sortable lists and trees use `'group'`. */
-  multiple?(): MultipleMode;
-  /** Default `'all'`. */
-  acceptMode?(): AcceptMode;
-  /** Copies an item (`pull: 'clone'`, the copy modifier). */
-  clone?(item: unknown): CreatedItem | undefined;
-  /** Makes an item for a plain draggable entering the list. */
-  create?(active: Active): CreatedItem | undefined;
-
-  // Extension points for list kinds built on the group (the tree uses them).
-  /**
-   * Dragged keys of this list that travel inside another dragged one (a tree's selected
-   * descendants), each with the dragged key it rides in: they leave the drag. The active
-   * key may be one: the key it rides in then leads the drag.
-   */
-  carried?(keys: readonly Key[]): ReadonlyMap<Key, Key>;
-  /** Adjusts a draft at drag start or when copying turns on or off, e.g. hides the descendants of the dragged nodes. */
-  prepareDraft?(keys: Key[], context: DraftContext): Key[];
-  /** Replaces the index projection: new index of the active key, or `null` to keep it. */
-  project?(event: DnDEvent, context: ProjectContext): number | null;
-  /** Indicator mode: replaces `projectIndicator` (trees add the depth). */
-  indicate?(event: DnDEvent, items: ProjectionItem[]): IndicatorProjection | null | undefined;
-  /** Indicator mode: the line at `index` when the keyboard enters the list; `null` when none fits. */
-  indicateAt?(index: number): IndicatorProjection | null;
-  /** Runs on every move while this list holds the active slot (after any reorder). */
-  afterMove?(event: DnDEvent): void;
-  /** Whether committing `keys` changes anything; defaults to comparing with `getKeys()`. */
-  hasChanges?(keys: Key[], inserted: readonly Key[]): boolean;
-  /** Runs when the session ends (drop, cancel, reject). */
-  reset?(): void;
-}
-
-/** What `prepareDraft` is told about the drag. */
-export interface DraftContext {
-  /** Dragged key the slot stands for: the active key, or the tree node it rides in. */
-  lead: Key;
-  /** Dragged keys that travel on their own, in drop order (the lead included). */
-  keys: Key[];
-  /** The dragged items stay where they are; their copies travel. */
-  copying: boolean;
-}
-
-export interface ProjectContext {
-  /** Current draft of this list. */
-  keys: Key[];
-  /** Mounted items of this list, with layout rects, in draft order. */
-  items: ProjectionItem[];
-  /** Key of the active slot (the active key unless copying or inserting). */
-  activeKey: Key;
-  /** Index of the active key in this draft, -1 when it is in another list. */
-  activeIndex: number;
-}
-
-interface DropResult {
+export interface DropResult {
   next: Map<ListEntry, Key[]>;
   /** The new items of each list in `next` (`build`): the event's `result`, what the write puts. */
   built: Map<ListEntry, unknown[]>;
@@ -187,71 +98,6 @@ interface DropResult {
 
 /** A drop event before its list results are built. */
 type DropFacts = Omit<SortableDropEvent, 'result' | 'preventDefault' | 'defaultPrevented'>;
-
-interface Session {
-  activeKey: Key;
-  /**
-   * Dragged key the slot stands for: the active key, unless that is a tree node riding in
-   * another selected one (VS Code), which then leads the drag with the active node inside.
-   */
-  lead: Key;
-  /** Every moved key in document order (multi-drag), the lead included. */
-  keys: Key[];
-  /** Where the lead started; `list` is `null` for an external draggable. */
-  origin: { list: Key | null; index: number };
-  /** Key holding the active slot in the drafts: the lead, its copy or a created item. */
-  slot: Key;
-  /** List whose draft holds the slot; `null` while no draft does (copy over its palette, external item outside). */
-  list: Key | null;
-  lock: Key | null;
-  /** Item objects at drag start (plus copies and created items), so keys can be mapped back across lists. */
-  items: Map<Key, unknown>;
-  size: Size;
-  result: DropResult | null;
-
-  /** The other dragged keys (multi-drag). */
-  others: Set<Key>;
-  /** List and index every dragged key started at; rejected keys go back there. */
-  sources: Map<Key, { list: Key; index: number }>;
-  /** Multi-drag `'stack'`: the others are collapsed out of the drafts. */
-  stacked: boolean;
-  /** Multi-drag `'group'`: the others travel with the slot in the drafts. */
-  grouped: boolean;
-  /**
-   * Keys travelling with the slot, in drop order, the slot included: contiguous in the
-   * draft of `list`. The slot alone unless `grouped`.
-   */
-  block: Key[];
-  /** Move-mode drafts at drag start; swaps and copy toggles rebuild from them. */
-  base: Map<Key, Key[]>;
-  external: boolean;
-  copying: boolean;
-  /** Copy of each dragged key, made once per session so the key stays stable; `null` when `clone` refused. */
-  copies: Map<Key, Key | null>;
-  /** Item made for an external draggable, per list. */
-  created: Map<Key, Key | null>;
-  /** Item the active one is exchanged with (`behavior: 'swap'`). */
-  swap: Key | null;
-  /** Last valid indicator; kept after leaving the list for `dropOutside: 'placeholder'`. */
-  indicator: SortableIndicator | null;
-  /** Indicator the drop commits at, decided in `onBeforeDrop`. */
-  marker: SortableIndicator | null;
-  hysteresis: Hysteresis | null;
-  /** Last valid target and the pointer there: bridges one-frame gaps at list boundaries. */
-  target: { list: Key; at: Coordinates } | null;
-  /** A trash zone or `dropOutside: 'remove'` asked to remove the dragged items. */
-  removed: boolean;
-  /** `event.preventDefault()` in `onBeforeDrop` or `onDrop`: the drop isn't written. */
-  prevented: boolean;
-  /** Keyboard: resting on a drop target in the item `key`, reached with the arrow `direction`. */
-  stop: { key: Key; direction: Coordinates } | null;
-}
-
-interface Snapshot {
-  element: HTMLElement;
-  /** `null`: far from the viewport, the element jumps instead of animating. */
-  rect: Rect | null;
-}
 
 export interface SortableGroup {
   name: string;
@@ -281,9 +127,6 @@ declare const process: { env: { NODE_ENV?: string } };
 
 const registries = new WeakMap<DnDManager, Map<string, SortableGroup>>();
 
-const sameKeys = (a: readonly Key[], b: readonly Key[]) =>
-  a.length === b.length && a.every((key, index) => key === b[index]);
-
 const isPromise = <T>(value: MaybePromise<T>): value is Promise<T> =>
   !!value && typeof (value as Promise<T>).then === 'function';
 
@@ -310,168 +153,24 @@ const clamp = (value: number, min: number, max: number) => Math.min(Math.max(val
 const NO_OFFSET: Coordinates = { x: 0, y: 0 };
 
 function createGroup(manager: DnDManager, name: string, release: () => void): SortableGroup {
-  const lists = new Map<Key, ListEntry>();
-  const items = new Map<Key, () => HTMLElement | null>();
-  const session = shallowRef<Session | null>(null);
-  const indicator = shallowRef<SortableIndicator | null>(null);
-  const version = shallowRef(0);
-  const indexCache = new WeakMap<readonly Key[], Map<Key, number>>();
-  /** Per list, its last draft that has a map in `indexCache`: the next draft takes the map over. */
-  const indexedDrafts = new WeakMap<ListEntry, readonly Key[]>();
+  const g = createContext(manager, name);
+  const { lists, items, session, indicator } = g;
   const scope = effectScope(true);
-  /** Others of a finished `'stack'` drag: they fly out of the overlay into their slots. */
-  let returning: { keys: Set<Key>; from: Rect } | null = null;
-  /** The next FLIP pass is the pickup of a `'group'` drag: the others travel into the block, from other lists too. */
-  let gathering = false;
-  /** List whose strategy and gap the overlay column follows. */
-  let columnList: Key | null = null;
-  /** Text for the end or cancel announcement, computed while the session still existed. */
-  let announced: { key: Key; text: string | undefined } | null = null;
-  /** Last position announced (or picked up at), so an unchanged position isn't spoken again. */
-  let spokenSpot: string | null = null;
 
-  const keysOf = (list: ListEntry) => list.draft.value ?? list.getKeys();
+  const listOf = (id: Key | null) => listIn(g, id);
+  const spotIn = (list: Key, index: number) => spotInCtx(g, list, index);
+  const indexMap = (keys: readonly Key[]) => mapOf(g, keys);
+  const indicesOf = (list: ListEntry) => indicesIn(g, list);
+  const indexOf = (list: ListEntry, key: Key) => indexIn(g, list, key);
+  const lookup = (key: Key) => lookupIn(g, key);
+  const listOfKey = (key: Key, useDraft: boolean) => listOfKeyIn(g, key, useDraft);
+  const orderedLists = () => orderedIn(g);
+  const bump = () => bumpFlip(g);
 
-  /** The list with this id; none for `null` (no list holds the slot, an external drag's origin). */
-  const listOf = (id: Key | null) => (id == null ? undefined : lists.get(id));
-
-  /** A position in a list as announced, out of the list's current length. */
-  const spotIn = (list: Key, index: number): SortableSpot => ({
-    list,
-    index,
-    length: lists.get(list)?.getKeys().length ?? 0,
-  });
-
-  const indexMap = (keys: readonly Key[]) => {
-    let map = indexCache.get(keys);
-    if (!map) {
-      map = new Map(keys.map((key, index) => [key, index]));
-      indexCache.set(keys, map);
-    }
-    return map;
-  };
-
-  /**
-   * Key → index in `list`'s current order. A new draft takes over the map of the list's
-   * previous one, patched over the run that changed (see `patchIndexMap`).
-   */
-  const indicesOf = (list: ListEntry): Map<Key, number> => {
-    const draft = list.draft.value;
-    if (!draft) return indexMap(list.getKeys());
-    if (indexCache.has(draft)) return indexCache.get(draft)!;
-    const previous = indexedDrafts.get(list);
-    const map = previous && indexCache.get(previous);
-    if (map && patchIndexMap(map, previous!, draft)) {
-      indexCache.delete(previous!);
-      indexCache.set(draft, map);
-    }
-    indexedDrafts.set(list, draft);
-    return indexMap(draft);
-  };
-
-  const indexOf = (list: ListEntry, key: Key) => indicesOf(list).get(key) ?? -1;
-
-  const lookup = (key: Key): unknown => {
-    const snapshot = session.value?.items;
-    if (snapshot?.has(key)) return snapshot.get(key);
-    for (const list of lists.values()) {
-      const item = list.getItem(key);
-      if (item !== undefined) return item;
-    }
-    return undefined;
-  };
-
-  const listOfKey = (key: Key, useDraft: boolean): ListEntry | undefined => {
-    for (const list of lists.values()) {
-      if ((useDraft ? indicesOf(list) : indexMap(list.getKeys())).has(key)) return list;
-    }
-    return undefined;
-  };
-
-  /** Lists in document order, so multi-drag keys from several lists insert in the order the user sees. */
-  const orderedLists = (): ListEntry[] =>
-    [...lists.values()].sort((a, b) => {
-      const x = a.getElement();
-      const y = b.getElement();
-      if (!x || !y || x === y) return 0;
-      return x.compareDocumentPosition(y) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
-    });
-
-  // ─── FLIP ────────────────────────────────────────────────────────────────────
-
-  const capture = (): Map<Key, Snapshot> => {
-    const snapshot = new Map<Key, Snapshot>();
-    for (const [key, getElement] of items) {
-      const element = getElement();
-      if (!element?.isConnected) continue;
-      snapshot.set(key, { element, rect: manager.isNearViewport(element) ? getRect(element) : null });
-    }
-    return snapshot;
-  };
-
-  const animate = (snapshot: Map<Key, Snapshot>, fadeAppearing: boolean) => {
-    const byList = new Map<ListEntry, FlipEntry[]>();
-    const appearing: Array<{ element: HTMLElement; list: ListEntry }> = [];
-    const landing = manager.landingKey.value ?? manager.active.value?.id;
-    const back = returning;
-    returning = null;
-    const pickup = gathering;
-    gathering = false;
-    // The overlay carries a clone of the item landing on `key` (multi-drag column).
-    const carried = (key: Key) => key === landing || manager.overlayItems.has(manager.landings.value.get(key) ?? key);
-    for (const [key, getElement] of items) {
-      const before = snapshot.get(key);
-      // Far from the viewport: it jumps instead of animating.
-      if (before && !before.rect) continue;
-      const element = getElement();
-      if (!element?.isConnected) continue;
-      const list = listOfKey(key, true);
-      if (!list) continue;
-      let first: Rect;
-      let previous: HTMLElement;
-      if (before?.rect) {
-        first = before.rect;
-        previous = before.element;
-      } else if (back?.keys.has(key)) {
-        // Multi-drag items coming back out of the overlay.
-        first = back.from;
-        previous = element;
-        appearing.push({ element, list });
-      } else {
-        if (fadeAppearing && key !== landing) fadeIn(element, list.animation());
-        continue;
-      }
-      // The active slot entering another list was recreated: sliding it in from the
-      // old list would be clipped by the new scroller, and the overlay shows it anyway.
-      // The same goes for the items whose clones the overlay carries, except at pickup,
-      // where the others visibly travel into the block.
-      if (previous !== element && !pickup && carried(key)) continue;
-      const entries = byList.get(list) ?? [];
-      // A recreated element came from another list (a swap partner, a key a list didn't take).
-      entries.push({ key, element, first, crossing: previous !== element });
-      byList.set(list, entries);
-    }
-    for (const [list, entries] of byList) flip(entries, list.animation());
-    for (const { element, list } of appearing) fadeIn(element, list.animation());
-    manager.invalidateMeasurements();
-  };
-
-  const bump = () => version.value++;
-
-  let copyHeld: () => boolean = () => false;
   scope.run(() => {
-    let snapshot = new Map<Key, Snapshot>();
-    watch(version, () => (snapshot = capture()), { flush: 'pre' });
-    watch(version, () => animate(snapshot, true), { flush: 'post' });
-    copyHeld = trackCopyModifier(manager, () => manager.scheduleFrame());
+    watchLayout(g);
+    g.copyHeld = trackCopyModifier(manager, () => manager.scheduleFrame());
   });
-
-  /** For layout changes the library didn't cause (virtualizer re-measures). Free while idle. */
-  const captureLayout = () => {
-    if (manager.status.value === 'idle') return;
-    const snapshot = capture();
-    void nextTick(() => animate(snapshot, false));
-  };
 
   // ─── Accepting ───────────────────────────────────────────────────────────────
 
@@ -538,18 +237,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
   // ─── Drop into an item ───────────────────────────────────────────────────────
 
-  /**
-   * Drop targets inside items, as of the target detection at `at` (that frame's pointer):
-   * the middle band of each item holding one that takes the drag, by key, and the `ids`
-   * of the targets that counted.
-   */
-  let targets: { at: Coordinates | null; bands: Map<Key, Rect>; ids: Set<Key> } = {
-    at: null,
-    bands: new Map(),
-    ids: new Set(),
-  };
   /** The bands for projecting `event`: of its own target detection. */
-  const bandsAt = (event: DnDEvent) => (targets.at === event.pointer ? targets.bands : undefined);
+  const bandsAt = (event: DnDEvent) => (g.targets.at === event.pointer ? g.targets.bands : undefined);
 
   /**
    * A drop target inside an item of a list that takes the drag (rfcs/0001-v3.md §6)
@@ -565,17 +254,17 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const list = key != null && items.get(key)?.() === found!.element ? listOfKey(key, true) : undefined;
     if (!list || !accepts(list, active)) return true;
     if (!entry.accepts(active)) return false;
-    if (targets.at !== point) targets = { at: point, bands: new Map(), ids: new Set() };
+    if (g.targets.at !== point) g.targets ={ at: point, bands: new Map(), ids: new Set() };
     // Layout rects, as projection uses: an item still sliding into place counts where it lands.
     const band = dropBand(manager.measure(found!.element), list.strategy());
-    targets.bands.set(key!, band);
+    g.targets.bands.set(key!, band);
     if (!containsPoint(band, point)) return false;
-    targets.ids.add(entry.id);
+    g.targets.ids.add(entry.id);
     return true;
   };
 
   /** The drag is over a drop target inside an item: dropping goes into that item. */
-  const isInto = (event: DnDEvent) => !!event.over && targets.at === event.pointer && targets.ids.has(event.over.id);
+  const isInto = (event: DnDEvent) => !!event.over && g.targets.at === event.pointer && g.targets.ids.has(event.over.id);
 
   /** Keyboard: where the pointer drops into item `key`, on a target in its middle that takes the drag; `null` without one. */
   const intoPoint = (key: Key, list: ListEntry, active: Active): Coordinates | null => {
@@ -612,7 +301,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   const wantsCopy = (current: Session) => {
     const origin = listOf(current.origin.list);
     if (current.external || !origin?.clone) return false;
-    return origin.pull() === 'clone' || copyHeld();
+    return origin.pull() === 'clone' || g.copyHeld();
   };
 
   const isSwapping = (current: Session, list: ListEntry | undefined) =>
@@ -682,8 +371,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const ids = columnIds(current);
     if (ids.length < 2) return;
     const list = listOf(current.list ?? current.origin.list);
-    if (!list || list.id === columnList) return;
-    columnList = list.id;
+    if (!list || list.id === g.columnList) return;
+    g.columnList = list.id;
     const axis = list.strategy() === 'vertical' ? 'y' : 'x';
     manager.overlayColumn.value = {
       ids,
@@ -831,8 +520,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         list.draft.value = list.prepareDraft?.(draft, { lead: activeKey, keys: [activeKey], copying: false }) ?? draft;
         base.set(list.id, list.draft.value);
       }
-      spokenSpot = null;
-      columnList = null;
+      g.spokenSpot = null;
+      g.columnList = null;
       session.value = {
         ...common,
         lead: activeKey,
@@ -909,10 +598,10 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       copying: false,
     };
     session.value = current;
-    columnList = null;
+    g.columnList = null;
     // The pickup announcement names this position: the first target of the drag doesn't repeat it.
     const formed = base.get(origin.list)!;
-    spokenSpot = grouped
+    g.spokenSpot = grouped
       ? spotKey({ list: origin.list, index: formed.indexOf(keys[0]!), length: formed.length })
       : spotKey(spotIn(origin.list, origin.index));
 
@@ -931,7 +620,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
           .filter((element): element is HTMLElement => !!element?.isConnected);
         collapseIntoOverlay(elements, event.active.rect, originList.animation());
       }
-      gathering = grouped;
+      g.gathering = grouped;
       for (const list of lists.values()) list.draft.value = base.get(list.id)!;
     }
     syncManager();
@@ -1287,12 +976,6 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     listOf(current.list)?.afterMove?.(event);
   };
 
-  /** Pointer of the last move, and the projections run again for it (`followBlock`). */
-  let movedAt: Coordinates | null = null;
-  let followed = 0;
-  /** A pending `followBlock` pass: the drop waits for it. */
-  let following: Promise<void> | null = null;
-
   /**
    * A block that moved can leave the pointer over one of its members (items of other
    * sizes passed, the end of a list): project again once it has rendered, as the pointer
@@ -1301,27 +984,27 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
    * the pointer, so it ends within a pass per member.
    */
   const followBlock = (current: Session, event: DnDEvent) => {
-    if (current.block.length < 2 || followed++ > current.block.length) return;
+    if (current.block.length < 2 || g.followed++ > current.block.length) return;
     const pass: Promise<void> = nextTick(() => {
-      if (following === pass) following = null;
+      if (g.following === pass) g.following = null;
       if (session.value === current && manager.status.value !== 'idle' && manager.pointer.value === event.pointer) {
         move(event);
       }
     });
-    following = pass;
+    g.following = pass;
   };
 
   /** Resolves once no `followBlock` pass is pending. */
   const settleBlock = async () => {
-    while (following) await following;
+    while (g.following) await g.following;
   };
 
   const move = (event: DnDEvent) => {
     const current = session.value;
     if (!current || current.activeKey !== event.active.id) return;
-    if (event.pointer !== movedAt) {
-      movedAt = event.pointer;
-      followed = 0;
+    if (event.pointer !== g.movedAt) {
+      g.movedAt = event.pointer;
+      g.followed = 0;
     }
     // Keyboard drags move the slot in getKeyboardCoordinates. Trees (`project`) answer
     // the keyboard themselves and keep the pointer path below (in indicator mode they
@@ -1566,7 +1249,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     if (!current) return;
     if (current.stacked && !current.copying) {
       const overlay = manager.overlayElement.value;
-      if (overlay?.isConnected) returning = { keys: new Set(current.others), from: getRect(overlay) };
+      if (overlay?.isConnected) g.returning = { keys: new Set(current.others), from: getRect(overlay) };
     }
     for (const list of lists.values()) {
       list.draft.value = null;
@@ -1589,7 +1272,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const current = session.value;
     if (!current || current.activeKey !== event.active.id || isForeign(event)) return;
     // The last move may still be lining the block up with the overlay.
-    return following ? settleBlock().then(() => decide(current, event)) : decide(current, event);
+    return g.following ? settleBlock().then(() => decide(current, event)) : decide(current, event);
   };
 
   const decide = (current: Session, event: DnDEvent): MaybePromise<BeforeDropResult> => {
@@ -1675,7 +1358,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     } else if (!result && !isForeign(event) && !current.copying && current.origin.list != null) {
       text = sortableTexts.end(who, spotIn(current.origin.list, current.origin.index));
     }
-    announced = { key: current.activeKey, text };
+    g.announced = { key: current.activeKey, text };
     reset();
   };
 
@@ -1684,7 +1367,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     // Copies vanish: their clones fly back to the originals. Moved block members stay placeholders until the overlay is home.
     if (current?.copying && current.activeKey === event.active.id) setLandings([]);
     if (current && current.activeKey === event.active.id && current.origin.list != null) {
-      announced = {
+      g.announced = {
         key: current.activeKey,
         text: sortableTexts.cancel(subjectOf(current), spotIn(current.origin.list, current.origin.index)),
       };
@@ -1971,7 +1654,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       const into = session.value;
       if (into?.activeKey === event.active.id && isInto(event)) {
         // Back over the list, the position is spoken again.
-        spokenSpot = null;
+        g.spokenSpot = null;
         return sortableTexts.target(subjectOf(into), event.over!.id);
       }
       const current = ours(event);
@@ -1979,8 +1662,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       if (!spot) return undefined;
       // '' tells the manager there is nothing new, without cancelling a pending text.
       const key = spotKey(spot);
-      if (key === spokenSpot) return '';
-      spokenSpot = key;
+      if (key === g.spokenSpot) return '';
+      g.spokenSpot = key;
       // A swap partner sits where the active item started.
       const partner = current.swap;
       return sortableTexts.over(
@@ -1989,8 +1672,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         partner == null ? undefined : { key: partner, spot: spotIn(current.origin.list!, current.origin.index) },
       );
     },
-    onDragEnd: (event) => (announced?.key === event.active.id ? announced.text : undefined),
-    onDragCancel: (event) => (announced?.key === event.active.id ? announced.text : undefined),
+    onDragEnd: (event) => (g.announced?.key === event.active.id ? g.announced.text : undefined),
+    onDragCancel: (event) => (g.announced?.key === event.active.id ? g.announced.text : undefined),
   };
 
   // ─── Wiring ──────────────────────────────────────────────────────────────────
@@ -2054,7 +1737,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     accepts,
     isInert,
     leadOffset: () => (session.value ? leadOffset(session.value) : NO_OFFSET),
-    captureLayout,
+    captureLayout: () => captureLayout(g),
   };
 }
 

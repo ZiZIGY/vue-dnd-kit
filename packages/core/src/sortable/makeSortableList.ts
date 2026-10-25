@@ -25,7 +25,8 @@ import { useManager } from '../core/context';
 import { createDroppable } from '../core/makeDroppable';
 import { createId, toElement } from '../utils/dom';
 import { read } from '../utils/read';
-import { useSortableGroup, type ListEntry, type SortableGroup } from './group';
+import { useSortableGroup, type SortableGroup } from './group';
+import type { ListEntry } from './entry';
 import { changedRun } from './draft';
 
 /** What a list (or tree) gives its items. */

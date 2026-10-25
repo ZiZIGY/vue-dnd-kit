@@ -18,7 +18,8 @@ import { revealElement } from '../core/autoscroll';
 import { getLayoutRect } from '../animation/layout';
 import { createId, toElement } from '../utils/dom';
 import { read } from '../utils/read';
-import { useSortableGroup, type DraftContext, type ListEntry, type ProjectContext } from './group';
+import { useSortableGroup } from './group';
+import type { DraftContext, ListEntry, ProjectContext } from './entry';
 import { defaultGetKey, provideSortableContext, pullOf } from './makeSortableList';
 import type { IndicatorProjection, ProjectionItem } from './projection';
 import {
