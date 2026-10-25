@@ -22,7 +22,8 @@
     items: tasks,
     // `?noautoscroll`: tests that park the pointer past the list edge on purpose.
     autoScroll: !new URLSearchParams(location.search).has('noautoscroll'),
-    onDrop: (event) => (lastDrop.value = describeDrop(tasks.value, event.keys[0])),
+    // Before the write: the new order is in `result`.
+    onDrop: (event) => (lastDrop.value = describeDrop(event.result.get(event.to.list) ?? tasks.value, event.keys[0])),
   });
 
   // The recipe from rfcs/0001-v3/virtualization.md: one computed that reads the draft
