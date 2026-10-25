@@ -170,7 +170,7 @@ export function makeSortableTree<T>(
   const slotKey = (current: DragState) => group.session.value?.slot ?? current.lead;
 
   /** Copying: the dragged nodes stay where they are, their copies travel. */
-  const copying = () => !!group.session.value?.copying;
+  const copying = () => group.session.value?.mode.name === 'copy';
 
   /** Rows that travel with the drag (see `DragState.moving`); none while copying. */
   const movingRows = (current: DragState): KeySet => (copying() ? NO_ROWS : current.moving);
@@ -194,9 +194,7 @@ export function makeSortableTree<T>(
   const incomingNodes = () => {
     const session = group.session.value!;
     if (incoming?.slot !== session.slot) {
-      let keys = session.keys;
-      if (session.external) keys = [session.slot];
-      else if (session.copying) keys = keys.map((key) => session.copies.get(key) ?? key);
+      const keys = session.keys.map((key) => session.mode.placed(session, key));
       const items = keys.map((key) => group.lookup(key) as T).filter((item) => item !== undefined);
       incoming = { slot: session.slot, items, height: blockHeight(items, accessors.getChildren) };
     }
@@ -711,7 +709,7 @@ export function makeSortableTree<T>(
       base = { index: gaps.index, depth: mine ? mine.depth! : current.startDepth };
       end = gaps.keys.length;
       // One node moving: its own place at its own level changes nothing (a copy there does).
-      if (at !== -1 && !session.copying && session.keys.length < 2) home = gapPosition(draftKeys, at, moving, rows()).index;
+      if (at !== -1 && session.mode.name !== 'copy' && session.keys.length < 2) home = gapPosition(draftKeys, at, moving, rows()).index;
     } else if (from === -1) {
       return undefined;
     }

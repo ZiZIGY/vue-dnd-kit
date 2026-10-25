@@ -14,34 +14,17 @@ export interface Partition {
 
 export const itemTypes = (g: GroupContext, key: Key): string[] => g.manager.getDraggable(key)?.getTypes() ?? [g.name];
 
-export const createdIn = (g: GroupContext, list: ListEntry, current: Session): Key | null => {
-  if (!list.create) return null;
-  if (!current.created.has(list.id)) {
-    const active = g.manager.active.value;
-    const made = active ? list.create(active) : undefined;
-    current.created.set(list.id, made ? made.key : null);
-    if (made) current.items.set(made.key, made.item);
-  }
-  return current.created.get(list.id) ?? null;
-};
+/** Which dragged keys `list` takes, by the rules of the session's mode; none for a disabled list. */
+export const partition = (g: GroupContext, list: ListEntry, current: Session): Partition =>
+  list.isDisabled() ? { accepted: [], rejected: current.keys } : current.mode.partition(g, list, current);
 
-/** Which dragged keys `list` takes: `group.put` per key with `acceptMode: 'some'`, all or none otherwise. */
-export const partition = (g: GroupContext, list: ListEntry, current: Session): Partition => {
+/**
+ * The rules for the dragged items themselves (or their copies): `group.pull` of their
+ * list, then `group.put` of `list`, per key with `acceptMode: 'some'`, all or none otherwise.
+ */
+export const partitionMoved = (g: GroupContext, list: ListEntry, current: Session): Partition => {
   const all = { accepted: current.keys, rejected: [] as Key[] };
   const none = { accepted: [] as Key[], rejected: current.keys };
-  if (list.isDisabled()) return none;
-  if (current.external) {
-    const created = createdIn(g, list, current);
-    if (created == null) return none;
-    const context: SortablePutContext = {
-      keys: current.keys,
-      items: [lookup(g, created)],
-      types: g.manager.active.value?.type ?? [],
-      from: null,
-      to: list.id,
-    };
-    return list.canPut(context) ? all : none;
-  }
   if (list.id === current.origin.list) return all;
   if (listOf(g, current.origin.list)?.pull() === false) return none;
   const context = (keys: Key[]): SortablePutContext => ({
@@ -71,7 +54,7 @@ export const isInert = (g: GroupContext, list: ListEntry) => {
   if (!active) return false;
   const current = g.session.value;
   if (!current || current.activeKey !== active.id) return true;
-  return current.external && !list.create;
+  return !!current.mode.inert?.(list);
 };
 
 export const isSwapping = (g: GroupContext, current: Session, list: ListEntry | undefined) =>
@@ -80,8 +63,7 @@ export const isSwapping = (g: GroupContext, current: Session, list: ListEntry | 
   list?.behavior?.() === 'swap' &&
   listOf(g, current.origin.list)?.behavior?.() === 'swap' &&
   current.keys.length === 1 &&
-  !current.external &&
-  !current.copying;
+  current.mode.moves;
 
 /**
  * Whether `partner`, an item of `list`, can take the active item's place. From another

@@ -7,7 +7,7 @@
 
 import type { DnDEvent, DragItem, Key } from '../types';
 import { getRect } from '../animation/layout';
-import { indicesOf, keysOf, listOf, lookup, sameKeys, type GroupContext, type Session } from './context';
+import { indicesOf, keysOf, listOf, sameKeys, type GroupContext, type Session } from './context';
 import type { ListEntry } from './entry';
 import type { ProjectionItem } from './projection';
 import { itemTypes, partition } from './accept';
@@ -93,20 +93,11 @@ export const gather = (g: GroupContext, current: Session, event: DnDEvent) => {
   g.gathering = current.grouped;
 };
 
-/** The drag ends: the others of a `'stack'` drag fly out of the overlay into their slots. */
+/** The drag ends: the others of a `'stack'` drag fly out of the overlay into their slots (copied ones never left). */
 export const scatter = (g: GroupContext, current: Session) => {
-  if (!current.stacked || current.copying) return;
+  if (!current.stacked || !current.mode.moves) return;
   const overlay = g.manager.overlayElement.value;
   if (overlay?.isConnected) g.returning = { keys: new Set(current.others), from: getRect(overlay) };
-};
-
-export const copyOf = (g: GroupContext, current: Session, key: Key): Key | null => {
-  if (!current.copies.has(key)) {
-    const made = listOf(g, current.sources.get(key)?.list ?? null)?.clone?.(lookup(g, key));
-    current.copies.set(key, made ? made.key : null);
-    if (made) current.items.set(made.key, made.item);
-  }
-  return current.copies.get(key) ?? null;
 };
 
 /**
@@ -122,8 +113,7 @@ export const blockFor = (g: GroupContext, current: Session, target: ListEntry | 
     const { accepted } = partition(g, target, current);
     if (accepted.length < keys.length && accepted.includes(current.lead)) keys = accepted;
   }
-  if (!current.copying) return keys;
-  return keys.map((key) => copyOf(g, current, key)).filter((key): key is Key => key != null);
+  return current.mode.inserted(g, current, keys);
 };
 
 /** A source's draft with the block's keys out of it: those the list doesn't take stay there. */

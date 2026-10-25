@@ -11,6 +11,7 @@ import type { ListEntry } from './entry';
 import type { DropResult } from './group';
 import type { Hysteresis } from './stability';
 import type { SortableSpot } from './announcements';
+import type { SortableMode } from './modes/mode';
 import { patchIndexMap } from './draft';
 
 export interface Session {
@@ -49,8 +50,11 @@ export interface Session {
   block: Key[];
   /** Move-mode drafts at drag start; swaps and copy toggles rebuild from them. */
   base: Map<Key, Key[]>;
-  external: boolean;
-  copying: boolean;
+  /**
+   * What the slot is (`modes/`): the dragged item itself (`sort`), its copy (`copy`) or an
+   * item made for a plain draggable (`insert`). An exchange held is `swap` (see `modeOf`).
+   */
+  mode: SortableMode;
   /** Copy of each dragged key, made once per session so the key stays stable; `null` when `clone` refused. */
   copies: Map<Key, Key | null>;
   /** Item made for an external draggable, per list. */
@@ -71,6 +75,12 @@ export interface Session {
   /** Keyboard: resting on a drop target in the item `key`, reached with the arrow `direction`. */
   stop: { key: Key; direction: Coordinates } | null;
 }
+
+/** What every session starts with, whatever is dragged. */
+export type SessionStart = Omit<
+  Session,
+  'lead' | 'keys' | 'origin' | 'slot' | 'list' | 'others' | 'stacked' | 'grouped' | 'block' | 'base' | 'mode'
+>;
 
 export interface GroupContext {
   name: string;

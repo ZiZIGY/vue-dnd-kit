@@ -3,20 +3,13 @@
  * placeholders of a block), the `mode` it shows, and the column of a multi-drag.
  */
 
-import type { Coordinates, DnDEvent, DragMode, Key } from '../types';
+import type { Coordinates, DnDEvent, Key } from '../types';
 import { landOverlayItems } from '../animation/drop';
 import { listOf, type GroupContext, type Session } from './context';
 import type { ListEntry } from './entry';
-import { isSwapping } from './accept';
 import { ColumnPreview, layoutColumn } from './column';
 
 const NO_OFFSET: Coordinates = { x: 0, y: 0 };
-
-/** Dragged key a slot stands for: the original of a copy, otherwise the key itself. */
-const originalOf = (current: Session, key: Key): Key => {
-  if (current.copying) for (const [original, copy] of current.copies) if (copy === key) return original;
-  return key;
-};
 
 /** Sets where the other dragged items land (slot → dragged id), keeping the map when nothing changed. */
 export const setLandings = (g: GroupContext, entries: Array<[Key, Key]>) => {
@@ -80,15 +73,11 @@ export const syncManager = (g: GroupContext) => {
     placed && (current.grouped || carrier)
       ? current.block
           .filter((key) => key !== current.slot || carrier)
-          .map((key) => [key, originalOf(current, key)])
+          .map((key) => [key, current.mode.original?.(current, key) ?? key])
       : [],
   );
   syncColumn(g, current);
-  let mode: DragMode = 'move';
-  if (current.external) mode = placed ? 'insert' : 'move';
-  else if (current.copying) mode = 'copy';
-  else if (isSwapping(g, current, listOf(g, current.list))) mode = 'swap';
-  manager.mode.value = mode;
+  manager.mode.value = current.mode.dragMode(g, current);
 };
 
 /**
