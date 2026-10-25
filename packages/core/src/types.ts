@@ -257,6 +257,12 @@ export type Modifier = (args: ModifierArgs) => Coordinates;
 
 // ─── Provider ──────────────────────────────────────────────────────────────────
 
+/**
+ * Screen reader texts per event. A text is spoken by the provider's live region (moves
+ * once the drag rests for 500 ms); `undefined` leaves the event to the next source (the
+ * texts of integrations such as sortable positions, then the defaults); `''` says
+ * nothing. A move isn't announced for the target found at pickup: nothing moved yet.
+ */
 export interface Announcements {
   onDragStart(event: DnDEvent): string | undefined;
   onDragOver(event: DnDEvent): string | undefined;
@@ -298,6 +304,7 @@ export interface DnDProviderProps {
    * content re-lays out at the new size; it is never scaled.
    */
   overlayFit?: 'slot' | 'source';
+  /** Own texts for some events (see `Announcements`); `false` keeps the live region silent. */
   announcements?: Partial<Announcements> | false;
   screenReaderInstructions?: string;
   /** Inject zero-specificity default styles (placeholder opacity, no text selection while dragging). */
@@ -387,7 +394,9 @@ export interface DnDSelection {
  * The drag state ends when the drop is decided: `active`, `over` and `pointer` read
  * `null` (and droppables stop accepting) while the overlay still animates into place
  * (`status` stays `'dropping'`). Derived UI never mixes the old drag with the new data.
- * While an async `onBeforeDrop` decides, the state is kept as it was at release.
+ * While an async `onBeforeDrop` decides, the state is kept as it was at release, but the
+ * page is out of drag mode: its own cursor and text selection are back (a confirmation
+ * dialog works normally), and the overlay waits where it was dropped.
  */
 export interface DnDState {
   status: Readonly<Ref<DnDStatus>>;
@@ -432,7 +441,11 @@ export interface DraggableOptions<TData = unknown> {
   modifiers?: MaybeReadonlyRefOrGetter<Modifier[] | undefined>;
   /** Arrow keys in free drags: move by pixels or jump between accepting drop targets. */
   keyboard?: 'pixels' | 'droppables';
-  /** Set role/tabindex/aria-* attributes (never overriding the user's own). */
+  /**
+   * Set role/tabindex/aria-* attributes, never overriding the user's own. The provider's
+   * instructions id joins an existing `aria-describedby` as one more token (a UI kit
+   * tooltip on the same element keeps its own), and only that token is ever removed.
+   */
   attributes?: boolean;
 }
 
@@ -530,6 +543,11 @@ export interface SortableIndicator {
   side: 'before' | 'after';
 }
 
+/**
+ * Options of `makeSortableList`. One list (or tree) per component: it provides the
+ * context its items read, so a second one in the same component would take the first
+ * one's items (development builds warn about it).
+ */
 export interface SortableListOptions<T> {
   /** Source of truth; the library writes the new array here on drop. */
   items: Ref<T[]>;
@@ -560,7 +578,11 @@ export interface SortableListOptions<T> {
   sort?: boolean;
   /** Creates copies (`pull: 'clone'`, copy modifier key). Required for copying. */
   clone?: (item: T) => T;
-  /** Accepts plain draggables from outside: creates the item to insert. */
+  /**
+   * Accepts plain draggables from outside: creates the item to insert. With the keyboard,
+   * an arrow toward the list takes the draggable in (level with it, as moves between
+   * lists go), and the created item then moves by slots like any other.
+   */
   createItem?: (active: Active) => T | undefined;
   dropOutside?: DropOutside;
   animation?: LayoutAnimation;

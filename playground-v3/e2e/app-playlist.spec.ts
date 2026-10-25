@@ -78,7 +78,13 @@ test.describe('app: playlist', () => {
     await track(page, 'ember').focus();
     await press(page, 'Space');
     await announced(page, 'Picked up “Ember” by Northbound from the library.');
+    // Up enters the queue level with the track (its center is past Ocean Static's), as
+    // keyboard moves between lists do: the library behaviour, no app code.
     await press(page, 'ArrowUp');
+    await expect(byTestId(page, 'queue').locator('[data-dnd-placeholder]')).toHaveAttribute('data-track', 'ember');
+    await announced(page, '“Ember” by Northbound will be added at position 3 of 5 in the queue.');
+    // Along the queue the arrows move the entry it made for the track, one slot each.
+    await press(page, 'ArrowRight', 'ArrowRight');
     await announced(page, '“Ember” by Northbound will be added at position 5 of 5 in the queue.');
     await press(page, 'ArrowLeft', 'ArrowLeft');
     await announced(page, '“Ember” by Northbound will be added at position 3 of 5 in the queue.');
@@ -86,6 +92,8 @@ test.describe('app: playlist', () => {
     await announced(page, '“Ember” by Northbound added to the queue at position 3 of 5.');
     await settled(page);
     await expect(state(page)).toHaveText('midnight,ocean,ember,neon,glass');
+    // The track never left the library: it keeps the focus.
+    await expect(track(page, 'ember')).toBeFocused();
   });
 
   test('keyboard: Escape cancels, Delete removes, and the buttons work too', async ({ page }) => {

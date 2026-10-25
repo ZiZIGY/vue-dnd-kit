@@ -58,16 +58,6 @@
     background: rgb(15 23 42 / 0.35);
   }
 
-  /* The drop is still pending: the library keeps its grabbing cursor on the page. */
-  .tb-backdrop,
-  .tb-backdrop * {
-    cursor: default !important;
-  }
-
-  .tb-backdrop button {
-    cursor: pointer !important;
-  }
-
   .tb-dialog {
     width: 340px;
     padding: 20px;
@@ -97,6 +87,7 @@
     border-radius: 6px;
     font: inherit;
     font-weight: 600;
+    cursor: pointer;
   }
 
   .tb-secondary {

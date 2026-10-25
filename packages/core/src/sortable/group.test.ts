@@ -1,10 +1,12 @@
 import { createApp, defineComponent, h, nextTick, ref, useTemplateRef, type Component } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { MultipleMode, OverlayProps } from '../types';
+import { createRect } from '../animation/layout';
 import { DnDProvider } from '../core/DnDProvider';
 import { DragPreview } from '../core/DragPreview';
 import { useDnDContext } from '../core/context';
 import type { DnDManager } from '../core/manager';
+import { makeDraggable } from '../core/makeDraggable';
 import { layoutColumn } from './column';
 import { makeSortableItem } from './makeSortableItem';
 import { makeSortableList } from './makeSortableList';
@@ -124,6 +126,120 @@ describe('multi-drag modes', () => {
     expect(overlay()!.querySelectorAll('.fallback')).toHaveLength(1);
     // A component overlay gets no column: the box flies alone.
     expect(manager.overlayItems.size).toBe(0);
+    await cancel();
+  });
+});
+
+describe('keyboard: a plain draggable over a list with createItem', () => {
+  const ROW = 40;
+
+  /** A list `inbox` (n1, n2, n3; 200px wide, 40px rows) and the plain draggable `chip` 300px below it. */
+  const mountInbox = () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const Chip = defineComponent({
+      setup() {
+        makeDraggable(useTemplateRef<HTMLElement>('el'), { id: 'chip', data: { title: 'New' } });
+        return () => h('span', { ref: 'el', 'data-chip': '' }, 'chip');
+      },
+    });
+    const app = createApp({
+      setup: () => () =>
+        h(DnDProvider, { dropAnimation: false, animation: false }, {
+          default: () => [
+            h({
+              setup() {
+                manager = useDnDContext();
+                const { items } = makeSortableList(useTemplateRef<HTMLElement>('list'), {
+                  id: 'inbox',
+                  items: ref(['n1', 'n2', 'n3'].map((id) => ({ id }))),
+                  createItem: () => ({ id: 'created' }),
+                });
+                return () =>
+                  h('ul', { ref: 'list', 'data-list': '' }, items.value.map((task) => h(Row, { key: task.id, rowId: task.id })));
+              },
+            }),
+            h(Chip),
+          ],
+      }),
+    });
+    app.mount(container);
+    unmount = () => {
+      app.unmount();
+      container.remove();
+    };
+    return container;
+  };
+
+  /** The layout happy-dom doesn't have: the list's rows stack from the top, the chip sits below. */
+  const rectOf = (element: Element) => {
+    if (element.closest('[data-dnd-overlay]')) return createRect(0, 0, 0, 0);
+    if (element.hasAttribute('data-list')) return createRect(0, 0, 200, element.children.length * ROW);
+    if (element.parentElement?.hasAttribute('data-list')) {
+      return createRect(0, [...element.parentElement.children].indexOf(element) * ROW, 200, ROW);
+    }
+    if (element.hasAttribute('data-chip')) return createRect(0, 300, 200, ROW);
+    return createRect(0, 0, 0, 0);
+  };
+
+  const press = async (key: string) => {
+    const before = manager.pointer.value;
+    document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+    // The move resolves after a render; the sensor then moves the drag there.
+    await vi.waitFor(() => expect(manager.pointer.value).not.toBe(before));
+    await nextTick();
+  };
+
+  afterEach(() => {
+    unmount?.();
+    unmount = null;
+    vi.restoreAllMocks();
+  });
+
+  it('Up enters the list level with the drag, the arrows move the created item by slots, the drop inserts it', async () => {
+    const container = mountInbox();
+    await nextTick();
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+      return rectOf(this) as DOMRect;
+    });
+    vi.spyOn(document, 'elementFromPoint').mockImplementation((x, y) => {
+      const list = container.querySelector('[data-list]')!;
+      const rect = rectOf(list);
+      return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom ? list : null;
+    });
+
+    expect(manager.start('chip', { x: 100, y: 320 }, 'keyboard')).toBe(true);
+    await nextTick();
+    // The chip is below the rows: it enters after the last one.
+    await press('ArrowUp');
+    expect(rows(container)).toEqual(['n1', 'n2', 'n3', 'created']);
+    expect(slots(container)).toEqual(['created']);
+    expect(manager.mode.value).toBe('insert');
+    expect(manager.pointer.value).toEqual({ x: 100, y: 3.5 * ROW });
+
+    await press('ArrowUp');
+    await press('ArrowUp');
+    expect(rows(container)).toEqual(['n1', 'created', 'n2', 'n3']);
+    await press('ArrowDown');
+    expect(rows(container)).toEqual(['n1', 'n2', 'created', 'n3']);
+
+    await manager.drop();
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+    await nextTick();
+    expect(rows(container)).toEqual(['n1', 'n2', 'created', 'n3']);
+  });
+
+  it('with no list in the arrow direction it moves as a plain draggable', async () => {
+    const container = mountInbox();
+    await nextTick();
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+      return rectOf(this) as DOMRect;
+    });
+    manager.start('chip', { x: 100, y: 320 }, 'keyboard');
+    await nextTick();
+    await press('ArrowDown');
+    expect(manager.pointer.value).toEqual({ x: 100, y: 345 });
+    expect(rows(container)).toEqual(['n1', 'n2', 'n3']);
     await cancel();
   });
 });

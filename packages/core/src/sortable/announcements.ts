@@ -1,7 +1,8 @@
 /**
  * Default position-aware announcements for sortable lists (rfcs/0001-v3.md §10).
- * The provider's `announcements` prop overrides them; the manager falls back to
- * its generic texts when a drag doesn't involve a sortable list.
+ * The provider's `announcements` prop overrides them (its texts that return `undefined`
+ * fall back to them); the manager falls back to its generic texts when a drag doesn't
+ * involve a sortable list.
  */
 
 import type { Key } from '../types';

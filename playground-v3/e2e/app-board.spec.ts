@@ -97,6 +97,13 @@ test.describe('app: trello board', () => {
     // The column still accepts the card it is asked about.
     await expect(cards(page, 'done')).toHaveAttribute('data-accepting');
     await expect(cards(page, 'done')).not.toHaveAttribute('data-refusing');
+    // The page is out of drag mode while the drop waits: no grabbing cursor, and the
+    // dialog's text can be selected.
+    await expect(page.locator('html')).not.toHaveAttribute('data-dnd-dragging');
+    const message = dialog.locator('p');
+    await expect(message).toHaveCSS('cursor', 'auto');
+    await message.click({ clickCount: 3 });
+    expect(await page.evaluate(() => getSelection()?.toString().trim())).toBe('“Dark mode” will be marked as finished.');
     await page.getByTestId('confirm-accept').click();
     await settled(page);
     await expect(dialog).toHaveCount(0);

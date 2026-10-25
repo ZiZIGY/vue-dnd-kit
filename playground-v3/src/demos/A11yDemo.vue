@@ -8,6 +8,8 @@
   const customAnnouncements: Partial<Announcements> = {
     onDragStart: ({ active }) => `Custom pickup of ${active.id}.`,
     onDragCancel: ({ active }) => `Custom cancel of ${active.id}.`,
+    // `undefined` leaves the event to the default text.
+    onDragEnd: ({ active, over }) => (over ? `Custom drop of ${active.id} on ${over.id}.` : undefined),
   };
 
   // The app re-renders the item inside the zone it was dropped on: a new element.
@@ -29,7 +31,8 @@
         label="Plain draggable"
         data-testid="plain"
       />
-      <!-- Everything set here must survive: the library never overrides user attributes. -->
+      <!-- Everything set here must survive: the library never overrides user attributes.
+           The instructions join aria-describedby as one more id. -->
       <A11yItem
         item-id="custom"
         label="Custom attributes"

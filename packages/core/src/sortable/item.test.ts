@@ -1,5 +1,5 @@
 import { createApp, defineComponent, h, ref, useTemplateRef, type Component, type PropType } from 'vue';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SortableItemOptions } from '../types';
 import { DnDProvider } from '../core/DnDProvider';
 import { useDnDContext } from '../core/context';
@@ -101,5 +101,52 @@ describe('makeSortableItem keys', () => {
     const message = (errors[0] as Error).message;
     expect(message).toContain('needs `id` or `item`');
     expect(message).toMatch(/recreated.*virtual list.*lose the item/s);
+  });
+});
+
+describe('two lists in one component', () => {
+  afterEach(() => {
+    mounted.splice(0).forEach((unmount) => unmount());
+    vi.restoreAllMocks();
+  });
+
+  /** A component with one list, or `count` lists (and trees) of its own. */
+  const Lists = (count: number, tree = false) =>
+    defineComponent({
+      setup() {
+        for (let i = 0; i < count; i++) {
+          const target = useTemplateRef<HTMLElement>(`list${i}`);
+          if (tree && i === count - 1) makeSortableTree(target, { items: ref([{ id: `t${i}` }]) });
+          else makeSortableList(target, { items: ref([{ id: `a${i}` }]) });
+        }
+        return () => h('div', Array.from({ length: count }, (_, i) => h('ul', { ref: `list${i}` })));
+      },
+    });
+
+  const renderIn = (child: Component) => mount({ setup: () => () => h(DnDProvider, null, { default: () => h(child) }) });
+
+  it('warns in development: the first list loses its items; each list needs its own component', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    renderIn(Lists(2));
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0]![0])).toMatch(/^\[vue-dnd-kit\] Two sortable lists.*Render each list in its own component\.$/);
+    // A list and a tree share the same context.
+    renderIn(Lists(2, true));
+    expect(warn).toHaveBeenCalledTimes(2);
+  });
+
+  it('one list per component, nested or side by side, does not warn', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const One = Lists(1);
+    renderIn(defineComponent({ setup: () => () => h('div', [h(One), h(One), h(Lists(1, true))]) }));
+    renderIn(
+      defineComponent({
+        setup() {
+          makeSortableList(useTemplateRef<HTMLElement>('outer'), { items: ref([{ id: 'column' }]) });
+          return () => h('div', { ref: 'outer' }, [h(One)]);
+        },
+      }),
+    );
+    expect(warn).not.toHaveBeenCalled();
   });
 });

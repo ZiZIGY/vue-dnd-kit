@@ -334,17 +334,13 @@ export function createDnDManager(props: DnDProviderProps) {
     let text: string | undefined;
     try {
       // The provider's own text wins, then announcers (sortable positions), then defaults.
-      const own = custom?.[name] as Announce | undefined;
-      if (own) {
-        text = own.call(custom, event);
-      } else {
-        for (const announcer of announcers) {
-          text = (announcer[name] as Announce | undefined)?.call(announcer, event);
-          // `undefined`: not this announcer's business; '' : it has nothing new to say.
-          if (text !== undefined) break;
-        }
-        text ??= (defaultAnnouncements[name] as Announce).call(defaultAnnouncements, event);
+      // `undefined`: not this source's business, the next one speaks; '': nothing to say.
+      text = (custom?.[name] as Announce | undefined)?.call(custom, event);
+      for (const announcer of announcers) {
+        if (text !== undefined) break;
+        text = (announcer[name] as Announce | undefined)?.call(announcer, event);
       }
+      text ??= (defaultAnnouncements[name] as Announce).call(defaultAnnouncements, event);
     } catch (error) {
       // A throwing announcement must not break the session (§13).
       clearTimeout(announceTimer);
@@ -578,6 +574,8 @@ export function createDnDManager(props: DnDProviderProps) {
     // The target follows the pointer, scrolling and resizing, never a layout shift
     // alone: a frame where none of them changed (a repeated pointermove) does nothing.
     if (!refresh && detectedAt && point.x === detectedAt.x && point.y === detectedAt.y) return;
+    // The first detection of the drag: the target found under the item at pickup isn't news.
+    const pickup = !detectedAt;
     detectedAt = point;
     transform.value = offset;
     pointer.value = point;
@@ -597,7 +595,7 @@ export function createDnDManager(props: DnDProviderProps) {
       if (previous) droppables.get(previous.id)?.onDragLeave?.(event);
       if (next) droppables.get(next.id)?.onDragEnter?.(event);
       emit('onDragOver', event);
-      announce('onDragOver', event);
+      if (!pickup) announce('onDragOver', event);
     }
     emit('onDragMove', event);
     // The move may have reordered (sortable): fit the slot once that rendered, even if
@@ -898,6 +896,11 @@ export function createDnDManager(props: DnDProviderProps) {
     flushFrame();
     const id = session;
     status.value = 'dropping';
+    // `onBeforeDrop` may wait for the user (a confirmation dialog): the page stops being
+    // in drag mode now, with its own cursor and text selection. The drag state and the
+    // overlay stay as they are until the drop is decided.
+    restoreDocument?.();
+    restoreDocument = null;
     const event = createEvent();
     const target = event.over;
 
