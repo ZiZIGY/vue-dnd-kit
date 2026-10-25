@@ -382,6 +382,29 @@ test.describe("multi-drag 'group'", () => {
     check();
   });
 
+  test('with reduced motion nothing animates, and the result is the same', async ({ page }) => {
+    const check = guard(page);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.evaluate(() => {
+      const win = window as Window & { __animated?: number };
+      win.__animated = 0;
+      const animate = Element.prototype.animate;
+      Element.prototype.animate = function (this: Element, keyframes, options) {
+        win.__animated!++;
+        return animate.call(this, keyframes, options);
+      };
+    });
+    await select(page, 'a2', 'a5');
+    await pickUp(page, item(page, 'a2'));
+    await expect.poll(() => order(list(page, 'group-a'))).toEqual(['a1', 'a2', 'a5', 'a3', 'a4', 'a6', 'a7', 'a8']);
+    await glide(page, await center(item(page, 'b2'), 0.3));
+    await page.mouse.up();
+    await waitForIdle(page);
+    await expect(state(page)).toContainText('group-a:a1,a3,a4,a6,a7,a8 | group-b:b1,a2,a5,b2,b3 |');
+    expect(await page.evaluate(() => (window as Window & { __animated?: number }).__animated)).toBe(0);
+    check();
+  });
+
   test('cancel puts every item back and the clones fly home', async ({ page }) => {
     const check = guard(page);
     await select(page, 'a2', 'a6');
