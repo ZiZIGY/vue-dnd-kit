@@ -113,6 +113,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     },
     registerItem(key, getElement) {
       items.set(key, getElement);
+      // Created by the render a FLIP pass waits for.
+      g.fresh?.add(key);
       return () => {
         if (items.get(key) === getElement) items.delete(key);
       };
