@@ -8,6 +8,8 @@
   const customAnnouncements: Partial<Announcements> = {
     onDragStart: ({ active }) => `Custom pickup of ${active.id}.`,
     onDragCancel: ({ active }) => `Custom cancel of ${active.id}.`,
+    // `undefined` leaves the event to the default text.
+    onDragEnd: ({ active, over }) => (over ? `Custom drop of ${active.id} on ${over.id}.` : undefined),
   };
 
   // The app re-renders the item inside the zone it was dropped on: a new element.

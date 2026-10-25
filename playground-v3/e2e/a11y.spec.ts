@@ -169,9 +169,27 @@ test.describe('announcements', () => {
 
     await pickUp(item);
     await page.keyboard.press('Space');
-    // No custom onDragEnd: the default one is used.
+    // The custom onDragEnd returns undefined without a target: the default one is used.
     await expect(live).toHaveText('Draggable item announce-custom was dropped.');
     await waitForIdle(page);
+  });
+
+  test('picking up an item that rests on a drop target announces no move', async ({ page }) => {
+    const errors = trackErrors(page);
+    const movable = page.getByTestId('zone-c').getByTestId('movable');
+    const live = await liveRegionOf(page, movable);
+    await pickUp(movable);
+    await expect(live).toHaveText('Picked up draggable item movable.');
+    // Moves are spoken once the drag rests for 500 ms: the target found at pickup isn't one.
+    await page.waitForTimeout(900);
+    await expect(live).toHaveText('Picked up draggable item movable.');
+    // A real move still is.
+    await moveRight(page, 2);
+    await expect(page.getByTestId('zone-d')).toHaveClass(/over/);
+    await expect(live).toHaveText('Draggable item movable was moved over droppable area zone-d.');
+    await page.keyboard.press('Escape');
+    await waitForIdle(page);
+    expect(errors).toEqual([]);
   });
 
   test('announcements: false keeps the live region silent', async ({ page }) => {

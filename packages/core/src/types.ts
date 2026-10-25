@@ -257,6 +257,12 @@ export type Modifier = (args: ModifierArgs) => Coordinates;
 
 // ─── Provider ──────────────────────────────────────────────────────────────────
 
+/**
+ * Screen reader texts per event. A text is spoken by the provider's live region (moves
+ * once the drag rests for 500 ms); `undefined` leaves the event to the next source (the
+ * texts of integrations such as sortable positions, then the defaults); `''` says
+ * nothing. A move isn't announced for the target found at pickup: nothing moved yet.
+ */
 export interface Announcements {
   onDragStart(event: DnDEvent): string | undefined;
   onDragOver(event: DnDEvent): string | undefined;
@@ -298,6 +304,7 @@ export interface DnDProviderProps {
    * content re-lays out at the new size; it is never scaled.
    */
   overlayFit?: 'slot' | 'source';
+  /** Own texts for some events (see `Announcements`); `false` keeps the live region silent. */
   announcements?: Partial<Announcements> | false;
   screenReaderInstructions?: string;
   /** Inject zero-specificity default styles (placeholder opacity, no text selection while dragging). */
