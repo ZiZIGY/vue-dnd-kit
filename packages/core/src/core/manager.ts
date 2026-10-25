@@ -187,6 +187,8 @@ export function createDnDManager(props: DnDProviderProps) {
   const droppables = new Map<Key, DroppableEntry>();
   const draggableIds = new WeakMap<Element, Key>();
   const monitors = new Set<DnDMonitor>();
+  /** Monitors of library layers (see `addMonitor`). */
+  const integrations = new Set<DnDMonitor>();
   const sourceResolvers = new Set<(active: Active) => DragSource | undefined>();
   const targetRules = new Set<TargetRule>();
   /** Integration announcers (sortable positions): after the user's `announcements`, before the defaults. */
@@ -276,9 +278,17 @@ export function createDnDManager(props: DnDProviderProps) {
     return null;
   };
 
-  const addMonitor = (monitor: DnDMonitor): (() => void) => {
+  /**
+   * `integration`: a library layer (sortable groups). Its notifications run before the
+   * others', so the user's `onDragEnd` sees the drop it wrote.
+   */
+  const addMonitor = (monitor: DnDMonitor, integration = false): (() => void) => {
     monitors.add(monitor);
-    return () => monitors.delete(monitor);
+    if (integration) integrations.add(monitor);
+    return () => {
+      monitors.delete(monitor);
+      integrations.delete(monitor);
+    };
   };
 
   const addSourceResolver = (resolver: (active: Active) => DragSource | undefined) => {
@@ -327,7 +337,8 @@ export function createDnDManager(props: DnDProviderProps) {
   };
 
   const emit = (name: MonitorHandler, event: DnDEvent | DnDEndEvent) => {
-    for (const monitor of [...monitors]) {
+    const ordered = [...monitors].sort((a, b) => Number(integrations.has(b)) - Number(integrations.has(a)));
+    for (const monitor of ordered) {
       try {
         (monitor[name] as ((event: DnDEvent) => void) | undefined)?.(event);
       } catch (error) {

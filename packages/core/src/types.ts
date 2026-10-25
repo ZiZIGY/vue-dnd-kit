@@ -382,6 +382,7 @@ export interface DnDMonitor {
   onDragOver?(event: DnDEvent): void;
   /** Runs before the drop is committed: `false` rejects, a list of ids accepts a subset. */
   onBeforeDrop?(event: DnDEvent): MaybePromise<BeforeDropResult>;
+  /** A notification once the drop is done: sortable lists have run their `onDrop` and written it. */
   onDragEnd?(event: DnDEndEvent): void;
   onDragCancel?(event: DnDEvent): void;
   /** Keyboard drags: next pointer position for an arrow key (e.g. the next sortable slot). */
@@ -550,12 +551,27 @@ export interface SortableGroupOptions {
   put?: boolean | ((context: SortablePutContext) => boolean);
 }
 
+/**
+ * A source of sortable items. A writable ref: the library writes each drop into it. A
+ * read-only one (a getter, a readonly ref, a computed: an immutable store, server state,
+ * a store changed only through actions): you apply each drop from `event.result`, after
+ * `event.preventDefault()` (see `SortableDropEvent`).
+ */
+export type SortableItems<T> = Ref<T[]> | Readonly<Ref<readonly T[]>> | (() => readonly T[]);
+
+/**
+ * A drop on a sortable list or tree. Its hooks run in order: `onBeforeDrop` decides,
+ * `onDrop` is told, then the default action writes `result` into the `items` of every
+ * list it names, and the overlay lands. `preventDefault()` in either hook skips that
+ * write, so you can apply `result` yourself.
+ */
 export interface SortableDropEvent<T = unknown> {
   keys: Key[];
   items: T[];
   accepted: Key[];
   rejected: Key[];
   from: { list: Key | null; index: number };
+  /** `index` is -1 when nothing landed: the items left their lists (`e.source.remove()`, `dropOutside: 'remove'`). */
   to: { list: Key; index: number };
   sameList: boolean;
   mode: DragMode;
@@ -565,6 +581,27 @@ export interface SortableDropEvent<T = unknown> {
    * started at (`from` above); between lists, into the dragged item's list.
    */
   partner?: { key: Key; item: T; from: { list: Key; index: number }; to: { list: Key; index: number } };
+  /**
+   * The new items of every list the drop changes, by list id: exactly what the default
+   * write puts in their `items`, as new arrays. Moves, copies, created items, a partial
+   * accept, both sides of a swap and items removed (`e.source.remove()` in a target
+   * inside an item, a trash zone, `dropOutside: 'remove'`) are all in it; a list the drop
+   * leaves as it is isn't. A tree's entry is a new root array: the nodes on the changed
+   * paths are copies (`withChildren`), untouched subtrees are shared, your nodes are never
+   * mutated. In `onBeforeDrop` it is the drop as it stands before the hook answers
+   * (returning some keys changes it); `onDrop` gets the final one.
+   */
+  result: ReadonlyMap<Key, T[]>;
+  /**
+   * Skips the default write, into every list in `result` (writing only some would lose
+   * or duplicate items). Apply `result` yourself in `onDrop`, or before an async
+   * `onBeforeDrop` resolves, and the overlay lands in the new order. Applied nowhere,
+   * the lists stay as they were and the overlay flies back (copies and created items,
+   * which have no place yet, fade out).
+   */
+  preventDefault(): void;
+  /** `preventDefault()` was called, in `onBeforeDrop` or `onDrop`. */
+  readonly defaultPrevented: boolean;
 }
 
 export interface SortableIndicator {
@@ -590,8 +627,13 @@ export interface SortableIndicator {
  * one's items (development builds warn about it).
  */
 export interface SortableListOptions<T> {
-  /** Source of truth; the library writes the new array here on drop. */
-  items: Ref<T[]>;
+  /**
+   * Source of truth. A writable ref takes the new array on drop, right after `onDrop`.
+   * A read-only source (a getter, a readonly ref, a computed) can't: call
+   * `event.preventDefault()` and apply `event.result` yourself. Development builds warn
+   * about a drop left to the library there, which then changes nothing.
+   */
+  items: SortableItems<T>;
   /** Default: `item.id`, or the item itself for primitives. Also keys `makeSortableItem({ item })`. */
   getKey?: (item: T) => Key;
   /** Default: `useId()`, stable between server and client render. */
@@ -636,10 +678,20 @@ export interface SortableListOptions<T> {
   animation?: LayoutAnimation;
   autoScroll?: boolean | AutoScrollOptions;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
+  /**
+   * Asked before a drop into this list: `false` rejects it (the items fly back), some
+   * keys accept only those. May be async: the overlay waits where it was dropped. An
+   * error rejects the drop too. See `SortableDropEvent` for `result` and `preventDefault`.
+   */
   onBeforeDrop?: (
     event: SortableDropEvent<T>,
   ) => MaybePromise<BeforeDropResult>;
-  /** Called after the result was written to `items`. */
+  /**
+   * Called once a drop into this list is accepted, before it is written: `items` still
+   * holds the old order, `event.result` the new one. Synchronous: the write follows as it
+   * returns, unless it called `event.preventDefault()`. Also called on the list the items
+   * came from when they are removed (`to.index` is -1).
+   */
   onDrop?: (event: SortableDropEvent<T>) => void;
 }
 
@@ -740,11 +792,26 @@ export interface SortableTreeDropEvent<T = unknown> extends SortableDropEvent<T>
  * the whole block.
  */
 export interface SortableTreeOptions<T> {
-  items: Ref<T[]>;
+  /**
+   * The root nodes. A writable ref: on drop the library gives the changed nodes their new
+   * children (`setChildren`) and writes a new root array. A read-only source (a getter, a
+   * readonly ref, a computed): call `event.preventDefault()` and apply `event.result`
+   * yourself (as in `SortableListOptions.items`).
+   */
+  items: SortableItems<T>;
   /** Default: `node.id`. Also keys `makeSortableItem({ item })`. */
   getKey?: (node: T) => Key;
   getChildren?: (node: T) => T[] | undefined;
+  /** How the default write gives a node its new children. Default: `node.children = children`. */
   setChildren?: (node: T, children: T[]) => void;
+  /**
+   * A copy of `node` with `children`, for `event.result`: a new tree that leaves your
+   * nodes as they are (the default write still goes through `setChildren`). Default:
+   * `{ ...node }` given the children through `setChildren` (`{ ...node, children }`
+   * without a `setChildren`). Pass it for class instances and nodes that need more
+   * than a shallow copy.
+   */
+  withChildren?: (node: T, children: T[]) => T;
   /** Default: `useId()`, stable between server and client render. */
   id?: Key;
   /** Overlay component for this tree's rows (a row's own `overlay` wins). */
@@ -768,10 +835,11 @@ export interface SortableTreeOptions<T> {
   collapsed?: Ref<Set<Key>>;
   animation?: LayoutAnimation;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
+  /** As in `SortableListOptions`. */
   onBeforeDrop?: (
     event: SortableTreeDropEvent<T>,
   ) => MaybePromise<BeforeDropResult>;
-  /** Called after the result was written to `items`. */
+  /** As in `SortableListOptions`: before the write, which `event.preventDefault()` skips. */
   onDrop?: (event: SortableTreeDropEvent<T>) => void;
 }
 

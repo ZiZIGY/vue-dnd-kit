@@ -1,12 +1,15 @@
 import {
   computed,
   getCurrentInstance,
+  isReadonly,
+  isRef,
   markRaw,
   onScopeDispose,
   provide,
   shallowRef,
   type Component,
   type InjectionKey,
+  type Ref,
 } from 'vue';
 import type {
   Key,
@@ -80,7 +83,8 @@ let warnedClone = false;
 
 /**
  * Makes a container a sortable list. Render the returned `items` (the draft order);
- * the result is written back to `options.items` on drop.
+ * the result is written back to `options.items` on drop, after `onDrop`, unless
+ * `event.preventDefault()` leaves `event.result` to you.
  */
 export function makeSortableList<T>(
   target: MaybeElementRef,
@@ -91,11 +95,12 @@ export function makeSortableList<T>(
   const groupOptions = typeof options.group === 'string' ? { name: options.group } : options.group;
   const group = useSortableGroup(manager, groupOptions?.name ?? `sortable:${id}`);
   const getKey = (options.getKey ?? defaultGetKey) as (item: T) => Key;
+  const source = () => read<readonly T[]>(options.items) as T[];
 
-  const keys = computed(() => options.items.value.map(getKey));
+  const keys = computed(() => source().map(getKey));
   const byKey = computed(() => {
     const map = new Map<Key, T>();
-    for (const item of options.items.value) map.set(getKey(item), item);
+    for (const item of source()) map.set(getKey(item), item);
     return map;
   });
   const draft = shallowRef<Key[] | null>(null);
@@ -141,8 +146,11 @@ export function makeSortableList<T>(
           return item === undefined ? undefined : { key: getKey(item), item };
         }
       : undefined,
-    commit: (next, lookup) => {
-      options.items.value = next.map((key) => lookup(key) as T);
+    isReadonly: () => !isRef(options.items) || isReadonly(options.items),
+    build: (next, lookup) => next.map(lookup),
+    // The very array the drop's `result` holds.
+    commit: (built) => {
+      (options.items as Ref<T[]>).value = built as T[];
     },
     beforeDrop: options.onBeforeDrop as ListEntry['beforeDrop'],
     afterDrop: options.onDrop as ((event: SortableDropEvent) => void) | undefined,
@@ -170,7 +178,7 @@ export function makeSortableList<T>(
     const order = draft.value;
     if (!order) {
       rendered = null;
-      return options.items.value;
+      return source();
     }
     const session = group.session.value;
     const lookup = (key: Key) => group.lookup(key) as T;
