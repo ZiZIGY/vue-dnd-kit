@@ -6,12 +6,9 @@
     "dev": "vitepress dev docs",
     "build": "vitepress build docs",
     "preview": "vitepress preview docs",
-    "playground:build": "yarn --cwd packages/core build && yarn --cwd packages/utilities build",
-    "playground:watch:core": "yarn --cwd packages/core start",
-    "playground:watch:utilities": "yarn --cwd packages/utilities start",
-    "playground:dev": "yarn --cwd playground dev",
-    "playground": "yarn playground:build && concurrently -n core,utils,play -c blue,green,magenta \"yarn playground:watch:core\" \"yarn playground:watch:utilities\" \"yarn playground:dev\"",
-    "dev:v2": "yarn --cwd packages/core build && concurrently -n core,play,docs -c blue,magenta,green \"yarn --cwd packages/core start\" \"yarn playground:dev\" \"yarn dev\""
+    "playground": "yarn --cwd playground-v3 dev",
+    "playground:host": "yarn --cwd playground-v3 dev:host",
+    "dev:v2": "yarn --cwd packages/core build && concurrently -n core,docs -c blue,green \"yarn --cwd packages/core start\" \"yarn dev\""
   },
   "keywords": [
     "vue",

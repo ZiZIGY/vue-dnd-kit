@@ -118,7 +118,6 @@ pnpm add @vue-dnd-kit/core
 | Package | Description |
 |---------|-------------|
 | [`@vue-dnd-kit/core`](./packages/core) | Core library — composables, `DnDProvider`, `DragPreview` |
-| [`@vue-dnd-kit/utilities`](./packages/utilities) | Extra utility helpers |
 
 ---
 
