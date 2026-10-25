@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { center, trackErrors, trackVueWarnings } from './helpers';
-import { byId, drag, hold, press, settled } from './app-helpers';
+import { byId, drag, hold, press, settled, watchAfterCommit } from './app-helpers';
 
 const INITIAL =
   'demo:Fri 15:30-16:30 | design:Tue 10:00-11:00 | lunch:Wed 12:00-13:00 | planning:Thu 14:00-15:30 | standup:Mon 09:00-09:30';
@@ -38,7 +38,13 @@ test.describe('app: calendar', () => {
     const { start, to } = await shifted(page, 'design', 1, 3);
     await hold(page, start, to);
     await expect(ghostTime(page)).toHaveText('Wed 11:30 – 12:30');
+    const afterCommit = await watchAfterCommit(page, '[data-testid="calendar-state"]', '[data-dnd-overlay] [data-testid="ghost-time"]');
     await page.mouse.up();
+    // Flying into place, the overlay keeps the time it lands on (`over` at the drop).
+    const { frames, seen } = await afterCommit();
+    expect(frames).toBeGreaterThan(0);
+    expect(seen.length).toBe(frames);
+    for (const label of seen) expect(label).toContain('Wed 11:30 – 12:30');
     await settled(page);
     await expect(state(page)).toContainText('design:Wed 11:30-12:30');
     await expect(page.getByTestId('calendar-last')).toHaveText('Design review moved to Wed 11:30 – 12:30');

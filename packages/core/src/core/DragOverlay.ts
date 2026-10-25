@@ -257,11 +257,13 @@ export const DragOverlay = defineComponent({
     return () => {
       if (!visible.value) return null;
       const current = manager.active.value!;
+      // Flying into place, the overlay still shows what it lands on (`over` is cleared).
+      const over = manager.settling.value ? manager.dropTarget.value : manager.over.value;
       const props: OverlaySlotProps = {
         active: current,
         items: current.items,
-        over: manager.over.value,
-        accepted: manager.over.value?.accepted ?? false,
+        over,
+        accepted: over?.accepted ?? false,
         status: manager.status.value,
         mode: manager.mode.value,
       };

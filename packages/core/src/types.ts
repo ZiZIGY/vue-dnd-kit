@@ -312,6 +312,10 @@ export interface OverlaySlotProps {
   active: Active;
   /** Every dragged item, the primary one first: one overlay for the whole multi-drag. */
   items: DragItem[];
+  /**
+   * The drop target under the drag. While a decided drop animates, the target it lands
+   * on (as it was at the drop); `null` while a cancelled drag flies back.
+   */
   over: Over | null;
   /** Whether `over` accepts the dragged items; `false` when over nothing. */
   accepted: boolean;

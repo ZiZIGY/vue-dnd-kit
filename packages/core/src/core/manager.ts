@@ -143,6 +143,11 @@ export function createDnDManager(props: DnDProviderProps) {
    * (the data has already changed under them), and `useDnD().active` reads `null`.
    */
   const settling = shallowRef(false);
+  /**
+   * What a decided drop lands on (`over` at the drop; `null` when it was cancelled): the
+   * overlay keeps showing it while it flies there, after `over` itself is cleared.
+   */
+  const dropTarget = shallowRef<Over | null>(null);
   const transform = shallowRef<Coordinates>({ x: 0, y: 0 });
   const activationProgress = shallowRef(0);
   const isAutoScrolling = shallowRef(false);
@@ -763,6 +768,7 @@ export function createDnDManager(props: DnDProviderProps) {
     over.value = null;
     pointer.value = null;
     settling.value = false;
+    dropTarget.value = null;
     transform.value = { x: 0, y: 0 };
     fitSize.value = null;
     resize = null;
@@ -824,6 +830,7 @@ export function createDnDManager(props: DnDProviderProps) {
     // The commit (or the cancel) happened in this same tick: nothing has rendered against
     // the changed data with the drag state still live.
     settling.value = true;
+    dropTarget.value = reason === 'drop' ? event.over : null;
     over.value = null;
     pointer.value = null;
     if (frame) cancelAnimationFrame(frame);
@@ -942,6 +949,7 @@ export function createDnDManager(props: DnDProviderProps) {
     over,
     pointer,
     settling,
+    dropTarget,
     transform,
     activationProgress,
     isAutoScrolling,
