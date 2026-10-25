@@ -93,6 +93,7 @@ export function createDraggable<TData>(
   const entry: DraggableEntry = {
     id: id.value,
     overlay: toOverlay(options.overlay),
+    getModifiers: () => read(options.modifiers),
     activation: options.activation,
     canDrag: options.canDrag,
     keyboard: options.keyboard,

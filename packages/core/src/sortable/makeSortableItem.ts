@@ -42,6 +42,7 @@ export function makeSortableItem<TData = unknown>(
       data: options.data,
       activation: options.activation,
       overlay: options.overlay ?? context.overlay,
+      modifiers: () => read(options.modifiers) ?? context.getModifiers?.(),
     },
     {
       getItem: () => group.lookup(key.value),

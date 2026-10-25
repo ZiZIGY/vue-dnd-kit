@@ -420,6 +420,12 @@ export interface DraggableOptions<TData = unknown> {
    * via the returned `transform`.
    */
   overlay?: boolean | Component;
+  /**
+   * Modifiers for drags that start here, applied after the provider's `modifiers`: e.g.
+   * `[restrictToVerticalAxis]` for one element on a page where other drags move freely.
+   * Read when the drag starts.
+   */
+  modifiers?: MaybeReadonlyRefOrGetter<Modifier[] | undefined>;
   /** Arrow keys in free drags: move by pixels or jump between accepting drop targets. */
   keyboard?: 'pixels' | 'droppables';
   /** Set role/tabindex/aria-* attributes (never overriding the user's own). */
@@ -532,6 +538,12 @@ export interface SortableListOptions<T> {
    * `OverlayProps` and is kept for the whole drag, also over other lists.
    */
   overlay?: Component;
+  /**
+   * Modifiers for drags of this list's items, applied after the provider's `modifiers`
+   * (an item's own `modifiers` win): e.g. `[restrictToVerticalAxis]` to keep a vertical
+   * list's items on their axis. Read when the drag starts.
+   */
+  modifiers?: MaybeReadonlyRefOrGetter<Modifier[] | undefined>;
   /** Lists with the same group name exchange items. Default: a group of its own. */
   group?: string | SortableGroupOptions;
   acceptMode?: AcceptMode;
@@ -587,6 +599,8 @@ export interface SortableItemOptions<TData = unknown> {
   item?: MaybeReadonlyRefOrGetter<unknown>;
   /** Overlay component for this item; wins over the list's `overlay`. */
   overlay?: Component;
+  /** Modifiers for drags of this item, after the provider's; win over the list's `modifiers`. */
+  modifiers?: MaybeReadonlyRefOrGetter<Modifier[] | undefined>;
   handle?: MaybeElementRef | string;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
   type?: MaybeReadonlyRefOrGetter<string | string[] | undefined>;

@@ -10,6 +10,7 @@ import {
 import type {
   Key,
   MaybeElementRef,
+  Modifier,
   SortableDropEvent,
   SortableListOptions,
   SortableListReturn,
@@ -28,6 +29,8 @@ export interface SortableContext {
   getKey: (item: unknown) => Key;
   /** The list's `overlay` component, used when the item has none. */
   overlay?: Component;
+  /** The list's `modifiers`, used when the item has none. */
+  getModifiers?: () => Modifier[] | undefined;
 }
 
 export const SORTABLE_CONTEXT: InjectionKey<SortableContext> = Symbol('vue-dnd-kit-sortable');
@@ -43,12 +46,14 @@ export const provideSortableContext = (
   list: ListEntry,
   getKey: (item: never) => Key,
   overlay: Component | undefined,
+  getModifiers?: () => Modifier[] | undefined,
 ): void =>
   provide(SORTABLE_CONTEXT, {
     group,
     list,
     getKey: getKey as (item: unknown) => Key,
     overlay: overlay && markRaw(overlay),
+    getModifiers,
   });
 
 let warnedClone = false;
@@ -136,7 +141,7 @@ export function makeSortableList<T>(
     { accepts: (active) => group.accepts(entry, active) },
   );
 
-  provideSortableContext(group, entry, getKey, options.overlay);
+  provideSortableContext(group, entry, getKey, options.overlay, () => read(options.modifiers));
 
   const items = computed<T[]>(() => {
     const order = draft.value;

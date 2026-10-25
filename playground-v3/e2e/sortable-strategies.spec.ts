@@ -142,3 +142,49 @@ test.describe('table rows', () => {
     expect(errors).toEqual([]);
   });
 });
+
+test.describe('axis lock (list modifiers)', () => {
+  /** Left edge of the overlay box while dragging `id` 120px right and down to `target`. */
+  const overlayLeftAfterDiagonal = async (page: Page, id: string, target: string) => {
+    const startLeft = (await item(page, id).boundingBox())!.x;
+    const end = await center(item(page, target), 0.8);
+    await dragTo(page, item(page, id), { x: end.x + 120, y: end.y }, { release: false });
+    await frames(page, 2);
+    const left = (await page.locator('[data-dnd-overlay]').boundingBox())!.x;
+    await page.mouse.up();
+    await waitForIdle(page);
+    return left - startLeft;
+  };
+
+  test('table rows stay on the y axis; unticked, they follow the pointer', async ({ page }) => {
+    const errors = trackErrors(page);
+    await page.goto('/#table');
+    expect(Math.abs(await overlayLeftAfterDiagonal(page, 'p1', 'p3'))).toBeLessThan(1);
+    // Sorting follows the pointer as before: only the overlay is kept on the axis.
+    await expect(state(page)).toHaveText('p2,p3,p1,p4,p5');
+    await page.getByTestId('lock-axis').uncheck();
+    expect(await overlayLeftAfterDiagonal(page, 'p2', 'p4')).toBeGreaterThan(100);
+    expect(errors).toEqual([]);
+  });
+
+  test('the horizontal list stays on the x axis, the indicator lists move freely', async ({ page }) => {
+    await page.goto('/#lists');
+    await pickUp(page, item(page, 'h1'));
+    const top = (await page.locator('[data-dnd-overlay]').boundingBox())!.y;
+    const to = await center(item(page, 'h3'));
+    await glide(page, { x: to.x, y: to.y + 60 }, 10);
+    await frames(page, 2);
+    expect(Math.abs((await page.locator('[data-dnd-overlay]').boundingBox())!.y - top)).toBeLessThan(1);
+    await page.mouse.up();
+    await waitForIdle(page);
+
+    // Indicator lists exchange items side by side: no lock there.
+    await pickUp(page, item(page, 'i1'));
+    const left = (await page.locator('[data-dnd-overlay]').boundingBox())!.x;
+    await glide(page, await center(item(page, 'j2')), 12);
+    await frames(page, 2);
+    expect((await page.locator('[data-dnd-overlay]').boundingBox())!.x - left).toBeGreaterThan(100);
+    await page.keyboard.press('Escape');
+    await waitForIdle(page);
+  });
+});

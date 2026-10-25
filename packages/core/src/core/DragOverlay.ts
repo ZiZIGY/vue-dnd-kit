@@ -222,7 +222,7 @@ export const DragOverlay = defineComponent({
     // drop animation (transitions sit above animations in the cascade).
     const transition = computed(() => {
       if (manager.status.value !== 'dragging' || prefersReducedMotion()) return undefined;
-      const smooth = getOverlaySmoothing(manager.props.modifiers);
+      const smooth = getOverlaySmoothing(manager.getModifiers());
       return smooth ? `transform ${smooth.duration}ms ${smooth.easing}` : undefined;
     });
 

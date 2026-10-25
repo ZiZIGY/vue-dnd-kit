@@ -28,6 +28,7 @@ import type {
   DragSource,
   Key,
   LayoutAnimation,
+  Modifier,
   Over,
   Rect,
   SensorType,
@@ -66,6 +67,8 @@ export interface DraggableEntry {
   canDrag?: (event: PointerEvent | KeyboardEvent) => boolean;
   /** `false`: no overlay; `true`: the provider's slot or the clone; a component (`markRaw`): rendered instead. */
   overlay: boolean | Component;
+  /** Modifiers of this draggable (or its list), applied after the provider's. */
+  getModifiers?(): Modifier[] | undefined;
   /** Arrow keys in free keyboard drags: move by pixels (default) or jump between accepting drop targets. */
   keyboard?: 'pixels' | 'droppables';
   /** Sortable integration: the item object behind this draggable. */
@@ -189,6 +192,8 @@ export function createDnDManager(props: DnDProviderProps) {
   let fades: Animation[] = [];
   /** Overlay component of the drag, taken at start: the source may unmount mid-drag. */
   let overlayComponent: Component | null = null;
+  /** Modifiers of the draggable the drag started from, taken at start like the overlay. */
+  let sourceModifiers: readonly Modifier[] = [];
   let restoreDocument: (() => void) | null = null;
   let session = 0;
   let announceTimer: ReturnType<typeof setTimeout> | undefined;
@@ -357,9 +362,13 @@ export function createDnDManager(props: DnDProviderProps) {
   const getOverlayRect = (current: Active, offset: Coordinates): Rect =>
     resizeAround(offsetRect(current.rect, offset.x, offset.y), fitSize.value ?? current.rect, grab);
 
+  /** The provider's modifiers, then those of the draggable (or list) the drag started from. */
+  const getModifiers = (): readonly Modifier[] =>
+    sourceModifiers.length ? [...(props.modifiers ?? []), ...sourceModifiers] : (props.modifiers ?? []);
+
   const applyModifiers = (current: Active, offset: Coordinates): Coordinates => {
     let result = offset;
-    for (const modifier of props.modifiers ?? []) {
+    for (const modifier of getModifiers()) {
       result = modifier({
         transform: result,
         active: current,
@@ -661,6 +670,7 @@ export function createDnDManager(props: DnDProviderProps) {
     const overlay = entry.overlay;
     previewEnabled = overlay !== false;
     overlayComponent = typeof overlay === 'boolean' ? null : overlay;
+    sourceModifiers = entry.getModifiers?.() ?? [];
     // Taken synchronously, before the placeholder re-renders. Overlay components get it
     // too: they may show it (`DragPreview`).
     const preview = previewEnabled ? takePreview(id) : null;
@@ -766,6 +776,7 @@ export function createDnDManager(props: DnDProviderProps) {
     previewIds = [];
     previewEnabled = false;
     overlayComponent = null;
+    sourceModifiers = [];
     containerRect = null;
     status.value = 'idle';
     // Faded-in items keep full opacity until their placeholder marks are gone (post-flush).
@@ -957,6 +968,7 @@ export function createDnDManager(props: DnDProviderProps) {
       return previewEnabled;
     },
     /** The dragged item's overlay component (its own, else its list's); `null`: slot or clone. */
+    getModifiers,
     get overlayComponent() {
       return overlayComponent;
     },
