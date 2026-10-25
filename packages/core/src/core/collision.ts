@@ -1,5 +1,5 @@
 import type { CollisionDetection, Coordinates, Key, Rect } from '../types';
-import { getCenter } from '../animation/layout';
+import { distance, getCenter } from '../animation/layout';
 
 const area = (rect: Rect) => rect.width * rect.height;
 
@@ -10,8 +10,6 @@ const intersectionRatio = (a: Rect, b: Rect): number => {
   const intersection = width * height;
   return intersection / (area(a) + area(b) - intersection);
 };
-
-const distance = (a: Coordinates, b: Coordinates) => Math.hypot(a.x - b.x, a.y - b.y);
 
 /** Targets under the pointer, from hit-testing: respects z-order, overlays and shadow roots. */
 export const pointerWithin: CollisionDetection = ({ hits }) => hits;

@@ -23,7 +23,7 @@ import type {
 import type { DnDManager, DraggableEntry } from './manager';
 import { useDnDContext } from './context';
 import { matchesRule } from './accept';
-import { createRect, getLayoutRect, offsetRect } from '../animation/layout';
+import { createRect, getLayoutRect, intersects, offsetRect } from '../animation/layout';
 import { isInsideInteractive, parentOf, toElement } from '../utils/dom';
 import { read } from '../utils/read';
 
@@ -81,9 +81,7 @@ export const getBandRect = (
   return createRect(left, top, right - left, bottom - top);
 };
 
-/** Overlap test: touching edges don't count, a zero-width band crossing an item does. */
-export const intersects = (a: Rect, b: Rect): boolean =>
-  a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+export { intersects };
 
 /**
  * Selection for the current band. `hits` holds every item measured during this band

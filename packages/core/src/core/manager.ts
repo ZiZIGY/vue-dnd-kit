@@ -572,13 +572,12 @@ export function createDnDManager(props: DnDProviderProps) {
     refreshRequested = false;
     const offset = applyModifiers(current, { x: raw.x - origin.x, y: raw.y - origin.y });
     const point = { x: origin.x + offset.x, y: origin.y + offset.y };
+    // A modifier moved the point off the pointer (it may hold it while the pointer moves on).
+    if (point.x !== raw.x || point.y !== raw.y) pointerElement = null;
+
     // The target follows the pointer, scrolling and resizing, never a layout shift
     // alone: a frame where none of them changed (a repeated pointermove) does nothing.
-    if (!refresh && detectedAt && point.x === detectedAt.x && point.y === detectedAt.y) {
-      // A modifier holds the point while the pointer moves on.
-      if (point.x !== raw.x || point.y !== raw.y) pointerElement = null;
-      return;
-    }
+    if (!refresh && detectedAt && point.x === detectedAt.x && point.y === detectedAt.y) return;
     detectedAt = point;
     transform.value = offset;
     pointer.value = point;

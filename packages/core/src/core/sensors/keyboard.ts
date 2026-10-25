@@ -1,7 +1,7 @@
 import { defaultDocument, useEventListener } from '@vueuse/core';
 import type { Active, Coordinates, Key, Rect } from '../../types';
 import type { DnDManager } from '../manager';
-import { getCenter, getRect, getWindowRect } from '../../animation/layout';
+import { getCenter, getRect, getWindowRect, intersectRect } from '../../animation/layout';
 import { getEventTarget, isEditable } from '../../utils/dom';
 import { revealElement } from '../autoscroll';
 
@@ -55,16 +55,7 @@ export const pickInDirection = (
 };
 
 /** Center of the part of `rect` inside the viewport, so the hit test lands on it. */
-const visibleCenter = (rect: Rect): Coordinates => {
-  const view = getWindowRect();
-  const left = Math.max(rect.left, view.left);
-  const right = Math.min(rect.right, view.right);
-  const top = Math.max(rect.top, view.top);
-  const bottom = Math.min(rect.bottom, view.bottom);
-  return left < right && top < bottom
-    ? { x: (left + right) / 2, y: (top + bottom) / 2 }
-    : getCenter(rect);
-};
+const visibleCenter = (rect: Rect): Coordinates => getCenter(intersectRect(rect, getWindowRect()) ?? rect);
 
 export function useKeyboardSensor(manager: DnDManager): void {
   const options = () => (manager.props.keyboard === false ? null : (manager.props.keyboard ?? {}));

@@ -12,14 +12,12 @@ import {
   canAnimate,
   getRect,
   getWindowRect,
+  intersects,
   resolveAnimation,
 } from '../animation/layout';
 
 /** Clones beyond this count add cost without being noticeable. */
 const MAX_GHOSTS = 12;
-
-const intersects = (a: Rect, b: Rect) =>
-  a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
 
 /**
  * Flies clones of `elements` into `overlay` and fades them out. Call it before the

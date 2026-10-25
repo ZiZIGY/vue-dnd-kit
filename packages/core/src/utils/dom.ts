@@ -87,8 +87,9 @@ export const elementFromPoint = (x: number, y: number): Element | null => {
   return element;
 };
 
-const INTERACTIVE =
-  'input, textarea, select, option, button, [contenteditable]:not([contenteditable="false"])';
+const EDITABLE = 'input, textarea, select, [contenteditable]:not([contenteditable="false"])';
+const INTERACTIVE = `${EDITABLE}, option, button`;
+const FOCUSABLE = `${EDITABLE}, a[href], button`;
 
 /** True when `target` sits inside an interactive element nested in `container`. */
 export const isInsideInteractive = (
@@ -101,13 +102,7 @@ export const isInsideInteractive = (
   );
 };
 
-export const isEditable = (element: Element): boolean =>
-  element.matches(
-    'input, textarea, select, [contenteditable]:not([contenteditable="false"])',
-  );
-
-const FOCUSABLE =
-  'a[href], button, input, select, textarea, [contenteditable]:not([contenteditable="false"])';
+export const isEditable = (element: Element): boolean => element.matches(EDITABLE);
 
 export const isNativelyFocusable = (element: Element): boolean =>
   element.matches(FOCUSABLE);

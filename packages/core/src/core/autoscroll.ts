@@ -309,8 +309,7 @@ export const revealElement = (element: Element, margin = 8): void => {
     if (delta.x || delta.y) scrollBy(node, delta.x, delta.y);
   }
   const page = readPageScroll();
-  const { clientWidth, clientHeight } = document.documentElement;
-  const delta = getRevealDelta(getLayoutRect(element), createRect(0, 0, clientWidth, clientHeight), margin);
+  const delta = getRevealDelta(getLayoutRect(element), measureWindow(page).rect, margin);
   const dx = page.x ? delta.x : 0;
   const dy = page.y ? delta.y : 0;
   if (dx || dy) scrollBy(window, dx, dy);

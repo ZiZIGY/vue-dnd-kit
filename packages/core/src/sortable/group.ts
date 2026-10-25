@@ -256,6 +256,16 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
   const keysOf = (list: ListEntry) => list.draft.value ?? list.getKeys();
 
+  /** The list with this id; none for `null` (no list holds the slot, an external drag's origin). */
+  const listOf = (id: Key | null) => (id == null ? undefined : lists.get(id));
+
+  /** A position in a list as announced, out of the list's current length. */
+  const spotIn = (list: Key, index: number): SortableSpot => ({
+    list,
+    index,
+    length: lists.get(list)?.getKeys().length ?? 0,
+  });
+
   const indexMap = (keys: readonly Key[]) => {
     let map = indexCache.get(keys);
     if (!map) {
@@ -419,7 +429,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       return list.canPut(context) ? all : none;
     }
     if (list.id === current.origin.list) return all;
-    if (lists.get(current.origin.list!)?.pull() === false) return none;
+    if (listOf(current.origin.list)?.pull() === false) return none;
     const context = (keys: Key[]): SortablePutContext => ({
       keys,
       items: keys.map(lookup),
@@ -453,9 +463,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
   const copyOf = (current: Session, key: Key): Key | null => {
     if (!current.copies.has(key)) {
-      const source = current.sources.get(key);
-      const list = source ? lists.get(source.list) : undefined;
-      const made = list?.clone?.(lookup(key));
+      const made = listOf(current.sources.get(key)?.list ?? null)?.clone?.(lookup(key));
       current.copies.set(key, made ? made.key : null);
       if (made) current.items.set(made.key, made.item);
     }
@@ -463,9 +471,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   };
 
   const wantsCopy = (current: Session) => {
-    if (current.external || current.origin.list == null) return false;
-    const origin = lists.get(current.origin.list);
-    if (!origin?.clone) return false;
+    const origin = listOf(current.origin.list);
+    if (current.external || !origin?.clone) return false;
     return origin.pull() === 'clone' || copyHeld();
   };
 
@@ -501,7 +508,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
    */
   const syncColumn = (current: Session) => {
     if (current.stacked || current.keys.length < 2) return;
-    const list = lists.get(current.list ?? current.origin.list ?? '');
+    const list = listOf(current.list ?? current.origin.list);
     if (!list || list.id === columnList) return;
     columnList = list.id;
     const axis = list.strategy() === 'vertical' ? 'y' : 'x';
@@ -527,11 +534,10 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         : [],
     );
     syncColumn(current);
-    const list = placed ? lists.get(current.list!) : undefined;
     let mode: DragMode = 'move';
     if (current.external) mode = placed ? 'insert' : 'move';
     else if (current.copying) mode = 'copy';
-    else if (isSwapping(current, list)) mode = 'swap';
+    else if (isSwapping(current, listOf(current.list))) mode = 'swap';
     manager.mode.value = mode;
   };
 
@@ -692,7 +698,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const formed = base.get(origin.list)!;
     spokenSpot = grouped
       ? spotKey({ list: origin.list, index: formed.indexOf(keys[0]!), length: formed.length })
-      : spotKey({ list: origin.list, index: origin.index, length: originList.getKeys().length });
+      : spotKey(spotIn(origin.list, origin.index));
 
     const copy = wantsCopy(current) ? copyOf(current, activeKey) : null;
     if (copy != null) {
@@ -731,7 +737,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   const moveActive = (target: ListEntry, index: number, pointer: Coordinates | null, blockStart = false) => {
     const current = session.value!;
     const slot = current.slot;
-    const from = current.list == null ? undefined : lists.get(current.list);
+    const from = listOf(current.list);
     let passed: Set<Key>;
     if (from === target) {
       const view = [...viewOf(from, current)];
@@ -803,7 +809,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   /** Takes the slot (and its block) out of every draft (a copy over its palette, an external item leaving). */
   const removeSlot = () => {
     const current = session.value!;
-    const list = current.list == null ? undefined : lists.get(current.list);
+    const list = listOf(current.list);
     if (!list) return;
     const block = new Set(current.block);
     list.draft.value = keysOf(list).filter((key) => !block.has(key));
@@ -816,7 +822,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   const returnToOrigin = (pointer: Coordinates | null) => {
     const current = session.value!;
     if (current.slot !== current.activeKey) return removeSlot();
-    const origin = current.origin.list == null ? undefined : lists.get(current.origin.list);
+    const origin = listOf(current.origin.list);
     const base = origin && current.base.get(origin.id);
     const start = base ? base.indexOf(current.activeKey) : -1;
     if (!origin || !base || start < 0) return;
@@ -959,7 +965,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const current = session.value!;
     const slot = copying ? copyOf(current, current.activeKey) : current.activeKey;
     if (slot == null) return;
-    const from = current.list == null ? undefined : lists.get(current.list);
+    const from = listOf(current.list);
     let anchor: { list: ListEntry; after: Key | null } | null = null;
     if (from) {
       const keys = keysOf(from);
@@ -977,8 +983,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     current.slot = slot;
     current.swap = null;
     current.hysteresis = null;
-    const origin = current.origin.list == null ? undefined : lists.get(current.origin.list);
-    current.block = blockFor(current, anchor?.list ?? (copying ? undefined : origin));
+    current.block = blockFor(current, anchor?.list ?? (copying ? undefined : listOf(current.origin.list)));
     const moving = new Set(current.block);
     for (const list of lists.values()) {
       let draft: Key[];
@@ -1018,7 +1023,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
   /** Extension hook: runs on every move over a valid target, guarded or not (trees update depth here). */
   const afterMove = (current: Session, event: DnDEvent) => {
-    if (current.list != null) lists.get(current.list)?.afterMove?.(event);
+    listOf(current.list)?.afterMove?.(event);
   };
 
   /** Pointer of the last move, and the projections run again for it (`followBlock`). */
@@ -1166,7 +1171,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const slot = current.slot;
     const drafts = new Map<ListEntry, Key[]>();
     for (const list of lists.values()) drafts.set(list, keysOf(list));
-    let target = current.list == null ? undefined : lists.get(current.list);
+    let target = listOf(current.list);
     if (marker) {
       const list = lists.get(marker.list);
       if (list) {
@@ -1293,9 +1298,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     // A refusing list cancels the drop in the manager; don't ask the user about it.
     if (event.over && !event.over.accepted) return;
     const outside = isOutside(current, event);
-    const list = lists.get(current.list ?? current.origin.list ?? '');
     if (outside) {
-      const rule = list?.dropOutside();
+      const rule = listOf(current.list ?? current.origin.list)?.dropOutside();
       if (rule === 'cancel') return false;
       if (rule === 'remove') {
         current.removed = true;
@@ -1356,12 +1360,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         length: committed.length,
       });
     } else if (!result && !isForeign(event) && !current.copying && current.origin.list != null) {
-      const list = lists.get(current.origin.list);
-      text = sortableTexts.end(who, {
-        list: current.origin.list,
-        index: current.origin.index,
-        length: list ? list.getKeys().length : 0,
-      });
+      text = sortableTexts.end(who, spotIn(current.origin.list, current.origin.index));
     }
     announced = { key: current.activeKey, text };
     reset();
@@ -1373,14 +1372,9 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     // Copies vanish: their clones fly back to the originals. Moved block members stay placeholders until the overlay is home.
     if (current?.copying && current.activeKey === event.active.id) setLandings([]);
     if (current && current.activeKey === event.active.id && current.origin.list != null) {
-      const list = lists.get(current.origin.list);
       announced = {
         key: current.activeKey,
-        text: sortableTexts.cancel(subjectOf(current), {
-          list: current.origin.list,
-          index: current.origin.index,
-          length: list ? list.getKeys().length : 0,
-        }),
+        text: sortableTexts.cancel(subjectOf(current), spotIn(current.origin.list, current.origin.index)),
       };
     }
     reset();
@@ -1567,12 +1561,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     onDragStart: (event) => {
       const current = ours(event);
       if (!current || current.origin.list == null) return undefined;
-      const list = lists.get(current.origin.list);
-      return sortableTexts.start(subjectOf(current), {
-        list: current.origin.list,
-        index: current.origin.index,
-        length: list ? list.getKeys().length : 0,
-      });
+      return sortableTexts.start(subjectOf(current), spotIn(current.origin.list, current.origin.index));
     },
     onDragOver: (event) => {
       const current = ours(event);
