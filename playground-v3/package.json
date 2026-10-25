@@ -21,6 +21,7 @@
     "@tanstack/vue-virtual": "^3.13.48",
     "@types/node": "^26.6.5",
     "@vitejs/plugin-vue": "^6.0.10",
+    "gsap": "^3.13.0",
     "motion-v": "^2.8.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~5.9.3",

@@ -35,6 +35,7 @@
   import NestedZonesDemo from './demos/NestedZonesDemo.vue';
   import ShadowDomDemo from './demos/ShadowDomDemo.vue';
   import { overlayDemos } from './demos/overlay';
+  import AnimationLibsDemo from './demos/animation/AnimationLibsDemo.vue';
   // Example apps (each brings its own DnDProvider).
   import BoardApp from './demos/apps/BoardApp.vue';
   import FilesApp from './demos/apps/FilesApp.vue';
@@ -82,6 +83,7 @@
     'nested-zones': NestedZonesDemo,
     shadow: ShadowDomDemo,
     ...overlayDemos,
+    'animation-libs': AnimationLibsDemo,
     'app-board': BoardApp,
     'app-files': FilesApp,
     'app-form': FormApp,
