@@ -1,12 +1,14 @@
-import { computed, defineComponent, ref, type ShallowRef } from 'vue';
+import { computed, createApp, defineComponent, ref, type ShallowRef } from 'vue';
 import { describe, expect, it } from 'vitest';
+import { provideDnDContext, useDnDContext } from './index';
 import type {
+  DnDContext,
   DraggableOptions,
   Key,
   MaybeElementRef,
   MaybeReadonlyRefOrGetter,
   SortableItemOptions,
-} from './types';
+} from './index';
 
 /** A component with typed emits, like most UI kit components (`<v-list-item>`, `<UTooltip>`). */
 const KitComponent = defineComponent({
@@ -48,5 +50,20 @@ describe('public option types', () => {
     // @ts-expect-error The keyboard moves sortable items by slots.
     accepts<SortableItemOptions>({ id: 'a', keyboard: 'pixels' });
     expect(true).toBe(true);
+  });
+});
+
+describe('DnDContext', () => {
+  it('is opaque: no public members, and only what useDnDContext() returns fits provideDnDContext()', () => {
+    assertType<Equal<ReturnType<typeof useDnDContext>, DnDContext>>();
+    assertType<Equal<Extract<keyof DnDContext, string | number>, never>>();
+    assertType<Equal<Parameters<typeof provideDnDContext>[1], DnDContext>>();
+    const check = (context: DnDContext) => {
+      // @ts-expect-error The manager's members are internal.
+      void context.status;
+      // @ts-expect-error Nothing else can be passed off as a provider.
+      provideDnDContext(createApp({}), { status: ref('idle') });
+    };
+    expect(check).toBeTypeOf('function');
   });
 });

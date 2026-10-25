@@ -325,6 +325,17 @@ export interface DnDProviderProps {
   defaultStyles?: boolean;
 }
 
+declare const dndContext: unique symbol;
+
+/**
+ * A provider as `useDnDContext()` returns it, to hand to `provideDnDContext()`: another
+ * Vue app (e.g. one mounted in a shadow root) then works with the same provider. Opaque:
+ * it has no public members, so it never changes with the library's internals.
+ */
+export interface DnDContext {
+  readonly [dndContext]: true;
+}
+
 /**
  * What the overlay shows: the props of the provider's `#overlay` slot and of overlay
  * components (`overlay` option of draggables, sortable items, lists and trees).

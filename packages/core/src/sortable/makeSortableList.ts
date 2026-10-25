@@ -17,7 +17,7 @@ import type {
   SortableListOptions,
   SortableListReturn,
 } from '../types';
-import { useDnDContext } from '../core/context';
+import { useManager } from '../core/context';
 import { createDroppable } from '../core/makeDroppable';
 import { createId, toElement } from '../utils/dom';
 import { read } from '../utils/read';
@@ -87,7 +87,7 @@ export function makeSortableList<T>(
   target: MaybeElementRef,
   options: SortableListOptions<T>,
 ): SortableListReturn<T> {
-  const manager = useDnDContext();
+  const manager = useManager();
   const id = options.id ?? createId('sortable');
   const groupOptions = typeof options.group === 'string' ? { name: options.group } : options.group;
   const group = useSortableGroup(manager, groupOptions?.name ?? `sortable:${id}`);

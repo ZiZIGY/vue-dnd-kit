@@ -16,7 +16,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Active, OverlayProps, OverlaySlotProps, SortableItemOptions } from '../types';
 import { DnDProvider } from './DnDProvider';
 import { renderOverlay } from './DragOverlay';
-import { useDnDContext } from './context';
+import { useManager } from './context';
 import type { DnDManager } from './manager';
 import { makeDraggable, toOverlay } from './makeDraggable';
 import { makeSortableItem } from '../sortable/makeSortableItem';
@@ -116,7 +116,7 @@ const mountBoard = () => {
           default: () =>
             h({
               setup() {
-                manager = useDnDContext();
+                manager = useManager();
                 return () => [
                   showFirstList.value
                     ? h(List, {

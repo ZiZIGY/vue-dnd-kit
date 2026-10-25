@@ -8,7 +8,7 @@ import type {
   Placement,
 } from '../types';
 import type { DroppableEntry } from './manager';
-import { useDnDContext } from './context';
+import { useManager } from './context';
 import { matchesRule } from './accept';
 import { createId, toElement } from '../utils/dom';
 import { read } from '../utils/read';
@@ -24,7 +24,7 @@ export function createDroppable<TData>(
   options: DroppableOptions<TData>,
   internals: DroppableInternals = {},
 ): DroppableReturn {
-  const manager = useDnDContext();
+  const manager = useManager();
   const fallbackId = createId('droppable');
   const id = computed<Key>(() => read(options.id) ?? fallbackId);
 

@@ -21,7 +21,7 @@
   );
 
   const container = useTemplateRef<HTMLElement>('container');
-  const manager = useDnDContext();
+  const context = useDnDContext();
   let app: App | null = null;
 
   onMounted(() => {
@@ -36,7 +36,7 @@
 
     // A separate Vue app inside the shadow root, sharing this provider.
     app = createApp(ShadowList, { tasks });
-    provideDnDContext(app, manager);
+    provideDnDContext(app, context);
     app.mount(mount);
   });
 

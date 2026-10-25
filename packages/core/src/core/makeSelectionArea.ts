@@ -24,7 +24,7 @@ import type {
   SelectionStrategy,
 } from '../types';
 import type { DnDManager, DraggableEntry } from './manager';
-import { useDnDContext } from './context';
+import { useManager } from './context';
 import { matchesRule } from './accept';
 import { createRect, getLayoutRect, intersects, offsetRect } from '../animation/layout';
 import { isInsideInteractive, parentOf, toElement } from '../utils/dom';
@@ -215,7 +215,7 @@ export function makeSelectionArea(
   target: MaybeElementRef,
   options: SelectionAreaOptions = {},
 ): SelectionAreaReturn {
-  const manager = useDnDContext();
+  const manager = useManager();
   const areas = areasOf(manager);
   const getElement = () => toElement(target);
 

@@ -1,7 +1,7 @@
 import { computed, markRaw, onScopeDispose, unref, watch, watchEffect, type Component } from 'vue';
 import type { DraggableOptions, DraggableReturn, Key, MaybeElementRef } from '../types';
 import type { DraggableEntry } from './manager';
-import { useDnDContext } from './context';
+import { useManager } from './context';
 import { normalizeTypes } from './accept';
 import { createId, isNativelyFocusable, toElement } from '../utils/dom';
 import { read } from '../utils/read';
@@ -126,7 +126,7 @@ export function createDraggable<TData>(
   options: DraggableOptions<TData>,
   internals: DraggableInternals & { roleDescription?: string } = {},
 ): DraggableReturn {
-  const manager = useDnDContext();
+  const manager = useManager();
   const fallbackId = createId('draggable');
   const id = computed<Key>(() => read(options.id) ?? fallbackId);
 

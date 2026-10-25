@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DnDEvent, DropAnimationContext, SortableStrategy } from '../types';
 import { createRect } from '../animation/layout';
 import { DnDProvider } from '../core/DnDProvider';
-import { useDnDContext } from '../core/context';
+import { useManager } from '../core/context';
 import type { DnDManager } from '../core/manager';
 import { makeDroppable } from '../core/makeDroppable';
 import { makeSortableItem } from './makeSortableItem';
@@ -76,7 +76,7 @@ describe('drop into an item', () => {
             default: () =>
               h({
                 setup() {
-                  manager = useDnDContext();
+                  manager = useManager();
                   const { items } = makeSortableList(useTemplateRef<HTMLElement>('list'), { id: 'list', items: order, strategy });
                   return () =>
                     h('ul', { ref: 'list', 'data-list': '' }, items.value.map((task) => h(Row, { key: task.id, rowId: task.id })));

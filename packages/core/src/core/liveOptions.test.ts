@@ -12,7 +12,7 @@ import type {
 } from '../types';
 import { createRect } from '../animation/layout';
 import { DnDProvider } from './DnDProvider';
-import { useDnDContext } from './context';
+import { useManager } from './context';
 import type { DnDManager } from './manager';
 import { makeDraggable } from './makeDraggable';
 import { makeDroppable } from './makeDroppable';
@@ -27,7 +27,7 @@ const mounted: Array<() => void> = [];
 
 const Probe = defineComponent({
   setup() {
-    manager = useDnDContext();
+    manager = useManager();
     return () => null;
   },
 });

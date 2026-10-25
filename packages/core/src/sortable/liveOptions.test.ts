@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ActivationOptions, LayoutAnimation, SortableItemOptions, SortableListOptions } from '../types';
 import { containsPoint, createRect } from '../animation/layout';
 import { DnDProvider } from '../core/DnDProvider';
-import { useDnDContext } from '../core/context';
+import { useManager } from '../core/context';
 import type { DnDManager } from '../core/manager';
 import { makeSortableItem } from './makeSortableItem';
 import { makeSortableList } from './makeSortableList';
@@ -78,7 +78,7 @@ const mountPair = (
         default: () => [
           h({
             setup() {
-              manager = useDnDContext();
+              manager = useManager();
               return () => null;
             },
           }),

@@ -2,7 +2,7 @@ import { createApp, defineComponent, h, nextTick, useTemplateRef } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { BeforeDropResult } from '../types';
 import { DnDProvider } from './DnDProvider';
-import { useDnDContext } from './context';
+import { useManager } from './context';
 import type { DnDManager } from './manager';
 import { makeDraggable } from './makeDraggable';
 
@@ -14,7 +14,7 @@ const mountCard = () => {
   document.body.appendChild(container);
   const Card = defineComponent({
     setup() {
-      manager = useDnDContext();
+      manager = useManager();
       makeDraggable(useTemplateRef<HTMLElement>('el'), { id: 'card' });
       return () => h('div', { ref: 'el' }, 'card');
     },

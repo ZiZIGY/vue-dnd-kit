@@ -29,4 +29,3 @@ export {
 } from './core/modifiers';
 
 export type * from './types';
-export type { DnDManager } from './core/manager';

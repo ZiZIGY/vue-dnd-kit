@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Modifier } from '../types';
 import { createRect, getCenter, getFraction } from '../animation/layout';
 import { DnDProvider } from './DnDProvider';
-import { useDnDContext } from './context';
+import { useManager } from './context';
 import type { DnDManager } from './manager';
 import { makeDraggable } from './makeDraggable';
 import { snapCenterToCursor, snapToGrid } from './modifiers';
@@ -21,7 +21,7 @@ const mountCard = (options: { modifiers?: Modifier[]; overlay?: boolean } = {}) 
   document.body.appendChild(container);
   const Card = defineComponent({
     setup() {
-      manager = useDnDContext();
+      manager = useManager();
       makeDraggable(useTemplateRef<HTMLElement>('el'), { id: 'card', overlay: options.overlay });
       return () => h('div', { ref: 'el', 'data-card': '' }, 'card');
     },
