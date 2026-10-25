@@ -15,6 +15,8 @@ const INHERITED = [
   'color',
   'text-align',
   'direction',
+  // A cloned <li> outside its list would show a marker.
+  'list-style-type',
 ] as const;
 
 const OWN = ['background-color', 'border-radius'] as const;

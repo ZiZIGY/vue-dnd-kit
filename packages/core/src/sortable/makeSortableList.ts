@@ -102,7 +102,7 @@ export function makeSortableList<T>(
     dropOutside: () =>
       options.dropOutside ?? (options.placeholder === 'indicator' ? 'cancel' : 'placeholder'),
     behavior: () => options.behavior ?? 'sort',
-    multiple: () => options.multiple ?? 'stack',
+    multiple: () => options.multiple ?? 'group',
     acceptMode: () => options.acceptMode ?? 'all',
     clone: options.clone
       ? (item) => {

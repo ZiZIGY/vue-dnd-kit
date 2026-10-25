@@ -4,13 +4,18 @@
  */
 
 import type { Coordinates, Key, Rect, SortableStrategy } from '../types';
-import { containsPoint, getCenter } from '../animation/layout';
+import { containsPoint, createRect, getCenter } from '../animation/layout';
 
 export interface ProjectionItem {
   key: Key;
-  /** Index in the list's draft. */
+  /** Index in the list's draft. A multi-drag block counts once: its members share the slot's index. */
   index: number;
   rect: Rect;
+  /**
+   * Multi-drag `'group'`: a dragged item travelling with the slot, before (`-1`) or
+   * after (`1`) it in the block.
+   */
+  side?: -1 | 1;
 }
 
 export interface ProjectArgs {
@@ -74,13 +79,56 @@ const projectEdges = (
   // so the slot goes between them. A frame can jump from the far half of an item
   // straight into the gap beyond it (fast swipes, coalesced input), which must not
   // leave the slot an item behind. Beyond mounted items (virtual lists) the position
-  // stays: moving to the nearest edge is what made v2 items "teleport".
+  // stays: moving to the nearest edge is what made v2 items "teleport". The members of
+  // a multi-drag block share the slot's index, so gaps inside the block and at its edges
+  // keep the position too.
   const after = items.findIndex((item) => p < item.rect[start]);
   const next = items[after];
   const previous = items[after - 1];
   if (!next || !previous || next.index === activeIndex || previous.index === activeIndex) return null;
   const index = next.index > activeIndex ? next.index - 1 : next.index;
   return index === activeIndex ? null : index;
+};
+
+/** Mounted items of the block holding the slot (the slot and its `side` members), in draft order. */
+const blockOf = (items: ProjectionItem[], activeIndex: number) => items.filter((item) => item.index === activeIndex);
+
+/**
+ * Multi-drag `'group'`: the pointer is over an item travelling with the slot, so the
+ * block lags behind the overlay. It steps toward the pointer, past the neighbour on
+ * that side, once that neighbour's center would end up behind the pointer: the
+ * crossing rule of single items, seen from the block's edge, so a taller neighbour
+ * can't swap back.
+ */
+const stepList = (args: ProjectArgs, side: -1 | 1, { axis, start, end }: Axis): Projection => {
+  const { items, activeIndex } = args;
+  const neighbour = items.find((item) => item.index === activeIndex + side);
+  const block = blockOf(items, activeIndex);
+  if (!neighbour || !block.length) return { index: null, lock: null, key: null };
+  const size = neighbour.rect[end] - neighbour.rect[start];
+  // After the step the neighbour starts where the block starts (forward) or ends where it ends.
+  const center =
+    side > 0 ? Math.min(...block.map((item) => item.rect[start])) + size / 2 : Math.max(...block.map((item) => item.rect[end])) - size / 2;
+  const p = args.pointer[axis];
+  return (side > 0 ? p > center : p < center)
+    ? { index: activeIndex + side, lock: null, key: neighbour.key }
+    : { index: null, lock: null, key: null };
+};
+
+/**
+ * Grids: the same step as `stepList`. The neighbour takes the cell of the block's first
+ * (forward) or last member; the block steps unless that puts the neighbour under the pointer.
+ */
+const stepGrid = (args: ProjectArgs, side: -1 | 1, lock: Key | null): Projection => {
+  const { items, activeIndex } = args;
+  const neighbour = items.find((item) => item.index === activeIndex + side);
+  const block = blockOf(items, activeIndex);
+  const cell = side > 0 ? block[0] : block[block.length - 1];
+  if (!neighbour || !cell) return { index: null, lock, key: null };
+  const landing = createRect(cell.rect.left, cell.rect.top, neighbour.rect.width, neighbour.rect.height);
+  return containsPoint(landing, args.pointer)
+    ? { index: null, lock, key: null }
+    : { index: activeIndex + side, lock: null, key: neighbour.key };
 };
 
 /**
@@ -106,6 +154,7 @@ const projectList = (args: ProjectArgs): Projection => {
     if (!inBand(item.rect, p, axis)) continue;
     // After a reorder the active slot itself is the target: nothing moves while the pointer is on it.
     if (item.key === activeKey) return keep;
+    if (item.side) return stepList(args, item.side, axis);
     hit ??= item;
   }
   if (!hit) return { index: projectEdges(p, items, axis, activeIndex, length), lock: null, key: null };
@@ -137,6 +186,7 @@ const projectGrid = (args: ProjectArgs): Projection => {
   for (const item of items) {
     if (!containsPoint(item.rect, pointer)) continue;
     if (item.key === activeKey) return { index: null, lock, key: null };
+    if (item.side) return stepGrid(args, item.side, lock);
     hit ??= item;
   }
   if (hit) {

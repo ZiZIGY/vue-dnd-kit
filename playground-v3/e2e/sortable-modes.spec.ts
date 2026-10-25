@@ -20,26 +20,6 @@ const select = async (page: Page, ...ids: string[]) => {
   for (const id of ids) await item(page, id).click({ modifiers: ['ControlOrMeta'] });
 };
 
-/** First `translate` keyframe of a layout animation on the item, within ~20 frames. */
-const flyIn = (page: Page, id: string) =>
-  page.evaluate(
-    (key) =>
-      new Promise<string | null>((resolve) => {
-        let frames = 0;
-        const check = () => {
-          const element = document.querySelector(`[data-id="${key}"]:not([data-dnd-overlay] *)`);
-          for (const animation of element?.getAnimations() ?? []) {
-            const frame = (animation.effect as KeyframeEffect | null)?.getKeyframes()[0];
-            if (frame && 'translate' in frame) return resolve(String(frame.translate));
-          }
-          if (++frames > 20) return resolve(null);
-          requestAnimationFrame(check);
-        };
-        check();
-      }),
-    id,
-  );
-
 test.describe('copy', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/#copy');
@@ -232,12 +212,14 @@ test.describe('reject and partial accept', () => {
     await expect(page.getByTestId('last')).toHaveText('to:confirm accepted:r3 rejected: mode:move');
   });
 
-  test("acceptMode 'some': matching items land, the rest fly back", async ({ page }) => {
+  test("acceptMode 'some': matching items land, the rest go back where they started", async ({ page }) => {
     await select(page, 'r1', 'r2');
     await dragTo(page, item(page, 'r2'), await center(list(page, 'bugs')), { release: false });
     await expect(list(page, 'bugs')).toHaveAttribute('data-accepting');
+    // Multi-drag 'group' (the default) shows it while hovering: r1 is back in the source.
+    await expect.poll(() => order(list(page, 'bugs'))).toEqual(['r2']);
+    await expect.poll(() => order(list(page, 'source'))).toEqual(['r1', 'r3', 'r4']);
     await page.mouse.up();
-    expect(await flyIn(page, 'r1')).not.toBeNull();
     await waitForIdle(page);
     await expect(state(page)).toHaveText('source:r1,r3,r4 | confirm: | bugs:r2 | first:');
     await expect(page.getByTestId('last')).toHaveText('to:bugs accepted:r2 rejected:r1 mode:move');

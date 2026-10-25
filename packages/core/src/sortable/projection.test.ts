@@ -100,6 +100,26 @@ describe('projectIndex: vertical lists', () => {
     expect(vertical(gapped, 1, 95)).toBeNull();
   });
 
+  it("keeps a multi-drag 'group' block in gaps inside it or at its edges, moves it in gaps beyond", () => {
+    // 40px items, 10px gaps: k0 | m1 S m3 | k4 k5 — the block (m1, S, m3) counts once, at index 1.
+    const keys = ['k0', 'm1', 'S', 'm3', 'k4', 'k5'];
+    const block: Record<string, -1 | 1 | undefined> = { m1: -1, m3: 1 };
+    const indexes = [0, 1, 1, 1, 2, 3];
+    const gapped: ProjectionItem[] = keys.map((key, i) => ({
+      key,
+      index: indexes[i]!,
+      rect: createRect(0, i * 50, 100, 40),
+      ...(block[key] && { side: block[key] }),
+    }));
+    const project = (y: number) =>
+      projectIndex({ strategy: 'vertical', pointer: { x: 50, y }, items: gapped, activeKey: 'S', activeIndex: 1, length: 4, lock: null })
+        .index;
+    // Between k0 and m1, m1 and S, S and m3, m3 and k4: next to the block.
+    for (const y of [45, 95, 145, 195]) expect(project(y), `gap at ${y}`).toBeNull();
+    // Between k4 and k5: past k4's center, so the block goes after k4.
+    expect(project(245)).toBe(2);
+  });
+
   it('inserts an item from another list before or after the hovered one', () => {
     expect(vertical(items, -1, 45)).toBe(1);
     expect(vertical(items, -1, 75)).toBe(2);
@@ -214,6 +234,90 @@ describe('projectIndex: the active slot is the target after a reorder', () => {
       lock: null,
     });
     expect(projection.index).toBeNull();
+  });
+});
+
+describe("projectIndex: a multi-drag 'group' block moves as one", () => {
+  /**
+   * A draft collapsed like the group does it: the block counts once, at the slot's index;
+   * `sides` tags the members travelling with the slot (`S`).
+   */
+  const collapsed = (heights: number[], keys: string[], sides: Record<string, -1 | 1> = {}): ProjectionItem[] => {
+    let top = 0;
+    let index = -1;
+    return heights.map((height, i) => {
+      const key = keys[i]!;
+      const side = sides[key];
+      const inBlock = key === 'S' || side !== undefined;
+      const previous = keys[i - 1];
+      const previousInBlock = previous !== undefined && (previous === 'S' || sides[previous] !== undefined);
+      if (!inBlock || !previousInBlock) index++;
+      const item: ProjectionItem = { key, index, rect: createRect(0, top, 100, height), ...(side && { side }) };
+      top += height;
+      return item;
+    });
+  };
+  const project = (items: ProjectionItem[], y: number) => {
+    const activeIndex = items.find((item) => item.key === 'S')!.index;
+    return projectIndex({
+      strategy: 'vertical',
+      pointer: { x: 50, y },
+      items,
+      activeKey: 'S',
+      activeIndex,
+      length: items[items.length - 1]!.index + 1,
+      lock: null,
+    });
+  };
+  // k0 | m1 S m3 | k4, 40px each: the block is one unit at index 1 of 3.
+  const items = collapsed([40, 40, 40, 40, 40], ['k0', 'm1', 'S', 'm3', 'k4'], { m1: -1, m3: 1 });
+
+  it('keeps the slot while the pointer is on it', () => {
+    expect(project(items, 100).index).toBeNull();
+  });
+
+  it('steps toward the pointer over a member after the slot, past the next item', () => {
+    // After the step k4 starts at the block's top (40): its center (60) is behind the pointer.
+    expect(project(items, 130)).toEqual({ index: 2, lock: null, key: 'k4' });
+  });
+
+  it('steps back over a member before the slot, past the previous item', () => {
+    expect(project(items, 50)).toEqual({ index: 0, lock: null, key: 'k0' });
+  });
+
+  it('crosses the neighbour beyond the block like a single item, counting the block once', () => {
+    // k4 spans 160-200: past its center the block goes after it.
+    expect(project(items, 185)).toEqual({ index: 2, lock: null, key: 'k4' });
+    expect(project(items, 175).index).toBeNull();
+  });
+
+  it('stays at the end of the list when there is nothing to step past', () => {
+    const last = collapsed([40, 40, 40], ['k0', 'S', 'm2'], { m2: 1 });
+    expect(project(last, 100).index).toBeNull();
+  });
+
+  it('does not step past a taller neighbour that would swap straight back', () => {
+    // S m1 | N (200px): after a step N would start at 0, its center (100) still ahead of the pointer.
+    const tall = collapsed([40, 40, 200], ['S', 'm1', 'N'], { m1: 1 });
+    expect(project(tall, 60).index).toBeNull();
+    // Past N's center the usual crossing rule moves the block, counted as one item.
+    expect(project(tall, 190)).toEqual({ index: 1, lock: null, key: 'N' });
+  });
+
+  it('steps a grid block toward the pointer unless the neighbour would land under it', () => {
+    const cell = (key: string, index: number, x: number, y: number, side?: -1 | 1): ProjectionItem => ({
+      key,
+      index,
+      rect: createRect(x, y, 100, 100),
+      ...(side && { side }),
+    });
+    // Three columns: a | S m | b c d. The block (S, m) is index 1.
+    const grid = [cell('a', 0, 0, 0), cell('S', 1, 100, 0), cell('m', 1, 200, 0, 1), cell('b', 2, 0, 100), cell('c', 3, 100, 100)];
+    const step = (x: number, y: number) =>
+      projectIndex({ strategy: 'grid', pointer: { x, y }, items: grid, activeKey: 'S', activeIndex: 1, length: 4, lock: null });
+    // Over m: b would take S's cell (100, 0), away from the pointer.
+    expect(step(250, 50)).toEqual({ index: 2, lock: null, key: 'b' });
+    expect(step(150, 50).index).toBeNull();
   });
 });
 

@@ -174,6 +174,38 @@ test.describe('the overlay resizes around the pointer (overlayFit: slot)', () =>
     await expect(page.getByTestId('state-slot')).toHaveText(/^slot-narrow:[\w,]*sw1[\w,]* \| slot-wide:sw2,sw3$/);
   });
 
+  test('a multi-drag column grows around the grabbed card: the pointer stays over it, not the column', async ({
+    page,
+  }) => {
+    await page.goto('/#overlay-fit');
+    await expect(page.getByTestId('state-slot')).toHaveText('slot-narrow:sn1,sn2,sn3,sn4 | slot-wide:sw1,sw2,sw3');
+    for (const id of ['sn1', 'sn3']) await item(page, id).click({ modifiers: ['ControlOrMeta'] });
+    const source = (await item(page, 'sn3').boundingBox())!;
+    const tall = (await item(page, 'sw2').boundingBox())!;
+    expect(tall.height - source.height).toBeGreaterThan(20);
+
+    const grab = { x: 0.3, y: 0.7 };
+    await grabAt(page, item(page, 'sn3'), grab);
+    const column = page.locator('[data-dnd-overlay] [data-dnd-overlay-item]');
+    await expect(column).toHaveCount(1);
+    const target = await center(item(page, 'sw2'));
+    await page.mouse.move(target.x, target.y, { steps: 12 });
+    await expect(page.getByTestId('slot-wide').locator('[data-id="sn3"]')).toHaveCount(1);
+    // The box is the grabbed card's part of the overlay; the column of the others (sn1,
+    // above it) is laid out around the box and never shifts the grab point.
+    for (const box of await overlayFrames(page, 15)) expectHeldAt(box, grab, target);
+    await expect.poll(async () => (await overlaySize(page)).height).toBeGreaterThan(source.height + 20);
+    await layoutSettled(page);
+    const box = await overlayBox(page);
+    expectHeldAt(box, grab, target);
+    const clone = (await column.boundingBox())!;
+    expect(clone.y + clone.height).toBeLessThan(box.y);
+    within(clone.height, box.height, 1);
+    await page.mouse.up();
+    await waitForIdle(page);
+    await expect(page.getByTestId('state-slot')).toHaveText(/^slot-narrow:sn2,sn4 \| slot-wide:[\w,]*sn1,sn3[\w,]*$/);
+  });
+
   test('a keyboard drag into a list of narrower items puts the box exactly over the slot', async ({ page }) => {
     await page.goto('/#overlay-fit');
     await expect(page.getByTestId('state-slot')).toHaveText('slot-narrow:sn1,sn2,sn3,sn4 | slot-wide:sw1,sw2,sw3');

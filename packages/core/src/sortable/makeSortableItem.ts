@@ -57,11 +57,12 @@ export function makeSortableItem<TData = unknown>(
   });
   onScopeDispose(() => unregister());
 
-  // The slot: the active item, or its copy / the item made for an external draggable.
-  // Stays true through the drop animation, until the overlay has landed.
+  // The slot: the active item, or its copy / the item made for an external draggable;
+  // in a `'group'` multi-drag also the slots of the items travelling with it. Stays
+  // true through the drop animation, until the overlay has landed.
   const isPlaceholder = computed(() => {
     const active = manager.active.value;
-    return !!active && (manager.landingKey.value ?? active.id) === key.value;
+    return !!active && ((manager.landingKey.value ?? active.id) === key.value || manager.landings.value.has(key.value));
   });
   // Multi-drag `'gaps'`: the other dragged items stay in place until the drop. Copied
   // items don't leave at all, so they aren't marked (the default style dims the mark).

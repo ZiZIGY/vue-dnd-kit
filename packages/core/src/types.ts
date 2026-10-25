@@ -190,6 +190,11 @@ export type LayoutAnimation =
   | ((context: LayoutAnimationContext) => Animation | Promise<unknown> | void);
 
 export interface DropAnimationContext {
+  /**
+   * The overlay box; it lands on the active item's slot. In a multi-drag the default
+   * overlay's clones of the other items ride inside it and land on their own slots by
+   * themselves (with the default timing when this is a custom function).
+   */
   overlay: HTMLElement;
   from: Rect;
   /** Final rect of the dropped item; `null` when it isn't rendered (the overlay fades out). */
@@ -323,6 +328,21 @@ export interface OverlaySlotProps {
  */
 export type OverlayProps = OverlaySlotProps;
 
+/**
+ * Props of `DragPreview`: the default clone of one dragged item, for custom overlays (an
+ * `overlay` component or the provider's `#overlay` slot) that lay out several items
+ * themselves, e.g. `<DragPreview v-for="item in items" :key="item.id" :id="item.id" />`.
+ *
+ * Clones are taken at pickup, of the grabbed item and of up to four others next to it in
+ * drop order (those that are rendered then). For any other item `DragPreview` renders its
+ * default slot, or nothing. The clone fills the element, which has the item's size at
+ * pickup unless you style it (`class` and `style` fall through).
+ */
+export interface DragPreviewProps {
+  /** Id of a dragged item: one of `items` in `OverlayProps`. */
+  id: Key;
+}
+
 // ─── Monitor ───────────────────────────────────────────────────────────────────
 
 export interface KeyboardMoveContext {
@@ -444,7 +464,17 @@ export interface DroppableReturn {
 export type SortableStrategy = 'vertical' | 'horizontal' | 'grid';
 export type SortableBehavior = 'sort' | 'swap';
 export type SortablePlaceholder = 'item' | 'indicator';
-export type MultipleMode = 'stack' | 'gaps';
+/**
+ * What the other selected items do in a multi-drag:
+ * - `'group'`: they leave their places and travel with the active item as contiguous
+ *   placeholders, so while hovering the list already shows the result of the drop;
+ * - `'gaps'`: they stay in place until the drop;
+ * - `'stack'`: they collapse into the overlay.
+ *
+ * The default overlay shows every dragged item in a column along the list (`'group'`,
+ * `'gaps'`; a row in horizontal lists and grids), or the active one with a count (`'stack'`).
+ */
+export type MultipleMode = 'group' | 'gaps' | 'stack';
 export type DropOutside = 'placeholder' | 'cancel' | 'remove';
 
 export interface SortablePutContext {
@@ -502,6 +532,7 @@ export interface SortableListOptions<T> {
   strategy?: SortableStrategy;
   behavior?: SortableBehavior;
   placeholder?: SortablePlaceholder;
+  /** Multi-drag mode of drags that start in this list. Default `'group'`. */
   multiple?: MultipleMode;
   /** `false`: items can't be reordered inside this list (palettes). */
   sort?: boolean;
@@ -560,7 +591,10 @@ export interface SortableItemOptions<TData = unknown> {
 export interface SortableItemReturn {
   /** This item is being dragged (also true for the other items of a multi-drag). */
   isDragging: ComputedRef<boolean>;
-  /** This element is the slot where the active item will land. */
+  /**
+   * This element is a slot a dragged item will land in: the active item's, and in
+   * multi-drag `'group'` mode the slots of the items travelling with it.
+   */
   isPlaceholder: ComputedRef<boolean>;
   selected: WritableComputedRef<boolean>;
   /** Indicator mode: side of this item where the drop line goes. */

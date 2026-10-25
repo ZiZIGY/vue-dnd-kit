@@ -22,6 +22,7 @@
   import NestedDemo from './demos/NestedDemo.vue';
   import TableDemo from './demos/TableDemo.vue';
   import MultiDemo from './demos/MultiDemo.vue';
+  import MultiGroupDemo from './demos/MultiGroupDemo.vue';
   import CopyDemo from './demos/CopyDemo.vue';
   import TrashDemo from './demos/TrashDemo.vue';
   import ExternalDemo from './demos/ExternalDemo.vue';
@@ -63,6 +64,7 @@
     nested: NestedDemo,
     table: TableDemo,
     multi: MultiDemo,
+    'multi-group': MultiGroupDemo,
     copy: CopyDemo,
     trash: TrashDemo,
     external: ExternalDemo,

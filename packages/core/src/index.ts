@@ -1,4 +1,5 @@
 export { DnDProvider } from './core/DnDProvider';
+export { DragPreview } from './core/DragPreview';
 export { makeDraggable } from './core/makeDraggable';
 export { makeDroppable } from './core/makeDroppable';
 export { useDnD, useDnDMonitor, useDnDContext, provideDnDContext } from './core/context';
