@@ -42,6 +42,7 @@ export default defineConfig({
     alias: {
       // Library sources, not the build: edits show up immediately.
       '@vue-dnd-kit/core': resolve(__dirname, '../packages/core/src/index.ts'),
+      '@vue-dnd-kit/actions': resolve(__dirname, '../packages/actions/src/index.ts'),
     },
     // The core's own node_modules must not provide a second copy of Vue or VueUse.
     dedupe: ['vue', '@vueuse/core'],

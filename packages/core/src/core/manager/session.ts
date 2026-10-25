@@ -21,6 +21,7 @@ import { getLayoutRect, getRect } from '../../animation/layout';
 import { fadeInPlace, runDropAnimation, type OverlayItemLanding } from '../../animation/drop';
 import { isFocusLost, nextFrame } from '../../utils/dom';
 import { markDocumentDragging } from '../styles';
+import { vibrate } from '../haptics';
 import { NO_LANDINGS, type ManagerContext } from './state';
 
 export function createSession(ctx: ManagerContext) {
@@ -52,7 +53,8 @@ export function createSession(ctx: ManagerContext) {
     if (ctx.active.value) ctx.active.value = { ...ctx.active.value, ...patch };
   };
 
-  const start = (id: Key, coordinates: Coordinates, sensor: SensorType): boolean => {
+  /** Starts a drag of `id` from `coordinates` (sensors: `SensorContext.activate`); `touch`: started by touch. */
+  const start = (id: Key, coordinates: Coordinates, sensor: SensorType, touch = false): boolean => {
     const status = ctx.status.value;
     if (status === 'dragging' || status === 'dropping' || status === 'selecting') return false;
     const entry = ctx.draggables.get(id);
@@ -82,6 +84,7 @@ export function createSession(ctx: ManagerContext) {
     };
     const container = entry.getContainer?.() ?? element.parentElement;
     ctx.origin = coordinates;
+    ctx.touch = touch;
     ctx.raw = coordinates;
     ctx.pointer.value = coordinates;
     ctx.transform.value = { x: 0, y: 0 };
@@ -100,6 +103,7 @@ export function createSession(ctx: ManagerContext) {
     ctx.events.emit('onDragStart', event);
     if (ctx.overlay.enabled && ctx.active.value) ctx.overlay.takePreviews(ctx.active.value);
     ctx.events.announce('onDragStart', event);
+    vibrate(ctx.props.haptics, 'start', touch);
     ctx.loop.runFrame();
     return true;
   };
@@ -297,7 +301,10 @@ export function createSession(ctx: ManagerContext) {
     }
     if (id !== session) return;
 
-    if (verdict === false || (target && !target.accepted)) return conclude('onDragCancel', event);
+    if (verdict === false || (target && !target.accepted)) {
+      vibrate(ctx.props.haptics, 'refuse', ctx.touch);
+      return conclude('onDragCancel', event);
+    }
 
     if (target) {
       try {
@@ -311,6 +318,7 @@ export function createSession(ctx: ManagerContext) {
       dropped: !!target,
       accepted: Array.isArray(verdict) ? verdict : event.active.ids,
     };
+    vibrate(ctx.props.haptics, 'drop', ctx.touch);
     return conclude('onDragEnd', endEvent);
   };
 

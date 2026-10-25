@@ -54,6 +54,42 @@ jobs:
       - name: Size limit
         run: yarn size
 
+  actions:
+    name: Actions (typecheck, test, build, package checks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: packages/actions
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: packages/actions/yarn.lock
+
+      # The core is compiled from its sources (tsconfig `paths`, Vitest alias) with this
+      # package's own Vue and VueUse: it needs no install of its own.
+      - name: Install
+        run: yarn install --frozen-lockfile
+
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Unit tests
+        run: yarn test
+
+      - name: Build
+        run: yarn build
+
+      - name: publint + arethetypeswrong
+        run: yarn lint:package
+
+      - name: Size limit
+        run: yarn size
+
   e2e:
     name: E2E (${{ matrix.browser }})
     runs-on: ubuntu-latest
