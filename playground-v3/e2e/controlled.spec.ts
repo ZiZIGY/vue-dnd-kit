@@ -122,6 +122,8 @@ test.describe('controlled tree', () => {
     const warnings = trackLibraryWarnings(page);
     await page.goto('/#controlled');
     await expect(page.getByTestId('tree')).toHaveText('src(components,main),docs(intro),assets,readme');
+    // The tree sits below the lists: centered in the viewport, away from the auto-scroll edges.
+    await page.getByTestId('folders').evaluate((element) => element.scrollIntoView({ block: 'center' }));
     // Into the middle of assets/.
     const target = await center(row(page, 'assets'));
     const start = await center(row(page, 'readme'));
