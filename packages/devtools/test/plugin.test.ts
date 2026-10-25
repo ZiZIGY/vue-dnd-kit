@@ -1,7 +1,8 @@
 import { nextTick } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { connectDevtools } from '@vue-dnd-kit/core/devtools';
+import { connectDevtools, type DevtoolsProvider } from '@vue-dnd-kit/core/devtools';
 import { DnDDevtools, autoSetupDnDDevtools } from '../src/index';
+import { timelineEntries } from '../src/timeline';
 import type { InspectorNode, InspectorState } from '../src/format';
 import { open, registrations, type FakeDevtools } from './api';
 import { at, drag, drop, mountBoard, type Fixture } from './fixture';
@@ -205,6 +206,26 @@ describe('the timeline', () => {
     await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
     expect(titles(devtools)).not.toContain('onBeforeDrop');
     expect(entry(devtools, 'cancel')).toMatchObject({ subtitle: 'cancelled', logType: 'default' });
+  });
+
+  it('names the sensor that started a drag', () => {
+    const provider = { id: 'provider-x', label: 'DnDProvider' } as DevtoolsProvider;
+    const start = (sensor: { name: string | undefined; touch: boolean } | null) =>
+      timelineEntries(
+        provider,
+        {
+          type: 'start',
+          drag: 3,
+          active: { id: 'chip', ids: ['chip'], items: [], type: [], sensor: 'pointer', element: document.body, rect: {} as never },
+          pointer: { x: 0, y: 0 },
+          source: null,
+          sensor,
+        },
+        { drag: null, released: false },
+      )[0]!;
+    expect(start({ name: 'joystick', touch: false }).subtitle).toBe('chip · joystick (pointer)');
+    expect(start({ name: 'pointer', touch: true }).subtitle).toBe('chip · pointer · touch');
+    expect(start(null)).toMatchObject({ subtitle: 'chip · pointer', groupId: 'provider-x:3' });
   });
 
   it('refreshes the inspector on events, and the state at most every 200 ms while moving', async () => {

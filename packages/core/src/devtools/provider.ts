@@ -8,15 +8,17 @@
  */
 
 import { effectScope, getCurrentInstance, watch, type ComponentInternalInstance, type EffectScope } from 'vue';
-import type { DnDEvent, DnDMonitor, Key } from '../types';
+import type { DnDEvent, DnDMonitor, Key, Sensor } from '../types';
 import type { DnDManager } from '../core/manager';
 import type { GroupContext } from '../sortable/context';
 import { snapshotActive, snapshotOver, snapshotProvider, snapshotSortableDrop } from './snapshot';
-import type { CancelReason, DevtoolsEvent, DevtoolsProvider, SortableDropSnapshot } from './types';
+import type { CancelReason, DevtoolsEvent, DevtoolsProvider, SensorSnapshot, SortableDropSnapshot } from './types';
 
 export interface ProviderRecord extends DevtoolsProvider {
   /** A sortable group of this provider was created. */
   addGroup(g: GroupContext): void;
+  /** A sensor is about to start the drag of `id`. */
+  sensorStarts(id: Key, sensor: Sensor | undefined, touch: boolean): void;
   /** Starts telling its events (idempotent). */
   follow(): void;
   /** Stops following the provider. */
@@ -50,6 +52,8 @@ export function createProviderRecord(
   let over: Key | null = null;
   let releasedAt: number | null = null;
   let drops: SortableDropSnapshot[] = [];
+  /** The sensor about to start a drag, and of which item. */
+  let starting: { id: Key; sensor: SensorSnapshot } | null = null;
 
   /** The session is set when a drag starts and cleared when it ends: what it held then is the drop it made (or prepared before a rejection). */
   const watchGroup = (g: GroupContext) =>
@@ -81,6 +85,9 @@ export function createProviderRecord(
     clearSelection: () => manager.selection.clear(),
     addGroup(g) {
       if (!groups.has(g)) groups.set(g, scope && watchGroup(g));
+    },
+    sensorStarts(id, sensor, touch) {
+      starting = { id, sensor: { name: sensor?.name, touch } };
     },
     follow() {
       if (scope) return;
@@ -123,12 +130,16 @@ export function createProviderRecord(
       drag++;
       ended();
       drops = [];
+      // A sensor reports right before it starts the manager; a start that failed left it behind.
+      const sensor = starting?.id === event.active.id ? starting.sensor : null;
+      starting = null;
       send({
         type: 'start',
         drag,
         active: snapshotActive(event.active),
         pointer: event.pointer,
         source: event.source?.list ?? sourceOf(event.active.id),
+        sensor,
       });
     },
     onDragOver(event) {

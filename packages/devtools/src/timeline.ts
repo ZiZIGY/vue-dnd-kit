@@ -59,12 +59,16 @@ export const timelineEntries = (provider: DevtoolsProvider, event: DevtoolsEvent
 
   switch (event.type) {
     case 'start': {
-      const { active } = event;
+      const { active, sensor } = event;
+      // The sensor by name (its kind of drag when that differs); the kind alone without one (`manager.start`).
+      const by = sensor
+        ? `${sensor.name ?? 'sensor'}${sensor.name === active.sensor ? '' : ` (${active.sensor})`}${sensor.touch ? ' · touch' : ''}`
+        : active.sensor;
       return [
         entry({
           title: 'drag start',
-          subtitle: `${keysLabel(active.ids)} · ${active.sensor}${event.source != null ? ` · from ${keyLabel(event.source)}` : ''}`,
-          data: { active, pointer: event.pointer, source: event.source },
+          subtitle: `${keysLabel(active.ids)} · ${by}${event.source != null ? ` · from ${keyLabel(event.source)}` : ''}`,
+          data: { active, sensor, pointer: event.pointer, source: event.source },
         }),
       ];
     }

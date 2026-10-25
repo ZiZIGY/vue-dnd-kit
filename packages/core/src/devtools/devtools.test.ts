@@ -1,6 +1,6 @@
 import { createApp, defineComponent, h, nextTick, ref, toRef, useTemplateRef, type PropType } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { AcceptRule, Coordinates, Rect } from '../types';
+import type { AcceptRule, Coordinates, Rect, Sensor, SensorContext } from '../types';
 import { containsPoint, createRect } from '../animation/layout';
 import { DnDProvider } from '../core/DnDProvider';
 import { useManager } from '../core/context';
@@ -79,18 +79,24 @@ const Zones = defineComponent({
   },
 });
 
+const Probe = defineComponent({
+  setup() {
+    manager = useManager();
+    return () => null;
+  },
+});
+
 const Board = defineComponent({
   name: 'KanbanBoard',
-  props: { accept: { type: [String, Function] as PropType<AcceptRule>, default: 'card' }, chipType: { type: String, default: 'card' } },
+  props: {
+    accept: { type: [String, Function] as PropType<AcceptRule>, default: 'card' },
+    chipType: { type: String, default: 'card' },
+    sensors: Array as PropType<Sensor[]>,
+  },
   setup(props) {
     return () =>
-      h(DnDProvider, { animation: false, dropAnimation: false }, () => [
-        h({
-          setup() {
-            manager = useManager();
-            return () => null;
-          },
-        }),
+      h(DnDProvider, { animation: false, dropAnimation: false, sensors: props.sensors }, () => [
+        h(Probe),
         h(List),
         h(Tree),
         h(Zones, { accept: props.accept, chipType: props.chipType }),
@@ -98,7 +104,7 @@ const Board = defineComponent({
   },
 });
 
-const mount = (props: { accept?: AcceptRule; chipType?: string } = {}) => {
+const mount = (props: { accept?: AcceptRule; chipType?: string; sensors?: Sensor[] } = {}) => {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const app = createApp(Board, props);
@@ -341,6 +347,28 @@ describe('events', () => {
     expect(end).toMatchObject({ over: { id: 'trash', accepted: true }, dropped: true, sortable: [] });
     expect(events.find((event) => event.type === 'selection')).toEqual({ type: 'selection', ids: ['x'] });
     expect(events.some((event) => event.type === 'announcement' && event.text.length > 0)).toBe(true);
+  });
+});
+
+describe('sensors', () => {
+  it('the start tells which sensor started the drag; none for a drag started without one', async () => {
+    const events = connect();
+    let context!: SensorContext;
+    const joystick: Sensor = { name: 'joystick', setup: (sensorContext) => void (context = sensorContext) };
+    mount({ sensors: [joystick] });
+    await nextTick();
+    const started = context.activate({ target: 'chip' });
+    expect(started?.state).toBe('dragging');
+    started!.cancel();
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+    await drag('a1', at(0, 0), at(0, 2, 0.75));
+    manager.cancel();
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+    const starts = events.flatMap((event) => (event.type === 'start' ? [[event.active.id, event.sensor]] : []));
+    expect(starts).toEqual([
+      ['chip', { name: 'joystick', touch: false }],
+      ['a1', null],
+    ]);
   });
 });
 

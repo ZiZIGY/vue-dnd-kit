@@ -208,6 +208,14 @@ export interface SortableDropSnapshot {
   defaultPrevented: boolean;
 }
 
+/** The sensor that started a drag. */
+export interface SensorSnapshot {
+  /** Its `name` (`'pointer'`, `'keyboard'` for the built-in ones); `undefined` when it has none. */
+  name: string | undefined;
+  /** Started by touch. */
+  touch: boolean;
+}
+
 /** Why a drag ended without a drop. */
 export type CancelReason =
   /** Escape, `cancel()`, the provider unmounted. */
@@ -223,7 +231,15 @@ interface OfDrag {
 }
 
 export type DevtoolsEvent =
-  | (OfDrag & { type: 'start'; active: ActiveSnapshot; pointer: Coordinates; source: Key | null })
+  | (OfDrag & {
+      type: 'start';
+      active: ActiveSnapshot;
+      pointer: Coordinates;
+      /** The list the items come from. */
+      source: Key | null;
+      /** `null`: started without a sensor (`manager.start`). */
+      sensor: SensorSnapshot | null;
+    })
   | (OfDrag & { type: 'over'; over: OverSnapshot | null; previous: Key | null })
   /** The pointer moved (every frame of a drag): for live views, not for logs. */
   | (OfDrag & { type: 'move' })

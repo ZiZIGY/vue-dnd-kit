@@ -10,6 +10,7 @@ import type {
   ActivationConstraint,
   Coordinates,
   Key,
+  Sensor,
   SensorActivation,
   SensorDirection,
   SensorDrag,
@@ -19,6 +20,7 @@ import type {
   SortablePosition,
 } from '../../types';
 import type { DnDManager } from '../manager';
+import { devtoolsHook } from '../devtoolsHook';
 import { checkActivation } from './activation';
 import { DIRECTIONS, arrowEvent, place, step } from './steps';
 
@@ -31,6 +33,8 @@ export interface DragSetup {
   constraint: ActivationConstraint;
   /** Started by touch: it vibrates (`haptics`). */
   touch: boolean;
+  /** The sensor that activated it (the devtools tell it); none for a drag started without one. */
+  sensor?: Sensor;
   callbacks: Pick<SensorActivation, 'onStart' | 'onEnd'>;
   /** The drag ended: whoever tracks it lets it go. */
   onEnded(): void;
@@ -110,6 +114,7 @@ export function createSensorDrag(setup: DragSetup): DragControl {
     if (manager.status.value === 'activating') manager.status.value = 'idle';
     // Before the start: a monitor of `onDragStart` may already end it.
     state = 'dragging';
+    devtoolsHook()?.sensor(manager, id, setup.sensor, setup.touch);
     if (!manager.start(id, origin, type, setup.touch)) {
       manager.activationProgress.value = 0;
       end();

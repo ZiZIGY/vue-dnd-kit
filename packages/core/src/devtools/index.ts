@@ -34,6 +34,7 @@ export type {
   ProviderSnapshot,
   SessionSnapshot,
   SortableDropSnapshot,
+  SensorSnapshot,
   SortableSessionSnapshot,
 } from './types';
 
@@ -85,6 +86,9 @@ export function connectDevtools(): DevtoolsBridge {
     },
     group(g) {
       records.get(g.manager)?.addGroup(g);
+    },
+    sensor(manager, id, sensor, touch) {
+      records.get(manager)?.sensorStarts(id, sensor, touch);
     },
   };
   (globalThis as HookHolder)[HOOK] = hook;
