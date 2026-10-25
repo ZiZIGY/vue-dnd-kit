@@ -88,6 +88,18 @@ describe('projectIndex: vertical lists', () => {
     expect(vertical(gapped, 0, 45)).toBeNull();
   });
 
+  it('puts the slot between two items when the pointer jumped into the gap between them', () => {
+    // 40px items, 10px gaps: k0 0-40, k1 50-90, k2 100-140, k3 150-190.
+    const gapped = items.map((item, index) => ({ ...item, rect: createRect(0, index * 50, 100, 40) }));
+    // Down from k0: the pointer skipped k1's lower half and is in the gap below k1.
+    expect(vertical(gapped, 0, 95)).toBe(1);
+    // Up from k3: in the gap above k1, past its center.
+    expect(vertical(gapped, 3, 45)).toBe(1);
+    // A gap next to the active slot changes nothing.
+    expect(vertical(gapped, 3, 145)).toBeNull();
+    expect(vertical(gapped, 1, 95)).toBeNull();
+  });
+
   it('inserts an item from another list before or after the hovered one', () => {
     expect(vertical(items, -1, 45)).toBe(1);
     expect(vertical(items, -1, 75)).toBe(2);
