@@ -42,6 +42,7 @@
   import TouchHandleDemo from './demos/touch/TouchHandleDemo.vue';
   import TouchKanbanDemo from './demos/touch/TouchKanbanDemo.vue';
   import TouchTreeDemo from './demos/touch/TouchTreeDemo.vue';
+  import DeviceCheckDemo from './demos/device/DeviceCheckDemo.vue';
 
   const demos = {
     sortable: SortableDemo,
@@ -84,8 +85,12 @@
     'touch-handle': TouchHandleDemo,
     'touch-kanban': TouchKanbanDemo,
     'touch-tree': TouchTreeDemo,
+    // A manual checklist for a real phone (open it over Wi-Fi: `yarn dev:host`).
+    'device-check': DeviceCheckDemo,
   };
   type DemoName = keyof typeof demos;
+  /** Pages that bring their own header: the nav would fill half a phone screen. */
+  const STANDALONE: ReadonlySet<DemoName> = new Set(['device-check']);
 
   const readHash = (): DemoName => {
     const name = location.hash.slice(1);
@@ -98,7 +103,7 @@
 </script>
 
 <template>
-  <nav>
+  <nav v-if="!STANDALONE.has(current)">
     <a
       v-for="(_, name) in demos"
       :key="name"
