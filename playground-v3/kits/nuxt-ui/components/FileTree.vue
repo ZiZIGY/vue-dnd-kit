@@ -30,7 +30,7 @@
     <h2 class="mb-2 font-semibold text-highlighted">Files (makeSortableTree, UCard rows)</h2>
     <div
       ref="root"
-      class="flex w-96 flex-col gap-1 rounded-lg border border-default bg-muted p-2"
+      class="flex w-96 max-w-full flex-col gap-1 rounded-lg border border-default bg-muted p-2"
       data-testid="tree-root"
     >
       <TreeRow
@@ -42,12 +42,12 @@
       />
     </div>
     <pre
-      class="mt-2 text-xs text-muted"
+      class="mt-2 text-xs text-muted whitespace-pre-wrap break-all"
       data-testid="tree"
       >{{ structure }}</pre
     >
     <pre
-      class="text-xs text-muted"
+      class="text-xs text-muted whitespace-pre-wrap break-all"
       data-testid="projected"
       >{{ projected ? `${projected.depth}:${projected.parentKey ?? 'root'}` : '' }}</pre
     >

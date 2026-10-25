@@ -24,7 +24,7 @@
       />
     </div>
     <pre
-      class="mt-2 text-xs text-muted"
+      class="mt-2 text-xs text-muted whitespace-pre-wrap break-all"
       data-testid="tasks-state"
       >{{ ids(tasks) }}</pre
     >

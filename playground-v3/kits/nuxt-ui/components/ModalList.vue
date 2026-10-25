@@ -44,7 +44,7 @@
       </template>
     </UModal>
     <pre
-      class="mt-2 text-xs text-muted"
+      class="mt-2 text-xs text-muted whitespace-pre-wrap break-all"
       data-testid="modal-state"
       >{{ ids(tasks) }}{{ opened ? ` opened:${opened}` : '' }}</pre
     >

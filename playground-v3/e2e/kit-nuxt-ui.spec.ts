@@ -1,10 +1,13 @@
-import type { Locator, Page } from '@playwright/test';
-import { center, frames } from './helpers';
+import type { Page } from '@playwright/test';
+import { center, frames, nextFrames, scrollElement } from './helpers';
 import {
+  at,
   byId,
   drag,
   expect,
   focusedId,
+  grab,
+  leaveSideways,
   look,
   overlayClone,
   press,
@@ -23,13 +26,6 @@ const enableDark = async (page: Page) => {
   await expect(page.locator('html')).toHaveClass(/\bdark\b/);
   // Some components transition their colors to the new theme.
   await settle(page);
-};
-
-/** A point inside `locator`: `x`/`y` ratios of its box. */
-const at = async (locator: Locator, x = 0.5, y = 0.5) => {
-  const box = await locator.boundingBox();
-  if (!box) throw new Error('Element is not visible');
-  return { x: box.x + box.width * x, y: box.y + box.height * y };
 };
 
 test.describe('Nuxt UI: sortable lists', () => {
@@ -300,5 +296,118 @@ test.describe('Nuxt UI: tree', () => {
     await waitForIdle(page);
     await expect(structure(page)).toHaveText('src(components(ui,button),main),docs(intro,guide),assets,readme,package');
     expect(await focusedId(page)).toBe('readme');
+  });
+});
+
+test.describe('Nuxt UI: UTable virtualize (3,000 rows)', () => {
+  // UTable's virtualizer can't pin a row (kits/nuxt-ui/components/VirtualTable.vue): the
+  // active row unmounts when it is scrolled out of range, and the drag goes on by key.
+  const ROW = 58;
+  const HEAD = 'r0,r1,r2,r3,r4,r5,r6,r7,r8,r9';
+  const scroller = (page: Page) => page.getByTestId('virtual-scroller');
+  /** The <tr> of row `r<n>` (UTable rows carry no id: found by the title cell). */
+  const row = (page: Page, id: string) =>
+    scroller(page)
+      .locator('tbody tr')
+      .filter({ has: page.getByRole('cell', { name: `Row ${id.slice(1)}`, exact: true }) });
+  const handle = (page: Page, id: string) => row(page, id).getByTestId('row-handle');
+  /** The rendered row at virtual index `index`. */
+  const slot = (page: Page, index: number) => scroller(page).locator(`tbody tr[data-index="${index}"]`);
+  const placeholder = (page: Page) => page.locator('[data-dnd-placeholder]');
+  const order = (page: Page) => page.getByTestId('virtual-order');
+  const dropped = (page: Page) => page.getByTestId('virtual-drop');
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto(`${PAGE}#virtual`);
+    await expect(order(page)).toHaveText(HEAD);
+    await expect(row(page, 'r0')).toBeVisible();
+  });
+
+  test('reorders UTable rows within the viewport; the rendered rows follow the data', async ({ page }) => {
+    await drag(page, handle(page, 'r1'), await at(row(page, 'r4'), 0.5, 0.8));
+    await waitForIdle(page);
+    await expect(order(page)).toHaveText('r0,r2,r3,r4,r1,r5,r6,r7,r8,r9');
+    await expect(dropped(page)).toHaveText('r1@4:r4,r1,r5');
+    // Keyed by id: the virtualizer's slot 4 holds r1, right below r4.
+    await expect(slot(page, 4)).toContainText('Row 1');
+    const above = (await row(page, 'r4').boundingBox())!;
+    expect((await row(page, 'r1').boundingBox())!.y - above.y).toBeCloseTo(ROW, -1);
+  });
+
+  test('held at the bottom edge, a row auto-scrolls the table far down and lands under the pointer', async ({
+    page,
+  }) => {
+    const box = (await scroller(page).boundingBox())!;
+    const start = await grab(page, handle(page, 'r1'));
+    await page.mouse.move(start.x, box.y + box.height - 4, { steps: 10 });
+    await expect
+      .poll(() => scroller(page).evaluate((element) => element.scrollTop), { timeout: 15_000 })
+      .toBeGreaterThan(40 * ROW);
+    // Back to the middle: the scrolling stops, and r1 sits under the pointer.
+    const middle = box.y + box.height / 2;
+    await page.mouse.move(start.x, middle, { steps: 6 });
+    const scrolled = await scroller(page).evaluate((element) => element.scrollTop);
+    await nextFrames(page, 4);
+    expect(await scroller(page).evaluate((element) => element.scrollTop)).toBe(scrolled);
+    await expect
+      .poll(async () => {
+        const slot = (await row(page, 'r1').boundingBox())!;
+        return Math.abs(slot.y + slot.height / 2 - middle);
+      })
+      .toBeLessThanOrEqual(ROW);
+    await page.mouse.up();
+    await waitForIdle(page);
+    const index = Number((await dropped(page).textContent())!.match(/^r1@(\d+):/)![1]);
+    expect(index).toBeGreaterThan(40);
+    await expect(order(page)).toHaveText('r0,r2,r3,r4,r5,r6,r7,r8,r9,r10');
+  });
+
+  test('the active row unmounts when scrolled out of range, and the drop still lands', async ({ page }) => {
+    const point = await grab(page, handle(page, 'r2'));
+    await leaveSideways(page, scroller(page), point);
+    await scrollElement(scroller(page), 100 * ROW);
+    // No pinning in UTable: the active row is gone; the overlay stays.
+    await expect(row(page, 'r2')).toHaveCount(0);
+    await expect(page.locator('[data-dnd-overlay]')).toHaveCount(1);
+    await expect(row(page, 'r104')).toBeInViewport();
+
+    const target = await at(row(page, 'r104'), 0.5, 0.8);
+    await page.mouse.move(target.x, target.y, { steps: 10 });
+    await expect(placeholder(page)).toHaveCount(1);
+    await expect(placeholder(page).getByRole('cell', { name: 'Row 2', exact: true })).toHaveCount(1);
+    await page.mouse.up();
+    await waitForIdle(page);
+    await expect(dropped(page)).toHaveText('r2@104:r104,r2,r105');
+    await expect(order(page)).toHaveText('r0,r1,r3,r4,r5,r6,r7,r8,r9,r10');
+  });
+
+  test('keyboard: arrows carry a row past the bottom of the viewport; the table follows, the focus stays', async ({
+    page,
+  }) => {
+    const focused = () => page.evaluate(() => document.activeElement?.getAttribute('aria-label'));
+    await handle(page, 'r1').focus();
+    await press(page, 'Space');
+    await press(page, 'ArrowDown', 25);
+    await expect(row(page, 'r1')).toBeInViewport();
+    expect(await focused()).toBe('Drag Row 1');
+    await press(page, 'Space');
+    await waitForIdle(page);
+    await expect(dropped(page)).toHaveText('r1@26:r26,r1,r27');
+    expect(await focused()).toBe('Drag Row 1');
+  });
+
+  test('Escape restores the order after the active row unmounted', async ({ page }) => {
+    await drag(page, handle(page, 'r1'), await at(row(page, 'r5'), 0.5, 0.8), { release: false });
+    await expect(slot(page, 5)).toContainText('Row 1');
+    await leaveSideways(page, scroller(page), await center(row(page, 'r1')));
+    await scrollElement(scroller(page), 300 * ROW);
+    await expect(row(page, 'r1')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await waitForIdle(page);
+    await page.mouse.up();
+    await expect(order(page)).toHaveText(HEAD);
+    await expect(dropped(page)).toHaveText('');
+    await scrollElement(scroller(page), 0);
+    await expect(slot(page, 1)).toContainText('Row 1');
   });
 });

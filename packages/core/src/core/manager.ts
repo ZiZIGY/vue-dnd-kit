@@ -51,7 +51,7 @@ import { createMeasurer } from './measure';
 import { defaultAnnouncements } from './a11y';
 import { markDocumentDragging } from './styles';
 import { clonePreview } from './clone';
-import { containsComposed, elementFromPoint, nextFrame, parentOf } from '../utils/dom';
+import { containsComposed, elementFromPoint, isFocusLost, nextFrame, parentOf } from '../utils/dom';
 
 export interface DraggableEntry {
   id: Key;
@@ -84,6 +84,8 @@ export interface DroppableEntry {
   isDisabled(): boolean;
   accepts(active: Active): boolean;
   priority: number;
+  /** A sortable list or tree: what drops on it is shown in it, as a slot. */
+  sortable?: boolean;
   onDragEnter?(event: DnDEvent): void;
   onDragLeave?(event: DnDEvent): void;
   onBeforeDrop?(event: DnDEvent): BeforeDropResult | Promise<BeforeDropResult>;
@@ -111,6 +113,12 @@ export interface OverlayColumn {
   /** Lands the column's clones (`overlayItems`) on their slots with the drop. */
   land: typeof landOverlayItems;
 }
+
+/**
+ * Integration rule for a drop target, asked on every target detection: `false` leaves it
+ * out of this one (sortable: a target inside an item counts only in the item's middle).
+ */
+export type TargetRule = (entry: DroppableEntry, element: HTMLElement, point: Coordinates, active: Active) => boolean;
 
 /** Per-container auto-scroll override (e.g. `SortableListOptions.autoScroll`). */
 export interface AutoScrollEntry {
@@ -180,6 +188,7 @@ export function createDnDManager(props: DnDProviderProps) {
   const draggableIds = new WeakMap<Element, Key>();
   const monitors = new Set<DnDMonitor>();
   const sourceResolvers = new Set<(active: Active) => DragSource | undefined>();
+  const targetRules = new Set<TargetRule>();
   /** Integration announcers (sortable positions): after the user's `announcements`, before the defaults. */
   const announcers = new Set<Partial<Announcements>>();
   const activationAborts = new Set<() => void>();
@@ -212,6 +221,8 @@ export function createDnDManager(props: DnDProviderProps) {
   const stabilizer = createTargetStabilizer();
   /** Nesting depth of drop target elements among drop targets, per session. */
   let nesting = new WeakMap<Element, number>();
+  /** Drop target elements in a dragged item or in a slot one lands in, per session. */
+  let owned = new WeakMap<Element, boolean>();
   /** Pointer of the last target detection. */
   let detectedAt: Coordinates | null = null;
   /**
@@ -273,6 +284,11 @@ export function createDnDManager(props: DnDProviderProps) {
   const addSourceResolver = (resolver: (active: Active) => DragSource | undefined) => {
     sourceResolvers.add(resolver);
     return () => sourceResolvers.delete(resolver);
+  };
+
+  const addTargetRule = (rule: TargetRule) => {
+    targetRules.add(rule);
+    return () => targetRules.delete(rule);
   };
 
   /** Overrides auto-scroll for the scroll container of `getElement()` (the element or its closest scrollable ancestor). */
@@ -426,16 +442,37 @@ export function createDnDManager(props: DnDProviderProps) {
     return depth;
   };
 
+  /**
+   * Never drop items into themselves: a target in (or on) any dragged item, or in a slot
+   * one lands in (a copy, a created item), is out for the whole drag.
+   */
+  const isOwned = (element: Element, current: Active): boolean => {
+    let own = owned.get(element);
+    if (own === undefined) {
+      own = false;
+      for (let node: Element | null = element; node && !own; node = parentOf(node)) {
+        const id = draggableIds.get(node);
+        own = id != null && (current.ids.includes(id) || id === landingKey.value || landings.value.has(id));
+      }
+      owned.set(element, own);
+    }
+    return own;
+  };
+
   const detectOver = (current: Active, point: Coordinates): Over | null => {
     const candidates: CollisionCandidate[] = [];
+    // Every target that could be one (nesting depth), and the ones the rules let in now.
+    const all = new Map<Element, DroppableEntry>();
     const byElement = new Map<Element, DroppableEntry>();
     const elements = new Map<Key, HTMLElement>();
     for (const entry of droppables.values()) {
       if (entry.isDisabled()) continue;
       const element = entry.getElement();
-      if (!element?.isConnected) continue;
-      // Never drop an item into itself or its own descendants.
-      if (current.element.isConnected && containsComposed(current.element, element)) continue;
+      if (!element?.isConnected || isOwned(element, current)) continue;
+      all.set(element, entry);
+      let hidden = false;
+      for (const rule of targetRules) hidden ||= !rule(entry, element, point, current);
+      if (hidden) continue;
       byElement.set(element, entry);
       elements.set(entry.id, element);
       measurer.observe(element);
@@ -444,7 +481,7 @@ export function createDnDManager(props: DnDProviderProps) {
       // Fully clipped by a scroll container or the viewport: not hittable.
       const rect = measurer.measureVisible(element);
       if (rect) {
-        candidates.push({ id: entry.id, rect, priority: entry.priority, depth: depthOf(element, byElement) });
+        candidates.push({ id: entry.id, rect, priority: entry.priority, depth: depthOf(element, all) });
       }
     }
     const hits = hitTest(point, byElement);
@@ -721,6 +758,7 @@ export function createDnDManager(props: DnDProviderProps) {
     measurer.begin();
     stabilizer.reset();
     nesting = new WeakMap();
+    owned = new WeakMap();
     detectedAt = null;
     refreshRequested = false;
     status.value = 'dragging';
@@ -748,13 +786,7 @@ export function createDnDManager(props: DnDProviderProps) {
     const attempt = () => {
       const target = draggables.get(id)?.getFocusTarget();
       if (!target?.isConnected) return false;
-      const focused = document.activeElement;
-      const lost =
-        !focused ||
-        focused === document.body ||
-        focused === document.documentElement ||
-        !focused.isConnected;
-      if (lost) target.focus({ preventScroll: true });
+      if (isFocusLost()) target.focus({ preventScroll: true });
       return true;
     };
     void nextTick(() => {
@@ -803,9 +835,10 @@ export function createDnDManager(props: DnDProviderProps) {
   /**
    * Multi-drag: the default overlay's clones of the other items land on their own slots
    * with the box; items without a clone (past the cap, custom overlays) fade in where
-   * they are, instead of popping to full opacity when the drop ends.
+   * they are, instead of popping to full opacity when the drop ends. A box going `into`
+   * a zone takes every clone with it, and the items still shown fade in where they are.
    */
-  const landItems = (current: Active, box: { from: Rect; to: Rect | null }): Promise<void> => {
+  const landItems = (current: Active, box: { from: Rect; to: Rect | null }, into: boolean): Promise<void> => {
     if (current.ids.length < 2) return Promise.resolve();
     const slotOf = new Map<Key, Key>();
     for (const [slot, id] of landings.value) slotOf.set(id, slot);
@@ -819,7 +852,7 @@ export function createDnDManager(props: DnDProviderProps) {
       if (id === current.id) continue;
       const clone = overlayItems.get(id);
       const target = elementOf(id);
-      if (!clone?.isConnected) {
+      if (into || !clone?.isConnected) {
         if (target) resting.push(target);
         continue;
       }
@@ -866,9 +899,14 @@ export function createDnDManager(props: DnDProviderProps) {
       const visible = !!to && to.width > 0 && !!measurer.measureVisible(target!);
       const from = getRect(overlay);
       const landing = visible ? to : null;
+      // Shown nowhere after a drop on a zone (not a list: an item dropped into a folder,
+      // a trash zone): the overlay goes into the zone. Otherwise it fades where it is.
+      const zone = landing || reason !== 'drop' ? null : event.over;
+      const into =
+        (zone?.element.isConnected && !droppables.get(zone.id)?.sortable && measurer.measureVisible(zone.element)) || null;
       await Promise.all([
-        runDropAnimation(props.dropAnimation, { overlay, from, to: landing, reason, active: current }),
-        landItems(current, { from, to: landing }),
+        runDropAnimation(props.dropAnimation, { overlay, from, to: landing, into, reason, active: current }),
+        landItems(current, { from, to: landing }, !!into),
       ]);
       if (id !== session) return;
     }
@@ -1018,6 +1056,9 @@ export function createDnDManager(props: DnDProviderProps) {
     findDraggable,
     addMonitor,
     addSourceResolver,
+    addTargetRule,
+    /** The element is (in) a dragged item or a slot one lands in: never a drop target. */
+    isOwned,
     addAnnouncer,
     announce,
     updateActive,

@@ -9,12 +9,13 @@
   const fm = inject(FILE_MANAGER)!;
   const el = useTemplateRef<HTMLElement>('el');
 
-  // A node of the folder tree...
-  makeSortableItem(el, { id: () => props.node.key, type: 'folder' });
-  // ...and a drop target for files dragged from the grid.
+  // A node of the folder tree (keyed `tree:<id>`: the folder's grid tile has its id)...
+  makeSortableItem(el, { id: () => props.node.key, type: 'tree' });
+  // ...and a drop target for what is dragged from the grid (and elsewhere). It refuses
+  // the tree's own drags, so the tree nests and sorts them over it as usual.
   const { isOver, isAccepting } = useFolderDrop(el, () => props.node.item.id, 'row');
 
-  const current = computed(() => fm.current.value === props.node.key);
+  const current = computed(() => fm.current.value === props.node.item.id);
 </script>
 
 <template>
@@ -22,7 +23,7 @@
     ref="el"
     class="fm-row"
     :class="{ current, accepting: isAccepting, target: isOver && isAccepting }"
-    :data-id="node.key"
+    :data-id="node.item.id"
     :data-depth="node.depth"
     :data-target="(isOver && isAccepting) || undefined"
     :style="{ paddingLeft: `${6 + node.depth * indentation}px` }"
@@ -34,7 +35,7 @@
       class="fm-chevron"
       :aria-expanded="!node.collapsed"
       :aria-label="`${node.collapsed ? 'Expand' : 'Collapse'} ${node.item.name}`"
-      :data-testid="`toggle-${node.key}`"
+      :data-testid="`toggle-${node.item.id}`"
       @click.stop="emit('toggle', node.key)"
     >
       {{ node.collapsed ? '▸' : '▾' }}

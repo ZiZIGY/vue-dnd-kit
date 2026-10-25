@@ -47,12 +47,12 @@
       />
     </VList>
     <pre
-      class="text-caption mt-2"
+      class="text-caption mt-2 text-pre-wrap text-break"
       data-testid="tree"
       >{{ structure }}</pre
     >
     <pre
-      class="text-caption"
+      class="text-caption text-pre-wrap text-break"
       data-testid="projected"
       >{{ projected ? `${projected.depth}:${projected.parentKey ?? 'root'}` : '' }}</pre
     >

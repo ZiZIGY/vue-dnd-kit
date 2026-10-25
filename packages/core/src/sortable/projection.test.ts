@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { Rect } from '../types';
 import { createRect } from '../animation/layout';
 import {
   nextRowIndex,
@@ -120,6 +121,43 @@ describe('projectIndex: vertical lists', () => {
     expect(project(245)).toBe(2);
   });
 
+  it('a block never steps past an item you can drop into ahead of the pointer', () => {
+    // 40px rows: k0 | m1 S | k3 — the block (m1, S) counts once, at index 1.
+    const rows: ProjectionItem[] = ['k0', 'm1', 'S', 'k3'].map((key, i) => ({
+      key,
+      index: [0, 1, 1, 2][i]!,
+      rect: createRect(0, i * 40, 100, 40),
+      ...(key === 'm1' && { side: -1 as const }),
+    }));
+    const project = (targets?: Map<string, Rect>) =>
+      projectIndex({
+        strategy: 'vertical',
+        pointer: { x: 50, y: 50 },
+        items: rows,
+        activeKey: 'S',
+        activeIndex: 1,
+        length: 3,
+        lock: null,
+        targets,
+      }).index;
+    // The pointer is over m1, the block's leading member: it steps past k0...
+    expect(project()).toBe(0);
+    // ...unless k0 takes the drag: the pointer has to get there itself.
+    expect(project(new Map([['k0', createRect(0, 10, 100, 20)]]))).toBeNull();
+  });
+
+  it("nothing moves while the pointer is in a target item's middle band", () => {
+    // k1 (40–80) can be dropped into; its middle is 50–70. The hit test may miss it (a
+    // sibling still sliding over it): the list must not sort past it there.
+    const targets = new Map([['k1', createRect(0, 50, 100, 20)]]);
+    const project = (y: number) =>
+      projectIndex({ strategy: 'vertical', pointer: { x: 50, y }, items, activeKey: 'k0', activeIndex: 0, length: 4, lock: null, targets })
+        .index;
+    expect(project(65)).toBeNull();
+    // Its far edge: past it, as usual.
+    expect(project(75)).toBe(1);
+  });
+
   it('inserts an item from another list before or after the hovered one', () => {
     expect(vertical(items, -1, 45)).toBe(1);
     expect(vertical(items, -1, 75)).toBe(2);
@@ -168,6 +206,47 @@ describe('projectIndex: grids', () => {
     // Without the lock it would move straight back.
     expect(project(null)).toBe(0);
     expect(project(first.lock as string)).toBeNull();
+  });
+
+  describe('cells holding a drop target (drop into an item)', () => {
+    // a b c d in one row, 100px each; c can be dropped into (its middle is 225–275): its edges sort.
+    const row = ['a', 'b', 'c', 'd'].map((key, index) => cell(key, index, index * 100, 0));
+    const targets = new Map([['c', createRect(225, 0, 50, 100)]]);
+    const project = (activeKey: string, x: number, lock: string | null = null) =>
+      projectIndex({
+        strategy: 'grid',
+        pointer: { x, y: 50 },
+        items: row,
+        activeKey,
+        activeIndex: row.findIndex((item) => item.key === activeKey),
+        length: 4,
+        lock,
+        targets,
+      });
+
+    it('go before or after the cell by its halves instead of taking it', () => {
+      // a over c's left edge: right before c (index 1), c stays where it is.
+      expect(project('a', 210)).toEqual({ index: 1, lock: null, key: 'c' });
+      // Its right edge: after c.
+      expect(project('a', 290)).toEqual({ index: 2, lock: null, key: 'c' });
+      // From the other side.
+      expect(project('d', 210)).toEqual({ index: 2, lock: null, key: 'c' });
+      expect(project('b', 290)).toEqual({ index: 2, lock: null, key: 'c' });
+    });
+
+    it('already next to the cell on that side: nothing moves, so the cell never runs from the pointer', () => {
+      expect(project('b', 210)).toEqual({ index: null, lock: null, key: null });
+      expect(project('d', 290)).toEqual({ index: null, lock: null, key: null });
+    });
+
+    it('nothing moves in its middle band, even past its center', () => {
+      expect(project('a', 260)).toEqual({ index: null, lock: null, key: null });
+      expect(project('d', 240)).toEqual({ index: null, lock: null, key: null });
+    });
+
+    it('other cells keep the grid rule', () => {
+      expect(project('a', 350)).toEqual({ index: 3, lock: 'd', key: 'd' });
+    });
   });
 });
 

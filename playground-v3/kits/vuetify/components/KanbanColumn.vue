@@ -23,6 +23,7 @@
     :class="isOver ? 'bg-primary-lighten' : 'bg-surface-light'"
     :border="isOver ? 'primary md' : true"
     width="280"
+    class="flex-shrink-0"
   >
     <VCardTitle class="d-flex align-center justify-space-between text-subtitle-1">
       {{ column.title }}

@@ -107,6 +107,20 @@ export const isEditable = (element: Element): boolean => element.matches(EDITABL
 export const isNativelyFocusable = (element: Element): boolean =>
   element.matches(FOCUSABLE);
 
+/**
+ * True when nothing has the focus any more: the focused element left the document
+ * (re-rendered or unmounted), and the browser moved the focus back to <body>.
+ */
+export const isFocusLost = (): boolean => {
+  const focused = document.activeElement;
+  return (
+    !focused ||
+    focused === document.body ||
+    focused === document.documentElement ||
+    !focused.isConnected
+  );
+};
+
 /** Frames stop in hidden tabs and can stall on a busy compositor: wait at most this long. */
 const FRAME_TIMEOUT = 100;
 

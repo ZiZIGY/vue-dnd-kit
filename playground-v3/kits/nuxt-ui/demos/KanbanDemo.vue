@@ -34,7 +34,14 @@
 
 <template>
   <DnDProvider>
-    <div class="flex items-start gap-4">
+    <!--
+      Columns keep their width; on a phone the board scrolls sideways, not the page. The
+      padding keeps the hovered column's ring inside the scroller's clip.
+    -->
+    <div
+      class="flex items-start gap-4 overflow-x-auto p-1"
+      data-testid="board-scroller"
+    >
       <KanbanColumn
         v-for="column in columns"
         :key="column.id"
@@ -44,7 +51,7 @@
       />
     </div>
     <pre
-      class="mt-4 text-xs text-muted"
+      class="mt-4 text-xs text-muted whitespace-pre-wrap break-all"
       data-testid="board"
       >{{ board }}</pre
     >

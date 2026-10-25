@@ -32,7 +32,7 @@
       />
     </VSheet>
     <pre
-      class="text-caption mt-2"
+      class="text-caption mt-2 text-pre-wrap text-break"
       data-testid="tags-state"
       >{{ tags.join(',') }}</pre
     >

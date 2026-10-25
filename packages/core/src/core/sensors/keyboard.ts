@@ -87,7 +87,7 @@ export function useKeyboardSensor(manager: DnDManager): void {
     for (const entry of manager.getDroppables()) {
       if (entry.id === overId || entry.isDisabled()) continue;
       const element = entry.getElement();
-      if (!element?.isConnected || current.element.contains(element)) continue;
+      if (!element?.isConnected || manager.isOwned(element, current)) continue;
       if (!entry.accepts(current)) continue;
       candidates.push({ id: entry.id, rect: getRect(element) });
       elements.set(entry.id, element);

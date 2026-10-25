@@ -1,0 +1,145 @@
+<script setup lang="ts">
+  import { useTemplateRef } from 'vue';
+  import { makeSortableItem } from '@vue-dnd-kit/core';
+  import type { TouchTask } from '../touch/data';
+
+  /**
+   * An item of the device checks:
+   * - `plain`: text only, the whole item drags after a long press;
+   * - `rich`: also a real link and an image, which a browser would long-press or drag
+   *   natively (callout menu, context menu, native drag preview);
+   * - `handle`: drags by its ⠿ handle only, at once (`touch-action: none`, 4px).
+   */
+  const props = defineProps<{ task: TouchTask; variant: 'plain' | 'rich' | 'handle' }>();
+  const el = useTemplateRef<HTMLElement>('el');
+  const handle = useTemplateRef<HTMLElement>('handle');
+  makeSortableItem(
+    el,
+    // The variant never changes for an item.
+    props.variant === 'handle'
+      ? { id: () => props.task.id, handle, activation: { touch: { distance: 4 } } }
+      : { id: () => props.task.id },
+  );
+
+  // An image of its own, without a network request.
+  const IMAGE = `data:image/svg+xml,${encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#bfdbfe"/><path d="M8 30l9-11 6 7 4-5 5 9z" fill="#1d4ed8"/><circle cx="28" cy="12" r="4" fill="#1d4ed8"/></svg>',
+  )}`;
+</script>
+
+<template>
+  <li
+    ref="el"
+    class="device-row"
+    :data-id="task.id"
+  >
+    <img
+      v-if="variant === 'rich'"
+      :src="IMAGE"
+      alt=""
+      width="40"
+      height="40"
+      class="thumb"
+      data-testid="image"
+    />
+    <span
+      v-else
+      class="avatar"
+      aria-hidden="true"
+      >{{ task.id.toUpperCase() }}</span
+    >
+    <span class="text">
+      <strong class="title">{{ task.title }}</strong>
+      <small class="note">
+        <a
+          v-if="variant === 'rich'"
+          href="https://vuejs.org/"
+          target="_blank"
+          rel="noopener"
+          data-testid="link"
+          >vuejs.org</a
+        >
+        {{ task.note }}
+      </small>
+    </span>
+    <span
+      v-if="variant === 'handle'"
+      ref="handle"
+      class="handle"
+      data-testid="handle"
+      aria-label="Drag handle"
+      >⠿</span
+    >
+  </li>
+</template>
+
+<style scoped>
+  .device-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 60px;
+    padding: 8px 12px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    color: #111827;
+    font: 15px/1.3 system-ui, sans-serif;
+  }
+
+  .avatar,
+  .thumb {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+  }
+
+  .avatar {
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .title {
+    font-weight: 600;
+  }
+
+  .note {
+    overflow: hidden;
+    color: #6b7280;
+    font-size: 13px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .note a {
+    color: #1d4ed8;
+  }
+
+  /* As in the touch-handle demo: only the handle refuses to pan, the rest scrolls. */
+  .handle {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    margin: -4px -8px -4px 0;
+    border-radius: 8px;
+    color: #6b7280;
+    font-size: 22px;
+    touch-action: none;
+    cursor: grab;
+  }
+</style>
