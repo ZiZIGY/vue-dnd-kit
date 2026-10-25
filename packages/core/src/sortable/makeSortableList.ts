@@ -20,6 +20,7 @@ import { createDroppable } from '../core/makeDroppable';
 import { createId, toElement } from '../utils/dom';
 import { read } from '../utils/read';
 import { useSortableGroup, type ListEntry, type SortableGroup } from './group';
+import { changedRun } from './draft';
 
 /** What a list (or tree) gives its items. */
 export interface SortableContext {
@@ -143,9 +144,27 @@ export function makeSortableList<T>(
 
   provideSortableContext(group, entry, getKey, options.overlay, () => read(options.modifiers));
 
+  // A new draft usually differs from the previous one in a short run (a reorder): only
+  // that run is looked up, the rest is copied. Items of a session never change by key.
+  let rendered: { order: Key[]; items: T[]; session: unknown } | null = null;
   const items = computed<T[]>(() => {
     const order = draft.value;
-    return order ? order.map((key) => group.lookup(key) as T) : options.items.value;
+    if (!order) {
+      rendered = null;
+      return options.items.value;
+    }
+    const session = group.session.value;
+    const lookup = (key: Key) => group.lookup(key) as T;
+    let next: T[];
+    if (rendered?.session === session) {
+      const { start, end, nextEnd } = changedRun(rendered.order, order);
+      const previous = rendered.items;
+      next = previous.slice(0, start).concat(order.slice(start, nextEnd).map(lookup), previous.slice(end));
+    } else {
+      next = order.map(lookup);
+    }
+    rendered = { order, items: next, session };
+    return next;
   });
   // The row a virtualizer must keep mounted: in the list holding a copy or an
   // external item, that row is the copy/item (the slot), not the original.

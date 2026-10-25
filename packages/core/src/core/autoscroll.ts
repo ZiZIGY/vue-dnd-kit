@@ -419,9 +419,11 @@ export function useAutoScroll(manager: DnDManager): void {
     const intent = updateScrollIntent(current.intent, pointer);
     const provider = manager.props.autoScroll;
 
-    // Read pass: innermost first, the window last.
+    // Read pass: innermost first, the window last. What is under the pointer comes from
+    // the manager's hit test of the last frame: a hit test brings the page's rendering
+    // up to date, which with thousands of items costs more than the rest of the frame.
     const candidates: Element[] = [];
-    addScrollers(current, elementFromPoint(pointer.x, pointer.y), candidates);
+    addScrollers(current, manager.getPointerElement() ?? elementFromPoint(pointer.x, pointer.y), candidates);
     const over = manager.over.value?.element;
     if (over?.isConnected) addScrollers(current, over, candidates);
     for (const element of current.previous) {

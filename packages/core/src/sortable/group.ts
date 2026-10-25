@@ -48,6 +48,7 @@ import {
   projectSwap,
   type ProjectionItem,
 } from './projection';
+import { patchIndexMap } from './draft';
 import {
   HYSTERESIS,
   blocksKey,
@@ -236,7 +237,9 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   const session = shallowRef<Session | null>(null);
   const indicator = shallowRef<SortableIndicator | null>(null);
   const version = shallowRef(0);
-  const indexCache = new WeakMap<Key[], Map<Key, number>>();
+  const indexCache = new WeakMap<readonly Key[], Map<Key, number>>();
+  /** Per list, its last draft that has a map in `indexCache`: the next draft takes the map over. */
+  const indexedDrafts = new WeakMap<ListEntry, readonly Key[]>();
   const scope = effectScope(true);
   /** Others of a finished `'stack'` drag: they fly out of the overlay into their slots. */
   let returning: { keys: Set<Key>; from: Rect } | null = null;
@@ -251,7 +254,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
   const keysOf = (list: ListEntry) => list.draft.value ?? list.getKeys();
 
-  const indexMap = (keys: Key[]) => {
+  const indexMap = (keys: readonly Key[]) => {
     let map = indexCache.get(keys);
     if (!map) {
       map = new Map(keys.map((key, index) => [key, index]));
@@ -260,7 +263,25 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     return map;
   };
 
-  const indexOf = (list: ListEntry, key: Key) => indexMap(keysOf(list)).get(key) ?? -1;
+  /**
+   * Key → index in `list`'s current order. A new draft takes over the map of the list's
+   * previous one, patched over the run that changed (see `patchIndexMap`).
+   */
+  const indicesOf = (list: ListEntry): Map<Key, number> => {
+    const draft = list.draft.value;
+    if (!draft) return indexMap(list.getKeys());
+    if (indexCache.has(draft)) return indexCache.get(draft)!;
+    const previous = indexedDrafts.get(list);
+    const map = previous && indexCache.get(previous);
+    if (map && patchIndexMap(map, previous!, draft)) {
+      indexCache.delete(previous!);
+      indexCache.set(draft, map);
+    }
+    indexedDrafts.set(list, draft);
+    return indexMap(draft);
+  };
+
+  const indexOf = (list: ListEntry, key: Key) => indicesOf(list).get(key) ?? -1;
 
   const lookup = (key: Key): unknown => {
     const snapshot = session.value?.items;
@@ -274,7 +295,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
   const listOfKey = (key: Key, useDraft: boolean): ListEntry | undefined => {
     for (const list of lists.values()) {
-      if (indexMap(useDraft ? keysOf(list) : list.getKeys()).has(key)) return list;
+      if ((useDraft ? indicesOf(list) : indexMap(list.getKeys())).has(key)) return list;
     }
     return undefined;
   };
@@ -810,7 +831,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
    * tagged with their side of it.
    */
   const collect = (list: ListEntry): ProjectionItem[] => {
-    const indices = indexMap(keysOf(list));
+    const indices = indicesOf(list);
     const current = session.value;
     const block = current && current.block.length > 1 && current.list === list.id ? current.block : null;
     const first = block ? (indices.get(block[0]!) ?? -1) : -1;

@@ -210,6 +210,11 @@ export function createDnDManager(props: DnDProviderProps) {
   let nesting = new WeakMap<Element, number>();
   /** Pointer of the last target detection. */
   let detectedAt: Coordinates | null = null;
+  /**
+   * Topmost element under the pointer at the last target detection, for auto-scroll;
+   * `null` while a modifier moves the point away from the pointer.
+   */
+  let pointerElement: Element | null = null;
   /** Scroll, resize or an external request since the last frame: detect even if the pointer stood still. */
   let refreshRequested = false;
 
@@ -394,11 +399,9 @@ export function createDnDManager(props: DnDProviderProps) {
    */
   const hitTest = (point: Coordinates, byElement: Map<Element, DroppableEntry>): Key[] => {
     const hits: DroppableEntry[] = [];
-    for (
-      let element = elementFromPoint(point.x, point.y);
-      element;
-      element = parentOf(element)
-    ) {
+    const top = elementFromPoint(point.x, point.y);
+    pointerElement = point.x === raw.x && point.y === raw.y ? top : null;
+    for (let element = top; element; element = parentOf(element)) {
       const entry = byElement.get(element);
       if (entry) hits.push(entry);
     }
@@ -567,7 +570,11 @@ export function createDnDManager(props: DnDProviderProps) {
     const point = { x: origin.x + offset.x, y: origin.y + offset.y };
     // The target follows the pointer, scrolling and resizing, never a layout shift
     // alone: a frame where none of them changed (a repeated pointermove) does nothing.
-    if (!refresh && detectedAt && point.x === detectedAt.x && point.y === detectedAt.y) return;
+    if (!refresh && detectedAt && point.x === detectedAt.x && point.y === detectedAt.y) {
+      // A modifier holds the point while the pointer moves on.
+      if (point.x !== raw.x || point.y !== raw.y) pointerElement = null;
+      return;
+    }
     detectedAt = point;
     transform.value = offset;
     pointer.value = point;
@@ -763,6 +770,7 @@ export function createDnDManager(props: DnDProviderProps) {
     frame = 0;
     measurer.end();
     detectedAt = null;
+    pointerElement = null;
     if (current.sensor === 'keyboard') restoreFocus(current.id);
     active.value = null;
     over.value = null;
@@ -987,6 +995,11 @@ export function createDnDManager(props: DnDProviderProps) {
     getDroppables: () => droppables.values(),
     /** Pointer position as the sensor reported it, before modifiers. */
     getRawPointer: (): Coordinates => raw,
+    /**
+     * Topmost element under the pointer at the last target detection (at most a frame
+     * old); `null` when unknown, e.g. while a modifier moves the point off the pointer.
+     */
+    getPointerElement: (): Element | null => pointerElement,
     /** The overlay box for a drag offset, as the overlay, collision and modifiers see it. */
     getOverlayRect,
     autoScrollEntries,
