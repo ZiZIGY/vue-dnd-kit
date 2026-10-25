@@ -1,5 +1,5 @@
 import type { AnimationOptions, DropAnimation, DropAnimationContext, Rect } from '../types';
-import { canAnimate, getRect, prefersReducedMotion, resolveAnimation } from './layout';
+import { canAnimate, prefersReducedMotion, resolveAnimation } from './layout';
 
 export const DEFAULT_DROP_ANIMATION: Required<AnimationOptions> = {
   duration: 250,
@@ -111,7 +111,7 @@ const frame = ({ a, b, c, d, e, f }: DOMMatrix, width: string, height: string, o
  * the overlay (`linear`), its own transform around its top left corner, and that corner
  * (viewport) without it.
  */
-const placeOf = (element: HTMLElement, overlay: Element | null, rect = getRect(element)) => {
+const placeOf = (element: HTMLElement, overlay: Element | null, rect: Rect = element.getBoundingClientRect()) => {
   let linear = new DOMMatrix();
   for (let node = element.parentElement; node && node !== overlay; node = node.parentElement) {
     linear = new DOMMatrix(getComputedStyle(node).transform).multiply(linear);
