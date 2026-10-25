@@ -532,6 +532,12 @@ export interface SortableDropEvent<T = unknown> {
   to: { list: Key; index: number };
   sameList: boolean;
   mode: DragMode;
+  /**
+   * `mode: 'swap'`: the item the dragged one was exchanged with. It moved the other way,
+   * `from` the place the dragged item took (`to` above) `to` the one the dragged item
+   * started at (`from` above); between lists, into the dragged item's list.
+   */
+  partner?: { key: Key; item: T; from: { list: Key; index: number }; to: { list: Key; index: number } };
 }
 
 export interface SortableIndicator {
@@ -570,6 +576,13 @@ export interface SortableListOptions<T> {
   group?: string | SortableGroupOptions;
   acceptMode?: AcceptMode;
   strategy?: SortableStrategy;
+  /**
+   * `'swap'`: the dragged item exchanges places with the hovered one, live; moving back
+   * onto it or off the lists reverts. Lists of one group that both swap exchange items
+   * between them: the hovered item moves into the dragged one's place, so it must be
+   * able to leave its list (`group.pull: true`) and enter the dragged item's
+   * (`group.put`). Multi-drag sorts instead.
+   */
   behavior?: SortableBehavior;
   placeholder?: SortablePlaceholder;
   /** Multi-drag mode of drags that start in this list. Default `'group'`. */
