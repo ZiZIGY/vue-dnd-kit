@@ -543,8 +543,9 @@ export function createDnDManager(props: DnDProviderProps) {
     const overlay = entry.overlay;
     previewEnabled = overlay !== false;
     overlayComponent = typeof overlay === 'boolean' ? null : overlay;
-    // Taken synchronously, before the placeholder re-renders. A component never needs it.
-    preview = overlay === true ? clonePreview(element) : null;
+    // Taken synchronously, before the placeholder re-renders; a component never needs it.
+    // Sortable items (they have a container) stay opaque: their background is often the list's.
+    preview = overlay === true ? clonePreview(element, { opaque: !!entry.getContainer }) : null;
     active.value = {
       id,
       ids,

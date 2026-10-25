@@ -1,4 +1,4 @@
-import { getCurrentInstance, useId } from 'vue';
+import { getCurrentInstance, toValue, useId, type ComponentPublicInstance, type VNode } from 'vue';
 import { unrefElement } from '@vueuse/core';
 import type { MaybeElementRef } from '../types';
 
@@ -17,15 +17,37 @@ export const isClient = typeof window !== 'undefined';
 const ELEMENT_NODE = 1;
 
 /**
+ * End anchor of a component's fragment (or teleport) root, through components that
+ * render another component (`<UTooltip>` → `<TooltipRoot>` → fragment). `null` for a
+ * root without a range (a comment or a text); `undefined` when `value` isn't a component.
+ */
+const fragmentEnd = (value: unknown): Node | null | undefined => {
+  const instance = (value as Partial<ComponentPublicInstance> | null)?.$;
+  if (!instance) return undefined;
+  let tree: VNode | undefined = instance.subTree;
+  while (tree?.component) tree = tree.component.subTree;
+  return (tree?.anchor as Node | null | undefined) ?? null;
+};
+
+/**
  * Resolves an element, component ref or getter to a DOM element. A component with
- * several root nodes (a fragment, common in UI kits) exposes an anchor text node as
- * `$el`: its first element is used instead.
+ * several root nodes (a fragment, common in UI kits: tooltips and menus render their
+ * activator next to a teleport) exposes the fragment's start anchor, a text node, as
+ * `$el`: its first element is used instead. Nothing past the fragment's end counts:
+ * a fragment with no element in place (only teleported content) resolves to `null`,
+ * never to the element that follows the component.
  */
 export const toElement = (target: MaybeElementRef): HTMLElement | null => {
   const node = unrefElement(target as Parameters<typeof unrefElement>[0]) as Node | null | undefined;
   if (!node) return null;
   if (node.nodeType === ELEMENT_NODE) return node as HTMLElement;
-  return ((node as CharacterData).nextElementSibling as HTMLElement | null) ?? null;
+  const end = fragmentEnd(toValue(target));
+  // A component that rendered a comment (`v-if`) or a text has no element.
+  if (end === null) return null;
+  for (let next = node.nextSibling; next && next !== end; next = next.nextSibling) {
+    if (next.nodeType === ELEMENT_NODE) return next as HTMLElement;
+  }
+  return null;
 };
 
 /**

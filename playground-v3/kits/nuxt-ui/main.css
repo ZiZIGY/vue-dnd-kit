@@ -1,0 +1,8 @@
+/*
+ * Tailwind and Nuxt UI for this page only. `source(none)` limits class scanning to the
+ * kit's own files: the main playground's class names must not generate utilities here.
+ */
+@import 'tailwindcss' source(none);
+@import '@nuxt/ui';
+
+@source './';
