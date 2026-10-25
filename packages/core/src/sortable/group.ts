@@ -58,9 +58,7 @@ import {
   nextRowIndex,
   pickAdjacent,
   projectIndex,
-  projectIndicator,
   projectSwap,
-  type IndicatorProjection,
 } from './projection';
 import {
   HYSTERESIS,
@@ -72,6 +70,7 @@ import {
 } from './stability';
 import { blockFor, collect, copyOf, gather, pickUp, putBack, scatter, viewOf } from './block';
 import { keepSlotHome, moveActive, removeSlot, returnToOrigin } from './slot';
+import { indicateAt, setIndicator, showIndicator, updateIndicator } from './indicator';
 import { atLead as atLeadIn, leadOffset, setLandings as setLandingsIn, syncManager as syncManagerIn } from './landing';
 import { trackCopyModifier } from './modifier';
 import { revealElement } from '../core/autoscroll';
@@ -138,11 +137,6 @@ const placeAt = (keys: Key[], slot: Key, index: number): Key[] => {
   result.splice(Math.max(0, Math.min(at, result.length)), 0, slot);
   return result;
 };
-
-const INDICATOR_FIELDS = ['list', 'index', 'key', 'side', 'depth', 'parentKey'] as const;
-
-const sameIndicator = (a: SortableIndicator | null, b: SortableIndicator | null) =>
-  a === b || (!!a && !!b && INDICATOR_FIELDS.every((field) => a[field] === b[field]));
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
@@ -294,38 +288,6 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     return list.prepareDraft?.(draft, draftContext(current)) ?? draft;
   };
 
-  // ─── Indicator ───────────────────────────────────────────────────────────────
-
-  const setIndicator = (value: SortableIndicator | null) => {
-    if (sameIndicator(indicator.value, value)) return false;
-    indicator.value = value;
-    return true;
-  };
-
-  const showIndicator = (value: SortableIndicator | null) => {
-    const current = session.value!;
-    if (value) current.indicator = value;
-    if (setIndicator(value) && value) manager.announce('onDragOver');
-  };
-
-  const updateIndicator = (target: ListEntry, event: DnDEvent) => {
-    const current = session.value!;
-    keepSlotHome(g, current);
-    const items = collect(g, target);
-    const lead = atLead(current, event);
-    const result = target.indicate
-      ? target.indicate(lead, items)
-      : projectIndicator({
-          strategy: target.strategy(),
-          pointer: lead.pointer,
-          items,
-          activeKey: current.slot,
-          length: keysOf(target).length,
-          targets: bandsAt(event),
-        });
-    if (result !== undefined) showIndicator(result && { list: target.id, ...result });
-  };
-
   // ─── Swap ────────────────────────────────────────────────────────────────────
 
   /**
@@ -466,7 +428,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
   /** The pointer is over no list of this group (or one that refuses the drag). */
   const leave = (current: Session) => {
-    setIndicator(null);
+    setIndicator(g, null);
     if (current.swap != null) applySwap(null, null);
     if (current.external && current.list != null) removeSlot(g);
   };
@@ -545,10 +507,10 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     if (!blocked && !enter(current, target)) return leave(current);
 
     if (target.placeholder() === 'indicator') {
-      updateIndicator(target, event);
+      updateIndicator(g, target, event);
       return afterMove(current, event);
     }
-    setIndicator(null);
+    setIndicator(g, null);
     if (isSwapping(current, target)) {
       updateSwap(target, event);
       return afterMove(current, event);
@@ -753,7 +715,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       list.reset?.();
     }
     session.value = null;
-    setIndicator(null);
+    setIndicator(g, null);
     bump();
   };
 
@@ -924,22 +886,6 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     return pickAdjacent(from, candidates, direction)?.list ?? null;
   };
 
-  /** Shows the insertion line at `index` of `target`; returns where the overlay goes. */
-  const indicateAt = (target: ListEntry, index: number): Coordinates | undefined => {
-    const keys = keysOf(target);
-    const line: IndicatorProjection | null = target.indicateAt
-      ? target.indicateAt(index)
-      : index < keys.length
-        ? { index, key: keys[index]!, side: 'before' }
-        : { index, key: keys[keys.length - 1] ?? null, side: 'after' };
-    if (!line) return undefined;
-    showIndicator({ list: target.id, ...line });
-    const element = (line.key == null ? null : items.get(line.key)?.()) ?? target.getElement();
-    if (!element?.isConnected) return undefined;
-    revealElement(element);
-    return getCenter(getLayoutRect(element));
-  };
-
   /**
    * Once a keyboard move has rendered: reveals the slot and returns its center. A slot
    * that was recreated (in another list, or by a list that remounts its rows) gets the
@@ -965,7 +911,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     await nextTick();
     if (session.value !== current) return undefined;
     if (current.list !== home) slotCenter(current, true);
-    return indicateAt(target, insertionIndex(target, from, current));
+    return indicateAt(g, target, insertionIndex(target, from, current));
   };
 
   const keyboardIndicator = async (
@@ -984,7 +930,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       const from = createRect(pointer.x, pointer.y, 0, 0);
       if (other.placeholder() === 'indicator') return indicateAcross(current, other, from);
       // A list that moves takes the slot; the line goes away.
-      setIndicator(null);
+      setIndicator(g, null);
       moveActive(g, other, insertionIndex(other, from, current), null);
       await nextTick();
       return session.value === current ? slotCenter(current, true) : undefined;
@@ -996,7 +942,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     // Right before or after the active item the drop changes nothing: skip those positions.
     while (own >= 0 && (next === own || next === own + 1)) next += step;
     if (next < 0 || next > keys.length) return undefined;
-    return indicateAt(list, next);
+    return indicateAt(g, list, next);
   };
 
   /**
@@ -1014,7 +960,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const target = adjacentList(null, active, direction, from);
     if (!target || !enter(current, target)) return undefined;
     const index = insertionIndex(target, from, current);
-    if (target.placeholder() === 'indicator') return indicateAt(target, index) ?? pointer;
+    if (target.placeholder() === 'indicator') return indicateAt(g, target, index) ?? pointer;
     moveActive(g, target, index, null);
     await nextTick();
     if (session.value !== current) return undefined;
@@ -1226,7 +1172,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         if (items.get(key) === getElement) items.delete(key);
       };
     },
-    showIndicator,
+    showIndicator: (value) => showIndicator(g, value),
     lookup,
     keysOf,
     viewOf: (list) => (session.value ? viewOf(list, session.value) : keysOf(list)),
