@@ -1,5 +1,6 @@
+import { createApp, defineComponent, h, Teleport, type Component, type ComponentPublicInstance } from 'vue';
 import { afterEach, describe, expect, it } from 'vitest';
-import { containsComposed, getEventTarget, parentOf } from './dom';
+import { containsComposed, getEventTarget, parentOf, toElement } from './dom';
 
 describe('shadow-aware DOM helpers', () => {
   afterEach(() => {
@@ -44,8 +45,54 @@ describe('shadow-aware DOM helpers', () => {
 });
 
 describe('toElement', () => {
-  it('resolves elements, getters and the first element of a fragment anchor', async () => {
-    const { toElement } = await import('./dom');
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  /** Mounts `Inner` between two sibling elements and returns its component instance. */
+  const mountBetweenSiblings = (Inner: Component) => {
+    let instance: ComponentPublicInstance | null = null;
+    const App = defineComponent({
+      setup: () => () => [
+        h('i', { id: 'before' }),
+        h(Inner, { ref: (value: unknown) => (instance = value as ComponentPublicInstance | null) }),
+        h('i', { id: 'after' }),
+      ],
+    });
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const app = createApp(App);
+    app.mount(container);
+    return { instance: () => instance, unmount: () => app.unmount() };
+  };
+
+  it('resolves a fragment-root component (a kit tooltip: activator, then a teleport) to its activator', () => {
+    const Tooltip = defineComponent({
+      setup: () => () => [
+        h('span', { id: 'activator' }),
+        h(Teleport, { to: 'body' }, [h('div', { id: 'tooltip' })]),
+      ],
+    });
+    // A wrapper whose root is another component, like <UTooltip> rendering <TooltipRoot>.
+    const Wrapper = defineComponent({ setup: () => () => h(Tooltip) });
+    const { instance, unmount } = mountBetweenSiblings(Wrapper);
+    expect(toElement(instance())?.id).toBe('activator');
+    unmount();
+  });
+
+  it('never resolves to an element that follows the component', () => {
+    const OnlyTeleported = defineComponent({
+      setup: () => () => [h(Teleport, { to: 'body' }, [h('div', { id: 'content' })])],
+    });
+    const Hidden = defineComponent({ setup: () => () => (false as boolean) ? h('div') : null });
+    for (const Inner of [OnlyTeleported, Hidden]) {
+      const { instance, unmount } = mountBetweenSiblings(Inner);
+      expect(toElement(instance())).toBeNull();
+      unmount();
+    }
+  });
+
+  it('resolves elements, getters and the first element of a fragment anchor', () => {
     const parent = document.createElement('div');
     const anchor = document.createTextNode('');
     const first = document.createElement('span');

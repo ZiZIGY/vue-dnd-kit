@@ -22,10 +22,17 @@ export type Key = string | number;
  */
 export type MaybeReadonlyRefOrGetter<T> = T | Readonly<Ref<T>> | (() => T);
 
+/**
+ * A component instance as a template ref gives it. Only `$el` is read: Vue's full
+ * `ComponentPublicInstance` would reject every component that declares typed emits
+ * (its `$emit` takes any event name), which is most UI kit components.
+ */
+type ComponentRef = Pick<ComponentPublicInstance, '$el'>;
+
 export type MaybeElement =
   | HTMLElement
   | SVGElement
-  | ComponentPublicInstance
+  | ComponentRef
   | null
   | undefined;
 export type MaybeElementRef = MaybeReadonlyRefOrGetter<MaybeElement>;

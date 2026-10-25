@@ -130,13 +130,25 @@ export function useKeyboardSensor(manager: DnDManager): void {
     manager.flushFrame();
   };
 
+  /**
+   * A key the drag acts on is consumed: nothing below the document sees it. UI kits
+   * handle the same keys on their own elements (a list moving focus on arrows, an item
+   * clicking itself on Enter/Space and stopping propagation, an overlay closing on
+   * Escape); left to them, the press would act twice or never reach the drag.
+   */
+  const consume = (event: KeyboardEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  // Capture phase: runs before any handler on the focused element or its ancestors.
   useEventListener(defaultDocument, 'keydown', async (event: KeyboardEvent) => {
     const status = manager.status.value;
     const bindings = keys();
 
     // Escape cancels any drag, including pointer drags and pending activations.
     if ((status === 'dragging' || status === 'activating') && matches(bindings.cancel, event)) {
-      event.preventDefault();
+      consume(event);
       manager.cancel();
       return;
     }
@@ -145,13 +157,13 @@ export function useKeyboardSensor(manager: DnDManager): void {
       const current = manager.active.value!;
       if (current.sensor !== 'keyboard') return;
       if (matches(bindings.drop, event)) {
-        event.preventDefault();
+        consume(event);
         if (!event.repeat) enqueue(() => void manager.drop());
         return;
       }
       const direction = DIRECTIONS.get(event.key) ?? DIRECTIONS.get(event.code);
       if (!direction) return;
-      event.preventDefault();
+      consume(event);
       // A held arrow repeats (pixel moves glide), but repeats don't pile up behind a
       // move that is still resolving. Separate presses are never dropped.
       if (event.repeat && queued > 0) return;
@@ -168,7 +180,6 @@ export function useKeyboardSensor(manager: DnDManager): void {
     // Only the draggable itself (or its handle) starts a keyboard drag, never a button inside it.
     if (target !== found.entry.getFocusTarget()) return;
     if (found.entry.canDrag && !found.entry.canDrag(event)) return;
-    event.preventDefault();
-    manager.start(found.entry.id, getCenter(getRect(found.element)), 'keyboard');
-  });
+    if (manager.start(found.entry.id, getCenter(getRect(found.element)), 'keyboard')) consume(event);
+  }, { capture: true });
 }
