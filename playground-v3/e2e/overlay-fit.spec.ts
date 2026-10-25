@@ -45,9 +45,9 @@ const within = (actual: number, expected: number, tolerance: number) =>
  * The point at `ratio` of the box is under the pointer. Checked in pixels, not as a
  * fraction: WebKit rounds mouse coordinates, which a fraction of a small box magnifies.
  */
-const expectHeldAt = (box: Box, ratio: Point, pointer: Point) => {
-  within(box.x + box.width * ratio.x, pointer.x, 1.5);
-  within(box.y + box.height * ratio.y, pointer.y, 1.5);
+const expectHeldAt = (box: Box, ratio: Point, pointer: Point, tolerance = 1.5) => {
+  within(box.x + box.width * ratio.x, pointer.x, tolerance);
+  within(box.y + box.height * ratio.y, pointer.y, tolerance);
 };
 
 /** Presses at `ratio` of the element's box and moves past the activation distance; returns the press point. */
@@ -192,12 +192,16 @@ test.describe('the overlay resizes around the pointer (overlayFit: slot)', () =>
     await page.mouse.move(target.x, target.y, { steps: 12 });
     await expect(page.getByTestId('slot-wide').locator('[data-id="sn3"]')).toHaveCount(1);
     // The box is the grabbed card's part of the overlay; the column of the others (sn1,
-    // above it) is laid out around the box and never shifts the grab point.
-    for (const box of await overlayFrames(page, 15)) expectHeldAt(box, grab, target);
+    // above it) is laid out around the box and never shifts the grab point. The fraction
+    // is fixed from the pointer as the browser reported it: Firefox and WebKit round it,
+    // and the box growing to the taller slot magnifies that by up to ~2px. Holding the
+    // column instead would be off by a whole card.
+    const tolerance = 2.5;
+    for (const box of await overlayFrames(page, 15)) expectHeldAt(box, grab, target, tolerance);
     await expect.poll(async () => (await overlaySize(page)).height).toBeGreaterThan(source.height + 20);
     await layoutSettled(page);
     const box = await overlayBox(page);
-    expectHeldAt(box, grab, target);
+    expectHeldAt(box, grab, target, tolerance);
     const clone = (await column.boundingBox())!;
     expect(clone.y + clone.height).toBeLessThan(box.y);
     within(clone.height, box.height, 1);
