@@ -24,6 +24,7 @@ const ROW = 40;
 const LEFT: Record<string, number> = { a: 0, b: 300, c: 600 };
 
 let actions: DnDActions;
+let otherActions: DnDActions;
 let dnd: DnDState;
 let unmount: (() => void) | null = null;
 
@@ -79,6 +80,13 @@ const mount = (lists: Record<string, SortableListOptions<Item>>, onZoneDrop: (id
             setup() {
               actions = useDnDActions();
               dnd = useDnD();
+              return () => null;
+            },
+          }),
+          h({
+            setup() {
+              // Another component of the same provider, like a row with its own buttons.
+              otherActions = useDnDActions();
               return () => null;
             },
           }),
@@ -178,9 +186,14 @@ describe('moveItem', () => {
     const a = ref(tasks('a1', 'a2', 'a3'));
     mount({ a: { items: a } });
     await nextTick();
+    // From two components of the provider: they don't race for it.
     const first = actions.moveItem('a3', { index: 0 });
-    const second = actions.moveItem('a1', { index: 2 });
-    expect(await Promise.all([first, second])).toEqual([true, true]);
+    const second = otherActions.moveItem('a1', { index: 2 });
+    const third = actions.moveItem('a2', { index: 0 });
+    expect(await Promise.all([first, second, third])).toEqual([true, true, true]);
+    expect(ids(a)).toBe('a2,a3,a1');
+    await actions.moveItem('a3', { index: 1 });
+    await actions.moveItem('a2', { index: 1 });
     expect(ids(a)).toBe('a3,a2,a1');
 
     // A drag of the user: the move waits for it to end.

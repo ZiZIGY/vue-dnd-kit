@@ -9,8 +9,10 @@
 import { nextTick, watch } from 'vue';
 import {
   defineSensor,
+  useDnDContext,
   useSensor,
   type Coordinates,
+  type DnDContext,
   type Key,
   type SensorContext,
   type SensorDirection,
@@ -78,6 +80,9 @@ export interface DnDActions {
    */
   startDrag(id: Key, options?: StartDragOptions): ActionDrag | null;
 }
+
+/** The last `moveItem` of each provider: the next one runs after it. */
+const queues = new WeakMap<DnDContext, Promise<unknown>>();
 
 /** Frames stop in hidden tabs: wait at most this long for one. */
 const FRAME_TIMEOUT = 100;
@@ -178,7 +183,8 @@ export function useDnDActions(): DnDActions {
     return drag ? wrap(drag) : null;
   };
 
-  let queue: Promise<unknown> = Promise.resolve();
+  // One queue per provider: rows that each call `useDnDActions()` don't race for it.
+  const provider = useDnDContext();
   const moveItem = (id: Key, to: SortablePosition): Promise<boolean> => {
     const run = async () => {
       await whenIdle();
@@ -188,8 +194,8 @@ export function useDnDActions(): DnDActions {
       drag.cancel();
       return false;
     };
-    const result = queue.then(run, run);
-    queue = result;
+    const result = (queues.get(provider) ?? Promise.resolve()).then(run, run);
+    queues.set(provider, result);
     return result;
   };
 
