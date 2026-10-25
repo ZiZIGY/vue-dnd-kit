@@ -197,8 +197,14 @@ export interface DropAnimationContext {
    */
   overlay: HTMLElement;
   from: Rect;
-  /** Final rect of the dropped item; `null` when it isn't rendered (the overlay fades out). */
+  /** Final rect of the dropped item; `null` when it isn't rendered or visible (the overlay fades out). */
   to: Rect | null;
+  /**
+   * The item isn't shown after a drop on a zone (not a sortable list), e.g. it was dropped
+   * into another item (a folder) or a trash zone: the zone's visible rect. The default
+   * animation shrinks the overlay into it as it fades out, instead of fading in place.
+   */
+  into: Rect | null;
   reason: 'drop' | 'cancel';
   active: Active;
   options: Required<AnimationOptions>;

@@ -169,6 +169,42 @@ describe('projectIndex: grids', () => {
     expect(project(null)).toBe(0);
     expect(project(first.lock as string)).toBeNull();
   });
+
+  describe('cells holding a drop target (drop into an item)', () => {
+    // a b c d in one row, 100px each; c can be dropped into: its edges sort.
+    const row = ['a', 'b', 'c', 'd'].map((key, index) => cell(key, index, index * 100, 0));
+    const targets = new Set(['c']);
+    const project = (activeKey: string, x: number, lock: string | null = null) =>
+      projectIndex({
+        strategy: 'grid',
+        pointer: { x, y: 50 },
+        items: row,
+        activeKey,
+        activeIndex: row.findIndex((item) => item.key === activeKey),
+        length: 4,
+        lock,
+        targets,
+      });
+
+    it('go before or after the cell by its halves instead of taking it', () => {
+      // a over c's left edge: right before c (index 1), c stays where it is.
+      expect(project('a', 210)).toEqual({ index: 1, lock: null, key: 'c' });
+      // Its right edge: after c.
+      expect(project('a', 290)).toEqual({ index: 2, lock: null, key: 'c' });
+      // From the other side.
+      expect(project('d', 210)).toEqual({ index: 2, lock: null, key: 'c' });
+      expect(project('b', 290)).toEqual({ index: 2, lock: null, key: 'c' });
+    });
+
+    it('already next to the cell on that side: nothing moves, so the cell never runs from the pointer', () => {
+      expect(project('b', 210)).toEqual({ index: null, lock: null, key: null });
+      expect(project('d', 290)).toEqual({ index: null, lock: null, key: null });
+    });
+
+    it('other cells keep the grid rule', () => {
+      expect(project('a', 350)).toEqual({ index: 3, lock: 'd', key: 'd' });
+    });
+  });
 });
 
 describe('projectIndex: horizontal lists', () => {

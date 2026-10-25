@@ -38,8 +38,8 @@ import type {
   SortablePutContext,
   SortableStrategy,
 } from '../types';
-import type { DnDManager } from '../core/manager';
-import { createRect, fadeIn, flip, getCenter, getLayoutRect, getRect, type FlipEntry } from '../animation/layout';
+import type { DnDManager, TargetRule } from '../core/manager';
+import { containsPoint, createRect, fadeIn, flip, getCenter, getLayoutRect, getRect, type FlipEntry } from '../animation/layout';
 import {
   nextRowIndex,
   pickAdjacent,
@@ -65,6 +65,7 @@ import { landOverlayItems } from '../animation/drop';
 import { trackCopyModifier } from './modifier';
 import { revealElement } from '../core/autoscroll';
 import { sortableTexts, type SortableSpot, type SortableSubject } from './announcements';
+import { dropBand, dropBandPoint } from './combine';
 
 /** An item made by a list: a copy (`clone`) or an item for an external draggable (`createItem`). */
 export interface CreatedItem {
@@ -181,6 +182,8 @@ interface Session {
   target: { list: Key; at: Coordinates } | null;
   /** A trash zone or `dropOutside: 'remove'` asked to remove the dragged items. */
   removed: boolean;
+  /** Keyboard: resting on a drop target in the item `key`, reached with the arrow `direction`. */
+  stop: { key: Key; direction: Coordinates } | null;
 }
 
 interface Snapshot {
@@ -459,6 +462,58 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     return current.external && !list.create;
   };
 
+  // ─── Drop into an item ───────────────────────────────────────────────────────
+
+  /**
+   * Drop targets inside items, as of the target detection at `at` (that frame's pointer):
+   * `keys` of the items holding one that takes the drag, `ids` of those that counted.
+   */
+  let targets: { at: Coordinates | null; keys: Set<Key>; ids: Set<Key> } = { at: null, keys: new Set(), ids: new Set() };
+
+  /**
+   * A drop target inside an item of a list that takes the drag (rfcs/0001-v3.md §6)
+   * counts only while the pointer is in the item's middle: the drop goes into the item
+   * there, and at its edges the list sorts as usual. A target that doesn't take the drag
+   * is left out, so the list sorts over it like over any item. Nested lists are lists.
+   */
+  const targetRule: TargetRule = (entry, element, point, active) => {
+    const current = session.value;
+    if (!current || current.activeKey !== active.id || entry.sortable) return true;
+    const found = manager.findDraggable(element);
+    const key = found?.entry.id;
+    const list = key != null && items.get(key)?.() === found!.element ? listOfKey(key, true) : undefined;
+    if (!list || !accepts(list, active)) return true;
+    if (!entry.accepts(active)) return false;
+    if (targets.at !== point) targets = { at: point, keys: new Set(), ids: new Set() };
+    targets.keys.add(key!);
+    // Visual rects, as the hit test sees them (a FLIP may still move the item).
+    if (!containsPoint(dropBand(getRect(found!.element), list.strategy()), point)) return false;
+    targets.ids.add(entry.id);
+    return true;
+  };
+
+  /** The drag is over a drop target inside an item: dropping goes into that item. */
+  const isInto = (event: DnDEvent) => !!event.over && targets.at === event.pointer && targets.ids.has(event.over.id);
+
+  /** Keyboard: where the pointer drops into item `key`, on a target in its middle that takes the drag; `null` without one. */
+  const intoPoint = (key: Key, list: ListEntry, active: Active): Coordinates | null => {
+    const element = items.get(key)?.();
+    if (!element?.isConnected) return null;
+    let rect: Rect | null = null;
+    for (const entry of manager.getDroppables()) {
+      const target = entry.getElement();
+      if (!target?.isConnected || entry.sortable || entry.isDisabled() || manager.isOwned(target, active)) continue;
+      if (manager.findDraggable(target)?.element !== element || !entry.accepts(active)) continue;
+      if (!rect) {
+        revealElement(element);
+        rect = getRect(element);
+      }
+      const point = dropBandPoint(rect, getRect(target), list.strategy());
+      if (point) return point;
+    }
+    return null;
+  };
+
   // ─── Session ─────────────────────────────────────────────────────────────────
 
   const copyOf = (current: Session, key: Key): Key | null => {
@@ -613,6 +668,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       hysteresis: null,
       target: null,
       removed: false,
+      stop: null,
     };
 
     const origin = sources.get(activeKey);
@@ -1151,6 +1207,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         activeIndex,
         length: keys.length,
         lock: current.lock,
+        targets: targets.at === event.pointer ? targets.keys : undefined,
       });
       current.lock = projection.lock;
       index = projection.index;
@@ -1241,11 +1298,11 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     };
   };
 
-  /** Trash zones and `dropOutside: 'remove'`: the dragged items leave their lists. */
-  const computeRemoval = (): DropResult | null => {
+  /** Trash zones and `dropOutside: 'remove'`: the dragged items leave their lists (those the zone accepted). */
+  const computeRemoval = (accepted: readonly Key[]): DropResult | null => {
     const current = session.value!;
     if (current.copying || current.external || current.origin.list == null) return null;
-    const gone = new Set(current.keys);
+    const gone = new Set(accepted);
     const next = new Map<ListEntry, Key[]>();
     for (const list of lists.values()) {
       const source = list.getKeys();
@@ -1332,7 +1389,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     if (!current || current.activeKey !== event.active.id) return;
     let result: DropResult | null = null;
     if (current.removed) {
-      result = computeRemoval();
+      result = computeRemoval(event.accepted);
     } else if (!isForeign(event)) {
       const accepted = new Set(event.accepted);
       const prepared = current.result;
@@ -1354,7 +1411,9 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
     const who = subjectOf(current);
     let text: string | undefined;
-    if (current.removed) {
+    if (isInto(event)) {
+      text = sortableTexts.into(who, event.over!.id);
+    } else if (current.removed) {
       if (result) text = sortableTexts.removed(who, result.event.to.list);
     } else if (result && result.event.to.index >= 0) {
       const list = lists.get(result.event.to.list);
@@ -1539,6 +1598,15 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const slot = items.get(current.slot)?.();
     if (position === -1 || !slot?.isConnected) return center();
     const slotRect = getLayoutRect(slot);
+    // Resting on a drop target in an item: the arrow that went there goes on past the
+    // item, the opposite one comes back to the slot, any other moves from the slot.
+    const stop = current.stop;
+    current.stop = null;
+    // Leaving the target: detect again even where the pointer stays (the slot that took
+    // the item's place has its center where the target's was).
+    if (stop) manager.scheduleFrame();
+    const onward = !!stop && direction.x === stop.direction.x && direction.y === stop.direction.y;
+    if (stop && !onward && direction.x === -stop.direction.x && direction.y === -stop.direction.y) return center();
 
     let target = list;
     let index: number | null = null;
@@ -1569,6 +1637,14 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         returnToOrigin(null);
         index = null;
       }
+    }
+    // Passing an item with a drop target that takes the drag stops on the target first:
+    // the next press drops into the item (or goes on past it, as the pointer does).
+    const passed = index !== null && target === list && !onward ? keys[index] : undefined;
+    const into = passed === undefined ? null : intoPoint(passed, list, active);
+    if (into) {
+      current.stop = { key: passed!, direction };
+      return into;
     }
     // An external item takes the item the other list makes for it.
     if (index !== null && enter(current, target)) moveActive(target, index, null);
@@ -1617,6 +1693,12 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       return sortableTexts.start(subjectOf(current), spotIn(current.origin.list, current.origin.index));
     },
     onDragOver: (event) => {
+      const into = session.value;
+      if (into?.activeKey === event.active.id && isInto(event)) {
+        // Back over the list, the position is spoken again.
+        spokenSpot = null;
+        return sortableTexts.target(subjectOf(into), event.over!.id);
+      }
       const current = ours(event);
       const spot = current && spotOf(current);
       if (!spot) return undefined;
@@ -1641,6 +1723,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     getKeyboardCoordinates,
   });
   const removeAnnouncer = manager.addAnnouncer(announcer);
+  const removeRule = manager.addTargetRule(targetRule);
   // `e.source.remove()` in a trash zone's onDrop marks the dragged items for removal.
   const removeSource = manager.addSourceResolver((active) => {
     const current = session.value;
@@ -1666,6 +1749,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         if (lists.size) return;
         removeMonitor();
         removeAnnouncer();
+        removeRule();
         removeSource();
         scope.stop();
         release();

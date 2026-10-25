@@ -30,6 +30,12 @@ export interface ProjectArgs {
   length: number;
   /** Grid only: the item that just moved under the pointer, ignored until the pointer leaves it. */
   lock: Key | null;
+  /**
+   * Grid only: items holding a drop target for this drag. Their middle drops into them,
+   * so their edges put the active item before or after them, as in lists, instead of
+   * taking their cell: an item that moved to the next cell would run from the pointer.
+   */
+  targets?: ReadonlySet<Key>;
 }
 
 export interface Projection {
@@ -173,7 +179,8 @@ const projectList = (args: ProjectArgs): Projection => {
 /**
  * Grids: entering an item moves the active item to its slot. The item that moved
  * is locked until the pointer leaves it, which stops ping-pong between cells of
- * different sizes.
+ * different sizes. Items from another list, and items you can drop into (`targets`),
+ * go before or after the hovered item instead.
  */
 const projectGrid = (args: ProjectArgs): Projection => {
   const { pointer, items, activeKey, activeIndex, length } = args;
@@ -191,11 +198,13 @@ const projectGrid = (args: ProjectArgs): Projection => {
   }
   if (hit) {
     if (hit.key === lock) return { index: null, lock, key: null };
-    if (activeIndex === -1) {
-      const before = pointer.x < getCenter(hit.rect).x;
-      return { index: before ? hit.index : hit.index + 1, lock: hit.key, key: hit.key };
-    }
-    return { index: hit.index, lock: hit.key, key: hit.key };
+    if (activeIndex !== -1 && !args.targets?.has(hit.key)) return { index: hit.index, lock: hit.key, key: hit.key };
+    // Before or after the item, by the side of its center the pointer is on. Passing it
+    // leaves the slot under the pointer, so it needs no lock (an entering item does).
+    let index = pointer.x < getCenter(hit.rect).x ? hit.index : hit.index + 1;
+    if (activeIndex !== -1 && hit.index > activeIndex) index--;
+    if (index === activeIndex) return { index: null, lock, key: null };
+    return { index, lock: activeIndex === -1 ? hit.key : lock, key: hit.key };
   }
   if (!items.length) return { index: activeIndex === -1 ? 0 : null, lock, key: null };
   const last = items[items.length - 1]!;
