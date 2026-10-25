@@ -17,6 +17,7 @@ import type {
   DragSource,
   Key,
   Modifier,
+  SortablePosition,
 } from '../../types';
 import { parentOf } from '../../utils/dom';
 
@@ -59,6 +60,15 @@ export interface DroppableEntry {
   onDrop?(event: DnDEvent): void;
 }
 
+/** A monitor of a library layer (`addMonitor(monitor, true)`): hooks users' monitors don't have. */
+export interface IntegrationMonitor extends DnDMonitor {
+  /**
+   * Programmatic moves (`SensorDrag.place`): puts the slot of the running drag at a list
+   * position; returns where the drag goes then, `undefined` when this layer can't.
+   */
+  placeAt?(active: Active, position: SortablePosition): Promise<Coordinates | undefined>;
+}
+
 /**
  * Integration rule for a drop target, asked on every target detection: `false` leaves it
  * out of this one (sortable: a target inside an item counts only in the item's middle).
@@ -83,7 +93,7 @@ export function createRegistry() {
   const draggables = new Map<Key, DraggableEntry>();
   const droppables = new Map<Key, DroppableEntry>();
   const draggableIds = new WeakMap<Element, Key>();
-  const monitors = new Set<DnDMonitor>();
+  const monitors = new Set<IntegrationMonitor>();
   /** Monitors of library layers (see `addMonitor`). */
   const integrations = new Set<DnDMonitor>();
   const sourceResolvers = new Set<(active: Active) => DragSource | undefined>();
@@ -143,7 +153,7 @@ export function createRegistry() {
    * others', so the user's `onDragEnd` sees the drop it wrote; its `onBeforeDrop` runs
    * after theirs (see `drop`).
    */
-  const addMonitor = (monitor: DnDMonitor, integration = false): (() => void) => {
+  const addMonitor = (monitor: IntegrationMonitor, integration = false): (() => void) => {
     monitors.add(monitor);
     if (integration) integrations.add(monitor);
     return () => {

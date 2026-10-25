@@ -25,15 +25,20 @@ import type {
   LayoutAnimation,
   Modifier,
   OverlaySlotProps,
+  Sensor,
 } from '../types';
 import { createDnDManager } from './manager';
 import { DND_CONTEXT, useManager } from './context';
-import { usePointerSensor } from './sensors/pointer';
-import { useKeyboardSensor } from './sensors/keyboard';
+import { useSensors } from './sensors/host';
+import { pointerSensor } from './sensors/pointer';
+import { keyboardSensor } from './sensors/keyboard';
 import { useAutoScroll } from './autoscroll';
 import { DragOverlay } from './DragOverlay';
 import { DEFAULT_INSTRUCTIONS, VISUALLY_HIDDEN } from './a11y';
 import { injectDefaultStyles } from './styles';
+
+/** `sensors` by default. */
+const DEFAULT_SENSORS: readonly Sensor[] = [pointerSensor, keyboardSensor];
 
 const LiveRegion = /* @__PURE__ */ defineComponent({
   name: 'DnDLiveRegion',
@@ -58,6 +63,7 @@ export const DnDProvider = /* @__PURE__ */ defineComponent({
     autoScroll: { type: [Boolean, Object] as PropType<boolean | AutoScrollOptions>, default: true },
     activation: Object as PropType<ActivationOptions>,
     keyboard: { type: [Boolean, Object] as PropType<KeyboardOptions | false>, default: undefined },
+    sensors: Array as PropType<Sensor[]>,
     copyModifier: { type: String as PropType<string | null>, default: 'Alt' },
     overlayTo: { type: [String, Object] as PropType<string | HTMLElement>, default: 'body' },
     overlayFit: { type: String as PropType<'slot' | 'source'>, default: 'slot' },
@@ -93,8 +99,7 @@ export const DnDProvider = /* @__PURE__ */ defineComponent({
       onDragCancel: (event) => emit('dragCancel', event),
     });
 
-    usePointerSensor(manager);
-    useKeyboardSensor(manager);
+    useSensors(manager, DEFAULT_SENSORS);
     useAutoScroll(manager);
 
     const refresh = () => manager.scheduleFrame();

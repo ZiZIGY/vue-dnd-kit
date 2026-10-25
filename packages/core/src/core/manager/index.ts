@@ -24,7 +24,7 @@ import { createDetection } from './detection';
 import { createFrameLoop } from './frame';
 import { createSession } from './session';
 
-export type { AutoScrollEntry, DraggableEntry, DroppableEntry, TargetRule } from './registry';
+export type { AutoScrollEntry, DraggableEntry, DroppableEntry, IntegrationMonitor, TargetRule } from './registry';
 export type { OverlayColumn } from './state';
 export type { PreviewSource } from './overlay';
 
@@ -41,6 +41,7 @@ export function createDnDManager(props: DnDProviderProps) {
     ...members,
     measurer: createMeasurer({ onShadowScroll: () => ctx.loop.scheduleFrame() }),
     origin: { x: 0, y: 0 },
+    touch: false,
     raw: { x: 0, y: 0 },
     pointerElement: null,
     restoreDocument: null,

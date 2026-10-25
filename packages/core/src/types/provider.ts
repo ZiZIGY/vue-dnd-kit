@@ -4,6 +4,7 @@ import type { ActivationOptions, DnDStatus, Key } from './primitives';
 import type { Active, DnDEndEvent, DnDEvent, DragItem, DragMode, Over } from './drag';
 import type { DropAnimation, LayoutAnimation } from './animation';
 import type { CollisionDetection, Modifier } from './collision';
+import type { Sensor } from './sensor';
 
 // ─── Provider ──────────────────────────────────────────────────────────────────
 
@@ -43,6 +44,13 @@ export interface DnDProviderProps {
   autoScroll?: boolean | AutoScrollOptions;
   activation?: ActivationOptions;
   keyboard?: KeyboardOptions | false;
+  /**
+   * What turns input into drags. Default `[pointerSensor, keyboardSensor]`: leave one out,
+   * wrap or replace it, or add your own (`defineSensor`). The keyboard sensor also cancels
+   * any drag with Escape; `keyboard: false` turns its drags off but keeps that. The list
+   * may change at any time: sensors that leave it stop, cancelling their drag.
+   */
+  sensors?: Sensor[];
   /** Key (KeyboardEvent.key) that turns a move into a copy. Default `'Alt'`; `null` disables. */
   copyModifier?: string | null;
   overlayTo?: string | HTMLElement;

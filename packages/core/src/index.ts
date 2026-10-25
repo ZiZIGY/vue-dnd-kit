@@ -7,6 +7,9 @@ export { makeSortableList } from './sortable/makeSortableList';
 export { makeSortableItem } from './sortable/makeSortableItem';
 export { makeSortableTree } from './sortable/makeSortableTree';
 export { makeSelectionArea } from './core/makeSelectionArea';
+export { defineSensor, useSensor } from './core/sensors/host';
+export { pointerSensor } from './core/sensors/pointer';
+export { keyboardSensor } from './core/sensors/keyboard';
 
 export {
   pointerFirst,
@@ -48,6 +51,16 @@ export type {
   ActivationOptions,
   KeyboardOptions,
   AutoScrollOptions,
+
+  // Sensors
+  Sensor,
+  SensorContext,
+  SensorActivation,
+  SensorDrag,
+  SensorDragState,
+  SensorDirection,
+  SensorStepOptions,
+  SortablePosition,
 
   // Drag state and events
   DragItem,

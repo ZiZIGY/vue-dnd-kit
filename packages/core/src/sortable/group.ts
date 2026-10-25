@@ -30,6 +30,7 @@ import { trackCopyModifier } from './modifier';
 import { move, start } from './session';
 import { beforeDrop, cancel, end } from './drop';
 import { getKeyboardCoordinates } from './keyboard';
+import { placeAt } from './place';
 import { createAnnouncer } from './announcements';
 
 export interface SortableGroup {
@@ -75,6 +76,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       onDragEnd: (event) => end(g, event),
       onDragCancel: (event) => cancel(g, event),
       getKeyboardCoordinates: (_event, context) => getKeyboardCoordinates(g, context),
+      placeAt: (active, position) => placeAt(g, active, position),
     },
     true,
   );

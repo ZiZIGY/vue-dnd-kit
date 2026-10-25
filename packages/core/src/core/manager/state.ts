@@ -96,6 +96,8 @@ export interface ManagerContext extends DragState, RegistryLookups, RegistryMemb
   measurer: Measurer;
   /** Pointer position at drag start. */
   origin: Coordinates;
+  /** The drag was started by touch: it vibrates (`haptics`). */
+  touch: boolean;
   /** Pointer position as the sensor reported it, before modifiers. */
   raw: Coordinates;
   /**

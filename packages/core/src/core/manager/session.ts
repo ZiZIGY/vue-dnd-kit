@@ -52,7 +52,8 @@ export function createSession(ctx: ManagerContext) {
     if (ctx.active.value) ctx.active.value = { ...ctx.active.value, ...patch };
   };
 
-  const start = (id: Key, coordinates: Coordinates, sensor: SensorType): boolean => {
+  /** Starts a drag of `id` from `coordinates` (sensors: `SensorContext.activate`); `touch`: started by touch. */
+  const start = (id: Key, coordinates: Coordinates, sensor: SensorType, touch = false): boolean => {
     const status = ctx.status.value;
     if (status === 'dragging' || status === 'dropping' || status === 'selecting') return false;
     const entry = ctx.draggables.get(id);
@@ -82,6 +83,7 @@ export function createSession(ctx: ManagerContext) {
     };
     const container = entry.getContainer?.() ?? element.parentElement;
     ctx.origin = coordinates;
+    ctx.touch = touch;
     ctx.raw = coordinates;
     ctx.pointer.value = coordinates;
     ctx.transform.value = { x: 0, y: 0 };
