@@ -1,6 +1,6 @@
 import { createApp, defineComponent, h, Teleport, type Component, type ComponentPublicInstance } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { containsComposed, getEventTarget, nextFrame, parentOf, toElement } from './dom';
+import { containsComposed, getEventTarget, isFocusLost, nextFrame, parentOf, toElement } from './dom';
 
 describe('shadow-aware DOM helpers', () => {
   afterEach(() => {
@@ -102,6 +102,22 @@ describe('toElement', () => {
     // A fragment-root component: `$el` is the anchor text node.
     expect(toElement({ $el: anchor } as never)).toBe(first);
     expect(toElement(null)).toBeNull();
+  });
+});
+
+describe('isFocusLost', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('is false while an element has the focus, true once that element left the document', () => {
+    const button = document.createElement('button');
+    document.body.appendChild(button);
+    button.focus();
+    expect(isFocusLost()).toBe(false);
+    // A re-render replaces the focused element: the focus falls back to <body>.
+    button.remove();
+    expect(isFocusLost()).toBe(true);
   });
 });
 

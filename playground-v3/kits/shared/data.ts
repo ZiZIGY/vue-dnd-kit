@@ -63,6 +63,16 @@ export const createPeople = (): KitPerson[] => [
   { id: 'p4', name: 'Edsger Dijkstra', role: 'Professor' },
 ];
 
+const ROW_TAGS = ['docs', 'api', 'bug', 'qa', 'release'];
+
+/** Rows for the virtualized lists: `r0`, `r1`, … (ids are unique per provider: one prefix per list). */
+export const createRows = (count: number, prefix = 'r'): KitTask[] =>
+  Array.from({ length: count }, (_, index) => ({
+    id: `${prefix}${index}`,
+    title: `Row ${index}`,
+    tag: ROW_TAGS[index % ROW_TAGS.length]!,
+  }));
+
 /** `todo:c1,c2 | doing:c4 | done:` for assertions. */
 export const serializeBoard = (columns: readonly KitColumn[]): string =>
   columns.map((column) => `${column.id}:${column.cards.map((card) => card.id).join(',')}`).join(' | ');
@@ -70,7 +80,7 @@ export const serializeBoard = (columns: readonly KitColumn[]): string =>
 export const ids = (items: ReadonlyArray<{ id: string }>): string => items.map((item) => item.id).join(',');
 
 /** Demo pages of a kit, selected by the URL hash. */
-export const KIT_DEMOS = ['list', 'kanban', 'tree'] as const;
+export const KIT_DEMOS = ['list', 'kanban', 'tree', 'virtual'] as const;
 export type KitDemo = (typeof KIT_DEMOS)[number];
 
 export const readDemoHash = (): KitDemo => {

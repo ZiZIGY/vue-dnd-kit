@@ -51,7 +51,7 @@ import { createMeasurer } from './measure';
 import { defaultAnnouncements } from './a11y';
 import { markDocumentDragging } from './styles';
 import { clonePreview } from './clone';
-import { containsComposed, elementFromPoint, nextFrame, parentOf } from '../utils/dom';
+import { containsComposed, elementFromPoint, isFocusLost, nextFrame, parentOf } from '../utils/dom';
 
 export interface DraggableEntry {
   id: Key;
@@ -748,13 +748,7 @@ export function createDnDManager(props: DnDProviderProps) {
     const attempt = () => {
       const target = draggables.get(id)?.getFocusTarget();
       if (!target?.isConnected) return false;
-      const focused = document.activeElement;
-      const lost =
-        !focused ||
-        focused === document.body ||
-        focused === document.documentElement ||
-        !focused.isConnected;
-      if (lost) target.focus({ preventScroll: true });
+      if (isFocusLost()) target.focus({ preventScroll: true });
       return true;
     };
     void nextTick(() => {

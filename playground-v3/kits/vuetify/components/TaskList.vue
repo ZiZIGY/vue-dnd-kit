@@ -26,7 +26,7 @@
       />
     </VList>
     <pre
-      class="text-caption mt-2"
+      class="text-caption mt-2 text-pre-wrap text-break"
       data-testid="tasks-state"
       >{{ ids(tasks) }}</pre
     >

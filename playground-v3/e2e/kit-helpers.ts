@@ -28,6 +28,29 @@ export { expect };
 export const byId = (scope: Page | Locator, id: string): Locator =>
   scope.locator(`[data-id="${id}"]:not([data-dnd-overlay] *)`);
 
+/** A point inside `locator`: `x`/`y` ratios of its box. */
+export const at = async (locator: Locator, x = 0.5, y = 0.5): Promise<Point> => {
+  const box = await locator.boundingBox();
+  if (!box) throw new Error('Element is not visible');
+  return { x: box.x + box.width * x, y: box.y + box.height * y };
+};
+
+/** Scrolls the page so that `locator` is in the middle of the screen, away from the auto-scroll edges. */
+export const centerOnScreen = async (locator: Locator): Promise<void> => {
+  await locator.evaluate((element) => element.scrollIntoView({ block: 'center' }));
+  await frames(locator.page(), 2);
+};
+
+/**
+ * True when the page is no wider than the screen. A wider page makes a phone zoom out
+ * to show all of it: everything gets tiny, and the page pans sideways under a finger.
+ */
+export const fitsScreen = (page: Page): Promise<boolean> =>
+  page.evaluate(
+    ({ width }) => window.innerWidth === width && document.documentElement.scrollWidth <= width,
+    page.viewportSize()!,
+  );
+
 /** The default overlay content: the clone taken at drag start (a <table> wrapper for rows). */
 export const overlayClone = (page: Page): Locator => page.locator('[data-dnd-overlay] > div > div > *').first();
 
@@ -52,6 +75,26 @@ export const pressAndMove = async (page: Page, from: Locator, dx: number, dy: nu
   await page.mouse.move(start.x, start.y);
   await page.mouse.down();
   await page.mouse.move(start.x + dx, start.y + dy, { steps: 6 });
+};
+
+/** Presses on `from` and activates the drag without leaving it (no reorder yet). */
+export const grab = async (page: Page, from: Locator): Promise<Point> => {
+  const start = await center(from);
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x, start.y + 8, { steps: 2 });
+  await expect(page.locator('[data-dnd-overlay]')).toHaveCount(1);
+  return { x: start.x, y: start.y + 8 };
+};
+
+/**
+ * Moves the held pointer sideways until the overlay no longer overlaps `list`: the
+ * list falls back to overlay intersection, so merely leaving it with the pointer
+ * would still hover it.
+ */
+export const leaveSideways = async (page: Page, list: Locator, from: Point): Promise<void> => {
+  const box = (await list.boundingBox())!;
+  await page.mouse.move(box.x + 2 * box.width + 40, from.y, { steps: 6 });
 };
 
 /** Waits for the drop/return animation and the end of the session. */

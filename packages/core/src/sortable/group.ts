@@ -64,6 +64,7 @@ import { ColumnPreview } from './column';
 import { landOverlayItems } from '../animation/drop';
 import { trackCopyModifier } from './modifier';
 import { revealElement } from '../core/autoscroll';
+import { isFocusLost } from '../utils/dom';
 import { sortableTexts, type SortableSpot, type SortableSubject } from './announcements';
 
 /** An item made by a list: a copy (`clone`) or an item for an external draggable (`createItem`). */
@@ -1578,9 +1579,11 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     const element = items.get(current.slot)?.();
     if (!element?.isConnected) return center();
     revealElement(element);
-    // The slot was recreated in the other list, and the focus left with the old element.
-    // An external draggable is still where it was and keeps it.
-    if (target !== list && !current.external) {
+    // The slot was recreated and the focus left with the old element: in the other list,
+    // or in this one when it keys its rows by index (Vuetify's v-data-table-virtual
+    // remounts every row whose index changed). An external draggable is still where it
+    // was and keeps it.
+    if (!current.external && (target !== list || isFocusLost())) {
       manager.getDraggable(current.slot)?.getFocusTarget()?.focus({ preventScroll: true });
     }
     return getCenter(getLayoutRect(element));

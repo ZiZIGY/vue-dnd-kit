@@ -33,7 +33,11 @@
 
 <template>
   <DnDProvider>
-    <div class="d-flex align-start ga-4">
+    <!-- Columns keep their width; on a phone the board scrolls sideways, not the page. -->
+    <div
+      class="d-flex align-start ga-4 overflow-x-auto"
+      data-testid="board-scroller"
+    >
       <KanbanColumn
         v-for="column in columns"
         :key="column.id"
@@ -43,7 +47,7 @@
       />
     </div>
     <pre
-      class="text-caption mt-4"
+      class="text-caption mt-4 text-pre-wrap text-break"
       data-testid="board"
       >{{ board }}</pre
     >

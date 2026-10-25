@@ -24,7 +24,7 @@
 </script>
 
 <template>
-  <section class="w-96">
+  <section class="w-96 max-w-full">
     <h2 class="mb-2 font-semibold text-highlighted">People (UTable rows)</h2>
     <!-- Rows keyed by id (getRowId): the default key is the row index. -->
     <UTable
@@ -43,7 +43,7 @@
       </template>
     </UTable>
     <pre
-      class="mt-2 text-xs text-muted"
+      class="mt-2 text-xs text-muted whitespace-pre-wrap break-all"
       data-testid="people-state"
       >{{ ids(people) }}</pre
     >

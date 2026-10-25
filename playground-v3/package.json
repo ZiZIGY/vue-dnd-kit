@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:host": "vite --host",
     "typecheck": "vue-tsc --noEmit",
     "e2e": "playwright test",
     "bench": "playwright test -c playwright.bench.config.ts"
