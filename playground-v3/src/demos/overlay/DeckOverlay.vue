@@ -4,7 +4,9 @@
   import { ICONS, cardOf } from './gallery';
 
   // A custom layout of the default clones: `DragPreview` renders the clone of any dragged
-  // item. The grabbed card stays on top; up to four more fan out behind it.
+  // item. The grabbed card stays on top; up to four more fan out behind it. On drop each
+  // preview lands on its own card's slot, turning straight on the way: the card's look
+  // (corners, shadow) goes on the preview, as the wrapper that turns it stays in the box.
   const props = defineProps<OverlayProps>();
   const MAX_CARDS = 5;
 
@@ -37,6 +39,7 @@
     >
       <DragPreview
         :id="entry.id"
+        class="deck-face"
         :style="{ width: '100%', height: '100%' }"
       >
         <!-- No clone for this one (more cards than were cloned): a card of our own. -->
@@ -68,9 +71,12 @@
   .deck-card {
     position: absolute;
     inset: 0;
-    border-radius: 8px;
     transform: rotate(var(--angle));
     transform-origin: 50% 160%;
+  }
+
+  .deck-face {
+    border-radius: 8px;
     box-shadow: 0 10px 24px -14px rgb(15 23 42 / 0.6);
   }
 

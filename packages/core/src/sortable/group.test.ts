@@ -124,9 +124,13 @@ describe('multi-drag modes', () => {
     const previews = [...overlay()!.querySelectorAll('.preview')];
     expect(previews.map((preview) => preview.querySelector('[data-id]')?.getAttribute('data-id'))).toEqual(['x2', 'x3']);
     expect(overlay()!.querySelectorAll('.fallback')).toHaveLength(1);
-    // A component overlay gets no column: the box flies alone.
-    expect(manager.overlayItems.size).toBe(0);
+    // The other item's preview is its clone in the overlay: it lands on its own slot. The
+    // grabbed one rides in the box.
+    expect([...manager.overlayItems.keys()]).toEqual(['x3']);
+    expect(manager.overlayItems.get('x3')).toBe(previews[1]);
+    expect(previews.map((preview) => preview.hasAttribute('data-dnd-overlay-item'))).toEqual([false, true]);
     await cancel();
+    expect(manager.overlayItems.size).toBe(0);
   });
 });
 

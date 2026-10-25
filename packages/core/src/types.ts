@@ -191,9 +191,10 @@ export type LayoutAnimation =
 
 export interface DropAnimationContext {
   /**
-   * The overlay box; it lands on the active item's slot. In a multi-drag the default
-   * overlay's clones of the other items ride inside it and land on their own slots by
-   * themselves (with the default timing when this is a custom function).
+   * The overlay box; it lands on the active item's slot. In a multi-drag the clones of the
+   * other items riding inside it (the default overlay's, the `DragPreview`s of a custom
+   * one) land on their own slots by themselves (with the default timing when this is a
+   * custom function).
    */
   overlay: HTMLElement;
   from: Rect;
@@ -348,6 +349,12 @@ export type OverlayProps = OverlaySlotProps;
  * drop order (those that are rendered then). For any other item `DragPreview` renders its
  * default slot, or nothing. The clone fills the element, which has the item's size at
  * pickup unless you style it (`class` and `style` fall through).
+ *
+ * In a sortable multi-drag (`multiple: 'group'` or `'gaps'`), the preview of an item other
+ * than the grabbed one lands on that item's slot with the drop (back on its place when
+ * cancelled), from wherever the layout put it: wrappers turned or scaled with `transform`
+ * are undone on the way, its size animates as width and height. Style the preview itself
+ * (corners, shadow): its wrappers stay in the box. Items without a clone fade in instead.
  */
 export interface DragPreviewProps {
   /** Id of a dragged item: one of `items` in `OverlayProps`. */
