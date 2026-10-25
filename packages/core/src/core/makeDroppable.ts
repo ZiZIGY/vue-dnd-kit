@@ -42,6 +42,7 @@ export function createDroppable<TData>(
     getPriority: () => read(options.priority) ?? 0,
     // Lists and trees accept by group rules.
     sortable: !!internals.accepts,
+    options,
     getElement: () => toElement(target),
     getData: () => read(options.data),
     isDisabled: () => !!read(options.disabled),

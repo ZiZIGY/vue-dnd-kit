@@ -52,7 +52,24 @@
         "default": "./dist/index.cjs"
       }
     },
+    "./devtools": {
+      "import": {
+        "types": "./dist/devtools.d.ts",
+        "default": "./dist/devtools.js"
+      },
+      "require": {
+        "types": "./dist/devtools.d.cts",
+        "default": "./dist/devtools.cjs"
+      }
+    },
     "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "devtools": [
+        "./dist/devtools.d.ts"
+      ]
+    }
   },
   "files": [
     "dist",

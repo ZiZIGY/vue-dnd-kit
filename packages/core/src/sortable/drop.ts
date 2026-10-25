@@ -262,6 +262,8 @@ export const end = (g: GroupContext, event: DnDEndEvent) => {
     }
     if (!current.prevented) write(g, result);
   }
+  // The drop as it was made, for the devtools: they read it as the session ends.
+  current.result = result;
   landDrop(g, current, result);
   g.announced = { key: current.activeKey, text: endText(g, current, event, result) };
   reset(g);
