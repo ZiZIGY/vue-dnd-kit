@@ -77,6 +77,26 @@ export const pressAndMove = async (page: Page, from: Locator, dx: number, dy: nu
   await page.mouse.move(start.x + dx, start.y + dy, { steps: 6 });
 };
 
+/** Presses on `from` and activates the drag without leaving it (no reorder yet). */
+export const grab = async (page: Page, from: Locator): Promise<Point> => {
+  const start = await center(from);
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x, start.y + 8, { steps: 2 });
+  await expect(page.locator('[data-dnd-overlay]')).toHaveCount(1);
+  return { x: start.x, y: start.y + 8 };
+};
+
+/**
+ * Moves the held pointer sideways until the overlay no longer overlaps `list`: the
+ * list falls back to overlay intersection, so merely leaving it with the pointer
+ * would still hover it.
+ */
+export const leaveSideways = async (page: Page, list: Locator, from: Point): Promise<void> => {
+  const box = (await list.boundingBox())!;
+  await page.mouse.move(box.x + 2 * box.width + 40, from.y, { steps: 6 });
+};
+
 /** Waits for the drop/return animation and the end of the session. */
 export const waitForIdle = async (page: Page): Promise<void> => {
   await expect(page.locator('[data-dnd-overlay]')).toHaveCount(0);

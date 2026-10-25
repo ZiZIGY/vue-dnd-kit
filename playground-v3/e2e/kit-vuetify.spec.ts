@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { center, frames } from './helpers';
+import { center, frames, nextFrames, scrollElement, type Point } from './helpers';
 import {
   at,
   byId,
@@ -7,6 +7,8 @@ import {
   drag,
   expect,
   focusedId,
+  grab,
+  leaveSideways,
   look,
   overlayClone,
   press,
@@ -309,5 +311,195 @@ test.describe('Vuetify: tree', () => {
     await waitForIdle(page);
     await expect(structure(page)).toHaveText('src(components(ui,button),main),docs(intro,guide),assets,readme,package');
     expect(await focusedId(page)).toBe('readme');
+  });
+});
+
+test.describe('Vuetify: v-virtual-scroll (3,000 rows)', () => {
+  // v-virtual-scroll can't pin a row (kits/vuetify/components/VirtualList.vue): the
+  // active row unmounts when it is scrolled out of range, and the drag goes on by key.
+  const ROW = 48;
+  const HEAD = 'r0,r1,r2,r3,r4,r5,r6,r7,r8,r9';
+  const scroller = (page: Page) => page.getByTestId('virtual-scroller');
+  const row = (page: Page, id: string) => byId(scroller(page), id);
+  const order = (page: Page) => page.getByTestId('virtual-order');
+  const dropped = (page: Page) => page.getByTestId('virtual-drop');
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto(`${PAGE}#virtual`);
+    await expect(order(page)).toHaveText(HEAD);
+    await expect(row(page, 'r0')).toBeVisible();
+  });
+
+  test('reorders v-list-items within the viewport; the rendered rows follow the data', async ({ page }) => {
+    await drag(page, row(page, 'r1'), await at(row(page, 'r4'), 0.5, 0.8));
+    await waitForIdle(page);
+    await expect(order(page)).toHaveText('r0,r2,r3,r4,r1,r5,r6,r7,r8,r9');
+    await expect(dropped(page)).toHaveText('r1@4:r4,r1,r5');
+    // Keyed by id: the fifth rendered row is r1, at the fifth slot.
+    await expect(scroller(page).locator('[data-id]').nth(4)).toHaveAttribute('data-id', 'r1');
+    const box = (await scroller(page).boundingBox())!;
+    expect((await row(page, 'r1').boundingBox())!.y - box.y).toBeCloseTo(4 * ROW, 0);
+  });
+
+  test('held at the bottom edge, a row auto-scrolls the list far down and lands under the pointer', async ({
+    page,
+  }) => {
+    const box = (await scroller(page).boundingBox())!;
+    const start = await grab(page, row(page, 'r1'));
+    await page.mouse.move(start.x, box.y + box.height - 4, { steps: 10 });
+    await expect
+      .poll(() => scroller(page).evaluate((element) => element.scrollTop), { timeout: 15_000 })
+      .toBeGreaterThan(40 * ROW);
+    // Back to the middle: the scrolling stops, and r1 sits under the pointer.
+    const middle = box.y + box.height / 2;
+    await page.mouse.move(start.x, middle, { steps: 6 });
+    const scrolled = await scroller(page).evaluate((element) => element.scrollTop);
+    await nextFrames(page, 4);
+    expect(await scroller(page).evaluate((element) => element.scrollTop)).toBe(scrolled);
+    await expect
+      .poll(async () => {
+        const slot = (await row(page, 'r1').boundingBox())!;
+        return Math.abs(slot.y + slot.height / 2 - middle);
+      })
+      .toBeLessThanOrEqual(ROW);
+    await page.mouse.up();
+    await waitForIdle(page);
+    const index = Number((await dropped(page).textContent())!.match(/^r1@(\d+):/)![1]);
+    expect(index).toBeGreaterThan(40);
+    await expect(order(page)).toHaveText('r0,r2,r3,r4,r5,r6,r7,r8,r9,r10');
+  });
+
+  test('the active row unmounts when scrolled out of range, and the drop still lands', async ({ page }) => {
+    const point = await grab(page, row(page, 'r2'));
+    await leaveSideways(page, scroller(page), point);
+    await scrollElement(scroller(page), 100 * ROW);
+    // No pinning in v-virtual-scroll: the active row is gone; the overlay stays.
+    await expect(row(page, 'r2')).toHaveCount(0);
+    await expect(page.locator('[data-dnd-overlay]')).toHaveCount(1);
+    await expect(row(page, 'r105')).toBeInViewport();
+
+    const target = await at(row(page, 'r105'), 0.5, 0.8);
+    await page.mouse.move(target.x, target.y, { steps: 10 });
+    await expect(page.locator('[data-dnd-placeholder]')).toHaveAttribute('data-id', 'r2');
+    await page.mouse.up();
+    await waitForIdle(page);
+    await expect(dropped(page)).toHaveText('r2@105:r105,r2,r106');
+    await expect(order(page)).toHaveText('r0,r1,r3,r4,r5,r6,r7,r8,r9,r10');
+  });
+
+  test('keyboard: arrows carry a row past the bottom of the viewport; the list follows, the focus stays', async ({
+    page,
+  }) => {
+    await row(page, 'r1').focus();
+    await press(page, 'Space');
+    await press(page, 'ArrowDown', 25);
+    await expect(row(page, 'r1')).toBeInViewport();
+    expect(await focusedId(page)).toBe('r1');
+    await press(page, 'Space');
+    await waitForIdle(page);
+    await expect(dropped(page)).toHaveText('r1@26:r26,r1,r27');
+    expect(await focusedId(page)).toBe('r1');
+  });
+
+  test('Escape restores the order after the active row unmounted', async ({ page }) => {
+    await drag(page, row(page, 'r1'), await at(row(page, 'r5'), 0.5, 0.8), { release: false });
+    await expect(scroller(page).locator('[data-id]').nth(5)).toHaveAttribute('data-id', 'r1');
+    await leaveSideways(page, scroller(page), await center(row(page, 'r1')));
+    await scrollElement(scroller(page), 300 * ROW);
+    await expect(row(page, 'r1')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await waitForIdle(page);
+    await page.mouse.up();
+    await expect(order(page)).toHaveText(HEAD);
+    await expect(dropped(page)).toHaveText('');
+    await scrollElement(scroller(page), 0);
+    await expect(scroller(page).locator('[data-id]').nth(1)).toHaveAttribute('data-id', 'r1');
+  });
+});
+
+test.describe('Vuetify: v-data-table-virtual (3,000 rows)', () => {
+  // Vuetify keys each row's measuring wrapper by index (kits/vuetify/components/
+  // VirtualTable.vue): rows whose index changed are remounted on every reorder, and no
+  // row can be pinned.
+  const HEAD = 'd0,d1,d2,d3,d4,d5,d6,d7,d8,d9';
+  const table = (page: Page) => page.getByTestId('virtual-table');
+  const scroller = (page: Page) => table(page).locator('.v-table__wrapper');
+  const row = (page: Page, id: string) => byId(table(page), id);
+  const order = (page: Page) => page.getByTestId('virtual-table-order');
+  const dropped = (page: Page) => page.getByTestId('virtual-table-drop');
+  const rowHeight = async (page: Page) => (await row(page, 'd0').boundingBox())!.height;
+
+  /** Moves the held pointer left of the table, until the overlay (a full row) clears it. */
+  const leaveLeft = async (page: Page, from: Point) => {
+    const box = (await table(page).boundingBox())!;
+    await page.mouse.move(box.x - box.width / 2 - 30, from.y, { steps: 6 });
+  };
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto(`${PAGE}#virtual`);
+    await expect(order(page)).toHaveText(HEAD);
+    await expect(row(page, 'd0')).toBeVisible();
+  });
+
+  test('reorders v-data-table-rows within the viewport; the rows whose index changed are remounted', async ({
+    page,
+  }) => {
+    await table(page).evaluate((root) =>
+      root.querySelectorAll('[data-id]').forEach((element) => element.setAttribute('data-mounted-before', '')),
+    );
+    await drag(page, row(page, 'd1'), await at(row(page, 'd4'), 0.5, 0.8));
+    await waitForIdle(page);
+    await expect(order(page)).toHaveText('d0,d2,d3,d4,d1,d5,d6,d7,d8,d9');
+    await expect(dropped(page)).toHaveText('d1@4:d4,d1,d5');
+    // d1–d4 changed index: new elements. d0 and d5 kept theirs.
+    for (const id of ['d0', 'd5']) await expect(row(page, id)).toHaveAttribute('data-mounted-before', '');
+    for (const id of ['d1', 'd2', 'd3', 'd4']) await expect(row(page, id)).not.toHaveAttribute('data-mounted-before');
+  });
+
+  test('keyboard: the focus stays on the row while every step remounts it', async ({ page }) => {
+    await row(page, 'd1').focus();
+    await press(page, 'Space');
+    for (let step = 0; step < 3; step++) {
+      await press(page, 'ArrowDown');
+      expect(await focusedId(page)).toBe('d1');
+    }
+    await press(page, 'Space');
+    await waitForIdle(page);
+    await expect(dropped(page)).toHaveText('d1@4:d4,d1,d5');
+    expect(await focusedId(page)).toBe('d1');
+  });
+
+  test('the active row unmounts when scrolled out of range, and the drop still lands', async ({ page }) => {
+    const height = await rowHeight(page);
+    const point = await grab(page, row(page, 'd2'));
+    await leaveLeft(page, point);
+    await scrollElement(scroller(page), 100 * height);
+    await expect(row(page, 'd2')).toHaveCount(0);
+    await expect(page.locator('[data-dnd-overlay]')).toHaveCount(1);
+    await expect(row(page, 'd105')).toBeInViewport();
+
+    const target = await at(row(page, 'd105'), 0.5, 0.8);
+    await page.mouse.move(target.x, target.y, { steps: 10 });
+    await expect(page.locator('[data-dnd-placeholder]')).toHaveAttribute('data-id', 'd2');
+    await page.mouse.up();
+    await waitForIdle(page);
+    await expect(dropped(page)).toHaveText('d2@105:d105,d2,d106');
+    await expect(order(page)).toHaveText('d0,d1,d3,d4,d5,d6,d7,d8,d9,d10');
+  });
+
+  test('Escape restores the order after the active row unmounted', async ({ page }) => {
+    const height = await rowHeight(page);
+    await drag(page, row(page, 'd1'), await at(row(page, 'd5'), 0.5, 0.8), { release: false });
+    await expect(table(page).locator('tbody [data-id]').nth(5)).toHaveAttribute('data-id', 'd1');
+    await leaveLeft(page, await center(row(page, 'd1')));
+    await scrollElement(scroller(page), 300 * height);
+    await expect(row(page, 'd1')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await waitForIdle(page);
+    await page.mouse.up();
+    await expect(order(page)).toHaveText(HEAD);
+    await expect(dropped(page)).toHaveText('');
+    await scrollElement(scroller(page), 0);
+    await expect(table(page).locator('tbody [data-id]').nth(1)).toHaveAttribute('data-id', 'd1');
   });
 });

@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
-import { center } from './helpers';
+import { center, scrollElement } from './helpers';
 import { at, byId, centerOnScreen, expect, fitsScreen, test, waitForIdle } from './kit-helpers';
-import { longPress, overlay, scrollLeft, swipe, touchscreen, windowScrollY } from './touch-helpers';
+import { longPress, overlay, scrollLeft, scrollTop, swipe, touchscreen, windowScrollY } from './touch-helpers';
 
 // Vuetify page (kits/vuetify.html) on a phone: the `mobile` project (Pixel 7, real
 // touch input through CDP). Items without a handle pick up after a long press; the
@@ -16,6 +16,7 @@ test.describe('Vuetify on a phone @touch', () => {
       ['list', 'tasks-state'],
       ['kanban', 'board'],
       ['tree', 'tree'],
+      ['virtual', 'virtual-order'],
     ] as const) {
       await page.goto(`${PAGE}#${demo}`);
       await page.reload();
@@ -188,5 +189,83 @@ test.describe('Vuetify on a phone: tree @touch', () => {
     await expect(row(page, 'intro')).toBeVisible();
     await expect(overlay(page)).toHaveCount(0);
     await expect(structure(page)).toHaveText(INITIAL);
+  });
+});
+
+test.describe('Vuetify on a phone: v-virtual-scroll @touch', () => {
+  const ROW = 48;
+  const HEAD = 'r0,r1,r2,r3,r4,r5,r6,r7,r8,r9';
+  const scroller = (page: Page) => page.getByTestId('virtual-scroller');
+  const row = (page: Page, id: string) => byId(scroller(page), id);
+  const order = (page: Page) => page.getByTestId('virtual-order');
+  const dropped = (page: Page) => page.getByTestId('virtual-drop');
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto(`${PAGE}#virtual`);
+    await expect(order(page)).toHaveText(HEAD);
+    await expect(row(page, 'r0')).toBeVisible();
+  });
+
+  test('a quick swipe scrolls the list, not the page, and does not drag; a long press drags a row', async ({
+    page,
+  }) => {
+    const finger = (await touchscreen(page)).finger();
+    const start = await center(row(page, 'r6'));
+    await swipe(finger, start, { x: start.x, y: start.y - 200 });
+    await expect.poll(() => scrollTop(scroller(page))).toBeGreaterThan(100);
+    await page.waitForTimeout(300);
+    await expect(overlay(page)).toHaveCount(0);
+    expect(await windowScrollY(page)).toBe(0);
+
+    await scrollElement(scroller(page), 0);
+    await longPress(page, finger, row(page, 'r1'));
+    await finger.move(await at(row(page, 'r4'), 0.5, 0.8), { steps: 12 });
+    await finger.up();
+    await waitForIdle(page);
+    await expect(dropped(page)).toHaveText('r1@4:r4,r1,r5');
+  });
+
+  test('the touched row unmounts mid-drag (scrolled away): the finger keeps dragging and the drop lands', async ({
+    page,
+  }) => {
+    const finger = (await touchscreen(page)).finger();
+    await longPress(page, finger, row(page, 'r2'));
+    // Above the list, where the overlay no longer overlaps it; then the list scrolls
+    // away under the finger. The touch target, r2's row, leaves the document: its
+    // touchmoves no longer reach the window, yet the page must not take the gesture.
+    const box = (await scroller(page).boundingBox())!;
+    await finger.move({ x: finger.position.x, y: box.y - 2 * ROW }, { steps: 8 });
+    await scrollElement(scroller(page), 100 * ROW);
+    await expect(row(page, 'r2')).toHaveCount(0);
+    await expect(overlay(page)).toHaveCount(1);
+
+    // One jump: a glide down through the list's top edge zone would scroll it back up
+    // (the move up has unlocked upward auto-scroll).
+    await finger.move(await at(row(page, 'r105'), 0.5, 0.8), { steps: 1 });
+    await expect(page.locator('[data-dnd-placeholder]')).toHaveAttribute('data-id', 'r2');
+    await finger.up();
+    await waitForIdle(page);
+    await expect(dropped(page)).toHaveText('r2@105:r105,r2,r106');
+    expect(await windowScrollY(page)).toBe(0);
+  });
+
+  test('held at the bottom edge of the list, a row auto-scrolls it and lands under the finger', async ({ page }) => {
+    const finger = (await touchscreen(page)).finger();
+    const box = (await scroller(page).boundingBox())!;
+    const start = await longPress(page, finger, row(page, 'r1'));
+    await finger.move({ x: start.x, y: box.y + box.height - 4 }, { steps: 12 });
+    await expect.poll(() => scrollTop(scroller(page)), { timeout: 15_000 }).toBeGreaterThan(20 * ROW);
+    const middle = box.y + box.height / 2;
+    await finger.move({ x: start.x, y: middle }, { steps: 6 });
+    await expect
+      .poll(async () => {
+        const slot = (await row(page, 'r1').boundingBox())!;
+        return Math.abs(slot.y + slot.height / 2 - middle);
+      })
+      .toBeLessThanOrEqual(ROW);
+    await finger.up();
+    await waitForIdle(page);
+    expect(Number((await dropped(page).textContent())!.match(/^r1@(\d+):/)![1])).toBeGreaterThan(20);
+    expect(await windowScrollY(page)).toBe(0);
   });
 });

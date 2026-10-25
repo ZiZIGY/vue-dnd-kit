@@ -6,9 +6,10 @@
   import ListDemo from './demos/ListDemo.vue';
   import KanbanDemo from './demos/KanbanDemo.vue';
   import TreeDemo from './demos/TreeDemo.vue';
+  import VirtualDemo from './demos/VirtualDemo.vue';
   import { KIT_DEMOS, readDemoHash } from '../shared/data';
 
-  const demos = { list: ListDemo, kanban: KanbanDemo, tree: TreeDemo };
+  const demos = { list: ListDemo, kanban: KanbanDemo, tree: TreeDemo, virtual: VirtualDemo };
   const current = shallowRef(readDemoHash());
   useEventListener(window, 'hashchange', () => (current.value = readDemoHash()));
   const demo = computed(() => demos[current.value]);
@@ -19,7 +20,7 @@
 
 <template>
   <UApp>
-    <header class="flex items-center gap-2 border-b border-default bg-elevated px-4 py-2">
+    <header class="flex flex-wrap items-center gap-2 border-b border-default bg-elevated px-4 py-2">
       <a
         href="/"
         class="mr-2 text-sm text-muted hover:text-default"
