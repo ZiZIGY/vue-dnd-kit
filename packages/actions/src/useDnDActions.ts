@@ -6,7 +6,7 @@
  * `preventDefault()`), and the provider's rules (one drag at a time, disabled items).
  */
 
-import { nextTick, watch } from 'vue';
+import { effectScope, nextTick, watch } from 'vue';
 import {
   defineSensor,
   useDnDContext,
@@ -81,8 +81,21 @@ export interface DnDActions {
   startDrag(id: Key, options?: StartDragOptions): ActionDrag | null;
 }
 
-/** The last `moveItem` of each provider: the next one runs after it. */
-const queues = new WeakMap<DnDContext, Promise<unknown>>();
+/** What every `useDnDActions()` of a provider shares. */
+interface Shared {
+  /** The context of the provider's actions sensor; `null` until it runs (never during SSR). */
+  context: SensorContext | null;
+  /** The last `moveItem`: the next one runs after it. */
+  queue: Promise<unknown>;
+}
+
+const providers = new WeakMap<DnDContext, Shared>();
+
+const sharedOf = (provider: DnDContext): Shared => {
+  let shared = providers.get(provider);
+  if (!shared) providers.set(provider, (shared = { context: null, queue: Promise.resolve() }));
+  return shared;
+};
 
 /** Frames stop in hidden tabs: wait at most this long for one. */
 const FRAME_TIMEOUT = 100;
@@ -128,25 +141,29 @@ const centerOf = (element: Element): Coordinates => {
  * for scripted drags. Call it in a component's `setup` under a `<DnDProvider>`.
  */
 export function useDnDActions(): DnDActions {
-  let context: SensorContext | null = null;
-  useSensor(
-    defineSensor({
-      name: 'actions',
-      setup(ctx) {
-        context = ctx;
-        return () => {
-          context = null;
-        };
-      },
-    }),
-  );
+  const shared = sharedOf(useDnDContext());
+  if (!shared.context) {
+    // The provider's one sensor for actions outlives the component that calls this first:
+    // a row with "move" buttons is re-created when its drag takes it to another list, and
+    // the drag must go on. It has no listeners to clean up; the provider's unmount ends
+    // any drag it runs.
+    effectScope(true).run(() =>
+      useSensor(
+        defineSensor({
+          name: 'actions',
+          setup: (context) => void (shared.context = context),
+        }),
+      ),
+    );
+  }
+  const context = shared.context;
 
   /** Resolves once the provider has no drag (and no drop landing). */
   const whenIdle = (): Promise<void> => {
     if (!context || context.status === 'idle') return Promise.resolve();
     return new Promise((resolve) => {
       const stop = watch(
-        () => context?.status ?? 'idle',
+        () => context.status,
         (status) => {
           if (status !== 'idle') return;
           stop();
@@ -184,7 +201,6 @@ export function useDnDActions(): DnDActions {
   };
 
   // One queue per provider: rows that each call `useDnDActions()` don't race for it.
-  const provider = useDnDContext();
   const moveItem = (id: Key, to: SortablePosition): Promise<boolean> => {
     const run = async () => {
       await whenIdle();
@@ -194,8 +210,8 @@ export function useDnDActions(): DnDActions {
       drag.cancel();
       return false;
     };
-    const result = (queues.get(provider) ?? Promise.resolve()).then(run, run);
-    queues.set(provider, result);
+    const result = shared.queue.then(run, run);
+    shared.queue = result;
     return result;
   };
 

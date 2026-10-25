@@ -28,10 +28,14 @@ let otherActions: DnDActions;
 let dnd: DnDState;
 let unmount: (() => void) | null = null;
 
+/** The actions of each row, as rows with "move" buttons have them. */
+const rowActions = new Map<string, DnDActions>();
+
 const Row = defineComponent({
   props: { rowId: { type: String, required: true } },
   setup(props) {
     makeSortableItem(useTemplateRef<HTMLElement>('el'), { id: () => props.rowId, disabled: () => props.rowId.endsWith('!') });
+    rowActions.set(props.rowId, useDnDActions());
     return () => h('li', { ref: 'el', 'data-id': props.rowId }, props.rowId);
   },
 });
@@ -160,6 +164,20 @@ describe('moveItem', () => {
     expect(ids(b)).toBe('b1,a1,b2');
     // Prevented: only what the user applied changed.
     expect(ids(a)).toBe('a1,a2');
+  });
+
+  it("from a row's own buttons: the row re-created in the other list doesn't end the drag", async () => {
+    const a = ref(tasks('a1', 'a2'));
+    const b = ref(tasks('b1'));
+    const container = mount({ a: { items: a, group: 'g' }, b: { items: b, group: 'g' } });
+    await nextTick();
+    const own = rowActions.get('a1')!;
+    expect(await own.moveItem('a1', { list: 'b', index: 0 })).toBe(true);
+    expect([ids(a), ids(b)]).toEqual(['a2', 'a1,b1']);
+    expect(container.querySelector('[data-list="b"] > li')?.getAttribute('data-id')).toBe('a1');
+    // The old row is gone; its actions still work for the provider.
+    expect(await own.moveItem('a1', { list: 'a' })).toBe(true);
+    expect([ids(a), ids(b)]).toEqual(['a2,a1', 'b1']);
   });
 
   it('resolves false when no list takes the item there, or the drop is refused', async () => {
