@@ -27,6 +27,7 @@ import { showIndicator } from './indicator';
 import { leadOffset } from './landing';
 import { targetRule } from './combine';
 import { captureLayout, watchLayout } from './flip';
+import { watchChanges } from './autoAnimate';
 import { trackCopyModifier } from './modifier';
 import { move, start } from './session';
 import { beforeDrop, cancel, end } from './drop';
@@ -43,6 +44,8 @@ export interface SortableGroup {
   /** Shows the insertion line (trees move it with their own keys). */
   showIndicator(value: SortableIndicator | null): void;
   addList(entry: ListEntry): () => void;
+  /** Animates `entry`'s changes that no drag made, while its `animate` is on. Call in the list's setup. */
+  animateChanges(entry: ListEntry): void;
   registerItem(key: Key, getElement: () => HTMLElement | null): () => void;
   lookup(key: Key): unknown;
   keysOf(list: ListEntry): Key[];
@@ -115,8 +118,11 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         release();
       };
     },
+    animateChanges: (entry) => watchChanges(g, entry),
     registerItem(key, getElement) {
       items.set(key, getElement);
+      // Created by the render a FLIP pass waits for.
+      g.fresh?.add(key);
       return () => {
         if (items.get(key) === getElement) items.delete(key);
       };

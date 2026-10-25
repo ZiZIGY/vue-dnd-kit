@@ -15,6 +15,7 @@ import { defaultDocument, defaultWindow, useEventListener } from '@vueuse/core';
 import type {
   ActivationOptions,
   Announcements,
+  AutoAnimation,
   AutoScrollOptions,
   CollisionDetection,
   DnDEndEvent,
@@ -62,6 +63,7 @@ export const DnDProvider = /* @__PURE__ */ defineComponent({
     modifiers: Array as PropType<Modifier[]>,
     animation: { type: [Boolean, Object, Function] as PropType<LayoutAnimation>, default: undefined },
     dropAnimation: { type: [Boolean, Object, Function] as PropType<DropAnimation>, default: undefined },
+    animate: { type: [Boolean, Object] as PropType<AutoAnimation>, default: undefined },
     autoScroll: { type: [Boolean, Object] as PropType<boolean | AutoScrollOptions>, default: true },
     activation: Object as PropType<ActivationOptions>,
     keyboard: { type: [Boolean, Object] as PropType<KeyboardOptions | false>, default: undefined },

@@ -37,6 +37,7 @@
   import SensorsDemo from './demos/sensors/SensorsDemo.vue';
   import ActionsDemo from './demos/actions/ActionsDemo.vue';
   import { overlayDemos } from './demos/overlay';
+  import AnimationLibsDemo from './demos/animation/AnimationLibsDemo.vue';
   // Example apps (each brings its own DnDProvider).
   import BoardApp from './demos/apps/BoardApp.vue';
   import FilesApp from './demos/apps/FilesApp.vue';
@@ -86,6 +87,7 @@
     sensors: SensorsDemo,
     actions: ActionsDemo,
     ...overlayDemos,
+    'animation-libs': AnimationLibsDemo,
     'app-board': BoardApp,
     'app-files': FilesApp,
     'app-form': FormApp,

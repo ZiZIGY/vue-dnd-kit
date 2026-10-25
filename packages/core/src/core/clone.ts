@@ -94,10 +94,13 @@ export interface CloneOptions {
   opaque?: boolean;
 }
 
-export const clonePreview = (source: HTMLElement, { opaque = false }: CloneOptions = {}): HTMLElement => {
+/**
+ * A deep copy of `source` that stays out of the page's way: no ids, no `data-dnd-*` marks,
+ * hidden from assistive tech, with what `cloneNode` leaves out (form state, canvas pixels).
+ * `source` may be detached (an item Vue just removed).
+ */
+export const copyElement = (source: HTMLElement): HTMLElement => {
   const clone = source.cloneNode(true) as HTMLElement;
-  const computed = getComputedStyle(source);
-
   for (const element of [clone, ...clone.querySelectorAll('*')]) {
     element.removeAttribute('id');
     for (const name of element.getAttributeNames()) {
@@ -106,6 +109,14 @@ export const clonePreview = (source: HTMLElement, { opaque = false }: CloneOptio
   }
   copyFormState(source, clone);
   copyCanvases(source, clone);
+  clone.setAttribute('aria-hidden', 'true');
+  clone.removeAttribute('tabindex');
+  return clone;
+};
+
+export const clonePreview = (source: HTMLElement, { opaque = false }: CloneOptions = {}): HTMLElement => {
+  const clone = copyElement(source);
+  const computed = getComputedStyle(source);
 
   for (const property of [...INHERITED, ...OWN]) {
     clone.style.setProperty(property, computed.getPropertyValue(property));
@@ -136,8 +147,6 @@ export const clonePreview = (source: HTMLElement, { opaque = false }: CloneOptio
   // A positioned source (a piece on a board) would keep its offsets inside the overlay.
   // `relative` keeps it a containing block for its own positioned children.
   if (computed.position !== 'static') Object.assign(clone.style, { position: 'relative', inset: 'auto' });
-  clone.setAttribute('aria-hidden', 'true');
-  clone.removeAttribute('tabindex');
 
   return source.tagName === 'TR' ? wrapTableRow(clone, source) : clone;
 };

@@ -7,6 +7,7 @@ import type { ShallowRef } from 'vue';
 import type {
   AcceptMode,
   Active,
+  AutoAnimation,
   BeforeDropResult,
   DropOutside,
   Key,
@@ -70,4 +71,6 @@ export interface ListEntry {
   clone?(item: unknown): CreatedItem | undefined;
   /** Makes an item for a plain draggable entering the list. */
   create?(active: Active): CreatedItem | undefined;
+  /** Animates changes of the items that no drag made (`autoAnimate.ts`). Default: off. */
+  animate?(): AutoAnimation | undefined;
 }

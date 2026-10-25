@@ -3,7 +3,7 @@
 import type { Component, ComputedRef } from 'vue';
 import type { Key, MaybePromise, MaybeReadonlyRef, MaybeReadonlyRefOrGetter, Size } from './primitives';
 import type { AcceptMode, Active, BeforeDropResult } from './drag';
-import type { LayoutAnimation } from './animation';
+import type { AutoAnimation, LayoutAnimation } from './animation';
 import type { Modifier } from './collision';
 import type { AutoScrollOptions } from './provider';
 import type {
@@ -139,6 +139,11 @@ export interface SortableTreeOptions<T> {
   dropOutside?: MaybeReadonlyRefOrGetter<DropOutside | undefined>;
   /** FLIP animation of this tree; default: the provider's `animation`. A value or a ref (a function is a custom animation). */
   animation?: MaybeReadonlyRef<LayoutAnimation | undefined>;
+  /**
+   * As in `SortableListOptions`, for the visible rows: nodes added, removed or moved, and
+   * the rows a node shows or hides as it expands or collapses (`collapsed`).
+   */
+  animate?: MaybeReadonlyRefOrGetter<AutoAnimation | undefined>;
   /** Overrides the provider's `autoScroll` for this tree's scroll container. Read when the drag starts. */
   autoScroll?: MaybeReadonlyRefOrGetter<boolean | AutoScrollOptions | undefined>;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;

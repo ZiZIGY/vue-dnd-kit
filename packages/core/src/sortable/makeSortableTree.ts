@@ -84,6 +84,7 @@ export function makeSortableTree<T>(
     strategy: () => 'vertical',
     placeholder: () => read(options.placeholder) ?? 'item',
     animation: () => unref(options.animation) ?? manager.props.animation,
+    animate: () => read(options.animate) ?? manager.props.animate,
     isDisabled: () => !!read(options.disabled),
     canSort: () => true,
     pull: () => pullOf(groupOptions, !!options.clone),
@@ -115,6 +116,7 @@ export function makeSortableTree<T>(
   };
   t.entry = entry;
   onScopeDispose(group.addList(entry));
+  group.animateChanges(entry);
 
   onScopeDispose(
     manager.addMonitor({
