@@ -28,6 +28,29 @@ export { expect };
 export const byId = (scope: Page | Locator, id: string): Locator =>
   scope.locator(`[data-id="${id}"]:not([data-dnd-overlay] *)`);
 
+/** A point inside `locator`: `x`/`y` ratios of its box. */
+export const at = async (locator: Locator, x = 0.5, y = 0.5): Promise<Point> => {
+  const box = await locator.boundingBox();
+  if (!box) throw new Error('Element is not visible');
+  return { x: box.x + box.width * x, y: box.y + box.height * y };
+};
+
+/** Scrolls the page so that `locator` is in the middle of the screen, away from the auto-scroll edges. */
+export const centerOnScreen = async (locator: Locator): Promise<void> => {
+  await locator.evaluate((element) => element.scrollIntoView({ block: 'center' }));
+  await frames(locator.page(), 2);
+};
+
+/**
+ * True when the page is no wider than the screen. A wider page makes a phone zoom out
+ * to show all of it: everything gets tiny, and the page pans sideways under a finger.
+ */
+export const fitsScreen = (page: Page): Promise<boolean> =>
+  page.evaluate(
+    ({ width }) => window.innerWidth === width && document.documentElement.scrollWidth <= width,
+    page.viewportSize()!,
+  );
+
 /** The default overlay content: the clone taken at drag start (a <table> wrapper for rows). */
 export const overlayClone = (page: Page): Locator => page.locator('[data-dnd-overlay] > div > div > *').first();
 

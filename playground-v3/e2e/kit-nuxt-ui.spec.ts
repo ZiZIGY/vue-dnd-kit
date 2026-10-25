@@ -1,6 +1,7 @@
-import type { Locator, Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { center, frames } from './helpers';
 import {
+  at,
   byId,
   drag,
   expect,
@@ -23,13 +24,6 @@ const enableDark = async (page: Page) => {
   await expect(page.locator('html')).toHaveClass(/\bdark\b/);
   // Some components transition their colors to the new theme.
   await settle(page);
-};
-
-/** A point inside `locator`: `x`/`y` ratios of its box. */
-const at = async (locator: Locator, x = 0.5, y = 0.5) => {
-  const box = await locator.boundingBox();
-  if (!box) throw new Error('Element is not visible');
-  return { x: box.x + box.width * x, y: box.y + box.height * y };
 };
 
 test.describe('Nuxt UI: sortable lists', () => {

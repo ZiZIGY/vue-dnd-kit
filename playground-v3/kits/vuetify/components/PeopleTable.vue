@@ -23,7 +23,7 @@
 </script>
 
 <template>
-  <section style="width: 420px">
+  <section style="width: 420px; max-width: 100%">
     <h2 class="text-subtitle-1 font-weight-bold mb-2">People (v-data-table rows)</h2>
     <!-- The draft order is rendered as is: no sorting, no pagination. -->
     <VDataTable
@@ -46,7 +46,7 @@
       </template>
     </VDataTable>
     <pre
-      class="text-caption mt-2"
+      class="text-caption mt-2 text-pre-wrap text-break"
       data-testid="people-state"
       >{{ ids(people) }}</pre
     >

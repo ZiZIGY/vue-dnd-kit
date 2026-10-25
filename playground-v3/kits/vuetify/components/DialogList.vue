@@ -46,7 +46,7 @@
       </VCard>
     </VDialog>
     <pre
-      class="text-caption mt-2"
+      class="text-caption mt-2 text-pre-wrap text-break"
       data-testid="modal-state"
       >{{ ids(tasks) }}{{ opened ? ` opened:${opened}` : '' }}</pre
     >

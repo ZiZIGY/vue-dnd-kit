@@ -18,7 +18,7 @@
 
 <template>
   <UCard
-    class="w-72"
+    class="w-72 shrink-0"
     :class="{ 'ring-2 ring-primary': isOver }"
     variant="subtle"
     :ui="{ header: 'flex items-center justify-between p-3 sm:px-3', body: 'p-2 sm:p-2' }"
