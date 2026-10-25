@@ -79,7 +79,9 @@ const projectEdges = (
   // so the slot goes between them. A frame can jump from the far half of an item
   // straight into the gap beyond it (fast swipes, coalesced input), which must not
   // leave the slot an item behind. Beyond mounted items (virtual lists) the position
-  // stays: moving to the nearest edge is what made v2 items "teleport".
+  // stays: moving to the nearest edge is what made v2 items "teleport". The members of
+  // a multi-drag block share the slot's index, so gaps inside the block and at its edges
+  // keep the position too.
   const after = items.findIndex((item) => p < item.rect[start]);
   const next = items[after];
   const previous = items[after - 1];

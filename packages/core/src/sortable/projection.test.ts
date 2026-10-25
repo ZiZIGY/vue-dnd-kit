@@ -100,6 +100,26 @@ describe('projectIndex: vertical lists', () => {
     expect(vertical(gapped, 1, 95)).toBeNull();
   });
 
+  it("keeps a multi-drag 'group' block in gaps inside it or at its edges, moves it in gaps beyond", () => {
+    // 40px items, 10px gaps: k0 | m1 S m3 | k4 k5 — the block (m1, S, m3) counts once, at index 1.
+    const keys = ['k0', 'm1', 'S', 'm3', 'k4', 'k5'];
+    const block: Record<string, -1 | 1 | undefined> = { m1: -1, m3: 1 };
+    const indexes = [0, 1, 1, 1, 2, 3];
+    const gapped: ProjectionItem[] = keys.map((key, i) => ({
+      key,
+      index: indexes[i]!,
+      rect: createRect(0, i * 50, 100, 40),
+      ...(block[key] && { side: block[key] }),
+    }));
+    const project = (y: number) =>
+      projectIndex({ strategy: 'vertical', pointer: { x: 50, y }, items: gapped, activeKey: 'S', activeIndex: 1, length: 4, lock: null })
+        .index;
+    // Between k0 and m1, m1 and S, S and m3, m3 and k4: next to the block.
+    for (const y of [45, 95, 145, 195]) expect(project(y), `gap at ${y}`).toBeNull();
+    // Between k4 and k5: past k4's center, so the block goes after k4.
+    expect(project(245)).toBe(2);
+  });
+
   it('inserts an item from another list before or after the hovered one', () => {
     expect(vertical(items, -1, 45)).toBe(1);
     expect(vertical(items, -1, 75)).toBe(2);
