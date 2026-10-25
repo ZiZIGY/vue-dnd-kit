@@ -1469,7 +1469,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     if (blocked.length) {
       if (process.env.NODE_ENV !== 'production') {
         console.warn(
-          `[vue-dnd-kit] A drop wasn't written: \`items\` of ${blocked.map((list) => `"${String(list.id)}"`).join(', ')} is read-only (a getter, a readonly ref or a computed). Call \`event.preventDefault()\` in onBeforeDrop or onDrop and apply \`event.result\` yourself.`,
+          `[vue-dnd-kit] A drop wasn't written: \`items\` is read-only (a getter, a readonly ref or a computed) in ${blocked.map((list) => `"${String(list.id)}"`).join(', ')}. Call \`event.preventDefault()\` in onBeforeDrop or onDrop and apply \`event.result\` yourself.`,
         );
       }
       return;

@@ -337,6 +337,7 @@ export function createDnDManager(props: DnDProviderProps) {
   };
 
   const emit = (name: MonitorHandler, event: DnDEvent | DnDEndEvent) => {
+    // Integrations first (see `addMonitor`), each side in registration order.
     const ordered = [...monitors].sort((a, b) => Number(integrations.has(b)) - Number(integrations.has(a)));
     for (const monitor of ordered) {
       try {

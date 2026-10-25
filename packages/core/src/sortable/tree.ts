@@ -487,7 +487,7 @@ export function buildTreeMove<T>(
     for (let node = owner; node !== null && !copied.has(node); node = parents.get(node) ?? null) copied.add(node);
   }
 
-  // Bottom-up through the new shape (a moved node may now sit under a shallower parent).
+  // Bottom-up through the new shape, not the old depths: a moved node may land deeper.
   const childrenAfter = (node: T): readonly T[] => changes.get(node) ?? getChildren(node) ?? [];
   const copies = new Map<T, T>();
   const next = changes.get(null) ?? [...roots];
