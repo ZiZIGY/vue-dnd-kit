@@ -1,4 +1,4 @@
-import { createApp, defineComponent, h, nextTick, ref, toRef, useTemplateRef, type PropType } from 'vue';
+import { createApp, defineComponent, h, nextTick, ref, toRef, useTemplateRef, type PropType, type Ref } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AcceptRule, Coordinates, Rect, Sensor, SensorContext } from '../types';
 import { containsPoint, createRect } from '../animation/layout';
@@ -47,13 +47,19 @@ const Row = defineComponent({
   },
 });
 
+/** The items of list `a`. */
+let listItems: Ref<{ id: string }[]>;
+
 const List = defineComponent({
   name: 'TaskList',
-  setup() {
+  props: { animate: Boolean },
+  setup(props) {
+    listItems = ref(['a1', 'a2', 'a3'].map((id) => ({ id })));
     const { items } = makeSortableList(useTemplateRef<HTMLElement>('list'), {
       id: 'a',
       group: 'g',
-      items: ref(['a1', 'a2', 'a3'].map((id) => ({ id }))),
+      items: listItems,
+      animate: () => props.animate,
     });
     return () => h('ul', { ref: 'list', 'data-col': 0 }, items.value.map((item) => h(Row, { key: item.id, rowId: item.id })));
   },
@@ -92,19 +98,20 @@ const Board = defineComponent({
     accept: { type: [String, Function] as PropType<AcceptRule>, default: 'card' },
     chipType: { type: String, default: 'card' },
     sensors: Array as PropType<Sensor[]>,
+    animate: Boolean,
   },
   setup(props) {
     return () =>
       h(DnDProvider, { animation: false, dropAnimation: false, sensors: props.sensors }, () => [
         h(Probe),
-        h(List),
+        h(List, { animate: props.animate }),
         h(Tree),
         h(Zones, { accept: props.accept, chipType: props.chipType }),
       ]);
   },
 });
 
-const mount = (props: { accept?: AcceptRule; chipType?: string; sensors?: Sensor[] } = {}) => {
+const mount = (props: { accept?: AcceptRule; chipType?: string; sensors?: Sensor[]; animate?: boolean } = {}) => {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const app = createApp(Board, props);
@@ -347,6 +354,39 @@ describe('events', () => {
     expect(end).toMatchObject({ over: { id: 'trash', accepted: true }, dropped: true, sortable: [] });
     expect(events.find((event) => event.type === 'selection')).toEqual({ type: 'selection', ids: ['x'] });
     expect(events.some((event) => event.type === 'announcement' && event.text.length > 0)).toBe(true);
+  });
+});
+
+describe('changes no drag made', () => {
+  it('are told for lists with animate on, not for the changes of a drag', async () => {
+    // Animations that never end (happy-dom's reject when the next pass cancels them).
+    vi.spyOn(Element.prototype, 'animate').mockImplementation(
+      () => ({ playState: 'running', cancel() {}, addEventListener() {}, finished: new Promise(() => {}) }) as unknown as Animation,
+    );
+    const events = connect();
+    mount({ animate: true });
+    // The group's lists are read once the render that created it is done.
+    await nextTick();
+    await nextTick();
+    const changes = () => events.filter((event) => event.type === 'change');
+    listItems.value = [{ id: 'a3' }, { id: 'a1' }, { id: 'a4' }];
+    await nextTick();
+    expect(changes()).toEqual([{ type: 'change', group: 'g', list: 'a', added: ['a4'], removed: ['a2'], reordered: true }]);
+    // The drop writes the list: the drag's own change.
+    await drag('a3', at(0, 0), at(0, 2, 0.75));
+    await drop();
+    expect(listItems.value.map((item) => item.id)).toEqual(['a1', 'a4', 'a3']);
+    expect(changes()).toHaveLength(1);
+  });
+
+  it('are not told for lists without animate', async () => {
+    const events = connect();
+    mount();
+    await nextTick();
+    await nextTick();
+    listItems.value = [{ id: 'a2' }];
+    await nextTick();
+    expect(events.some((event) => event.type === 'change')).toBe(false);
   });
 });
 

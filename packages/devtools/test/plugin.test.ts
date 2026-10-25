@@ -228,6 +228,17 @@ describe('the timeline', () => {
     expect(start(null)).toMatchObject({ subtitle: 'chip · pointer', groupId: 'provider-x:3' });
   });
 
+  it('logs the changes `animate` plays (no drag made them)', () => {
+    const provider = { id: 'provider-x', label: 'DnDProvider' } as DevtoolsProvider;
+    const [change] = timelineEntries(
+      provider,
+      { type: 'change', group: 'cards', list: 'a', added: ['a4'], removed: ['a2', 'a5'], reordered: true },
+      { drag: null, released: false },
+    );
+    expect(change).toMatchObject({ title: 'animate', subtitle: 'a · +1 −2 reordered', data: { group: 'cards', added: ['a4'] } });
+    expect(change!.groupId).toBeUndefined();
+  });
+
   it('refreshes the inspector on events, and the state at most every 200 ms while moving', async () => {
     const { devtools, manager } = await mountWithDevtools();
     devtools.sendInspectorTree.mockClear();

@@ -63,7 +63,9 @@ Items mount and unmount without events: the tree catches up within a second.
 
 ### The "Vue DnD Kit" timeline layer
 
-One group per drag: `drag start` (ids, sensor, the list it comes from), `over` and `left` (target changes, and whether the target accepts), `release`, `onBeforeDrop` (the verdict: accepted, accepted some, rejected by a hook, or refused by the target's `accept`, and how long the hooks took), `drop` (the target, and for sortable lists the move, `event.result` and whether `preventDefault()` was called) or `cancel` (and why), `announcement` (what the live region said) and `auto-scroll on` / `off`.
+One group per drag: `drag start` (ids, the sensor that started it and whether by touch, the list it comes from), `over` and `left` (target changes, and whether the target accepts), `release`, `onBeforeDrop` (the verdict: accepted, accepted some, rejected by a hook, or refused by the target's `accept`, and how long the hooks took), `drop` (the target, and for sortable lists the move, `event.result` and whether `preventDefault()` was called) or `cancel` (and why), `announcement` (what the live region said) and `auto-scroll on` / `off`.
+
+Outside drags, `animate` logs the changes of a list's items that no drag made and that its `animate` option plays: items added, removed, reordered.
 
 ## Several apps, shadow roots
 

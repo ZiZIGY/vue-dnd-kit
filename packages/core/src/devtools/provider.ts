@@ -4,14 +4,15 @@
  * monitor for the drag events and watchers on the manager's state, in a scope of its
  * own that ends when the provider unmounts. The verdict of `onBeforeDrop` is told by how
  * the drag ends after a release; the drop of a sortable list by the group's session,
- * read as the session ends.
+ * read as the session ends (`group.ts`).
  */
 
 import { effectScope, getCurrentInstance, watch, type ComponentInternalInstance, type EffectScope } from 'vue';
 import type { DnDEvent, DnDMonitor, Key, Sensor } from '../types';
 import type { DnDManager } from '../core/manager';
 import type { GroupContext } from '../sortable/context';
-import { snapshotActive, snapshotOver, snapshotProvider, snapshotSortableDrop } from './snapshot';
+import { snapshotActive, snapshotOver, snapshotProvider } from './snapshot';
+import { followGroup } from './group';
 import type { CancelReason, DevtoolsEvent, DevtoolsProvider, SensorSnapshot, SortableDropSnapshot } from './types';
 
 export interface ProviderRecord extends DevtoolsProvider {
@@ -55,17 +56,12 @@ export function createProviderRecord(
   /** The sensor about to start a drag, and of which item. */
   let starting: { id: Key; sensor: SensorSnapshot } | null = null;
 
-  /** The session is set when a drag starts and cleared when it ends: what it held then is the drop it made (or prepared before a rejection). */
   const watchGroup = (g: GroupContext) =>
     scope!.run(() =>
-      watch(
-        g.session,
-        (_next, previous) => {
-          const drop = previous && snapshotSortableDrop(g, previous);
-          if (drop) drops.push(drop);
-        },
-        { flush: 'sync' },
-      ),
+      followGroup(g, {
+        drop: (drop) => drops.push(drop),
+        change: (event) => send(event),
+      }),
     )!;
 
   const record: ProviderRecord = {

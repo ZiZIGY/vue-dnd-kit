@@ -116,6 +116,21 @@ export const timelineEntries = (provider: DevtoolsProvider, event: DevtoolsEvent
       return [entry({ title: 'announcement', subtitle: event.text, data: { text: event.text } })];
     case 'autoScroll':
       return [entry({ title: event.scrolling ? 'auto-scroll on' : 'auto-scroll off', data: { scrolling: event.scrolling } })];
+    case 'change': {
+      // A change of the items no drag made, which the list's `animate` plays.
+      const what = [
+        event.added.length ? `+${event.added.length}` : '',
+        event.removed.length ? `−${event.removed.length}` : '',
+        event.reordered ? 'reordered' : '',
+      ].filter(Boolean);
+      return [
+        entry({
+          title: 'animate',
+          subtitle: `${keyLabel(event.list)} · ${what.join(' ')}`,
+          data: { list: event.list, group: event.group, added: event.added, removed: event.removed, reordered: event.reordered },
+        }),
+      ];
+    }
     default:
       return [];
   }
