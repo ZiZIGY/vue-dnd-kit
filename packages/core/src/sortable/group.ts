@@ -241,16 +241,10 @@ const placeAt = (keys: Key[], slot: Key, index: number): Key[] => {
 const expand = (view: Key[], slot: Key, block: Key[]): Key[] =>
   block.length > 1 ? view.flatMap((key) => (key === slot ? block : [key])) : view;
 
+const INDICATOR_FIELDS = ['list', 'index', 'key', 'side', 'depth', 'parentKey'] as const;
+
 const sameIndicator = (a: SortableIndicator | null, b: SortableIndicator | null) =>
-  a === b ||
-  (!!a &&
-    !!b &&
-    a.list === b.list &&
-    a.index === b.index &&
-    a.key === b.key &&
-    a.side === b.side &&
-    a.depth === b.depth &&
-    a.parentKey === b.parentKey);
+  a === b || (!!a && !!b && INDICATOR_FIELDS.every((field) => a[field] === b[field]));
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 

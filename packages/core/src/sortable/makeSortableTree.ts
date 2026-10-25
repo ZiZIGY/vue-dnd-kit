@@ -187,7 +187,6 @@ export function makeSortableTree<T>(
     const node = byKey.get(activeKey);
     const origins = new Map<Key, Origin>();
     const moving = new Map<Key, Key>();
-    let flatIndex: Map<Key, number> | null = null;
     for (const key of dragged) {
       const row = byKey.get(key);
       if (!row) continue;
@@ -195,8 +194,7 @@ export function makeSortableTree<T>(
       moving.set(key, key);
       if (!row.hasChildren || row.collapsed) continue;
       // Every dragged node carries its subtree.
-      flatIndex ??= new Map(nodes.map((each, index) => [each.key, index]));
-      const at = flatIndex.get(key)!;
+      const at = nodes.indexOf(row);
       for (let i = at + 1, end = subtreeEnd(nodes, at); i < end; i++) {
         if (!moving.has(nodes[i]!.key)) moving.set(nodes[i]!.key, key);
       }
@@ -372,32 +370,10 @@ export function makeSortableTree<T>(
   };
 
   /** The line before the row at a gap of `position` (which leaves the moving rows out), or after the last one. */
-  const lineBefore = (position: DraftPosition): IndicatorProjection => {
-    const others = position.keys;
-    const after = position.index >= others.length;
-    const key = others[after ? others.length - 1 : position.index] ?? null;
-    return {
-      index: key == null ? 0 : group.indexOf(entry, key) + (after ? 1 : 0),
-      key,
-      side: after ? 'after' : 'before',
-    };
-  };
-
-  /** The first gap from `position.index` on, in the direction `step`, where some depth up to `depth` fits. */
-  const findGap = (
-    current: DragState<T>,
-    position: DraftPosition,
-    step: 1 | -1,
-    depth: number,
-    skip?: (index: number, projection: TreeProjection) => boolean,
-  ): IndicatorProjection | null => {
-    const filter = depthFilter(current);
-    for (let index = position.index; index >= 0 && index <= position.keys.length; index += step) {
-      const at = { ...position, index };
-      const projection = projectDepth(at, depth, filter);
-      if (projection && !skip?.(index, projection)) return lineAt(current, at, projection.depth, lineBefore(at));
-    }
-    return null;
+  const lineBefore = ({ keys: others, index }: DraftPosition): IndicatorProjection => {
+    const after = index >= others.length;
+    const key = others[after ? others.length - 1 : index] ?? null;
+    return { index: key == null ? 0 : group.indexOf(entry, key) + +after, key, side: after ? 'after' : 'before' };
   };
 
   const indicate = (event: DnDEvent, items: ProjectionItem[]): IndicatorProjection | null | undefined => {
@@ -428,62 +404,12 @@ export function makeSortableTree<T>(
     return lineAt(current, gapPosition(draftKeys, line.index, current.moving, rows()), depth, line);
   };
 
-  /** The keyboard enters the tree at `index`: the line there (or at the nearest gap that fits), level with its row. */
+  /** The keyboard enters the tree: the line at `index`, level with the row it goes on. */
   const indicateAt = (index: number): IndicatorProjection | null => {
-    const current = state;
-    if (!current) return null;
+    const current = state!;
     const position = gapPosition(group.keysOf(entry), index, current.moving, rows());
-    const near = position.keys[position.index] ?? position.keys[position.index - 1];
-    const depth = near == null ? 0 : (rows().get(near)?.depth ?? 0);
-    const line =
-      findGap(current, position, 1, depth) ?? findGap(current, { ...position, index: position.index - 1 }, -1, depth);
-    if (!line) clearSpot();
-    return line;
-  };
-
-  /**
-   * Keyboard in indicator mode: up/down move the line by one gap (keeping its level
-   * where the new neighbours allow it, and skipping the dragged node's own place),
-   * left/right change its level.
-   */
-  const keyboardLine = (current: DragState<T>, pointer: Coordinates, direction: Coordinates) => {
-    const draftKeys = group.keysOf(entry);
-    const shown = group.indicator.value;
-    const mine = shown?.list === id ? shown : null;
-    const at = group.indexOf(entry, current.activeKey);
-    // The line is in another list, or the dragged node isn't here.
-    if (!mine && (shown || at === -1)) return undefined;
-    const position = gapPosition(draftKeys, mine ? mine.index : at, current.moving, rows());
-    const depth = mine ? (mine.depth ?? 0) : current.startDepth;
-    const home = at === -1 || current.items.length > 1 ? -1 : gapPosition(draftKeys, at, current.moving, rows()).index;
-
-    let line: IndicatorProjection | null = null;
-    if (direction.y) {
-      const step = direction.y > 0 ? 1 : -1;
-      line = findGap(
-        current,
-        { ...position, index: position.index + step },
-        step,
-        depth,
-        // The dragged node's own place at its own level: the drop would change nothing.
-        (index, projection) => index === home && projection.depth === current.startDepth,
-      );
-    } else if (direction.x) {
-      const next = depth + (direction.x > 0 ? 1 : -1);
-      const { min, max } = depthRange(position);
-      if (next >= min && next <= max && depthFilter(current)(next, parentAt(position, next))) {
-        line = lineAt(current, position, next, lineBefore(position));
-      }
-    }
-    // Staying put still answers, so the sensor doesn't fall back to pixel steps.
-    if (!line) return pointer;
-    group.showIndicator({ list: id, ...line });
-    const element = (line.key == null ? null : manager.getDraggable(line.key)?.getElement()) ?? toElement(target);
-    if (!element?.isConnected) return pointer;
-    revealElement(element);
-    const rect = getLayoutRect(element);
-    const x = pointer.x - manager.transform.value.x + ((line.depth ?? 0) - current.startDepth) * indentation();
-    return { x, y: rect.top + rect.height / 2 };
+    const row = rows().get(position.keys[position.index] ?? position.keys[position.index - 1]!);
+    return lineAt(current, position, row?.depth ?? 0, lineBefore(position));
   };
 
   // ─── Drop ────────────────────────────────────────────────────────────────────
@@ -491,10 +417,11 @@ export function makeSortableTree<T>(
   /** Where the dragged nodes would land in this tree, `null` when not here. */
   const landingSpot = (current: DragState<T>): Spot | null => {
     if (indicating()) {
-      if (spot || !current.origin) return spot;
       // No line: the active node's own place.
-      const position = gapPosition(group.keysOf(entry), group.indexOf(entry, current.activeKey), current.moving, rows());
-      setSpot(current, position, projectDepth(position, current.startDepth) ?? { depth: 0, parentKey: null });
+      if (!spot && current.origin) {
+        const position = gapPosition(group.keysOf(entry), group.indexOf(entry, current.activeKey), current.moving, rows());
+        setSpot(current, position, { depth: current.startDepth, parentKey: current.origin.parentKey });
+      }
       return spot;
     }
     const index = viewIndex(current);
@@ -505,32 +432,31 @@ export function makeSortableTree<T>(
   };
 
   /**
-   * What committing `next` does here: the nodes `inserted` at the slot land side by side
-   * at `to`; the dragged nodes of this tree that aren't back in place (rejected) leave.
+   * What committing `next` does here (one list holds the slot, so nodes either land here
+   * or leave): the nodes `inserted` at the slot land side by side at `to`, and the
+   * dragged nodes of this tree leave their places, unless rejected back into them.
    */
   const outcome = (current: DragState<T>, next: Key[], inserted: readonly Key[]) => {
     const present = new Set(next);
     const landing = inserted.filter((key) => present.has(key));
-    const landed = new Set(landing);
-    const removed = [...current.origins.keys()].filter((key) => landed.has(key) || !present.has(key));
+    const removed = [...current.origins.keys()].filter((key) => landing.includes(key) || !present.has(key));
     const at = landing.length ? landingSpot(current) : null;
     const to: Placement | null = at && {
       ...at.projection,
       index: siblingIndexAt(at.position, at.projection, removed.map((key) => current.origins.get(key)!)),
     };
-    return { landing, landed, removed, to };
+    return { landing, removed, to };
   };
 
   const hasChanges = (next: Key[], inserted: readonly Key[]) => {
-    const current = state;
-    if (!current) return false;
-    const { landing, landed, removed, to } = outcome(current, next, inserted);
-    // Something leaves the tree, or the landing nodes aren't already side by side right there.
+    const current = state!;
+    const { landing, removed, to } = outcome(current, next, inserted);
+    // Nodes leave the tree, or the landing ones aren't already side by side right there.
     return (
-      removed.some((key) => !landed.has(key)) ||
+      (!to && removed.length > 0) ||
       landing.some((key, i) => {
         const origin = current.origins.get(key);
-        return !origin || !to || origin.parentKey !== to.parentKey || origin.index !== to.index + i;
+        return !origin || origin.parentKey !== to!.parentKey || origin.index !== to!.index + i;
       })
     );
   };
@@ -615,9 +541,8 @@ export function makeSortableTree<T>(
     from: number,
     next: { index: number; depth: number },
     pointer: Coordinates,
+    x: number,
   ): Coordinates => {
-    const transform = manager.transform.value;
-    const x = pointer.x - transform.x + (next.depth - current.startDepth) * indentation();
     const rectOf = (key: Key | undefined) => {
       const element = key == null ? null : manager.getDraggable(key)?.getElement();
       return element?.isConnected ? getLayoutRect(element) : null;
@@ -637,45 +562,77 @@ export function makeSortableTree<T>(
     return { x, y: top + active.height / 2 };
   };
 
+  /**
+   * Arrow keys: up/down move the slot by one visible row, keeping its depth where the
+   * new neighbours allow it; left/right change the depth. In indicator mode the line
+   * moves the same way, through the gaps between the rows that stay, skipping the
+   * dragged node's own place at its own level (that drop would change nothing).
+   */
   const keyboardCoordinates = ({ active, pointer, direction }: KeyboardMoveContext): Coordinates | undefined => {
     const current = state;
     if (!current || !draft.value || active.id !== current.activeKey) return undefined;
-    if (indicating()) return keyboardLine(current, pointer, direction);
+    const draftKeys = group.keysOf(entry);
+    const at = group.indexOf(entry, current.activeKey);
     const from = viewIndex(current);
-    if (from === -1) return undefined;
     const view = group.viewOf(entry);
-    const filter = depthFilter(current);
-    const base = current.pending ?? { index: from, depth: placement.value?.depth ?? current.startDepth };
-    const positionAt = (index: number): DraftPosition => ({
+    let positionAt = (index: number): DraftPosition => ({
       keys: index === from ? view : moveKey(view, current.activeKey, from, index),
       index,
       rows: rows(),
     });
+    let base = current.pending ?? { index: from, depth: placement.value?.depth ?? current.startDepth };
+    let end = view.length - 1;
+    let home = -1;
+    if (indicating()) {
+      const shown = group.indicator.value;
+      const mine = shown?.list === id ? shown : null;
+      // The line is in another list, or the dragged node isn't here.
+      if (!mine && (shown || at === -1)) return undefined;
+      const gaps = gapPosition(draftKeys, mine ? mine.index : at, current.moving, rows());
+      positionAt = (index) => ({ ...gaps, index });
+      base = { index: gaps.index, depth: mine ? mine.depth! : current.startDepth };
+      end = gaps.keys.length;
+      if (at !== -1 && current.items.length < 2) home = gapPosition(draftKeys, at, current.moving, rows()).index;
+    } else if (from === -1) {
+      return undefined;
+    }
+    const filter = depthFilter(current);
 
-    let next: { index: number; depth: number } | null = null;
-    if (direction.y !== 0) {
-      // ±1 visible row; keep the depth where the new neighbours allow it.
+    let next: Spot | null = null;
+    if (direction.y) {
       const step = direction.y > 0 ? 1 : -1;
-      for (let index = base.index + step; index >= 0 && index < view.length; index += step) {
-        const projection = projectDepth(positionAt(index), base.depth, filter);
-        if (projection) {
-          next = { index, depth: projection.depth };
+      for (let index = base.index + step; index >= 0 && index <= end; index += step) {
+        const position = positionAt(index);
+        const projection = projectDepth(position, base.depth, filter);
+        if (projection && (index !== home || projection.depth !== current.startDepth)) {
+          next = { position, projection };
           break;
         }
       }
-    } else if (direction.x !== 0) {
+    } else if (direction.x) {
       // One level in or out, only when that exact level is allowed here.
       const position = positionAt(base.index);
       const depth = base.depth + (direction.x > 0 ? 1 : -1);
       const { min, max } = depthRange(position);
-      if (depth >= min && depth <= max && filter(depth, parentAt(position, depth))) {
-        next = { index: base.index, depth };
-      }
+      const parentKey = parentAt(position, depth);
+      if (depth >= min && depth <= max && filter(depth, parentKey)) next = { position, projection: { depth, parentKey } };
     }
     // Staying put still answers, so the sensor doesn't fall back to pixel steps.
     if (!next) return pointer;
-    current.pending = next;
-    return slotCoordinates(current, view, from, next, pointer);
+    const { position, projection } = next;
+    const x = pointer.x - manager.transform.value.x + (projection.depth - current.startDepth) * indentation();
+    if (!indicating()) {
+      current.pending = { index: position.index, depth: projection.depth };
+      return slotCoordinates(current, view, from, current.pending, pointer, x);
+    }
+    const line = lineAt(current, position, projection.depth, lineBefore(position))!;
+    group.showIndicator({ list: id, ...line });
+    // The overlay goes over the row with the line.
+    const element = (line.key == null ? null : manager.getDraggable(line.key)?.getElement()) ?? toElement(target);
+    if (!element?.isConnected) return pointer;
+    revealElement(element);
+    const rect = getLayoutRect(element);
+    return { x, y: rect.top + rect.height / 2 };
   };
 
   onScopeDispose(
@@ -718,40 +675,26 @@ export function makeSortableTree<T>(
     // The dragged nodes here (a multi-drag block) carry the projected depth, side by side.
     const block = new Map((projection ? blockHere() : []).map((key, index) => [key, index]));
     return visible.map((nodeKey) => {
-      const node = byKey.get(nodeKey);
-      const at = block.get(nodeKey);
-      if (at === undefined) {
-        return (
-          node ?? {
-            key: nodeKey,
-            item: group.lookup(nodeKey) as T,
-            depth: 0,
-            parentKey: null,
-            index: 0,
-            hasChildren: false,
-            collapsed: false,
-          }
-        );
-      }
-      return {
+      const node = byKey.get(nodeKey) ?? {
         key: nodeKey,
-        item: node?.item ?? (group.lookup(nodeKey) as T),
-        depth: projection!.depth,
-        parentKey: projection!.parentKey,
-        index: projection!.index + at,
-        hasChildren: node?.hasChildren ?? false,
-        collapsed: node?.collapsed ?? false,
+        item: group.lookup(nodeKey) as T,
+        depth: 0,
+        parentKey: null,
+        index: 0,
+        hasChildren: false,
+        collapsed: false,
       };
+      const at = block.get(nodeKey);
+      return at === undefined ? node : { ...node, ...projection!, index: projection!.index + at };
     });
   });
 
   const projected = computed<TreeProjection | null>(() => {
-    if (indicating()) {
-      const value = indicator.value;
-      return value ? { depth: value.depth ?? 0, parentKey: value.parentKey ?? null } : null;
-    }
     const projection = placement.value;
-    return projection && inTree.value ? { depth: projection.depth, parentKey: projection.parentKey } : null;
+    // Indicator mode: the line's place, while it is in this tree.
+    return projection && (indicating() ? indicator.value : inTree.value)
+      ? { depth: projection.depth, parentKey: projection.parentKey }
+      : null;
   });
 
   return {
