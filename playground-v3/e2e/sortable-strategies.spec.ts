@@ -31,6 +31,8 @@ test.describe('horizontal lists', () => {
 test.describe('custom placeholder', () => {
   test('user CSS overrides the zero-specificity default', async ({ page }) => {
     await page.goto('/#lists');
+    // Mid-screen, away from the page's bottom auto-scroll zone however tall the nav grows.
+    await page.getByTestId('custom').evaluate((element) => element.scrollIntoView({ block: 'center' }));
     await dragTo(page, item(page, 'c1'), await center(item(page, 'c3'), 0.8), { release: false });
     const placeholder = page.locator('[data-dnd-placeholder]');
     await expect(placeholder).toHaveAttribute('data-id', 'c1');

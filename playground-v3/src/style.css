@@ -274,8 +274,15 @@ pre.order {
   border-color: #2563eb;
 }
 
+/* One row however many demos there are: a nav that wraps pushes every demo further down
+   as demos are added, and specs that drag near the bottom then hit the page's auto-scroll. */
 nav {
-  flex-wrap: wrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+nav a {
+  flex: none;
 }
 
 section + section {

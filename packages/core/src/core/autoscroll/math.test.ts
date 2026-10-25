@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createRect } from '../animation/layout';
+import { createRect } from '../../animation/layout';
 import {
   DEFAULT_AUTO_SCROLL,
   createScrollIntent,
@@ -10,7 +10,7 @@ import {
   resolveAutoScrollOptions,
   updateScrollIntent,
   type Directions,
-} from './autoscroll';
+} from './math';
 
 const all: Directions = { up: true, down: true, left: true, right: true };
 const none: Directions = { up: false, down: false, left: false, right: false };
