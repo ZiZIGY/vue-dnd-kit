@@ -19,7 +19,8 @@
     <p class="lead">
       Ctrl/Cmd+click to select, then drag one of the selected cards. The list's <code>overlay</code> component fans the
       cards out like a hand of cards, each one drawn by <code>&lt;DragPreview :id&gt;</code>: the same clone the
-      default overlay shows. Cards past the clone limit render the preview's slot instead.
+      default overlay shows. On drop every card lands on its own slot (back on its place when cancelled). Cards past
+      the clone limit render the preview's slot instead and fade in where they land.
     </p>
     <div class="layout">
       <CardList

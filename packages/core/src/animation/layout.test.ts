@@ -115,6 +115,25 @@ describe('flip', () => {
     );
   });
 
+  it('an element sliding in from another list ignores the pointer until it lands', () => {
+    const item = element([300, 100, 100, 40]);
+    flip([{ ...entry(item.node, [0, 100, 100, 40]), crossing: true }], true);
+    expect(item.node.style.pointerEvents).toBe('none');
+    // Restarted on the way by a change in its new list: still crossing.
+    item.move([300, 140, 100, 40]);
+    flip([entry(item.node, [150, 110, 100, 40])], true);
+    expect(item.animations[0]!.cancel).toHaveBeenCalled();
+    expect(item.node.style.pointerEvents).toBe('none');
+    const [, land] = item.animations[1]!.addEventListener.mock.calls.find(([type]) => type === 'finish')!;
+    (land as () => void)();
+    expect(item.node.style.pointerEvents).toBe('');
+    // Stopped before landing, it gives the pointer back too.
+    flip([{ ...entry(item.node, [0, 140, 100, 40]), crossing: true }], true);
+    expect(item.node.style.pointerEvents).toBe('none');
+    flip([entry(item.node, [0, 140, 100, 40])], false);
+    expect(item.node.style.pointerEvents).toBe('');
+  });
+
   it('stops running animations when animations are turned off', () => {
     const item = element([0, 100, 100, 40]);
     flip([entry(item.node, [0, 60, 100, 40])], true);

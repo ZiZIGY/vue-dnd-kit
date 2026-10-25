@@ -400,7 +400,8 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       // where the others visibly travel into the block.
       if (previous !== element && !pickup && carried(key)) continue;
       const entries = byList.get(list) ?? [];
-      entries.push({ key, element, first });
+      // A recreated element came from another list (a swap partner, a key a list didn't take).
+      entries.push({ key, element, first, crossing: previous !== element });
       byList.set(list, entries);
     }
     for (const [list, entries] of byList) flip(entries, list.animation());
@@ -569,7 +570,33 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
   const isSwapping = (current: Session, list: ListEntry | undefined) =>
     // Swap is a single-item exchange; multi-drag falls back to sorting (rfcs/0001-v3.md §6, §14 item 6).
-    list?.behavior?.() === 'swap' && current.keys.length === 1 && !current.external && !current.copying;
+    // Between lists both must swap: the partner takes the active item's place in its list.
+    list?.behavior?.() === 'swap' &&
+    listOf(current.origin.list)?.behavior?.() === 'swap' &&
+    current.keys.length === 1 &&
+    !current.external &&
+    !current.copying;
+
+  /**
+   * Whether `partner`, an item of `list`, can take the active item's place. From another
+   * list it leaves `list` and enters the origin list, under the rules any item entering
+   * it follows: `list` must let it go, the origin must take it.
+   */
+  const canSwap = (current: Session, list: ListEntry, partner: Key): boolean => {
+    const origin = listOf(current.origin.list)!;
+    return (
+      list === origin ||
+      (list.pull() === true &&
+        !origin.isDisabled() &&
+        origin.canPut({
+          keys: [partner],
+          items: [lookup(partner)],
+          types: itemTypes(partner),
+          from: list.id,
+          to: origin.id,
+        }))
+    );
+  };
 
   /** Dragged key a slot stands for: the original of a copy, otherwise the key itself. */
   const originalOf = (current: Session, key: Key): Key => {
@@ -1010,7 +1037,10 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
   // ─── Swap ────────────────────────────────────────────────────────────────────
 
-  /** Restores the drafts to the drag start, then exchanges the active item with `partner`. */
+  /**
+   * Restores the drafts to the drag start, then exchanges the active item with `partner`:
+   * each takes the other's place, in one list or across two.
+   */
   const applySwap = (partner: Key | null, pointer: Coordinates | null) => {
     const current = session.value!;
     const previous = current.swap;
@@ -1045,6 +1075,14 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     manager.announce('onDragOver');
   };
 
+  /** The swap partner as the drop event tells it: it went to where the active item started. */
+  const partnerOf = (current: Session, partner: Key): SortableDropEvent['partner'] => ({
+    key: partner,
+    item: lookup(partner),
+    from: { ...current.sources.get(partner)! },
+    to: { list: current.origin.list!, index: current.origin.index },
+  });
+
   const updateSwap = (target: ListEntry, event: DnDEvent) => {
     const current = session.value!;
     const { partner, key } = projectSwap({
@@ -1054,8 +1092,10 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       activeKey: current.slot,
       partner: current.swap,
     });
-    if (partner === undefined || partner === current.swap || blocksKey(current.hysteresis, key)) return;
-    applySwap(partner, event.pointer);
+    if (partner === undefined || blocksKey(current.hysteresis, key)) return;
+    // An item that can't take the active item's place makes no exchange: hovering it reverts one.
+    const next = partner != null && !canSwap(current, target, partner) ? null : partner;
+    if (next !== current.swap) applySwap(next, event.pointer);
   };
 
   // ─── Copy ────────────────────────────────────────────────────────────────────
@@ -1346,6 +1386,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         to: { list: target.id, index: insert.length ? finalKeys.indexOf(insert[0]!) : -1 },
         sameList: current.origin.list === target.id,
         mode,
+        ...(mode === 'swap' && { partner: partnerOf(current, current.swap!) }),
       },
     };
   };
@@ -1474,11 +1515,13 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       const list = lists.get(result.event.to.list);
       // The committed keys: a `defineModel` ref only shows the new array after the parent re-renders.
       const committed = list ? (result.next.get(list) ?? list.getKeys()) : [];
-      text = sortableTexts.end(who, {
-        list: result.event.to.list,
-        index: result.event.to.index,
-        length: committed.length,
-      });
+      // A swap changes no list's length.
+      const partner = result.event.partner;
+      text = sortableTexts.end(
+        who,
+        { list: result.event.to.list, index: result.event.to.index, length: committed.length },
+        partner && { key: partner.key, spot: spotIn(partner.to.list, partner.to.index) },
+      );
     } else if (!result && !isForeign(event) && !current.copying && current.origin.list != null) {
       text = sortableTexts.end(who, spotIn(current.origin.list, current.origin.index));
     }
@@ -1789,7 +1832,13 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       const key = spotKey(spot);
       if (key === spokenSpot) return '';
       spokenSpot = key;
-      return sortableTexts.over(subjectOf(current), spot);
+      // A swap partner sits where the active item started.
+      const partner = current.swap;
+      return sortableTexts.over(
+        subjectOf(current),
+        spot,
+        partner == null ? undefined : { key: partner, spot: spotIn(current.origin.list!, current.origin.index) },
+      );
     },
     onDragEnd: (event) => (announced?.key === event.active.id ? announced.text : undefined),
     onDragCancel: (event) => (announced?.key === event.active.id ? announced.text : undefined),

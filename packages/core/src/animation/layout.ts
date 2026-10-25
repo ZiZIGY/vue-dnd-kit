@@ -19,6 +19,8 @@ interface LayoutAnimationState {
   to: Rect;
   /** From a user function: it may animate more than `translate`. */
   custom: boolean;
+  /** Slides in from another list: it ignores the pointer meanwhile (see `FlipEntry.crossing`). */
+  crossing?: boolean;
 }
 
 const layoutAnimations = new WeakMap<Element, LayoutAnimationState>();
@@ -165,15 +167,20 @@ const cancelTransformTransitions = (elements: Element[]) => {
 };
 
 export const stopLayoutAnimation = (element: Element): void => {
-  layoutAnimations.get(element)?.animation.cancel();
+  const state = layoutAnimations.get(element);
+  state?.animation.cancel();
   layoutAnimations.delete(element);
+  if (state?.crossing) (element as HTMLElement).style.pointerEvents = '';
 };
 
-const track = (element: Element, animation: Animation, to: Rect, custom: boolean) => {
-  const state = { animation, to, custom };
+const track = (element: HTMLElement, animation: Animation, to: Rect, custom: boolean, crossing?: boolean) => {
+  const state = { animation, to, custom, crossing };
   layoutAnimations.set(element, state);
+  if (crossing) element.style.pointerEvents = 'none';
   const release = () => {
-    if (layoutAnimations.get(element) === state) layoutAnimations.delete(element);
+    if (layoutAnimations.get(element) !== state) return;
+    layoutAnimations.delete(element);
+    if (crossing) element.style.pointerEvents = '';
   };
   animation.addEventListener('finish', release);
   animation.addEventListener('cancel', release);
@@ -187,6 +194,11 @@ export interface FlipEntry {
   element: HTMLElement;
   /** Visual rect captured before the change (including any running animation). */
   first: Rect;
+  /**
+   * Slides in from another list (a swap partner, an item a list didn't take): it ignores
+   * the pointer until it lands, or hit tests over the lists it crosses would find it.
+   */
+  crossing?: boolean;
 }
 
 /**
@@ -208,9 +220,11 @@ export const flip = (
   if (!resolved) return;
 
   const measured = entries.map((entry) => ({ ...entry, last: getLayoutRect(entry.element) }));
-  for (const { key, element, first, last } of measured) {
+  for (const { key, element, first, last, crossing } of measured) {
     const running = layoutAnimations.get(element);
     if (running && isRunning(running.animation) && sameRect(running.to, last)) continue;
+    // Interrupted on its way in from another list, it keeps ignoring the pointer.
+    const passing = crossing || (!!running?.crossing && isRunning(running.animation));
     stopLayoutAnimation(element);
     const dx = first.left - last.left;
     const dy = first.top - last.top;
@@ -224,7 +238,7 @@ export const flip = (
         options: resolved.options,
       });
       if (result && typeof (result as Animation).cancel === 'function') {
-        track(element, result as Animation, last, true);
+        track(element, result as Animation, last, true, passing);
       }
       continue;
     }
@@ -237,6 +251,7 @@ export const flip = (
       ),
       last,
       false,
+      passing,
     );
   }
 };

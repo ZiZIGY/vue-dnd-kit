@@ -110,7 +110,7 @@ export interface OverlayColumn {
   animation?: LayoutAnimation;
   /** Renders the column in the default overlay. The sortable layer brings it: plain drags don't bundle it. */
   preview: Component;
-  /** Lands the column's clones (`overlayItems`) on their slots with the drop. */
+  /** Lands the overlay's clones (`overlayItems`: the column's, custom layouts' `DragPreview`s) with the drop. */
   land: typeof landOverlayItems;
 }
 
@@ -861,7 +861,7 @@ export function createDnDManager(props: DnDProviderProps) {
       items.push({ element: clone, from: getRect(clone), to: visible ? to : null });
     }
     fades = fadeInPlace(props.dropAnimation, resting);
-    // Clones exist only in the sortable layer's column.
+    // Clones exist only with the sortable layer's column: its cells, a custom layout's `DragPreview`s.
     return overlayColumn.value?.land(props.dropAnimation, items, box) ?? Promise.resolve();
   };
 
