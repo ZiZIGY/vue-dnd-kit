@@ -197,8 +197,14 @@ export interface DropAnimationContext {
    */
   overlay: HTMLElement;
   from: Rect;
-  /** Final rect of the dropped item; `null` when it isn't rendered (the overlay fades out). */
+  /** Final rect of the dropped item; `null` when it isn't rendered or visible (the overlay fades out). */
   to: Rect | null;
+  /**
+   * The item isn't shown after a drop on a zone (not a sortable list), e.g. it was dropped
+   * into another item (a folder) or a trash zone: the zone's visible rect. The default
+   * animation shrinks the overlay into it as it fades out, instead of fading in place.
+   */
+  into: Rect | null;
   reason: 'drop' | 'cancel';
   active: Active;
   options: Required<AnimationOptions>;
@@ -464,10 +470,24 @@ export interface Placement {
   left: boolean;
 }
 
+/**
+ * Options of `makeDroppable`.
+ *
+ * **Drop into an item.** A drop target on a sortable item's element (or inside it) works
+ * as everywhere else, with one rule while that item's list would sort the drag: it counts
+ * only while the pointer is in the middle of the item (25–75% along the list's axis; x in
+ * grids), where the drop goes into the target and the list doesn't move for it. Near the
+ * item's edges the list sorts as usual. A target whose `accept` refuses the drag is left
+ * out, so the list sorts over the item like over any other (no need to disable it). The
+ * keyboard stops on such a target before moving past its item. A target is never one of
+ * its own drag: not in (or on) any dragged item, nor in the slot one lands in. To move the
+ * items out of their list in `onDrop`, call `e.source.remove()`.
+ */
 export interface DroppableOptions<TData = unknown> {
   /** Default: `useId()`, stable between server and client render. */
   id?: MaybeReadonlyRefOrGetter<Key>;
   data?: MaybeReadonlyRefOrGetter<TData>;
+  /** What this target takes. Inside a sortable item, one that refuses the drag lets the list sort over it. */
   accept?: AcceptRule | Ref<AcceptRule>;
   acceptMode?: AcceptMode;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;

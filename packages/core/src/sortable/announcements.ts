@@ -35,6 +35,9 @@ export const sortableTexts = {
   over: (who: SortableSubject, spot: SortableSpot) => `${subject(who)} moved to ${where(spot)}.`,
   end: (who: SortableSubject, spot: SortableSpot) => `${subject(who)} dropped at ${where(spot)}.`,
   removed: (who: SortableSubject, list: Key) => `${subject(who)} removed from list ${list}.`,
+  /** Over a drop target inside an item (drop into the item). */
+  target: (who: SortableSubject, target: Key) => `Over ${target}: dropping puts ${subject(who, false)} inside.`,
+  into: (who: SortableSubject, target: Key) => `${subject(who)} dropped into ${target}.`,
   cancel: (who: SortableSubject, spot: SortableSpot) =>
     `Dragging was cancelled. ${subject({ ...who, copy: false })} returned to ${where(spot)}.`,
 };

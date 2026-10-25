@@ -40,6 +40,8 @@ export function createDroppable<TData>(
   const entry: DroppableEntry = {
     id: id.value,
     priority: options.priority ?? 0,
+    // Lists and trees accept by group rules.
+    sortable: !!internals.accepts,
     getElement: () => toElement(target),
     getData: () => read(options.data),
     isDisabled: () => !!read(options.disabled),

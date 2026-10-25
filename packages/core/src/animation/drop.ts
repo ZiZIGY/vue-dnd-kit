@@ -1,5 +1,5 @@
 import type { AnimationOptions, DropAnimation, DropAnimationContext, Rect } from '../types';
-import { canAnimate, prefersReducedMotion, resolveAnimation } from './layout';
+import { canAnimate, getCenter, prefersReducedMotion, resolveAnimation } from './layout';
 
 export const DEFAULT_DROP_ANIMATION: Required<AnimationOptions> = {
   duration: 250,
@@ -8,6 +8,9 @@ export const DEFAULT_DROP_ANIMATION: Required<AnimationOptions> = {
 
 /** Margin over the animation duration after which the drop ends anyway. */
 const STALL_MARGIN = 1000;
+
+/** Scale at which an overlay going `into` a zone vanishes, centered on it. */
+const INTO_SCALE = 0.25;
 
 /**
  * Waits for the drop animation, but never longer than `timeout`: an animation that
@@ -31,8 +34,9 @@ const settle = async (result: Animation | Promise<unknown> | void, timeout: numb
 
 /**
  * Flies the overlay to the final rect of the dropped item, or fades it out when the
- * item isn't rendered. The size is animated as width/height, not `scale()`: the
- * content re-lays out at the target size instead of being stretched.
+ * item isn't rendered: shrinking into the zone it was dropped `into`, else in place.
+ * A landing animates the size as width/height, not `scale()`: the content re-lays out
+ * at the target size instead of being stretched.
  */
 export const runDropAnimation = async (
   option: DropAnimation | undefined,
@@ -42,9 +46,11 @@ export const runDropAnimation = async (
   if (!resolved) return;
   const full: DropAnimationContext = { ...context, options: resolved.options };
   if (resolved.custom) return settle(resolved.custom(full), resolved.options.duration + STALL_MARGIN);
-  const { overlay, from, to } = context;
+  const { overlay, from, to, into } = context;
   if (!canAnimate(overlay)) return;
 
+  // Into a zone: scaled around its center (the overlay's transform origin is its corner).
+  const end = into && getCenter(into);
   const keyframes: Keyframe[] = to
     ? [
         {
@@ -62,7 +68,9 @@ export const runDropAnimation = async (
         { opacity: 1, transform: `translate3d(${from.left}px, ${from.top}px, 0)` },
         {
           opacity: 0,
-          transform: `translate3d(${from.left}px, ${from.top}px, 0) scale(0.96)`,
+          transform: end
+            ? `translate3d(${end.x - (from.width * INTO_SCALE) / 2}px, ${end.y - (from.height * INTO_SCALE) / 2}px, 0) scale(${INTO_SCALE})`
+            : `translate3d(${from.left}px, ${from.top}px, 0) scale(0.96)`,
         },
       ];
   await settle(
