@@ -88,6 +88,38 @@ const suppressNextClick = () => {
   const timer = setTimeout(cleanup, CLICK_SUPPRESS_MS);
 };
 
+const USER_SELECT = ['-webkit-user-select', 'user-select'] as const;
+
+const isUnselectable = (element: Element): boolean => {
+  const style = getComputedStyle(element);
+  return USER_SELECT.some((name) => style.getPropertyValue(name) === 'none');
+};
+
+/**
+ * Makes the pressed node selectable until the returned function runs, so that the
+ * press dispatches a `selectstart` the sensor can cancel (see the pointerdown handler).
+ * Only an inline value the sensor set is ever restored (rfcs/0001-v3.md §13).
+ */
+export const makeSelectableForPress = (element: Element): (() => void) => {
+  if (!(element instanceof HTMLElement || element instanceof SVGElement) || !isUnselectable(element)) {
+    return () => {};
+  }
+  const { style } = element;
+  const saved = USER_SELECT.map(
+    (name) => [name, style.getPropertyValue(name), style.getPropertyPriority(name)] as const,
+  );
+  for (const name of USER_SELECT) style.setProperty(name, 'text', 'important');
+  let restored = false;
+  return () => {
+    if (restored) return;
+    restored = true;
+    for (const [name, value, priority] of saved) {
+      if (value) style.setProperty(name, value, priority);
+      else style.removeProperty(name);
+    }
+  };
+};
+
 interface PendingSession {
   pointerId: number;
   id: DraggableEntry['id'];
@@ -99,6 +131,8 @@ interface PendingSession {
   startedAt: number;
   /** The press turned into a drag (even if it was cancelled since): its click is swallowed. */
   dragged: boolean;
+  /** Undoes `makeSelectableForPress` once the press has been handled. */
+  restoreSelectable: () => void;
   stops: Array<() => void>;
 }
 
@@ -111,6 +145,7 @@ export function usePointerSensor(manager: DnDManager): void {
     clearTimeout(session.timer);
     if (session.progressFrame) cancelAnimationFrame(session.progressFrame);
     session.stops.forEach((stop) => stop());
+    session.restoreSelectable();
     if (document.body.hasPointerCapture?.(session.pointerId)) {
       document.body.releasePointerCapture(session.pointerId);
     }
@@ -171,6 +206,8 @@ export function usePointerSensor(manager: DnDManager): void {
 
   const onPointerMove = (event: PointerEvent) => {
     if (!session || event.pointerId !== session.pointerId) return;
+    // The mousedown that came with the press has been handled by now.
+    session.restoreSelectable();
     session.current = { x: event.clientX, y: event.clientY };
     if (manager.status.value === 'activating') evaluate();
     else if (session.dragged && manager.status.value === 'dragging') manager.move(session.current);
@@ -196,6 +233,34 @@ export function usePointerSensor(manager: DnDManager): void {
     if (session) event.preventDefault();
   };
 
+  /**
+   * A press on a draggable never starts a text selection (rfcs/0001-v3.md §10). Beyond
+   * the selection itself, WebKit uses it to auto-scroll the scroll container the press
+   * started in whenever the pointer is outside it, even with the library's auto-scroll
+   * off: that fights the library's own auto-scroll and moves targets under the pointer.
+   * WebKit settles this on mousedown, by dispatching `selectstart`: once that is
+   * cancelled, it neither selects nor auto-scrolls. (Cancelling `mousemove` or
+   * `-webkit-user-drag: none` don't stop it.)
+   */
+  const cancelSelection = (event: Event) => {
+    if (!session) return;
+    event.preventDefault();
+    session.restoreSelectable();
+    // What the press would have done otherwise: a click drops the selection elsewhere.
+    if (!session.dragged) document.getSelection()?.removeAllRanges();
+  };
+
+  /** A touch drag owns the gesture: the page must not scroll or zoom under it. */
+  const preventTouchScroll = (event: TouchEvent) => {
+    if (
+      event.cancelable &&
+      manager.status.value === 'dragging' &&
+      manager.active.value?.sensor === 'pointer'
+    ) {
+      event.preventDefault();
+    }
+  };
+
   useEventListener(defaultDocument, 'pointerdown', (event: PointerEvent) => {
     if (session || manager.status.value !== 'idle') return;
     if (!event.isPrimary || event.button !== 0) return;
@@ -216,6 +281,24 @@ export function usePointerSensor(manager: DnDManager): void {
     );
     const origin = { x: event.clientX, y: event.clientY };
 
+    const stops = [
+      useEventListener(document, 'pointermove', onPointerMove),
+      useEventListener(document, 'pointerup', onPointerUp),
+      useEventListener(document, 'pointercancel', onPointerCancel),
+      useEventListener(window, 'contextmenu', preventWhileActive),
+      useEventListener(window, 'dragstart', preventWhileActive),
+      // From the press on: the mousedown that follows decides about selecting.
+      useEventListener(document, 'selectstart', cancelSelection, { capture: true }),
+    ];
+    if (kind === 'touch') {
+      // Touch events keep targeting the element the finger landed on. When a drag into
+      // another list re-creates the item, that element leaves the document and its
+      // touchmoves no longer bubble to the window listener below: the browser would
+      // pan the page and fire `pointercancel`. A listener on the target itself still
+      // sees them.
+      stops.push(useEventListener(target, 'touchmove', preventTouchScroll, { passive: false }));
+    }
+
     session = {
       pointerId: event.pointerId,
       id: entry.id,
@@ -224,13 +307,10 @@ export function usePointerSensor(manager: DnDManager): void {
       constraint,
       startedAt: performance.now(),
       dragged: false,
-      stops: [
-        useEventListener(document, 'pointermove', onPointerMove),
-        useEventListener(document, 'pointerup', onPointerUp),
-        useEventListener(document, 'pointercancel', onPointerCancel),
-        useEventListener(window, 'contextmenu', preventWhileActive),
-        useEventListener(window, 'dragstart', preventWhileActive),
-      ],
+      // WebKit dispatches no `selectstart` for a `user-select: none` node, yet still
+      // auto-scrolls: such a node is selectable for the press, so it can be cancelled.
+      restoreSelectable: kind === 'touch' ? () => {} : makeSelectableForPress(target),
+      stops,
     };
     manager.status.value = 'activating';
     manager.activationProgress.value = 0;
@@ -240,20 +320,7 @@ export function usePointerSensor(manager: DnDManager): void {
   // iOS Safari honours preventDefault() on touchmove only when a non-passive
   // listener exists before the gesture starts. While activating, the page must
   // still scroll (a quick swipe is a scroll, not a drag).
-  useEventListener(
-    defaultWindow,
-    'touchmove',
-    (event: TouchEvent) => {
-      if (
-        event.cancelable &&
-        manager.status.value === 'dragging' &&
-        manager.active.value?.sensor === 'pointer'
-      ) {
-        event.preventDefault();
-      }
-    },
-    { passive: false },
-  );
+  useEventListener(defaultWindow, 'touchmove', preventTouchScroll, { passive: false });
 
   useEventListener(defaultDocument, 'visibilitychange', () => {
     if (document.visibilityState !== 'hidden') return;

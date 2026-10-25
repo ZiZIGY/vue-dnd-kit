@@ -37,6 +37,10 @@
   import PlaylistApp from './demos/apps/PlaylistApp.vue';
   import CalendarApp from './demos/apps/CalendarApp.vue';
   import ChessApp from './demos/apps/ChessApp.vue';
+  import TouchListDemo from './demos/touch/TouchListDemo.vue';
+  import TouchHandleDemo from './demos/touch/TouchHandleDemo.vue';
+  import TouchKanbanDemo from './demos/touch/TouchKanbanDemo.vue';
+  import TouchTreeDemo from './demos/touch/TouchTreeDemo.vue';
 
   const demos = {
     sortable: SortableDemo,
@@ -73,6 +77,11 @@
     'app-playlist': PlaylistApp,
     'app-calendar': CalendarApp,
     'app-chess': ChessApp,
+    // Phone layouts (open them in a mobile viewport).
+    'touch-list': TouchListDemo,
+    'touch-handle': TouchHandleDemo,
+    'touch-kanban': TouchKanbanDemo,
+    'touch-tree': TouchTreeDemo,
   };
   type DemoName = keyof typeof demos;
 

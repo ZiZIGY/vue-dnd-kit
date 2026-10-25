@@ -192,6 +192,8 @@ interface ScrollStyle {
   /** Scroll offsets run from -max to 0 (RTL, `*-reverse` flex containers). */
   reverseX: boolean;
   reverseY: boolean;
+  /** Has `scroll-snap-type`. */
+  snap: boolean;
 }
 
 interface Measured {
@@ -210,8 +212,12 @@ const readScrollStyle = (element: Element): ScrollStyle => {
     y: OVERFLOW.test(style.overflowY),
     reverseX: (style.direction === 'rtl') !== (flex && style.flexDirection === 'row-reverse'),
     reverseY: flex && style.flexDirection === 'column-reverse',
+    snap: hasSnapping(style),
   };
 };
+
+const hasSnapping = (style: CSSStyleDeclaration): boolean =>
+  !!style.scrollSnapType && style.scrollSnapType !== 'none';
 
 /** The page itself scrolls through the window, which is always the last candidate. */
 const isPageRoot = (element: Element): boolean =>
@@ -249,6 +255,8 @@ interface PageScroll {
   x: boolean;
   y: boolean;
   reverseX: boolean;
+  /** `scroll-snap-type` on the root, which snaps the viewport. */
+  snap: boolean;
 }
 
 const readPageScroll = (): PageScroll => {
@@ -260,7 +268,12 @@ const readPageScroll = (): PageScroll => {
     const value = root[axis] === 'visible' ? body[axis] : root[axis];
     return value !== 'hidden' && value !== 'clip';
   };
-  return { x: allowed('overflowX'), y: allowed('overflowY'), reverseX: root.direction === 'rtl' };
+  return {
+    x: allowed('overflowX'),
+    y: allowed('overflowY'),
+    reverseX: root.direction === 'rtl',
+    snap: hasSnapping(root),
+  };
 };
 
 const measureWindow = (page: PageScroll): Measured => {
@@ -321,6 +334,8 @@ interface Session {
   /** Elements that scrolled last frame: they keep scrolling while the pointer is past their edge. */
   previous: Element[];
   page: PageScroll;
+  /** Inline `scroll-snap-type` of the scrollers whose snapping is suspended, restored when the drag ends. */
+  snaps: Map<HTMLElement, { value: string; priority: string }>;
 }
 
 /** Runs auto-scroll for the provider's pointer drags. Keyboard drags never auto-scroll. */
@@ -348,6 +363,33 @@ export function useAutoScroll(manager: DnDManager): void {
     }
   };
 
+  /**
+   * Scroll snapping and small relative steps don't mix: Chromium snaps every
+   * programmatic `scrollBy` in its direction (a whole column per frame with
+   * `mandatory`), and a step shorter than the `proximity` range snaps back. Snapping
+   * is suspended on a scroller from its first step until the drag ends; restoring it
+   * re-snaps to the nearest snap position.
+   */
+  const suspendSnapping = (current: Session, scroller: Scroller) => {
+    const snaps = scroller === window ? current.page.snap : styleOf(current, scroller as Element).snap;
+    const element = scroller === window ? document.documentElement : scroller;
+    if (!snaps || !(element instanceof HTMLElement) || current.snaps.has(element)) return;
+    const { style } = element;
+    current.snaps.set(element, {
+      value: style.getPropertyValue('scroll-snap-type'),
+      priority: style.getPropertyPriority('scroll-snap-type'),
+    });
+    style.setProperty('scroll-snap-type', 'none', 'important');
+  };
+
+  const restoreSnapping = (current: Session) => {
+    for (const [element, { value, priority }] of current.snaps) {
+      if (value) element.style.setProperty('scroll-snap-type', value, priority);
+      else element.style.removeProperty('scroll-snap-type');
+    }
+    current.snaps.clear();
+  };
+
   const step = (current: Session, scroller: Scroller, dx: number, dy: number) => {
     let remainder = current.remainders.get(scroller);
     if (!remainder) current.remainders.set(scroller, (remainder = { x: 0, y: 0 }));
@@ -357,7 +399,9 @@ export function useAutoScroll(manager: DnDManager): void {
     const top = Math.trunc(y);
     remainder.x = x - left;
     remainder.y = y - top;
-    if (left || top) scrollBy(scroller, left, top);
+    if (!left && !top) return;
+    suspendSnapping(current, scroller);
+    scrollBy(scroller, left, top);
   };
 
   const isPointerDrag = () =>
@@ -430,6 +474,7 @@ export function useAutoScroll(manager: DnDManager): void {
       remainders: new Map(),
       previous: [],
       page: readPageScroll(),
+      snaps: new Map(),
     };
     // A list's option applies to its scroll container: the list itself or its closest scrollable ancestor.
     for (const entry of entries) {
@@ -446,6 +491,7 @@ export function useAutoScroll(manager: DnDManager): void {
   const stop = () => {
     if (frame) cancelAnimationFrame(frame);
     frame = 0;
+    if (session) restoreSnapping(session);
     session = null;
     manager.isAutoScrolling.value = false;
   };
