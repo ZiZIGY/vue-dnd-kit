@@ -41,6 +41,8 @@ export function makeSortableItem<TData = unknown>(
       type: () => read(options.type) ?? group.name,
       data: options.data,
       activation: options.activation,
+      canDrag: options.canDrag,
+      attributes: options.attributes,
       overlay: options.overlay,
       modifiers: () => read(options.modifiers) ?? context.getModifiers?.(),
     },

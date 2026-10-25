@@ -269,23 +269,58 @@ describe('makeSortableList options are read when needed', () => {
   });
 });
 
-describe('makeSortableItem options are read when needed', () => {
+describe('makeSortableItem options', () => {
   afterEach(() => {
     mounted.splice(0).forEach((unmount) => unmount());
     vi.restoreAllMocks();
   });
 
-  it('`activation` when a press starts', async () => {
+  const press = (type: string, target: EventTarget, init: PointerEventInit = {}) => {
+    const event = new PointerEvent(type, { bubbles: true, composed: true, isPrimary: true, button: 0, pointerId: 1, pointerType: 'mouse', ...init });
+    // happy-dom leaves it out; the copy modifier reads it.
+    Object.defineProperty(event, 'getModifierState', { value: () => false });
+    target.dispatchEvent(event);
+  };
+
+  it('`canDrag` gates pointer and keyboard drags, as on makeDraggable', async () => {
+    const canDrag = vi.fn((event: PointerEvent | KeyboardEvent) => event.shiftKey);
+    const container = mountPair({}, {}, {}, { canDrag, activation: { mouse: {} } });
+    await nextTick();
+    const row = container.querySelector<HTMLElement>('[data-id="a1"]')!;
+
+    press('pointerdown', row);
+    expect(manager.status.value).toBe('idle');
+    row.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
+    expect(manager.status.value).toBe('idle');
+    expect(canDrag).toHaveBeenCalledTimes(2);
+
+    press('pointerdown', row, { shiftKey: true });
+    expect(manager.status.value).toBe('dragging');
+    expect(manager.active.value?.id).toBe('a1');
+    press('pointercancel', document);
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+  });
+
+  it('`attributes`, live', async () => {
+    const attributes = shallowRef(false);
+    const container = mountPair({}, {}, {}, { attributes });
+    await nextTick();
+    const row = container.querySelector('[data-id="a1"]')!;
+    expect(row.hasAttribute('role')).toBe(false);
+    expect(row.hasAttribute('aria-roledescription')).toBe(false);
+    attributes.value = true;
+    await nextTick();
+    expect(row.getAttribute('role')).toBe('button');
+    expect(row.getAttribute('aria-roledescription')).toBe('sortable');
+    // The other list's rows keep the default.
+    expect(container.querySelector('[data-id="b1"]')!.getAttribute('role')).toBe('button');
+  });
+
+  it('`activation` is read when a press starts', async () => {
     const activation = shallowRef<ActivationOptions>({ mouse: {} });
     const container = mountPair({}, {}, {}, { activation: () => activation.value });
     await nextTick();
     const row = container.querySelector('[data-id="a1"]')!;
-    const press = (type: string, target: EventTarget) => {
-      const event = new PointerEvent(type, { bubbles: true, composed: true, isPrimary: true, button: 0, pointerId: 1, pointerType: 'mouse' });
-      // happy-dom leaves it out; the copy modifier reads it.
-      Object.defineProperty(event, 'getModifierState', { value: () => false });
-      target.dispatchEvent(event);
-    };
 
     press('pointerdown', row);
     expect(manager.status.value).toBe('dragging');

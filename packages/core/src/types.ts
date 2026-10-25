@@ -704,8 +704,9 @@ export interface SortableListReturn<T> {
  * data: an automatic id would change whenever the component is recreated (moved to
  * another list, recycled by a virtual list), and the drag would lose the item.
  *
- * Options take a value, a ref or a getter (`overlay`: a value or a ref) and mean what
- * they mean on `makeDraggable`.
+ * Options but `canDrag` take a value, a ref or a getter (`overlay`: a value or a ref) and
+ * mean what they mean on `makeDraggable`. There is no `keyboard`: the keyboard moves a
+ * sortable item by slots.
  */
 export interface SortableItemOptions<TData = unknown> {
   /** Key of the item in its list. A getter keeps it current in virtual lists. */
@@ -726,6 +727,13 @@ export interface SortableItemOptions<TData = unknown> {
   data?: MaybeReadonlyRefOrGetter<TData>;
   /** Overrides the provider's `activation`. Read when a press starts. */
   activation?: MaybeReadonlyRefOrGetter<ActivationOptions | undefined>;
+  /** Extra gate, e.g. drag only while a key is held. */
+  canDrag?: (event: PointerEvent | KeyboardEvent) => boolean;
+  /**
+   * Set role/tabindex/aria-* attributes (default `true`), never overriding the user's
+   * own. Live: turning it off removes what the library set.
+   */
+  attributes?: MaybeReadonlyRefOrGetter<boolean | undefined>;
 }
 
 export interface SortableItemReturn {
