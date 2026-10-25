@@ -65,6 +65,21 @@ test.describe('Nuxt UI: sortable lists', () => {
     await expect(badge).toHaveAttribute('tabindex', '0');
   });
 
+  test('a UTooltip trigger keeps the drag instructions while its tooltip opens and closes', async ({ page }) => {
+    // Reka describes the trigger by the tooltip only while it is open, rewriting
+    // aria-describedby both ways: the instructions id goes back on each time.
+    const badge = byId(page.getByTestId('tags'), 'vue');
+    const instructions = await badge.getAttribute('aria-describedby');
+    expect(instructions).toMatch(/^dnd-kit-instructions-\S+$/);
+    await badge.hover();
+    const tooltip = page.locator('[data-slot="content"]', { hasText: '#vue' });
+    await expect(tooltip).toBeVisible();
+    await expect(badge).toHaveAttribute('aria-describedby', new RegExp(`^(?!dnd-kit-)\\S+ ${instructions}$`));
+    await page.mouse.move(0, 0);
+    await expect(tooltip).toBeHidden();
+    await expect(badge).toHaveAttribute('aria-describedby', instructions!);
+  });
+
   test('the overlay clone keeps the kit styling', async ({ page }) => {
     const source = await look(task(page, 't1'));
     await drag(page, handle(page, 't1'), await at(task(page, 't2')), { release: false });

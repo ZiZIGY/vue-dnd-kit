@@ -86,15 +86,23 @@ describe('SSR', () => {
       },
     });
 
+    // Each list in its own component: they provide the context their items read.
+    const Tree = defineComponent({
+      setup() {
+        const tree = makeSortableTree(useTemplateRef<HTMLElement>('tree'), { items: ref([{ id: 'root' }]) });
+        seen.push(tree.id);
+        return () => h('ul', { ref: 'tree', 'data-tree': tree.id });
+      },
+    });
+
     const Lists = defineComponent({
       setup() {
         const list = makeSortableList(useTemplateRef<HTMLElement>('list'), { items: ref([{ id: 'a' }, { id: 'b' }]) });
-        const tree = makeSortableTree(useTemplateRef<HTMLElement>('tree'), { items: ref([{ id: 'root' }]) });
-        seen.push(list.id, tree.id);
+        seen.push(list.id);
         return () =>
           h('div', [
             h('ul', { ref: 'list', 'data-list': list.id }, list.items.value.map((task) => h(Row, { key: task.id, task }))),
-            h('ul', { ref: 'tree', 'data-tree': tree.id }),
+            h(Tree),
             h(Piece),
             h(Piece),
           ]);

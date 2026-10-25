@@ -1,5 +1,6 @@
 import {
   computed,
+  getCurrentInstance,
   markRaw,
   onScopeDispose,
   provide,
@@ -41,13 +42,30 @@ export const defaultGetKey = (item: unknown): Key =>
     ? ((item as { id: Key }).id)
     : (item as Key);
 
+/** Bundlers replace it: development builds keep the warnings, production drops them. */
+declare const process: { env: { NODE_ENV?: string } };
+
+/** Components that provide a sortable context (development only). */
+const providers = new WeakSet<object>();
+
 export const provideSortableContext = (
   group: SortableGroup,
   list: ListEntry,
   getKey: (item: never) => Key,
   overlay: Component | undefined,
   getModifiers?: () => Modifier[] | undefined,
-): void =>
+): void => {
+  if (process.env.NODE_ENV !== 'production') {
+    // A second list overrides the first one's context: every item of the component
+    // registers with the last list, and the first list's items stop sorting.
+    const instance = getCurrentInstance();
+    if (instance && providers.has(instance)) {
+      console.warn(
+        '[vue-dnd-kit] Two sortable lists (makeSortableList, makeSortableTree) in one component: their items all join the last one, so the others stop sorting. Render each list in its own component.',
+      );
+    }
+    if (instance) providers.add(instance);
+  }
   provide(SORTABLE_CONTEXT, {
     group,
     list,
@@ -55,6 +73,7 @@ export const provideSortableContext = (
     overlay: overlay && markRaw(overlay),
     getModifiers,
   });
+};
 
 let warnedClone = false;
 

@@ -69,6 +69,21 @@ test.describe('Vuetify: sortable lists', () => {
     await expect(chip).toHaveAttribute('tabindex', '0');
   });
 
+  test('a v-tooltip activator is described by the tooltip and by the drag instructions', async ({ page }) => {
+    // v-tooltip puts its own aria-describedby on the chip; the instructions join it.
+    const chip = byId(page.getByTestId('tags'), 'vue');
+    const ids = (await chip.getAttribute('aria-describedby'))?.split(' ') ?? [];
+    expect(ids).toHaveLength(2);
+    const [tooltip, instructions] = ids as [string, string];
+    expect(tooltip).not.toMatch(/^dnd-kit-/);
+    expect(instructions).toMatch(/^dnd-kit-instructions-/);
+    await expect(page.locator(`[id="${instructions}"]`)).toHaveCount(1);
+    await chip.hover();
+    await expect(page.locator(`[id="${tooltip}"]`)).toContainText('#vue');
+    await expect(chip).toHaveAttribute('aria-describedby', `${tooltip} ${instructions}`);
+    await expect(chip).toHaveAccessibleDescription(/^#vue To pick up a draggable item/);
+  });
+
   test('the overlay clone keeps the kit styling, with the background of its list', async ({ page }) => {
     const source = await look(task(page, 't1'));
     // <v-list-item> is transparent: <v-list> paints its background.
