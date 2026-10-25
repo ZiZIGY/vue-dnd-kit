@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import { computed, ref, shallowRef, useTemplateRef } from 'vue';
-  import { makeSortableList, makeSortableTree, type Key, type TreeNesting } from '@vue-dnd-kit/core';
+  import { makeSortableTree, type Key, type TreeNesting } from '@vue-dnd-kit/core';
   import TreeRow from '../components/TreeRow.vue';
-  import FileListRow from '../components/FileListRow.vue';
+  import FileList from '../components/FileList.vue';
   import { createFileTree, serializeTree, type FileNode } from '../fileTree';
 
   const INDENTATION = 24;
@@ -35,13 +35,6 @@
       const place = (parentKey: Key | null, index: number) => `${parentKey ?? 'root'}[${index}]`;
       lastDrop.value = `${event.keys[0]} ${event.from.list}:${place(event.from.parentKey, event.from.index)} -> ${place(event.to.parentKey, event.to.index)}`;
     },
-  });
-
-  const clipboardRef = useTemplateRef<HTMLElement>('clipboard');
-  const { items: clipboardItems } = makeSortableList(clipboardRef, {
-    id: 'clipboard',
-    items: clipboard,
-    group: GROUP,
   });
 
   const toggle = (key: Key) => {
@@ -85,17 +78,14 @@
     <div class="layout">
       <div>
         <h3>Clipboard</h3>
-        <ul
-          ref="clipboard"
-          class="list clipboard"
+        <!-- Its own component: a list made next to the tree in this one would give the tree's rows its context. -->
+        <FileList
+          v-model="clipboard"
+          list-id="clipboard"
+          :group="GROUP"
+          class="clipboard"
           data-testid="clipboard-list"
-        >
-          <FileListRow
-            v-for="file in clipboardItems"
-            :key="file.id"
-            :file="file"
-          />
-        </ul>
+        />
       </div>
       <div>
         <h3>Files</h3>

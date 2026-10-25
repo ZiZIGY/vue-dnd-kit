@@ -83,7 +83,7 @@ export function makeSortableItem<TData = unknown>(
 
   const indicator = computed(() => {
     const value = group.indicator.value;
-    return value && value.list === list.id && value.key === key.value ? value.side : null;
+    return value && value.list === list.id && value.key === key.value ? value : null;
   });
 
   return {

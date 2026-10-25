@@ -33,7 +33,7 @@
     :class="{ tall: item.tall, selected, placeholder: isPlaceholder }"
     :style="style"
     :data-id="item.id"
-    :data-indicator="indicator ?? undefined"
+    :data-indicator="indicator?.side"
     :data-selected="selected || undefined"
     @click="onClick"
   >

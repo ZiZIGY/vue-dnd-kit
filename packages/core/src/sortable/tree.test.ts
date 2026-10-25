@@ -4,10 +4,13 @@ import { createRect } from '../animation/layout';
 import type { ProjectionItem } from './projection';
 import {
   applyTreeMove,
+  blockFilter,
+  blockHeight,
   createFlatTree,
   depthRange,
   findTreeNode,
   flattenTree,
+  gapPosition,
   getDescendantKeys,
   moveKey,
   nearestValidSlot,
@@ -15,6 +18,7 @@ import {
   parentAt,
   projectDepth,
   projectTreeIndex,
+  projectTreeIndicator,
   siblingIndexAt,
   subtreeEnd,
   subtreeHeight,
@@ -195,21 +199,42 @@ describe('depth projection', () => {
     const roots = sample();
     // c (root index 2) right after a2x at depth 1: after a2 among a's children.
     const position = positionOf(roots, 'c', 4);
-    expect(siblingIndexAt(position, { depth: 1, parentKey: 'a' }, { parentKey: null, index: 2 })).toBe(2);
-    expect(siblingIndexAt(position, { depth: 2, parentKey: 'a2' }, { parentKey: null, index: 2 })).toBe(1);
-    expect(siblingIndexAt(position, { depth: 3, parentKey: 'a2x' }, { parentKey: null, index: 2 })).toBe(0);
+    const origins = [{ parentKey: null, index: 2 }];
+    expect(siblingIndexAt(position, { depth: 1, parentKey: 'a' }, origins)).toBe(2);
+    expect(siblingIndexAt(position, { depth: 2, parentKey: 'a2' }, origins)).toBe(1);
+    expect(siblingIndexAt(position, { depth: 3, parentKey: 'a2x' }, origins)).toBe(0);
     // At depth 0 it follows a: root index 1, b moves to 2.
-    expect(siblingIndexAt(position, { depth: 0, parentKey: null }, { parentKey: null, index: 2 })).toBe(1);
+    expect(siblingIndexAt(position, { depth: 0, parentKey: null }, origins)).toBe(1);
   });
 
   it('accounts for leaving an earlier slot of the same parent', () => {
     // a moved after b's subtree at depth 0: a (index 0) left, b becomes 0, so a lands at 1.
     const position = positionOf(sample(), 'a', 3);
     expect(position.keys).toEqual(['b', 'b1', 'c', 'a']);
-    expect(siblingIndexAt(position, { depth: 0, parentKey: null }, { parentKey: null, index: 0 })).toBe(2);
+    expect(siblingIndexAt(position, { depth: 0, parentKey: null }, [{ parentKey: null, index: 0 }])).toBe(2);
     const between = positionOf(sample(), 'a', 2);
     expect(between.keys).toEqual(['b', 'b1', 'a', 'c']);
-    expect(siblingIndexAt(between, { depth: 0, parentKey: null }, { parentKey: null, index: 0 })).toBe(1);
+    expect(siblingIndexAt(between, { depth: 0, parentKey: null }, [{ parentKey: null, index: 0 }])).toBe(1);
+  });
+
+  it('accounts for every node of a block leaving its slot', () => {
+    // a and c travel as a block (a holds it) to the end, after b's subtree: both left the
+    // roots, b becomes 0, so the block starts at 1.
+    const position: DraftPosition = { keys: ['b', 'b1', 'a'], index: 2, rows: createFlatTree(flat(sample())).byKey };
+    const block = [
+      { parentKey: null, index: 0 },
+      { parentKey: null, index: 2 },
+    ];
+    expect(siblingIndexAt(position, { depth: 0, parentKey: null }, block)).toBe(1);
+    // Into b after b1: the block's nodes left other parents, b1 keeps its index.
+    expect(siblingIndexAt(position, { depth: 1, parentKey: 'b' }, block)).toBe(1);
+    // a1 (a's first child) and c into a, after a2: a1 left before a2, so a2 is 0 and the block starts at 1.
+    const into: DraftPosition = { keys: ['a', 'a2', 'a2x', 'a1', 'b', 'b1'], index: 3, rows: position.rows };
+    const a1AndC = [
+      { parentKey: 'a', index: 0 },
+      { parentKey: null, index: 2 },
+    ];
+    expect(siblingIndexAt(into, { depth: 1, parentKey: 'a' }, a1AndC)).toBe(1);
   });
 
   it('is the first child of a collapsed parent', () => {
@@ -218,7 +243,7 @@ describe('depth projection', () => {
     expect(position.keys).toEqual(['a', 'a1', 'a2', 'a2x', 'b', 'c']);
     const projection = projectDepth(position, 1)!;
     expect(projection).toEqual({ depth: 1, parentKey: 'b' });
-    expect(siblingIndexAt(position, projection, { parentKey: null, index: 2 })).toBe(0);
+    expect(siblingIndexAt(position, projection, [{ parentKey: null, index: 2 }])).toBe(0);
   });
 });
 
@@ -330,12 +355,99 @@ describe('projectTreeIndex', () => {
     });
     expect(result).toMatchObject({ index: 1, nest: null });
   });
+
+  it('never nests into the other members of a block: over them the block steps as in lists', () => {
+    // The block [x, f] holds index 0 (x is the slot, f travels after it), then g, h.
+    const items: ProjectionItem[] = [
+      { key: 'x', index: 0, rect: createRect(0, 0, 200, 40) },
+      { key: 'f', index: 0, rect: createRect(0, 40, 200, 40), side: 1 },
+      { key: 'g', index: 1, rect: createRect(0, 80, 200, 40) },
+      { key: 'h', index: 2, rect: createRect(0, 120, 200, 40) },
+    ];
+    const project = (y: number) =>
+      projectTreeIndex({ pointer: { x: 50, y }, items, activeKey: 'x', activeIndex: 0, length: 3, canNestInto: () => true });
+    // The middle of f (a member) is not "into f": the block steps past g, as in lists.
+    expect(project(60)).toMatchObject({ index: 1, nest: null, hit: null });
+    // Over the active row nothing moves.
+    expect(project(20)).toMatchObject({ index: null, nest: null });
+    // The middle of g nests into it.
+    expect(project(100)).toMatchObject({ index: 1, nest: 'g' });
+  });
+});
+
+describe('indicator projection', () => {
+  /** Rows of height 40 stacked from y = 0, at their draft indices. */
+  const rows = (keys: string[]): ProjectionItem[] =>
+    keys.map((key, index) => ({ key, index, rect: createRect(0, index * 40, 200, 40) }));
+  // Visible: a(0) a1(1) a2(1) a2x(2) b(0) b1(1) c(0).
+  const keys = ['a', 'a1', 'a2', 'a2x', 'b', 'b1', 'c'];
+  const tree = createFlatTree(flat(sample())).byKey;
+
+  const line = (y: number, moving: Set<Key> = new Set(['c']), nestable: string[] = []) =>
+    projectTreeIndicator({
+      pointer: { x: 50, y },
+      items: rows(keys),
+      activeKey: 'c',
+      length: keys.length,
+      moving,
+      canNestInto: (key) => nestable.includes(key as string),
+    });
+
+  it('goes before or after the hovered row; the middle of a row that takes the nodes means inside', () => {
+    expect(line(85)).toEqual({ index: 2, key: 'a2', side: 'before' });
+    expect(line(115)).toEqual({ index: 3, key: 'a2', side: 'after' });
+    expect(line(100, undefined, ['a2'])).toEqual({ index: 3, key: 'a2', side: 'inside' });
+    // The edge bands of a folder are still before/after.
+    expect(line(85, undefined, ['a2'])).toEqual({ index: 2, key: 'a2', side: 'before' });
+  });
+
+  it('has no line over the rows that travel with the drag, and keeps it in gaps', () => {
+    expect(line(170, new Set(['b', 'b1']))).toBeNull();
+    expect(line(250)).toBeNull();
+    const gappy: ProjectionItem[] = [
+      { key: 'a', index: 0, rect: createRect(0, 0, 200, 30) },
+      { key: 'b', index: 1, rect: createRect(0, 40, 200, 30) },
+    ];
+    expect(
+      projectTreeIndicator({ pointer: { x: 50, y: 35 }, items: gappy, activeKey: 'z', length: 2, moving: new Set() }),
+    ).toBeUndefined();
+  });
+
+  it('projects the depth of the line between its neighbours, without the rows that travel', () => {
+    // Line before b (index 4) while a2 (with a2x) is dragged: between a1 (1) and b (0).
+    const position = gapPosition(keys, 4, new Set(['a2', 'a2x']), tree);
+    expect(position).toMatchObject({ keys: ['a', 'a1', 'b', 'b1', 'c'], index: 2, inserted: true });
+    expect(depthRange(position)).toEqual({ min: 0, max: 2 });
+    expect(projectDepth(position, 9)).toEqual({ depth: 2, parentKey: 'a1' });
+    expect(projectDepth(position, 1)).toEqual({ depth: 1, parentKey: 'a' });
+    expect(projectDepth(position, -1)).toEqual({ depth: 0, parentKey: null });
+    // Among its new siblings: after a1, with a2 gone from a.
+    expect(siblingIndexAt(position, { depth: 1, parentKey: 'a' }, [{ parentKey: 'a', index: 1 }])).toBe(1);
+  });
+
+  it('puts a line inside a row one level deeper, under it', () => {
+    const inside = line(100, undefined, ['a2'])!;
+    const position = gapPosition(keys, inside.index, new Set(['c']), tree);
+    // Right after a2, before its child a2x: only depth 2 fits, as a2's first child.
+    expect(depthRange(position)).toEqual({ min: 2, max: 2 });
+    expect(projectDepth(position, 2)).toEqual({ depth: 2, parentKey: 'a2' });
+    expect(siblingIndexAt(position, { depth: 2, parentKey: 'a2' }, [{ parentKey: null, index: 2 }])).toBe(0);
+  });
+
+  it('lowers the depth of the line while the block rules refuse it', () => {
+    // [a2, c] (a2 has a child) after a2x: maxDepth 2 leaves depth 1 at most.
+    const position = gapPosition(keys, 4, new Set(['c']), tree);
+    const filter = blockFilter([tree.get('a2')!.item, tree.get('c')!.item], 1, tree, 2);
+    expect(projectDepth(position, 3, filter)).toEqual({ depth: 1, parentKey: 'a' });
+    // Nothing fits between a and a1 (only depth 1, under a, too deep with maxDepth 1).
+    expect(projectDepth(gapPosition(keys, 1, new Set(), tree), 1, blockFilter([], 1, tree, 1))).toBeNull();
+  });
 });
 
 describe('applyTreeMove', () => {
   it('reorders among siblings', () => {
     const roots = sample();
-    const next = applyTreeMove(roots, { key: 'c', to: { parentKey: null, index: 0 } }, accessors);
+    const next = applyTreeMove(roots, { keys: ['c'], to: { parentKey: null, index: 0 } }, accessors);
     expect(shape(next)).toBe('c,a(a1,a2(a2x)),b(b1)');
     expect(next).not.toBe(roots);
   });
@@ -343,20 +455,20 @@ describe('applyTreeMove', () => {
   it('moves a node into another parent with its subtree', () => {
     const roots = sample();
     const a2 = roots[0]!.children![1]!;
-    const next = applyTreeMove(roots, { key: 'a2', to: { parentKey: 'b', index: 1 } }, accessors);
+    const next = applyTreeMove(roots, { keys: ['a2'], to: { parentKey: 'b', index: 1 } }, accessors);
     expect(shape(next)).toBe('a(a1),b(b1,a2(a2x)),c');
     // Nodes are moved, not copied.
     expect(findTreeNode(next, 'a2', accessors)?.node).toBe(a2);
   });
 
   it('interprets the index after removing the node from the same parent', () => {
-    const next = applyTreeMove(sample(), { key: 'a', to: { parentKey: null, index: 1 } }, accessors);
+    const next = applyTreeMove(sample(), { keys: ['a'], to: { parentKey: null, index: 1 } }, accessors);
     expect(shape(next)).toBe('b(b1),a(a1,a2(a2x)),c');
   });
 
   it('un-nests to the root and replaces the root array', () => {
     const roots = sample();
-    const next = applyTreeMove(roots, { key: 'a2x', to: { parentKey: null, index: 3 } }, accessors);
+    const next = applyTreeMove(roots, { keys: ['a2x'], to: { parentKey: null, index: 3 } }, accessors);
     expect(shape(next)).toBe('a(a1,a2),b(b1),c,a2x');
     expect(roots[0]!.children![1]!.children).toEqual([]);
   });
@@ -367,26 +479,26 @@ describe('applyTreeMove', () => {
     const setChildren = vi.fn((n: Node, children: Node[]) => {
       n.children = children;
     });
-    applyTreeMove(roots, { key: 'a1', to: { parentKey: 'a2', index: 0 } }, { ...accessors, setChildren });
+    applyTreeMove(roots, { keys: ['a1'], to: { parentKey: 'a2', index: 0 } }, { ...accessors, setChildren });
     expect(setChildren.mock.calls.map(([n]) => n.id)).toEqual(['a', 'a2']);
     expect(shape(roots)).toBe('a(a2(a1,a2x)),b(b1),c');
     expect(roots[1]!.children).toBe(bChildren);
   });
 
   it('keeps hidden children of a collapsed target', () => {
-    const next = applyTreeMove(sample(), { key: 'c', to: { parentKey: 'b', index: 0 } }, accessors);
+    const next = applyTreeMove(sample(), { keys: ['c'], to: { parentKey: 'b', index: 0 } }, accessors);
     expect(shape(next)).toBe('a(a1,a2(a2x)),b(c,b1)');
   });
 
   it('removes a node that left for another list', () => {
-    const next = applyTreeMove(sample(), { key: 'a2', to: null }, accessors);
+    const next = applyTreeMove(sample(), { keys: ['a2'], to: null }, accessors);
     expect(shape(next)).toBe('a(a1),b(b1),c');
   });
 
   it('inserts a node that comes from another list', () => {
     const next = applyTreeMove(
       sample(),
-      { key: 'new', node: node('new'), to: { parentKey: 'a2', index: 1 } },
+      { keys: ['new'], node: (key) => node(String(key)), to: { parentKey: 'a2', index: 1 } },
       accessors,
     );
     expect(shape(next)).toBe('a(a1,a2(a2x,new)),b(b1),c');
@@ -395,8 +507,87 @@ describe('applyTreeMove', () => {
   it('ignores moves into the node itself, its subtree or an unknown parent', () => {
     for (const parentKey of ['a', 'a2', 'a2x', 'missing']) {
       const roots = sample();
-      const next = applyTreeMove(roots, { key: 'a', to: { parentKey, index: 0 } }, accessors);
+      const next = applyTreeMove(roots, { keys: ['a'], to: { parentKey, index: 0 } }, accessors);
       expect(shape(next)).toBe(shape(sample()));
     }
+  });
+});
+
+describe('applyTreeMove with a block', () => {
+  it('lands the nodes side by side, in order, each with its subtree', () => {
+    // a2 (with a2x) and c into b, after b1: the index counts b's children once both left.
+    const next = applyTreeMove(sample(), { keys: ['a2', 'c'], to: { parentKey: 'b', index: 1 } }, accessors);
+    expect(shape(next)).toBe('a(a1),b(b1,a2(a2x),c)');
+  });
+
+  it('counts the index after every moved node left the parent', () => {
+    // a and c (roots 0 and 2) after b: b is root 0 once they left.
+    const next = applyTreeMove(sample(), { keys: ['a', 'c'], to: { parentKey: null, index: 1 } }, accessors);
+    expect(shape(next)).toBe('b(b1),a(a1,a2(a2x)),c');
+  });
+
+  it('takes a moved node out of another moved one', () => {
+    // a2x travels on its own (it was grabbed) next to a2.
+    const next = applyTreeMove(sample(), { keys: ['a2', 'a2x'], to: { parentKey: null, index: 3 } }, accessors);
+    expect(shape(next)).toBe('a(a1),b(b1),c,a2,a2x');
+  });
+
+  it('mixes nodes of the tree and nodes from another list', () => {
+    const next = applyTreeMove(
+      sample(),
+      { keys: ['x', 'b1', 'y'], node: (key) => node(String(key)), to: { parentKey: 'a', index: 0 } },
+      accessors,
+    );
+    expect(shape(next)).toBe('a(x,b1,y,a1,a2(a2x)),b,c');
+  });
+
+  it('removes every node that left for another list', () => {
+    const next = applyTreeMove(sample(), { keys: ['a1', 'b', 'a2x'], to: null }, accessors);
+    expect(shape(next)).toBe('a(a2),c');
+  });
+
+  it('refuses a parent inside any moved subtree', () => {
+    const next = applyTreeMove(sample(), { keys: ['c', 'a'], to: { parentKey: 'a2x', index: 0 } }, accessors);
+    expect(shape(next)).toBe(shape(sample()));
+  });
+});
+
+describe('block rules', () => {
+  const roots = sample();
+  const rows = createFlatTree(flat(roots)).byKey;
+  const item = (id: string) => rows.get(id)!.item;
+
+  it('measures the block by its deepest node', () => {
+    expect(blockHeight([item('c'), item('a'), item('b')], getChildren)).toBe(2);
+    expect(blockHeight([item('c'), item('a1')], getChildren)).toBe(0);
+  });
+
+  it('keeps the deepest descendant of the block within maxDepth', () => {
+    // a (2 levels below it) with c: at most at depth 0 with maxDepth 2.
+    const filter = blockFilter([item('a'), item('c')], 2, rows, 2);
+    expect(filter(0, null)).toBe(true);
+    expect(filter(1, 'b')).toBe(false);
+    // Without a: one level deeper is fine.
+    expect(blockFilter([item('a1'), item('c')], 0, rows, 2)(2, 'a2')).toBe(true);
+  });
+
+  it('asks canNest about every node of the block', () => {
+    // Only folders take children, and folders don't go into b.
+    const canNest = (n: Node, parent: Node) => !!parent.folder && !(n.folder && parent.id === 'b');
+    expect(blockFilter([item('c'), item('a1')], 0, rows, undefined, canNest)(1, 'b')).toBe(true);
+    expect(blockFilter([item('c'), item('a2')], 1, rows, undefined, canNest)(1, 'b')).toBe(false);
+    expect(blockFilter([item('c'), item('a2')], 1, rows, undefined, canNest)(1, 'a')).toBe(true);
+    // A file parent refuses the whole block.
+    expect(blockFilter([item('c')], 0, rows, undefined, canNest)(3, 'a2x')).toBe(false);
+  });
+
+  it('stops a flicking block at the last slot where it fits', () => {
+    // Visible: a(0) a1(1) a2(1) a2x(2) b(0) b1(1) | the block [c, a] dragged up from the end.
+    // With maxDepth 2 the block (height 2) only fits at depth 0: slots between rows of
+    // depth >= 1 are skipped.
+    const view = ['b', 'b1', 'c'];
+    const filter = blockFilter([item('c'), item('a')], 2, rows, 2);
+    expect(nearestValidSlot(view, 'c', 2, 1, rows, filter)).toBeNull();
+    expect(nearestValidSlot(view, 'c', 2, 0, rows, filter)).toBe(0);
   });
 });

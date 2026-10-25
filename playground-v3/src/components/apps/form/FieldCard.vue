@@ -22,7 +22,7 @@
     class="fb-field"
     :class="[field.kind, { dragging: isDragging }]"
     :data-id="field.id"
-    :data-indicator="indicator ?? undefined"
+    :data-indicator="indicator?.side"
   >
     <header class="fb-field-head">
       <span

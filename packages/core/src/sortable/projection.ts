@@ -3,7 +3,7 @@
  * Pure functions: the group feeds them layout rects (without in-flight FLIP offsets).
  */
 
-import type { Coordinates, Key, Rect, SortableStrategy } from '../types';
+import type { Coordinates, Key, Rect, SortableIndicator, SortableStrategy } from '../types';
 import { containsPoint, createRect, getCenter } from '../animation/layout';
 
 export interface ProjectionItem {
@@ -230,12 +230,8 @@ const projectGrid = (args: ProjectArgs): Projection => {
 export const projectIndex = (args: ProjectArgs): Projection =>
   args.strategy === 'grid' ? projectGrid(args) : projectList(args);
 
-export interface IndicatorProjection {
-  /** Insertion position in the list as rendered (the active item still in place). */
-  index: number;
-  key: Key | null;
-  side: 'before' | 'after';
-}
+/** A `SortableIndicator` before the group adds its list (`index`: the active item still in place). */
+export type IndicatorProjection = Omit<SortableIndicator, 'list'>;
 
 /**
  * Indicator mode: the list doesn't move, so a plain before/after split of the

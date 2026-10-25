@@ -573,7 +573,15 @@ export interface SortableIndicator {
   index: number;
   /** Item the indicator is attached to; `null` in an empty list. */
   key: Key | null;
-  side: 'before' | 'after';
+  /**
+   * Side of `key` the line goes on. `'inside'` (trees): the middle of a row that takes
+   * the dragged nodes is hovered, the drop goes into it as its first child.
+   */
+  side: 'before' | 'after' | 'inside';
+  /** Trees: depth the dropped nodes get (roots are 0), e.g. to indent the line. */
+  depth?: number;
+  /** Trees: parent the dropped nodes get, `null` at the root level. */
+  parentKey?: Key | null;
 }
 
 /**
@@ -683,8 +691,12 @@ export interface SortableItemReturn {
    */
   isPlaceholder: ComputedRef<boolean>;
   selected: WritableComputedRef<boolean>;
-  /** Indicator mode: side of this item where the drop line goes. */
-  indicator: ComputedRef<'before' | 'after' | null>;
+  /**
+   * Indicator mode: the list's `indicator` while it is attached to this item, `null`
+   * otherwise. `side` says where the line goes; in trees `depth` and `parentKey` say
+   * where the drop lands (`side: 'inside'`: into this item).
+   */
+  indicator: ComputedRef<SortableIndicator | null>;
   /** Index in the rendered draft, -1 when unknown. */
   index: ComputedRef<number>;
 }
@@ -713,12 +725,20 @@ export interface TreeProjection {
  * Drop event of a tree. `index` is the position among the siblings under `parentKey`
  * (`from`: before the move; `to`: after it, with the node already removed from its
  * old place). `from.parentKey` is `null` for root nodes and for items from another list.
+ * A multi-drag moves `keys` (each with its subtree) side by side: `from` is where the
+ * dragged node was, `to` where the first of them lands.
  */
 export interface SortableTreeDropEvent<T = unknown> extends SortableDropEvent<T> {
   from: { list: Key | null; index: number; parentKey: Key | null };
   to: { list: Key; index: number; parentKey: Key | null };
 }
 
+/**
+ * Options of `makeSortableTree`. A multi-drag moves the selected nodes as one block, each
+ * with its subtree, to one place and depth (in document order); a selected node inside
+ * another selected one rides along in its subtree. `canNest` and `maxDepth` apply to
+ * the whole block.
+ */
 export interface SortableTreeOptions<T> {
   items: Ref<T[]>;
   /** Default: `node.id`. Also keys `makeSortableItem({ item })`. */
@@ -734,8 +754,16 @@ export interface SortableTreeOptions<T> {
   indentation?: number;
   /** How the depth is chosen: horizontal offset, hovering the middle of a row, or both (default). */
   nesting?: TreeNesting;
-  /** Deepest allowed depth (roots are 0). The dragged node's own descendants count. */
+  /**
+   * `'item'` (default): the dragged node moves through the rows at its projected depth.
+   * `'indicator'`: the tree doesn't move; `indicator` (on the tree and on each row's
+   * `makeSortableItem`) says where the drop goes, with its `depth` and `parentKey`, and
+   * you draw the line. Dropping outside then cancels.
+   */
+  placeholder?: SortablePlaceholder;
+  /** Deepest allowed depth (roots are 0). The dragged nodes' own descendants count. */
   maxDepth?: number;
+  /** Whether `node` may go under `parent`; a multi-drag asks for every dragged node. */
   canNest?: (node: T, parent: T) => boolean;
   collapsed?: Ref<Set<Key>>;
   animation?: LayoutAnimation;
@@ -753,6 +781,8 @@ export interface SortableTreeReturn<T> {
   items: ComputedRef<FlatNode<T>[]>;
   /** Where the active node would land, `null` when it isn't in this tree. */
   projected: ComputedRef<TreeProjection | null>;
+  /** Indicator mode: where the drop goes, with its `depth` and `parentKey`; `null` when not here. */
+  indicator: ComputedRef<SortableIndicator | null>;
   isOver: ComputedRef<boolean>;
   activeKey: ComputedRef<Key | null>;
   captureLayout(): void;

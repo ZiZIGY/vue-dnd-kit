@@ -56,6 +56,7 @@ import {
   projectIndex,
   projectIndicator,
   projectSwap,
+  type IndicatorProjection,
   type ProjectionItem,
 } from './projection';
 import { patchIndexMap } from './draft';
@@ -100,14 +101,15 @@ export interface ListEntry {
   pull(): boolean | 'clone';
   canPut(context: SortablePutContext): boolean;
   dropOutside(): DropOutside;
-  commit(keys: Key[], lookup: (key: Key) => unknown): void;
+  /** Writes the new order. `inserted`: the keys the drop puts at the slot, when this list is the target. */
+  commit(keys: Key[], lookup: (key: Key) => unknown, inserted: readonly Key[]): void;
   beforeDrop?(event: SortableDropEvent): MaybePromise<BeforeDropResult>;
   afterDrop?(event: SortableDropEvent): void;
 
   // Optional features; lists that don't implement them get the defaults.
   /** Default `'sort'`. */
   behavior?(): SortableBehavior;
-  /** Default `'stack'` (trees); sortable lists default to `'group'`. */
+  /** Default `'stack'`; sortable lists and trees use `'group'`. */
   multiple?(): MultipleMode;
   /** Default `'all'`. */
   acceptMode?(): AcceptMode;
@@ -117,14 +119,20 @@ export interface ListEntry {
   create?(active: Active): CreatedItem | undefined;
 
   // Extension points for list kinds built on the group (the tree uses them).
-  /** Adjusts the initial draft, e.g. hides the descendants of the active node. */
+  /** Dragged keys of this list that travel inside another dragged one (a tree's selected descendants): they leave the drag. */
+  carried?(keys: readonly Key[], activeKey: Key): Key[];
+  /** Adjusts the initial draft, e.g. hides the descendants of the dragged nodes. */
   prepareDraft?(keys: Key[], context: { activeKey: Key; keys: Key[] }): Key[];
   /** Replaces the index projection: new index of the active key, or `null` to keep it. */
   project?(event: DnDEvent, context: ProjectContext): number | null;
+  /** Indicator mode: replaces `projectIndicator` (trees add the depth). */
+  indicate?(event: DnDEvent, items: ProjectionItem[]): IndicatorProjection | null | undefined;
+  /** Indicator mode: the line at `index` when the keyboard enters the list; `null` when none fits. */
+  indicateAt?(index: number): IndicatorProjection | null;
   /** Runs on every move while this list holds the active slot (after any reorder). */
   afterMove?(event: DnDEvent): void;
   /** Whether committing `keys` changes anything; defaults to comparing with `getKeys()`. */
-  hasChanges?(keys: Key[]): boolean;
+  hasChanges?(keys: Key[], inserted: readonly Key[]): boolean;
   /** Runs when the session ends (drop, cancel, reject). */
   reset?(): void;
 }
@@ -142,6 +150,8 @@ export interface ProjectContext {
 
 interface DropResult {
   next: Map<ListEntry, Key[]>;
+  /** Keys put at the slot of the target list (`event.to.list`). */
+  inserted: Key[];
   event: SortableDropEvent;
 }
 
@@ -209,10 +219,14 @@ export interface SortableGroup {
   session: ShallowRef<Session | null>;
   /** Insertion line of `placeholder: 'indicator'` lists, while the pointer is over one. */
   indicator: ShallowRef<SortableIndicator | null>;
+  /** Shows the insertion line (trees move it with their own keys). */
+  showIndicator(value: SortableIndicator | null): void;
   addList(entry: ListEntry): () => void;
   registerItem(key: Key, getElement: () => HTMLElement | null): () => void;
   lookup(key: Key): unknown;
   keysOf(list: ListEntry): Key[];
+  /** `list`'s draft as projection counts it: a multi-drag block once, as the slot. */
+  viewOf(list: ListEntry): Key[];
   indexOf(list: ListEntry, key: Key): number;
   accepts(list: ListEntry, active: Active): boolean;
   /** The current drag can never enter this list (another group, or a plain draggable it can't create items for). */
@@ -241,9 +255,10 @@ const placeAt = (keys: Key[], slot: Key, index: number): Key[] => {
 const expand = (view: Key[], slot: Key, block: Key[]): Key[] =>
   block.length > 1 ? view.flatMap((key) => (key === slot ? block : [key])) : view;
 
+const INDICATOR_FIELDS = ['list', 'index', 'key', 'side', 'depth', 'parentKey'] as const;
+
 const sameIndicator = (a: SortableIndicator | null, b: SortableIndicator | null) =>
-  a === b ||
-  (!!a && !!b && a.list === b.list && a.index === b.index && a.key === b.key && a.side === b.side);
+  a === b || (!!a && !!b && INDICATOR_FIELDS.every((field) => a[field] === b[field]));
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
@@ -755,9 +770,12 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       const source = sources.get(key)!;
       return ordered.findIndex((list) => list.id === source.list) * 1e9 + source.index;
     };
-    const keys = event.active.ids.filter((key) => sources.has(key)).sort((a, b) => order(a) - order(b));
+    let keys = event.active.ids.filter((key) => sources.has(key)).sort((a, b) => order(a) - order(b));
+    // A selected tree node inside another selected one travels in its subtree, not on its own.
+    const carried = new Set(ordered.flatMap((list) => list.carried?.(keys, activeKey) ?? []));
+    if (carried.size) keys = keys.filter((key) => !carried.has(key));
 
-    // Multi-drag ids may belong to unmounted rows or other groups: keep ours only.
+    // Multi-drag ids may belong to unmounted rows or other groups (or ride inside others): keep ours only.
     const ids = [activeKey, ...keys.filter((key) => key !== activeKey)];
     if (!sameKeys(ids, event.active.ids)) {
       const dragItems: DragItem[] = ids.map((key) => ({
@@ -991,22 +1009,29 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     if (setIndicator(value) && value) manager.announce('onDragOver');
   };
 
-  const updateIndicator = (target: ListEntry, event: DnDEvent) => {
-    const current = session.value!;
-    // Indicator lists don't move: the slot stays (or goes back) where it started.
+  /** Indicator lists don't move: the slot stays (or goes back) where it started. */
+  const keepSlotHome = (current: Session) => {
     if (current.slot !== current.activeKey) {
       if (current.list != null) removeSlot();
     } else if (current.list !== current.origin.list) {
       returnToOrigin(null);
     }
-    const result = projectIndicator({
-      strategy: target.strategy(),
-      pointer: event.pointer,
-      items: collect(target),
-      activeKey: current.slot,
-      length: keysOf(target).length,
-      targets: bandsAt(event),
-    });
+  };
+
+  const updateIndicator = (target: ListEntry, event: DnDEvent) => {
+    const current = session.value!;
+    keepSlotHome(current);
+    const items = collect(target);
+    const result = target.indicate
+      ? target.indicate(event, items)
+      : projectIndicator({
+          strategy: target.strategy(),
+          pointer: event.pointer,
+          items,
+          activeKey: current.slot,
+          length: keysOf(target).length,
+          targets: bandsAt(event),
+        });
     if (result !== undefined) showIndicator(result && { list: target.id, ...result });
   };
 
@@ -1193,11 +1218,12 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       followed = 0;
     }
     // Keyboard drags move the slot in getKeyboardCoordinates. Trees (`project`) answer
-    // the keyboard themselves and keep the pointer path below, and so does an external
-    // item outside the lists: its own keyboard moves (pixels, droppables) may take it in.
+    // the keyboard themselves and keep the pointer path below (in indicator mode they
+    // move the line themselves), and so does an external item outside the lists: its
+    // own keyboard moves (pixels, droppables) may take it in.
     if (event.active.sensor === 'keyboard' && (!current.external || current.list != null || indicator.value)) {
       const list = current.list == null ? undefined : lists.get(current.list);
-      if (!list?.project) return afterMove(current, event);
+      if (!list?.project || list.placeholder() === 'indicator' || indicator.value) return afterMove(current, event);
     }
     syncCopy(current);
     // No frame is ever skipped: the target follows pointer movement only, so a skipped
@@ -1335,7 +1361,10 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       // Rejected keys fly back to where they started: after their nearest original
       // predecessor that is still in the list and stays (other keys may have left it).
       for (const { key, source } of back) if (source.list === list.id) putBack(keys, list, key, source.index, settled);
-      if (list.hasChanges ? list.hasChanges(keys) : !sameKeys(keys, list.getKeys())) next.set(list, keys);
+      const changed = list.hasChanges
+        ? list.hasChanges(keys, list === target ? insert : [])
+        : !sameKeys(keys, list.getKeys());
+      if (changed) next.set(list, keys);
     }
     if (!next.size) return null;
     const finalKeys = next.get(target) ?? target.getKeys();
@@ -1347,6 +1376,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     else if (current.swap != null) mode = 'swap';
     return {
       next,
+      inserted: insert,
       event: {
         keys: current.keys,
         items: current.keys.map((key) => lookup(inserted(key))),
@@ -1370,11 +1400,12 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     for (const list of lists.values()) {
       const source = list.getKeys();
       const keys = source.filter((key) => !gone.has(key));
-      if (list.hasChanges ? list.hasChanges(keys) : keys.length !== source.length) next.set(list, keys);
+      if (list.hasChanges ? list.hasChanges(keys, []) : keys.length !== source.length) next.set(list, keys);
     }
     if (!next.size) return null;
     return {
       next,
+      inserted: [],
       event: {
         keys: current.keys,
         items: current.keys.map(lookup),
@@ -1461,7 +1492,9 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
           ? prepared
           : computeResult(accepted, current.marker);
     }
-    if (result) for (const [list, keys] of result.next) list.commit(keys, lookup);
+    if (result) {
+      for (const [list, keys] of result.next) list.commit(keys, lookup, list.id === result.event.to.list ? result.inserted : []);
+    }
     // Where the overlay's clones land: the accepted items on their slots (copies when
     // copying); the rest on their own elements, back where they started.
     const accepted = result && !current.removed ? result.event.accepted : [];
@@ -1565,46 +1598,76 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   /** Shows the insertion line at `index` of `target`; returns where the overlay goes. */
   const indicateAt = (target: ListEntry, index: number): Coordinates | undefined => {
     const keys = keysOf(target);
-    const value: SortableIndicator =
-      index < keys.length
-        ? { list: target.id, index, key: keys[index]!, side: 'before' }
-        : { list: target.id, index, key: keys[keys.length - 1] ?? null, side: 'after' };
-    showIndicator(value);
-    const element = (value.key == null ? null : items.get(value.key)?.()) ?? target.getElement();
+    const line: IndicatorProjection | null = target.indicateAt
+      ? target.indicateAt(index)
+      : index < keys.length
+        ? { index, key: keys[index]!, side: 'before' }
+        : { index, key: keys[keys.length - 1] ?? null, side: 'after' };
+    if (!line) return undefined;
+    showIndicator({ list: target.id, ...line });
+    const element = (line.key == null ? null : items.get(line.key)?.()) ?? target.getElement();
     if (!element?.isConnected) return undefined;
     revealElement(element);
     return getCenter(getLayoutRect(element));
   };
 
-  const keyboardIndicator = (
+  /**
+   * Once a keyboard move has rendered: reveals the slot and returns its center. A slot
+   * that was recreated (in another list, or by a list that remounts its rows) gets the
+   * focus back, as the old element took it along; an external draggable is still where
+   * it was and keeps it.
+   */
+  const slotCenter = (current: Session, recreated: boolean): Coordinates | undefined => {
+    const element = items.get(current.slot)?.();
+    if (!element?.isConnected) return undefined;
+    revealElement(element);
+    if (recreated && !current.external) manager.getDraggable(current.slot)?.getFocusTarget()?.focus({ preventScroll: true });
+    return getCenter(getLayoutRect(element));
+  };
+
+  /**
+   * The arrow takes the drag across into an indicator list, level with `from`. Such
+   * lists never move: the slot stays (or goes back) home and only the line goes there.
+   */
+  const indicateAcross = async (current: Session, target: ListEntry, from: Rect): Promise<Coordinates | undefined> => {
+    const home = current.list;
+    keepSlotHome(current);
+    // Measured once the slot is back home.
+    await nextTick();
+    if (session.value !== current) return undefined;
+    if (current.list !== home) slotCenter(current, true);
+    return indicateAt(target, insertionIndex(target, from, current));
+  };
+
+  const keyboardIndicator = async (
     current: Session,
     list: ListEntry,
     active: Active,
     pointer: Coordinates,
     direction: Coordinates,
-  ): Coordinates | undefined => {
+  ): Promise<Coordinates | undefined> => {
     const strategy = list.strategy();
     const step = strategy === 'vertical' ? direction.y : direction.x;
-    let target = list;
-    let next: number;
     if (!step) {
       const other = adjacentList(list, active, direction);
       if (!other || !enter(current, other)) return undefined;
-      target = other;
-      // An external item has no slot in indicator lists: where the drag is stands for it.
-      const slot = items.get(current.slot)?.();
-      const from = slot?.isConnected ? getLayoutRect(slot) : createRect(pointer.x, pointer.y, 0, 0);
-      next = insertionIndex(other, from, current);
-    } else {
-      const keys = keysOf(list);
-      const own = list.id === current.list ? keys.indexOf(current.slot) : -1;
-      const marker = indicator.value?.list === list.id ? indicator.value : null;
-      next = (marker ? marker.index : Math.max(own, 0)) + step;
-      // Right before or after the active item the drop changes nothing: skip those positions.
-      while (own >= 0 && (next === own || next === own + 1)) next += step;
-      if (next < 0 || next > keys.length) return undefined;
+      // The line, where the keyboard took the drag, stands for the slot.
+      const from = createRect(pointer.x, pointer.y, 0, 0);
+      if (other.placeholder() === 'indicator') return indicateAcross(current, other, from);
+      // A list that moves takes the slot; the line goes away.
+      setIndicator(null);
+      moveActive(other, insertionIndex(other, from, current), null);
+      await nextTick();
+      return session.value === current ? slotCenter(current, true) : undefined;
     }
-    return indicateAt(target, next);
+    const keys = keysOf(list);
+    const own = list.id === current.list ? keys.indexOf(current.slot) : -1;
+    const marker = indicator.value?.list === list.id ? indicator.value : null;
+    let next = (marker ? marker.index : Math.max(own, 0)) + step;
+    // Right before or after the active item the drop changes nothing: skip those positions.
+    while (own >= 0 && (next === own || next === own + 1)) next += step;
+    if (next < 0 || next > keys.length) return undefined;
+    return indicateAt(list, next);
   };
 
   /**
@@ -1626,17 +1689,15 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     moveActive(target, index, null);
     await nextTick();
     if (session.value !== current) return undefined;
-    const element = items.get(current.slot)?.();
-    if (!element?.isConnected) return pointer;
-    revealElement(element);
-    return getCenter(getLayoutRect(element));
+    return slotCenter(current, false) ?? pointer;
   };
 
   /**
    * Keyboard sorting by items (rfcs/0001-v3.md §10): the arrow along the list moves
    * the slot by one, the perpendicular one moves it to the adjacent list (kanban),
    * and in grids up/down go to the nearest item of the next row. The item a list made
-   * for an external draggable moves like any other.
+   * for an external draggable moves like any other. Into an indicator list only the
+   * line moves.
    */
   const getKeyboardCoordinates = async (
     _event: KeyboardEvent,
@@ -1654,7 +1715,9 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       const element = items.get(current.slot)?.() ?? items.get(current.activeKey)?.();
       return element?.isConnected ? getCenter(getLayoutRect(element)) : pointer;
     };
-    if (list.placeholder() === 'indicator') return keyboardIndicator(current, list, active, pointer, direction) ?? center();
+    if (list.placeholder() === 'indicator') {
+      return (await keyboardIndicator(current, list, active, pointer, direction)) ?? center();
+    }
 
     const strategy = list.strategy();
     // A block moves by items as one unit.
@@ -1691,6 +1754,10 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     }
     if (across) {
       const other = adjacentList(list, active, direction);
+      if (other?.placeholder() === 'indicator') {
+        const line = enter(current, other) ? await indicateAcross(current, other, slotRect) : undefined;
+        return line ?? center();
+      }
       if (other) {
         target = other;
         index = insertionIndex(other, slotRect, current);
@@ -1716,17 +1783,9 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
 
     await nextTick();
     if (session.value !== current) return;
-    const element = items.get(current.slot)?.();
-    if (!element?.isConnected) return center();
-    revealElement(element);
-    // The slot was recreated and the focus left with the old element: in the other list,
-    // or in this one when it keys its rows by index (Vuetify's v-data-table-virtual
-    // remounts every row whose index changed). An external draggable is still where it
-    // was and keeps it.
-    if (!current.external && (target !== list || isFocusLost())) {
-      manager.getDraggable(current.slot)?.getFocusTarget()?.focus({ preventScroll: true });
-    }
-    return getCenter(getLayoutRect(element));
+    // In this list too when it keys its rows by index (Vuetify's v-data-table-virtual
+    // remounts every row whose index changed).
+    return slotCenter(current, target !== list || isFocusLost()) ?? center();
   };
 
   // ─── Announcements ───────────────────────────────────────────────────────────
@@ -1834,8 +1893,10 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         if (items.get(key) === getElement) items.delete(key);
       };
     },
+    showIndicator,
     lookup,
     keysOf,
+    viewOf: (list) => (session.value ? viewOf(list, session.value) : keysOf(list)),
     indexOf,
     accepts,
     isInert,
