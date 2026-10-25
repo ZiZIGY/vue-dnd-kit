@@ -445,7 +445,7 @@ export interface DnDState {
 /**
  * Options of `makeDraggable`. Every option but `canDrag` takes a value, a ref or a
  * getter (`overlay`: a value or a ref) and is read when it is needed, so a change
- * applies from the next drag on.
+ * applies to the next drag at the latest.
  */
 export interface DraggableOptions<TData = unknown> {
   /**
@@ -625,10 +625,11 @@ export interface SortableIndicator {
  * context its items read, so a second one in the same component would take the first
  * one's items (development builds warn about it).
  *
- * The other options take a value, a ref or a getter (`overlay`, `animation`: a value or
- * a ref) and are read when the list needs them, so a change applies from the next drag
- * on. `id` and `group` are read once, when the list is created. Functions (`getKey`,
- * `clone`, `createItem`, the callbacks) are passed as they are.
+ * Options take a value, a ref or a getter (`overlay`, `animation`: a value or a ref) and
+ * are read when the list needs them, so a change applies to the next drag at the latest.
+ * Exceptions: `id` and `group` are read once, when the list is created; `items` is the
+ * model itself; functions (`getKey`, `clone`, `createItem`, the callbacks) are passed as
+ * they are.
  */
 export interface SortableListOptions<T> {
   /** Source of truth; the library writes the new array here on drop. */
