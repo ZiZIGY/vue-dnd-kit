@@ -174,6 +174,21 @@ describe('the order of a drop', () => {
     expect(notified).toEqual(['a2,a3,a1']);
   });
 
+  it("the user's monitors decide before the lists: a later veto never strands an applied result", async () => {
+    const a = ref(tasks('a1', 'a2', 'a3'));
+    const seen: string[] = [];
+    const container = mount({ a: { items: a, onBeforeDrop: () => void seen.push('list') } });
+    await nextTick();
+    // Registered after the list, like a useDnDMonitor in a component rendered later.
+    manager.addMonitor({ onBeforeDrop: () => (seen.push('monitor'), false) });
+    await start('a1', at('a', 0));
+    await moveTo(at('a', 2, 0.75));
+    await drop();
+    expect(seen).toEqual(['monitor']);
+    expect(ids(a.value)).toBe('a1,a2,a3');
+    expect(rows(container, 'a')).toEqual(['a1', 'a2', 'a3']);
+  });
+
   it('writes the very arrays result holds, and only the lists in it', async () => {
     const a = shallowRef(tasks('a1', 'a2'));
     const b = shallowRef(tasks('b1'));

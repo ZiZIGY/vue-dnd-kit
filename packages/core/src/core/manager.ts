@@ -281,7 +281,8 @@ export function createDnDManager(props: DnDProviderProps) {
 
   /**
    * `integration`: a library layer (sortable groups). Its notifications run before the
-   * others', so the user's `onDragEnd` sees the drop it wrote.
+   * others', so the user's `onDragEnd` sees the drop it wrote; its `onBeforeDrop` runs
+   * after theirs (see `drop`).
    */
   const addMonitor = (monitor: DnDMonitor, integration = false): (() => void) => {
     monitors.add(monitor);
@@ -957,7 +958,10 @@ export function createDnDManager(props: DnDProviderProps) {
 
     let verdict: BeforeDropResult = true;
     try {
-      for (const monitor of [...monitors]) {
+      // The user's monitors decide first: a list may apply a controlled drop's result in
+      // its own `onBeforeDrop`, and a veto after that would strand the applied result.
+      const ordered = [...monitors].sort((a, b) => Number(integrations.has(a)) - Number(integrations.has(b)));
+      for (const monitor of ordered) {
         const result = await monitor.onBeforeDrop?.(event);
         if (result === false) {
           verdict = false;
