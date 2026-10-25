@@ -1,5 +1,7 @@
-import { expect, test, type Page } from '@playwright/test';
-import { center } from './helpers';
+import { expect, test, type Locator, type Page } from '@playwright/test';
+import { center, item, layoutSettled, trackErrors, waitForIdle, type Point } from './helpers';
+
+type Box = { x: number; y: number; width: number; height: number };
 
 /** Overlay box size as laid out (transforms excluded). */
 const overlaySize = (page: Page) =>
@@ -10,6 +12,92 @@ const overlaySize = (page: Page) =>
 
 const rowWidth = (page: Page, id: string) =>
   page.locator(`[data-id="${id}"]:not([data-dnd-overlay] *)`).evaluate((element) => (element as HTMLElement).offsetWidth);
+
+/** Overlay box as shown (transforms included). */
+const overlayBox = (page: Page): Promise<Box> =>
+  page.locator('[data-dnd-overlay]').evaluate((element) => {
+    const { x, y, width, height } = element.getBoundingClientRect();
+    return { x, y, width, height };
+  });
+
+/** The overlay box on each of the next `count` frames. */
+const overlayFrames = (page: Page, count: number): Promise<Box[]> =>
+  page.evaluate(
+    (count) =>
+      new Promise<Box[]>((resolve) => {
+        const element = document.querySelector('[data-dnd-overlay]')!;
+        const boxes: Box[] = [];
+        const tick = () => {
+          const { x, y, width, height } = element.getBoundingClientRect();
+          boxes.push({ x, y, width, height });
+          if (boxes.length < count) requestAnimationFrame(tick);
+          else resolve(boxes);
+        };
+        requestAnimationFrame(tick);
+      }),
+    count,
+  );
+
+const within = (actual: number, expected: number, tolerance: number) =>
+  expect(Math.abs(actual - expected), `${actual} ≈ ${expected}`).toBeLessThanOrEqual(tolerance);
+
+/**
+ * The point at `ratio` of the box is under the pointer. Checked in pixels, not as a
+ * fraction: WebKit rounds mouse coordinates, which a fraction of a small box magnifies.
+ */
+const expectHeldAt = (box: Box, ratio: Point, pointer: Point) => {
+  within(box.x + box.width * ratio.x, pointer.x, 1.5);
+  within(box.y + box.height * ratio.y, pointer.y, 1.5);
+};
+
+/** Presses at `ratio` of the element's box and moves past the activation distance; returns the press point. */
+const grabAt = async (page: Page, locator: Locator, ratio: Point): Promise<Point> => {
+  const box = (await locator.boundingBox())!;
+  const point = { x: box.x + box.width * ratio.x, y: box.y + box.height * ratio.y };
+  await page.mouse.move(point.x, point.y);
+  await page.mouse.down();
+  await page.mouse.move(point.x, point.y + 8, { steps: 2 });
+  return point;
+};
+
+type DropStart = { first: Record<string, string>; before: Box; after: Box };
+
+/**
+ * Call before releasing. Records the overlay's drop animation as it starts: its first
+ * keyframe, and the overlay box just before and just after the animation took over.
+ */
+const watchDropStart = (page: Page) =>
+  page.evaluate(() => {
+    const win = window as unknown as { __dropStart: DropStart | null };
+    win.__dropStart = null;
+    const animate = Element.prototype.animate;
+    Element.prototype.animate = function (this: Element, keyframes, options) {
+      if (!this.hasAttribute('data-dnd-overlay')) return animate.call(this, keyframes, options);
+      const box = () => {
+        const { x, y, width, height } = this.getBoundingClientRect();
+        return { x, y, width, height };
+      };
+      const before = box();
+      const animation = animate.call(this, keyframes, options);
+      win.__dropStart = { first: (keyframes as Array<Record<string, string>>)[0]!, before, after: box() };
+      return animation;
+    };
+  });
+
+/** The drop animation starts exactly where the box was, and takes over without a jump. */
+const expectDropFrom = async (page: Page, release: Box) => {
+  const handle = await page.waitForFunction(() => (window as unknown as { __dropStart: DropStart | null }).__dropStart);
+  const { first, before, after } = (await handle.jsonValue()) as DropStart;
+  const [, left, top] = first.transform!.match(/translate3d\((-?[\d.]+)px, (-?[\d.]+)px/)!.map(Number);
+  within(left!, release.x, 0.5);
+  within(top!, release.y, 0.5);
+  within(parseFloat(first.width!), release.width, 0.5);
+  within(parseFloat(first.height!), release.height, 0.5);
+  for (const key of ['x', 'y', 'width', 'height'] as const) {
+    within(before[key], release[key], 0.5);
+    within(after[key], release[key], 0.5);
+  }
+};
 
 test.describe('overlay fits the slot (overlayFit: slot)', () => {
   test.beforeEach(async ({ page }) => {
@@ -43,6 +131,98 @@ test.describe('overlay fits the slot (overlayFit: slot)', () => {
     });
     for (const transform of (await keyframes.jsonValue()) as string[]) expect(transform).not.toContain('scale');
     await expect(page.locator('[data-dnd-overlay]')).toHaveCount(0);
+  });
+});
+
+test.describe('the overlay resizes around the pointer (overlayFit: slot)', () => {
+  let errors: string[];
+
+  test.beforeEach(async ({ page }) => {
+    errors = trackErrors(page);
+  });
+
+  test.afterEach(() => {
+    expect(errors).toEqual([]);
+  });
+
+  test('grabbed near the right edge of a wide card, the pointer keeps its place in a narrow box', async ({
+    page,
+  }) => {
+    await page.goto('/#overlay-fit');
+    await expect(page.getByTestId('state-slot')).toHaveText('slot-narrow:sn1,sn2,sn3,sn4 | slot-wide:sw1,sw2,sw3');
+    const source = (await item(page, 'sw1').boundingBox())!;
+    const narrow = (await item(page, 'sn2').boundingBox())!;
+    expect(source.width - narrow.width).toBeGreaterThan(100);
+
+    const grab = { x: 0.9, y: 0.3 };
+    await grabAt(page, item(page, 'sw1'), grab);
+    const target = await center(item(page, 'sn2'));
+    await page.mouse.move(target.x, target.y, { steps: 12 });
+    await expect(page.getByTestId('slot-narrow').locator('[data-id="sw1"]')).toHaveCount(1);
+    // On every frame of the resize, not only once it has settled.
+    for (const box of await overlayFrames(page, 15)) expectHeldAt(box, grab, target);
+    await expect.poll(async () => (await overlaySize(page)).width).toBe(Math.round(narrow.width));
+    const release = await overlayBox(page);
+    within(release.width, narrow.width, 1);
+    within(release.height, narrow.height, 1);
+    expectHeldAt(release, grab, target);
+
+    await watchDropStart(page);
+    await page.mouse.up();
+    await expectDropFrom(page, release);
+    await waitForIdle(page);
+    await expect(page.getByTestId('state-slot')).toHaveText(/^slot-narrow:[\w,]*sw1[\w,]* \| slot-wide:sw2,sw3$/);
+  });
+
+  test('a keyboard drag into a list of narrower items puts the box exactly over the slot', async ({ page }) => {
+    await page.goto('/#overlay-fit');
+    await expect(page.getByTestId('state-slot')).toHaveText('slot-narrow:sn1,sn2,sn3,sn4 | slot-wide:sw1,sw2,sw3');
+    await item(page, 'sw1').focus();
+    await page.keyboard.press('Space');
+    await expect(page.locator('[data-dnd-overlay]')).toHaveCount(1);
+    await page.keyboard.press('ArrowLeft');
+    const slot = page.getByTestId('slot-narrow').locator('[data-id="sw1"]');
+    await expect(slot).toHaveCount(1);
+    await layoutSettled(page);
+    const target = (await slot.boundingBox())!;
+    await expect.poll(async () => (await overlaySize(page)).width).toBe(Math.round(target.width));
+    const box = await overlayBox(page);
+    for (const key of ['x', 'y', 'width', 'height'] as const) within(box[key], target[key], 1.5);
+    await page.keyboard.press('Space');
+    await waitForIdle(page);
+    await expect(page.getByTestId('state-slot')).toHaveText(/^slot-narrow:[\w,]*sw1[\w,]* \| slot-wide:sw2,sw3$/);
+  });
+
+  test('entering the tree, the box takes the row width around the pointer; the depth projection is unchanged', async ({
+    page,
+  }) => {
+    await page.goto('/#tree');
+    const source = page.locator('[data-testid="clipboard-list"] [data-id="notes"]');
+    const sourceWidth = (await source.boundingBox())!.width;
+    const treeWidth = await rowWidth(page, 'package');
+    expect(Math.abs(treeWidth - sourceWidth)).toBeGreaterThan(20);
+
+    const grab = { x: 0.9, y: 0.5 };
+    await grabAt(page, source, grab);
+    const entry = await center(page.locator('[data-testid="tree-root"] [data-id="package"]'), 0.3);
+    await page.mouse.move(entry.x, entry.y, { steps: 30 });
+    await expect(page.locator('[data-testid="tree-root"] [data-id="notes"]')).toHaveCount(1);
+    await layoutSettled(page);
+    // The same nesting as with a grab at the center (tree.spec.ts).
+    const folder = await center(page.locator('[data-testid="tree-root"] [data-id="assets"]'));
+    await page.mouse.move(folder.x, folder.y, { steps: 10 });
+    await expect(page.getByTestId('projected')).toHaveText('1:assets');
+    await expect.poll(async () => (await overlaySize(page)).width).toBe(treeWidth);
+    const release = await overlayBox(page);
+    expectHeldAt(release, grab, folder);
+
+    await watchDropStart(page);
+    await page.mouse.up();
+    await expectDropFrom(page, release);
+    await waitForIdle(page);
+    await expect(page.getByTestId('tree')).toHaveText(
+      'src(components(ui,button),main),docs(intro,guide),assets(notes),package,readme',
+    );
   });
 });
 

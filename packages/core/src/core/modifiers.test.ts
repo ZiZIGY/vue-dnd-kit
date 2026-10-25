@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Active, Coordinates, ModifierArgs, Rect } from '../types';
-import { createRect } from '../animation/layout';
+import { createRect, getCenter, getFraction, offsetRect, resizeAround } from '../animation/layout';
 import {
   getOverlaySmoothing,
   restrictToHorizontalAxis,
@@ -103,5 +103,37 @@ describe('snapCenterToCursor', () => {
       y: activeRect.top + offset.y + activeRect.height / 2,
     };
     expect(center).toEqual({ x: 120 + 10, y: 215 + 20 });
+  });
+});
+
+describe('a box resized around the grab point (overlayFit)', () => {
+  // The 50×30 item shown as a 100×20 box, held at (0.3, 0.25) of it.
+  const size = { width: 100, height: 20 };
+  const grab = getFraction(activeRect, { x: 120, y: 214.5 });
+  const box = (transform: Coordinates) => resizeAround(offsetRect(activeRect, transform.x, transform.y), size, grab);
+  const resized = (transform: Coordinates, overrides: Partial<ModifierArgs> = {}) =>
+    args(transform, { overlayRect: box(transform), ...overrides });
+
+  it('snapCenterToCursor centers the box as it is shown', () => {
+    const offset = snapCenterToCursor(resized({ x: 10, y: 20 }));
+    expect(getCenter(box(offset))).toEqual({ x: 120 + 10, y: 215 + 20 });
+  });
+
+  it('restrictions keep the box as it is shown inside', () => {
+    for (const transform of [{ x: -50, y: -50 }, { x: 1000, y: 1000 }]) {
+      const placed = box(restrictToParent(resized(transform)));
+      expect(placed.left).toBeGreaterThanOrEqual(container.left);
+      expect(placed.right).toBeLessThanOrEqual(container.right);
+      expect(placed.top).toBeGreaterThanOrEqual(container.top);
+      expect(placed.bottom).toBeLessThanOrEqual(container.bottom);
+    }
+    const inWindow = box(restrictToWindowEdges(resized({ x: -500, y: 900 })));
+    expect([inWindow.left, inWindow.bottom]).toEqual([0, 800]);
+  });
+
+  it('snapToGrid puts the top-left of the box as it is shown on the grid', () => {
+    const placed = box(snapToGrid(20)(resized({ x: 33, y: 47 })));
+    expect((placed.left - container.left) % 20).toBeCloseTo(0, 10);
+    expect((placed.top - container.top) % 20).toBeCloseTo(0, 10);
   });
 });

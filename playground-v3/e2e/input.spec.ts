@@ -373,7 +373,6 @@ test.describe('snap to grid', () => {
     const board = (await page.getByTestId('board').boundingBox())!;
     const start = await center(page.locator('[data-id="free"]'));
     await dragTo(page, page.locator('[data-id="free"]'), { x: start.x + 33, y: start.y + 47 }, { release: false });
-    // Alongside the width/height transition the overlay always has (overlayFit: 'slot').
     await expect(overlay(page)).toHaveCSS('transition-property', /(^|, )transform(,|$)/);
     await page.waitForTimeout(150);
     const box = (await overlay(page).boundingBox())!;
