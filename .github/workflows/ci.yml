@@ -90,6 +90,42 @@ jobs:
       - name: Size limit
         run: yarn size
 
+  devtools:
+    name: Devtools (typecheck, test, build, package checks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: packages/devtools
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: packages/devtools/yarn.lock
+
+      # The core and its devtools bridge are compiled from their sources (tsconfig `paths`,
+      # Vitest alias) with this package's own Vue and VueUse: they need no install of their own.
+      - name: Install
+        run: yarn install --frozen-lockfile
+
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Unit tests
+        run: yarn test
+
+      - name: Build
+        run: yarn build
+
+      - name: publint + arethetypeswrong
+        run: yarn lint:package
+
+      - name: Size limit
+        run: yarn size
+
   e2e:
     name: E2E (${{ matrix.browser }})
     runs-on: ubuntu-latest
@@ -117,11 +153,17 @@ jobs:
           cache: yarn
           cache-dependency-path: |
             packages/core/yarn.lock
+            packages/actions/yarn.lock
+            packages/devtools/yarn.lock
             playground-v3/yarn.lock
 
-      # The playground imports the core from source (Vite alias).
-      - name: Install core
-        run: yarn --cwd ../packages/core install --frozen-lockfile
+      # The playground imports the packages from source (Vite aliases); esbuild reads each
+      # package's tsconfig.json, which extends @vue/tsconfig from its node_modules.
+      - name: Install packages
+        run: |
+          yarn --cwd ../packages/core install --frozen-lockfile
+          yarn --cwd ../packages/actions install --frozen-lockfile
+          yarn --cwd ../packages/devtools install --frozen-lockfile
 
       - name: Install playground
         run: yarn install --frozen-lockfile

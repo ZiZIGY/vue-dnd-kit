@@ -2,8 +2,8 @@
  * The plugin: the "Vue DnD Kit" inspector and timeline layer of an app, fed by the core's
  * devtools bridge. The bridge is connected when the plugin is set up for an app (before
  * it mounts), so its providers report; they are followed only once the DevTools set the
- * plugin up, which they do only when they are there (the browser extension, or
- * `vite-plugin-vue-devtools`).
+ * plugin up, which they do when a DevTools panel opens (the browser extension's, or
+ * `vite-plugin-vue-devtools`'s).
  */
 
 import type { App } from 'vue';

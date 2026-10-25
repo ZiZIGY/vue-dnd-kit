@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "dev:host": "vite --host",
+    "dev:devtools": "vite --mode devtools",
     "typecheck": "vue-tsc --noEmit",
     "e2e": "playwright test",
     "bench": "playwright test -c playwright.bench.config.ts"
@@ -21,11 +22,13 @@
     "@tanstack/vue-virtual": "^3.13.48",
     "@types/node": "^26.6.5",
     "@vitejs/plugin-vue": "^6.0.10",
+    "@vue/devtools-api": "^8.2.1",
     "gsap": "^3.13.0",
     "motion-v": "^2.8.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~5.9.3",
     "vite": "^7.2.2",
+    "vite-plugin-vue-devtools": "^8.2.1",
     "vue-tsc": "^3.3.13",
     "vuetify": "^4.3.0"
   }

@@ -45,7 +45,7 @@ if (import.meta.env.DEV) app.use(DnDDevtools);
 
 ## Open it
 
-Run the app in development and open the Vue DevTools: the [browser extension](https://devtools.vuejs.org/getting-started/installation) or [`vite-plugin-vue-devtools`](https://devtools.vuejs.org/guide/vite-plugin) (<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>). The plugin adds:
+Run the app in development and open the Vue DevTools: the [browser extension](https://devtools.vuejs.org/getting-started/installation) or [`vite-plugin-vue-devtools`](https://devtools.vuejs.org/guide/vite-plugin) (<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>). The DevTools set plugins up once their panel is open; from then on the plugin follows the drags. It adds:
 
 ### The "Vue DnD Kit" inspector
 
@@ -63,7 +63,7 @@ Items mount and unmount without events: the tree catches up within a second.
 
 ### The "Vue DnD Kit" timeline layer
 
-One group per drag: `drag start` (ids, the sensor that started it and whether by touch, the list it comes from), `over` and `left` (target changes, and whether the target accepts), `release`, `onBeforeDrop` (the verdict: accepted, accepted some, rejected by a hook, or refused by the target's `accept`, and how long the hooks took), `drop` (the target, and for sortable lists the move, `event.result` and whether `preventDefault()` was called) or `cancel` (and why), `announcement` (what the live region said) and `auto-scroll on` / `off`.
+Turn the layer on in the Timeline tab (the DevTools record a plugin's layer only when it is on). One group per drag: `drag start` (ids, the sensor that started it and whether by touch, the list it comes from), `over` and `left` (target changes, and whether the target accepts), `release`, `onBeforeDrop` (the verdict: accepted, accepted some, rejected by a hook, or refused by the target's `accept`, and how long the hooks took), `drop` (the target, and for sortable lists the move, `event.result` and whether `preventDefault()` was called) or `cancel` (and why), `announcement` (what the live region said) and `auto-scroll on` / `off`.
 
 Outside drags, `animate` logs the changes of a list's items that no drag made and that its `animate` option plays: items added, removed, reordered.
 
@@ -73,7 +73,7 @@ Each app with the plugin shows its own providers. A provider shared with an app 
 
 ## How it works
 
-Providers report to a hook the plugin installs (through the core's internal bridge, `@vue-dnd-kit/core/devtools`). Without the plugin nothing reports and nothing runs. With it, a provider is only recorded until the DevTools are open; from then on the plugin listens like any monitor, and reads snapshots. It changes nothing but what you ask it to (cancel, clear the selection).
+Providers report to a hook the plugin installs (through the core's internal bridge, `@vue-dnd-kit/core/devtools`). Without the plugin nothing reports and nothing runs. With it, a provider is only recorded until the DevTools panel is open; from then on the plugin listens like any monitor, and reads snapshots. It changes nothing but what you ask it to (cancel, clear the selection).
 
 ## License
 
