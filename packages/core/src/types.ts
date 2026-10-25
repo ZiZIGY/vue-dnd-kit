@@ -539,6 +539,11 @@ export interface SortableIndicator {
   side: 'before' | 'after';
 }
 
+/**
+ * Options of `makeSortableList`. One list (or tree) per component: it provides the
+ * context its items read, so a second one in the same component would take the first
+ * one's items (development builds warn about it).
+ */
 export interface SortableListOptions<T> {
   /** Source of truth; the library writes the new array here on drop. */
   items: Ref<T[]>;
