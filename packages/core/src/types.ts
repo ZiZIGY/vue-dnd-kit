@@ -574,7 +574,11 @@ export interface SortableListOptions<T> {
   sort?: boolean;
   /** Creates copies (`pull: 'clone'`, copy modifier key). Required for copying. */
   clone?: (item: T) => T;
-  /** Accepts plain draggables from outside: creates the item to insert. */
+  /**
+   * Accepts plain draggables from outside: creates the item to insert. With the keyboard,
+   * an arrow toward the list takes the draggable in (level with it, as moves between
+   * lists go), and the created item then moves by slots like any other.
+   */
   createItem?: (active: Active) => T | undefined;
   dropOutside?: DropOutside;
   animation?: LayoutAnimation;
