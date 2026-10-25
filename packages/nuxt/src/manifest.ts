@@ -66,6 +66,7 @@ export const types = [
   'DraggableReturn',
   'DroppableOptions',
   'DroppableReturn',
+  'OverlayProps',
   'OverlaySlotProps',
   'SelectionAreaOptions',
   'SelectionAreaReturn',

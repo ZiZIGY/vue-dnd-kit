@@ -1,4 +1,4 @@
-import { computed, onScopeDispose, provide, shallowRef } from 'vue';
+import { computed, onScopeDispose, shallowRef } from 'vue';
 import type {
   Coordinates,
   DnDEvent,
@@ -18,7 +18,7 @@ import { getLayoutRect } from '../animation/layout';
 import { createId, toElement } from '../utils/dom';
 import { read } from '../utils/read';
 import { useSortableGroup, type ListEntry, type ProjectContext } from './group';
-import { SORTABLE_CONTEXT } from './makeSortableList';
+import { defaultGetKey, provideSortableContext } from './makeSortableList';
 import {
   applyTreeMove,
   createFlatTree,
@@ -39,9 +39,6 @@ import {
 } from './tree';
 
 const DEFAULT_INDENTATION = 24;
-
-const defaultGetKey = (node: unknown): Key =>
-  node !== null && typeof node === 'object' && 'id' in node ? (node as { id: Key }).id : (node as Key);
 
 const defaultGetChildren = (node: unknown): unknown[] | undefined =>
   node !== null && typeof node === 'object' ? (node as { children?: unknown[] }).children : undefined;
@@ -449,7 +446,7 @@ export function makeSortableTree<T>(
     { accepts: (active) => group.accepts(entry, active) },
   );
 
-  provide(SORTABLE_CONTEXT, { group, list: entry });
+  provideSortableContext(group, entry, accessors.getKey, options.overlay);
 
   const activeKey = computed(() => group.session.value?.activeKey ?? null);
   const inTree = computed(() => activeKey.value != null && draft.value != null && group.indexOf(entry, activeKey.value) !== -1);

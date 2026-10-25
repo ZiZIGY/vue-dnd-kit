@@ -1,10 +1,16 @@
-import { toValue, type ComponentPublicInstance, type VNode } from 'vue';
+import { getCurrentInstance, toValue, useId, type ComponentPublicInstance, type VNode } from 'vue';
 import { unrefElement } from '@vueuse/core';
 import type { MaybeElementRef } from '../types';
 
 let uid = 0;
 
-export const createId = (prefix: string): string => `${prefix}-${++uid}`;
+/**
+ * Default id of a composable. In a component: `useId()`, the same on the server and
+ * the client, unique per app (`app.config.idPrefix` tells apps sharing a provider
+ * apart). Without a component instance (a detached `effectScope`): a module counter.
+ */
+export const createId = (prefix: string): string =>
+  `${prefix}-${getCurrentInstance() ? useId() : ++uid}`;
 
 export const isClient = typeof window !== 'undefined';
 

@@ -5,6 +5,7 @@
  */
 
 import type {
+  Component,
   ComponentPublicInstance,
   ComputedRef,
   Ref,
@@ -293,14 +294,29 @@ export interface DnDProviderProps {
   defaultStyles?: boolean;
 }
 
+/**
+ * What the overlay shows: the props of the provider's `#overlay` slot and of overlay
+ * components (`overlay` option of draggables, sortable items, lists and trees).
+ */
 export interface OverlaySlotProps {
   active: Active;
+  /** Every dragged item, the primary one first: one overlay for the whole multi-drag. */
   items: DragItem[];
   over: Over | null;
+  /** Whether `over` accepts the dragged items; `false` when over nothing. */
   accepted: boolean;
   status: DnDStatus;
   mode: DragMode;
 }
+
+/**
+ * Props of an overlay component, for `defineProps<OverlayProps>()`.
+ *
+ * The component renders inside the overlay box, which follows the slot size
+ * (`overlayFit: 'slot'`) and animates it on drop. Give the root `width: 100%` (and
+ * `height: 100%`) to follow that size; a fixed size keeps the component's own.
+ */
+export type OverlayProps = OverlaySlotProps;
 
 // ─── Monitor ───────────────────────────────────────────────────────────────────
 
@@ -352,7 +368,11 @@ export interface DnDState {
 // ─── Draggable / droppable ─────────────────────────────────────────────────────
 
 export interface DraggableOptions<TData = unknown> {
-  /** Stable id. Pass a getter in virtual lists, where elements are recycled. */
+  /**
+   * Stable id. Pass a getter in virtual lists, where elements are recycled. Default:
+   * `useId()`, stable between server and client render but new for every component
+   * instance.
+   */
   id?: MaybeReadonlyRefOrGetter<Key>;
   data?: MaybeReadonlyRefOrGetter<TData>;
   type?: MaybeReadonlyRefOrGetter<string | string[] | undefined>;
@@ -362,8 +382,13 @@ export interface DraggableOptions<TData = unknown> {
   activation?: ActivationOptions;
   /** Extra gate, e.g. drag only while a key is held. */
   canDrag?: (event: PointerEvent | KeyboardEvent) => boolean;
-  /** `false` moves the element itself via the returned `transform` instead of an overlay. */
-  overlay?: boolean;
+  /**
+   * `true` (default): an overlay follows the pointer, rendered by the provider's
+   * `#overlay` slot or as a clone of the element. A component: the overlay renders it
+   * with `OverlayProps`, before the slot. `false`: no overlay, the element itself moves
+   * via the returned `transform`.
+   */
+  overlay?: boolean | Component;
   /** Arrow keys in free drags: move by pixels or jump between accepting drop targets. */
   keyboard?: 'pixels' | 'droppables';
   /** Set role/tabindex/aria-* attributes (never overriding the user's own). */
@@ -386,6 +411,7 @@ export interface Placement {
 }
 
 export interface DroppableOptions<TData = unknown> {
+  /** Default: `useId()`, stable between server and client render. */
   id?: MaybeReadonlyRefOrGetter<Key>;
   data?: MaybeReadonlyRefOrGetter<TData>;
   accept?: AcceptRule | Ref<AcceptRule>;
@@ -456,9 +482,15 @@ export interface SortableIndicator {
 export interface SortableListOptions<T> {
   /** Source of truth; the library writes the new array here on drop. */
   items: Ref<T[]>;
-  /** Default: `item.id`, or the item itself for primitives. */
+  /** Default: `item.id`, or the item itself for primitives. Also keys `makeSortableItem({ item })`. */
   getKey?: (item: T) => Key;
+  /** Default: `useId()`, stable between server and client render. */
   id?: Key;
+  /**
+   * Overlay component for this list's items (an item's own `overlay` wins). It receives
+   * `OverlayProps` and is kept for the whole drag, also over other lists.
+   */
+  overlay?: Component;
   /** Lists with the same group name exchange items. Default: a group of its own. */
   group?: string | SortableGroupOptions;
   acceptMode?: AcceptMode;
@@ -498,8 +530,21 @@ export interface SortableListReturn<T> {
   captureLayout(): void;
 }
 
+/**
+ * Pass `id` or `item` (`id` wins when both are given). Sortable keys must come from the
+ * data: an automatic id would change whenever the component is recreated (moved to
+ * another list, recycled by a virtual list), and the drag would lose the item.
+ */
 export interface SortableItemOptions<TData = unknown> {
-  id: MaybeReadonlyRefOrGetter<Key>;
+  /** Key of the item in its list. A getter keeps it current in virtual lists. */
+  id?: MaybeReadonlyRefOrGetter<Key>;
+  /**
+   * The item this element renders, e.g. `() => props.task`. Its key comes from the
+   * owning list's (or tree's) `getKey`, by default `item.id`.
+   */
+  item?: MaybeReadonlyRefOrGetter<unknown>;
+  /** Overlay component for this item; wins over the list's `overlay`. */
+  overlay?: Component;
   handle?: MaybeElementRef | string;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
   type?: MaybeReadonlyRefOrGetter<string | string[] | undefined>;
@@ -551,10 +596,14 @@ export interface SortableTreeDropEvent<T = unknown> extends SortableDropEvent<T>
 
 export interface SortableTreeOptions<T> {
   items: Ref<T[]>;
+  /** Default: `node.id`. Also keys `makeSortableItem({ item })`. */
   getKey?: (node: T) => Key;
   getChildren?: (node: T) => T[] | undefined;
   setChildren?: (node: T, children: T[]) => void;
+  /** Default: `useId()`, stable between server and client render. */
   id?: Key;
+  /** Overlay component for this tree's rows (a row's own `overlay` wins). */
+  overlay?: Component;
   group?: string | SortableGroupOptions;
   /** Pixels of horizontal offset per depth level. Default 24. */
   indentation?: number;

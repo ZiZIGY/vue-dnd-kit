@@ -1,10 +1,14 @@
 import { createSSRApp, defineComponent, h, nextTick, ref, useTemplateRef } from 'vue';
 import { renderToString } from 'vue/server-renderer';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { Key } from '../types';
 import { DnDProvider } from './DnDProvider';
+import { makeDraggable } from './makeDraggable';
+import { makeDroppable } from './makeDroppable';
 import { makeSelectionArea } from './makeSelectionArea';
 import { makeSortableItem } from '../sortable/makeSortableItem';
 import { makeSortableList } from '../sortable/makeSortableList';
+import { makeSortableTree } from '../sortable/makeSortableTree';
 
 const Item = defineComponent({
   props: { itemId: { type: String, required: true } },
@@ -59,5 +63,80 @@ describe('SSR', () => {
     expect(item.getAttribute('aria-roledescription')).toBe('sortable');
     expect(document.getElementById(item.getAttribute('aria-describedby')!)).not.toBeNull();
     app.unmount();
+  });
+
+  describe('default ids', () => {
+    /** Default ids seen by the current render, in setup order. */
+    let seen: Key[] = [];
+
+    const Piece = defineComponent({
+      setup() {
+        const { id } = makeDraggable(useTemplateRef<HTMLElement>('el'));
+        const zone = makeDroppable(useTemplateRef<HTMLElement>('zone'));
+        seen.push(id.value, zone.id.value);
+        return () => h('div', { ref: 'zone', 'data-zone': zone.id.value }, [h('span', { ref: 'el', 'data-drag': id.value })]);
+      },
+    });
+
+    const Row = defineComponent({
+      props: { task: { type: Object, required: true } },
+      setup(props) {
+        makeSortableItem(useTemplateRef<HTMLElement>('el'), { item: () => props.task });
+        return () => h('li', { ref: 'el' }, String(props.task.id));
+      },
+    });
+
+    const Lists = defineComponent({
+      setup() {
+        const list = makeSortableList(useTemplateRef<HTMLElement>('list'), { items: ref([{ id: 'a' }, { id: 'b' }]) });
+        const tree = makeSortableTree(useTemplateRef<HTMLElement>('tree'), { items: ref([{ id: 'root' }]) });
+        seen.push(list.id, tree.id);
+        return () =>
+          h('div', [
+            h('ul', { ref: 'list', 'data-list': list.id }, list.items.value.map((task) => h(Row, { key: task.id, task }))),
+            h('ul', { ref: 'tree', 'data-tree': tree.id }),
+            h(Piece),
+            h(Piece),
+          ]);
+      },
+    });
+
+    const IdsApp = defineComponent({
+      setup: () => () => h(DnDProvider, null, { default: () => h(Lists) }),
+    });
+
+    it('are the same on the server and after hydration', async () => {
+      seen = [];
+      const html = await renderToString(createSSRApp(IdsApp));
+      const server = seen;
+      expect(server).toHaveLength(6);
+      // useId() based: scoped by the app's id prefix, unique within the app.
+      expect(new Set(server).size).toBe(6);
+      for (const id of server) expect(String(id)).toMatch(/^(draggable|droppable|sortable|tree)-v-/);
+
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const container = document.createElement('div');
+      container.innerHTML = html;
+      document.body.appendChild(container);
+      seen = [];
+      const app = createSSRApp(IdsApp);
+      app.mount(container);
+      await nextTick();
+
+      expect(seen).toEqual(server);
+      const messages = [...warn.mock.calls, ...error.mock.calls].map((call) => String(call[0]));
+      expect(messages.filter((message) => /hydrat/i.test(message))).toEqual([]);
+      expect(container.querySelector('[data-list]')!.getAttribute('data-list')).toBe(server[0]);
+      app.unmount();
+    });
+
+    it('follow app.config.idPrefix', async () => {
+      seen = [];
+      const app = createSSRApp(IdsApp);
+      app.config.idPrefix = 'shadow';
+      await renderToString(app);
+      expect(seen[0]).toMatch(/^sortable-shadow-/);
+    });
   });
 });

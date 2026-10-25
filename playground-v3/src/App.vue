@@ -29,6 +29,7 @@
   import AnnounceDemo from './demos/AnnounceDemo.vue';
   import NestedZonesDemo from './demos/NestedZonesDemo.vue';
   import ShadowDomDemo from './demos/ShadowDomDemo.vue';
+  import { overlayDemos } from './demos/overlay';
   // Example apps (each brings its own DnDProvider).
   import BoardApp from './demos/apps/BoardApp.vue';
   import FilesApp from './demos/apps/FilesApp.vue';
@@ -65,6 +66,7 @@
     announce: AnnounceDemo,
     'nested-zones': NestedZonesDemo,
     shadow: ShadowDomDemo,
+    ...overlayDemos,
     'app-board': BoardApp,
     'app-files': FilesApp,
     'app-form': FormApp,
