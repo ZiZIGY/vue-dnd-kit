@@ -34,10 +34,12 @@ export const DragPreview = /* @__PURE__ */ defineComponent({
       // One clone, one place: a second preview of the same item shows a copy of it.
       shown = preview.element.isConnected ? (preview.element.cloneNode(true) as HTMLElement) : preview.element;
       element.appendChild(shown);
-      // In a custom overlay layout, another dragged item's preview lands on that item's slot
-      // with the drop, as the default column's cells do (those register themselves).
+      // In a custom overlay layout of a sortable multi-drag (the column brings the landing),
+      // another dragged item's preview lands on that item's slot with the drop, as the
+      // default column's cells do (those register themselves).
       const parent = element.parentElement;
       const lands =
+        !!manager.overlayColumn.value &&
         props.id !== manager.active.value?.id &&
         !!parent?.closest('[data-dnd-overlay]') &&
         !parent.closest('[data-dnd-overlay-item]');

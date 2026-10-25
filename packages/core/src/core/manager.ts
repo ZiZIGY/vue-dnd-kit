@@ -801,15 +801,12 @@ export function createDnDManager(props: DnDProviderProps) {
   };
 
   /**
-   * Multi-drag: the overlay's clones of the other items (the default column's, the
-   * `DragPreview`s of a custom layout) land on their own slots with the box; items
-   * without a clone (past the cap, not in the layout) fade in where they are, instead of
-   * popping to full opacity when the drop ends.
+   * Multi-drag: the default overlay's clones of the other items land on their own slots
+   * with the box; items without a clone (past the cap, custom overlays) fade in where
+   * they are, instead of popping to full opacity when the drop ends.
    */
-  const landItems = (current: Active, box: Parameters<typeof landOverlayItems>[2]): Promise<void> => {
+  const landItems = (current: Active, box: { from: Rect; to: Rect | null }): Promise<void> => {
     if (current.ids.length < 2) return Promise.resolve();
-    // Landing comes with the sortable layer's column: plain drags don't bundle it.
-    const land = overlayColumn.value?.land;
     const slotOf = new Map<Key, Key>();
     for (const [slot, id] of landings.value) slotOf.set(id, slot);
     const elementOf = (id: Key) => {
@@ -820,7 +817,7 @@ export function createDnDManager(props: DnDProviderProps) {
     const resting: HTMLElement[] = [];
     for (const id of current.ids) {
       if (id === current.id) continue;
-      const clone = land && overlayItems.get(id);
+      const clone = overlayItems.get(id);
       const target = elementOf(id);
       if (!clone?.isConnected) {
         if (target) resting.push(target);
@@ -828,10 +825,11 @@ export function createDnDManager(props: DnDProviderProps) {
       }
       const to = target ? measurer.measure(target) : null;
       const visible = !!to && to.width > 0 && !!measurer.measureVisible(target!);
-      items.push({ element: clone, to: visible ? to : null });
+      items.push({ element: clone, from: getRect(clone), to: visible ? to : null });
     }
     fades = fadeInPlace(props.dropAnimation, resting);
-    return land?.(props.dropAnimation, items, box) ?? Promise.resolve();
+    // Clones exist only with the sortable layer's column: its cells, a custom layout's `DragPreview`s.
+    return overlayColumn.value?.land(props.dropAnimation, items, box) ?? Promise.resolve();
   };
 
   /** Plays the drop or return animation, then ends the session. */
@@ -868,11 +866,9 @@ export function createDnDManager(props: DnDProviderProps) {
       const visible = !!to && to.width > 0 && !!measurer.measureVisible(target!);
       const from = getRect(overlay);
       const landing = visible ? to : null;
-      // The clones read their places before the box starts to move.
-      const items = landItems(current, { overlay, from, to: landing });
       await Promise.all([
         runDropAnimation(props.dropAnimation, { overlay, from, to: landing, reason, active: current }),
-        items,
+        landItems(current, { from, to: landing }),
       ]);
       if (id !== session) return;
     }

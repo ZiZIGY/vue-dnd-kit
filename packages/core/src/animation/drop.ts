@@ -1,5 +1,5 @@
 import type { AnimationOptions, DropAnimation, DropAnimationContext, Rect } from '../types';
-import { canAnimate, prefersReducedMotion, resolveAnimation } from './layout';
+import { canAnimate, getRect, prefersReducedMotion, resolveAnimation } from './layout';
 
 export const DEFAULT_DROP_ANIMATION: Required<AnimationOptions> = {
   duration: 250,
@@ -88,6 +88,8 @@ export interface OverlayItemLanding {
    * of a custom layout, which may be turned or scaled by its wrappers' `transform`.
    */
   element: HTMLElement;
+  /** Where it is now (viewport): its bounding box. */
+  from: Rect;
   /** Final rect of its item; `null` when it isn't visible (the clone fades out). */
   to: Rect | null;
 }
@@ -105,10 +107,11 @@ const frame = ({ a, b, c, d, e, f }: DOMMatrix, width: string, height: string, o
 });
 
 /**
- * Where a clone is: the turn and scale of its wrappers inside the overlay (`linear`), its
- * own transform around its top left corner, and that corner (viewport) without it.
+ * Where a clone with the bounding box `rect` is: the turn and scale of its wrappers inside
+ * the overlay (`linear`), its own transform around its top left corner, and that corner
+ * (viewport) without it.
  */
-const placeOf = (element: HTMLElement, overlay: Element) => {
+const placeOf = (element: HTMLElement, overlay: Element | null, rect = getRect(element)) => {
   let linear = new DOMMatrix();
   for (let node = element.parentElement; node && node !== overlay; node = node.parentElement) {
     linear = new DOMMatrix(getComputedStyle(node).transform).multiply(linear);
@@ -117,10 +120,9 @@ const placeOf = (element: HTMLElement, overlay: Element) => {
   const style = getComputedStyle(element);
   const [x = 0, y = 0] = style.transformOrigin.split(' ').map(parseFloat);
   const own = new DOMMatrix().translate(x, y).multiply(new DOMMatrix(style.transform)).translate(-x, -y);
-  // Its bounding box starts at the leftmost and topmost corner of the turned box.
+  // The bounding box starts at the leftmost and topmost corner of the turned box.
   const { a, b, c, d, e, f } = linear.multiply(own);
   const { offsetWidth: w, offsetHeight: h } = element;
-  const rect = element.getBoundingClientRect();
   return {
     linear,
     own,
@@ -136,32 +138,32 @@ const placeOf = (element: HTMLElement, overlay: Element) => {
  * from `box.from` to `box.to`. Each one animates relative to the box with the box's
  * timing, so position and box add up to a straight flight that ends exactly on its
  * slot, its wrappers' turn undone on the way. Width and height animate, never
- * `scale()` (see `runDropAnimation`). Call it right before starting the box's animation:
- * it reads the clones' places at once.
+ * `scale()` (see `runDropAnimation`).
  */
 export const landOverlayItems = async (
   option: DropAnimation | undefined,
   items: OverlayItemLanding[],
-  box: { overlay: HTMLElement; from: Rect; to: Rect | null },
+  box: { from: Rect; to: Rect | null },
 ): Promise<void> => {
   const timing = items.length ? companionTiming(option) : null;
   if (!timing) return;
-  const { overlay, from } = box;
+  const { from } = box;
   // A box that fades out stays where it is.
   const end = box.to ?? from;
-  const places = items.map(({ element }) => placeOf(element, overlay));
-  // A layout that follows the box's size (a custom one) is measured at the size the box lands with.
+  const overlay = items[0]!.element.closest<HTMLElement>('[data-dnd-overlay]');
+  const places = items.map(({ element, from: rect }) => placeOf(element, overlay, rect));
+  // A layout that follows the box's size (a custom one) is measured at the size the box lands
+  // with: `!important` wins over the box's animation, which holds the size it starts from.
   let landed = places;
-  if (end.width !== from.width || end.height !== from.height) {
-    const { width, height } = overlay.style;
-    overlay.style.width = `${end.width}px`;
-    overlay.style.height = `${end.height}px`;
+  if (overlay && (end.width !== from.width || end.height !== from.height)) {
+    const { style } = overlay;
+    const { width, height } = style;
+    style.setProperty('width', `${end.width}px`, 'important');
+    style.setProperty('height', `${end.height}px`, 'important');
     landed = items.map(({ element }) => placeOf(element, overlay));
-    overlay.style.width = width;
-    overlay.style.height = height;
+    style.width = width;
+    style.height = height;
   }
-  // Measured before the box moves; the clones start right after it, in the same frame.
-  await null;
   await Promise.all(
     items.map(({ element, to }, index) => {
       if (!canAnimate(element)) return undefined;

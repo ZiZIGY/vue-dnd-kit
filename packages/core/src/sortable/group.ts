@@ -972,6 +972,14 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     manager.announce('onDragOver');
   };
 
+  /** The swap partner as the drop event tells it: it went to where the active item started. */
+  const partnerOf = (current: Session, partner: Key): SortableDropEvent['partner'] => ({
+    key: partner,
+    item: lookup(partner),
+    from: { ...current.sources.get(partner)! },
+    to: { list: current.origin.list!, index: current.origin.index },
+  });
+
   const updateSwap = (target: ListEntry, event: DnDEvent) => {
     const current = session.value!;
     const { partner, key } = projectSwap({
@@ -1258,27 +1266,20 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     if (current.external) mode = 'insert';
     else if (current.copying) mode = 'copy';
     else if (current.swap != null) mode = 'swap';
-    const event: SortableDropEvent = {
-      keys: current.keys,
-      items: current.keys.map((key) => lookup(inserted(key))),
-      accepted: moved,
-      rejected,
-      from: { ...current.origin },
-      to: { list: target.id, index: insert.length ? finalKeys.indexOf(insert[0]!) : -1 },
-      sameList: current.origin.list === target.id,
-      mode,
+    return {
+      next,
+      event: {
+        keys: current.keys,
+        items: current.keys.map((key) => lookup(inserted(key))),
+        accepted: moved,
+        rejected,
+        from: { ...current.origin },
+        to: { list: target.id, index: insert.length ? finalKeys.indexOf(insert[0]!) : -1 },
+        sameList: current.origin.list === target.id,
+        mode,
+        ...(mode === 'swap' && { partner: partnerOf(current, current.swap!) }),
+      },
     };
-    // The swap partner went the other way: to where the active item started.
-    if (mode === 'swap') {
-      const partner = current.swap!;
-      event.partner = {
-        key: partner,
-        item: lookup(partner),
-        from: { ...current.sources.get(partner)! },
-        to: { list: current.origin.list!, index: current.origin.index },
-      };
-    }
-    return { next, event };
   };
 
   /** Trash zones and `dropOutside: 'remove'`: the dragged items leave their lists. */
