@@ -7,6 +7,7 @@ import type { Coordinates, DnDEvent, Key } from '../types';
 import { landOverlayItems } from '../animation/drop';
 import { listOf, type GroupContext, type Session } from './context';
 import type { ListEntry } from './entry';
+import type { DropResult } from './drop';
 import { ColumnPreview, layoutColumn } from './column';
 
 const NO_OFFSET: Coordinates = { x: 0, y: 0 };
@@ -78,6 +79,22 @@ export const syncManager = (g: GroupContext) => {
   );
   syncColumn(g, current);
   manager.mode.value = current.mode.dragMode(g, current);
+};
+
+/**
+ * The drop is decided: where the overlay's clones land. The accepted items on their
+ * slots (copies when copying); the rest on their own elements, back where they started.
+ * The active item goes with its lead.
+ */
+export const landDrop = (g: GroupContext, current: Session, result: DropResult | null) => {
+  const accepted = result && !current.removed ? result.event.accepted : [];
+  if (result && !accepted.includes(current.lead)) g.manager.landingKey.value = null;
+  setLandings(
+    g,
+    accepted
+      .filter((key) => key !== current.activeKey)
+      .map((key) => [current.mode.placed(current, key), key]),
+  );
 };
 
 /**

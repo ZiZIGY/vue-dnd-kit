@@ -11,7 +11,7 @@
 import type { Coordinates, DnDEvent, DragMode, Key, KeyboardMoveContext } from '../../types';
 import { listOf, type GroupContext, type Session } from '../context';
 import type { ListEntry } from '../entry';
-import type { DropFacts } from '../group';
+import type { DropFacts } from '../drop';
 import { isSwapping, partitionMoved, type Partition } from '../accept';
 
 export interface SortableMode {

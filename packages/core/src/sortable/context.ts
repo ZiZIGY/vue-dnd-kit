@@ -5,10 +5,10 @@
  */
 
 import { shallowRef, type ShallowRef } from 'vue';
-import type { Coordinates, Key, Rect, Size, SortableIndicator } from '../types';
+import type { Coordinates, DnDEvent, Key, Rect, Size, SortableIndicator } from '../types';
 import type { DnDManager } from '../core/manager';
 import type { ListEntry } from './entry';
-import type { DropResult } from './group';
+import type { DropResult } from './drop';
 import type { Hysteresis } from './stability';
 import type { SortableSpot } from './announcements';
 import type { SortableMode } from './modes/mode';
@@ -153,6 +153,9 @@ export const sameKeys = (a: readonly Key[], b: readonly Key[]) =>
   a.length === b.length && a.every((key, index) => key === b[index]);
 
 export const keysOf = (list: ListEntry) => list.draft.value ?? list.getKeys();
+
+/** The drag is over a drop target that is no list of this group (a trash zone, a target inside an item). */
+export const isForeign = (g: GroupContext, event: DnDEvent) => !!event.over && !g.lists.has(event.over.id);
 
 /** The list with this id; none for `null` (no list holds the slot, an external drag's origin). */
 export const listOf = (g: GroupContext, id: Key | null) => (id == null ? undefined : g.lists.get(id));
