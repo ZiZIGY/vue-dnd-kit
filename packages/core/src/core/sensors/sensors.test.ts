@@ -1,7 +1,35 @@
 import { describe, expect, it } from 'vitest';
 import { createRect } from '../../animation/layout';
-import { checkActivation, resolveActivation } from './pointer';
+import { checkActivation, makeSelectableForPress, resolveActivation } from './pointer';
 import { pickInDirection } from './keyboard';
+
+describe('makeSelectableForPress', () => {
+  it('leaves selectable elements alone', () => {
+    const element = document.createElement('div');
+    document.body.appendChild(element);
+    const restore = makeSelectableForPress(element);
+    expect(element.style.cssText).toBe('');
+    restore();
+    expect(element.style.cssText).toBe('');
+    element.remove();
+  });
+
+  it('makes a user-select: none element selectable and restores its own inline value', () => {
+    const element = document.createElement('div');
+    element.style.setProperty('user-select', 'none', 'important');
+    document.body.appendChild(element);
+    const restore = makeSelectableForPress(element);
+    expect(element.style.getPropertyValue('user-select')).toBe('text');
+    restore();
+    expect(element.style.getPropertyValue('user-select')).toBe('none');
+    expect(element.style.getPropertyPriority('user-select')).toBe('important');
+    // Idempotent: a second call doesn't touch what changed since.
+    element.style.setProperty('user-select', 'auto');
+    restore();
+    expect(element.style.getPropertyValue('user-select')).toBe('auto');
+    element.remove();
+  });
+});
 
 describe('resolveActivation', () => {
   it('uses the item option, then the provider, then the defaults', () => {

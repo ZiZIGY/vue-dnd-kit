@@ -13,7 +13,6 @@ import {
   type VNode,
   type VNodeArrayChildren,
 } from 'vue';
-import { useResizeObserver } from '@vueuse/core';
 import type { Key, OverlaySlotProps, Size } from '../types';
 import { useDnDContext } from './context';
 import { getOverlaySmoothing } from './modifiers';
@@ -42,12 +41,6 @@ const BADGE_STYLE = {
 } as const;
 
 const FILL = { width: '100%', height: '100%' } as const;
-
-/** Overlay box resizes (target list with other item sizes) glide instead of jumping. */
-const RESIZE_TRANSITION = 'width 150ms ease, height 150ms ease';
-
-/** The column follows the box's resizes in step with it. */
-const COLUMN_TRANSITION = `transform 150ms ease, ${RESIZE_TRANSITION}`;
 
 export interface ColumnCell {
   id: Key;
@@ -130,11 +123,11 @@ const ColumnPreview = defineComponent({
       const current = manager.active.value;
       const column = manager.overlayColumn.value;
       if (!current || !column) return null;
+      // The size on screen: a resize glides frame by frame, and the column with it.
       const box = manager.fitSize.value ?? current.rect;
       const source = manager.getPreview(current.id)?.rect ?? current.rect;
       const items = manager.previewIds.map((id) => ({ id, size: manager.getPreview(id)!.rect }));
       const hidden = current.ids.length - items.length;
-      const transition = manager.status.value === 'dragging' && !prefersReducedMotion() ? COLUMN_TRANSITION : undefined;
       return h('div', { ref: root, 'aria-hidden': 'true', style: { ...FILL, position: 'relative' } }, [
         ...layoutColumn(items, current.id, box, source, column.axis, column.gap).map((cell) =>
           cell.id === current.id
@@ -152,7 +145,6 @@ const ColumnPreview = defineComponent({
                     width: `${cell.width}px`,
                     height: `${cell.height}px`,
                     transform: `translate(${cell.x}px, ${cell.y}px)`,
-                    transition,
                   },
                 },
                 h(DragPreview, { id: cell.id, style: FILL }),
@@ -219,10 +211,6 @@ export const DragOverlay = defineComponent({
     const element = shallowRef<HTMLElement | null>(null);
 
     watch(element, (value) => (manager.overlayElement.value = value));
-    useResizeObserver(element, () => {
-      const el = element.value;
-      if (el) manager.overlaySize.value = { width: el.offsetWidth, height: el.offsetHeight };
-    });
 
     const visible = computed(() => {
       const status = manager.status.value;
@@ -235,15 +223,20 @@ export const DragOverlay = defineComponent({
     const transition = computed(() => {
       if (manager.status.value !== 'dragging' || prefersReducedMotion()) return undefined;
       const smooth = getOverlaySmoothing(manager.props.modifiers);
-      return [smooth && `transform ${smooth.duration}ms ${smooth.easing}`, RESIZE_TRANSITION]
-        .filter(Boolean)
-        .join(', ');
+      return smooth ? `transform ${smooth.duration}ms ${smooth.easing}` : undefined;
     });
 
     const style = computed(() => {
       const current = manager.active.value!;
       const offset = manager.transform.value;
-      const size = manager.fitSize.value ?? current.rect;
+      // Sized and placed as collision sees it: resized around the grab point.
+      const box = manager.getOverlayRect(current, offset);
+      // While `transform` glides (smooth snapping), the shift of a resize goes to
+      // `translate`, so it keeps pace with the size. Otherwise, and on drop (the drop
+      // animation moves `transform` from this rect), it all sits in `transform`.
+      const glide = !!transition.value;
+      const x = glide ? current.rect.left + offset.x : box.left;
+      const y = glide ? current.rect.top + offset.y : box.top;
       return {
         position: 'fixed',
         top: '0',
@@ -253,9 +246,10 @@ export const DragOverlay = defineComponent({
         transformOrigin: '0 0',
         willChange: 'transform',
         boxSizing: 'border-box',
-        width: `${size.width}px`,
-        height: `${size.height}px`,
-        transform: `translate3d(${current.rect.left + offset.x}px, ${current.rect.top + offset.y}px, 0)`,
+        width: `${box.width}px`,
+        height: `${box.height}px`,
+        transform: `translate3d(${x}px, ${y}px, 0)`,
+        translate: glide ? `${box.left - x}px ${box.top - y}px` : undefined,
         transition: transition.value,
       } as const;
     });

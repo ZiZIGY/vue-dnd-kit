@@ -10,6 +10,7 @@ import type {
   Key,
   LayoutAnimation,
   Rect,
+  Size,
 } from '../types';
 
 interface LayoutAnimationState {
@@ -79,6 +80,21 @@ export const getCenter = (rect: Rect): Coordinates => ({
 
 export const getWindowRect = (): Rect =>
   createRect(0, 0, window.innerWidth, window.innerHeight);
+
+/** Where `point` lies in `rect`, as fractions of its size: 0 at the left/top edge, 1 at the right/bottom. */
+export const getFraction = (rect: Rect, point: Coordinates): Coordinates => ({
+  x: rect.width ? (point.x - rect.left) / rect.width : 0,
+  y: rect.height ? (point.y - rect.top) / rect.height : 0,
+});
+
+/** `rect` resized to `size` around the point at `fraction` of it: that point keeps its fraction. */
+export const resizeAround = (rect: Rect, size: Size, fraction: Coordinates): Rect =>
+  createRect(
+    rect.left + (rect.width - size.width) * fraction.x,
+    rect.top + (rect.height - size.height) * fraction.y,
+    size.width,
+    size.height,
+  );
 
 const parseTranslate = (value: string): Coordinates => {
   if (!value || value === 'none') return { x: 0, y: 0 };

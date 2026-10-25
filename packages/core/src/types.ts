@@ -239,7 +239,11 @@ export interface ModifierArgs {
   active: Active;
   /** Rect of the dragged element at drag start. */
   activeRect: Rect;
-  /** Rect of the overlay if it were moved by `transform`. */
+  /**
+   * Rect of the overlay box if it were moved by `transform`, at the size it has now. With
+   * `overlayFit: 'slot'` the box resizes around the pointer, so it isn't always
+   * `activeRect` moved by `transform`.
+   */
   overlayRect: Rect;
   /** Pointer position at drag start. */
   origin: Coordinates;
@@ -289,8 +293,9 @@ export interface DnDProviderProps {
   /**
    * Overlay size while dragging. `'slot'` (default): it follows the slot the item will
    * land in, so over another list it takes the size of that list's items, and the drop
-   * needs no resize. `'source'`: it keeps the dragged element's size. The default
-   * overlay content re-lays out at the new size; it is never scaled.
+   * needs no resize. It resizes around the pointer, which stays at the same fraction of
+   * the box. `'source'`: it keeps the dragged element's size. The default overlay
+   * content re-lays out at the new size; it is never scaled.
    */
   overlayFit?: 'slot' | 'source';
   announcements?: Partial<Announcements> | false;

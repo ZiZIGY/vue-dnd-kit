@@ -1,5 +1,34 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createRect, flip, type FlipEntry } from './layout';
+import { createRect, flip, getFraction, resizeAround, type FlipEntry } from './layout';
+
+describe('resizing around a point', () => {
+  // A 300×60 card grabbed near its right edge.
+  const card = createRect(100, 50, 300, 60);
+  const grab = { x: 370, y: 68 };
+
+  it('gives the fractions of a point in a rect', () => {
+    expect(getFraction(card, grab)).toEqual({ x: 0.9, y: 0.3 });
+    expect(getFraction(card, { x: 100, y: 110 })).toEqual({ x: 0, y: 1 });
+    // Outside the rect, and an empty rect.
+    expect(getFraction(card, { x: 40, y: 50 })).toEqual({ x: -0.2, y: 0 });
+    expect(getFraction(createRect(10, 10, 0, 0), grab)).toEqual({ x: 0, y: 0 });
+  });
+
+  it('keeps the point at the same fraction of the resized rect', () => {
+    const fraction = getFraction(card, grab);
+    for (const size of [{ width: 170, height: 40 }, { width: 420, height: 90 }]) {
+      const resized = resizeAround(card, size, fraction);
+      expect(resized.width).toBe(size.width);
+      expect(resized.height).toBe(size.height);
+      expect(getFraction(resized, grab).x).toBeCloseTo(0.9, 10);
+      expect(getFraction(resized, grab).y).toBeCloseTo(0.3, 10);
+    }
+  });
+
+  it('leaves a rect of the same size in place', () => {
+    expect(resizeAround(card, card, { x: 0.9, y: 0.3 })).toEqual(card);
+  });
+});
 
 type Box = [left: number, top: number, width: number, height: number];
 

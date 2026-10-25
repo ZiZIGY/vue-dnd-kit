@@ -35,10 +35,13 @@ import type {
 } from '../types';
 import {
   containsPoint,
-  createRect,
+  getFraction,
   getLayoutRect,
   getRect,
   getWindowRect,
+  offsetRect,
+  prefersReducedMotion,
+  resizeAround,
   unionRect,
 } from '../animation/layout';
 import { fadeInPlace, landOverlayItems, runDropAnimation, type OverlayItemLanding } from '../animation/drop';
@@ -135,8 +138,7 @@ export function createDnDManager(props: DnDProviderProps) {
   const activationProgress = shallowRef(0);
   const isAutoScrolling = shallowRef(false);
   const overlayElement = shallowRef<HTMLElement | null>(null);
-  const overlaySize = shallowRef<Size | null>(null);
-  /** Size the overlay box takes while dragging (see `updateFitSize`). */
+  /** Size the overlay box has while dragging (see `updateFitSize`). */
   const fitSize = shallowRef<Size | null>(null);
   const announcement = shallowRef('');
   const selection = shallowReactive(new Set<Key>());
@@ -168,6 +170,8 @@ export function createDnDManager(props: DnDProviderProps) {
   const selectionAborts = new Set<() => void>();
 
   let origin: Coordinates = { x: 0, y: 0 };
+  /** Where the pointer holds the overlay box, as fractions of its size: it resizes around this point. */
+  let grab: Coordinates = { x: 0, y: 0 };
   let raw: Coordinates = { x: 0, y: 0 };
   let containerRect: Rect | null = null;
   let frame = 0;
@@ -339,10 +343,13 @@ export function createDnDManager(props: DnDProviderProps) {
 
   // ─── Geometry ────────────────────────────────────────────────────────────────
 
-  const getOverlayRect = (current: Active, offset: Coordinates): Rect => {
-    const size = overlaySize.value ?? current.rect;
-    return createRect(current.rect.left + offset.x, current.rect.top + offset.y, size.width, size.height);
-  };
+  /**
+   * The overlay box for a drag offset: the dragged element's rect moved by `offset`,
+   * at the box's current size, resized around the grab point. The overlay, collision
+   * and modifiers all place the box with this, so they never disagree.
+   */
+  const getOverlayRect = (current: Active, offset: Coordinates): Rect =>
+    resizeAround(offsetRect(current.rect, offset.x, offset.y), fitSize.value ?? current.rect, grab);
 
   const applyModifiers = (current: Active, offset: Coordinates): Coordinates => {
     let result = offset;
@@ -466,6 +473,15 @@ export function createDnDManager(props: DnDProviderProps) {
 
   /** A placeholder styled smaller than this share of the source (a drop line) keeps the source size on that axis. */
   const FIT_MIN_RATIO = 0.25;
+  /** Overlay box resizes (a target list with other item sizes) glide instead of jumping. */
+  const RESIZE_DURATION = 150;
+
+  /**
+   * Glide of `fitSize` to a new slot size. It runs in the frame loop rather than as a
+   * CSS transition: the box resizes around the grab point, so its position depends
+   * on its size, and collision and modifiers must see the box as it is shown.
+   */
+  let resize: { from: Size; to: Size; start: number } | null = null;
 
   /**
    * `overlayFit: 'slot'`: the overlay takes the size of the slot the item will land in,
@@ -474,7 +490,8 @@ export function createDnDManager(props: DnDProviderProps) {
    * still passes its width.
    */
   const updateFitSize = (current: Active) => {
-    if (props.overlayFit === 'source') return;
+    // Without an overlay the element itself moves: it keeps its size.
+    if (props.overlayFit === 'source' || !previewEnabled) return;
     const slot = draggables.get(landingKey.value ?? current.id)?.getElement();
     if (!slot?.isConnected) return;
     const size =
@@ -484,11 +501,37 @@ export function createDnDManager(props: DnDProviderProps) {
     const { width: sourceWidth, height: sourceHeight } = current.rect;
     const width = size.width >= sourceWidth * FIT_MIN_RATIO ? size.width : sourceWidth;
     const height = size.height >= sourceHeight * FIT_MIN_RATIO ? size.height : sourceHeight;
-    const previous = fitSize.value;
+    const previous = resize?.to ?? fitSize.value;
     if (previous && Math.abs(previous.width - width) < 0.5 && Math.abs(previous.height - height) < 0.5) {
       return;
     }
-    fitSize.value = { width, height };
+    const shown = fitSize.value;
+    if (!shown || prefersReducedMotion()) {
+      resize = null;
+      fitSize.value = { width, height };
+      return;
+    }
+    resize = { from: shown, to: { width, height }, start: performance.now() };
+    requestFrame();
+  };
+
+  /** Moves `fitSize` along the running glide; asks for frames until it ends. */
+  const stepResize = () => {
+    if (!resize) return;
+    const { from, to, start } = resize;
+    const progress = (performance.now() - start) / RESIZE_DURATION;
+    if (progress >= 1) {
+      resize = null;
+      fitSize.value = to;
+      return;
+    }
+    // Ease-out: quick at first, settling on the slot size.
+    const eased = 1 - (1 - progress) ** 3;
+    fitSize.value = {
+      width: from.width + (to.width - from.width) * eased,
+      height: from.height + (to.height - from.height) * eased,
+    };
+    requestFrame();
   };
 
   const runFrame = () => {
@@ -497,6 +540,7 @@ export function createDnDManager(props: DnDProviderProps) {
     if (status.value !== 'dragging' || !current) return;
     // Reorders render between frames: the slot may have moved into another list.
     updateFitSize(current);
+    stepResize();
     const refresh = refreshRequested;
     refreshRequested = false;
     const offset = applyModifiers(current, { x: raw.x - origin.x, y: raw.y - origin.y });
@@ -636,8 +680,12 @@ export function createDnDManager(props: DnDProviderProps) {
     pointer.value = coordinates;
     transform.value = { x: 0, y: 0 };
     over.value = null;
-    overlaySize.value = null;
     fitSize.value = { width: active.value.rect.width, height: active.value.rect.height };
+    resize = null;
+    // Where the pointer holds the box on the first frame, after modifiers (the center
+    // with snapCenterToCursor). The box has the source size here: no grab applies yet.
+    const first = applyModifiers(active.value, { x: 0, y: 0 });
+    grab = getFraction(offsetRect(active.value.rect, first.x, first.y), coordinates);
     mode.value = 'move';
     landingKey.value = null;
     activationProgress.value = 1;
@@ -699,8 +747,8 @@ export function createDnDManager(props: DnDProviderProps) {
     over.value = null;
     pointer.value = null;
     transform.value = { x: 0, y: 0 };
-    overlaySize.value = null;
     fitSize.value = null;
+    resize = null;
     mode.value = 'move';
     landingKey.value = null;
     landings.value = NO_LANDINGS;
@@ -874,7 +922,6 @@ export function createDnDManager(props: DnDProviderProps) {
     activationProgress,
     isAutoScrolling,
     overlayElement,
-    overlaySize,
     fitSize,
     announcement,
     selection,
@@ -907,6 +954,8 @@ export function createDnDManager(props: DnDProviderProps) {
     getDroppables: () => droppables.values(),
     /** Pointer position as the sensor reported it, before modifiers. */
     getRawPointer: (): Coordinates => raw,
+    /** The overlay box for a drag offset, as the overlay, collision and modifiers see it. */
+    getOverlayRect,
     autoScrollEntries,
     registerAutoScroll,
     registerDraggable,

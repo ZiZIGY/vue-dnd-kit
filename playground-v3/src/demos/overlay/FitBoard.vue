@@ -36,6 +36,7 @@
           :column="narrow"
           :options="{ group: `fit-${fit}` }"
           size="compact"
+          selectable
         >
           <template #note>clone</template>
         </CardList>

@@ -1,6 +1,6 @@
 import { createApp, defineComponent, h, Teleport, type Component, type ComponentPublicInstance } from 'vue';
-import { afterEach, describe, expect, it } from 'vitest';
-import { containsComposed, getEventTarget, parentOf, toElement } from './dom';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { containsComposed, getEventTarget, nextFrame, parentOf, toElement } from './dom';
 
 describe('shadow-aware DOM helpers', () => {
   afterEach(() => {
@@ -102,5 +102,33 @@ describe('toElement', () => {
     // A fragment-root component: `$el` is the anchor text node.
     expect(toElement({ $el: anchor } as never)).toBe(first);
     expect(toElement(null)).toBeNull();
+  });
+});
+
+describe('nextFrame', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('resolves even when no frame comes (hidden tab, stalled compositor)', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('requestAnimationFrame', () => 1);
+    let resolved = false;
+    void nextFrame().then(() => (resolved = true));
+    await vi.advanceTimersByTimeAsync(99);
+    expect(resolved).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(resolved).toBe(true);
+  });
+
+  it('resolves on the frame and drops the fallback timer', async () => {
+    vi.useFakeTimers();
+    let tick: FrameRequestCallback | undefined;
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => ((tick = callback), 1));
+    const done = nextFrame();
+    tick!(0);
+    await done;
+    expect(vi.getTimerCount()).toBe(0);
   });
 });
