@@ -4,27 +4,36 @@ import { collapseIntoOverlay } from './multiple';
 
 describe('collapseIntoOverlay', () => {
   afterEach(() => {
+    document.head.innerHTML = '';
     document.body.innerHTML = '';
     vi.restoreAllMocks();
   });
 
-  it('gives each ghost the size of its source, not the viewport', () => {
-    const source = document.createElement('div');
-    source.textContent = 'a4';
-    document.body.appendChild(source);
+  /** A source in a list; the ghost is a clone: the animation is stubbed so it stays in the document. */
+  const setUp = () => {
+    document.body.innerHTML = '<ul class="list"><li class="row">a4</li></ul>';
+    const source = document.querySelector<HTMLElement>('.row')!;
     vi.spyOn(source, 'getBoundingClientRect').mockReturnValue(new DOMRect(24, 340, 304, 42));
-    // The ghost is a clone: stub the animation so it stays in the document.
     const animation = { addEventListener: vi.fn() } as unknown as Animation;
     const animate = vi.fn(() => animation);
     Object.defineProperty(HTMLElement.prototype, 'animate', { value: animate, configurable: true });
-
     collapseIntoOverlay([source], createRect(24, 100, 304, 42), { duration: 100 });
+    return { ghost: document.querySelector<HTMLElement>('[data-dnd-ghost]'), animate };
+  };
 
-    const ghost = document.querySelector<HTMLElement>('[data-dnd-ghost]');
+  it('gives each ghost the size of its source, not the viewport', () => {
+    const { ghost, animate } = setUp();
     expect(ghost).not.toBeNull();
     // clonePreview makes the clone fill its box; a ghost on <body> sizes itself.
     expect(ghost!.style.width).toBe('304px');
     expect(ghost!.style.height).toBe('42px');
     expect(animate).toHaveBeenCalledOnce();
+  });
+
+  it('gives each ghost the styles its source has in the list', () => {
+    const style = document.createElement('style');
+    style.textContent = '.list .row { padding: 6px 10px }';
+    document.head.appendChild(style);
+    expect(setUp().ghost!.style.padding).toBe('6px 10px');
   });
 });
