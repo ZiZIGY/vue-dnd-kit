@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs wc -l)",
+      "WebFetch(domain:vueuse.org)",
+      "WebFetch(domain:dndkit.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:tanstack.com)",
+      "Bash(cd \"/c/Users/Александр/Desktop/vue-dnd-kit/docs/.vitepress/components/v2\" && grep -rhoE \"from '[^.][^']*'\" . | sort | uniq -c; echo \"--- motion-v files:\"; grep -rl \"motion-v\" . | sort; echo \"--- provider props / misc:\"; grep -rnE \"previewTo|autoScrollViewport|preview-to|auto-scroll-viewport|collision|scrollPosition|hovered\\\\.|pointer\\\\.value|keyboard\\\\.|selectedSet|initiatingDraggable|distanceProgress|delay\\\\.progress|preview\\\\.\\(render|to|position|size|ref\\)\" . ; echo \"--- data-dnd / dnd-kit classes in examples:\"; grep -rnE \"data-dnd|dnd-kit-\" . ; echo \"--- tailwind-ish arbitrary classes:\"; grep -rlE \"text-\\\\\\(--vp|class=\\\\\"[^\\\\\"]*\\(flex-col|gap-[0-9]|rounded-full\\)\" . ; echo \"--- glass-btn def:\"; grep -rn \"glass-btn\" ../ --include=*.css --include=*.vue | grep -v \"class=\" | head -3)",
+      "Read(//c/Users/Александр/Desktop/**)",
+      "Bash(cd \"/c/Users/8523~1/AppData/Local/Temp/claude/c--Users-----------Desktop-vue-dnd-kit/a89cc320-8936-445e-ba0e-6b9d5a0e03cb/scratchpad/v3-research/src/dnd-kit/apps/stories/stories/react/Sortable/Tree\"; sed -n 30,160p Tree.tsx; sed -n 38,110p utilities.ts)",
+      "Read(//c/Users/8523~1/AppData/Local/Temp/claude/c--Users-----------Desktop-vue-dnd-kit/a89cc320-8936-445e-ba0e-6b9d5a0e03cb/scratchpad/v3-research/src/dnd-kit/apps/stories/stories/react/Sortable/Tree/**)",
+      "Read(//c/Users/8523~1/AppData/Local/Temp/claude/c--Users-----------Desktop-vue-dnd-kit/a89cc320-8936-445e-ba0e-6b9d5a0e03cb/scratchpad/v3-research/src/dnd-kit/packages/dom/src/**)",
+      "Bash(grep -v \"^\\\\s*\\\\*\\\\|/\\\\*\\\\*\")",
+      "Bash(yarn add *)",
+      "Bash(git merge --no-ff v3-b5-tree -m 'Merge v3-b5-tree: projection fix for skipped rows, nearest valid tree slot *)",
+      "Bash(npx vitest *)",
+      "Bash(git checkout *)",
+      "Bash(yarn typecheck *)"
+    ]
+  }
+}

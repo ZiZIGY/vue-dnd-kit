@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(npx tsc --noEmit)",
-      "WebFetch(domain:nuxt.com)",
-      "WebSearch"
-    ]
-  }
-}
