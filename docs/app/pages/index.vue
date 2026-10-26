@@ -32,7 +32,7 @@
     (tm(key) as Record<T, unknown>[]).map((item) => Object.fromEntries(fields.map((field) => [field, rt(item[field] as never)])) as Record<T, string>);
 
   const SHOWCASES = [
-    { key: 'drop', example: 'drop-zones', focus: 'Folder.vue', height: '32rem' },
+    { key: 'drop', example: 'drop-zones', focus: 'Folder.vue', height: '40rem' },
     { key: 'lists', example: 'lists', focus: 'Playlist.vue', height: '34rem' },
     { key: 'kanban', example: 'kanban', focus: 'Column.vue', height: '30rem' },
     { key: 'tree', example: 'tree', focus: 'FileTree.vue', height: '34rem' },

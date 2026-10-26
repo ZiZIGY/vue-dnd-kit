@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, useTemplateRef } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 import { makeDroppable, useDnD, type Key } from '@vue-dnd-kit/core';
 import FileCard from './FileCard.vue';
 import type { DeskFile } from './types';
@@ -18,10 +18,26 @@ const { isOver, isAccepting } = makeDroppable(el, {
 // Over it, but not its kind of file.
 const { status } = useDnD();
 const refused = computed(() => isOver.value && !isAccepting.value && status.value === 'dragging');
+
+// A short pulse when a file comes in.
+const received = ref(false);
+watch(
+  () => props.files.length,
+  (count, before) => {
+    if (count <= before) return;
+    received.value = false;
+    requestAnimationFrame(() => (received.value = true));
+  },
+);
 </script>
 
 <template>
-  <section ref="el" class="folder" :class="{ desktop, accepting: isAccepting, over: isOver && isAccepting, refused }">
+  <section
+    ref="el"
+    class="folder"
+    :class="{ desktop, accepting: isAccepting, over: isOver && isAccepting, refused, received }"
+    @animationend="received = false"
+  >
     <header>
       <svg v-if="id === 'trash'" class="icon" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13" />
@@ -34,29 +50,35 @@ const refused = computed(() => isOver.value && !isAccepting.value && status.valu
       <span class="name">{{ name }}</span>
       <span class="count">{{ files.length }}</span>
     </header>
-    <div class="files">
-      <FileCard v-for="file in files" :key="file.id" :file="file" :compact="!desktop" />
-    </div>
+    <!-- The files left behind slide into the gap (Vue's TransitionGroup). -->
+    <TransitionGroup tag="div" class="files" move-class="moving">
+      <FileCard v-for="file in files" :key="file.id" :file="file" />
+    </TransitionGroup>
   </section>
 </template>
 
 <style scoped>
+/*
+ * Sized for every file it can hold, so nothing around it moves when files come and go:
+ * the desktop two rows, a folder all four in its tray.
+ */
 .folder {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  box-sizing: border-box;
+  min-height: 284px;
   padding: 12px;
   border: 1.5px solid color-mix(in srgb, currentColor 12%, transparent);
   border-radius: 14px;
   background: color-mix(in srgb, currentColor 3%, Canvas);
   transition:
     border-color 0.2s,
-    background 0.2s,
-    scale 0.2s;
+    background 0.2s;
 }
 
 .folder.desktop {
-  min-height: 260px;
+  min-height: 166px;
   border-style: dashed;
 }
 
@@ -72,14 +94,14 @@ const refused = computed(() => isOver.value && !isAccepting.value && status.valu
   background: color-mix(in srgb, #42b883 12%, Canvas);
 }
 
-.folder.over:not(.desktop) {
-  scale: 1.03;
-}
-
 .folder.refused {
   border-color: #f43f5e;
   background: color-mix(in srgb, #f43f5e 8%, Canvas);
   animation: shake 0.3s;
+}
+
+.folder.received {
+  animation: pulse 0.45s 0.15s;
 }
 
 @keyframes shake {
@@ -88,6 +110,13 @@ const refused = computed(() => isOver.value && !isAccepting.value && status.valu
   }
   75% {
     translate: 4px 0;
+  }
+}
+
+@keyframes pulse {
+  40% {
+    scale: 1.04;
+    border-color: #42b883;
   }
 }
 
@@ -125,16 +154,33 @@ header {
   font: 11px/1 ui-monospace, Menlo, Consolas, monospace;
 }
 
+/* A folder's tray: where its files go. */
 .files {
   display: flex;
-  flex-wrap: wrap;
+  flex: 1;
+  flex-direction: column;
   gap: 6px;
+  padding: 5px;
+  border: 1.5px dashed color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 10px;
+  transition: border-color 0.2s;
+}
+
+.accepting .files {
+  border-color: color-mix(in srgb, #42b883 60%, transparent);
 }
 
 .desktop .files {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
-  gap: 10px;
+  flex: none;
+  grid-template-columns: repeat(auto-fill, 172px);
+  gap: 8px 10px;
+  padding: 0;
+  border: 0;
+}
+
+.moving {
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -142,8 +188,13 @@ header {
     transition: none;
   }
 
-  .folder.refused {
+  .folder.refused,
+  .folder.received {
     animation: none;
+  }
+
+  .moving {
+    transition: none;
   }
 }
 </style>

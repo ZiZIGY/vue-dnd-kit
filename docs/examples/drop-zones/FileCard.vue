@@ -3,14 +3,14 @@ import { useTemplateRef } from 'vue';
 import { makeDraggable } from '@vue-dnd-kit/core';
 import type { DeskFile } from './types';
 
-const props = defineProps<{ file: DeskFile; compact?: boolean }>();
+const props = defineProps<{ file: DeskFile }>();
 const el = useTemplateRef<HTMLElement>('el');
 // A plain draggable: its `type` says which drop targets take it.
-makeDraggable(el, { id: () => props.file.id, type: () => props.file.kind });
+const { isDragging } = makeDraggable(el, { id: () => props.file.id, type: () => props.file.kind });
 </script>
 
 <template>
-  <div ref="el" class="file" :class="[file.kind, { compact }]">
+  <div ref="el" class="file" :class="[file.kind, { dragging: isDragging }]">
     <span class="thumb" aria-hidden="true">
       <svg v-if="file.kind === 'image'" viewBox="0 0 40 30">
         <circle cx="29" cy="9" r="4" fill="rgb(255 255 255 / 0.75)" />
@@ -23,17 +23,21 @@ makeDraggable(el, { id: () => props.file.id, type: () => props.file.kind });
     </span>
     <span class="text">
       <span class="name">{{ file.name }}</span>
-      <span v-if="!compact" class="size">{{ file.size }}</span>
+      <span class="size">{{ file.size }}</span>
     </span>
   </div>
 </template>
 
 <style scoped>
+/* The same size in every folder: a drop only moves it, it never has to resize. */
 .file {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 8px;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  width: 172px;
+  height: 48px;
+  padding: 6px 10px 6px 6px;
   border-radius: 10px;
   background: Canvas;
   box-shadow:
@@ -48,11 +52,17 @@ makeDraggable(el, { id: () => props.file.id, type: () => props.file.kind });
   outline-offset: 2px;
 }
 
+/* Where the file was picked up from, while it travels. */
+.file.dragging {
+  opacity: 0.3;
+}
+
 .thumb {
-  display: block;
+  flex: none;
   overflow: hidden;
-  aspect-ratio: 4 / 3;
-  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  border-radius: 7px;
 }
 
 .image .thumb {
@@ -72,7 +82,7 @@ makeDraggable(el, { id: () => props.file.id, type: () => props.file.kind });
 .text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   min-width: 0;
 }
 
@@ -85,21 +95,7 @@ makeDraggable(el, { id: () => props.file.id, type: () => props.file.kind });
 }
 
 .size {
-  font: 11px/1.2 ui-monospace, Menlo, Consolas, monospace;
+  font: 10px/1.2 ui-monospace, Menlo, Consolas, monospace;
   opacity: 0.5;
-}
-
-/* In a folder: a chip with a small thumbnail. */
-.file.compact {
-  flex-direction: row;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px 4px 4px;
-  border-radius: 8px;
-}
-
-.compact .thumb {
-  width: 22px;
-  border-radius: 4px;
 }
 </style>

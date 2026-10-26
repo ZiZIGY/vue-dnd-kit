@@ -37,21 +37,22 @@ const move = (id: Key, place: string) => {
 
 <style scoped>
 .workspace {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 240px);
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   max-width: 680px;
   margin: 0 auto;
 }
 
 .folders {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
 }
 
-@media (max-width: 560px) {
-  .workspace {
+@media (max-width: 640px) {
+  .folders {
     grid-template-columns: minmax(0, 1fr);
   }
 }
