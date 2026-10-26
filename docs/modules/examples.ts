@@ -10,7 +10,7 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, relative, resolve } from 'node:path';
-import { addTemplate, createResolver, defineNuxtModule, updateTemplates } from '@nuxt/kit';
+import { addTemplate, addVitePlugin, createResolver, defineNuxtModule, updateTemplates } from '@nuxt/kit';
 import { createHighlighter } from 'shiki';
 import { codeDark, codeLight } from '../shiki/themes';
 
@@ -56,25 +56,33 @@ export default defineNuxtModule({
       });
     };
 
-    const fileTemplates = new Set<string>();
-    const fileTemplate = (name: string) => {
-      const filename = `examples/${name}.mjs`;
-      if (!fileTemplates.has(filename)) {
-        fileTemplates.add(filename);
-        addTemplate({ filename, getContents: () => `export default ${JSON.stringify(filesOf(name))};` });
-      }
-      return filename;
-    };
-
-    // Templates are registered before generation: new folders get theirs in the watcher below.
-    names().forEach(fileTemplate);
+    // An example's sources are a virtual module, made when it is asked for: a folder added
+    // while the dev server runs has them at once (templates added then would never be written).
+    const SOURCES = 'virtual:docs-example-sources/';
+    const RESOLVED = `\0${SOURCES}`;
+    const rootPath = root.replaceAll('\\', '/');
+    addVitePlugin({
+      name: 'docs-example-sources',
+      resolveId: (id) => (id.startsWith(SOURCES) ? RESOLVED + id.slice(SOURCES.length) : undefined),
+      load: (id) =>
+        id.startsWith(RESOLVED) ? `export default ${JSON.stringify(filesOf(id.slice(RESOLVED.length)))};` : undefined,
+      // An edited file: its example's sources are made again, and the page shows them.
+      handleHotUpdate({ file, server }) {
+        if (!file.startsWith(`${rootPath}/`)) return;
+        const name = file.slice(rootPath.length + 1).split('/')[0];
+        const module = server.moduleGraph.getModuleById(RESOLVED + name);
+        if (!module) return;
+        server.moduleGraph.invalidateModule(module);
+        server.ws.send({ type: 'full-reload' });
+      },
+    });
 
     const index = addTemplate({
       filename: 'examples/index.mjs',
       getContents: () => {
         const entries = names().map((name) => {
           const component = JSON.stringify(join(root, name, ENTRY).replaceAll('\\', '/'));
-          const files = JSON.stringify(`./${fileTemplate(name).slice('examples/'.length)}`);
+          const files = JSON.stringify(SOURCES + name);
           return `  ${JSON.stringify(name)}: { component: () => import(${component}), files: () => import(${files}).then((m) => m.default) },`;
         });
         return `export const examples = {\n${entries.join('\n')}\n};\n`;
@@ -91,12 +99,11 @@ export default defineNuxtModule({
     });
     nuxt.options.alias['#examples'] = index.dst;
 
-    // Edits to an example's files re-highlight its sources; new folders join the index.
+    // New (or removed) folders join (or leave) the index.
     nuxt.hook('builder:watch', async (_event, path) => {
       const absolute = resolve(nuxt.options.rootDir, path);
       if (!absolute.startsWith(root)) return;
-      names().forEach(fileTemplate);
-      await updateTemplates({ filter: (template) => template.filename.startsWith('examples/') });
+      await updateTemplates({ filter: (template) => template.filename === 'examples/index.mjs' });
     });
   },
 });

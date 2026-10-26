@@ -137,6 +137,9 @@ export default defineNuxtConfig({
 
   // A project site on GitHub Pages lives under a path: robots.txt belongs to the domain root.
   robots: { robotsTxt: false },
+  // Its HTML minifier rewrites the `<style>` of highlighted code in the page body, and the
+  // page then hydrates against different text (a mismatch on every page with code).
+  seo: { minify: false },
   ogImage: { enabled: false },
   linkChecker: { enabled: false },
 
