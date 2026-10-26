@@ -70,25 +70,44 @@
     },
     "intro": {
       "title": "Composables,\nnot components.",
-      "text": "Your markup, your styles. Hand a template ref to a composable and the element drags, sorts and drops — with the animation, keyboard and screen reader work done for you."
+      "text": "Your markup, your styles. Hand a template ref to a composable and the element drags, sorts and drops — with the animation, keyboard and screen reader work done for you.",
+      "label": "How it works",
+      "apis": [
+        {
+          "code": "makeSortableList",
+          "text": "Lists, grids and kanban columns that reorder as you drag — and trade items within a group."
+        },
+        {
+          "code": "makeSortableTree",
+          "text": "Nested data, rendered flat: depth by a sideways nudge, drops into folders, virtualization."
+        },
+        {
+          "code": "makeDraggable · makeDroppable",
+          "text": "Anything else: boards, canvases, uploads — your own rules for what goes where."
+        }
+      ]
     },
     "showcase": {
       "docs": "Docs",
       "lists": {
         "title": "Lists and grids",
-        "text": "Render a draft of your array and it reorders live while you drag. On drop, the new order is written into your ref. Vertical, horizontal or a grid of any size."
+        "text": "Render a draft of your array and it reorders live while you drag. On drop, the new order is written into your ref. Vertical, horizontal or a grid of any size.",
+        "hint": "Drag a track or an app"
       },
       "kanban": {
         "title": "Kanban boards",
-        "text": "Lists in one group trade items. Copy from a palette, take plain draggables in, or swap instead of shifting — the receiving list makes room as you hover."
+        "text": "Lists in one group trade items. Copy from a palette, take plain draggables in, or swap instead of shifting — the receiving list makes room as you hover.",
+        "hint": "Move cards between the columns"
       },
       "tree": {
         "title": "Trees",
-        "text": "Rendered flat with depths, so they virtualize. Drag sideways to change the level or hover a folder to drop inside; limit depth and decide what nests where."
+        "text": "Rendered flat with depths, so they virtualize. Drag sideways to change the level or hover a folder to drop inside; limit depth and decide what nests where.",
+        "hint": "Drag sideways to change the depth"
       },
       "multi": {
         "title": "Multi-drag",
-        "text": "Select with Ctrl/Cmd-click or draw a box, then drag one: the whole selection travels together and lands in order, even across lists."
+        "text": "Select with Ctrl/Cmd-click or draw a box, then drag one: the whole selection travels together and lands in order, even across lists.",
+        "hint": "Ctrl/Cmd-click or draw a box, then drag"
       }
     },
     "more": [
@@ -147,7 +166,10 @@
         "text": "Live demos with their code, ready to copy or open in StackBlitz.",
         "action": "See examples"
       }
-    }
+    },
+    "tag": "Drag and drop for Vue 3",
+    "moreLabel": "And more",
+    "moreTitle": "Ready for real apps."
   },
   "docs": {
     "onThisPage": "On this page",

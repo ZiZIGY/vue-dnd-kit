@@ -10,17 +10,27 @@ const files = ref<FileNode[]>([
     name: 'src',
     folder: true,
     children: [
+      {
+        id: 'components',
+        name: 'components',
+        folder: true,
+        children: [
+          { id: 'board', name: 'Board.vue' },
+          { id: 'card', name: 'Card.vue' },
+        ],
+      },
+      { id: 'composables', name: 'composables', folder: true, children: [{ id: 'use-board', name: 'useBoard.ts' }] },
       { id: 'app', name: 'App.vue' },
-      { id: 'components', name: 'components', folder: true, children: [{ id: 'list', name: 'List.vue' }] },
+      { id: 'main', name: 'main.ts' },
     ],
   },
-  { id: 'public', name: 'public', folder: true, children: [] },
+  { id: 'public', name: 'public', folder: true, children: [{ id: 'logo', name: 'logo.svg' }] },
   { id: 'readme', name: 'README.md' },
   { id: 'package', name: 'package.json' },
 ]);
 const collapsed = ref(new Set<Key>());
 
-const INDENT = 20;
+const INDENT = 18;
 const root = useTemplateRef<HTMLElement>('root');
 // Drag sideways to change the depth, or hover the middle of a folder to drop into it.
 const { items } = makeSortableTree(root, {
@@ -34,17 +44,36 @@ const toggle = (key: Key) => (collapsed.value.has(key) ? collapsed.value.delete(
 </script>
 
 <template>
-  <div ref="root" class="tree">
-    <TreeRow v-for="node in items" :key="node.key" :node="node" :indent="INDENT" @toggle="toggle" />
-  </div>
+  <section class="explorer">
+    <header>Explorer</header>
+    <div ref="root" class="tree">
+      <TreeRow v-for="node in items" :key="node.key" :node="node" :indent="INDENT" @toggle="toggle" />
+    </div>
+  </section>
 </template>
 
 <style scoped>
+.explorer {
+  width: 300px;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 6px;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, currentColor 3%, Canvas);
+}
+
+header {
+  padding: 10px 10px 8px;
+  font: 600 11px/1 ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
 .tree {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  width: 280px;
-  margin: 0 auto;
+  gap: 1px;
 }
 </style>

@@ -1,14 +1,17 @@
 <script setup lang="ts">
   /**
-   * One feature on the home page: its name, a wide stage where its live example runs,
-   * then a short text beside the example's code, and where to read more.
+   * One feature on the home page: its index and name, a short text with where to read more,
+   * then the live example side by side with its code, like a playground.
    */
   const props = defineProps<{
+    index: number;
+    label: string;
     title: string;
     text: string;
     example: string;
     /** The file shown first: the one the feature is about. */
     focus?: string;
+    hint?: string;
     docs: string;
     docsLabel: string;
     height?: string;
@@ -17,41 +20,48 @@
 </script>
 
 <template>
-  <section class="py-20 lg:py-28">
-    <div class="mx-auto max-w-(--ui-container) px-5 lg:px-8">
-      <h2 class="heading text-4xl sm:text-5xl">{{ title }}</h2>
+  <SiteSection>
+    <div class="grid grid-cols-1 gap-8 px-(--gutter) pt-16 pb-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:items-end lg:gap-16 lg:pt-24 lg:pb-16">
+      <div>
+        <p class="label flex items-center gap-3 text-[11px] text-dimmed">
+          <span class="text-(--ui-primary) tabular-nums">{{ String(index).padStart(2, '0') }}</span>
+          <span class="h-px w-8 bg-(--ui-border-accented)" />
+          {{ label }}
+        </p>
+        <h2 class="heading mt-6 text-4xl sm:text-5xl lg:text-6xl">{{ title }}</h2>
+      </div>
+      <div>
+        <p class="text-base leading-relaxed text-muted">{{ text }}</p>
+        <NuxtLink
+          :to="docs"
+          class="label mt-5 inline-flex items-center gap-1 text-[11px] text-highlighted transition-colors hover:text-(--ui-primary)"
+        >
+          {{ docsLabel }}
+          <UIcon
+            name="i-lucide-chevron-right"
+            class="size-3.5"
+          />
+        </NuxtLink>
+      </div>
     </div>
-    <div class="mt-10 lg:mt-14">
+    <div class="grid grid-cols-1 border-t border-default xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
       <ExampleStage
         :demo="Demo"
-        :min-height="height ?? '26rem'"
+        :hint="hint"
+        :min-height="height ?? '32rem'"
+        class="border-default xl:border-e"
       />
-    </div>
-    <div class="mx-auto mt-10 grid max-w-(--ui-container) items-start gap-8 px-5 lg:mt-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] lg:gap-16 lg:px-8">
-      <p class="max-w-sm text-base leading-relaxed text-muted lg:text-lg">{{ text }}</p>
-      <div>
+      <div class="relative h-[26rem] border-default max-xl:border-t xl:h-auto">
         <ExampleCode
           v-if="files?.length"
           :files="files"
           :name="example"
           :title="title"
           :focus="focus"
-          max-height="22rem"
-          class="rounded-(--ui-radius) ring-1 ring-default"
+          fill
+          class="xl:absolute xl:inset-0"
         />
-        <div class="mt-5 flex flex-wrap gap-6">
-          <NuxtLink
-            :to="docs"
-            class="label inline-flex items-center gap-1 text-[11px] text-highlighted transition-colors hover:text-(--ui-primary)"
-          >
-            {{ docsLabel }}
-            <UIcon
-              name="i-lucide-chevron-right"
-              class="size-3.5"
-            />
-          </NuxtLink>
-        </div>
       </div>
     </div>
-  </section>
+  </SiteSection>
 </template>

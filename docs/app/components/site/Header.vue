@@ -23,10 +23,12 @@
 
 <template>
   <header
-    class="sticky top-0 z-50 h-(--ui-header-height) transition-colors duration-200"
-    :class="scrolled || open ? 'border-b border-default bg-default/85 backdrop-blur-md' : 'border-b border-transparent'"
+    class="sticky top-0 z-50 h-(--ui-header-height) border-b border-default transition-colors duration-200"
+    :class="scrolled || open ? 'bg-default/85 backdrop-blur-md' : 'bg-default'"
   >
-    <div class="mx-auto flex h-full max-w-(--ui-container) items-center gap-6 px-5 lg:px-8">
+    <div class="frame flex h-full items-center gap-6 px-(--gutter)">
+      <DecorCross at="bottom-left" />
+      <DecorCross at="bottom-right" />
       <NuxtLink
         :to="localePath('/')"
         :aria-label="t('nav.home')"
@@ -74,7 +76,7 @@
 
     <div
       v-if="open"
-      class="border-t border-default bg-default px-5 pb-8 pt-4 md:hidden"
+      class="border-t border-default bg-default px-(--gutter) pb-8 pt-4 md:hidden"
     >
       <nav class="flex flex-col">
         <NuxtLink

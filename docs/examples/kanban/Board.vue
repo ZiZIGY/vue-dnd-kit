@@ -6,21 +6,27 @@ const columns = reactive([
   {
     id: 'todo',
     title: 'To do',
+    color: '#a1a1aa',
     cards: [
-      { id: 'c1', title: 'Pick a colour palette', tag: '#f59e0b' },
-      { id: 'c2', title: 'Write release notes', tag: '#3b82f6' },
-      { id: 'c3', title: 'Record the demo', tag: '#a855f7' },
+      { id: 'vdk-12', title: 'Pick a colour palette', tag: 'Design' },
+      { id: 'vdk-15', title: 'Write release notes', tag: 'Docs' },
+      { id: 'vdk-16', title: 'Record the demo', tag: 'Video' },
     ],
   },
   {
     id: 'doing',
     title: 'In progress',
-    cards: [{ id: 'c4', title: 'Sortable trees', tag: '#42b883' }],
+    color: '#f59e0b',
+    cards: [
+      { id: 'vdk-9', title: 'Sortable trees', tag: 'Core' },
+      { id: 'vdk-11', title: 'Keyboard drags', tag: 'A11y' },
+    ],
   },
   {
     id: 'done',
     title: 'Done',
-    cards: [{ id: 'c5', title: 'Kanban boards', tag: '#42b883' }],
+    color: '#42b883',
+    cards: [{ id: 'vdk-4', title: 'Kanban boards', tag: 'Core' }],
   },
 ]);
 </script>
@@ -34,8 +40,8 @@ const columns = reactive([
 <style scoped>
 .board {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 220px));
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 240px));
+  gap: 14px;
   justify-content: center;
 }
 </style>

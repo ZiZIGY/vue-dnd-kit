@@ -35,7 +35,7 @@ const { items } = makeSortableList(listRef, { items: tasks });
 
 .order {
   margin: 16px 0 0;
-  font: 12px/1 ui-monospace, monospace;
+  font: 12px/1 ui-monospace, Menlo, Consolas, monospace;
   text-align: center;
   opacity: 0.6;
 }

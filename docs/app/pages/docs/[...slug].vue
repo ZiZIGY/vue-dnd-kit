@@ -57,11 +57,16 @@
 </script>
 
 <template>
-  <div class="xl:grid xl:grid-cols-[minmax(0,1fr)_13rem] xl:gap-12">
-    <article class="min-w-0 py-10 lg:py-14">
-      <div class="mx-auto max-w-3xl">
-        <header>
+  <div class="xl:grid xl:grid-cols-[minmax(0,1fr)_16rem]">
+    <article class="min-w-0">
+      <header class="relative overflow-hidden border-b border-default px-(--gutter) py-12 lg:py-16">
+        <div
+          aria-hidden="true"
+          class="grid-paper fade-right pointer-events-none absolute inset-0 opacity-60"
+        />
+        <div class="relative mx-auto max-w-3xl">
           <p class="label flex items-center gap-2 text-[11px] text-muted">
+            <span class="size-1.5 bg-(--ui-primary)" />
             <span>{{ t('nav.docs') }}</span>
             <template v-if="section">
               <span class="text-dimmed">/</span>
@@ -114,12 +119,11 @@
               >
             </p>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <ContentRenderer
-          :value="page"
-          class="mt-10"
-        />
+      <div class="mx-auto max-w-3xl px-(--gutter) py-12 lg:box-content lg:py-14">
+        <ContentRenderer :value="page" />
 
         <nav
           v-if="surround?.some(Boolean)"
@@ -159,8 +163,8 @@
       </div>
     </article>
 
-    <aside class="hidden xl:block">
-      <div class="sticky top-(--ui-header-height) max-h-[calc(100dvh-var(--ui-header-height))] overflow-y-auto py-14">
+    <aside class="hidden border-s border-default xl:block">
+      <div class="sticky top-(--ui-header-height) max-h-[calc(100dvh-var(--ui-header-height))] overflow-y-auto px-6 py-12 lg:py-16">
         <UContentToc
           v-if="page.body?.toc?.links?.length"
           :links="page.body.toc.links"
