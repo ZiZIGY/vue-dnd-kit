@@ -86,7 +86,7 @@
         "@vueuse/core"
       ],
       "gzip": true,
-      "limit": "47 KB"
+      "limit": "47.6 KB"
     },
     {
       "name": "DnDProvider + makeSortableList + makeSortableItem",
@@ -97,7 +97,7 @@
         "@vueuse/core"
       ],
       "gzip": true,
-      "limit": "38 KB"
+      "limit": "38.7 KB"
     },
     {
       "name": "DnDProvider + makeDraggable + makeDroppable",
@@ -108,7 +108,7 @@
         "@vueuse/core"
       ],
       "gzip": true,
-      "limit": "19.6 KB"
+      "limit": "20.2 KB"
     },
     {
       "name": "devtools bridge (@vue-dnd-kit/core/devtools)",

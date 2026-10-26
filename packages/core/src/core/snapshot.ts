@@ -40,8 +40,9 @@ const names = (list: string) => list.split(' ');
 /** Inherited: a child that inherits one in the clone will get its parent's snapshot value. */
 const INHERITED = new Set(
   names(
-    'color font-family font-size font-weight font-style line-height letter-spacing text-align text-transform ' +
-      'white-space list-style-type',
+    'color font-family font-size font-weight font-style font-variant font-feature-settings line-height ' +
+      'letter-spacing text-align text-transform text-shadow white-space word-break overflow-wrap direction ' +
+      'visibility list-style-type',
   ),
 );
 
@@ -52,9 +53,9 @@ const INHERITED = new Set(
 const LOOK = [
   ...INHERITED,
   ...names(
-    'display opacity box-shadow background overflow text-overflow text-decoration-line border-radius padding ' +
-      'border-width border-style border-color flex-flow place-content place-items gap position vertical-align ' +
-      'flex object-fit',
+    'display opacity filter box-shadow outline background overflow text-overflow text-decoration-line ' +
+      'border-radius padding border-width border-style border-color flex-flow place-content place-items gap ' +
+      'position z-index vertical-align flex object-fit',
   ),
 ];
 
@@ -62,7 +63,7 @@ const LOOK = [
  * Resolved by the layout, compared below the root only: the root fills the overlay box.
  * Grid tracks are a box's own, compared on the root too.
  */
-const RESOLVED = names('grid-template-columns grid-template-rows margin inset transform');
+const RESOLVED = names('grid-template-columns grid-template-rows margin inset transform translate rotate scale');
 const SIZES = names('width height');
 
 const read = (style: CSSStyleDeclaration, list: string[], into = new Map<string, string>()) => {
