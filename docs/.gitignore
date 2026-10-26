@@ -1,0 +1,6 @@
+.nuxt
+.output
+.data
+.nitro
+.cache
+dist

@@ -1,0 +1,405 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+/* Classes used in Markdown/MDC and in the live examples. */
+@source "../../../content/**/*";
+@source "../../../examples/**/*";
+
+/* ---------------------------------------------------------------------------
+ * Design tokens — the "blueprint" system: monochrome, zero radius, 1px lines.
+ * ------------------------------------------------------------------------- */
+
+@theme static {
+  --font-sans: 'Onest', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+
+  --animate-grid-spin: grid-spin 40s linear infinite;
+  --animate-beam-x: beam-x 4s linear infinite;
+  --animate-beam-y: beam-y 4s linear infinite;
+  --animate-blink: blink 1.6s steps(2, start) infinite;
+}
+
+/* CJK: Onest has no glyphs for them; the system's own fonts take over per language. */
+:lang(zh) {
+  --font-sans: 'Onest', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Noto Sans CJK SC', ui-sans-serif, sans-serif;
+}
+:lang(ja) {
+  --font-sans: 'Onest', 'Hiragino Sans', 'Yu Gothic UI', 'Noto Sans JP', 'Noto Sans CJK JP', ui-sans-serif, sans-serif;
+}
+:lang(ko) {
+  --font-sans: 'Onest', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', 'Noto Sans CJK KR', ui-sans-serif, sans-serif;
+}
+
+:root {
+  /* System colours (Canvas) in the live examples follow the theme. */
+  color-scheme: light;
+  --ui-radius: 0px;
+  --ui-container: 85%;
+  --ui-header-height: 3.5rem;
+
+  --ui-primary: #000;
+  --ui-bg: #fff;
+  --ui-bg-muted: #fafafa;
+  --ui-bg-elevated: #f2f2f2;
+  --ui-bg-accented: #e5e5e5;
+  --ui-border: #e5e5e5;
+  --ui-border-muted: #ebebeb;
+  --ui-border-accented: #d4d4d4;
+  --ui-text-highlighted: #0a0a0a;
+  --ui-text: #404040;
+  --ui-text-muted: #737373;
+  --ui-text-dimmed: #767676;
+
+  --ui-success: #15803d;
+  --ui-warning: #a16207;
+  --ui-error: #b91c1c;
+  --ui-info: #404040;
+
+  --line-dashed: var(--ui-border-accented);
+}
+
+.dark {
+  color-scheme: dark;
+  --ui-primary: #fff;
+  --ui-bg: #000;
+  --ui-bg-muted: #0a0a0a;
+  --ui-bg-elevated: #111;
+  --ui-bg-accented: #1f1f1f;
+  --ui-border: #262626;
+  --ui-border-muted: #1f1f1f;
+  --ui-border-accented: #333;
+  --ui-text-highlighted: #ededed;
+  --ui-text: #d4d4d4;
+  --ui-text-muted: #a1a1a1;
+  --ui-text-dimmed: #757575;
+
+  --ui-success: #4ade80;
+  --ui-warning: #facc15;
+  --ui-error: #f87171;
+  --ui-info: #d4d4d4;
+}
+
+/* ---------------------------------------------------------------------------
+ * Base
+ * ------------------------------------------------------------------------- */
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-radius: 0 !important;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--ui-header-height) + 24px);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-feature-settings: 'calt', 'kern';
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--ui-primary);
+    color: var(--ui-bg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Page transitions: the new page rises out of a slit, the header stays put.
+ * ------------------------------------------------------------------------- */
+
+::view-transition-old(root) {
+  animation: none;
+}
+
+::view-transition-new(root) {
+  animation: vt-rise 0.6s var(--ease-out-expo) both;
+}
+
+::view-transition-group(site-header) {
+  animation-duration: 0.3s;
+}
+
+html.theme-transition::view-transition-old(root),
+html.theme-transition::view-transition-new(root),
+html.theme-transition::view-transition-group(site-header) {
+  animation: none;
+}
+
+@keyframes vt-rise {
+  from {
+    clip-path: inset(100% 0 0 0);
+    transform: translateY(24px);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Decorative primitives
+ * ------------------------------------------------------------------------- */
+
+@keyframes grid-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes beam-x {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(400%);
+  }
+}
+
+@keyframes beam-y {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(400%);
+  }
+}
+
+@keyframes blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+@utility line-dashed-x {
+  background-image: repeating-linear-gradient(to right, var(--line-dashed) 0 2px, transparent 2px 4px);
+}
+
+@utility line-dashed-y {
+  background-image: repeating-linear-gradient(to bottom, var(--line-dashed) 0 2px, transparent 2px 4px);
+}
+
+@utility divider-dashed-b {
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(to right, var(--line-dashed) 0 2px, transparent 2px 4px);
+  }
+}
+
+@utility divider-dashed-t {
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 1px;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(to right, var(--line-dashed) 0 2px, transparent 2px 4px);
+  }
+}
+
+@utility divider-dashed-e {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 1px;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(to bottom, var(--line-dashed) 0 2px, transparent 2px 4px);
+  }
+}
+
+@utility divider-dashed-s {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 1px;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(to bottom, var(--line-dashed) 0 2px, transparent 2px 4px);
+  }
+}
+
+/* Cells with dashed 1px gutters: a 4px checkerboard shows through the gaps. Cells paint
+   their own background (bg-default). */
+@utility cells-dashed {
+  display: grid;
+  gap: 1px;
+  background-image: conic-gradient(var(--line-dashed) 25%, transparent 0 50%, var(--line-dashed) 0 75%, transparent 0);
+  background-size: 4px 4px;
+}
+
+@utility rule-dashed-b {
+  background-image: repeating-linear-gradient(to right, var(--line-dashed) 0 2px, transparent 2px 4px);
+  background-size: 100% 1px;
+  background-position: bottom;
+  background-repeat: no-repeat;
+}
+
+@utility grid-paper {
+  background-image:
+    linear-gradient(to right, var(--ui-border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--ui-border) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+@utility dot-paper {
+  background-image: radial-gradient(var(--ui-border-accented) 1px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+@utility hatch-paper {
+  background-image: repeating-linear-gradient(-45deg, var(--ui-border) 0 1px, transparent 1px 12px);
+}
+
+@utility cross-paper {
+  background-color: var(--ui-border-accented);
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><path d='M20 15.5v9M15.5 20h9' stroke='black' stroke-width='1'/></svg>");
+  mask-size: 40px 40px;
+  mask-repeat: repeat;
+}
+
+@utility glow-paper {
+  background-image: radial-gradient(60% 70% at 75% 0%, color-mix(in oklab, var(--ui-text-highlighted) 10%, transparent), transparent 70%);
+}
+
+@utility mask-fade-y {
+  mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+}
+
+@utility mask-fade-x {
+  mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+}
+
+@utility mask-show-radial {
+  mask-image: radial-gradient(ellipse at center, black 15%, transparent 70%);
+}
+
+@utility mask-show-right {
+  mask-image: linear-gradient(to right, transparent 30%, black 100%);
+}
+
+@utility mask-show-left {
+  mask-image: linear-gradient(to left, transparent 30%, black 100%);
+}
+
+@utility mask-show-top {
+  mask-image: linear-gradient(to top, transparent 20%, black 100%);
+}
+
+@utility mask-show-bottom {
+  mask-image: linear-gradient(to bottom, transparent 20%, black 100%);
+}
+
+@utility mask-show-top-right {
+  mask-image: radial-gradient(80% 90% at 100% 0%, black 20%, transparent 75%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-grid-spin,
+  .animate-beam-x,
+  .animate-beam-y,
+  .animate-blink {
+    animation: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Reveal: content slides out of a slit (v-reveal), once, on first load only.
+ * Hidden only under `html.reveal-ready` (see plugins/reveal.ts), so the page reads
+ * without JS.
+ * ------------------------------------------------------------------------- */
+
+[data-reveal] {
+  overflow: hidden;
+}
+
+html.reveal-ready [data-reveal] > * {
+  transform: translateY(var(--reveal-distance, 105%));
+  transition: transform 1s var(--ease-out-expo);
+  transition-delay: var(--reveal-delay, 0s);
+}
+
+html.reveal-ready [data-reveal].is-revealed > * {
+  transform: none;
+}
+
+.rt-clip {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  /* Descenders (g, y, р) stay visible; the line height doesn't change. */
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+
+.rt-word {
+  display: inline-block;
+}
+
+html.reveal-ready [data-reveal-text] .rt-word {
+  transform: translateY(120%);
+  transition: transform var(--rt-duration, 0.9s) var(--ease-out-expo);
+  transition-delay: calc(var(--rt-delay, 0s) + var(--i, 0) * var(--rt-stagger, 0.045s));
+}
+
+html.reveal-ready [data-reveal-text].is-revealed .rt-word {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.reveal-ready [data-reveal] > *,
+  html.reveal-ready [data-reveal-text] .rt-word {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Code: dual-theme Shiki output (live examples), colours from CSS variables.
+ * ------------------------------------------------------------------------- */
+
+.shiki.shiki-themes,
+.shiki.shiki-themes span {
+  color: var(--shiki-light);
+  background-color: transparent !important;
+}
+
+.dark .shiki.shiki-themes,
+.dark .shiki.shiki-themes span {
+  color: var(--shiki-dark);
+}
