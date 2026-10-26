@@ -149,9 +149,10 @@ const connect = (api: DevtoolsApi, app: App, bridge: DevtoolsBridge) => {
     highlight(found.element, nodeLabel(found.ref));
   });
 
-  // An edit of an item's `position` moves it there: the state follows once it has.
+  // An edit of an item's `position` (its only editable field) moves it there: the state
+  // follows once it has. The path tells the field (`type` is unset for custom inspectors).
   api.on.editInspectorState((payload) => {
-    if (!asked(payload) || payload.type !== 'move' || payload.state.remove || payload.state.newKey) return;
+    if (!asked(payload) || payload.state.remove || payload.state.newKey) return;
     const target = editedMove(payload.path, payload.state.value);
     if (target) void move(target)(payload.nodeId);
   });

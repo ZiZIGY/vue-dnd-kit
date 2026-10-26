@@ -94,26 +94,26 @@ describe('moves from the inspector', () => {
     // Only items of sortable lists have one.
     for (const label of ['f1', 'chip', 'list a']) expect(devtools.state(node(label))!.move).toBeUndefined();
 
-    devtools.edit(node('a1'), 'move', ['position'], { list: 'b', index: 1 });
+    devtools.edit(node('a1'), ['position'], { list: 'b', index: 1 });
     await vi.waitFor(() => expect(order('b')).toEqual(['b1', 'a1', 'b2']));
     await idle(manager);
     expect(order('a')).toEqual(['a2', 'a3']);
     expect(devtools.state(node('a1'))!.move![0]!.value).toEqual({ list: 'b', index: 1 });
     // Its index (the DevTools' − button), then its list: the index is kept.
-    devtools.edit(node('a1'), 'move', ['position', 'index'], 0);
+    devtools.edit(node('a1'), ['position', 'index'], 0);
     await vi.waitFor(() => expect(order('b')).toEqual(['a1', 'b1', 'b2']));
     await idle(manager);
-    devtools.edit(node('a1'), 'move', ['position', 'list'], 'a');
+    devtools.edit(node('a1'), ['position', 'list'], 'a');
     await vi.waitFor(() => expect(order('a')).toEqual(['a1', 'a2', 'a3']));
     await idle(manager);
     expect(subtitles(devtools, 'drag start')).toHaveLength(3);
 
     // Values that are no position, and other fields, move nothing.
-    devtools.edit(node('a1'), 'move', ['position'], 'b');
-    devtools.edit(node('a1'), 'move', ['position', 'index'], 'last');
-    devtools.edit(node('a1'), 'move', ['position', 'list'], { id: 'b' });
-    devtools.edit(node('a1'), 'draggable', ['list'], 'b');
-    devtools.edit(node('chip'), 'move', ['position'], { list: 'a', index: 0 });
+    devtools.edit(node('a1'), ['position'], 'b');
+    devtools.edit(node('a1'), ['position', 'index'], 'last');
+    devtools.edit(node('a1'), ['position', 'list'], { id: 'b' });
+    devtools.edit(node('a1'), ['list'], 'b');
+    devtools.edit(node('chip'), ['position'], { list: 'a', index: 0 });
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(subtitles(devtools, 'drag start')).toHaveLength(3);
     expect([order('a'), order('b')]).toEqual([

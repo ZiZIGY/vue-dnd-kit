@@ -1,9 +1,10 @@
 /**
  * `@vue-dnd-kit/devtools`: a Vue DevTools plugin for Vue DnD Kit. It adds the "Vue DnD
  * Kit" inspector (providers, their draggables, drop targets, sortable lists and trees,
- * the selection and the drag session; a selected node is highlighted on the page) and a
- * timeline layer (drag start, targets, `onBeforeDrop` verdicts, drops, cancels,
- * announcements, auto-scroll).
+ * the selection and the drag session; a selected node is highlighted on the page; its
+ * items can be moved and dragged from it, through `@vue-dnd-kit/actions`) and a timeline
+ * layer (drag start, targets, `onBeforeDrop` verdicts, drops, cancels, announcements,
+ * auto-scroll).
  *
  * Production builds drop it: every entry point checks `process.env.NODE_ENV` first, so
  * bundlers remove the plugin and `@vue/devtools-api` with it.

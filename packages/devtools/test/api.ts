@@ -23,9 +23,10 @@ export interface FakeDevtools {
   state(nodeId: string): InspectorState | null;
   /**
    * Edits a field of a node's state, as the DevTools send it: `path` from the field's key
-   * down (`['position']`, `['position', 'index']`), `section` the section it is in.
+   * down (`['position']`, `['position', 'index']`). Their `type` is the field's
+   * `stateType`, which the plugin's fields don't have.
    */
-  edit(nodeId: string, section: string, path: string[], value: unknown): void;
+  edit(nodeId: string, path: string[], value: unknown): void;
   /** Clicks a button above the tree (`actions`), by its icon: resolves once its command is done. */
   action(icon: string): Promise<void>;
   /** Clicks a button of the selected node (`nodeActions`), by its icon: resolves once its command is done. */
@@ -54,9 +55,9 @@ export const open = (app: App): FakeDevtools => {
       handlers.get('state')!(payload as never);
       return payload.state;
     },
-    edit(nodeId: string, section: string, path: string[], value: unknown) {
+    edit(nodeId: string, path: string[], value: unknown) {
       const state = { newKey: null, value, type: typeof value, remove: false };
-      handlers.get('edit')!({ app, inspectorId: 'vue-dnd-kit', nodeId, type: section, path, state, set: () => {} } as never);
+      handlers.get('edit')!({ app, inspectorId: 'vue-dnd-kit', nodeId, type: undefined, path, state, set: () => {} } as never);
     },
     async action(icon: string) {
       await devtools.inspector.actions!.find((action) => action.icon === icon)!.action();

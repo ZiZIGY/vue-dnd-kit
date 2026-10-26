@@ -106,8 +106,8 @@ jobs:
           cache: yarn
           cache-dependency-path: packages/devtools/yarn.lock
 
-      # The core and its devtools bridge are compiled from their sources (tsconfig `paths`,
-      # Vitest alias) with this package's own Vue and VueUse: they need no install of their own.
+      # The core, its devtools bridge and the actions are compiled from their sources (tsconfig
+      # `paths`, Vitest alias) with this package's own Vue and VueUse: they need no install of their own.
       - name: Install
         run: yarn install --frozen-lockfile
 

@@ -8,10 +8,10 @@ A [Vue DevTools](https://devtools.vuejs.org/) plugin for [Vue DnD Kit](https://g
 ## Install
 
 ```bash
-npm i -D @vue-dnd-kit/devtools
+npm i -D @vue-dnd-kit/devtools @vue-dnd-kit/actions
 ```
 
-Peer dependencies: `vue ^3.5` and `@vue-dnd-kit/core ^3`. The plugin talks to the DevTools through [`@vue/devtools-api`](https://www.npmjs.com/package/@vue/devtools-api) v8, which comes with it.
+Peer dependencies: `vue ^3.5`, `@vue-dnd-kit/core ^3` and [`@vue-dnd-kit/actions`](https://www.npmjs.com/package/@vue-dnd-kit/actions) `^3` (the inspector drags through it; npm 7+ and pnpm install peer dependencies themselves, with Yarn 1 add it). The plugin talks to the DevTools through [`@vue/devtools-api`](https://www.npmjs.com/package/@vue/devtools-api) v8, which comes with it.
 
 ### `app.use()`
 
@@ -61,6 +61,41 @@ Selecting a node highlights its element on the page; the node action (⌖) scrol
 
 Items mount and unmount without events: the tree catches up within a second.
 
+### Drag from the inspector
+
+The inspector drags too, for real: through the core's public sensor API, the way [`@vue-dnd-kit/actions`](https://www.npmjs.com/package/@vue-dnd-kit/actions) does. So these drags animate, the live region announces them, and the drop goes through `onBeforeDrop`, `onDrop`, `event.result` and `preventDefault()` like any other. They run as keyboard drags of a sensor named `devtools`, which the timeline's `drag start` names: `a1 · devtools (keyboard) · from todo`.
+
+**Move an item of a sortable list.** Select the item in the tree. The buttons of the selected node:
+
+| Button | Does |
+| --- | --- |
+| ↑ `arrow_upward` | moves it up one place in its list |
+| ↓ `arrow_downward` | moves it down one place |
+| ⤒ `vertical_align_top` | moves it to the start of its list |
+| ⤓ `vertical_align_bottom` | moves it to the end of its list |
+
+Each move is one drag (picked up, placed, dropped). Clicks in a row queue: each move starts from where the item is once the one before has landed.
+
+**Move it to another list, at an index.** The item's state has a `move` section with its `position`, `{ list, index }`, which you can edit:
+
+- Edit `position` as a whole: `{ "list": "done", "index": 0 }` puts it at the top of the list `done` (any list that takes it: same group, `put` rules). Leave `index` out for the end of the list.
+- Expand it and use the `+` / `−` buttons of `index` (down / up), or edit `index`: a new place in its list.
+- Edit `list` alone: the same index in another list.
+
+Trees aren't moved this way (their positions have a depth too); pick their items up instead.
+
+**Pick an item up and step it.** The ✥ (`open_with`) button of a draggable or sortable item (a tree's too) starts a keyboard drag of it. Then use the buttons above the tree:
+
+| Button | Does |
+| --- | --- |
+| `keyboard_arrow_up` / `down` / `left` / `right` | one arrow step, as the arrow keys do (the next place in a list, the next column of a kanban, a tree's depth; `keyboard.step` pixels in a free drag) |
+| `file_download_done` | drops it |
+| `cancel` | cancels it: it flies back |
+
+The step and drop buttons work on any keyboard drag of the provider, whoever started it. One drag at a time: while one runs, nothing else is picked up, and moves wait until it has ended.
+
+The plugin loads this part on the first drag from the inspector. Production builds leave it out with the rest of the plugin.
+
 ### The "Vue DnD Kit" timeline layer
 
 Turn the layer on in the Timeline tab (the DevTools record a plugin's layer only when it is on). One group per drag: `drag start` (ids, the sensor that started it and whether by touch, the list it comes from), `over` and `left` (target changes, and whether the target accepts), `release`, `onBeforeDrop` (the verdict: accepted, accepted some, rejected by a hook, or refused by the target's `accept`, and how long the hooks took), `drop` (the target, and for sortable lists the move, `event.result` and whether `preventDefault()` was called) or `cancel` (and why), `announcement` (what the live region said) and `auto-scroll on` / `off`.
@@ -73,7 +108,7 @@ Each app with the plugin shows its own providers. A provider shared with an app 
 
 ## How it works
 
-Providers report to a hook the plugin installs (through the core's internal bridge, `@vue-dnd-kit/core/devtools`). Without the plugin nothing reports and nothing runs. With it, a provider is only recorded until the DevTools panel is open; from then on the plugin listens like any monitor, and reads snapshots. It changes nothing but what you ask it to (cancel, clear the selection).
+Providers report to a hook the plugin installs (through the core's internal bridge, `@vue-dnd-kit/core/devtools`). Without the plugin nothing reports and nothing runs. With it, a provider is only recorded until the DevTools panel is open; from then on the plugin listens like any monitor, and reads snapshots. It changes nothing but what you ask it to (cancel, clear the selection, the drags above). Drags from the inspector use public API only: a sensor (`useSensor`) in the provider, with the actions of `createDnDActions` from `@vue-dnd-kit/actions`.
 
 ## License
 
