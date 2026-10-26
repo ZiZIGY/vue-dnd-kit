@@ -25,6 +25,10 @@ export const restrictToVerticalAxis: Modifier = ({ transform }) => ({ x: 0, y: t
 
 export const restrictToHorizontalAxis: Modifier = ({ transform }) => ({ x: transform.x, y: 0 });
 
+/** `modifiers` with the lock of the `axis` option last, so it holds whatever they do. */
+export const withAxis = (modifiers: Modifier[] | undefined, axis: 'x' | 'y' | null | undefined): Modifier[] | undefined =>
+  axis ? [...(modifiers ?? []), axis === 'x' ? restrictToHorizontalAxis : restrictToVerticalAxis] : modifiers;
+
 export const restrictToWindowEdges: Modifier = ({ transform, overlayRect, windowRect }) =>
   restrictToRect(transform, baseRect(overlayRect, transform), windowRect);
 

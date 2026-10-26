@@ -138,7 +138,14 @@ export function makeSortableTree<T>(
   // Read when a drag starts; `undefined` leaves the provider's.
   onScopeDispose(manager.registerAutoScroll(entry.getElement, () => read(options.autoScroll)));
 
-  provideSortableContext(group, entry, accessors.getKey, options.overlay, () => read(options.modifiers));
+  provideSortableContext(
+    group,
+    entry,
+    accessors.getKey,
+    options.overlay,
+    () => read(options.modifiers),
+    () => read(options.axis),
+  );
 
   // The row a virtualizer must keep mounted. The session is mutated in place: a copy or a
   // created node is read from the slot's reactive mirror (the lead never changes).

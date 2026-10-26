@@ -52,6 +52,12 @@ export interface DraggableOptions<TData = unknown> {
    */
   modifiers?: MaybeReadonlyRefOrGetter<Modifier[] | undefined>;
   /**
+   * Locks drags that start here to one axis: `'x'` moves only horizontally, `'y'` only
+   * vertically. The lock comes after `modifiers` (`restrictToHorizontalAxis` /
+   * `restrictToVerticalAxis` last), so it holds whatever they do. Read when the drag starts.
+   */
+  axis?: MaybeReadonlyRefOrGetter<'x' | 'y' | undefined>;
+  /**
    * Arrow keys in free drags: move by pixels (default) or jump between accepting drop
    * targets. Read on every arrow press.
    */

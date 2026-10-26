@@ -155,6 +155,12 @@ export interface SortableListOptions<T> {
    * list's items on their axis. Read when the drag starts.
    */
   modifiers?: MaybeReadonlyRefOrGetter<Modifier[] | undefined>;
+  /**
+   * Locks drags of this list's items to one axis: `'y'` for a vertical list, `'x'` for a
+   * horizontal one (an item's own `axis` wins). The lock comes after the modifiers, so it
+   * holds whatever they do. Read when the drag starts.
+   */
+  axis?: MaybeReadonlyRefOrGetter<'x' | 'y' | undefined>;
   /** Lists with the same group name exchange items. Default: a group of its own. Read once. */
   group?: string | SortableGroupOptions;
   /** Multi-drag of items of several types: `'all'` (default) or `'some'` must be accepted (`group.put`). */
@@ -254,6 +260,8 @@ export interface SortableItemOptions<TData = unknown> {
   overlay?: MaybeReadonlyRef<Component | undefined>;
   /** Modifiers for drags of this item, after the provider's; win over the list's `modifiers`. */
   modifiers?: MaybeReadonlyRefOrGetter<Modifier[] | undefined>;
+  /** Locks drags of this item to one axis (`'x'`, `'y'`); wins over the list's `axis`. */
+  axis?: MaybeReadonlyRefOrGetter<'x' | 'y' | undefined>;
   /** Element or selector inside the item that starts the drag (and gets the attributes). */
   handle?: MaybeReadonlyRefOrGetter<MaybeElement | string>;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;

@@ -111,5 +111,5 @@ allow it. In indicator mode the line moves instead.
 
 ## Axis lock
 
-`modifiers: [restrictToVerticalAxis]` still allows nesting: the depth then comes only
-from hovering the middle of a row.
+`axis: 'y'` (or `modifiers: [restrictToVerticalAxis]`) still allows nesting: the depth
+then comes only from hovering the middle of a row.

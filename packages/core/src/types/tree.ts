@@ -96,6 +96,12 @@ export interface SortableTreeOptions<T> {
    * A locked axis still nests: the depth then comes from hovering the middle of a row.
    */
   modifiers?: MaybeReadonlyRefOrGetter<Modifier[] | undefined>;
+  /**
+   * Locks drags of this tree's rows to one axis (a row's own `axis` wins), after the
+   * modifiers. With `'y'` rows still nest: the depth then comes from hovering the middle of
+   * a row. Read when the drag starts.
+   */
+  axis?: MaybeReadonlyRefOrGetter<'x' | 'y' | undefined>;
   /** Lists and trees with the same group name exchange items. Default: a group of its own. Read once. */
   group?: string | SortableGroupOptions;
   /** Multi-drag of items of several types: `'all'` (default) or `'some'` must be accepted (`group.put`). */

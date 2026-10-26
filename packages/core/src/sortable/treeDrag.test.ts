@@ -719,6 +719,22 @@ describe('tree options as lists have them', () => {
     await cancel();
   });
 
+  it("axis locks drags of the tree's rows, read when the drag starts", async () => {
+    const axis = ref<'x' | 'y' | undefined>('y');
+    const { container } = renderTree({ axis });
+    await settle();
+    const from = centerOf(container, 'c');
+    await start(container, 'c', 'pointer');
+    await pointTo({ x: from.x + 80, y: from.y - 30 });
+    expect(manager.transform.value).toEqual({ x: 0, y: -30 });
+    await cancel();
+    axis.value = undefined;
+    await start(container, 'c', 'pointer');
+    await pointTo({ x: from.x + 80, y: from.y - 30 });
+    expect(manager.transform.value).toEqual({ x: 80, y: -30 });
+    await cancel();
+  });
+
   it("autoScroll overrides the provider's for the tree's scroll container, following a ref", async () => {
     const autoScroll = ref<boolean | { maxSpeed: number } | undefined>(false);
     const { container } = renderTree({ autoScroll });

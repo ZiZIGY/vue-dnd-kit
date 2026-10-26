@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ref, shallowRef, useTemplateRef } from 'vue';
-  import { makeSortableList, restrictToVerticalAxis } from '@vue-dnd-kit/core';
+  import { makeSortableList } from '@vue-dnd-kit/core';
   import TableRow from '../components/TableRow.vue';
 
   const people = ref([
@@ -11,13 +11,13 @@
     { id: 'p5', name: 'Barbara Liskov', role: 'Professor' },
   ]);
 
-  // Rows only move up and down: the list's own modifiers keep the dragged row on the y axis.
+  // Rows only move up and down: the list's `axis` keeps the dragged row on the y axis.
   const lockAxis = shallowRef(true);
   const body = useTemplateRef<HTMLElement>('body');
   const { items } = makeSortableList(body, {
     id: 'table',
     items: people,
-    modifiers: () => (lockAxis.value ? [restrictToVerticalAxis] : undefined),
+    axis: () => (lockAxis.value ? 'y' : undefined),
   });
 </script>
 

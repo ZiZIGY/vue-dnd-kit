@@ -22,6 +22,7 @@ const { isDragging, selected, transform } = makeDraggable(el, {
   canDrag: (event) => !(event instanceof KeyboardEvent) || event.altKey,
   overlay: true,                   // true | false | a component (OverlayProps)
   modifiers: [],                   // applied after the provider's
+  axis: 'y',                       // lock to one axis: 'x' | 'y' (after the modifiers)
   keyboard: 'pixels',              // 'pixels' (step px) | 'droppables' (jump between accepting targets)
   attributes: true,                // role/tabindex/aria-*; never overrides your own
 });
@@ -131,7 +132,7 @@ import {
   snapToGrid, snapCenterToCursor,
 } from '@vue-dnd-kit/core';
 
-makeSortableList(listRef, { items, modifiers: [restrictToVerticalAxis] });  // axis lock
+makeSortableList(listRef, { items, axis: 'y' });   // axis lock: the `axis` option (lists, trees, items, draggables)
 makeDraggable(el, { modifiers: [restrictToElement(boardRef)] });
 makeDraggable(el, { modifiers: [snapToGrid({ x: 32, y: 32, origin: 'container', smooth: true })] });
 ```
@@ -141,5 +142,8 @@ makeDraggable(el, { modifiers: [snapToGrid({ x: 32, y: 32, origin: 'container', 
 - `snapToGrid(size)` takes a number or `{ x, y, origin: 'container' | 'delta', smooth }`.
   `smooth` glides the overlay between cells, while collision uses the snapped position at once.
 - Custom: `({ transform, active, activeRect, overlayRect, origin, containerRect, windowRect, over }) => ({ x, y })`.
+- **Axis lock:** prefer `axis: 'x' | 'y'` over `restrictToHorizontalAxis` /
+  `restrictToVerticalAxis`. It runs after all modifiers, so the lock always holds. An
+  item's own `axis` wins over its list's.
 - Options read "when the drag starts" accept getters, so an axis lock can be toggled:
-  `modifiers: () => (locked.value ? [restrictToVerticalAxis] : undefined)`.
+  `axis: () => (locked.value ? 'y' : undefined)`.

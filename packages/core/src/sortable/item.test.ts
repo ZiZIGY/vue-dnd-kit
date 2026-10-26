@@ -1,7 +1,8 @@
 import { createApp, defineComponent, h, ref, useTemplateRef, type Component, type PropType } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { SortableItemOptions } from '../types';
+import type { SortableItemOptions, SortableListOptions } from '../types';
 import { DnDProvider } from '../core/DnDProvider';
+import { restrictToHorizontalAxis, restrictToVerticalAxis, snapCenterToCursor } from '../core/modifiers';
 import { useManager } from '../core/context';
 import type { DnDManager } from '../core/manager';
 import { makeSortableItem } from './makeSortableItem';
@@ -43,7 +44,7 @@ const Row = defineComponent({
 const renderList = (
   tasks: Task[],
   options: (task: Task) => SortableItemOptions,
-  list: { tree?: boolean; getKey?: (task: Task) => string } = {},
+  list: { tree?: boolean; getKey?: (task: Task) => string } & Pick<SortableListOptions<Task>, 'axis' | 'modifiers'> = {},
 ) =>
   mount({
     setup: () => () =>
@@ -53,7 +54,7 @@ const renderList = (
             setup() {
               manager = useManager();
               const target = useTemplateRef<HTMLElement>('list');
-              const source = { items: ref(tasks), getKey: list.getKey };
+              const source = { items: ref(tasks), getKey: list.getKey, axis: list.axis, modifiers: list.modifiers };
               const items = list.tree
                 ? makeSortableTree(target, source).items.value.map((node) => node.item)
                 : makeSortableList(target, source).items.value;
@@ -101,6 +102,29 @@ describe('makeSortableItem keys', () => {
     const message = (errors[0] as Error).message;
     expect(message).toContain('needs `id` or `item`');
     expect(message).toMatch(/recreated.*virtual list.*lose the item/s);
+  });
+});
+
+describe('axis of sortable items', () => {
+  afterEach(() => mounted.splice(0).forEach((unmount) => unmount()));
+
+  const modifiersOf = (key: string) => manager.getDraggable(key)?.getModifiers?.();
+
+  it("the list's axis locks its items (in lists and trees); an item's own axis wins", () => {
+    const tasks = [{ uid: 'a', id: 'a' }, { uid: 'b', id: 'b' }];
+    const options = (task: Task): SortableItemOptions => ({ item: () => task, axis: task.id === 'b' ? 'x' : undefined });
+    renderList(tasks, options, { axis: 'y' });
+    expect(modifiersOf('a')).toEqual([restrictToVerticalAxis]);
+    expect(modifiersOf('b')).toEqual([restrictToHorizontalAxis]);
+    mounted.splice(0).forEach((unmount) => unmount());
+    renderList(tasks, options, { axis: 'y', tree: true });
+    expect(modifiersOf('a')).toEqual([restrictToVerticalAxis]);
+    expect(modifiersOf('b')).toEqual([restrictToHorizontalAxis]);
+  });
+
+  it('comes after the modifiers', () => {
+    renderList([{ uid: 'a', id: 'a' }], (task) => ({ item: () => task }), { axis: 'y', modifiers: [snapCenterToCursor] });
+    expect(modifiersOf('a')).toEqual([snapCenterToCursor, restrictToVerticalAxis]);
   });
 });
 

@@ -84,7 +84,8 @@ const { isDragging, isPlaceholder, selected, index } = makeSortableItem(el, { it
 | `dropOutside` | `'placeholder'` (`'cancel'` with the indicator) | Drop outside every target: keep the placeholder's position, `'cancel'`, or `'remove'` the items. |
 | `acceptMode` | `'all'` | Multi-drag of mixed types: `'all'` or `'some'` must pass `group.put`. |
 | `overlay` | — | Overlay component for this list's items (see [overlay](overlay.md)). |
-| `modifiers` | — | E.g. `[restrictToVerticalAxis]`. |
+| `axis` | — | `'y'` / `'x'`: lock drags of the items to one axis (after `modifiers`; an item's own `axis` wins). |
+| `modifiers` | — | Movement modifiers, e.g. `[restrictToWindowEdges]`. |
 | `animation` | provider's | FLIP while sorting. |
 | `animate` | provider's (`false`) | Animate data changes that no drag made. |
 | `autoScroll` | provider's | Per list. |
@@ -97,8 +98,8 @@ Returns `{ id, items, isOver, isAccepting, indicator, activeKey, activeIndex, ac
 ## makeSortableItem options
 
 Pass `id` (a getter) or `item` (a getter, keyed with the list's `getKey`). Also:
-`handle`, `disabled`, `type`, `data`, `overlay`, `modifiers`, `activation`, `canDrag`,
-`attributes` (as on `makeDraggable`). There is no `keyboard` option: arrow keys move by slots.
+`handle`, `disabled`, `type`, `data`, `overlay`, `modifiers`, `axis`, `activation`,
+`canDrag`, `attributes` (as on `makeDraggable`). There is no `keyboard` option: arrow keys move by slots.
 
 Returns:
 - `isDragging`: this item is part of the drag (true for every dragged item in a multi-drag).

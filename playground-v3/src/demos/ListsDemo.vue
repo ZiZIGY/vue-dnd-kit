@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import { reactive, shallowRef } from 'vue';
-  import { restrictToHorizontalAxis, restrictToVerticalAxis } from '@vue-dnd-kit/core';
   import DemoList from '../components/DemoList.vue';
   import { describeLists, makeTasks } from '../data';
 
@@ -11,10 +10,10 @@
   const moving = reactive({ id: 'moving', title: 'Moving', tasks: makeTasks('m', 4) });
   const still = reactive({ id: 'still', title: 'Still', tasks: makeTasks('s', 4) });
 
-  // Single lists keep their items on their axis (the list's own `modifiers`); the
-  // indicator lists exchange items side by side, so they move freely.
+  // Single lists keep their items on their axis (the list's `axis`); the indicator lists
+  // exchange items side by side, so they move freely.
   const lockAxis = shallowRef(true);
-  const lockedTo = (modifier: typeof restrictToVerticalAxis) => () => (lockAxis.value ? [modifier] : undefined);
+  const lockedTo = (axis: 'x' | 'y') => () => (lockAxis.value ? axis : undefined);
 </script>
 
 <template>
@@ -31,7 +30,7 @@
     <DemoList
       class="horizontal"
       :list="horizontal"
-      :options="{ strategy: 'horizontal', modifiers: lockedTo(restrictToHorizontalAxis) }"
+      :options="{ strategy: 'horizontal', axis: lockedTo('x') }"
     />
   </section>
   <section>
@@ -56,7 +55,7 @@
     <DemoList
       class="custom-placeholder"
       :list="custom"
-      :options="{ modifiers: lockedTo(restrictToVerticalAxis) }"
+      :options="{ axis: lockedTo('y') }"
     />
   </section>
   <pre data-testid="state">{{ describeLists([horizontal, indicator, indicatorB, custom]) }}</pre>

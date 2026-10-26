@@ -40,6 +40,8 @@ export interface SortableContext {
   getOverlay: () => Component | undefined;
   /** The list's `modifiers`, used when the item has none. */
   getModifiers?: () => Modifier[] | undefined;
+  /** The list's `axis`, used when the item has none. */
+  getAxis?: () => 'x' | 'y' | undefined;
 }
 
 export const SORTABLE_CONTEXT: InjectionKey<SortableContext> = Symbol('vue-dnd-kit-sortable');
@@ -62,6 +64,7 @@ export const provideSortableContext = (
   getKey: (item: never) => Key,
   overlay: MaybeReadonlyRef<Component | undefined>,
   getModifiers?: () => Modifier[] | undefined,
+  getAxis?: () => 'x' | 'y' | undefined,
 ): void => {
   if (process.env.NODE_ENV !== 'production') {
     // A second list overrides the first one's context: every item of the component
@@ -80,6 +83,7 @@ export const provideSortableContext = (
     getKey: getKey as (item: unknown) => Key,
     getOverlay: () => unref(overlay),
     getModifiers,
+    getAxis,
   });
 };
 
@@ -178,7 +182,14 @@ export function makeSortableList<T>(
     { accepts: (active) => group.accepts(entry, active) },
   );
 
-  provideSortableContext(group, entry, getKey, options.overlay, () => read(options.modifiers));
+  provideSortableContext(
+    group,
+    entry,
+    getKey,
+    options.overlay,
+    () => read(options.modifiers),
+    () => read(options.axis),
+  );
 
   // A new draft usually differs from the previous one in a short run (a reorder): only
   // that run is looked up, the rest is copied. Items of a session never change by key.

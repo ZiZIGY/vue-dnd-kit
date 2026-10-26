@@ -116,6 +116,7 @@ mount on the client.
 | Store, server or immutable state (controlled) | read-only `items` + `e.preventDefault()` + `e.result` | [sortable](references/sortable.md) |
 | File tree / nested outline | `makeSortableTree` (flat rendering by depth) | [tree](references/tree.md) |
 | Free drag, drop zones, drop into a folder item | `makeDraggable` + `makeDroppable` | [draggable-droppable](references/draggable-droppable.md) |
+| Lock drags to one axis; snap, restrict to a container | `axis: 'x' \| 'y'`, `modifiers` | [draggable-droppable](references/draggable-droppable.md#modifiers) |
 | Provider options, global events, `useDnD`, monitors | `DnDProvider`, `useDnD`, `useDnDMonitor` | [provider](references/provider.md) |
 | Drag several items; rubber-band selection | `selected`, `multiple`, `makeSelectionArea` | [multi-drag](references/multi-drag.md) |
 | Custom drag preview, preview size | `overlay`, `#overlay` slot, `DragPreview`, `overlayFit` | [overlay](references/overlay.md) |

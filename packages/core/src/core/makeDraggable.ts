@@ -3,6 +3,7 @@ import type { DraggableOptions, DraggableReturn, Key, MaybeElementRef } from '..
 import type { DraggableEntry } from './manager';
 import { useManager } from './context';
 import { normalizeTypes } from './accept';
+import { withAxis } from './modifiers';
 import { createId, isNativelyFocusable, toElement } from '../utils/dom';
 import { read } from '../utils/read';
 
@@ -142,7 +143,7 @@ export function createDraggable<TData>(
   const entry: DraggableEntry = {
     id: id.value,
     getOverlay: () => toOverlay(unref(options.overlay) ?? internals.getOverlay?.()),
-    getModifiers: () => read(options.modifiers),
+    getModifiers: () => withAxis(read(options.modifiers), read(options.axis)),
     getActivation: () => read(options.activation),
     canDrag: options.canDrag,
     getKeyboard: () => read(options.keyboard),

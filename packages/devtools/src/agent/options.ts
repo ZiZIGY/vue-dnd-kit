@@ -50,6 +50,7 @@ const MODIFIER_NAMES: Spec = { input: 'names', names: Object.keys(MODIFIERS), se
 const ACCEPT_MODE: Spec = { choices: ['all', 'some'], fallback: 'all' };
 const PLACEHOLDER: Spec = { choices: ['item', 'indicator'], fallback: 'item' };
 const DROP_OUTSIDE: Spec = { choices: ['placeholder', 'cancel', 'remove'] };
+const AXIS: Spec = { choices: ['x', 'y', null] };
 
 /** `DnDProvider`'s props. */
 const PROVIDER: Record<string, Spec> = {
@@ -80,6 +81,7 @@ const LIST: Record<string, Spec> = {
   animate: ANIMATE,
   autoScroll: AUTO_SCROLL,
   modifiers: MODIFIER_NAMES,
+  axis: AXIS,
 };
 
 const TREE: Record<string, Spec> = {
@@ -94,6 +96,7 @@ const TREE: Record<string, Spec> = {
   animate: ANIMATE,
   autoScroll: AUTO_SCROLL,
   modifiers: MODIFIER_NAMES,
+  axis: AXIS,
 };
 
 const DRAGGABLE: Record<string, Spec> = {

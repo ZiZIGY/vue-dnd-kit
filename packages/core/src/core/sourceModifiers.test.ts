@@ -10,17 +10,20 @@ import { restrictToVerticalAxis } from './modifiers';
 let manager: DnDManager;
 let unmount: (() => void) | null = null;
 
-/** Two cards under one provider: `locked` with its own modifiers, `free` without. */
-const mount = (own: () => Modifier[] | undefined, provider?: Modifier[]) => {
+type Axis = 'x' | 'y' | undefined;
+
+/** Two cards under one provider: `locked` with its own modifiers (and `axis`), `free` without. */
+const mount = (own: () => Modifier[] | undefined, provider?: Modifier[], axis?: () => Axis) => {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const Card = defineComponent({
-    props: { id: { type: String, required: true }, modifiers: Function },
+    props: { id: { type: String, required: true }, modifiers: Function, axis: Function },
     setup(props) {
       manager = useManager();
       makeDraggable(useTemplateRef<HTMLElement>('el'), {
         id: props.id,
         modifiers: props.modifiers as (() => Modifier[] | undefined) | undefined,
+        axis: props.axis as (() => Axis) | undefined,
       });
       return () => h('div', { ref: 'el', 'data-card': props.id }, props.id);
     },
@@ -30,7 +33,7 @@ const mount = (own: () => Modifier[] | undefined, provider?: Modifier[]) => {
       h(
         DnDProvider,
         { dropAnimation: false, modifiers: provider },
-        { default: () => [h(Card, { id: 'locked', modifiers: own }), h(Card, { id: 'free' })] },
+        { default: () => [h(Card, { id: 'locked', modifiers: own, axis }), h(Card, { id: 'free' })] },
       ),
   });
   app.mount(container);
@@ -89,5 +92,34 @@ describe('modifiers of a draggable (or list)', () => {
     expect(await dragBy('locked')).toEqual({ x: 80, y: 60 });
     locked.value = true;
     expect(await dragBy('locked')).toEqual({ x: 0, y: 60 });
+  });
+});
+
+describe('axis of a draggable', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
+  });
+
+  afterEach(() => {
+    unmount?.();
+    unmount = null;
+    vi.useRealTimers();
+  });
+
+  it("locks drags that start there to one axis, read when the drag starts", async () => {
+    const axis = shallowRef<Axis>('x');
+    mount(() => undefined, undefined, () => axis.value);
+    expect(await dragBy('locked')).toEqual({ x: 80, y: 0 });
+    expect(await dragBy('free')).toEqual({ x: 80, y: 60 });
+    axis.value = 'y';
+    expect(await dragBy('locked')).toEqual({ x: 0, y: 60 });
+    axis.value = undefined;
+    expect(await dragBy('locked')).toEqual({ x: 80, y: 60 });
+  });
+
+  it('holds whatever the modifiers do: the lock comes after them', async () => {
+    const sideways: Modifier = ({ transform }) => ({ x: transform.x + 10, y: transform.y + 5 });
+    mount(() => [sideways], [sideways], () => 'y');
+    expect(await dragBy('locked')).toEqual({ x: 0, y: 70 });
   });
 });
