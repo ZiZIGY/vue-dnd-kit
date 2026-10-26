@@ -66,39 +66,22 @@ const guard = (page: Page) => {
   };
 };
 
-/** First `translate` keyframe of a layout animation on the row, within ~20 frames; null if none ran. */
-const flyIn = (page: Page, id: string) =>
-  page.evaluate(
-    (key) =>
-      new Promise<string | null>((resolve) => {
-        let count = 0;
-        const check = () => {
-          const element = document.querySelector(`[data-testid="tree-root"] [data-id="${key}"]`);
-          for (const animation of element?.getAnimations() ?? []) {
-            const frame = (animation.effect as KeyframeEffect | null)?.getKeyframes()[0];
-            if (frame && 'translate' in frame) return resolve(String(frame.translate));
-          }
-          if (++count > 20) return resolve(null);
-          requestAnimationFrame(check);
-        };
-        check();
-      }),
-    id,
-  );
-
 type Frame = Record<string, string | number | null>;
 type Landing = { id: string | null; frames: Frame[] };
-type AnimationLog = { box: Frame[] | null; items: Landing[] };
+type AnimationLog = { box: Frame[] | null; items: Landing[]; rows: string[] };
 type WatchWindow = Window & { __animations?: AnimationLog; __animationWatch?: boolean };
 
 /**
  * Records the keyframes of the overlay box's animation and of each clone in its column
- * (they animate relative to the box): the gather at pickup, the landing at the drop.
+ * (they animate relative to the box): the gather at pickup, the landing at the drop. Also
+ * the tree rows a layout animation (`translate`) slid. Hooking `animate()` can't miss a
+ * short animation that ends before a poll of `getAnimations()` would start on a loaded
+ * browser.
  */
 const watchAnimations = async (page: Page) => {
   await page.evaluate(() => {
     const win = window as WatchWindow;
-    win.__animations = { box: null, items: [] };
+    win.__animations = { box: null, items: [], rows: [] };
     if (win.__animationWatch) return;
     win.__animationWatch = true;
     const animate = Element.prototype.animate;
@@ -109,6 +92,8 @@ const watchAnimations = async (page: Page) => {
         if (this.hasAttribute('data-dnd-overlay')) log.box = frames;
         else if (this.hasAttribute('data-dnd-overlay-item')) {
           log.items.push({ id: this.querySelector('[data-id]')?.getAttribute('data-id') ?? null, frames });
+        } else if (this.closest('[data-testid="tree-root"]') && frames[0] && 'translate' in frames[0]) {
+          log.rows.push(this.getAttribute('data-id') ?? '');
         }
       }
       return animate.call(this, keyframes, options);
@@ -116,6 +101,7 @@ const watchAnimations = async (page: Page) => {
   });
   return {
     items: () => page.evaluate(() => (window as WatchWindow).__animations!.items),
+    rows: () => page.evaluate(() => (window as WatchWindow).__animations!.rows),
     landings: async () => {
       await page.waitForFunction(() => (window as WatchWindow).__animations?.box);
       return page.evaluate(() => (window as WatchWindow).__animations!);
@@ -156,7 +142,7 @@ test.describe('tree multi-drag', () => {
     const animations = await watchAnimations(page);
     await pick(page, 'package');
     // main slides down next to package (the same element, FLIP), in document order.
-    expect(await flyIn(page, 'main')).not.toBeNull();
+    await expect.poll(() => animations.rows()).toContain('main');
     await expect.poll(() => rowOrder(page)).toEqual([...ROWS.slice(0, 4), ...ROWS.slice(5, 9), 'main', 'package', 'readme']);
     expect(await placeholders(page)).toEqual({ ids: ['main', 'package'], contiguous: true });
     expect(await columnIds(page)).toEqual(['main']);
