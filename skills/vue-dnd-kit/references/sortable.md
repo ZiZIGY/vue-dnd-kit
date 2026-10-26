@@ -129,8 +129,9 @@ interface SortableDropEvent<T> {
 }
 ```
 
-- `onDrop` is called on the target list. When items leave their list, the source list's
-  `onDrop` is called too, with `to.index === -1`.
+- `onDrop` is called on the target list only (`e.to.list`); `e.result` has every list the
+  drop changes, the source too. When items are removed (`e.source.remove()` in a trash zone,
+  `dropOutside: 'remove'`), the source list's `onDrop` runs, with `to.index === -1`.
 - `onBeforeDrop` returning `'reject'` (or `false`) rejects (the items fly back); `'accept'`
   (or `true`, or nothing) lets the drop through. An array of keys accepts only those. A throw
   rejects too. It may be `async`: the overlay waits where it was dropped.

@@ -47,7 +47,7 @@ provider owns an element.
 | `dropAnimation` | `true` | How the overlay lands. Same shapes. |
 | `animate` | `false` | Default for lists and trees: animate data changes that no drag made. See [animations](animations.md). |
 | `autoScroll` | `true` | Scroll containers and the window near their edges. `{ threshold, maxSpeed, acceleration }`. |
-| `activation` | mouse/pen `{ distance: 4 }` (immediate on a handle), touch `{ delay: 200, tolerance: 5 }` | Per pointer kind: `{ mouse, touch, pen }`. |
+| `activation` | mouse `{ distance: 4 }` (immediate on a handle), pen `{ distance: 4 }`, touch `{ delay: 200, tolerance: 5 }` | Per pointer kind: `{ mouse, touch, pen }`. |
 | `keyboard` | Space/Enter start and drop, Escape cancels, `step: 25` | `false` turns keyboard drags off. Escape still cancels any drag. |
 | `sensors` | `[pointerSensor, keyboardSensor]` | What turns input into drags. See [sensors-actions](sensors-actions.md). |
 | `haptics` | short vibration on touch drag start | `false` turns it off. `{ start, enter, drop, refuse }` take `true`, ms, or a pattern. Only touch drags vibrate, and iOS Safari can't vibrate. |

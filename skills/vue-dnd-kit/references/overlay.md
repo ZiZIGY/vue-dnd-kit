@@ -25,7 +25,7 @@ colors, table cell widths…) inlined. Ids and `data-dnd-*` marks are stripped, 
 (Vuetify, Quasar, PrimeVue, Naive UI) are left out.
 
 - Mark parts that shouldn't be copied with **`data-dnd-no-clone`** (a tooltip, a menu button, a badge).
-- The clone shows the element as it is: no background is guessed. A row without one of its own (the list paints it: `<li>` in a white `<ul>`, `v-list-item`, table rows) gives a see-through clone. Give it the list's background with CSS (the overlay lives in `<body>`, so not in a scoped style, or use `:global()`):
+- The clone shows the element as it is: no background is guessed. A row without one of its own (the list paints it: `<li>` in a white `<ul>`, `v-list-item`, table rows) gives a see-through clone. Give it the list's background with CSS; a scoped style works too, since the clone keeps the component's `data-v-*` attribute:
 
   ```css
   [data-dnd-overlay] .row { background: var(--surface); }

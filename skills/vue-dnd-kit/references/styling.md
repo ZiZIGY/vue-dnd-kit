@@ -60,8 +60,9 @@ html[data-dnd-dragging] .drag-hint { display: block; }
 ## Refused targets
 
 `over.accepted` (from `useDnD()`, or `accepted` in overlay props) is `false` over a
-target that refuses the drag. Use it to tint the overlay red. Droppables only report
-`isOver` while they accept the drag.
+target that refuses the drag. Use it to tint the overlay red. A droppable's `isOver` is
+true over it whether it accepts or not: `isOver && !isAccepting` is a refusal (while a
+drag runs).
 
 ## Cursor
 

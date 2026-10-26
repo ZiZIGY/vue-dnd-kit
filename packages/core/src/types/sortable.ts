@@ -28,8 +28,9 @@ export type SortablePlaceholder = 'item' | 'indicator';
  * - `'gaps'`: they stay in place until the drop;
  * - `'stack'`: they collapse into the overlay.
  *
- * The default overlay shows every dragged item in a column along the list (`'group'`,
- * `'gaps'`; a row in horizontal lists and grids), or the active one with a count (`'stack'`).
+ * The default overlay shows the dragged items in a column along the list (`'group'`,
+ * `'gaps'`; a row in horizontal lists, a pile behind the active one in grids), or the active
+ * one with a count (`'stack'`).
  */
 export type MultipleMode = 'group' | 'gaps' | 'stack';
 export type DropOutside = 'placeholder' | 'cancel' | 'remove';
