@@ -32,14 +32,14 @@
     (tm(key) as Record<T, unknown>[]).map((item) => Object.fromEntries(fields.map((field) => [field, rt(item[field] as never)])) as Record<T, string>);
 
   const SHOWCASES = [
-    { key: 'drop', example: 'drop-zones', focus: 'Folder.vue', height: '40rem' },
-    { key: 'lists', example: 'lists', focus: 'Playlist.vue', height: '34rem' },
-    { key: 'kanban', example: 'kanban', focus: 'Column.vue', height: '30rem' },
-    { key: 'tree', example: 'tree', focus: 'FileTree.vue', height: '34rem' },
-    { key: 'multi', example: 'multi-drag', focus: 'Gallery.vue', height: '30rem', bleed: true },
-    { key: 'constraints', example: 'constraints', focus: 'Board.vue', height: '32rem' },
+    { key: 'drop', example: 'drop-zones', focus: 'Folder.vue', height: '40rem', guide: 'drag-and-drop' },
+    { key: 'lists', example: 'lists', focus: 'Playlist.vue', height: '34rem', guide: 'sortable-lists' },
+    { key: 'kanban', example: 'kanban', focus: 'Column.vue', height: '30rem', guide: 'shared-lists' },
+    { key: 'tree', example: 'tree', focus: 'FileTree.vue', height: '34rem', guide: 'trees' },
+    { key: 'multi', example: 'multi-drag', focus: 'Gallery.vue', height: '30rem', bleed: true, guide: 'multi-drag' },
+    { key: 'constraints', example: 'constraints', focus: 'Board.vue', height: '32rem', guide: 'constraints' },
   ];
-  const showcases = computed(() => SHOWCASES.map((showcase) => ({ ...showcase, docs: docs('getting-started/quick-start') })));
+  const showcases = computed(() => SHOWCASES.map((showcase) => ({ ...showcase, docs: docs(`guides/${showcase.guide}`) })));
 
   // The hero's title, word by word: each one comes in a little after the one before.
   const titleWords = computed(() => {
@@ -360,7 +360,7 @@
         <NuxtLink
           v-for="(card, at) in ['guide', 'examples']"
           :key="card"
-          :to="at ? docs('getting-started/quick-start') : docs('getting-started/introduction')"
+          :to="at ? docs('examples') : docs('getting-started/introduction')"
           class="group relative flex min-h-72 flex-col justify-between overflow-hidden px-(--gutter) py-10 transition-colors lg:min-h-80 lg:py-12"
           :class="at ? 'border-default hover:bg-muted max-md:border-t md:border-s' : 'bg-(--color-accent) text-(--color-on-accent) hover:bg-(--color-accent-strong)'"
         >

@@ -38,9 +38,11 @@
     description: () => page.value.description,
   });
 
-  /** The section the page sits in, for the breadcrumb. */
+  /** The section the page sits in (or opens: its index page), for the breadcrumb. */
   const section = computed(() =>
-    docsNavigation(navigation?.value, prefix.value).find((item) => path.value.startsWith(`${item.path}/`))?.title,
+    docsNavigation(navigation?.value, prefix.value).find(
+      (item) => path.value === item.path || path.value.startsWith(`${item.path}/`),
+    )?.title,
   );
 
   // The page as Markdown (the static build writes `<page>.md`): for pasting into an AI chat.
@@ -174,7 +176,7 @@
           color="primary"
           :ui="{
             root: 'static bg-transparent backdrop-blur-none p-0 border-0',
-            container: 'border-0 p-0 pt-0',
+            container: 'border-0 p-0 lg:py-0',
             top: 'hidden',
             title: 'label text-[11px] text-highlighted mb-3',
             link: 'text-[13px] text-muted hover:text-highlighted data-[active=true]:text-(--ui-primary)',

@@ -9,7 +9,7 @@
 <template>
   <div class="frame lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
     <aside class="hidden border-e border-default lg:block">
-      <div class="sticky top-(--ui-header-height) max-h-[calc(100dvh-var(--ui-header-height))] overflow-y-auto px-6 py-10">
+      <div class="sticky top-(--ui-header-height) max-h-[calc(100dvh-var(--ui-header-height))] overflow-y-auto px-6 pt-16 pb-10">
         <UContentNavigation
           :navigation="items"
           :collapsible="false"

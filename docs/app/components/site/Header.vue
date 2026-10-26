@@ -3,9 +3,15 @@
   const localePath = useLocalePath();
   const route = useRoute();
 
+  const inSection = (section: string) => route.path.includes(`/docs/${section}`);
   const links = computed(() => [
-    { label: t('nav.docs'), to: localePath('/docs/getting-started/introduction'), active: route.path.includes('/docs/') },
-    { label: t('nav.examples'), to: localePath('/docs/getting-started/quick-start'), active: false },
+    {
+      label: t('nav.docs'),
+      to: localePath('/docs/getting-started/introduction'),
+      active: route.path.includes('/docs/') && !inSection('api') && !inSection('examples'),
+    },
+    { label: t('nav.api'), to: localePath('/docs/api/dnd-provider'), active: inSection('api') },
+    { label: t('nav.examples'), to: localePath('/docs/examples'), active: inSection('examples') },
     { label: 'GitHub', to: 'https://github.com/ZiZIGY/vue-dnd-kit', active: false, external: true },
   ]);
 
