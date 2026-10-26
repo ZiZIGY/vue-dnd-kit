@@ -196,6 +196,8 @@ export function createFrames(): Frames {
       let pointer: MapFrame['pointer'] = null;
       let overlay: Rect | null = null;
       const refresh = !dragging;
+      /** Zones past the most drawn aren't copied at all. */
+      const full = () => zones.length >= MAX_ZONES;
 
       for (const provider of providers) {
         const snapshot = snapshots.get(provider)!;
@@ -221,7 +223,7 @@ export function createFrames(): Frames {
 
         const lists = snapshot.groups.flatMap((group) => group.lists);
         for (const list of lists) {
-          if (!list.element?.isConnected) continue;
+          if (full() || !list.element?.isConnected) continue;
           const order = new Map((list.draft ?? list.keys).map((key, index) => [key, index]));
           const own = snapshot.draggables
             .filter((entry) => entry.list === list.id)
@@ -243,7 +245,7 @@ export function createFrames(): Frames {
         for (const droppable of snapshot.droppables) {
           const element = droppable.element;
           // Drop targets inside a list (into an item) show in the list's copy.
-          if (droppable.sortable || !element?.isConnected || listElements.some((list) => list.contains(element))) continue;
+          if (full() || droppable.sortable || !element?.isConnected || listElements.some((list) => list.contains(element))) continue;
           const inside = free.filter((entry) => element.contains(entry.element));
           zones.push({
             provider: provider.id,
@@ -258,9 +260,9 @@ export function createFrames(): Frames {
           });
         }
         // Plain draggables outside every zone: one zone around them all.
-        const loose = free.filter((entry) => !placed.has(entry.id));
-        if (loose.length) {
-          const frames = items(loose);
+        const loose = full() ? [] : free.filter((entry) => !placed.has(entry.id));
+        const frames = items(loose);
+        if (frames.length) {
           const left = Math.min(...frames.map((entry) => entry.rect.x));
           const top = Math.min(...frames.map((entry) => entry.rect.y));
           const right = Math.max(...frames.map((entry) => entry.rect.x + entry.rect.w));
@@ -283,7 +285,7 @@ export function createFrames(): Frames {
           for (const group of snapshot.groups) indicator ??= indicatorOf(provider, snapshot, group);
         }
       }
-      return { frame: { zones: zones.slice(0, MAX_ZONES), pointer, overlay, indicator }, copies: unsent() };
+      return { frame: { zones, pointer, overlay, indicator }, copies: unsent() };
     },
 
     overlay(snapshot) {
@@ -297,7 +299,7 @@ export function createFrames(): Frames {
       const sheets = [...document.styleSheets];
       const rules = (sheet: CSSStyleSheet) => {
         try {
-          return [...sheet.cssRules];
+          return sheet.cssRules;
         } catch {
           // Another origin's sheet: the tab imports it.
           return null;
@@ -312,7 +314,7 @@ export function createFrames(): Frames {
       const text = sheets
         .map((sheet) => {
           const list = rules(sheet);
-          if (list) return list.map((rule) => rule.cssText).join('\n');
+          if (list) return Array.from(list, (rule) => rule.cssText).join('\n');
           return sheet.href ? `@import url("${sheet.href}");` : '';
         })
         .join('\n');

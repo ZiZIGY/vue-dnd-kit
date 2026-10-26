@@ -125,9 +125,13 @@ const receive = (message: PageMessage) => {
       store.detail = message.detail;
       store.ready = true;
       break;
-    case 'frame':
+    case 'frame': {
       frame.value = message.frame;
+      // The page forgets the copies a frame doesn't show (it makes them again if needed): so does the tab.
+      const shown = new Set(message.frame.zones.flatMap((zone) => [zone.shell, ...zone.items.map((item) => item.copy)]));
+      for (const id of copies.keys()) if (!shown.has(id)) copies.delete(id);
       break;
+    }
     case 'copies':
       for (const [id, html] of message.copies) copies.set(id, html);
       copiesVersion.value++;
