@@ -30,6 +30,11 @@ export interface LayoutAnimationContext {
    * it set, at once: the layout is measured right after.
    */
   signal: AbortSignal;
+  /**
+   * `prefers-reduced-motion: reduce` is set. The library's own animations don't run then;
+   * functions of yours always do, and decide with this (skip, or keep a fade).
+   */
+  reducedMotion: boolean;
 }
 
 /**
@@ -62,6 +67,11 @@ export interface DropAnimationContext {
   reason: 'drop' | 'cancel';
   active: Active;
   options: Required<AnimationOptions>;
+  /**
+   * `prefers-reduced-motion: reduce` is set. The library's own animations don't run then;
+   * functions of yours always do, and decide with this (skip, or keep a fade).
+   */
+  reducedMotion: boolean;
 }
 
 export type DropAnimation =
@@ -79,6 +89,11 @@ export interface EnterAnimationContext {
   /** Where it appeared (layout rect). */
   to: Rect;
   options: Required<AnimationOptions>;
+  /**
+   * `prefers-reduced-motion: reduce` is set. The library's own animations don't run then;
+   * functions of yours always do, and decide with this (skip, or keep a fade).
+   */
+  reducedMotion: boolean;
 }
 
 /** An item that left a list with `animate` on: removed, or hidden (a filter, a collapsed tree node). */
@@ -93,6 +108,11 @@ export interface LeaveAnimationContext {
   /** Where the item was. */
   from: Rect;
   options: Required<AnimationOptions>;
+  /**
+   * `prefers-reduced-motion: reduce` is set. The library's own animations don't run then;
+   * functions of yours always do, and decide with this (skip, or keep a fade).
+   */
+  reducedMotion: boolean;
 }
 
 /** `true`, options, `false` (the item just appears), or a function that animates it in. */
@@ -128,8 +148,9 @@ export interface AutoAnimationOptions extends AnimationOptions {
  * Animates changes of a list's (or tree's) items that no drag made: items added, removed,
  * moved (a sort, a shuffle, a move between lists of one group) or filtered. Off by default
  * (`false`); `true` animates moves, entering and leaving items with the default timing.
- * Drags keep their own animations (`animation`, `dropAnimation`). Nothing runs while
- * `prefers-reduced-motion: reduce` is set, custom functions included, and only items near
- * the visible area animate (unmounted rows of a virtual list are skipped).
+ * Drags keep their own animations (`animation`, `dropAnimation`). With
+ * `prefers-reduced-motion: reduce` the default animations don't run; functions of yours
+ * still do (with `reducedMotion: true`). Only items near the visible area animate
+ * (unmounted rows of a virtual list are skipped).
  */
 export type AutoAnimation = boolean | AutoAnimationOptions;

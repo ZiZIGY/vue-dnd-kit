@@ -306,18 +306,31 @@ describe('animate: changes no drag made', () => {
     expect(on('a2')).toHaveLength(1);
   });
 
-  it('reduced motion turns it off, custom functions included', async () => {
+  it('reduced motion turns the default animations off: nothing is even measured', async () => {
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('reduce') }));
-    const move = vi.fn();
-    const container = mount({ a: { options: { animate: { move } } } });
+    const container = mount({ a: { options: { animate: true } } });
     stubAnimate();
     rectReads = 0;
     data.a!.value = ids('a3', 'a2');
     await flush();
-    expect(move).not.toHaveBeenCalled();
     expect(played).toEqual([]);
     expect(ghost(container)).toBeNull();
     expect(rectReads).toBe(0);
+  });
+
+  it('with reduced motion, functions of yours still run and are told so', async () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('reduce') }));
+    const move = vi.fn();
+    const leave = vi.fn();
+    mount({ a: { options: { animate: { move, leave } } } });
+    stubAnimate();
+    data.a!.value = ids('a3', 'a2');
+    await flush();
+    expect(move).toHaveBeenCalled();
+    expect(move.mock.calls.every(([context]) => context.reducedMotion === true)).toBe(true);
+    expect(leave).toHaveBeenCalledWith(expect.objectContaining({ key: 'a1', reducedMotion: true }));
+    // The default enter would have been the library's own: nothing of it plays.
+    expect(played).toEqual([]);
   });
 
   it("the provider's `animate` is the default; a list's own wins; a ref turns it on and off", async () => {

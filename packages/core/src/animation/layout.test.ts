@@ -138,6 +138,17 @@ describe('flip', () => {
     expect(item.node.style.pointerEvents).toBe('');
   });
 
+  it('with reduced motion the default animation is skipped; a custom function runs and is told so', () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('reduce') }));
+    const plain = element([0, 100, 100, 40]);
+    run([entry(plain.node, [0, 60, 100, 40])], true);
+    expect(plain.node.animate).not.toHaveBeenCalled();
+    const contexts: LayoutAnimationContext[] = [];
+    const custom = element([0, 100, 100, 40]);
+    run([entry(custom.node, [0, 60, 100, 40])], (context) => void contexts.push(context));
+    expect(contexts).toEqual([expect.objectContaining({ reducedMotion: true })]);
+  });
+
   it('stops running animations when animations are turned off', () => {
     const item = element([0, 100, 100, 40]);
     run([entry(item.node, [0, 60, 100, 40])], true);

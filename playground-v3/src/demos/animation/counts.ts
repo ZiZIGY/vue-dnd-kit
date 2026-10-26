@@ -1,7 +1,7 @@
 /**
  * Instrumentation for e2e/animation-libs.spec.ts, kept out of the recipes: how many
- * animations each hook started (it returned something; with reduced motion the drag
- * hooks return nothing).
+ * animations each hook started (it returned something; with reduced motion the move and
+ * drop hooks return nothing, entrances and exits only fade).
  */
 
 import type {

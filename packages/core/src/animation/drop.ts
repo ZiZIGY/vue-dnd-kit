@@ -17,11 +17,11 @@ const INTO_SCALE = 0.25;
  */
 export const runDropAnimation = async (
   option: DropAnimation | undefined,
-  context: Omit<DropAnimationContext, 'options'>,
+  context: Omit<DropAnimationContext, 'options' | 'reducedMotion'>,
 ): Promise<void> => {
   const resolved = resolveAnimation(option, DEFAULT_DROP_ANIMATION);
   if (!resolved) return;
-  const full: DropAnimationContext = { ...context, options: resolved.options };
+  const full: DropAnimationContext = { ...context, options: resolved.options, reducedMotion: prefersReducedMotion() };
   if (resolved.custom) return settle(resolved.custom(full), resolved.options.duration + STALL_MARGIN);
   const { overlay, from, to, into } = context;
   if (!canAnimate(overlay)) return;

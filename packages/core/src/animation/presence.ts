@@ -45,15 +45,17 @@ const timing = ({ duration, easing }: AnimationOptions): AnimationOptions => ({
 });
 
 /**
- * `animate` per kind of change; `null` when it is off. Reduced motion turns it off
- * altogether, custom functions included: nothing is even measured then.
+ * `animate` per kind of change; `null` when it is off. Reduced motion turns off the
+ * default animations (functions of yours still run): with none of yours, nothing is even
+ * measured.
  */
 export const resolveAutoAnimation = (option: AutoAnimation | undefined): AutoAnimationParts | null => {
-  if (!option || prefersReducedMotion()) return null;
+  if (!option) return null;
   const parts = option === true ? {} : option;
   const defaults = { ...DEFAULT_LAYOUT_ANIMATION, ...timing(parts) };
+  const move = parts.move ?? true;
   const resolved: AutoAnimationParts = {
-    move: { option: parts.move ?? true, defaults },
+    move: { option: typeof move !== 'function' && prefersReducedMotion() ? false : move, defaults },
     enter: resolveAnimation(parts.enter, defaults),
     leave: resolveAnimation(parts.leave, defaults),
   };
@@ -63,7 +65,7 @@ export const resolveAutoAnimation = (option: AutoAnimation | undefined): AutoAni
 /** Plays the entrance of an item that appeared: by default a fade in, in its place. */
 export const enter = (part: Resolved<EnterAnimationContext>, key: Key, element: HTMLElement, to: Rect): void => {
   const { custom, options } = part;
-  if (custom) void custom({ key, element, to, options });
+  if (custom) void custom({ key, element, to, options, reducedMotion: prefersReducedMotion() });
   else if (canAnimate(element)) element.animate([{ opacity: 0 }, { opacity: 1 }], options);
 };
 
@@ -122,7 +124,7 @@ export const leave = (part: Resolved<LeaveAnimationContext>, items: Leaving[]): 
     ghost.style.setProperty('top', `${from.top - at.top}px`, 'important');
     const { custom, options } = part;
     const result = custom
-      ? custom({ key, element: ghost, from, options })
+      ? custom({ key, element: ghost, from, options, reducedMotion: prefersReducedMotion() })
       : canAnimate(ghost)
         ? ghost.animate(
             [

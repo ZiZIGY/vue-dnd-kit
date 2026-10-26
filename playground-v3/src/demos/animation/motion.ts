@@ -19,12 +19,12 @@ import type {
 
 const spring = { type: 'spring', duration: 0.45, bounce: 0.25 } as const;
 
-// Drag hooks run with reduced motion too, so they check it; `animate` doesn't run at all then.
-const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Every hook runs with reduced motion too (`reducedMotion: true`): movement is skipped
+// then, and items that appear or leave only fade.
 
 /** An item springs to its new place, while dragging and after a data change. */
-const move = ({ element, from, to, signal }: LayoutAnimationContext) => {
-  if (reduced()) return;
+const move = ({ element, from, to, signal, reducedMotion }: LayoutAnimationContext) => {
+  if (reducedMotion) return;
   const offset = `${from.left - to.left}px ${from.top - to.top}px`;
   const controls = animate(element, { translate: [offset, '0px 0px'] }, spring);
   // It moves again before landing: stop and clear the offset, the library measures right after.
@@ -36,8 +36,8 @@ const move = ({ element, from, to, signal }: LayoutAnimationContext) => {
 };
 
 /** The overlay lands on its slot: position and size, never `scale` (the content re-lays out). */
-const drop = ({ overlay, from, to }: DropAnimationContext) => {
-  if (reduced()) return;
+const drop = ({ overlay, from, to, reducedMotion }: DropAnimationContext) => {
+  if (reducedMotion) return;
   if (!to) return animate(overlay, { opacity: 0 }, { duration: 0.18 }).finished;
   return animate(
     overlay,
@@ -47,12 +47,14 @@ const drop = ({ overlay, from, to }: DropAnimationContext) => {
 };
 
 /** An item that appeared rises into place. */
-const enter = ({ element }: EnterAnimationContext) =>
-  animate(element, { opacity: [0, 1], translate: ['0px 12px', '0px 0px'] }, spring).finished;
+const enter = ({ element, reducedMotion }: EnterAnimationContext) =>
+  reducedMotion
+    ? animate(element, { opacity: [0, 1] }, { duration: 0.2 }).finished
+    : animate(element, { opacity: [0, 1], translate: ['0px 12px', '0px 0px'] }, spring).finished;
 
 /** The copy of an item that left drifts away; the library removes it once it ends. */
-const leave = ({ element }: LeaveAnimationContext) =>
-  animate(element, { opacity: 0, translate: '0px -12px' }, { duration: 0.2 }).finished;
+const leave = ({ element, reducedMotion }: LeaveAnimationContext) =>
+  animate(element, reducedMotion ? { opacity: 0 } : { opacity: 0, translate: '0px -12px' }, { duration: 0.2 }).finished;
 
 export const motionAnimations = {
   animation: move,

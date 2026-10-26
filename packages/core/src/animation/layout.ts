@@ -310,6 +310,7 @@ export const flip = (batches: FlipBatch[], reason: LayoutAnimationContext['reaso
     return resolved && { resolved, entries };
   });
   const measured = runs.map((run) => run?.entries.map((entry) => getLayoutRect(entry.element)));
+  const reducedMotion = prefersReducedMotion();
 
   runs.forEach((run, index) => {
     if (!run) return;
@@ -327,7 +328,16 @@ export const flip = (batches: FlipBatch[], reason: LayoutAnimationContext['reaso
       if (resolved.custom) {
         const abort = new AbortController();
         const { options } = resolved;
-        const result = resolved.custom({ key, element, from: first, to: last, options, reason, signal: abort.signal });
+        const result = resolved.custom({
+          key,
+          element,
+          from: first,
+          to: last,
+          options,
+          reason,
+          signal: abort.signal,
+          reducedMotion,
+        });
         trackCustom(element, result, abort, { to: last, crossing: passing });
         return;
       }

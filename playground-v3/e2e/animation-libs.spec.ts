@@ -25,6 +25,12 @@ const rendered = (page: Page, lib: Lib) =>
       .join(','),
   );
 
+/**
+ * Springs and tweens end on their own clock: under a full parallel run WebKit can take a
+ * while to finish them, so the polls below wait longer than the default 5s.
+ */
+const SETTLE = { timeout: 10_000 };
+
 /** No card is offset any more: by `translate` (moves, entrances) or `transform` (GSAP's `scale`). */
 const still = (page: Page, lib: Lib) =>
   expect
@@ -37,15 +43,19 @@ const still = (page: Page, lib: Lib) =>
           return transform.isIdentity && translate.every((value) => value === 0);
         }),
       ),
+      SETTLE,
     )
     .toBe(true);
 
 /** Every animation has ended: no card is offset or faded, and the copies of leaving ones are gone. */
 const settled = async (page: Page, lib: Lib) => {
-  await expect(list(page, lib).locator('[data-dnd-leaving]')).toHaveCount(0);
+  await expect(list(page, lib).locator('[data-dnd-leaving]')).toHaveCount(0, SETTLE);
   await still(page, lib);
   await expect
-    .poll(() => list(page, lib).evaluate((element) => [...element.children].every((child) => getComputedStyle(child).opacity === '1')))
+    .poll(
+      () => list(page, lib).evaluate((element) => [...element.children].every((child) => getComputedStyle(child).opacity === '1')),
+      SETTLE,
+    )
     .toBe(true);
 };
 
@@ -132,19 +142,21 @@ test.describe('animation libraries through the hooks (animation-libs)', () => {
     }
   });
 
-  test('with reduced motion nothing animates, and the results are the same', async ({ page }) => {
+  test('with reduced motion the hooks are told so: nothing moves, appearing and leaving only fade', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     for (const lib of LIBS) {
       await button(page, lib, 'reverse').click();
       await button(page, lib, 'add').click();
       await button(page, lib, 'remove').click();
       await showsOrder(page, lib, '5,4,3,2,1');
+      await settled(page, lib);
       await dragCard(page, lib, 5, 3);
       await showsOrder(page, lib, '4,3,5,2,1');
-      await expect(list(page, lib).locator('[data-dnd-leaving]')).toHaveCount(0);
-      for (const kind of ['drag', 'drop', 'move', 'enter', 'leave'] as const) {
-        await expect(count(page, lib, kind)).toHaveText('0');
-      }
+      await settled(page, lib);
+      // The recipes skip movement (they return nothing) and keep a fade for entrances and exits.
+      for (const kind of ['drag', 'drop', 'move'] as const) await expect(count(page, lib, kind)).toHaveText('0');
+      await expect(count(page, lib, 'enter')).toHaveText('1');
+      await expect(count(page, lib, 'leave')).toHaveText('1');
     }
   });
 });
