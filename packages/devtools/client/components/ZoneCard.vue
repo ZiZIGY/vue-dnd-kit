@@ -7,8 +7,8 @@
    */
   import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
   import type { Key, MapFrame, Rect, ZoneFrame } from '../../src/protocol';
-  import { copies, copiesVersion } from '../lib/connection';
-  import { createRoot, fromHtml, release } from '../lib/shadow';
+  import { copies, copiesVersion } from '../utils/connection';
+  import { createRoot, fromHtml, release } from '../utils/shadow';
 
   const props = defineProps<{ zone: ZoneFrame; frame: MapFrame; chosen: Key | null }>();
   const emit = defineEmits<{ pick: [id: Key]; open: [id: Key] }>();

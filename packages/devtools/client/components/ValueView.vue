@@ -2,7 +2,7 @@
   /** A value of the page (`Preview`), expandable when it is an object, an array, a map or a set. */
   import { computed, ref } from 'vue';
   import { TAG, type Preview } from '../../src/protocol';
-  import { isTagged, short } from '../lib/format';
+  import { isTagged, short } from '../utils/format';
 
   defineOptions({ name: 'ValueView' });
   const props = defineProps<{ value: Preview; depth?: number }>();

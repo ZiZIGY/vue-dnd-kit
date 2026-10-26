@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  /** The providers' registry as a tree (`lib/tree.ts`), filtered by label; a node chosen shows in details. */
+  /** The providers' registry as a tree (`utils/tree.ts`), filtered by label; a node chosen shows in details. */
   import { computed, reactive, ref } from 'vue';
-  import { select, send, store } from '../lib/connection';
-  import { buildTree, sameNode, type TreeNode } from '../lib/tree';
+  import { select, send, store } from '../utils/connection';
+  import { buildTree, sameNode, type TreeNode } from '../utils/tree';
 
   const filter = ref('');
   /** Nodes folded by the user (all open by default). */

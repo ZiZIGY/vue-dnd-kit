@@ -5,8 +5,8 @@
    */
   import { computed } from 'vue';
   import type { OptionView, OverrideView, ProviderView, TargetRef } from '../../src/protocol';
-  import { send, store } from '../lib/connection';
-  import { short } from '../lib/format';
+  import { send, store } from '../utils/connection';
+  import { short } from '../utils/format';
   import OptionField from './OptionField.vue';
 
   const provider = computed<ProviderView | null>(

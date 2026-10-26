@@ -1,4 +1,4 @@
-/* The tab's looks: compact, in the DevTools' colors (light and dark, `lib/theme.ts`). */
+/* The tab's looks: compact, in the DevTools' colors (light and dark, `utils/theme.ts`). */
 
 :root {
   --bg: #ffffff;

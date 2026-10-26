@@ -5,9 +5,9 @@
    * tells what the drag is doing and which page is watched.
    */
   import { computed, ref } from 'vue';
-  import { choose, connect, log, send, store } from './lib/connection';
-  import { running, togglePick, useShortcuts } from './lib/drive';
-  import { choice, cycleTheme, useTheme } from './lib/theme';
+  import { choose, connect, log, send, store } from './utils/connection';
+  import { running, togglePick, useShortcuts } from './utils/drive';
+  import { choice, cycleTheme, useTheme } from './utils/theme';
   import ControlPanel from './components/ControlPanel.vue';
   import EventLog from './components/EventLog.vue';
   import MiniMap from './components/MiniMap.vue';

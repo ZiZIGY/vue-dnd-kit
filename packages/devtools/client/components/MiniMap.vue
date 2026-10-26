@@ -6,7 +6,7 @@
    */
   import { computed } from 'vue';
   import type { Key, NodeRef } from '../../src/protocol';
-  import { frame, select, send, store } from '../lib/connection';
+  import { frame, select, send, store } from '../utils/connection';
   import ZoneCard from './ZoneCard.vue';
 
   const zones = computed(() => {

@@ -7,8 +7,8 @@
    */
   import { computed } from 'vue';
   import type { MoveTo } from '../../src/protocol';
-  import { send, store } from '../lib/connection';
-  import { cancel, chosen, drop, grab, running, togglePick, vector } from '../lib/drive';
+  import { send, store } from '../utils/connection';
+  import { cancel, chosen, drop, grab, running, togglePick, vector } from '../utils/drive';
   import DragPreview from './DragPreview.vue';
   import Joystick from './Joystick.vue';
 

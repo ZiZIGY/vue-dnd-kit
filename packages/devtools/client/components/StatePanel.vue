@@ -1,8 +1,8 @@
 <script setup lang="ts">
   /** What the bridge knows about the node shown, in sections (the former inspector's state). */
   import { computed } from 'vue';
-  import { send, store } from '../lib/connection';
-  import { sameNode } from '../lib/tree';
+  import { send, store } from '../utils/connection';
+  import { sameNode } from '../utils/tree';
   import ValueView from './ValueView.vue';
 
   const detail = computed(() => (store.detail && sameNode(store.detail.node, store.selected) ? store.detail : null));

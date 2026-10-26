@@ -4,8 +4,8 @@
    * a drag's events banded together. Announcements can be hidden; an entry opens on its data.
    */
   import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
-  import { log, send } from '../lib/connection';
-  import { clock } from '../lib/format';
+  import { log, send } from '../utils/connection';
+  import { clock } from '../utils/format';
   import ValueView from './ValueView.vue';
 
   const filter = ref('');

@@ -1,8 +1,8 @@
 <script setup lang="ts">
   /** What the overlay shows during a drag, copied from the page and scaled to fit (never enlarged). */
   import { computed, onBeforeUnmount, onMounted, useTemplateRef, watch } from 'vue';
-  import { preview } from '../lib/connection';
-  import { createRoot, fromHtml, release } from '../lib/shadow';
+  import { preview } from '../utils/connection';
+  import { createRoot, fromHtml, release } from '../utils/shadow';
 
   const props = withDefaults(defineProps<{ width?: number; height?: number }>(), { width: 260, height: 160 });
 

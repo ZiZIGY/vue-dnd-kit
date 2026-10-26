@@ -7,8 +7,8 @@
    */
   import { computed, ref, watch } from 'vue';
   import { TAG, type Literal, type OptionView, type Preview, type TargetRef } from '../../src/protocol';
-  import { send } from '../lib/connection';
-  import { isTagged, same, short, toJson } from '../lib/format';
+  import { send } from '../utils/connection';
+  import { isTagged, same, short, toJson } from '../utils/format';
 
   const props = defineProps<{ option: OptionView; target: TargetRef; provider: string }>();
 
