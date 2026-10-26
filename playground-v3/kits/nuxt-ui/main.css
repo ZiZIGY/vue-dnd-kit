@@ -6,3 +6,8 @@
 @import '@nuxt/ui';
 
 @source './';
+
+/* The overlay is a copy of the row, shown outside the table: it gets the page's background. */
+[data-dnd-overlay] tr {
+  background: var(--ui-bg);
+}

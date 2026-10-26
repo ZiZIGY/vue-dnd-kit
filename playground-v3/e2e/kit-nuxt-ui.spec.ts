@@ -133,7 +133,8 @@ test.describe('Nuxt UI: sortable lists', () => {
     await drag(page, ada.getByTestId('row-handle'), await at(rows.filter({ hasText: 'Grace Hopper' }), 0.5, 0.8), {
       release: false,
     });
-    // The row is cloned into a table of its own, with the background behind the row.
+    // The row is cloned into a table of its own; the demo's [data-dnd-overlay] CSS paints it
+    // with the page background (the library doesn't guess backgrounds).
     const clone = overlayClone(page);
     await expect(clone).toHaveJSProperty('tagName', 'TABLE');
     const row = await look(clone.locator('tr'));

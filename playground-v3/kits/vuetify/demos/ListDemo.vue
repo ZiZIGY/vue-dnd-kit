@@ -27,3 +27,14 @@
     </div>
   </DnDProvider>
 </template>
+
+<style>
+  /*
+   * The overlay is a copy of the row, shown outside <v-list> (or the table): a transparent
+   * row gets the surface back (the theme's variables travel with the copy).
+   */
+  [data-dnd-overlay] .v-list-item,
+  [data-dnd-overlay] tr {
+    background: rgb(var(--v-theme-surface));
+  }
+</style>

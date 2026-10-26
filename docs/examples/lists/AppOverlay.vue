@@ -3,8 +3,7 @@ import { computed } from 'vue';
 import type { DnDStatus, DragItem } from '@vue-dnd-kit/core';
 import AppIcon from './AppIcon.vue';
 
-// The app in hand: only its icon, lifted. The name stays behind, and nothing is drawn
-// around the icon (a clone of the tile would get the grid's background).
+// The app in hand: only its icon, lifted; the name stays behind.
 // The overlay's props it needs (see `OverlayProps`): the dragged items and the status.
 const props = defineProps<{ items: DragItem[]; status: DnDStatus }>();
 const app = computed(() => props.items[0]?.item as { id: string } | undefined);

@@ -80,9 +80,10 @@ test.describe('Vuetify: sortable lists', () => {
     await expect(chip).toHaveAccessibleDescription(/^#vue To pick up a draggable item/);
   });
 
-  test('the overlay clone keeps the kit styling, with the background of its list', async ({ page }) => {
+  test('the overlay clone keeps the kit styling; [data-dnd-overlay] CSS gives it the list background', async ({ page }) => {
     const source = await look(task(page, 't1'));
-    // <v-list-item> is transparent: <v-list> paints its background.
+    // <v-list-item> is transparent: <v-list> paints its background, and the demo's CSS
+    // paints it on the copy (the library doesn't guess backgrounds).
     const list = await look(tasks(page));
     await drag(page, handle(page, 't1'), await at(task(page, 't2')), { release: false });
     await expect(overlayClone(page)).toBeVisible();
@@ -144,7 +145,8 @@ test.describe('Vuetify: sortable lists', () => {
     await drag(page, byId(table, 'p1').getByTestId('row-handle'), await at(byId(table, 'p3'), 0.5, 0.8), {
       release: false,
     });
-    // The row is cloned into a table of its own, with the table's background.
+    // The row is cloned into a table of its own; the demo's [data-dnd-overlay] CSS gives it
+    // the table's background.
     const clone = overlayClone(page);
     await expect(clone).toHaveJSProperty('tagName', 'TABLE');
     expect((await look(clone.locator('tr'))).background).toBe((await look(table)).background);

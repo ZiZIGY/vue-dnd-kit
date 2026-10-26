@@ -42,6 +42,8 @@ const cover = computed(() => `linear-gradient(135deg, hsl(${props.track.hue} 85%
   gap: 12px;
   padding: 8px 10px;
   border-radius: 10px;
+  /* Its own background, the playlist's: the overlay, a copy of the row, isn't see-through. */
+  background: color-mix(in srgb, currentColor 3%, Canvas);
   user-select: none;
   transition: background 0.2s;
 }

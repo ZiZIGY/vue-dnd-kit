@@ -39,6 +39,8 @@ makeSortableItem(el, { id: () => props.node.key });
   height: 30px;
   padding: 0 10px 0 var(--pad);
   border-radius: 6px;
+  /* Its own background, the explorer's: the overlay, a copy of the row, isn't see-through. */
+  background: color-mix(in srgb, currentColor 3%, Canvas);
   font: 13px/1 ui-monospace, Menlo, Consolas, monospace;
   cursor: grab;
   user-select: none;

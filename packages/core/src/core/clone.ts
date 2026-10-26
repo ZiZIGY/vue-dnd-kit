@@ -3,7 +3,6 @@
  * before the placeholder re-renders, and detached from page-level side effects.
  */
 
-import { parentOf } from '../utils/dom';
 import { snapshotStyles } from './snapshot';
 
 let radioGroup = 0;
@@ -57,27 +56,12 @@ const wrapTableRow = (row: HTMLElement, source: HTMLElement): HTMLElement => {
   return table;
 };
 
-/** `transparent`, `rgba(…, 0)` and the `… / 0)` forms (oklch, color()) of a zero alpha. */
-export const isTransparent = (color: string): boolean =>
-  !color || color === 'transparent' || /^rgba\(.*,\s*0(?:\.0*)?\)$|\/\s*0(?:\.0*)?\)$/.test(color);
-
-/** Background painted behind `element`: the first ancestor (flat tree) that has one. */
-const findBackdrop = (element: Element): string | null => {
-  for (let parent = parentOf(element); parent; parent = parentOf(parent)) {
-    const color = getComputedStyle(parent).backgroundColor;
-    if (!isTransparent(color)) return color;
-  }
-  return null;
-};
-
+/**
+ * Where the clone will be shown (the overlay's parent): the styles it loses there are
+ * inlined. Backgrounds aren't guessed: a source without one of its own (a list row the
+ * list paints) gives a transparent clone, styled with `[data-dnd-overlay]` in CSS.
+ */
 export interface CloneOptions {
-  /**
-   * A source without a background of its own gets the one painted behind it. List
-   * items and table rows (UI kits' in particular) take their color from the list or
-   * table; a transparent clone floating over other items would let them show through.
-   */
-  opaque?: boolean;
-  /** Where the clone will be shown (the overlay's parent): the styles it loses there are inlined. */
   container?: Element | null;
 }
 
@@ -127,11 +111,9 @@ export const copyElement = (source: HTMLElement): HTMLElement => {
  * styles it would lose outside its list inlined (`snapshot.ts`). A table row comes in a
  * table of its own.
  */
-export const clonePreview = (source: HTMLElement, { opaque = false, container }: CloneOptions = {}): HTMLElement => {
+export const clonePreview = (source: HTMLElement, { container }: CloneOptions = {}): HTMLElement => {
   const clone = copyElement(source);
   const computed = getComputedStyle(source);
-  const hasImage = !!computed.backgroundImage && computed.backgroundImage !== 'none';
-  const backdrop = opaque && !hasImage && isTransparent(computed.backgroundColor) ? findBackdrop(source) : null;
   for (let index = 0; index < computed.length; index++) {
     const property = computed.item(index);
     if (property.startsWith('--')) {
@@ -155,7 +137,6 @@ export const clonePreview = (source: HTMLElement, { opaque = false, container }:
   // Laid out as the overlay will show it: the root's styles above are in place.
   snapshotStyles(source, clone, preview, container ?? document.body);
   removeTransient(clone);
-  if (backdrop) clone.style.setProperty('background-color', backdrop);
   // A positioned source (a piece on a board) would keep its offsets inside the overlay.
   // `relative` keeps it a containing block for its own positioned children.
   if (computed.position !== 'static') Object.assign(clone.style, { position: 'relative', inset: 'auto' });

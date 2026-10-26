@@ -65,12 +65,8 @@ export function createOverlay(ctx: ManagerContext) {
     const element = entry?.getElement();
     if (!entry || !element?.isConnected) return null;
     const to = ctx.props.overlayTo;
-    // Sortable items (they have a container) stay opaque: their background is often the list's.
     return {
-      element: clonePreview(element, {
-        opaque: !!entry.getContainer,
-        container: typeof to === 'string' ? document.querySelector(to) : to,
-      }),
+      element: clonePreview(element, { container: typeof to === 'string' ? document.querySelector(to) : to }),
       rect: getRect(element),
     };
   };

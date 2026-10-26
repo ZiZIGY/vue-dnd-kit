@@ -37,7 +37,7 @@ export const collapseIntoOverlay = (
     .map((element) => ({ element, rect: getRect(element) }))
     .filter(({ rect }) => rect.width > 0 && intersects(rect, viewport))
     .slice(0, MAX_GHOSTS)
-    .map(({ element, rect }) => ({ ghost: clonePreview(element, { opaque: true }), rect }));
+    .map(({ element, rect }) => ({ ghost: clonePreview(element), rect }));
 
   for (const { ghost, rect } of ghosts) {
     if (!canAnimate(ghost)) continue;
