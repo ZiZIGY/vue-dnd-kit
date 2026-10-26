@@ -9,6 +9,32 @@ const schema = async (page: Page) => JSON.parse((await page.getByTestId('form-js
   fields: Array<{ type: string; id: string; label?: string; title?: string; fields?: Array<{ id: string }> }>;
 };
 const ghost = (page: Page) => page.locator('[data-dnd-overlay] [data-testid="form-ghost"]');
+
+type LandWindow = Window & { __landing?: Record<string, string> | null };
+
+/** Call before releasing: records the last keyframe of the overlay's drop animation. */
+const watchLanding = (page: Page) =>
+  page.evaluate(() => {
+    const win = window as LandWindow;
+    win.__landing = null;
+    const animate = Element.prototype.animate;
+    Element.prototype.animate = function (this: Element, keyframes, options) {
+      if (this.hasAttribute('data-dnd-overlay') && Array.isArray(keyframes)) {
+        win.__landing = keyframes.at(-1) as Record<string, string>;
+      }
+      return animate.call(this, keyframes, options);
+    };
+  });
+
+/** The overlay flew to where the field `id` ended up (within a pixel or two). */
+const expectLandedOn = async (page: Page, id: string) => {
+  const landing = await page.evaluate(() => (window as LandWindow).__landing);
+  expect(landing, 'the overlay flew to a slot').not.toBeNull();
+  const [x = 0, y = 0] = [...landing!.transform!.matchAll(/-?[\d.]+(?=px)/g)].map((match) => Number(match[0]));
+  const box = (await byId(page, id).boundingBox())!;
+  expect(Math.abs(x - box.x)).toBeLessThan(2);
+  expect(Math.abs(y - box.y)).toBeLessThan(2);
+};
 /** The type badge in a field's header: a spot that starts a drag (the label input doesn't). */
 const grip = (page: Page, id: string) => byId(page, id).locator(':scope > header .fb-kind');
 
@@ -38,6 +64,25 @@ test.describe('app: form builder', () => {
     await expect(byTestId(page, 'palette').locator('[data-id]')).toHaveCount(8);
     const { fields } = await schema(page);
     expect(fields[3]).toEqual({ type: 'email', id: 'f1', label: 'Email', required: false });
+  });
+
+  test('the overlay lands where the field ends up: into a section the form slides, and from the palette', async ({
+    page,
+  }) => {
+    // email leaves the form above the section: the section card slides up a row as the
+    // field lands in it. The overlay goes where the field settles, not where it starts.
+    await watchLanding(page);
+    await drag(page, grip(page, 'email'), await at(byId(page, 'city'), 0.5, 0.8));
+    await settled(page);
+    await expect(outline(page)).toHaveText('name,address(street,city,email),message');
+    await expectLandedOn(page, 'email');
+
+    // A palette field (a copy): the overlay lands on the new field, not back on the palette.
+    await watchLanding(page);
+    await drag(page, byId(page, 'tpl-email'), await at(byId(page, 'message'), 0.5, 0.25));
+    await settled(page);
+    await expect(outline(page)).toHaveText('name,address(street,city,email),f1,message');
+    await expectLandedOn(page, 'f1');
   });
 
   test('fields move into a section and back out', async ({ page }) => {

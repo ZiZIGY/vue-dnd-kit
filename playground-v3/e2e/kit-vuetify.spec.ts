@@ -189,6 +189,23 @@ test.describe('Vuetify: sortable lists', () => {
     await page.keyboard.press('Escape');
     await expect(list).toBeHidden();
   });
+
+  test("the press's ripple doesn't freeze: neither in the item nor in the overlay", async ({ page }) => {
+    await page.getByTestId('open-modal').click();
+    const list = page.getByTestId('modal-list');
+    await expect(list).toBeVisible();
+    // The dialog scales in: press where the item is once it stands still.
+    await page.waitForFunction(() => document.getAnimations().every((animation) => animation.playState !== 'running'));
+    const item = byId(list, 'f1');
+    // The press starts Vuetify's ripple; the drag then holds the pointer on <body>, so the
+    // item hears no mouseup: the library tells it the pointer left, and the clone leaves
+    // the ripple out.
+    await grab(page, item);
+    await expect(page.locator('[data-dnd-overlay] .v-ripple__container')).toHaveCount(0);
+    await expect(item.locator('.v-ripple__container')).toHaveCount(0, { timeout: 2000 });
+    await page.mouse.up();
+    await waitForIdle(page);
+  });
 });
 
 test.describe('Vuetify: kanban', () => {

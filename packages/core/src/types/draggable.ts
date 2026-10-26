@@ -41,7 +41,8 @@ export interface DraggableOptions<TData = unknown> {
    * `#overlay` slot or as a clone of the element. A component: the overlay renders it
    * with `OverlayProps`, before the slot. `false`: no overlay, the element itself moves
    * via the returned `transform`. A value or a ref (a function is a functional
-   * component), read when the drag starts.
+   * component), read when the drag starts. The clone leaves out the press effects of UI
+   * kits (ripples) and any element inside marked `data-dnd-no-clone`.
    */
   overlay?: MaybeReadonlyRef<boolean | Component | undefined>;
   /**

@@ -82,6 +82,26 @@ export interface CloneOptions {
 }
 
 /**
+ * Effects UI kits add inside an element while it's pressed: Vuetify's ripple, Quasar's,
+ * PrimeVue's ink, Naive UI's wave. A copy would freeze them mid-animation.
+ */
+const PRESS_EFFECTS = '.v-ripple__container, .q-ripple, .p-ink, .n-base-wave';
+
+/** Nodes of copies marked `data-dnd-no-clone` in their source (the mark itself is stripped). */
+const leftOut = new WeakSet<Element>();
+
+/**
+ * Takes out of a copy what shouldn't travel with it: press effects of UI kits and elements
+ * marked `data-dnd-no-clone`. After the style snapshot, which pairs the copy's elements
+ * with the source's by position.
+ */
+export const removeTransient = (copy: Element): void => {
+  for (const element of copy.querySelectorAll('*')) {
+    if (leftOut.has(element) || element.matches(PRESS_EFFECTS)) element.remove();
+  }
+};
+
+/**
  * A deep copy of `source` that stays out of the page's way: no ids, no `data-dnd-*` marks,
  * hidden from assistive tech, with what `cloneNode` leaves out (form state, canvas pixels).
  * `source` may be detached (an item Vue just removed).
@@ -90,6 +110,7 @@ export const copyElement = (source: HTMLElement): HTMLElement => {
   const clone = source.cloneNode(true) as HTMLElement;
   for (const element of [clone, ...clone.querySelectorAll('*')]) {
     element.removeAttribute('id');
+    if (element.hasAttribute('data-dnd-no-clone')) leftOut.add(element);
     for (const name of element.getAttributeNames()) {
       if (name.startsWith('data-dnd-')) element.removeAttribute(name);
     }
@@ -133,6 +154,7 @@ export const clonePreview = (source: HTMLElement, { opaque = false, container }:
   const preview = source.tagName === 'TR' ? wrapTableRow(clone, source) : clone;
   // Laid out as the overlay will show it: the root's styles above are in place.
   snapshotStyles(source, clone, preview, container ?? document.body);
+  removeTransient(clone);
   if (backdrop) clone.style.setProperty('background-color', backdrop);
   // A positioned source (a piece on a board) would keep its offsets inside the overlay.
   // `relative` keeps it a containing block for its own positioned children.

@@ -115,6 +115,7 @@ function createHost(manager: DnDManager): Host {
         constraint: resolveConstraint(options.activation, entry, manager.props.activation),
         touch: (event as Partial<PointerEvent> | undefined)?.pointerType === 'touch',
         sensor: owner.sensor,
+        pressed: typeof options.target === 'object' ? { target: options.target, item: element } : undefined,
         callbacks: options,
         onEnded: () => {
           forget(control);

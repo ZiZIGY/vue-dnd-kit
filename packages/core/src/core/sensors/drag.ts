@@ -22,6 +22,7 @@ import type {
 import type { DnDManager } from '../manager';
 import { devtoolsHook } from '../devtoolsHook';
 import { checkActivation } from './activation';
+import { leavePressed } from './leave';
 import { DIRECTIONS, arrowEvent, place, step } from './steps';
 
 export interface DragSetup {
@@ -35,6 +36,8 @@ export interface DragSetup {
   touch: boolean;
   /** The sensor that activated it (the devtools tell it); none for a drag started without one. */
   sensor?: Sensor;
+  /** The element the input pressed, inside the dragged `item` (a sensor that gave an element). */
+  pressed?: { target: Element; item: Element };
   callbacks: Pick<SensorActivation, 'onStart' | 'onEnd'>;
   /** The drag ended: whoever tracks it lets it go. */
   onEnded(): void;
@@ -127,8 +130,11 @@ export function createSensorDrag(setup: DragSetup): DragControl {
     } catch (error) {
       report(error);
     }
-    // Where the input went while the activation waited.
-    if (type === 'pointer') manager.move(point);
+    if (type === 'pointer') {
+      if (setup.pressed) leavePressed(setup.pressed.target, setup.pressed.item);
+      // Where the input went while the activation waited.
+      manager.move(point);
+    }
     return true;
   };
 
