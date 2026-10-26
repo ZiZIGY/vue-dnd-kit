@@ -213,6 +213,18 @@ describe('overlay precedence (mounted)', () => {
     style.remove();
   });
 
+  it('tells CSS what it does: `dragging`, then `dropping` while it flies back', async () => {
+    mountBoard();
+    await nextTick();
+    expect(await drag('b2')).toBe('clone');
+    expect(overlay()!.getAttribute('data-dnd-overlay')).toBe('dragging');
+    manager.cancel();
+    await nextTick();
+    expect(manager.status.value).toBe('dropping');
+    expect(overlay()!.getAttribute('data-dnd-overlay')).toBe('dropping');
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+  });
+
   it('renders one overlay with every item of a multi-drag', async () => {
     mountBoard();
     await nextTick();

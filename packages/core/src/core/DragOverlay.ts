@@ -148,9 +148,11 @@ export const DragOverlay = /* @__PURE__ */ defineComponent({
         status: manager.status.value,
         mode: manager.mode.value,
       };
+      // `data-dnd-overlay` says what the overlay is doing, for CSS: `dragging`, then
+      // `dropping` while it lands (or waits for an async `onBeforeDrop`).
       return h(
         'div',
-        { ref: element, style: style.value, 'data-dnd-overlay': '' },
+        { ref: element, style: style.value, 'data-dnd-overlay': props.status },
         renderOverlay(manager.overlayComponent, slots.default, props, DefaultPreview),
       );
     };
