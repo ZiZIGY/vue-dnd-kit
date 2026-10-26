@@ -17,7 +17,7 @@ import type {
   Rect,
   SensorType,
 } from '../../types';
-import { getLayoutRect, getRect } from '../../animation/layout';
+import { getLayoutRect, getRect, getSettledRect } from '../../animation/layout';
 import { fadeInPlace, runDropAnimation, type OverlayItemLanding } from '../../animation/drop';
 import { isFocusLost, nextFrame } from '../../utils/dom';
 import { markDocumentDragging } from '../styles';
@@ -164,9 +164,11 @@ export function createSession(ctx: ManagerContext) {
   /**
    * Where a dragged item lands, if its slot is rendered and can be seen: virtualizers
    * keep overscan rows mounted outside the scroller, and the slot may be scrolled away.
+   * Measured where the slot will settle: in a nested list it may still be sliding with
+   * an ancestor (the item of the outer list that holds it).
    */
   const landingRect = (target: Element | null | undefined): Rect | null => {
-    const to = target?.isConnected ? ctx.measurer.measure(target) : null;
+    const to = target?.isConnected ? getSettledRect(target) : null;
     return to && to.width > 0 && ctx.measurer.measureVisible(target!) ? to : null;
   };
 

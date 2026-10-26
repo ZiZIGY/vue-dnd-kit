@@ -88,7 +88,13 @@ export const syncManager = (g: GroupContext) => {
  */
 export const landDrop = (g: GroupContext, current: Session, result: DropResult | null) => {
   const accepted = result && !current.removed ? result.event.accepted : [];
-  if (result && !accepted.includes(current.lead)) g.manager.landingKey.value = null;
+  if (result) {
+    // The lead lands where the drop put it: its copy, the item made for it, or itself. An
+    // indicator list never showed the copy while dragging, so only the drop knows it.
+    const placed = accepted.includes(current.lead) ? current.mode.placed(current, current.lead) : null;
+    if (placed == null) g.manager.landingKey.value = null;
+    else if (placed !== current.lead) g.manager.landingKey.value = placed;
+  }
   setLandings(
     g,
     accepted

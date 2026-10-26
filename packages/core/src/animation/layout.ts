@@ -13,6 +13,7 @@ import type {
   Rect,
   Size,
 } from '../types';
+import { parentOf } from '../utils/dom';
 
 interface LayoutAnimationState {
   /** Ends it early: cancels the animation, aborts a custom function's signal. */
@@ -156,6 +157,24 @@ export const getLayoutRect = (element: Element): Rect => {
   if (!state?.running()) return rect;
   const { x, y } = parseTranslate(getComputedStyle(element).translate);
   return offsetRect(rect, -x, -y);
+};
+
+/**
+ * Where the element will be once the layout animations in flight have ended: its own and
+ * its ancestors' (flat tree). An item of a list nested in another list's item (a field in
+ * a form section, a card in a kanban column) slides along with that item after a drop.
+ * Walks every ancestor: for landings, not for per-frame measuring.
+ */
+export const getSettledRect = (element: Element): Rect => {
+  let x = 0;
+  let y = 0;
+  for (let node: Element | null = element; node; node = parentOf(node)) {
+    if (!layoutAnimations.get(node)?.running()) continue;
+    const offset = parseTranslate(getComputedStyle(node).translate);
+    x += offset.x;
+    y += offset.y;
+  }
+  return offsetRect(getRect(element), -x, -y);
 };
 
 export const prefersReducedMotion = (): boolean =>
