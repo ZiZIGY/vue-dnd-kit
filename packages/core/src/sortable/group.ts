@@ -28,7 +28,7 @@ import { leadOffset } from './landing';
 import { targetRule } from './combine';
 import { captureLayout, watchLayout } from './flip';
 import { watchChanges } from './autoAnimate';
-import { trackCopyModifier } from './modifier';
+import { useCopyModifier } from './modifier';
 import { move, start } from './session';
 import { beforeDrop, cancel, end } from './drop';
 import { getKeyboardCoordinates } from './keyboard';
@@ -69,7 +69,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   const scope = effectScope(true);
   scope.run(() => {
     watchLayout(g);
-    g.copyHeld = trackCopyModifier(manager, () => manager.scheduleFrame());
+    g.copyHeld = useCopyModifier(manager);
   });
 
   // An integration: the drop is written before the user's monitors hear `onDragEnd`.
