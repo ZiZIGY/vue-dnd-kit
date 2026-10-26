@@ -119,16 +119,24 @@
   };
 
   let observer: ResizeObserver | null = null;
+  let resizeFrame = 0;
   onMounted(() => {
     root = createRoot(host.value!);
     root.addEventListener('click', onClick);
     root.addEventListener('dblclick', onClick);
     root.addEventListener('submit', (event) => event.preventDefault(), true);
-    observer = new ResizeObserver(([entry]) => (width.value = entry!.contentRect.width));
+    // The width applies in the next frame: set in the callback, it resizes the card in the
+    // frame being observed, and WebKit reports a ResizeObserver loop.
+    observer = new ResizeObserver(([entry]) => {
+      const next = entry!.contentRect.width;
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(() => (width.value = next));
+    });
     observer.observe(body.value!);
     render();
   });
   onBeforeUnmount(() => {
+    cancelAnimationFrame(resizeFrame);
     observer?.disconnect();
     if (root) release(root);
   });

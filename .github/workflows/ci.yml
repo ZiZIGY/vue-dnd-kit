@@ -68,12 +68,17 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: yarn
-          cache-dependency-path: packages/actions/yarn.lock
+          cache-dependency-path: |
+            packages/actions/yarn.lock
+            packages/core/yarn.lock
 
       # The core is compiled from its sources (tsconfig `paths`, Vitest alias) with this
-      # package's own Vue and VueUse: it needs no install of its own.
+      # package's own Vue and VueUse (Vitest dedupes them). The core is installed too: Vitest
+      # reads its tsconfig.json, which extends `@vue/tsconfig`.
       - name: Install
-        run: yarn install --frozen-lockfile
+        run: |
+          yarn install --frozen-lockfile
+          yarn --cwd ../core install --frozen-lockfile
 
       - name: Typecheck
         run: yarn typecheck
@@ -104,12 +109,19 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: yarn
-          cache-dependency-path: packages/devtools/yarn.lock
+          cache-dependency-path: |
+            packages/devtools/yarn.lock
+            packages/core/yarn.lock
+            packages/actions/yarn.lock
 
       # The core, its devtools bridge and the actions are compiled from their sources (tsconfig
-      # `paths`, Vitest alias) with this package's own Vue and VueUse: they need no install of their own.
+      # `paths`, Vitest alias) with this package's own Vue and VueUse (Vitest dedupes them). They
+      # are installed too: Vitest reads their tsconfig.json, which extends `@vue/tsconfig`.
       - name: Install
-        run: yarn install --frozen-lockfile
+        run: |
+          yarn install --frozen-lockfile
+          yarn --cwd ../core install --frozen-lockfile
+          yarn --cwd ../actions install --frozen-lockfile
 
       - name: Typecheck
         run: yarn typecheck
