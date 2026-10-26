@@ -1,0 +1,38 @@
+{
+  "DragAreaOptions": {
+    "source": "aedcd47d8d",
+    "text": "Opciones de `makeDragArea`: reglas para los arrastres que empiezan dentro del elemento del área (tanto elementos arrastrables como ítems ordenables), de modo que un único provider pueda servir a toda la app mientras partes de la página arrastran a su manera. Cuando hay áreas anidadas, gana la más cercana.\n\nCada opción acepta un valor, una ref o un getter, y se lee cuando hace falta: cuando empieza una pulsación (`activation`, `disabled`) o cuando empieza el arrastre."
+  },
+  "DragAreaOptions.axis": {
+    "source": "904978157c",
+    "text": "Bloquea los arrastres en un eje, después de los modificadores. Tiene prioridad el `axis` propio de un elemento arrastrable (o el de su lista)."
+  },
+  "DragAreaOptions.modifiers": {
+    "source": "fd6af7b03a",
+    "text": "Modificadores para los arrastres, después de los del provider y antes de los propios del elemento arrastrable (o los de su lista): por ejemplo `[snapToGrid(20)]` para un tablero."
+  },
+  "DragAreaOptions.restrictToArea": {
+    "source": "9a08abdb40",
+    "text": "`true`: los arrastres se quedan dentro del elemento del área (después de los modificadores, antes del bloqueo de eje)."
+  },
+  "DragAreaOptions.autoScroll": {
+    "source": "42d0809672",
+    "text": "Sustituye el `autoScroll` del provider para el contenedor desplazable del área: el propio elemento, o su ancestro desplazable más cercano. `false` lo desactiva ahí. A diferencia de las demás opciones, se aplica a todo arrastre que desplace el contenedor, empiece donde empiece."
+  },
+  "DragAreaOptions.activation": {
+    "source": "5bc47c8127",
+    "text": "Activación de los arrastres según el tipo de puntero, entre la propia del elemento arrastrable (que tiene prioridad) y la del provider: por ejemplo, una pulsación táctil más larga en un feed con scroll."
+  },
+  "DragAreaOptions.disabled": {
+    "source": "238dd09834",
+    "text": "`true`: no empieza ningún arrastre en el área, ni en las áreas que contiene (a diferencia de las demás opciones, que vienen del área más cercana). Sus elementos arrastrables indican `aria-disabled`."
+  },
+  "DragAreaReturn.isDragging": {
+    "source": "5e8f41c6fd",
+    "text": "Hay en curso un arrastre que empezó en esta área (hasta que se decide su drop)."
+  },
+  "DragAreaReturn.isAutoScrolling": {
+    "source": "828bff5f0a",
+    "text": "El desplazamiento automático está moviendo el contenedor desplazable del área (el elemento, o su ancestro desplazable más cercano)."
+  }
+}

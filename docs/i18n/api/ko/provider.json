@@ -1,0 +1,110 @@
+{
+  "Announcements": {
+    "source": "35c177cf7f",
+    "text": "이벤트별 스크린 리더 문구. 문구는 프로바이더의 라이브 리전이 읽어 줍니다(이동은 드래그가 500 ms 동안 멈춘 뒤). `undefined`는 그 이벤트를 다음 출처(정렬 위치 같은 통합 기능의 문구, 그다음 기본 문구)에 맡기고, `''`는 아무것도 읽지 않습니다. 집을 때 찾은 대상에 대해서는 이동을 안내하지 않습니다. 아직 아무것도 움직이지 않았기 때문입니다."
+  },
+  "Announcements.onDragResume": {
+    "source": "d4806359e7",
+    "text": "`onBeforeDrop`이 `'continue'`로 응답했습니다. 드래그가 계속됩니다."
+  },
+  "KeyboardOptions.step": {
+    "source": "66a729c31a",
+    "text": "자유(정렬이 아닌) 드래그에서 화살표 키를 한 번 누를 때 움직이는 픽셀 수. 기본값 25."
+  },
+  "AutoScrollOptions.threshold": {
+    "source": "1b2cd0615c",
+    "text": "컨테이너 크기에 대한 비율로 나타낸 가장자리 영역. 기본값 0.2(24–96px로 제한)."
+  },
+  "AutoScrollOptions.maxSpeed": {
+    "source": "4ebcb33d64",
+    "text": "16ms 프레임당 최대 속도(px)."
+  },
+  "HapticPattern": {
+    "source": "1fb9df65e6",
+    "text": "진동(`navigator.vibrate`): 길이(ms) 또는 켜짐/꺼짐 패턴. `true`는 기본 진동(10ms, `refuse`는 `[20, 40, 20]`), `false`나 `0`은 진동 없음."
+  },
+  "HapticsOptions": {
+    "source": "8c813a52b6",
+    "text": "터치 드래그가 진동하는 시점. 터치로 시작한 드래그만 진동합니다. 브라우저가 진동할 수 없거나(iOS Safari) 진동을 막는 경우(아직 페이지를 탭하지 않음)에는 아무 일도 일어나지 않습니다."
+  },
+  "HapticsOptions.start": {
+    "source": "e9e6d11084",
+    "text": "길게 누른 뒤 드래그가 시작될 때. 기본값 `true`."
+  },
+  "HapticsOptions.enter": {
+    "source": "8f9e55bdc7",
+    "text": "드래그를 받아들이는 드롭 대상(리스트, 영역)에 들어갈 때. 기본값 `false`."
+  },
+  "HapticsOptions.drop": {
+    "source": "dbf3451ed3",
+    "text": "드롭이 완료될 때. 기본값 `false`."
+  },
+  "HapticsOptions.refuse": {
+    "source": "54d244b821",
+    "text": "드롭이 (대상이나 `onBeforeDrop`에 의해) 거부되어 항목이 원래 자리로 돌아갈 때. 기본값 `false`."
+  },
+  "DnDProviderProps.animation": {
+    "source": "699c35a63c",
+    "text": "정렬 가능한 리스트의 기본 FLIP 애니메이션."
+  },
+  "DnDProviderProps.animate": {
+    "source": "e7b8ee12ca",
+    "text": "정렬 가능한 리스트와 트리의 기본 `animate`: 드래그가 아닌 항목 변경. 기본으로 꺼져 있습니다."
+  },
+  "DnDProviderProps.sensors": {
+    "source": "180c7efcc3",
+    "text": "입력을 드래그로 바꾸는 것. 기본값 `[pointerSensor, keyboardSensor]`. 하나를 빼거나, 감싸거나, 교체하거나, 직접 만든 센서(`defineSensor`)를 추가하세요. 키보드 센서는 Escape로 모든 드래그를 취소하는 역할도 합니다. `keyboard: false`는 키보드 드래그를 끄지만 이 역할은 유지합니다. 목록은 언제든 바뀔 수 있으며, 목록에서 빠진 센서는 진행 중인 드래그를 취소하고 멈춥니다."
+  },
+  "DnDProviderProps.haptics": {
+    "source": "a072f3054b",
+    "text": "터치 드래그의 진동. 기본값: 길게 누른 뒤 드래그가 시작될 때 짧게 한 번. 객체를 넘기면 다른 진동(`enter`, `drop`, `refuse`)을 추가하고, `false`는 모두 끕니다."
+  },
+  "DnDProviderProps.copyModifier": {
+    "source": "c45bff39ad",
+    "text": "이동을 복사로 바꾸는 키(KeyboardEvent.key). 기본값 `'Alt'`. `null`이면 비활성화합니다."
+  },
+  "DnDProviderProps.overlayFit": {
+    "source": "2cebf1b9ab",
+    "text": "드래그 중 오버레이의 크기. `'slot'`(기본값): 항목이 안착할 자리를 따르므로, 다른 리스트 위에서는 그 리스트 항목의 크기가 되고 드롭할 때 크기를 바꿀 필요가 없습니다. 포인터를 중심으로 크기가 바뀌며, 포인터는 박스 안에서 같은 비율의 위치에 머무릅니다. `'source'`: 드래그 중인 요소의 크기를 유지합니다. 기본 오버레이 콘텐츠는 새 크기에 맞춰 다시 배치되며, 확대·축소되지 않습니다."
+  },
+  "DnDProviderProps.announcements": {
+    "source": "0729e8985f",
+    "text": "일부 이벤트에 쓸 직접 만든 문구(`Announcements` 참고). `false`면 라이브 리전이 아무것도 읽지 않습니다."
+  },
+  "DnDProviderProps.defaultStyles": {
+    "source": "b635d7cd38",
+    "text": "명시도가 0인 기본 스타일을 주입합니다(플레이스홀더 투명도, 드래그 중 텍스트 선택 방지)."
+  },
+  "DnDContext": {
+    "source": "224db9f60d",
+    "text": "`useDnDContext()`가 반환하는 프로바이더. `provideDnDContext()`에 넘기면 다른 Vue 앱(예: shadow root에 마운트한 앱)도 같은 프로바이더로 동작합니다. 불투명 타입입니다. 공개 멤버가 없으므로 라이브러리 내부가 바뀌어도 변하지 않습니다."
+  },
+  "OverlaySlotProps": {
+    "source": "38a21c4b6d",
+    "text": "오버레이가 보여 주는 것: 프로바이더의 `#overlay` 슬롯과 오버레이 컴포넌트(draggable, 정렬 가능한 항목, 리스트, 트리의 `overlay` 옵션)의 props."
+  },
+  "OverlaySlotProps.items": {
+    "source": "10d477a1e7",
+    "text": "드래그 중인 모든 항목. 주 항목이 맨 앞입니다. 멀티 드래그 전체에 오버레이는 하나입니다."
+  },
+  "OverlaySlotProps.over": {
+    "source": "a44f968644",
+    "text": "드래그 아래의 드롭 대상. 결정된 드롭이 애니메이션되는 동안에는 안착하는 대상(드롭 시점의 상태)입니다. 취소된 드래그가 원래 자리로 돌아가는 동안에는 `null`."
+  },
+  "OverlaySlotProps.accepted": {
+    "source": "f7641f18e1",
+    "text": "`over`가 드래그 중인 항목을 받아들이는지 여부. 아래에 아무것도 없으면 `false`."
+  },
+  "OverlayProps": {
+    "source": "8058170119",
+    "text": "`defineProps<OverlayProps>()`에 쓰는 오버레이 컴포넌트의 props.\n\n컴포넌트는 오버레이 박스 안에서 렌더링됩니다. 박스는 자리의 크기를 따르고(`overlayFit: 'slot'`) 드롭할 때 그 크기를 애니메이션합니다. 그 크기를 따르려면 루트에 `width: 100%`(와 `height: 100%`)를 지정하세요. 고정 크기를 주면 컴포넌트 자체의 크기가 유지됩니다."
+  },
+  "DragPreviewProps": {
+    "source": "6c8d2b3c28",
+    "text": "`DragPreview`의 props: 드래그 중인 항목 하나의 기본 클론으로, 여러 항목을 직접 배치하는 커스텀 오버레이(`overlay` 컴포넌트나 프로바이더의 `#overlay` 슬롯)에 씁니다. 예: `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`.\n\n클론은 집을 때 만들어집니다. 집은 항목과, 드롭 순서상 그 옆에 있는 최대 네 개 항목(그 시점에 렌더링되어 있는 것)의 클론입니다. 그 밖의 항목에 대해서는 `DragPreview`가 기본 슬롯을 렌더링하거나 아무것도 렌더링하지 않습니다. 클론은 요소를 채우며, 요소는 스타일을 지정하지 않으면 집을 때의 항목 크기를 가집니다(`class`와 `style`은 그대로 전달됩니다).\n\n정렬 가능한 멀티 드래그(`multiple: 'group'` 또는 `'gaps'`)에서는 집은 항목이 아닌 항목의 미리보기가, 레이아웃이 어디에 두었든 드롭과 함께 그 항목의 자리에 안착합니다(취소되면 원래 자리로 돌아갑니다). `transform`으로 회전하거나 확대·축소한 래퍼는 이동하는 동안 원래대로 돌아가고, 크기는 너비와 높이로 애니메이션됩니다. 미리보기 자체를 스타일링하세요(모서리, 그림자). 래퍼는 박스 안에 남습니다. 클론이 없는 항목은 대신 서서히 나타납니다."
+  },
+  "DragPreviewProps.id": {
+    "source": "220d6dd174",
+    "text": "드래그 중인 항목의 id: `OverlayProps`의 `items` 중 하나."
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "MaybeReadonlyRefOrGetter": {
+    "source": "856e8d0c75",
+    "text": "值、getter 或任何 ref（可写、浅层、computed、只读——例如来自 `useTemplateRef` 的），库只会读取它。与 Vue 的 `MaybeRefOrGetter` 不同，在需要 `string | number` 的地方它接受 `Ref<string>`。"
+  },
+  "MaybeReadonlyRef": {
+    "source": "e1366b62a5",
+    "text": "值或任何 ref，用于函数本身就是一种值的选项（浮层组件、accept 规则、自定义动画），因此无法区分 getter。把组件放在 `shallowRef`（或 computed）中：Vue 不能把它们变成响应式的。"
+  },
+  "SensorType": {
+    "source": "ddccc05a96",
+    "text": "拖拽如何移动，无论由哪个传感器驱动（`SensorActivation.type`）：`'pointer'` 跟随坐标点，`'keyboard'` 按项移动。"
+  },
+  "ActivationConstraint.distance": {
+    "source": "70ede97eca",
+    "text": "拖拽开始前指针必须移动的像素数。"
+  },
+  "ActivationConstraint.delay": {
+    "source": "86a4e4ad54",
+    "text": "拖拽开始前指针必须按住的毫秒数。"
+  },
+  "ActivationConstraint.tolerance": {
+    "source": "f316a28dbe",
+    "text": "与 `delay` 一起使用：会中止激活的移动距离（px），这样页面可以滚动。"
+  },
+  "ActivationOptions": {
+    "source": "75a2dcce93",
+    "text": "按指针类型设置。默认值：鼠标/触控笔为 `{ distance: 4 }`（在手柄上立即开始），触摸为 `{ delay: 200, tolerance: 5 }`。"
+  }
+}

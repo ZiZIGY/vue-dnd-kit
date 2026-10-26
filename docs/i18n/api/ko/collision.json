@@ -1,0 +1,38 @@
+{
+  "CollisionCandidate.rect": {
+    "source": "6367b9d53a",
+    "text": "대상의 보이는 부분: 스크롤 컨테이너와 뷰포트로 잘린 영역."
+  },
+  "CollisionCandidate.depth": {
+    "source": "87728867d4",
+    "text": "드롭 대상 사이의 중첩 단계: 최상위는 0이고, 더 깊은 대상일수록 값이 큽니다."
+  },
+  "CollisionArgs.hits": {
+    "source": "78fd5d5eeb",
+    "text": "히트 테스트로 찾은 포인터 아래의 드롭 대상(z-order와 shadow root를 고려합니다). 가장 적합한 것이 맨 앞입니다."
+  },
+  "CollisionDetection": {
+    "source": "1248ad0f81",
+    "text": "후보 id를 반환합니다. 가장 적합한 것이 맨 앞입니다."
+  },
+  "ModifierArgs.transform": {
+    "source": "559160a1f5",
+    "text": "앞선 모디파이어가 수정한, 드래그 시작점 기준의 오프셋."
+  },
+  "ModifierArgs.activeRect": {
+    "source": "c410ca6675",
+    "text": "드래그 시작 시점의 드래그 중인 요소의 사각형."
+  },
+  "ModifierArgs.overlayRect": {
+    "source": "cbccda9a74",
+    "text": "오버레이 박스를 현재 크기 그대로 `transform`만큼 옮겼을 때의 사각형. `overlayFit: 'slot'`이면 박스가 포인터를 중심으로 크기가 바뀌므로, 항상 `activeRect`를 `transform`만큼 옮긴 것과 같지는 않습니다."
+  },
+  "ModifierArgs.origin": {
+    "source": "f348437ad5",
+    "text": "드래그 시작 시점의 포인터 위치."
+  },
+  "ModifierArgs.containerRect": {
+    "source": "2a3d109ccb",
+    "text": "드래그 중인 항목의 정렬 가능한 리스트 컨테이너(또는 부모 요소). 드래그 시작 시점에 측정합니다."
+  }
+}

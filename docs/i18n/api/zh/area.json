@@ -1,0 +1,38 @@
+{
+  "DragAreaOptions": {
+    "source": "aedcd47d8d",
+    "text": "`makeDragArea` 的选项：为在区域元素内部开始的拖拽（普通可拖拽元素和可排序项都一样）设定规则，这样一个 provider 就能服务整个应用，而页面的各个部分可以按自己的方式拖拽。区域嵌套时，最近的区域优先。\n\n每个选项都接受值、ref 或 getter，并在需要时读取：按下开始时（`activation`、`disabled`）或拖拽开始时。"
+  },
+  "DragAreaOptions.axis": {
+    "source": "904978157c",
+    "text": "在修饰器之后，把拖拽锁定在一个轴上。可拖拽元素自身的 `axis`（或其列表的）优先。"
+  },
+  "DragAreaOptions.modifiers": {
+    "source": "fd6af7b03a",
+    "text": "拖拽的修饰器，在 provider 的之后、可拖拽元素自己的（或其列表的）之前运行：例如为面板设置 `[snapToGrid(20)]`。"
+  },
+  "DragAreaOptions.restrictToArea": {
+    "source": "9a08abdb40",
+    "text": "`true`：拖拽保持在区域的元素内（在修饰器之后、轴锁定之前）。"
+  },
+  "DragAreaOptions.autoScroll": {
+    "source": "42d0809672",
+    "text": "为区域的滚动容器覆盖 provider 的 `autoScroll`：滚动容器是该元素本身，或离它最近的可滚动祖先。`false` 在那里关闭自动滚动。与其他选项不同，它适用于每一次滚动该容器的拖拽，无论拖拽从哪里开始。"
+  },
+  "DragAreaOptions.activation": {
+    "source": "5bc47c8127",
+    "text": "按指针类型设置拖拽的激活条件，介于可拖拽元素自己的（优先）和 provider 的之间：例如在可滚动的信息流中使用更长的触摸按压。"
+  },
+  "DragAreaOptions.disabled": {
+    "source": "238dd09834",
+    "text": "`true`：区域内不会开始任何拖拽，其内部的区域也一样（与其他选项不同，其他选项取自最近的区域）。区域中的可拖拽元素会报告 `aria-disabled`。"
+  },
+  "DragAreaReturn.isDragging": {
+    "source": "5e8f41c6fd",
+    "text": "从这个区域开始的拖拽正在进行（直到放置结果确定）。"
+  },
+  "DragAreaReturn.isAutoScrolling": {
+    "source": "828bff5f0a",
+    "text": "自动滚动正在滚动区域的滚动容器（该元素，或离它最近的可滚动祖先）。"
+  }
+}

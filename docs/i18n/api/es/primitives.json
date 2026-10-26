@@ -1,0 +1,30 @@
+{
+  "MaybeReadonlyRefOrGetter": {
+    "source": "856e8d0c75",
+    "text": "Un valor, un getter o cualquier ref (escribible, shallow, computed, readonly — por ejemplo de `useTemplateRef`) que la biblioteca solo lee. A diferencia del `MaybeRefOrGetter` de Vue, acepta `Ref<string>` donde se espera `string | number`."
+  },
+  "MaybeReadonlyRef": {
+    "source": "e1366b62a5",
+    "text": "Un valor o cualquier ref, para opciones en las que una función es un valor en sí (un componente de overlay, una regla de aceptación, una animación personalizada), así que un getter no se podría distinguir. Guarda los componentes en una `shallowRef` (o en un computed): Vue no debe hacerlos reactivos."
+  },
+  "SensorType": {
+    "source": "ddccc05a96",
+    "text": "Cómo se mueve un arrastre, sea cual sea el sensor que lo dirige (`SensorActivation.type`): `'pointer'` sigue puntos, `'keyboard'` se mueve de ítem en ítem."
+  },
+  "ActivationConstraint.distance": {
+    "source": "70ede97eca",
+    "text": "Píxeles que debe recorrer el puntero antes de que empiece el arrastre."
+  },
+  "ActivationConstraint.delay": {
+    "source": "86a4e4ad54",
+    "text": "Milisegundos que hay que mantener pulsado el puntero antes de que empiece el arrastre."
+  },
+  "ActivationConstraint.tolerance": {
+    "source": "f316a28dbe",
+    "text": "Con `delay`: el movimiento en px que aborta la activación, para que la página pueda desplazarse."
+  },
+  "ActivationOptions": {
+    "source": "75a2dcce93",
+    "text": "Según el tipo de puntero. Por defecto: ratón/lápiz `{ distance: 4 }` (al instante sobre un asa), táctil `{ delay: 200, tolerance: 5 }`."
+  }
+}

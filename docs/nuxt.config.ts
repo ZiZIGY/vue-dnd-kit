@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DEFAULT_LOCALE, LOCALES } from './i18n/locales';
 import { codeDark, codeLight } from './shiki/themes';
+import remarkHeadingId from './tools/remark-heading-id';
 
 const fromRoot = (path: string) => fileURLToPath(new URL(`../${path}`, import.meta.url));
 
@@ -30,7 +31,7 @@ const ORIGIN = 'https://zizigy.github.io';
 
 export default defineNuxtConfig({
   // Nuxt UI before Content: its prose components must be registered first.
-  modules: ['@nuxt/ui', '@nuxt/content', '@nuxtjs/i18n', '@nuxtjs/seo', 'motion-v/nuxt', './modules/examples', './modules/api'],
+  modules: ['@nuxt/ui', '@nuxt/content', '@nuxtjs/i18n', '@nuxtjs/seo', 'motion-v/nuxt', './modules/examples', './modules/api', './modules/translations'],
 
   compatibilityDate: '2026-10-01',
   devtools: { enabled: true },
@@ -98,6 +99,15 @@ export default defineNuxtConfig({
     build: {
       markdown: {
         toc: { depth: 3, searchDepth: 3 },
+        // `## Heading {#id}`: translations keep the English ids of their sections. The build
+        // takes the instance; MDC's runtime parser imports `src`.
+        remarkPlugins: {
+          'remark-heading-id': {
+            instance: remarkHeadingId,
+            // Forward slashes: MDC writes the path into an import as it is.
+            src: fileURLToPath(new URL('./tools/remark-heading-id.ts', import.meta.url)).replaceAll('\\', '/'),
+          },
+        },
         highlight: {
           // Every key Nuxt UI uses (`light` too), or its own themes fill the gaps.
           theme: { default: codeLight, light: codeLight, dark: codeDark },

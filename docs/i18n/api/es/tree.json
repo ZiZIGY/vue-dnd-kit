@@ -1,0 +1,142 @@
+{
+  "FlatNode.index": {
+    "source": "b24454e95d",
+    "text": "Índice entre sus hermanos."
+  },
+  "SortableTreeDropEvent": {
+    "source": "eb47878c8b",
+    "text": "Evento de drop de un árbol. `index` es la posición entre los hermanos bajo `parentKey` (`from`: antes del movimiento; `to`: después, con el nodo ya quitado de su sitio anterior). `from.parentKey` es `null` para los nodos raíz y para los ítems que vienen de otra lista. Un multi-drag mueve las `keys` (cada una con su subárbol) una junto a otra: `from` es donde estaba el nodo que guía el arrastre (el agarrado, o el nodo seleccionado dentro del que viaja), `to` donde aterriza el primero de ellos. Una copia (`mode: 'copy'`) deja los nodos donde están e inserta `items`, sus copias; un elemento arrastrable simple (`mode: 'insert'`), el nodo que creó `createItem`."
+  },
+  "SortableTreeOptions": {
+    "source": "3b9c211f35",
+    "text": "Opciones de `makeSortableTree`. Un multi-drag mueve los nodos seleccionados como un solo bloque, cada uno con su subárbol, a un mismo sitio y profundidad (en el orden del documento); un nodo seleccionado dentro de otro seleccionado viaja dentro de su subárbol. Eso vale también para el nodo agarrado (como en VS Code): se queda dentro del nodo seleccionado en el que está, que se mueve con su subárbol, mientras el overlay se queda en la fila agarrada. `canNest` y `maxDepth` se aplican a todo el bloque.\n\nLas demás opciones significan lo mismo que en `makeSortableList`. Aceptan un valor, una ref o un getter (`overlay`, `animation`: un valor o una ref) y se leen cuando el árbol las necesita, así que un cambio se aplica, como muy tarde, en el siguiente arrastre. Excepciones: `id` y `group` se leen una sola vez, al crear el árbol; `items` es el propio modelo; las funciones (`getKey`, `getChildren`, `setChildren`, `canNest`, `clone`, `createItem`, los callbacks) se pasan tal cual."
+  },
+  "SortableTreeOptions.items": {
+    "source": "210f1fb478",
+    "text": "Los nodos raíz. Una ref escribible: al soltar, la biblioteca da a los nodos modificados sus nuevos hijos (`setChildren`) y escribe un nuevo array de raíces. Una fuente de solo lectura (un getter, una ref readonly, un computed): llama a `event.preventDefault()` y aplica `event.result` tú mismo (como en `SortableListOptions.items`)."
+  },
+  "SortableTreeOptions.getKey": {
+    "source": "8bd06a8146",
+    "text": "Por defecto: `node.id`. También da la clave de `makeSortableItem({ item })`, de las copias y de los nodos creados."
+  },
+  "SortableTreeOptions.setChildren": {
+    "source": "ebc9ed1493",
+    "text": "Cómo da la escritura por defecto sus nuevos hijos a un nodo. Por defecto: `node.children = children`."
+  },
+  "SortableTreeOptions.withChildren": {
+    "source": "f864a637ec",
+    "text": "Una copia de `node` con `children`, para `event.result`: un árbol nuevo que deja tus nodos como están (la escritura por defecto sigue pasando por `setChildren`). Por defecto: `{ ...node }` con los hijos asignados mediante `setChildren` (`{ ...node, children }` sin `setChildren`). Pásala para instancias de clases y para nodos que necesiten algo más que una copia superficial."
+  },
+  "SortableTreeOptions.id": {
+    "source": "c0adaf519f",
+    "text": "Por defecto: `useId()`, estable entre el renderizado en el servidor y en el cliente. Se lee una vez."
+  },
+  "SortableTreeOptions.overlay": {
+    "source": "99297d8dc8",
+    "text": "Componente de overlay para las filas de este árbol (el `overlay` propio de una fila tiene prioridad). Se lee cuando empieza el arrastre."
+  },
+  "SortableTreeOptions.modifiers": {
+    "source": "f6220f5795",
+    "text": "Modificadores para los arrastres de las filas de este árbol, aplicados después de los `modifiers` del provider (los `modifiers` propios de una fila tienen prioridad): por ejemplo `[restrictToVerticalAxis]`. Se leen cuando empieza el arrastre. Con un eje bloqueado se sigue anidando: la profundidad sale entonces de pasar sobre el centro de una fila."
+  },
+  "SortableTreeOptions.axis": {
+    "source": "6d30d4a81a",
+    "text": "Bloquea en un eje los arrastres de las filas de este árbol (el `axis` propio de una fila tiene prioridad), después de los modificadores. Con `'y'` las filas se siguen anidando: la profundidad sale entonces de pasar sobre el centro de una fila. Se lee cuando empieza el arrastre."
+  },
+  "SortableTreeOptions.group": {
+    "source": "8f0583eca8",
+    "text": "Las listas y los árboles con el mismo nombre de grupo intercambian ítems. Por defecto: un grupo propio. Se lee una vez."
+  },
+  "SortableTreeOptions.acceptMode": {
+    "source": "045f22daca",
+    "text": "Multi-drag de ítems de varios tipos: deben aceptarse `'all'` (por defecto) o `'some'` (`group.put`)."
+  },
+  "SortableTreeOptions.indentation": {
+    "source": "f552924dcb",
+    "text": "Píxeles de desplazamiento horizontal por nivel de profundidad. 24 por defecto."
+  },
+  "SortableTreeOptions.nesting": {
+    "source": "38bbd60e7c",
+    "text": "Cómo se elige la profundidad: desplazamiento horizontal, pasar sobre el centro de una fila, o ambos (por defecto)."
+  },
+  "SortableTreeOptions.placeholder": {
+    "source": "2cf98fc3a5",
+    "text": "`'item'` (por defecto): el nodo arrastrado se mueve entre las filas a su profundidad proyectada. `'indicator'`: el árbol no se mueve; `indicator` (en el árbol y en el `makeSortableItem` de cada fila) indica adónde va el drop, con su `depth` y su `parentKey`, y la línea la dibujas tú. Soltar fuera, en ese caso, cancela."
+  },
+  "SortableTreeOptions.maxDepth": {
+    "source": "1e961e3456",
+    "text": "La profundidad máxima permitida (las raíces son 0). Los descendientes de los nodos arrastrados cuentan."
+  },
+  "SortableTreeOptions.canNest": {
+    "source": "91ce5cdc34",
+    "text": "Si `node` puede ir bajo `parent`; un multi-drag pregunta por cada nodo arrastrado."
+  },
+  "SortableTreeOptions.collapsed": {
+    "source": "8668ce809d",
+    "text": "Claves de los nodos cuyos hijos están ocultos."
+  },
+  "SortableTreeOptions.clone": {
+    "source": "118c688670",
+    "text": "Crea copias (`group.pull: 'clone'`, la tecla modificadora de copia). Necesaria para copiar. Devuelve la copia con todo su subárbol: una carpeta copiada conserva sus hijos. La copia y cada uno de sus descendientes necesitan claves propias (que se leen con `getKey`), como todo nodo de un árbol."
+  },
+  "SortableTreeOptions.createItem": {
+    "source": "28224fdbf4",
+    "text": "Acepta elementos arrastrables simples de fuera: crea el nodo que se va a insertar, en la posición y la profundidad proyectadas (se le aplican `canNest` y `maxDepth`). Con el teclado, una flecha hacia el árbol mete en él el elemento arrastrable, al nivel de la fila delante de la que va, y luego las flechas mueven el nodo como a cualquier otro."
+  },
+  "SortableTreeOptions.dropOutside": {
+    "source": "324ddf9a40",
+    "text": "Un drop fuera de todo destino: dejar los nodos donde está el placeholder, cancelar o quitarlos. `'placeholder'` por defecto (`'cancel'` con `placeholder: 'indicator'`). Se lee al soltar."
+  },
+  "SortableTreeOptions.animation": {
+    "source": "5d1e2c66c2",
+    "text": "Animación FLIP de este árbol; por defecto, la `animation` del provider. Un valor o una ref (una función es una animación personalizada)."
+  },
+  "SortableTreeOptions.animate": {
+    "source": "9004d33175",
+    "text": "Como en `SortableListOptions`, para las filas visibles: nodos añadidos, quitados o movidos, y las filas que un nodo muestra u oculta al expandirse o plegarse (`collapsed`)."
+  },
+  "SortableTreeOptions.autoScroll": {
+    "source": "3216318fc0",
+    "text": "Sustituye el `autoScroll` del provider para el contenedor desplazable de este árbol. Se lee cuando empieza el arrastre."
+  },
+  "SortableTreeOptions.dropzone": {
+    "source": "26c5e98e4b",
+    "text": "Como en `SortableListOptions`: el elemento que recibe los drops del árbol, por defecto el propio del árbol."
+  },
+  "SortableTreeOptions.onBeforeDrop": {
+    "source": "94fc28e843",
+    "text": "Como en `SortableListOptions`."
+  },
+  "SortableTreeOptions.onDrop": {
+    "source": "cac25ac658",
+    "text": "Como en `SortableListOptions`: antes de la escritura, que `event.preventDefault()` omite."
+  },
+  "SortableTreeReturn.items": {
+    "source": "7c78a356e7",
+    "text": "Los nodos visibles en el orden del borrador; el nodo activo lleva su profundidad proyectada."
+  },
+  "SortableTreeReturn.projected": {
+    "source": "cb32fa0496",
+    "text": "Dónde aterrizaría el nodo activo, `null` cuando no está en este árbol."
+  },
+  "SortableTreeReturn.indicator": {
+    "source": "3f5878f4c5",
+    "text": "Modo indicador: adónde va el drop, con su `depth` y su `parentKey`; `null` cuando no es aquí."
+  },
+  "SortableTreeReturn.isAccepting": {
+    "source": "ae54d9827e",
+    "text": "Se está arrastrando algo y este árbol lo acepta."
+  },
+  "SortableTreeReturn.activeKey": {
+    "source": "d4804b031e",
+    "text": "La fila que un virtualizador debe mantener montada: el hueco mientras está en este árbol (el nodo arrastrado, el nodo seleccionado dentro del que viaja el agarrado, una copia, un nodo creado) y, si no, el nodo arrastrado."
+  },
+  "SortableTreeReturn.activeIndex": {
+    "source": "4d6761484d",
+    "text": "Índice de `activeKey` en `items`, -1 cuando no está aquí."
+  },
+  "SortableTreeReturn.activeSize": {
+    "source": "8337786343",
+    "text": "Tamaño de la fila arrastrada al inicio del arrastre."
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "DragItem.item": {
+    "source": "7cfd4640f1",
+    "text": "드래그가 정렬 가능한 리스트에서 왔을 때의 항목 객체."
+  },
+  "DragItem.type": {
+    "source": "9189758463",
+    "text": "draggable의 정규화된 `type`. 비어 있으면 어떤 드롭 대상에도 맞습니다."
+  },
+  "Active.id": {
+    "source": "f080aacddc",
+    "text": "드래그가 시작된 항목의 id."
+  },
+  "Active.ids": {
+    "source": "173336b06e",
+    "text": "드래그 중인 모든 id. 주 항목이 맨 앞입니다(멀티 드래그)."
+  },
+  "Active.element": {
+    "source": "b0e7f2b9f5",
+    "text": "드래그가 시작된 요소. DOM에서 분리될 수 있습니다(가상 리스트, 리스트 사이 이동)."
+  },
+  "Active.rect": {
+    "source": "7964e6f559",
+    "text": "드래그 시작 시점의 `element` 레이아웃 사각형."
+  },
+  "Over.accepted": {
+    "source": "48997f2ee2",
+    "text": "대상의 `accept` 규칙이 드래그 중인 항목을 받아들이는지 여부."
+  },
+  "DragSource.list": {
+    "source": "57db105431",
+    "text": "드래그 중인 항목이 온 정렬 가능한 리스트."
+  },
+  "DragSource.remove": {
+    "source": "5ef5100d7a",
+    "text": "드래그 중인 항목을 원래 리스트에서 제거합니다(휴지통 영역)."
+  },
+  "DnDEvent.pointer": {
+    "source": "49759bca51",
+    "text": "모디파이어 적용 후의 뷰포트 좌표 기준 포인터."
+  },
+  "DnDEvent.delta": {
+    "source": "292fe23ea1",
+    "text": "모디파이어 적용 후의, 드래그 시작점 기준 오프셋."
+  },
+  "DnDEvent.position": {
+    "source": "226682e4e6",
+    "text": "`over` 안에서 드래그 중인 박스의 왼쪽 위 모서리 위치. 대상의 패딩 가장자리부터 측정하고 스크롤 값을 포함합니다. 절대 위치로 배치한 항목을 드롭한 자리에 놓는 `left`/`top` 값입니다(보드 위의 메모). 아래에 아무것도 없으면 `null`. 오버레이 박스의 위치이며, `overlay: false`이면 요소 자체의 위치입니다."
+  },
+  "DnDEvent.source": {
+    "source": "d69f88797f",
+    "text": "드래그 중인 항목이 정렬 가능한 리스트에서 왔을 때 존재합니다."
+  },
+  "DnDEndEvent.dropped": {
+    "source": "8ada0b47b1",
+    "text": "드래그가 모든 드롭 대상 바깥에서 끝나면 false."
+  },
+  "DnDEndEvent.accepted": {
+    "source": "bf82d1aeb9",
+    "text": "`onBeforeDrop`이 수락한 id(일부를 반환하지 않았다면 드래그 중인 모든 id)."
+  },
+  "BeforeDropResult": {
+    "source": "056be141e8",
+    "text": "`onBeforeDrop`이 결정하는 것:\n- `'accept'`(또는 `true`, 또는 아무것도 반환하지 않음): 드롭이 완료됩니다.\n- `'reject'`(또는 `false`): 드롭하지 않고, 항목은 원래 자리로 돌아갑니다.\n- id 목록: 해당 항목만 수락하고, 나머지는 원래 자리로 돌아갑니다.\n- `'continue'`: 드롭하지 않고 드래그가 계속됩니다. 포인터에서는 항목이 다시 포인터를 따라가며(버튼을 누르지 않은 상태), 다음에 놓는 동작인 클릭이 드롭합니다. 터치에서는 다시 집고, 키보드에서는 이전처럼 옮깁니다. Escape로 취소합니다. 다음 드롭에서 `onBeforeDrop`을 다시 호출합니다."
+  },
+  "AcceptRule": {
+    "source": "b40b673608",
+    "text": "`'*'`이거나 생략하면 모두 받아들입니다. 타입이 없는 항목은 어떤 문자열 규칙에도 맞습니다(v2의 `groups: []`와 동일)."
+  },
+  "AcceptMode": {
+    "source": "2aa08aef31",
+    "text": "`'all'`: 드래그 중인 모든 항목이 맞아야 합니다. `'some'`: 하나 이상이면 됩니다(나머지는 `onBeforeDrop`에서 거부할 수 있습니다)."
+  },
+  "KeyboardMoveContext.direction": {
+    "source": "a0b25b3b54",
+    "text": "누른 화살표 키의 단위 벡터."
+  },
+  "DnDMonitor.onBeforeDrop": {
+    "source": "7c0b37588d",
+    "text": "드롭이 확정되기 전에 실행됩니다(`BeforeDropResult` 참고). `'reject'`는 드롭을 거부하고, id 목록은 일부만 수락합니다."
+  },
+  "DnDMonitor.onDragEnd": {
+    "source": "117782ceb2",
+    "text": "드롭이 끝난 뒤의 알림. 정렬 가능한 리스트는 이미 `onDrop`을 실행하고 기록했습니다."
+  },
+  "DnDMonitor.onDragResume": {
+    "source": "8e5af01ef3",
+    "text": "`onBeforeDrop`이 `'continue'`로 응답했습니다. 드롭은 없었고 드래그가 계속됩니다."
+  },
+  "DnDMonitor.getKeyboardCoordinates": {
+    "source": "72d709477a",
+    "text": "키보드 드래그: 화살표 키에 대한 다음 포인터 위치(예: 다음 정렬 자리)."
+  },
+  "DnDState": {
+    "source": "60baeb2f00",
+    "text": "드래그 상태는 드롭이 결정되면 끝납니다. 오버레이가 아직 제자리로 애니메이션되는 동안에도 `active`, `over`, `pointer`는 `null`이 되고(droppable도 더 이상 받아들이지 않습니다), `status`는 `'dropping'`으로 유지됩니다. 파생된 UI는 이전 드래그와 새 데이터를 섞지 않습니다. 비동기 `onBeforeDrop`이 결정하는 동안 상태는 놓은 순간 그대로 유지되지만, 페이지는 드래그 모드에서 벗어납니다. 페이지 자체의 커서와 텍스트 선택이 돌아오고(확인 다이얼로그가 정상적으로 동작합니다), 오버레이는 드롭한 자리에서 기다립니다."
+  }
+}

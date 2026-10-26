@@ -1,0 +1,98 @@
+{
+  "DragItem.item": {
+    "source": "7cfd4640f1",
+    "text": "Objekt des Elements, wenn der Drag aus einer sortierbaren Liste kommt."
+  },
+  "DragItem.type": {
+    "source": "9189758463",
+    "text": "Normalisierter `type` des ziehbaren Elements; leer bedeutet, dass es zu jedem Drop-Ziel passt."
+  },
+  "Active.id": {
+    "source": "f080aacddc",
+    "text": "ID des Elements, bei dem der Drag begonnen hat."
+  },
+  "Active.ids": {
+    "source": "173336b06e",
+    "text": "Alle gezogenen IDs, die primäre zuerst (Multi-Drag)."
+  },
+  "Active.element": {
+    "source": "b0e7f2b9f5",
+    "text": "Element, bei dem der Drag begonnen hat. Es kann vom DOM getrennt werden (virtuelle Listen, Verschieben zwischen Listen)."
+  },
+  "Active.rect": {
+    "source": "7964e6f559",
+    "text": "Layout-Rechteck von `element` beim Start des Drags."
+  },
+  "Over.accepted": {
+    "source": "48997f2ee2",
+    "text": "Ob die `accept`-Regel des Ziels die gezogenen Elemente annimmt."
+  },
+  "DragSource.list": {
+    "source": "57db105431",
+    "text": "Sortierbare Liste, aus der die gezogenen Elemente kommen."
+  },
+  "DragSource.remove": {
+    "source": "5ef5100d7a",
+    "text": "Entfernt die gezogenen Elemente aus ihrer Liste (Papierkorb-Zonen)."
+  },
+  "DnDEvent.pointer": {
+    "source": "49759bca51",
+    "text": "Zeiger in Viewport-Koordinaten, nach den Modifiern."
+  },
+  "DnDEvent.delta": {
+    "source": "292fe23ea1",
+    "text": "Versatz seit dem Start des Drags, nach den Modifiern."
+  },
+  "DnDEvent.position": {
+    "source": "226682e4e6",
+    "text": "Wo die linke obere Ecke der gezogenen Box in `over` liegt, gemessen von dessen Padding-Kante und mit dessen Scrollposition: das `left`/`top`, das ein absolut positioniertes Element dorthin setzt, wo es abgelegt wurde (eine Notiz auf einem Board). `null` über nichts. Bezieht sich auf die Overlay-Box oder, mit `overlay: false`, auf das Element selbst."
+  },
+  "DnDEvent.source": {
+    "source": "d69f88797f",
+    "text": "Vorhanden, wenn die gezogenen Elemente aus einer sortierbaren Liste kommen."
+  },
+  "DnDEndEvent.dropped": {
+    "source": "8ada0b47b1",
+    "text": "False, wenn der Drag außerhalb aller Drop-Ziele geendet hat."
+  },
+  "DnDEndEvent.accepted": {
+    "source": "bf82d1aeb9",
+    "text": "Von `onBeforeDrop` angenommene IDs (alle gezogenen IDs, sofern keine Teilmenge zurückgegeben wurde)."
+  },
+  "BeforeDropResult": {
+    "source": "056be141e8",
+    "text": "Was `onBeforeDrop` entscheidet:\n- `'accept'` (oder `true` oder nichts): Der Drop wird ausgeführt;\n- `'reject'` (oder `false`): kein Drop, die Elemente fliegen zurück;\n- eine Liste von IDs: Nur diese Elemente werden angenommen, die anderen fliegen zurück;\n- `'continue'`: kein Drop, und der Drag geht weiter. Mit einem Zeiger folgt das Element ihm wieder (ohne gedrückte Taste), und das nächste Loslassen – also ein Klick – legt es ab; ein Touch nimmt es wieder auf; die Tastatur bewegt es wie zuvor. Escape bricht den Drag ab. Der Drop fragt `onBeforeDrop` erneut."
+  },
+  "AcceptRule": {
+    "source": "b40b673608",
+    "text": "`'*'` oder weggelassen nimmt alles an. Elemente ohne Typ passen zu jeder String-Regel (entspricht `groups: []` aus v2)."
+  },
+  "AcceptMode": {
+    "source": "2aa08aef31",
+    "text": "`'all'`: Jedes gezogene Element muss passen; `'some'`: mindestens eines (die übrigen können in `onBeforeDrop` abgelehnt werden)."
+  },
+  "KeyboardMoveContext.direction": {
+    "source": "a0b25b3b54",
+    "text": "Einheitsvektor der gedrückten Pfeiltaste."
+  },
+  "DnDMonitor.onBeforeDrop": {
+    "source": "7c0b37588d",
+    "text": "Läuft, bevor der Drop festgeschrieben wird (siehe `BeforeDropResult`): `'reject'` lehnt ihn ab, IDs nehmen eine Teilmenge an."
+  },
+  "DnDMonitor.onDragEnd": {
+    "source": "117782ceb2",
+    "text": "Eine Benachrichtigung, sobald der Drop erledigt ist: Sortierbare Listen haben ihr `onDrop` ausgeführt und ihn geschrieben."
+  },
+  "DnDMonitor.onDragResume": {
+    "source": "8e5af01ef3",
+    "text": "`onBeforeDrop` hat `'continue'` geantwortet: Es gab keinen Drop, und der Drag geht weiter."
+  },
+  "DnDMonitor.getKeyboardCoordinates": {
+    "source": "72d709477a",
+    "text": "Drags per Tastatur: nächste Zeigerposition für eine Pfeiltaste (z. B. der nächste sortierbare Slot)."
+  },
+  "DnDState": {
+    "source": "60baeb2f00",
+    "text": "Der Zustand des Drags endet, wenn über den Drop entschieden ist: `active`, `over` und `pointer` sind `null` (und Drop-Zonen nehmen nichts mehr an), während das Overlay noch an seinen Platz animiert (`status` bleibt `'dropping'`). Abgeleitete UI mischt nie den alten Drag mit den neuen Daten. Während ein asynchrones `onBeforeDrop` entscheidet, bleibt der Zustand so, wie er beim Loslassen war, aber die Seite ist nicht mehr im Drag-Modus: Ihr eigener Cursor und die Textauswahl sind zurück (ein Bestätigungsdialog funktioniert normal), und das Overlay wartet dort, wo es abgelegt wurde."
+  }
+}

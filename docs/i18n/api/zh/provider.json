@@ -1,0 +1,110 @@
+{
+  "Announcements": {
+    "source": "35c177cf7f",
+    "text": "每个事件对应的屏幕阅读器文本。文本由 provider 的实时区域播报（移动会在拖拽停留 500 ms 后播报）；`undefined` 把该事件交给下一个来源（先是集成提供的文本，例如可排序列表的位置，然后是默认文本）；`''` 什么都不播报。拿起时找到的目标不会播报移动：此时还没有任何东西移动。"
+  },
+  "Announcements.onDragResume": {
+    "source": "d4806359e7",
+    "text": "`onBeforeDrop` 返回了 `'continue'`：拖拽继续。"
+  },
+  "KeyboardOptions.step": {
+    "source": "66a729c31a",
+    "text": "自由（非可排序）拖拽中每按一次方向键移动的像素数。默认 25。"
+  },
+  "AutoScrollOptions.threshold": {
+    "source": "1b2cd0615c",
+    "text": "边缘区域，以容器尺寸的比例表示。默认 0.2（限制在 24–96px 之间）。"
+  },
+  "AutoScrollOptions.maxSpeed": {
+    "source": "4ebcb33d64",
+    "text": "最大速度，单位为每 16ms 帧的像素数。"
+  },
+  "HapticPattern": {
+    "source": "1fb9df65e6",
+    "text": "一次振动（`navigator.vibrate`）：以 ms 为单位的时长，或一个开/关模式。`true` 是默认振动（10ms；`refuse` 为 `[20, 40, 20]`），`false` 或 `0` 表示不振动。"
+  },
+  "HapticsOptions": {
+    "source": "8c813a52b6",
+    "text": "触摸拖拽何时振动。只有由触摸发起的拖拽会振动；在浏览器无法振动（iOS Safari）或阻止振动（页面上还没有过点击）的地方，什么都不会发生。"
+  },
+  "HapticsOptions.start": {
+    "source": "e9e6d11084",
+    "text": "拖拽在长按之后开始时。默认 `true`。"
+  },
+  "HapticsOptions.enter": {
+    "source": "8f9e55bdc7",
+    "text": "拖拽进入一个接收它的放置目标（列表、区域）时。默认 `false`。"
+  },
+  "HapticsOptions.drop": {
+    "source": "dbf3451ed3",
+    "text": "放置生效时。默认 `false`。"
+  },
+  "HapticsOptions.refuse": {
+    "source": "54d244b821",
+    "text": "放置被拒绝（被目标或 `onBeforeDrop`）、项飞回原处时。默认 `false`。"
+  },
+  "DnDProviderProps.animation": {
+    "source": "699c35a63c",
+    "text": "可排序列表的默认 FLIP 动画。"
+  },
+  "DnDProviderProps.animate": {
+    "source": "e7b8ee12ca",
+    "text": "可排序列表和树的默认 `animate`：为非拖拽引起的项的变化添加动画。默认关闭。"
+  },
+  "DnDProviderProps.sensors": {
+    "source": "180c7efcc3",
+    "text": "由什么把输入转换为拖拽。默认为 `[pointerSensor, keyboardSensor]`：可以去掉其中一个、包装或替换它，或者添加你自己的（`defineSensor`）。键盘传感器还负责用 Escape 取消任何拖拽；`keyboard: false` 会关闭它的拖拽，但保留这一功能。这个列表随时可以变化：离开列表的传感器会停止，并取消它们的拖拽。"
+  },
+  "DnDProviderProps.haptics": {
+    "source": "a072f3054b",
+    "text": "触摸拖拽的振动。默认：拖拽在长按之后开始时短暂振动一次；传入对象可以添加其他振动（`enter`、`drop`、`refuse`）；`false` 关闭全部振动。"
+  },
+  "DnDProviderProps.copyModifier": {
+    "source": "c45bff39ad",
+    "text": "把移动变成复制的按键（KeyboardEvent.key）。默认为 `'Alt'`；`null` 表示禁用。"
+  },
+  "DnDProviderProps.overlayFit": {
+    "source": "2cebf1b9ab",
+    "text": "拖拽时浮层的尺寸。`'slot'`（默认）：它跟随项将落入的位置，所以经过另一个列表时它会采用那个列表中项的尺寸，放置时也不需要调整尺寸。它围绕指针调整尺寸，指针始终位于盒子中相同的比例位置。`'source'`：保持被拖拽元素的尺寸。默认浮层的内容会按新尺寸重新布局；它永远不会被缩放。"
+  },
+  "DnDProviderProps.announcements": {
+    "source": "0729e8985f",
+    "text": "为部分事件提供自己的文本（参见 `Announcements`）；`false` 让实时区域保持静默。"
+  },
+  "DnDProviderProps.defaultStyles": {
+    "source": "b635d7cd38",
+    "text": "注入零优先级的默认样式（占位的透明度、拖拽期间禁止选中文本）。"
+  },
+  "DnDContext": {
+    "source": "224db9f60d",
+    "text": "`useDnDContext()` 返回的 provider，用来交给 `provideDnDContext()`：之后另一个 Vue 应用（例如挂载在 shadow root 中的应用）就能与同一个 provider 协同工作。它是不透明的：没有公开成员，所以永远不会随库的内部实现而变化。"
+  },
+  "OverlaySlotProps": {
+    "source": "38a21c4b6d",
+    "text": "浮层显示的内容：provider 的 `#overlay` 插槽和浮层组件（可拖拽元素、可排序项、列表和树的 `overlay` 选项）的 props。"
+  },
+  "OverlaySlotProps.items": {
+    "source": "10d477a1e7",
+    "text": "所有被拖拽的项，主项在最前：整个多项拖拽只用一个浮层。"
+  },
+  "OverlaySlotProps.over": {
+    "source": "a44f968644",
+    "text": "拖拽下方的放置目标。已确定的放置执行动画期间，是它要落到的目标（保持放置那一刻的状态）；被取消的拖拽飞回原处时为 `null`。"
+  },
+  "OverlaySlotProps.accepted": {
+    "source": "f7641f18e1",
+    "text": "`over` 是否接收被拖拽的项；下方没有目标时为 `false`。"
+  },
+  "OverlayProps": {
+    "source": "8058170119",
+    "text": "浮层组件的 props，用于 `defineProps<OverlayProps>()`。\n\n组件渲染在浮层盒子内部，盒子跟随位置的尺寸（`overlayFit: 'slot'`），并在放置时以动画方式变化。给根元素设置 `width: 100%`（以及 `height: 100%`）以跟随这个尺寸；固定尺寸会保持组件自己的尺寸。"
+  },
+  "DragPreviewProps": {
+    "source": "6c8d2b3c28",
+    "text": "`DragPreview` 的 props：某一个被拖拽项的默认克隆，用于自行布局多个项的自定义浮层（`overlay` 组件或 provider 的 `#overlay` 插槽），例如 `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`。\n\n克隆在拿起时生成：抓起的项，以及按放置顺序与它相邻的最多四个其他项（当时已渲染的那些）。对于其他任何项，`DragPreview` 渲染它的默认插槽，或者什么都不渲染。克隆会填满这个元素，元素的尺寸是该项在拿起时的尺寸，除非你为它设置样式（`class` 和 `style` 会透传）。\n\n在可排序的多项拖拽中（`multiple: 'group'` 或 `'gaps'`），抓起的项以外的项的预览会随放置落到该项的位置上（取消时回到原处），无论布局把它放在哪里：途中会撤销用 `transform` 旋转或缩放的包裹元素，它的尺寸以宽度和高度的方式执行动画。为预览本身设置样式（圆角、阴影）：它的包裹元素留在盒子里。没有克隆的项则改为淡入。"
+  },
+  "DragPreviewProps.id": {
+    "source": "220d6dd174",
+    "text": "某个被拖拽项的 id：`OverlayProps` 中 `items` 的其中之一。"
+  }
+}

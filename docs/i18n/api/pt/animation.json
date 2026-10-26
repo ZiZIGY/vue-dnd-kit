@@ -1,0 +1,102 @@
+{
+  "LayoutAnimationContext.from": {
+    "source": "c5845d8793",
+    "text": "Retângulo visual antes da mudança (onde uma animação em andamento mostrava o item)."
+  },
+  "LayoutAnimationContext.to": {
+    "source": "17f753cbe6",
+    "text": "Retângulo de layout depois da mudança."
+  },
+  "LayoutAnimationContext.reason": {
+    "source": "eceea904fa",
+    "text": "O que moveu o item: um arraste (`'drag'`: a ordenação, o drop, um cancelamento), ou uma mudança nos seus dados que nenhum arraste fez (`'change'`, com o `animate` da lista ligado)."
+  },
+  "LayoutAnimationContext.signal": {
+    "source": "c8aa938f56",
+    "text": "Abortado quando a biblioteca interrompe a animação: o item se move de novo antes de ela terminar (a próxima animação começa de onde ele está sendo mostrado), ou as animações são desligadas. Uma `Animation` retornada é cancelada automaticamente. Pare qualquer outra coisa aqui e desfaça os estilos que ela definiu, na hora: o layout é medido logo em seguida."
+  },
+  "LayoutAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "`prefers-reduced-motion: reduce` está ativo. Nesse caso, as animações da própria biblioteca não rodam; as suas funções sempre rodam, e decidem com isto (pular, ou manter um fade)."
+  },
+  "LayoutAnimation": {
+    "source": "233b130a9c",
+    "text": "Como os itens se movem para os novos lugares: `true` (tempo padrão), opções, `false` (eles saltam), ou uma função que anima um item de `from` até `to` e retorna a `Animation` dele, uma promise que é resolvida quando ela termina, ou nada."
+  },
+  "DropAnimationContext.overlay": {
+    "source": "e272382994",
+    "text": "A caixa do overlay; ela pousa na posição do item ativo. Em um multi-drag, os clones dos outros itens que viajam dentro dela (os do overlay padrão, os `DragPreview`s de um personalizado) pousam sozinhos nas suas próprias posições (com o tempo padrão quando isto é uma função personalizada)."
+  },
+  "DropAnimationContext.to": {
+    "source": "d0780ba408",
+    "text": "Retângulo final do item solto; `null` quando ele não está renderizado ou visível (o overlay desaparece aos poucos)."
+  },
+  "DropAnimationContext.into": {
+    "source": "cecafada99",
+    "text": "O item não é mostrado depois de um drop em uma zona (não uma lista ordenável), por exemplo, ele foi solto dentro de outro item (uma pasta) ou de uma zona de lixeira: o retângulo visível da zona. A animação padrão encolhe o overlay para dentro dela enquanto ele desaparece, em vez de desaparecer no lugar."
+  },
+  "DropAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "`prefers-reduced-motion: reduce` está ativo. Nesse caso, as animações da própria biblioteca não rodam; as suas funções sempre rodam, e decidem com isto (pular, ou manter um fade)."
+  },
+  "EnterAnimationContext": {
+    "source": "bef530cbfe",
+    "text": "Um item que apareceu em uma lista com `animate` ligado: adicionado, ou mostrado de novo (um filtro, um nó de árvore expandido)."
+  },
+  "EnterAnimationContext.element": {
+    "source": "120613b512",
+    "text": "O elemento do item, já no lugar dele."
+  },
+  "EnterAnimationContext.to": {
+    "source": "fd058782f5",
+    "text": "Onde ele apareceu (retângulo de layout)."
+  },
+  "EnterAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "`prefers-reduced-motion: reduce` está ativo. Nesse caso, as animações da própria biblioteca não rodam; as suas funções sempre rodam, e decidem com isto (pular, ou manter um fade)."
+  },
+  "LeaveAnimationContext": {
+    "source": "b67e70e13a",
+    "text": "Um item que saiu de uma lista com `animate` ligado: removido, ou ocultado (um filtro, um nó de árvore recolhido)."
+  },
+  "LeaveAnimationContext.element": {
+    "source": "a4f7390241",
+    "text": "Uma cópia do elemento do item, mostrada onde o item estava (o próprio item já se foi): posicionada de forma absoluta no pai antigo, ignorando o ponteiro, marcada com `data-dnd-leaving`. A biblioteca a remove quando a sua animação termina."
+  },
+  "LeaveAnimationContext.from": {
+    "source": "645084e2fd",
+    "text": "Onde o item estava."
+  },
+  "LeaveAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "`prefers-reduced-motion: reduce` está ativo. Nesse caso, as animações da própria biblioteca não rodam; as suas funções sempre rodam, e decidem com isto (pular, ou manter um fade)."
+  },
+  "EnterAnimation": {
+    "source": "9a7cbcfe92",
+    "text": "`true`, opções, `false` (o item simplesmente aparece), ou uma função que anima a entrada dele."
+  },
+  "LeaveAnimation": {
+    "source": "fa236e4208",
+    "text": "`true`, opções, `false` (o item simplesmente desaparece), ou uma função que anima a saída da cópia deixada no lugar dele: retorne a `Animation` dela ou uma promise, e a cópia é removida quando ela terminar (na hora, quando a função não retorna nada)."
+  },
+  "AutoAnimationOptions": {
+    "source": "0130acd24e",
+    "text": "`animate` com as suas partes: `duration` e `easing` para todas elas, e, por tipo de mudança, `true`, opções (sobre as compartilhadas), `false` ou uma função sua."
+  },
+  "AutoAnimationOptions.move": {
+    "source": "684eb0594d",
+    "text": "Itens que trocaram de lugar (o FLIP padrão, como o de `animation`; uma função o substitui)."
+  },
+  "AutoAnimationOptions.enter": {
+    "source": "7d611358b7",
+    "text": "Itens que apareceram. Padrão: eles surgem aos poucos onde estão."
+  },
+  "AutoAnimationOptions.leave": {
+    "source": "de8fbd3ca4",
+    "text": "Itens que saíram. Padrão: uma cópia do item desaparece aos poucos onde ele estava, encolhendo um pouco."
+  },
+  "AutoAnimation": {
+    "source": "eb08eca97d",
+    "text": "Anima as mudanças nos itens de uma lista (ou árvore) que nenhum arraste fez: itens adicionados, removidos, movidos (uma ordenação, um embaralhamento, um movimento entre listas de um mesmo grupo) ou filtrados. Desligado por padrão (`false`); `true` anima movimentos, itens que entram e itens que saem com o tempo padrão. Os arrastes mantêm as próprias animações (`animation`, `dropAnimation`). Com `prefers-reduced-motion: reduce`, as animações padrão não rodam; as suas funções ainda rodam (com `reducedMotion: true`). Só os itens perto da área visível são animados (as linhas desmontadas de uma lista virtual são ignoradas)."
+  }
+}

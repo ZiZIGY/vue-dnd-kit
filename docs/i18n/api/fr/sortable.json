@@ -1,0 +1,226 @@
+{
+  "MultipleMode": {
+    "source": "d913df4640",
+    "text": "Ce que font les autres items sélectionnés dans un multi-drag :\n- `'group'` : ils quittent leur place et voyagent avec l'item actif sous forme de placeholders contigus, si bien que, pendant le survol, la liste montre déjà le résultat du dépôt ;\n- `'gaps'` : ils restent en place jusqu'au dépôt ;\n- `'stack'` : ils se regroupent dans l'overlay.\n\nL'overlay par défaut montre les items glissés en colonne dans le sens de la liste (`'group'`, `'gaps'` ; en rangée dans les listes horizontales, en pile derrière l'item actif dans les grilles), ou l'item actif avec un compteur (`'stack'`)."
+  },
+  "SortablePutContext.from": {
+    "source": "3ade1d4f94",
+    "text": "Liste source, `null` pour les éléments déplaçables externes."
+  },
+  "SortableGroupOptions.pull": {
+    "source": "ea3b5c781f",
+    "text": "Si les items peuvent quitter cette liste : déplacement, copie (`'clone'`, une palette) ou pas du tout."
+  },
+  "SortableGroupOptions.put": {
+    "source": "a59ba8af01",
+    "text": "Si les items peuvent entrer dans cette liste."
+  },
+  "SortableItems": {
+    "source": "ff96686528",
+    "text": "Une source d'items triables. Une ref modifiable : la bibliothèque y écrit chaque dépôt. Une source en lecture seule (un getter, une ref readonly, un computed : un store immuable, un état serveur, un store modifié uniquement via des actions) : c'est vous qui appliquez chaque dépôt depuis `event.result`, après `event.preventDefault()` (voir `SortableDropEvent`)."
+  },
+  "SortableDropEvent": {
+    "source": "1cb69d3b8b",
+    "text": "Un dépôt sur une liste ou un arbre triable. Ses hooks s'exécutent dans l'ordre : `onBeforeDrop` décide, `onDrop` est prévenu, puis l'action par défaut écrit `result` dans les `items` de chaque liste qu'il nomme, et l'overlay atterrit. `preventDefault()` dans l'un ou l'autre hook empêche cette écriture, pour que vous puissiez appliquer `result` vous-même."
+  },
+  "SortableDropEvent.to": {
+    "source": "f5bc49d9b2",
+    "text": "`index` vaut -1 quand rien n'a atterri : les items ont quitté leurs listes (`e.source.remove()`, `dropOutside: 'remove'`)."
+  },
+  "SortableDropEvent.partner": {
+    "source": "0dc90e4f32",
+    "text": "`mode: 'swap'` : l'item avec lequel l'item glissé a été échangé. Il s'est déplacé en sens inverse : `from`, la place prise par l'item glissé (`to` ci-dessus), et `to`, celle où l'item glissé a commencé (`from` ci-dessus) ; entre deux listes, vers la liste de l'item glissé."
+  },
+  "SortableDropEvent.result": {
+    "source": "88350b68d9",
+    "text": "Les nouveaux items de chaque liste modifiée par le dépôt, par id de liste : exactement ce que l'écriture par défaut place dans leurs `items`, sous forme de nouveaux tableaux. Les déplacements, les copies, les items créés, une acceptation partielle, les deux côtés d'un échange et les items retirés (`e.source.remove()` dans une cible à l'intérieur d'un item, une zone de corbeille, `dropOutside: 'remove'`) y figurent tous ; une liste que le dépôt laisse telle quelle n'y figure pas. L'entrée d'un arbre est un nouveau tableau de racines : les nœuds sur les chemins modifiés sont des copies (`withChildren`), les sous-arbres intacts sont partagés, vos nœuds ne sont jamais mutés. Dans `onBeforeDrop`, c'est le dépôt tel qu'il se présente avant la réponse du hook (renvoyer certaines clés le modifie) ; `onDrop` reçoit la version finale."
+  },
+  "SortableDropEvent.preventDefault": {
+    "source": "e42cc44015",
+    "text": "Empêche l'écriture par défaut, dans toutes les listes de `result` (n'en écrire qu'une partie perdrait ou dupliquerait des items). Appliquez `result` vous-même dans `onDrop`, ou avant qu'un `onBeforeDrop` asynchrone ne se résolve, et l'overlay atterrit dans le nouvel ordre. S'il n'est appliqué nulle part, les listes restent telles qu'elles étaient et l'overlay revient à sa place (les copies et les items créés, qui n'ont pas encore de place, disparaissent en fondu)."
+  },
+  "SortableDropEvent.defaultPrevented": {
+    "source": "0d1dce05c0",
+    "text": "`preventDefault()` a été appelé, dans `onBeforeDrop` ou dans `onDrop`."
+  },
+  "SortableIndicator.index": {
+    "source": "0043b67077",
+    "text": "Position d'insertion dans la liste telle qu'elle est rendue."
+  },
+  "SortableIndicator.key": {
+    "source": "12ba4e5060",
+    "text": "Item auquel l'indicateur est rattaché ; `null` dans une liste vide."
+  },
+  "SortableIndicator.side": {
+    "source": "616c01270f",
+    "text": "Côté de `key` où va la ligne. `'inside'` (arbres) : le milieu d'une ligne qui accepte les nœuds glissés est survolé, et le dépôt va à l'intérieur, comme son premier enfant."
+  },
+  "SortableIndicator.depth": {
+    "source": "d3a6c5b55c",
+    "text": "Arbres : profondeur que reçoivent les nœuds déposés (les racines sont à 0), par exemple pour indenter la ligne."
+  },
+  "SortableIndicator.parentKey": {
+    "source": "690c7fc50c",
+    "text": "Arbres : parent que reçoivent les nœuds déposés, `null` au niveau racine."
+  },
+  "SortableListOptions": {
+    "source": "ad5d98cc02",
+    "text": "Options de `makeSortableList`. Une liste (ou un arbre) par composant : elle fournit le contexte que lisent ses items, et une seconde liste dans le même composant prendrait donc les items de la première (les builds de développement le signalent).\n\nLes options acceptent une valeur, une ref ou un getter (`overlay`, `animation` : une valeur ou une ref) et sont lues quand la liste en a besoin : un changement s'applique donc au plus tard au glissement suivant. Exceptions : `id` et `group` sont lus une seule fois, à la création de la liste ; `items` est le modèle lui-même ; les fonctions (`getKey`, `clone`, `createItem`, les callbacks) sont passées telles quelles."
+  },
+  "SortableListOptions.items": {
+    "source": "bcf07acd7a",
+    "text": "La source de vérité. Une ref modifiable reçoit le nouveau tableau au dépôt, juste après `onDrop`. Une source en lecture seule (un getter, une ref readonly, un computed) ne le peut pas : appelez `event.preventDefault()` et appliquez `event.result` vous-même. Les builds de développement signalent un dépôt laissé à la bibliothèque dans ce cas, qui ne change alors rien."
+  },
+  "SortableListOptions.getKey": {
+    "source": "f5ae57e9ca",
+    "text": "Par défaut : `item.id`, ou l'item lui-même pour les primitives. Sert aussi de clé à `makeSortableItem({ item })`."
+  },
+  "SortableListOptions.id": {
+    "source": "c0adaf519f",
+    "text": "Par défaut : `useId()`, stable entre le rendu serveur et le rendu client. Lu une seule fois."
+  },
+  "SortableListOptions.overlay": {
+    "source": "4d236710b1",
+    "text": "Composant d'overlay pour les items de cette liste (l'`overlay` propre à un item l'emporte). Il reçoit `OverlayProps` et est conservé pendant tout le glissement, y compris au-dessus d'autres listes. Lu au début du glissement."
+  },
+  "SortableListOptions.modifiers": {
+    "source": "16c37d217b",
+    "text": "Modificateurs des glissements des items de cette liste, appliqués après les `modifiers` du provider (les `modifiers` propres à un item l'emportent) : par exemple `[restrictToVerticalAxis]` pour garder les items d'une liste verticale sur leur axe. Lus au début du glissement."
+  },
+  "SortableListOptions.axis": {
+    "source": "96097df6fa",
+    "text": "Verrouille sur un axe les glissements des items de cette liste : `'y'` pour une liste verticale, `'x'` pour une liste horizontale (l'`axis` propre à un item l'emporte). Le verrouillage vient après les modificateurs : il tient donc quoi qu'ils fassent. Lu au début du glissement."
+  },
+  "SortableListOptions.group": {
+    "source": "2d636dda19",
+    "text": "Les listes qui ont le même nom de groupe s'échangent des items. Par défaut : un groupe à elle seule. Lu une seule fois."
+  },
+  "SortableListOptions.acceptMode": {
+    "source": "045f22daca",
+    "text": "Multi-drag d'items de plusieurs types : `'all'` (par défaut) ou `'some'` doivent être acceptés (`group.put`)."
+  },
+  "SortableListOptions.strategy": {
+    "source": "3d22ac3d01",
+    "text": "`'vertical'` par défaut."
+  },
+  "SortableListOptions.behavior": {
+    "source": "6f2761c488",
+    "text": "`'swap'` : l'item glissé échange sa place avec l'item survolé, en direct ; revenir sur lui ou sortir des listes annule l'échange. Les listes d'un même groupe qui font toutes deux des échanges s'échangent des items : l'item survolé prend la place de l'item glissé, il doit donc pouvoir quitter sa liste (`group.pull: true`) et entrer dans celle de l'item glissé (`group.put`). Un multi-drag trie à la place. `'sort'` par défaut."
+  },
+  "SortableListOptions.placeholder": {
+    "source": "1a678d916f",
+    "text": "`'indicator'` : la liste ne bouge pas, `indicator` indique où va le dépôt. `'item'` par défaut."
+  },
+  "SortableListOptions.multiple": {
+    "source": "27faee6df8",
+    "text": "Mode multi-drag des glissements qui commencent dans cette liste. `'group'` par défaut. Lu au début du glissement."
+  },
+  "SortableListOptions.sort": {
+    "source": "9640243d4c",
+    "text": "`false` : les items ne peuvent pas être réordonnés dans cette liste (palettes)."
+  },
+  "SortableListOptions.clone": {
+    "source": "f4b2c534cd",
+    "text": "Crée des copies (`pull: 'clone'`, touche modificatrice de copie). Obligatoire pour copier."
+  },
+  "SortableListOptions.createItem": {
+    "source": "5c9f1d3856",
+    "text": "Accepte des éléments déplaçables simples venus de l'extérieur : crée l'item à insérer. Au clavier, une flèche en direction de la liste y fait entrer l'élément déplaçable (à sa hauteur, comme pour les déplacements entre listes), et l'item créé se déplace ensuite par emplacements comme n'importe quel autre."
+  },
+  "SortableListOptions.dropOutside": {
+    "source": "bffdd0d062",
+    "text": "Un dépôt hors de toute cible : garder les items là où se trouve le placeholder, annuler, ou les retirer. `'placeholder'` par défaut (`'cancel'` avec `placeholder: 'indicator'`). Lu au dépôt."
+  },
+  "SortableListOptions.animation": {
+    "source": "cc6ad2ca6a",
+    "text": "Animation FLIP de cette liste ; par défaut : l'`animation` du provider. Une valeur ou une ref (une fonction est une animation personnalisée)."
+  },
+  "SortableListOptions.animate": {
+    "source": "86283c7ec0",
+    "text": "Anime les changements de `items` qui ne viennent pas d'un glissement : items ajoutés, retirés, déplacés et filtrés (voir `AutoAnimation`). Par défaut : l'`animate` du provider, désactivé sauf s'il y est défini. Lu quand `items` change."
+  },
+  "SortableListOptions.autoScroll": {
+    "source": "0c0b0867b3",
+    "text": "Remplace l'`autoScroll` du provider pour le conteneur défilant de cette liste. Lu au début du glissement."
+  },
+  "SortableListOptions.dropzone": {
+    "source": "6202e9c757",
+    "text": "L'élément qui reçoit les dépôts pour la liste, par défaut l'élément de la liste lui-même : par exemple toute la colonne autour d'une courte liste de cartes, pour qu'une carte lâchée sous la dernière atterrisse quand même dans la liste (à la fin). Les items restent dans l'élément de la liste."
+  },
+  "SortableListOptions.onBeforeDrop": {
+    "source": "75b3651128",
+    "text": "Consulté avant un dépôt dans cette liste, et avant que `dropOutside: 'remove'` n'en retire les items : `false` le refuse (les items reviennent à leur place), des clés n'acceptent que ces items. Peut être asynchrone : l'overlay attend là où il a été déposé. Une erreur refuse aussi le dépôt. Voir `SortableDropEvent` pour `result` et `preventDefault`."
+  },
+  "SortableListOptions.onDrop": {
+    "source": "e1c7bf0125",
+    "text": "Appelé une fois qu'un dépôt dans cette liste est accepté, avant qu'il ne soit écrit : `items` contient encore l'ancien ordre, `event.result` le nouveau. Synchrone : l'écriture suit dès qu'il retourne, sauf s'il a appelé `event.preventDefault()`. Appelé aussi sur la liste d'où viennent les items quand ils sont retirés (`to.index` vaut -1)."
+  },
+  "SortableListReturn.items": {
+    "source": "d650d61bc4",
+    "text": "L'ordre du brouillon : rendez-le, et non le tableau source."
+  },
+  "SortableListReturn.activeIndex": {
+    "source": "eff30ad0eb",
+    "text": "Index de l'item actif dans le brouillon de cette liste, -1 quand il n'y est pas."
+  },
+  "SortableListReturn.captureLayout": {
+    "source": "4d1e38426d",
+    "text": "Anime les changements de mise en page que la bibliothèque n'a pas causés (par exemple une nouvelle mesure d'un virtualiseur)."
+  },
+  "SortableItemOptions": {
+    "source": "b25e70a1fe",
+    "text": "Passez `id` ou `item` (`id` l'emporte quand les deux sont fournis). Les clés triables doivent venir des données : un id automatique changerait chaque fois que le composant est recréé (déplacé dans une autre liste, recyclé par une liste virtuelle), et le glissement perdrait l'item.\n\nLes options, sauf `canDrag`, acceptent une valeur, une ref ou un getter (`overlay` : une valeur ou une ref) et signifient la même chose que dans `makeDraggable`. Il n'y a pas de `keyboard` : le clavier déplace un item triable par emplacements."
+  },
+  "SortableItemOptions.id": {
+    "source": "f76ac37600",
+    "text": "Clé de l'item dans sa liste. Un getter la garde à jour dans les listes virtuelles."
+  },
+  "SortableItemOptions.item": {
+    "source": "e326c731e9",
+    "text": "L'item que rend cet élément, par exemple `() => props.task`. Sa clé vient du `getKey` de la liste (ou de l'arbre) propriétaire, par défaut `item.id`."
+  },
+  "SortableItemOptions.overlay": {
+    "source": "2ded9454bb",
+    "text": "Composant d'overlay pour cet item ; l'emporte sur l'`overlay` de la liste. Lu au début du glissement."
+  },
+  "SortableItemOptions.modifiers": {
+    "source": "55d5129188",
+    "text": "Modificateurs des glissements de cet item, après ceux du provider ; l'emportent sur les `modifiers` de la liste."
+  },
+  "SortableItemOptions.axis": {
+    "source": "09e5ed09d6",
+    "text": "Verrouille les glissements de cet item sur un axe (`'x'`, `'y'`) ; l'emporte sur l'`axis` de la liste."
+  },
+  "SortableItemOptions.handle": {
+    "source": "519bda20d7",
+    "text": "Élément ou sélecteur, à l'intérieur de l'item, qui lance le glissement (et reçoit les attributs)."
+  },
+  "SortableItemOptions.activation": {
+    "source": "07b1465312",
+    "text": "Remplace l'`activation` du provider. Lue au début d'un appui."
+  },
+  "SortableItemOptions.canDrag": {
+    "source": "ba9d01922f",
+    "text": "Filtre supplémentaire, par exemple ne faire glisser que pendant qu'une touche est maintenue."
+  },
+  "SortableItemOptions.attributes": {
+    "source": "db7791f2d8",
+    "text": "Définit les attributs role/tabindex/aria-* (`true` par défaut), sans jamais écraser ceux de l'utilisateur. Réactif : le désactiver retire ce que la bibliothèque avait défini."
+  },
+  "SortableItemReturn.isDragging": {
+    "source": "f148b949fd",
+    "text": "Cet item est en cours de glissement (vrai aussi pour les autres items d'un multi-drag)."
+  },
+  "SortableItemReturn.isPlaceholder": {
+    "source": "e31014eb2c",
+    "text": "Cet élément est un emplacement où un item glissé va atterrir : celui de l'item actif et, en mode multi-drag `'group'`, les emplacements des items qui voyagent avec lui."
+  },
+  "SortableItemReturn.indicator": {
+    "source": "3e7f9ce50b",
+    "text": "Mode indicateur : l'`indicator` de la liste tant qu'il est rattaché à cet item, `null` sinon. `side` indique où va la ligne ; dans les arbres, `depth` et `parentKey` indiquent où atterrit le dépôt (`side: 'inside'` : dans cet item)."
+  },
+  "SortableItemReturn.index": {
+    "source": "de82731af7",
+    "text": "Index dans le brouillon rendu, -1 quand il est inconnu."
+  }
+}

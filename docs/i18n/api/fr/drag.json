@@ -1,0 +1,98 @@
+{
+  "DragItem.item": {
+    "source": "7cfd4640f1",
+    "text": "L'objet item, quand le glissement vient d'une liste triable."
+  },
+  "DragItem.type": {
+    "source": "9189758463",
+    "text": "`type` normalisé de l'élément déplaçable ; vide signifie qu'il convient à n'importe quelle cible de dépôt."
+  },
+  "Active.id": {
+    "source": "f080aacddc",
+    "text": "Id de l'item depuis lequel le glissement a commencé."
+  },
+  "Active.ids": {
+    "source": "173336b06e",
+    "text": "Tous les ids glissés, en commençant par l'id principal (multi-drag)."
+  },
+  "Active.element": {
+    "source": "b0e7f2b9f5",
+    "text": "Élément depuis lequel le glissement a commencé. Il peut être détaché du DOM (listes virtuelles, déplacements entre listes)."
+  },
+  "Active.rect": {
+    "source": "7964e6f559",
+    "text": "Rectangle de mise en page d'`element` au début du glissement."
+  },
+  "Over.accepted": {
+    "source": "48997f2ee2",
+    "text": "Si la règle `accept` de la cible accepte les items glissés."
+  },
+  "DragSource.list": {
+    "source": "57db105431",
+    "text": "Liste triable d'où viennent les items glissés."
+  },
+  "DragSource.remove": {
+    "source": "5ef5100d7a",
+    "text": "Retire les items glissés de leur liste (zones de corbeille)."
+  },
+  "DnDEvent.pointer": {
+    "source": "49759bca51",
+    "text": "Pointeur en coordonnées du viewport, après les modificateurs."
+  },
+  "DnDEvent.delta": {
+    "source": "292fe23ea1",
+    "text": "Décalage depuis le début du glissement, après les modificateurs."
+  },
+  "DnDEvent.position": {
+    "source": "226682e4e6",
+    "text": "Où se trouve le coin supérieur gauche de la boîte glissée dans `over`, depuis le bord de son padding et défilement compris : le `left`/`top` qui place un item positionné en absolu là où il a été déposé (une note sur un tableau). `null` au-dessus de rien. Celui de la boîte de l'overlay, ou de l'élément lui-même avec `overlay: false`."
+  },
+  "DnDEvent.source": {
+    "source": "d69f88797f",
+    "text": "Présent quand les items glissés viennent d'une liste triable."
+  },
+  "DnDEndEvent.dropped": {
+    "source": "8ada0b47b1",
+    "text": "Faux quand le glissement s'est terminé hors de toute cible de dépôt."
+  },
+  "DnDEndEvent.accepted": {
+    "source": "bf82d1aeb9",
+    "text": "Ids acceptés par `onBeforeDrop` (tous les ids glissés, sauf si un sous-ensemble a été renvoyé)."
+  },
+  "BeforeDropResult": {
+    "source": "056be141e8",
+    "text": "Ce que décide `onBeforeDrop` :\n- `'accept'` (ou `true`, ou rien) : le dépôt a lieu ;\n- `'reject'` (ou `false`) : pas de dépôt, les items reviennent à leur place ;\n- une liste d'ids : seuls ces items sont acceptés, les autres reviennent à leur place ;\n- `'continue'` : pas de dépôt, et le glissement continue. Avec un pointeur, l'item le suit de nouveau (sans bouton maintenu) et le relâchement suivant le dépose, un clic suffit ; au toucher, il est repris ; le clavier le déplace comme avant. Escape l'annule. Le dépôt consulte de nouveau `onBeforeDrop`."
+  },
+  "AcceptRule": {
+    "source": "b40b673608",
+    "text": "`'*'` ou une règle omise accepte tout. Les items sans type satisfont n'importe quelle règle sous forme de chaîne (comme `groups: []` en v2)."
+  },
+  "AcceptMode": {
+    "source": "2aa08aef31",
+    "text": "`'all'` : chaque item glissé doit correspondre ; `'some'` : au moins un (les autres peuvent être refusés dans `onBeforeDrop`)."
+  },
+  "KeyboardMoveContext.direction": {
+    "source": "a0b25b3b54",
+    "text": "Vecteur unitaire de la flèche pressée."
+  },
+  "DnDMonitor.onBeforeDrop": {
+    "source": "7c0b37588d",
+    "text": "S'exécute avant que le dépôt ne soit validé (voir `BeforeDropResult`) : `'reject'` le refuse, des ids en acceptent un sous-ensemble."
+  },
+  "DnDMonitor.onDragEnd": {
+    "source": "117782ceb2",
+    "text": "Une notification une fois le dépôt terminé : les listes triables ont exécuté leur `onDrop` et l'ont écrit."
+  },
+  "DnDMonitor.onDragResume": {
+    "source": "8e5af01ef3",
+    "text": "`onBeforeDrop` a répondu `'continue'` : il n'y a pas eu de dépôt, et le glissement continue."
+  },
+  "DnDMonitor.getKeyboardCoordinates": {
+    "source": "72d709477a",
+    "text": "Glissements au clavier : prochaine position du pointeur pour une flèche (par exemple le prochain emplacement triable)."
+  },
+  "DnDState": {
+    "source": "60baeb2f00",
+    "text": "L'état du glissement prend fin quand le dépôt est décidé : `active`, `over` et `pointer` valent `null` (et les droppables cessent d'accepter) pendant que l'overlay s'anime encore jusqu'à sa place (`status` reste `'dropping'`). Une UI dérivée ne mélange jamais l'ancien glissement avec les nouvelles données. Pendant qu'un `onBeforeDrop` asynchrone décide, l'état est conservé tel qu'il était au relâchement, mais la page est sortie du mode glissement : son propre curseur et la sélection de texte sont revenus (une boîte de dialogue de confirmation fonctionne normalement), et l'overlay attend là où il a été déposé."
+  }
+}

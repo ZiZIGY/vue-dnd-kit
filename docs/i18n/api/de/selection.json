@@ -1,0 +1,30 @@
+{
+  "SelectionStrategy": {
+    "source": "e9f3f3d3ea",
+    "text": "- `'toggle'`: Elemente, die der Rahmen kreuzt, kehren ihren Zustand von vor dem Rahmen um;\n- `'select'`: Nur die Elemente innerhalb des Rahmens sind ausgewählt."
+  },
+  "SelectionModifier": {
+    "source": "c7f915cabf",
+    "text": "Tasten (`KeyboardEvent.key` oder `.code`), die gedrückt sein müssen, damit ein Druck einen Rahmen aufzieht: alle oder `'some'` davon."
+  },
+  "SelectionAreaOptions": {
+    "source": "395589bdaa",
+    "text": "Optionen von `makeSelectionArea`. `modifier`, `strategy`, `accept` und `disabled` nehmen einen Wert, ein Ref oder einen Getter entgegen (`accept`: einen Wert oder ein Ref, eine Funktion ist eine Regel) und werden gelesen, wenn ein Druck einen Rahmen startet; `disabled` einzuschalten bricht auch einen laufenden ab."
+  },
+  "SelectionAreaOptions.selection": {
+    "source": "294f767d3b",
+    "text": "Standardmäßig die Auswahl des Providers."
+  },
+  "SelectionAreaOptions.strategy": {
+    "source": "0367d14627",
+    "text": "Standard `'toggle'`."
+  },
+  "SelectionAreaOptions.accept": {
+    "source": "6293487b0c",
+    "text": "Welche ziehbaren Elemente der Rahmen auswählt; der Matcher der Drop-Ziele."
+  },
+  "SelectionAreaReturn.style": {
+    "source": "e4525127b1",
+    "text": "Style für das Element des Auswahlrechtecks (absolut, relativ zum Container)."
+  }
+}

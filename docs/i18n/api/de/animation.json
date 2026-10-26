@@ -1,0 +1,102 @@
+{
+  "LayoutAnimationContext.from": {
+    "source": "c5845d8793",
+    "text": "Sichtbares Rechteck vor der Änderung (wo eine laufende Animation das Element gezeigt hat)."
+  },
+  "LayoutAnimationContext.to": {
+    "source": "17f753cbe6",
+    "text": "Layout-Rechteck nach der Änderung."
+  },
+  "LayoutAnimationContext.reason": {
+    "source": "eceea904fa",
+    "text": "Was das Element bewegt hat: ein Drag (`'drag'`: Sortieren, der Drop, ein Abbruch) oder eine Änderung deiner Daten, die kein Drag ausgelöst hat (`'change'`, bei eingeschaltetem `animate` der Liste)."
+  },
+  "LayoutAnimationContext.signal": {
+    "source": "c8aa938f56",
+    "text": "Wird abgebrochen, wenn die Bibliothek die Animation unterbricht: Das Element bewegt sich erneut, bevor sie endet (die nächste Animation beginnt dort, wo es gezeigt wird), oder Animationen werden ausgeschaltet. Eine zurückgegebene `Animation` wird für dich abgebrochen. Stoppe hier alles andere und mache die Styles, die es gesetzt hat, sofort rückgängig: Das Layout wird direkt danach gemessen."
+  },
+  "LayoutAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "`prefers-reduced-motion: reduce` ist gesetzt. Die eigenen Animationen der Bibliothek laufen dann nicht; deine Funktionen laufen immer und entscheiden anhand dieses Werts (überspringen oder eine Überblendung beibehalten)."
+  },
+  "LayoutAnimation": {
+    "source": "233b130a9c",
+    "text": "Wie Elemente an ihre neuen Plätze gelangen: `true` (Standard-Timing), Optionen, `false` (sie springen) oder eine Funktion, die ein Element von `from` nach `to` animiert und seine `Animation` zurückgibt, ein Promise, das abgeschlossen ist, wenn sie endet, oder nichts."
+  },
+  "DropAnimationContext.overlay": {
+    "source": "e272382994",
+    "text": "Die Box des Overlays; sie landet im Slot des aktiven Elements. Bei einem Multi-Drag landen die Klone der anderen Elemente, die darin mitfahren (die des Standard-Overlays, die `DragPreview`s eines eigenen), von selbst in ihren eigenen Slots (mit dem Standard-Timing, wenn dies eine eigene Funktion ist)."
+  },
+  "DropAnimationContext.to": {
+    "source": "d0780ba408",
+    "text": "Endgültiges Rechteck des abgelegten Elements; `null`, wenn es nicht gerendert oder nicht sichtbar ist (das Overlay wird ausgeblendet)."
+  },
+  "DropAnimationContext.into": {
+    "source": "cecafada99",
+    "text": "Das Element ist nach einem Drop auf eine Drop-Zone (keine sortierbare Liste) nicht zu sehen, z. B. wurde es in ein anderes Element (einen Ordner) oder eine Papierkorb-Zone abgelegt: das sichtbare Rechteck der Zone. Die Standardanimation lässt das Overlay beim Ausblenden in dieses Rechteck schrumpfen, statt es an Ort und Stelle auszublenden."
+  },
+  "DropAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "`prefers-reduced-motion: reduce` ist gesetzt. Die eigenen Animationen der Bibliothek laufen dann nicht; deine Funktionen laufen immer und entscheiden anhand dieses Werts (überspringen oder eine Überblendung beibehalten)."
+  },
+  "EnterAnimationContext": {
+    "source": "bef530cbfe",
+    "text": "Ein Element, das in einer Liste mit eingeschaltetem `animate` erschienen ist: hinzugefügt oder wieder eingeblendet (ein Filter, ein aufgeklappter Baumknoten)."
+  },
+  "EnterAnimationContext.element": {
+    "source": "120613b512",
+    "text": "Das DOM-Element des Elements, bereits an seinem Platz."
+  },
+  "EnterAnimationContext.to": {
+    "source": "fd058782f5",
+    "text": "Wo es erschienen ist (Layout-Rechteck)."
+  },
+  "EnterAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "`prefers-reduced-motion: reduce` ist gesetzt. Die eigenen Animationen der Bibliothek laufen dann nicht; deine Funktionen laufen immer und entscheiden anhand dieses Werts (überspringen oder eine Überblendung beibehalten)."
+  },
+  "LeaveAnimationContext": {
+    "source": "b67e70e13a",
+    "text": "Ein Element, das eine Liste mit eingeschaltetem `animate` verlassen hat: entfernt oder ausgeblendet (ein Filter, ein zugeklappter Baumknoten)."
+  },
+  "LeaveAnimationContext.element": {
+    "source": "a4f7390241",
+    "text": "Eine Kopie des DOM-Elements, gezeigt dort, wo das Element war (das Element selbst ist weg): absolut positioniert in seinem alten Elternelement, für den Zeiger nicht erreichbar, markiert mit `data-dnd-leaving`. Die Bibliothek entfernt sie, wenn deine Animation endet."
+  },
+  "LeaveAnimationContext.from": {
+    "source": "645084e2fd",
+    "text": "Wo das Element war."
+  },
+  "LeaveAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "`prefers-reduced-motion: reduce` ist gesetzt. Die eigenen Animationen der Bibliothek laufen dann nicht; deine Funktionen laufen immer und entscheiden anhand dieses Werts (überspringen oder eine Überblendung beibehalten)."
+  },
+  "EnterAnimation": {
+    "source": "9a7cbcfe92",
+    "text": "`true`, Optionen, `false` (das Element erscheint einfach) oder eine Funktion, die sein Erscheinen animiert."
+  },
+  "LeaveAnimation": {
+    "source": "fa236e4208",
+    "text": "`true`, Optionen, `false` (das Element verschwindet einfach) oder eine Funktion, die das Verschwinden der an seinem Platz zurückgelassenen Kopie animiert: Gib ihre `Animation` oder ein Promise zurück, und die Kopie wird entfernt, wenn sie endet (sofort, wenn die Funktion nichts zurückgibt)."
+  },
+  "AutoAnimationOptions": {
+    "source": "0130acd24e",
+    "text": "`animate` mit seinen Teilen: `duration` und `easing` für alle, und pro Art von Änderung `true`, Optionen (über den gemeinsamen), `false` oder eine eigene Funktion."
+  },
+  "AutoAnimationOptions.move": {
+    "source": "684eb0594d",
+    "text": "Elemente, die ihren Platz gewechselt haben (das Standard-FLIP, wie bei `animation`; eine Funktion ersetzt es)."
+  },
+  "AutoAnimationOptions.enter": {
+    "source": "7d611358b7",
+    "text": "Erschienene Elemente. Standard: Sie werden an ihrem Platz eingeblendet."
+  },
+  "AutoAnimationOptions.leave": {
+    "source": "de8fbd3ca4",
+    "text": "Verschwundene Elemente. Standard: Eine Kopie des Elements wird dort ausgeblendet, wo es war, und schrumpft dabei ein wenig."
+  },
+  "AutoAnimation": {
+    "source": "eb08eca97d",
+    "text": "Animiert Änderungen an den Elementen einer Liste (oder eines Baums), die kein Drag ausgelöst hat: hinzugefügte, entfernte, verschobene (eine Sortierung, ein Mischen, ein Verschieben zwischen Listen einer Gruppe) oder gefilterte Elemente. Standardmäßig aus (`false`); `true` animiert Verschiebungen sowie erscheinende und verschwindende Elemente mit dem Standard-Timing. Drags behalten ihre eigenen Animationen (`animation`, `dropAnimation`). Mit `prefers-reduced-motion: reduce` laufen die Standardanimationen nicht; deine Funktionen laufen trotzdem (mit `reducedMotion: true`). Nur Elemente in der Nähe des sichtbaren Bereichs werden animiert (nicht gemountete Zeilen einer virtuellen Liste werden übersprungen)."
+  }
+}

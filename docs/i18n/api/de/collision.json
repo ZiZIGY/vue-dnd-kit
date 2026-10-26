@@ -1,0 +1,38 @@
+{
+  "CollisionCandidate.rect": {
+    "source": "6367b9d53a",
+    "text": "Sichtbarer Teil des Ziels: beschnitten durch seine Scroll-Container und den Viewport."
+  },
+  "CollisionCandidate.depth": {
+    "source": "87728867d4",
+    "text": "Verschachtelungsebene unter den Drop-Zielen: 0 ganz oben, tiefere Ziele haben höhere Werte."
+  },
+  "CollisionArgs.hits": {
+    "source": "78fd5d5eeb",
+    "text": "Drop-Ziele unter dem Zeiger aus dem Hit-Testing (berücksichtigt z-Reihenfolge und Shadow Roots), das beste zuerst."
+  },
+  "CollisionDetection": {
+    "source": "1248ad0f81",
+    "text": "Gibt die IDs der Kandidaten zurück, den besten zuerst."
+  },
+  "ModifierArgs.transform": {
+    "source": "559160a1f5",
+    "text": "Versatz seit dem Start des Drags, wie ihn die vorherigen Modifier verändert haben."
+  },
+  "ModifierArgs.activeRect": {
+    "source": "c410ca6675",
+    "text": "Rechteck des gezogenen Elements beim Start des Drags."
+  },
+  "ModifierArgs.overlayRect": {
+    "source": "cbccda9a74",
+    "text": "Rechteck der Overlay-Box, wenn sie um `transform` verschoben würde, in ihrer jetzigen Größe. Mit `overlayFit: 'slot'` ändert die Box ihre Größe um den Zeiger herum, daher ist sie nicht immer `activeRect`, verschoben um `transform`."
+  },
+  "ModifierArgs.origin": {
+    "source": "f348437ad5",
+    "text": "Position des Zeigers beim Start des Drags."
+  },
+  "ModifierArgs.containerRect": {
+    "source": "2a3d109ccb",
+    "text": "Container der sortierbaren Liste (oder Elternelement) des gezogenen Elements, gemessen beim Start des Drags."
+  }
+}

@@ -1,15 +1,20 @@
 <script setup lang="ts">
-  import { api } from '#api';
+  import { api, translations } from '#api';
 
   /**
    * The members of an interface (or the definition of a type) of the library, read from its
    * types and JSDoc at build time (`modules/api.ts`): `::api-table{name="SortableListOptions"}`.
+   * In another language, the descriptions translated for it, or the English.
    */
   const props = defineProps<{ name: string }>();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   const entry = computed(() => api[props.name]);
   if (!entry.value && import.meta.dev) console.warn(`[docs] No type named "${props.name}" in the library's types.`);
+
+  const words = (await translations[locale.value]?.())?.default ?? {};
+  /** A description in the page's language: `key` is `Name` or `Name.member`. */
+  const text = (key: string, english: string) => words[key] ?? english;
 
   const escape = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   /** Inline marks of the JSDoc: `code`, **bold**. */
@@ -53,7 +58,7 @@
     <div
       v-if="entry.description"
       class="api-text mb-4 text-[15px] leading-relaxed text-muted"
-      v-html="describe(entry.description)"
+      v-html="describe(text(name, entry.description))"
     />
     <pre
       v-if="entry.kind === 'type'"
@@ -99,7 +104,7 @@
           <div
             v-if="member.description || member.deprecated"
             class="api-text mt-2 text-[14px] leading-relaxed text-muted"
-            v-html="describe([member.deprecated, member.description].filter(Boolean).join('\n\n'))"
+            v-html="describe([member.deprecated, member.description && text(`${name}.${member.name}`, member.description)].filter(Boolean).join('\n\n'))"
           />
         </div>
       </div>

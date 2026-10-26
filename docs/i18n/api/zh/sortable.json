@@ -1,0 +1,226 @@
+{
+  "MultipleMode": {
+    "source": "d913df4640",
+    "text": "多项拖拽中其他选中项的行为：\n- `'group'`：它们离开原位置，作为连续的占位随当前项一起移动，因此悬停时列表已经显示出放置的结果；\n- `'gaps'`：它们留在原处，直到放置；\n- `'stack'`：它们收进浮层中。\n\n默认浮层会把被拖拽的项沿列表方向排成一列（`'group'`、`'gaps'`；在水平列表中是一行，在网格中是当前项后面的一叠），或者显示当前项加上数量（`'stack'`）。"
+  },
+  "SortablePutContext.from": {
+    "source": "3ade1d4f94",
+    "text": "来源列表，对于外部的可拖拽元素为 `null`。"
+  },
+  "SortableGroupOptions.pull": {
+    "source": "ea3b5c781f",
+    "text": "项能否离开这个列表：移动、复制（`'clone'`，面板）或完全不能。"
+  },
+  "SortableGroupOptions.put": {
+    "source": "a59ba8af01",
+    "text": "项能否进入这个列表。"
+  },
+  "SortableItems": {
+    "source": "ff96686528",
+    "text": "可排序项的数据源。可写的 ref：库会把每次放置写入其中。只读的数据源（getter、只读 ref、computed：不可变的 store、服务端状态、只能通过 action 修改的 store）：在 `event.preventDefault()` 之后，由你根据 `event.result` 应用每次放置（参见 `SortableDropEvent`）。"
+  },
+  "SortableDropEvent": {
+    "source": "1cb69d3b8b",
+    "text": "可排序列表或树上的一次放置。它的钩子按顺序运行：`onBeforeDrop` 做决定，`onDrop` 收到通知，然后默认行为把 `result` 写入它所列出的每个列表的 `items`，最后浮层落位。在任一钩子中调用 `preventDefault()` 都会跳过这次写入，这样你就可以自己应用 `result`。"
+  },
+  "SortableDropEvent.to": {
+    "source": "f5bc49d9b2",
+    "text": "没有任何东西落下时，`index` 为 -1：项离开了它们的列表（`e.source.remove()`、`dropOutside: 'remove'`）。"
+  },
+  "SortableDropEvent.partner": {
+    "source": "0dc90e4f32",
+    "text": "`mode: 'swap'`：与被拖拽项交换的那个项。它朝相反的方向移动，`from` 是被拖拽项占据的位置（上面的 `to`），`to` 是被拖拽项开始时的位置（上面的 `from`）；在列表之间交换时，它会移入被拖拽项所在的列表。"
+  },
+  "SortableDropEvent.result": {
+    "source": "88350b68d9",
+    "text": "这次放置改变的每个列表的新项，以列表 id 为键：正是默认写入会放进它们 `items` 中的内容，以新数组的形式提供。移动、复制、新创建的项、部分接受、交换的双方，以及被移除的项（项内部目标中的 `e.source.remove()`、回收区、`dropOutside: 'remove'`）都包含在其中；放置后保持不变的列表则不包含。树的条目是一个新的根数组：变化路径上的节点是副本（`withChildren`），未受影响的子树是共享的，你的节点永远不会被修改。在 `onBeforeDrop` 中，它是钩子做出回答之前的放置结果（返回部分 key 会改变它）；`onDrop` 收到的是最终结果。"
+  },
+  "SortableDropEvent.preventDefault": {
+    "source": "e42cc44015",
+    "text": "跳过默认写入，对 `result` 中的每个列表都跳过（只写入其中一部分会丢失或重复项）。在 `onDrop` 中，或在异步的 `onBeforeDrop` resolve 之前自己应用 `result`，浮层就会按新的顺序落位。如果哪里都没有应用，列表保持原样，浮层飞回原处（副本和新创建的项还没有位置，会淡出）。"
+  },
+  "SortableDropEvent.defaultPrevented": {
+    "source": "0d1dce05c0",
+    "text": "在 `onBeforeDrop` 或 `onDrop` 中调用过 `preventDefault()`。"
+  },
+  "SortableIndicator.index": {
+    "source": "0043b67077",
+    "text": "在渲染出的列表中的插入位置。"
+  },
+  "SortableIndicator.key": {
+    "source": "12ba4e5060",
+    "text": "指示器所依附的项；在空列表中为 `null`。"
+  },
+  "SortableIndicator.side": {
+    "source": "616c01270f",
+    "text": "插入线位于 `key` 的哪一侧。`'inside'`（树）：悬停在一个接收被拖拽节点的行的中间，放置会进入这一行，成为它的第一个子节点。"
+  },
+  "SortableIndicator.depth": {
+    "source": "d3a6c5b55c",
+    "text": "树：被放下的节点将得到的深度（根节点为 0），例如用来缩进插入线。"
+  },
+  "SortableIndicator.parentKey": {
+    "source": "690c7fc50c",
+    "text": "树：被放下的节点将得到的父节点，在根层级时为 `null`。"
+  },
+  "SortableListOptions": {
+    "source": "ad5d98cc02",
+    "text": "`makeSortableList` 的选项。每个组件一个列表（或树）：它提供其项读取的上下文，所以同一组件中的第二个列表会拿走第一个列表的项（开发构建会对此发出警告）。\n\n选项接受值、ref 或 getter（`overlay`、`animation`：值或 ref），并在列表需要时读取，所以变化最迟在下一次拖拽时生效。例外：`id` 和 `group` 只在创建列表时读取一次；`items` 就是模型本身；函数（`getKey`、`clone`、`createItem`、各个回调）按原样传入。"
+  },
+  "SortableListOptions.items": {
+    "source": "bcf07acd7a",
+    "text": "数据的唯一来源。可写的 ref 会在放置时、紧接在 `onDrop` 之后接收新数组。只读的数据源（getter、只读 ref、computed）则不能：调用 `event.preventDefault()`，自己应用 `event.result`。如果那里的放置被留给库处理，开发构建会发出警告，而这样的放置什么都不会改变。"
+  },
+  "SortableListOptions.getKey": {
+    "source": "f5ae57e9ca",
+    "text": "默认：`item.id`；对于原始值，则是项本身。也用于为 `makeSortableItem({ item })` 生成 key。"
+  },
+  "SortableListOptions.id": {
+    "source": "c0adaf519f",
+    "text": "默认：`useId()`，在服务端和客户端渲染之间保持稳定。只读取一次。"
+  },
+  "SortableListOptions.overlay": {
+    "source": "4d236710b1",
+    "text": "这个列表中项的浮层组件（项自己的 `overlay` 优先）。它接收 `OverlayProps`，并在整个拖拽过程中保持不变，经过其他列表时也是如此。在拖拽开始时读取。"
+  },
+  "SortableListOptions.modifiers": {
+    "source": "16c37d217b",
+    "text": "这个列表中项的拖拽修饰器，在 provider 的 `modifiers` 之后应用（项自己的 `modifiers` 优先）：例如用 `[restrictToVerticalAxis]` 让垂直列表的项保持在轴上。在拖拽开始时读取。"
+  },
+  "SortableListOptions.axis": {
+    "source": "96097df6fa",
+    "text": "把这个列表中项的拖拽锁定在一个轴上：垂直列表用 `'y'`，水平列表用 `'x'`（项自己的 `axis` 优先）。锁定在修饰器之后执行，所以无论修饰器做什么，锁定都成立。在拖拽开始时读取。"
+  },
+  "SortableListOptions.group": {
+    "source": "2d636dda19",
+    "text": "分组名称相同的列表会互相交换项。默认：自成一组。只读取一次。"
+  },
+  "SortableListOptions.acceptMode": {
+    "source": "045f22daca",
+    "text": "多种类型项的多项拖拽：全部（`'all'`，默认）还是部分（`'some'`）项必须被接受（`group.put`）。"
+  },
+  "SortableListOptions.strategy": {
+    "source": "3d22ac3d01",
+    "text": "默认为 `'vertical'`。"
+  },
+  "SortableListOptions.behavior": {
+    "source": "6f2761c488",
+    "text": "`'swap'`：被拖拽的项与被悬停的项实时交换位置；移回它上方或移出列表会还原。同一分组中都设置了交换的列表之间会互相交换项：被悬停的项移到被拖拽项的位置，所以它必须能离开自己的列表（`group.pull: true`）并进入被拖拽项的列表（`group.put`）。多项拖拽会排序而不是交换。默认为 `'sort'`。"
+  },
+  "SortableListOptions.placeholder": {
+    "source": "1a678d916f",
+    "text": "`'indicator'`：列表不移动，由 `indicator` 指出放置的位置。默认为 `'item'`。"
+  },
+  "SortableListOptions.multiple": {
+    "source": "27faee6df8",
+    "text": "从这个列表开始的拖拽的多项拖拽模式。默认为 `'group'`。在拖拽开始时读取。"
+  },
+  "SortableListOptions.sort": {
+    "source": "9640243d4c",
+    "text": "`false`：项不能在这个列表内部重新排序（面板）。"
+  },
+  "SortableListOptions.clone": {
+    "source": "f4b2c534cd",
+    "text": "创建副本（`pull: 'clone'`、复制修饰键）。复制时必需。"
+  },
+  "SortableListOptions.createItem": {
+    "source": "5c9f1d3856",
+    "text": "接收来自外部的普通可拖拽元素：创建要插入的项。使用键盘时，朝列表方向按方向键即可把可拖拽元素放进来（与它平齐，就像在列表之间移动那样），之后新创建的项会像其他项一样逐个位置移动。"
+  },
+  "SortableListOptions.dropOutside": {
+    "source": "bffdd0d062",
+    "text": "放在所有目标之外时：把项留在占位所在的地方、取消，或者移除它们。默认为 `'placeholder'`（使用 `placeholder: 'indicator'` 时为 `'cancel'`）。在放置时读取。"
+  },
+  "SortableListOptions.animation": {
+    "source": "cc6ad2ca6a",
+    "text": "这个列表的 FLIP 动画；默认：provider 的 `animation`。值或 ref（函数即自定义动画）。"
+  },
+  "SortableListOptions.animate": {
+    "source": "86283c7ec0",
+    "text": "为非拖拽引起的 `items` 变化添加动画：被添加、删除、移动和过滤的项（参见 `AutoAnimation`）。默认：provider 的 `animate`，除非在那里设置，否则关闭。在 `items` 变化时读取。"
+  },
+  "SortableListOptions.autoScroll": {
+    "source": "0c0b0867b3",
+    "text": "为这个列表的滚动容器覆盖 provider 的 `autoScroll`。在拖拽开始时读取。"
+  },
+  "SortableListOptions.dropzone": {
+    "source": "6202e9c757",
+    "text": "替列表接收放置的元素，默认是列表元素本身：例如包围一个短卡片列表的整列，这样在最后一张卡片下方松开的卡片仍然会落进列表（落到末尾）。项仍然留在列表元素中。"
+  },
+  "SortableListOptions.onBeforeDrop": {
+    "source": "75b3651128",
+    "text": "在放置进入这个列表之前、以及 `dropOutside: 'remove'` 移出它的项之前询问：`false` 拒绝（项飞回原处），返回部分 key 则只接受这些项。可以是异步的：浮层停在被放下的位置等待。抛出错误也会拒绝这次放置。关于 `result` 和 `preventDefault`，参见 `SortableDropEvent`。"
+  },
+  "SortableListOptions.onDrop": {
+    "source": "e1c7bf0125",
+    "text": "放置进入这个列表并被接受后、写入之前调用：`items` 仍是旧顺序，`event.result` 是新顺序。同步执行：它返回后紧接着就会写入，除非它调用了 `event.preventDefault()`。当项被移除时（`to.index` 为 -1），也会在项所来自的列表上调用。"
+  },
+  "SortableListReturn.items": {
+    "source": "d650d61bc4",
+    "text": "草稿顺序：渲染它，而不是源数组。"
+  },
+  "SortableListReturn.activeIndex": {
+    "source": "eff30ad0eb",
+    "text": "当前项在这个列表草稿中的索引，不在这里时为 -1。"
+  },
+  "SortableListReturn.captureLayout": {
+    "source": "4d1e38426d",
+    "text": "为库没有引起的布局变化添加动画（例如虚拟化器重新测量）。"
+  },
+  "SortableItemOptions": {
+    "source": "b25e70a1fe",
+    "text": "传入 `id` 或 `item`（两者都传时 `id` 优先）。可排序的 key 必须来自数据：自动生成的 id 会在组件重新创建时（移到另一个列表、被虚拟列表回收）发生变化，拖拽就会丢失这个项。\n\n除 `canDrag` 外，选项都接受值、ref 或 getter（`overlay`：值或 ref），含义与 `makeDraggable` 上的相同。没有 `keyboard`：键盘按位置逐个移动可排序项。"
+  },
+  "SortableItemOptions.id": {
+    "source": "f76ac37600",
+    "text": "项在其列表中的 key。在虚拟列表中，getter 能让它保持最新。"
+  },
+  "SortableItemOptions.item": {
+    "source": "e326c731e9",
+    "text": "这个元素渲染的项，例如 `() => props.task`。它的 key 来自所属列表（或树）的 `getKey`，默认为 `item.id`。"
+  },
+  "SortableItemOptions.overlay": {
+    "source": "2ded9454bb",
+    "text": "这个项的浮层组件；优先于列表的 `overlay`。在拖拽开始时读取。"
+  },
+  "SortableItemOptions.modifiers": {
+    "source": "55d5129188",
+    "text": "这个项的拖拽修饰器，在 provider 的之后应用；优先于列表的 `modifiers`。"
+  },
+  "SortableItemOptions.axis": {
+    "source": "09e5ed09d6",
+    "text": "把这个项的拖拽锁定在一个轴上（`'x'`、`'y'`）；优先于列表的 `axis`。"
+  },
+  "SortableItemOptions.handle": {
+    "source": "519bda20d7",
+    "text": "项内部用于开始拖拽的元素或选择器（它也会得到相关属性）。"
+  },
+  "SortableItemOptions.activation": {
+    "source": "07b1465312",
+    "text": "覆盖 provider 的 `activation`。在按下开始时读取。"
+  },
+  "SortableItemOptions.canDrag": {
+    "source": "ba9d01922f",
+    "text": "额外的关卡，例如只在按住某个键时才能拖拽。"
+  },
+  "SortableItemOptions.attributes": {
+    "source": "db7791f2d8",
+    "text": "设置 role/tabindex/aria-* 属性（默认 `true`），永远不会覆盖用户自己设置的。实时生效：关闭后，库设置的属性会被移除。"
+  },
+  "SortableItemReturn.isDragging": {
+    "source": "f148b949fd",
+    "text": "这个项正在被拖拽（对多项拖拽中的其他项也为 true）。"
+  },
+  "SortableItemReturn.isPlaceholder": {
+    "source": "e31014eb2c",
+    "text": "这个元素是被拖拽项将落入的位置：当前项的位置；在多项拖拽的 `'group'` 模式下，还包括随它一起移动的各项的位置。"
+  },
+  "SortableItemReturn.indicator": {
+    "source": "3e7f9ce50b",
+    "text": "指示器模式：列表的 `indicator` 依附于这个项时为该值，否则为 `null`。`side` 说明插入线的位置；在树中，`depth` 和 `parentKey` 说明放置落在哪里（`side: 'inside'`：放进这个项）。"
+  },
+  "SortableItemReturn.index": {
+    "source": "de82731af7",
+    "text": "在渲染出的草稿中的索引，未知时为 -1。"
+  }
+}

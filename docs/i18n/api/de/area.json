@@ -1,0 +1,38 @@
+{
+  "DragAreaOptions": {
+    "source": "aedcd47d8d",
+    "text": "Optionen von `makeDragArea`: Regeln für die Drags, die innerhalb des Elements des Bereichs beginnen (ziehbare wie sortierbare Elemente), sodass ein einziger Provider die ganze App bedienen kann, während Teile der Seite auf ihre eigene Weise ziehen. Bei verschachtelten Bereichen gewinnt der nächstgelegene.\n\nJede Option nimmt einen Wert, ein Ref oder einen Getter entgegen und wird gelesen, wenn sie gebraucht wird: wenn ein Druck beginnt (`activation`, `disabled`) oder wenn der Drag beginnt."
+  },
+  "DragAreaOptions.axis": {
+    "source": "904978157c",
+    "text": "Beschränkt die Drags auf eine Achse, nach den Modifiern. Das eigene `axis` eines ziehbaren Elements (oder das seiner Liste) gewinnt."
+  },
+  "DragAreaOptions.modifiers": {
+    "source": "fd6af7b03a",
+    "text": "Modifier für die Drags, nach denen des Providers und vor den eigenen des ziehbaren Elements (oder denen seiner Liste): z. B. `[snapToGrid(20)]` für ein Board."
+  },
+  "DragAreaOptions.restrictToArea": {
+    "source": "9a08abdb40",
+    "text": "`true`: Die Drags bleiben innerhalb des Elements des Bereichs (nach den Modifiern, vor der Achsensperre)."
+  },
+  "DragAreaOptions.autoScroll": {
+    "source": "42d0809672",
+    "text": "Überschreibt `autoScroll` des Providers für den Scroll-Container des Bereichs: das Element selbst oder seinen nächsten scrollbaren Vorfahren. `false` schaltet es dort aus. Anders als die anderen Optionen gilt es für jeden Drag, der den Container scrollt, egal wo er begonnen hat."
+  },
+  "DragAreaOptions.activation": {
+    "source": "5bc47c8127",
+    "text": "Aktivierung der Drags pro Zeigerart, zwischen der eigenen des ziehbaren Elements (die gewinnt) und der des Providers: z. B. ein längeres Drücken per Touch in einem scrollenden Feed."
+  },
+  "DragAreaOptions.disabled": {
+    "source": "238dd09834",
+    "text": "`true`: Kein Drag beginnt im Bereich, auch nicht in den Bereichen darin (anders als bei den anderen Optionen, die vom nächstgelegenen Bereich kommen). Seine ziehbaren Elemente melden `aria-disabled`."
+  },
+  "DragAreaReturn.isDragging": {
+    "source": "5e8f41c6fd",
+    "text": "Ein Drag, der in diesem Bereich begonnen hat, läuft (bis über seinen Drop entschieden ist)."
+  },
+  "DragAreaReturn.isAutoScrolling": {
+    "source": "828bff5f0a",
+    "text": "Auto-Scroll bewegt den Scroll-Container des Bereichs (das Element oder seinen nächsten scrollbaren Vorfahren)."
+  }
+}

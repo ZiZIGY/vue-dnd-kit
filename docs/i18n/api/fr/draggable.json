@@ -1,0 +1,74 @@
+{
+  "DraggableOptions": {
+    "source": "6011f1e820",
+    "text": "Options de `makeDraggable`. Chaque option sauf `canDrag` accepte une valeur, une ref ou un getter (`overlay` : une valeur ou une ref) et est lue au moment où elle est nécessaire : un changement s'applique donc au plus tard au glissement suivant."
+  },
+  "DraggableOptions.id": {
+    "source": "2dac667235",
+    "text": "Id stable. Passez un getter dans les listes virtuelles, où les éléments sont recyclés. Par défaut : `useId()`, stable entre le rendu serveur et le rendu client, mais nouveau pour chaque instance du composant."
+  },
+  "DraggableOptions.handle": {
+    "source": "1330de430e",
+    "text": "Élément ou sélecteur, à l'intérieur de l'élément déplaçable, qui lance le glissement (et reçoit les attributs)."
+  },
+  "DraggableOptions.activation": {
+    "source": "07b1465312",
+    "text": "Remplace l'`activation` du provider. Lue au début d'un appui."
+  },
+  "DraggableOptions.canDrag": {
+    "source": "ba9d01922f",
+    "text": "Filtre supplémentaire, par exemple ne faire glisser que pendant qu'une touche est maintenue."
+  },
+  "DraggableOptions.overlay": {
+    "source": "f24fdc907d",
+    "text": "`true` (par défaut) : un overlay suit le pointeur, rendu par le slot `#overlay` du provider ou sous forme de clone de l'élément. Un composant : l'overlay le rend avec `OverlayProps`, avant le slot. `false` : pas d'overlay, l'élément lui-même bouge via le `transform` renvoyé. Une valeur ou une ref (une fonction est un composant fonctionnel), lue au début du glissement. Le clone laisse de côté les effets d'appui des kits UI (ondulations) et tout élément intérieur marqué `data-dnd-no-clone`."
+  },
+  "DraggableOptions.modifiers": {
+    "source": "71eb5c6851",
+    "text": "Modificateurs des glissements qui commencent ici, appliqués après les `modifiers` du provider : par exemple `[restrictToVerticalAxis]` pour un élément sur une page où les autres glissements sont libres. Lus au début du glissement."
+  },
+  "DraggableOptions.axis": {
+    "source": "41cb212360",
+    "text": "Verrouille sur un axe les glissements qui commencent ici : `'x'` ne déplace qu'horizontalement, `'y'` que verticalement. Le verrouillage vient après `modifiers` (`restrictToHorizontalAxis` / `restrictToVerticalAxis` en dernier) : il tient donc quoi qu'ils fassent. Lu au début du glissement."
+  },
+  "DraggableOptions.keyboard": {
+    "source": "fd726db037",
+    "text": "Les flèches dans les glissements libres : déplacer de quelques pixels (par défaut) ou sauter d'une cible de dépôt qui accepte l'élément à l'autre. Lu à chaque appui sur une flèche."
+  },
+  "DraggableOptions.attributes": {
+    "source": "f3f57590a6",
+    "text": "Définit les attributs role/tabindex/aria-* (`true` par défaut), sans jamais écraser ceux de l'utilisateur. L'id des instructions du provider rejoint un `aria-describedby` existant comme un jeton de plus (l'infobulle d'un kit UI sur le même élément garde le sien), et seul ce jeton est retiré le cas échéant. Réactif : le désactiver retire ce que la bibliothèque avait défini."
+  },
+  "DraggableReturn.transform": {
+    "source": "3c2e7e5527",
+    "text": "Décalage à appliquer quand `overlay: false`."
+  },
+  "DroppableOptions": {
+    "source": "6146f0758b",
+    "text": "Options de `makeDroppable`.\n\n**Déposer dans un item.** Une cible de dépôt placée sur l'élément d'un item triable (ou à l'intérieur) fonctionne comme partout ailleurs, avec une règle pendant que la liste de cet item trierait le glissement : elle ne compte que tant que le pointeur est au milieu de l'item (de 25 à 75 % le long de l'axe de la liste ; x dans les grilles), là où le dépôt va dans la cible et où la liste ne bouge pas pour lui. Près des bords de l'item, la liste trie comme d'habitude. Une cible dont l'`accept` refuse le glissement est ignorée : la liste trie donc au-dessus de l'item comme au-dessus de n'importe quel autre (inutile de la désactiver). Le clavier s'arrête sur une telle cible avant de dépasser son item. Une cible ne fait jamais partie de son propre glissement : ni dans (ou sur) un item glissé, ni dans l'emplacement où l'un d'eux atterrit. Pour sortir les items de leur liste dans `onDrop`, appelez `e.source.remove()`.\n\nChaque option sauf les callbacks accepte une valeur, une ref ou un getter (`accept` : une valeur ou une ref) et est lue en direct, pendant qu'un glissement cherche sa cible."
+  },
+  "DroppableOptions.id": {
+    "source": "ea58d47829",
+    "text": "Par défaut : `useId()`, stable entre le rendu serveur et le rendu client."
+  },
+  "DroppableOptions.accept": {
+    "source": "aae01588b5",
+    "text": "Ce que cette cible accepte. À l'intérieur d'un item triable, une cible qui refuse le glissement laisse la liste trier au-dessus d'elle. Une valeur ou une ref : une fonction est une règle."
+  },
+  "DroppableOptions.acceptMode": {
+    "source": "05b17f13f4",
+    "text": "`'all'` par défaut."
+  },
+  "DroppableOptions.priority": {
+    "source": "083ebc2847",
+    "text": "La plus haute l'emporte quand des cibles se chevauchent sans être imbriquées (0 par défaut). Les items triables l'emportent sur les conteneurs."
+  },
+  "DroppableReturn.isAccepting": {
+    "source": "520ef3c1da",
+    "text": "Quelque chose est en cours de glissement et cette cible l'accepte."
+  },
+  "DroppableReturn.placement": {
+    "source": "4e1160d2d2",
+    "text": "Position du pointeur par rapport aux moitiés de la cible pendant qu'elle est survolée."
+  }
+}

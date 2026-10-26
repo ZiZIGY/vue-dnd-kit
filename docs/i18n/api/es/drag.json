@@ -1,0 +1,98 @@
+{
+  "DragItem.item": {
+    "source": "7cfd4640f1",
+    "text": "El objeto del ítem cuando el arrastre viene de una lista ordenable."
+  },
+  "DragItem.type": {
+    "source": "9189758463",
+    "text": "`type` normalizado del elemento arrastrable; vacío significa que encaja con cualquier destino de drop."
+  },
+  "Active.id": {
+    "source": "f080aacddc",
+    "text": "Id del ítem desde el que empezó el arrastre."
+  },
+  "Active.ids": {
+    "source": "173336b06e",
+    "text": "Todos los ids arrastrados, empezando por el principal (multi-drag)."
+  },
+  "Active.element": {
+    "source": "b0e7f2b9f5",
+    "text": "Elemento desde el que empezó el arrastre. Puede quedar desconectado del DOM (listas virtuales, movimientos entre listas)."
+  },
+  "Active.rect": {
+    "source": "7964e6f559",
+    "text": "Rectángulo de layout de `element` al inicio del arrastre."
+  },
+  "Over.accepted": {
+    "source": "48997f2ee2",
+    "text": "Si la regla `accept` del destino acepta los ítems arrastrados."
+  },
+  "DragSource.list": {
+    "source": "57db105431",
+    "text": "Lista ordenable de la que vienen los ítems arrastrados."
+  },
+  "DragSource.remove": {
+    "source": "5ef5100d7a",
+    "text": "Quita los ítems arrastrados de su lista (zonas de papelera)."
+  },
+  "DnDEvent.pointer": {
+    "source": "49759bca51",
+    "text": "Puntero en coordenadas del viewport, tras los modificadores."
+  },
+  "DnDEvent.delta": {
+    "source": "292fe23ea1",
+    "text": "Desplazamiento desde el inicio del arrastre, tras los modificadores."
+  },
+  "DnDEvent.position": {
+    "source": "226682e4e6",
+    "text": "Dónde está la esquina superior izquierda de la caja arrastrada dentro de `over`, desde el borde de su padding y con su scroll: el `left`/`top` que coloca un ítem con posición absoluta donde se soltó (una nota en un tablero). `null` cuando no hay nada debajo. De la caja del overlay, o del propio elemento con `overlay: false`."
+  },
+  "DnDEvent.source": {
+    "source": "d69f88797f",
+    "text": "Presente cuando los ítems arrastrados vienen de una lista ordenable."
+  },
+  "DnDEndEvent.dropped": {
+    "source": "8ada0b47b1",
+    "text": "Falso cuando el arrastre terminó fuera de todo destino de drop."
+  },
+  "DnDEndEvent.accepted": {
+    "source": "bf82d1aeb9",
+    "text": "Ids aceptados por `onBeforeDrop` (todos los ids arrastrados, salvo que se devolviera un subconjunto)."
+  },
+  "BeforeDropResult": {
+    "source": "056be141e8",
+    "text": "Lo que decide `onBeforeDrop`:\n- `'accept'` (o `true`, o nada): el drop se completa;\n- `'reject'` (o `false`): no hay drop, los ítems vuelven a su sitio;\n- una lista de ids: solo se aceptan esos ítems, los demás vuelven a su sitio;\n- `'continue'`: no hay drop, y el arrastre continúa. Con un puntero, el ítem lo vuelve a seguir (sin botón pulsado) y la siguiente liberación lo suelta, basta un clic; al tocar, se vuelve a agarrar; el teclado lo mueve como antes. Escape lo cancela. El drop vuelve a consultar `onBeforeDrop`."
+  },
+  "AcceptRule": {
+    "source": "b40b673608",
+    "text": "`'*'` u omitida acepta todo. Los ítems sin tipo encajan con cualquier regla de tipo cadena (equivalente a `groups: []` de la v2)."
+  },
+  "AcceptMode": {
+    "source": "2aa08aef31",
+    "text": "`'all'`: todos los ítems arrastrados deben coincidir; `'some'`: al menos uno (los demás se pueden rechazar en `onBeforeDrop`)."
+  },
+  "KeyboardMoveContext.direction": {
+    "source": "a0b25b3b54",
+    "text": "Vector unitario de la flecha pulsada."
+  },
+  "DnDMonitor.onBeforeDrop": {
+    "source": "7c0b37588d",
+    "text": "Se ejecuta antes de confirmar el drop (consulta `BeforeDropResult`): `'reject'` lo rechaza, unos ids aceptan un subconjunto."
+  },
+  "DnDMonitor.onDragEnd": {
+    "source": "117782ceb2",
+    "text": "Una notificación una vez terminado el drop: las listas ordenables ya han ejecutado su `onDrop` y lo han escrito."
+  },
+  "DnDMonitor.onDragResume": {
+    "source": "8e5af01ef3",
+    "text": "`onBeforeDrop` respondió `'continue'`: no hubo drop y el arrastre continúa."
+  },
+  "DnDMonitor.getKeyboardCoordinates": {
+    "source": "72d709477a",
+    "text": "Arrastres con teclado: la siguiente posición del puntero para una flecha (por ejemplo, el siguiente hueco ordenable)."
+  },
+  "DnDState": {
+    "source": "60baeb2f00",
+    "text": "El estado del arrastre termina cuando se decide el drop: `active`, `over` y `pointer` pasan a valer `null` (y los droppables dejan de aceptar) mientras el overlay todavía se anima hasta su sitio (`status` sigue en `'dropping'`). La UI derivada nunca mezcla el arrastre anterior con los datos nuevos. Mientras decide un `onBeforeDrop` asíncrono, el estado se conserva como estaba al soltar, pero la página sale del modo de arrastre: vuelven su propio cursor y la selección de texto (un diálogo de confirmación funciona con normalidad), y el overlay espera donde se soltó."
+  }
+}

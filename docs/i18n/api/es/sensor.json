@@ -1,0 +1,130 @@
+{
+  "SensorDirection": {
+    "source": "7f9360b8f1",
+    "text": "La flecha de un paso con teclado."
+  },
+  "SortablePosition": {
+    "source": "9d6ffc08ba",
+    "text": "Una posición en una lista ordenable, para `SensorDrag.place()` (y `moveItem` de `@vue-dnd-kit/actions`). Solo listas: los árboles colocan los ítems con sus propias claves."
+  },
+  "SortablePosition.list": {
+    "source": "acaba34476",
+    "text": "Id de la lista (`SortableListOptions.id`). Por defecto: la lista en la que está el ítem."
+  },
+  "SortablePosition.index": {
+    "source": "879c486a9b",
+    "text": "Índice en el que acaba el ítem, contado sin el propio ítem (un bloque de multi-drag cuenta una vez). Limitado a la lista; por defecto: el final."
+  },
+  "SensorActivation": {
+    "source": "bee94513f8",
+    "text": "Lo que pide un sensor cuando su entrada quiere arrastrar (`SensorContext.activate()`)."
+  },
+  "SensorActivation.target": {
+    "source": "3456b2c0b5",
+    "text": "Dónde cayó la entrada: un elemento dentro de un elemento arrastrable, o el id de un elemento arrastrable. Un elemento debe pertenecer a este provider; en los arrastres `'pointer'` debe estar sobre el asa, si la hay, y no sobre un hijo interactivo (un botón, un input); en los arrastres `'keyboard'` debe ser el destino del foco del elemento arrastrable (el asa, o si no el propio elemento arrastrable) y no un campo editable. Un id se salta estas comprobaciones: el arrastre empieza desde el ítem, estuviera donde estuviera la entrada."
+  },
+  "SensorActivation.type": {
+    "source": "7a4cdb1638",
+    "text": "Cómo se mueve el arrastre. `'pointer'` (por defecto): sigue los puntos que se pasan a `move()`, los destinos se buscan ahí con la prueba de colisión, los contenedores se desplazan automáticamente en sus bordes y la página muestra el cursor de agarrar. `'keyboard'`: se mueve de ítem en ítem con `step()` y `place()`, como hacen las flechas, los destinos se hacen visibles en lugar de usar el desplazamiento automático, y el foco vuelve al ítem cuando termina. `Active.sensor` indica cuál."
+  },
+  "SensorActivation.point": {
+    "source": "7edeba1eec",
+    "text": "Dónde empieza el arrastre, en coordenadas del viewport. Por defecto: el centro del elemento arrastrable."
+  },
+  "SensorActivation.event": {
+    "source": "614ce932cb",
+    "text": "El evento de entrada. Se pasa al `canDrag` del elemento arrastrable: sin él (un mando, un arrastre programático), no se consulta `canDrag`. Un `pointerType` `'touch'` convierte el arrastre en uno táctil (`haptics`)."
+  },
+  "SensorActivation.activation": {
+    "source": "39a1a2728a",
+    "text": "Lo que espera el arrastre antes de empezar (`useDnD().status` es `'activating'` hasta entonces, con su progreso). Un tipo de puntero lee para él la opción `activation` del elemento arrastrable, luego la del provider y luego los valores por defecto (ratón y lápiz 4 px, al instante sobre un asa; táctil, una pulsación larga de 200 ms con 5 px de tolerancia). Una restricción se usa tal cual. Por defecto: ninguna, el arrastre empieza al instante."
+  },
+  "SensorActivation.onStart": {
+    "source": "e74975e61a",
+    "text": "El arrastre empezó, tras su activación: por ejemplo, captura el puntero."
+  },
+  "SensorActivation.onEnd": {
+    "source": "acfe1ac782",
+    "text": "El arrastre ha terminado: su activación se abortó, o se soltó o se canceló (por quien fuera)."
+  },
+  "SensorActivation.onResume": {
+    "source": "7bea6fab0a",
+    "text": "El drop que pidió el sensor no se produjo y el arrastre continúa (`onBeforeDrop` respondió `'continue'`): `move`, `drop` y `cancel` vuelven a aplicarse. Un sensor de puntero deja que el ítem siga al puntero hasta la siguiente liberación."
+  },
+  "SensorDragState": {
+    "source": "cede55f00c",
+    "text": "- `'pending'`: esperando la restricción de activación;\n- `'dragging'`: desde el inicio hasta que se decide el drop o se cancela el arrastre;\n- `'ended'`: la activación se abortó, o el arrastre se soltó o se canceló, por el sensor o por cualquier otra cosa (Escape, una pestaña oculta, `useDnD().cancel()`, el desmontaje del provider)."
+  },
+  "SensorStepOptions.event": {
+    "source": "a9cd22b651",
+    "text": "La pulsación de tecla, que se pasa al `getKeyboardCoordinates` de los monitores. Por defecto: un keydown de la flecha."
+  },
+  "SensorStepOptions.fast": {
+    "source": "0155c06811",
+    "text": "Un paso mayor en los arrastres libres (como con Shift). Por defecto: `event.shiftKey`."
+  },
+  "SensorDrag": {
+    "source": "6edb3afbc6",
+    "text": "Un arrastre de un sensor, desde `activate()` hasta que termina. Cada llamada se ignora en cuanto deja de aplicar: movimientos antes del inicio o después del final, un segundo `drop()`."
+  },
+  "SensorDrag.id": {
+    "source": "407eb1b511",
+    "text": "Id del ítem arrastrado."
+  },
+  "SensorDrag.started": {
+    "source": "0bc4410fb6",
+    "text": "El arrastre empezó, aunque ya haya terminado (el sensor de puntero se traga el clic que lo sigue)."
+  },
+  "SensorDrag.move": {
+    "source": "e3bbe7bb94",
+    "text": "La entrada se ha movido. Mientras está pendiente, se comprueba la restricción de activación (pasarse de su tolerancia la aborta); durante el arrastre, el arrastre va ahí. Los arrastres de puntero toman una posición por frame; los arrastres con teclado se mueven al instante, después de los pasos anteriores."
+  },
+  "SensorDrag.step": {
+    "source": "8c21fcb6e2",
+    "text": "Arrastres con teclado: un paso de flecha, como hacen las flechas del sensor de teclado (el siguiente ítem de una lista, el siguiente destino que lo acepta en modo `'droppables'`, o `keyboard.step` píxeles). Los pasos se encolan: cada uno se ejecuta cuando el anterior se ha renderizado, y una tecla repetida (`event.repeat`) se omite mientras otro todavía se resuelve. Los arrastres de puntero lo ignoran."
+  },
+  "SensorDrag.place": {
+    "source": "875a435278",
+    "text": "Coloca el ítem en una posición de una lista ordenable, como hacen los movimientos con teclado (otras listas solo lo toman si lo aceptan), y mueve el arrastre a su nuevo sitio. Se resuelve con `false` cuando ninguna lista lo acepta ahí. Se encola como `step()` en los arrastres con teclado."
+  },
+  "SensorDrag.drop": {
+    "source": "9e72401eb8",
+    "text": "Suelta; si la activación está pendiente, en cambio, la aborta. Se resuelve cuando el arrastre ha terminado y ha aterrizado: `true` cuando el drop se completó, `false` cuando se rechazó (un destino, `onBeforeDrop`) o no había nada que soltar."
+  },
+  "SensorDrag.cancel": {
+    "source": "44f5c428fe",
+    "text": "Cancela el arrastre (vuelve a su sitio), o aborta una activación pendiente."
+  },
+  "SensorContext": {
+    "source": "876aed9a75",
+    "text": "Lo que recibe un sensor del provider en el que se ejecuta."
+  },
+  "SensorContext.props": {
+    "source": "438e02e474",
+    "text": "Las props del provider (por ejemplo `activation`, `keyboard`). Léelas cuando las necesites: pueden cambiar."
+  },
+  "SensorContext.status": {
+    "source": "12276bbfc2",
+    "text": "El estado de arrastre del provider, sea cual sea el sensor que lleve el arrastre."
+  },
+  "SensorContext.drag": {
+    "source": "767f316252",
+    "text": "El arrastre del provider, pendiente o en curso, sea cual sea el sensor que lo inició; `null` cuando no hay ninguno. Los sensores pueden dirigir los arrastres de otros: el sensor de teclado mueve y suelta cualquier arrastre con teclado, por ejemplo uno que agarró un botón «Move» (`@vue-dnd-kit/actions`)."
+  },
+  "SensorContext.activate": {
+    "source": "e07116cbf5",
+    "text": "Pide arrastrar un ítem. El provider comprueba que está en reposo (un arrastre a la vez, ninguno mientras aterriza un drop), que el destino es un elemento arrastrable suyo que no está desactivado, dónde cayó la entrada (consulta `target`) y el `canDrag` del elemento arrastrable; luego espera la restricción de activación e inicia el arrastre. Devuelve el arrastre (pendiente, o ya en curso cuando no hay nada que esperar), o `null` cuando no puede empezar ningún arrastre."
+  },
+  "SensorContext.cancel": {
+    "source": "72e590e04a",
+    "text": "Cancela el arrastre o la activación pendiente del provider, sea cual sea el sensor que lo lleve (Escape, una pestaña oculta)."
+  },
+  "Sensor": {
+    "source": "e8d26c9d5d",
+    "text": "Entrada que inicia arrastres: puntero, teclado o la tuya propia (un mando, un joystick en pantalla, la voz, arrastres programados). `setup` se ejecuta una vez por provider, solo en el navegador, dentro de un effect scope que termina con el provider (o cuando el sensor sale de `sensors`, o se desmonta el componente que llamó a `useSensor`). Registra los listeners con `useEventListener` o devuelve una función de limpieza; un arrastre que siga en curso en ese momento se cancela.\n\nPara envolver un sensor, ejecuta su `setup` con un contexto propio. `Object.create(context, { activate: { value: … } })` conserva los getters vivos (`status`, `drag`, `props`): un spread los congelaría."
+  },
+  "Sensor.name": {
+    "source": "f3f1afa08b",
+    "text": "Para depuración."
+  }
+}

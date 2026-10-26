@@ -1,0 +1,98 @@
+{
+  "DragItem.item": {
+    "source": "7cfd4640f1",
+    "text": "拖拽来自可排序列表时的项对象。"
+  },
+  "DragItem.type": {
+    "source": "9189758463",
+    "text": "可拖拽元素经过规范化的 `type`；为空表示它符合任何放置目标。"
+  },
+  "Active.id": {
+    "source": "f080aacddc",
+    "text": "拖拽开始时所在项的 id。"
+  },
+  "Active.ids": {
+    "source": "173336b06e",
+    "text": "所有被拖拽的 id，主项在最前（多项拖拽）。"
+  },
+  "Active.element": {
+    "source": "b0e7f2b9f5",
+    "text": "拖拽开始时所在的元素。它可能会被移出文档（虚拟列表、跨列表移动）。"
+  },
+  "Active.rect": {
+    "source": "7964e6f559",
+    "text": "拖拽开始时 `element` 的布局矩形。"
+  },
+  "Over.accepted": {
+    "source": "48997f2ee2",
+    "text": "目标的 `accept` 规则是否接收被拖拽的项。"
+  },
+  "DragSource.list": {
+    "source": "57db105431",
+    "text": "被拖拽的项所来自的可排序列表。"
+  },
+  "DragSource.remove": {
+    "source": "5ef5100d7a",
+    "text": "把被拖拽的项从它们的列表中移除（回收区）。"
+  },
+  "DnDEvent.pointer": {
+    "source": "49759bca51",
+    "text": "指针的视口坐标，已经过修饰器处理。"
+  },
+  "DnDEvent.delta": {
+    "source": "292fe23ea1",
+    "text": "相对拖拽起点的偏移量，已经过修饰器处理。"
+  },
+  "DnDEvent.position": {
+    "source": "226682e4e6",
+    "text": "被拖拽盒子的左上角在 `over` 中的位置，从其内边距边缘量起，并计入其滚动量：即能把一个绝对定位的项放到被放下位置的 `left`/`top`（面板上的便签）。下方没有目标时为 `null`。取的是浮层盒子的位置；使用 `overlay: false` 时则是元素本身的位置。"
+  },
+  "DnDEvent.source": {
+    "source": "d69f88797f",
+    "text": "当被拖拽的项来自可排序列表时存在。"
+  },
+  "DnDEndEvent.dropped": {
+    "source": "8ada0b47b1",
+    "text": "拖拽结束在所有放置目标之外时为 false。"
+  },
+  "DnDEndEvent.accepted": {
+    "source": "bf82d1aeb9",
+    "text": "被 `onBeforeDrop` 接受的 id（除非返回了一个子集，否则就是所有被拖拽的 id）。"
+  },
+  "BeforeDropResult": {
+    "source": "056be141e8",
+    "text": "`onBeforeDrop` 的决定：\n- `'accept'`（或 `true`，或不返回）：放置生效；\n- `'reject'`（或 `false`）：不放置，项飞回原处；\n- id 列表：只接受这些项，其他项飞回原处；\n- `'continue'`：不放置，拖拽继续。使用指针时，项会再次跟随指针（不需要按住按键），下一次松开——也就是一次点击——会放下它；使用触摸时，会重新拿起它；使用键盘时，照常移动它。Escape 会取消它。放置时会再次询问 `onBeforeDrop`。"
+  },
+  "AcceptRule": {
+    "source": "b40b673608",
+    "text": "`'*'` 或省略表示接收所有。没有类型的项符合任何字符串规则（与 v2 的 `groups: []` 行为一致）。"
+  },
+  "AcceptMode": {
+    "source": "2aa08aef31",
+    "text": "`'all'`：每个被拖拽的项都必须匹配；`'some'`：至少一个（其余的可以在 `onBeforeDrop` 中拒绝）。"
+  },
+  "KeyboardMoveContext.direction": {
+    "source": "a0b25b3b54",
+    "text": "所按方向键的单位向量。"
+  },
+  "DnDMonitor.onBeforeDrop": {
+    "source": "7c0b37588d",
+    "text": "在放置提交之前运行（参见 `BeforeDropResult`）：`'reject'` 拒绝它，返回 id 则只接受其中一部分。"
+  },
+  "DnDMonitor.onDragEnd": {
+    "source": "117782ceb2",
+    "text": "放置完成后的通知：可排序列表已经运行了它们的 `onDrop` 并完成了写入。"
+  },
+  "DnDMonitor.onDragResume": {
+    "source": "8e5af01ef3",
+    "text": "`onBeforeDrop` 返回了 `'continue'`：没有发生放置，拖拽继续。"
+  },
+  "DnDMonitor.getKeyboardCoordinates": {
+    "source": "72d709477a",
+    "text": "键盘拖拽：某个方向键对应的下一个指针位置（例如下一个可排序位置）。"
+  },
+  "DnDState": {
+    "source": "60baeb2f00",
+    "text": "放置结果确定时，拖拽状态即告结束：`active`、`over` 和 `pointer` 变为 `null`（放置目标也不再接收），而浮层仍在以动画方式就位（`status` 保持为 `'dropping'`）。派生的 UI 永远不会把旧的拖拽和新数据混在一起。在异步的 `onBeforeDrop` 做决定期间，状态保持松开时的样子，但页面已退出拖拽模式：它自己的光标和文本选择恢复正常（确认对话框可以照常工作），浮层停在被放下的位置等待。"
+  }
+}

@@ -1,1 +1,237 @@
-{}
+{
+  "nav": {
+    "docs": "Documentation",
+    "examples": "Exemples",
+    "api": "API",
+    "ecosystem": "Écosystème",
+    "github": "GitHub",
+    "menu": "Menu",
+    "home": "Vue DnD Kit — accueil"
+  },
+  "search": {
+    "button": "Rechercher",
+    "placeholder": "Rechercher dans la documentation…"
+  },
+  "theme": {
+    "toggle": "Basculer entre le thème clair et le thème sombre"
+  },
+  "language": {
+    "label": "Langue",
+    "aiNote": "Les traductions sont réalisées par IA"
+  },
+  "version": {
+    "label": "Version",
+    "current": "v3 · actuelle",
+    "v2": "v2 · ancienne",
+    "v1": "v1 · ancienne",
+    "legacyBanner": "Vous lisez la documentation de l'ancienne v{version}. La version actuelle est la v3.",
+    "toCurrent": "Aller à la v3"
+  },
+  "copy": {
+    "copy": "Copier",
+    "copied": "Copié",
+    "command": "Copier la commande d'installation"
+  },
+  "home": {
+    "title": "Le glisser-déposer,\npensé pour Vue.",
+    "lead": "Listes triables, tableaux kanban, arbres et multi-drag pour Vue 3 — animés, utilisables au clavier et accessibles d'emblée.",
+    "openSource": "Libre et open source. Sous licence MIT.",
+    "start": "Commencer",
+    "hint": "Faites glisser les cartes — ou atteignez-en une avec Tab et utilisez les flèches",
+    "deck": {
+      "sortable": {
+        "label": "Tri",
+        "title": "Des listes qui se trient toutes seules"
+      },
+      "kanban": {
+        "label": "Kanban",
+        "title": "Des tableaux qui s'échangent des cartes"
+      },
+      "tree": {
+        "label": "Arbres",
+        "title": "Imbriquer d'un léger décalage"
+      },
+      "multi": {
+        "label": "Multi-drag",
+        "title": "Plusieurs items, un seul geste"
+      },
+      "animate": {
+        "label": "Animé",
+        "title": "Le mouvement par défaut"
+      },
+      "keyboard": {
+        "label": "A11y",
+        "title": "Le clavier, citoyen de première classe"
+      },
+      "virtual": {
+        "label": "Virtuel",
+        "title": "Dix mille lignes"
+      }
+    },
+    "intro": {
+      "title": "Des composables,\npas des composants.",
+      "text": "Votre balisage, vos styles. Passez une ref de template à un composable, et l'élément glisse, se trie et se dépose — l'animation, le clavier et le lecteur d'écran étant pris en charge pour vous.",
+      "label": "Comment ça marche",
+      "apis": [
+        {
+          "code": "makeSortableList",
+          "text": "Listes, grilles et colonnes de kanban qui se réordonnent pendant le glissement — et s'échangent des items au sein d'un groupe."
+        },
+        {
+          "code": "makeSortableTree",
+          "text": "Des données imbriquées, rendues à plat : la profondeur par un léger décalage de côté, des dépôts dans les dossiers, la virtualisation."
+        },
+        {
+          "code": "makeDraggable · makeDroppable",
+          "text": "Tout le reste : tableaux, canevas, envois de fichiers — vos propres règles pour décider de ce qui va où."
+        }
+      ]
+    },
+    "showcase": {
+      "docs": "Documentation",
+      "lists": {
+        "title": "Listes et grilles",
+        "text": "Rendez un brouillon de votre tableau, et il se réordonne en direct pendant le glissement. Au dépôt, le nouvel ordre est écrit dans votre ref. Vertical, horizontal ou en grille de n'importe quelle taille.",
+        "hint": "Faites glisser un morceau ou une application",
+        "label": "Tri"
+      },
+      "kanban": {
+        "title": "Tableaux kanban",
+        "text": "Les listes d'un même groupe s'échangent des items. Copiez depuis une palette, accueillez des éléments déplaçables simples, ou échangez au lieu de décaler — la liste qui reçoit fait de la place pendant le survol.",
+        "hint": "Déplacez les cartes d'une colonne à l'autre",
+        "label": "Kanban"
+      },
+      "tree": {
+        "title": "Arbres",
+        "text": "Rendus à plat avec des profondeurs, ils se virtualisent. Faites glisser de côté pour changer de niveau, ou survolez un dossier pour déposer à l'intérieur ; limitez la profondeur et décidez de ce qui s'imbrique où.",
+        "hint": "Faites glisser de côté pour changer la profondeur",
+        "label": "Arbres"
+      },
+      "multi": {
+        "title": "Multi-drag",
+        "text": "Sélectionnez par Ctrl/Cmd-clic ou tracez un rectangle, puis faites glisser un élément : toute la sélection se déplace ensemble et atterrit dans l'ordre, même d'une liste à l'autre.",
+        "hint": "Ctrl/Cmd-clic ou tracez un rectangle, puis faites glisser",
+        "label": "Multi-drag"
+      },
+      "drop": {
+        "label": "Glisser-déposer",
+        "title": "Glisser-déposer",
+        "text": "Un élément déplaçable, une cible de dépôt et une règle pour décider de ce qui va où. Les cibles s'illuminent quand elles acceptent le glissement et refusent ce qu'elles n'acceptent pas ; ce que fait un dépôt, c'est vous qui le décidez.",
+        "hint": "Rangez les fichiers dans les dossiers"
+      },
+      "constraints": {
+        "label": "Contraintes",
+        "title": "Axes, limites et grilles",
+        "text": "Une zone de glissement fixe les règles de tout ce qui y est glissé : verrouillez un axe, gardez les glissements dans ses bords, alignez sur une grille — et changez ces règles pendant que l'application tourne.",
+        "hint": "Changez les règles, puis faites glisser une note"
+      }
+    },
+    "more": [
+      {
+        "title": "Animé",
+        "text": "Du FLIP pendant le tri, un dépôt qui atterrit sur son emplacement, des changements de données animés. Utilisez GSAP ou motion si vous le souhaitez."
+      },
+      {
+        "title": "Accessible",
+        "text": "Glissement au clavier par emplacements, annonces en direct et attributs ARIA qui n'écrasent jamais les vôtres."
+      },
+      {
+        "title": "Listes virtuelles",
+        "text": "TanStack Virtual et VueUse : des milliers de lignes, toujours triables, toujours animées."
+      },
+      {
+        "title": "Contrôlé",
+        "text": "Pinia, un serveur ou des données immuables : sautez l'écriture par défaut et appliquez le résultat vous-même."
+      }
+    ],
+    "ecosystem": {
+      "title": "Un cœur léger, quelques outils affûtés.",
+      "text": "Tout glisse avec le cœur. Ajoutez le reste quand vous en avez besoin.",
+      "devtools": {
+        "title": "DevTools",
+        "text": "Un onglet dans Vue DevTools et Nuxt DevTools : une mini-carte en direct, un joystick qui fait glisser n'importe quoi, des options modifiables pendant que l'application tourne."
+      },
+      "actions": {
+        "title": "Glissements programmatiques",
+        "text": "« Monter », « déplacer vers Done », visites guidées et tests — de vrais glissements, annoncés et animés, depuis le code."
+      },
+      "nuxt": {
+        "title": "Module Nuxt",
+        "text": "Composables importés automatiquement, composants globaux et valeurs par défaut compatibles SSR."
+      },
+      "skill": {
+        "title": "Pour les agents IA",
+        "text": "Un skill pour agents qui apprend à Claude Code et à d'autres assistants comment fonctionne la bibliothèque."
+      }
+    },
+    "metrics": {
+      "e2e": "Tests de bout en bout dans trois navigateurs",
+      "unit": "Tests unitaires",
+      "size": "Éléments déplaçables et zones de dépôt, gzippés",
+      "languages": "Langues de cette documentation"
+    },
+    "next": {
+      "title": "Choisissez par où commencer.",
+      "guide": {
+        "title": "Lire le guide",
+        "text": "De l'installation à votre première liste triable en cinq minutes.",
+        "action": "Commencer"
+      },
+      "examples": {
+        "title": "Parcourir les exemples",
+        "text": "Des démos en direct avec leur code, prêtes à copier ou à ouvrir dans StackBlitz.",
+        "action": "Voir les exemples"
+      }
+    },
+    "tag": "Le glisser-déposer pour Vue 3",
+    "moreLabel": "Et plus encore",
+    "moreTitle": "Prêt pour de vraies applications."
+  },
+  "docs": {
+    "onThisPage": "Sur cette page",
+    "edit": "Modifier cette page",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "notTranslated": "Cette page n'est pas encore traduite. Vous lisez l'original en anglais.",
+    "aiNotice": "Cette page a été traduite par IA et peut contenir des inexactitudes.",
+    "outdated": "La page anglaise a changé depuis cette traduction. L'original est à jour.",
+    "readOriginal": "Lire l'original en anglais",
+    "copyPage": "Copier la page",
+    "copied": "Copié"
+  },
+  "example": {
+    "preview": "Aperçu",
+    "code": "Code",
+    "copy": "Copier",
+    "copied": "Copié",
+    "stackblitz": "Ouvrir dans StackBlitz",
+    "reset": "Réinitialiser la démo",
+    "loading": "Chargement de la démo…"
+  },
+  "api": {
+    "name": "Nom",
+    "type": "Type",
+    "description": "Description",
+    "optional": "optionnel",
+    "reactive": "valeur · ref · getter",
+    "reactiveRef": "valeur · ref",
+    "deprecated": "Obsolète"
+  },
+  "footer": {
+    "about": "Le glisser-déposer pour Vue 3. Open source sous licence MIT.",
+    "docs": "Documentation",
+    "ecosystem": "Écosystème",
+    "community": "Communauté",
+    "issues": "Issues",
+    "changelog": "Changelog",
+    "rights": "Licence MIT",
+    "aiNote": "Les traductions sont réalisées par IA et peuvent contenir des inexactitudes."
+  },
+  "notFound": {
+    "label": "Erreur 404",
+    "title": "Page introuvable",
+    "description": "La page que vous cherchez n'existe pas ou a été déplacée.",
+    "home": "Retour à l'accueil",
+    "docs": "Ouvrir la documentation"
+  }
+}

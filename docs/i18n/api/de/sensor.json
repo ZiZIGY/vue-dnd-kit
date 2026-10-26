@@ -1,0 +1,130 @@
+{
+  "SensorDirection": {
+    "source": "7f9360b8f1",
+    "text": "Pfeil eines Tastaturschritts."
+  },
+  "SortablePosition": {
+    "source": "9d6ffc08ba",
+    "text": "Eine Position in einer sortierbaren Liste, für `SensorDrag.place()` (und `moveItem` aus `@vue-dnd-kit/actions`). Nur Listen: Bäume platzieren Elemente über ihre eigenen Schlüssel."
+  },
+  "SortablePosition.list": {
+    "source": "acaba34476",
+    "text": "ID der Liste (`SortableListOptions.id`). Standard: die Liste, in der das Element ist."
+  },
+  "SortablePosition.index": {
+    "source": "879c486a9b",
+    "text": "Index, auf dem das Element landet, gezählt ohne das Element selbst (ein Multi-Drag-Block zählt einmal). Auf die Liste begrenzt; Standard: das Ende."
+  },
+  "SensorActivation": {
+    "source": "bee94513f8",
+    "text": "Was ein Sensor anfragt, wenn seine Eingabe ziehen will (`SensorContext.activate()`)."
+  },
+  "SensorActivation.target": {
+    "source": "3456b2c0b5",
+    "text": "Wo die Eingabe gelandet ist: ein Element innerhalb eines ziehbaren Elements oder die ID eines ziehbaren Elements. Ein Element muss zu diesem Provider gehören; bei `'pointer'`-Drags muss es auf dem Handle liegen, wenn es eines gibt, und nicht auf einem interaktiven Kind (einem Button, einem Eingabefeld); bei `'keyboard'`-Drags muss es das Fokusziel des ziehbaren Elements sein (das Handle, sonst das ziehbare Element selbst) und kein editierbares Feld. Eine ID überspringt diese Prüfungen: Der Drag startet vom Element, wo auch immer die Eingabe war."
+  },
+  "SensorActivation.type": {
+    "source": "7a4cdb1638",
+    "text": "Wie sich der Drag bewegt. `'pointer'` (Standard): Er folgt den Punkten, die an `move()` übergeben werden, Ziele werden dort per Hit-Testing ermittelt, Container scrollen an ihren Rändern automatisch, und die Seite zeigt den Greif-Cursor. `'keyboard'`: Er bewegt sich mit `step()` und `place()` von Element zu Element, wie es die Pfeiltasten tun, Ziele werden ins Sichtfeld gebracht statt per Auto-Scroll angefahren, und der Fokus kehrt am Ende zum Element zurück. `Active.sensor` sagt, welcher Typ es ist."
+  },
+  "SensorActivation.point": {
+    "source": "7edeba1eec",
+    "text": "Wo der Drag beginnt, in Viewport-Koordinaten. Standard: die Mitte des ziehbaren Elements."
+  },
+  "SensorActivation.event": {
+    "source": "614ce932cb",
+    "text": "Das Eingabe-Event. Es wird an `canDrag` des ziehbaren Elements übergeben: Ohne Event (ein Gamepad, ein programmatischer Drag) wird `canDrag` nicht gefragt. Ein `pointerType` von `'touch'` macht den Drag zu einem Touch-Drag (`haptics`)."
+  },
+  "SensorActivation.activation": {
+    "source": "39a1a2728a",
+    "text": "Worauf der Drag wartet, bevor er beginnt (`useDnD().status` ist bis dahin `'activating'`, mit seinem Fortschritt). Eine Zeigerart liest dafür die Option `activation` des ziehbaren Elements, dann die des Providers, dann die Standardwerte (Maus und Stift 4px, sofort bei einem Handle; Touch ein langes Drücken von 200ms mit 5px Toleranz). Eine Aktivierungsbedingung wird so verwendet, wie sie ist. Standard: keine, der Drag beginnt sofort."
+  },
+  "SensorActivation.onStart": {
+    "source": "e74975e61a",
+    "text": "Der Drag hat begonnen, nach seiner Aktivierung: z. B. den Zeiger einfangen."
+  },
+  "SensorActivation.onEnd": {
+    "source": "acfe1ac782",
+    "text": "Der Drag ist vorbei: Seine Aktivierung wurde abgebrochen, oder er wurde abgelegt oder (von wem auch immer) abgebrochen."
+  },
+  "SensorActivation.onResume": {
+    "source": "7bea6fab0a",
+    "text": "Der Drop, den der Sensor angefragt hat, hat nicht stattgefunden, und der Drag geht weiter (`onBeforeDrop` hat `'continue'` geantwortet): `move`, `drop` und `cancel` gelten wieder. Ein Zeigersensor lässt das Element bis zum nächsten Loslassen dem Zeiger folgen."
+  },
+  "SensorDragState": {
+    "source": "cede55f00c",
+    "text": "- `'pending'`: wartet auf die Aktivierungsbedingung;\n- `'dragging'`: vom Start, bis über den Drop entschieden ist oder der Drag abgebrochen wird;\n- `'ended'`: Die Aktivierung wurde abgebrochen, oder der Drag wurde abgelegt oder abgebrochen, vom Sensor oder durch etwas anderes (Escape, ein verborgener Tab, `useDnD().cancel()`, das Unmounten des Providers)."
+  },
+  "SensorStepOptions.event": {
+    "source": "a9cd22b651",
+    "text": "Der Tastendruck, der an `getKeyboardCoordinates` der Monitore übergeben wird. Standard: ein keydown der Pfeiltaste."
+  },
+  "SensorStepOptions.fast": {
+    "source": "0155c06811",
+    "text": "Ein größerer Schritt bei freien Drags (wie mit Shift). Standard: `event.shiftKey`."
+  },
+  "SensorDrag": {
+    "source": "6edb3afbc6",
+    "text": "Ein Drag eines Sensors, von `activate()` bis zu seinem Ende. Jeder Aufruf wird ignoriert, sobald er nicht mehr zutrifft: Bewegungen vor dem Start oder nach dem Ende, ein zweites `drop()`."
+  },
+  "SensorDrag.id": {
+    "source": "407eb1b511",
+    "text": "ID des gezogenen Elements."
+  },
+  "SensorDrag.started": {
+    "source": "0bc4410fb6",
+    "text": "Der Drag hat begonnen, auch wenn er inzwischen geendet hat (der Zeigersensor schluckt den Klick, der darauf folgt)."
+  },
+  "SensorDrag.move": {
+    "source": "e3bbe7bb94",
+    "text": "Die Eingabe hat sich bewegt. Im Wartezustand wird die Aktivierungsbedingung geprüft (eine Bewegung über ihre Toleranz hinaus bricht sie ab); während des Ziehens geht der Drag dorthin. Zeiger-Drags übernehmen eine Position pro Frame; Tastatur-Drags bewegen sich sofort, nach den Schritten davor."
+  },
+  "SensorDrag.step": {
+    "source": "8c21fcb6e2",
+    "text": "Tastatur-Drags: ein Pfeilschritt, wie ihn die Pfeiltasten des Tastatursensors ausführen (das nächste Element einer Liste, das nächste annehmende Ziel im Modus `'droppables'` oder `keyboard.step` Pixel). Schritte werden eingereiht: Jeder läuft, sobald der vorherige gerendert ist, und eine wiederholte Taste (`event.repeat`) wird übersprungen, solange noch einer läuft. Zeiger-Drags ignorieren ihn."
+  },
+  "SensorDrag.place": {
+    "source": "875a435278",
+    "text": "Setzt das Element an eine Position einer sortierbaren Liste, wie es Tastaturbewegungen tun (andere Listen nehmen es nur, wenn sie es annehmen), und bewegt den Drag an seinen neuen Platz. Liefert `false`, wenn keine Liste es dort nimmt. In Tastatur-Drags wie `step()` eingereiht."
+  },
+  "SensorDrag.drop": {
+    "source": "9e72401eb8",
+    "text": "Legt ab: Eine wartende Aktivierung wird stattdessen abgebrochen. Liefert sein Ergebnis, sobald der Drag geendet hat und gelandet ist: `true`, wenn der Drop ausgeführt wurde, `false`, wenn er abgelehnt wurde (von einem Ziel, von `onBeforeDrop`) oder es nichts abzulegen gab."
+  },
+  "SensorDrag.cancel": {
+    "source": "44f5c428fe",
+    "text": "Bricht den Drag ab (er fliegt zurück) oder bricht eine wartende Aktivierung ab."
+  },
+  "SensorContext": {
+    "source": "876aed9a75",
+    "text": "Was ein Sensor vom Provider bekommt, in dem er läuft."
+  },
+  "SensorContext.props": {
+    "source": "438e02e474",
+    "text": "Die Props des Providers (z. B. `activation`, `keyboard`). Lies sie, wenn du sie brauchst: Sie können sich ändern."
+  },
+  "SensorContext.status": {
+    "source": "12276bbfc2",
+    "text": "Der Drag-Status des Providers, egal welcher Sensor den Drag ausführt."
+  },
+  "SensorContext.drag": {
+    "source": "767f316252",
+    "text": "Der Drag des Providers, wartend oder laufend, egal welcher Sensor ihn gestartet hat; `null`, wenn es keinen gibt. Sensoren können die Drags der anderen steuern: Der Tastatursensor bewegt jeden Tastatur-Drag und legt ihn ab, z. B. einen, den ein „Move“-Button aufgenommen hat (`@vue-dnd-kit/actions`)."
+  },
+  "SensorContext.activate": {
+    "source": "e07116cbf5",
+    "text": "Fragt an, ein Element zu ziehen. Der Provider prüft, dass er frei ist (immer nur ein Drag gleichzeitig, keiner, während ein Drop landet), dass das Ziel ein eigenes ziehbares Element ist, das nicht deaktiviert ist, wo die Eingabe gelandet ist (siehe `target`) und `canDrag` des ziehbaren Elements; dann wartet er auf die Aktivierungsbedingung und startet den Drag. Gibt den Drag zurück (wartend oder bereits laufend, wenn es nichts abzuwarten gibt) oder `null`, wenn kein Drag beginnen darf."
+  },
+  "SensorContext.cancel": {
+    "source": "72e590e04a",
+    "text": "Bricht den Drag oder die wartende Aktivierung des Providers ab, egal welcher Sensor ihn ausführt (Escape, ein verborgener Tab)."
+  },
+  "Sensor": {
+    "source": "e8d26c9d5d",
+    "text": "Eingabe, die Drags startet: Zeiger, Tastatur oder deine eigene (ein Gamepad, ein Joystick auf dem Bildschirm, Sprache, per Skript gesteuerte Drags). `setup` läuft einmal pro Provider, nur im Browser, innerhalb eines Effect Scopes, der mit dem Provider endet (oder wenn der Sensor `sensors` verlässt oder die Komponente, die `useSensor` aufgerufen hat, unmountet wird). Registriere Listener mit `useEventListener` oder gib eine Aufräumfunktion zurück; ein Drag, der dann noch läuft, wird abgebrochen.\n\nUm einen Sensor zu umhüllen, führe sein `setup` mit einem eigenen Kontext aus. `Object.create(context, { activate: { value: … } })` behält die Live-Getter (`status`, `drag`, `props`): Ein Spread würde sie einfrieren."
+  },
+  "Sensor.name": {
+    "source": "f3f1afa08b",
+    "text": "Zum Debuggen."
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "FlatNode.index": {
+    "source": "b24454e95d",
+    "text": "Index parmi les frères."
+  },
+  "SortableTreeDropEvent": {
+    "source": "eb47878c8b",
+    "text": "Événement de dépôt d'un arbre. `index` est la position parmi les frères sous `parentKey` (`from` : avant le déplacement ; `to` : après, le nœud étant déjà retiré de son ancienne place). `from.parentKey` vaut `null` pour les nœuds racines et pour les items venant d'une autre liste. Un multi-drag déplace les `keys` (chacune avec son sous-arbre) côte à côte : `from` est l'endroit où se trouvait le nœud qui mène le glissement (celui qui a été saisi, ou le nœud sélectionné dans lequel il est emporté), `to` l'endroit où atterrit le premier d'entre eux. Une copie (`mode: 'copy'`) laisse les nœuds là où ils sont et insère `items`, leurs copies ; un élément déplaçable simple (`mode: 'insert'`), le nœud créé par `createItem`."
+  },
+  "SortableTreeOptions": {
+    "source": "3b9c211f35",
+    "text": "Options de `makeSortableTree`. Un multi-drag déplace les nœuds sélectionnés en un seul bloc, chacun avec son sous-arbre, vers une même place et une même profondeur (dans l'ordre du document) ; un nœud sélectionné à l'intérieur d'un autre nœud sélectionné suit dans son sous-arbre. Cela vaut aussi pour le nœud saisi (comme dans VS Code) : il reste à l'intérieur du nœud sélectionné qui le contient, lequel se déplace avec son sous-arbre, tandis que l'overlay reste sur la ligne saisie. `canNest` et `maxDepth` s'appliquent à tout le bloc.\n\nLes autres options signifient la même chose que dans `makeSortableList`. Elles acceptent une valeur, une ref ou un getter (`overlay`, `animation` : une valeur ou une ref) et sont lues quand l'arbre en a besoin : un changement s'applique donc au plus tard au glissement suivant. Exceptions : `id` et `group` sont lus une seule fois, à la création de l'arbre ; `items` est le modèle lui-même ; les fonctions (`getKey`, `getChildren`, `setChildren`, `canNest`, `clone`, `createItem`, les callbacks) sont passées telles quelles."
+  },
+  "SortableTreeOptions.items": {
+    "source": "210f1fb478",
+    "text": "Les nœuds racines. Une ref modifiable : au dépôt, la bibliothèque donne aux nœuds modifiés leurs nouveaux enfants (`setChildren`) et écrit un nouveau tableau de racines. Une source en lecture seule (un getter, une ref readonly, un computed) : appelez `event.preventDefault()` et appliquez `event.result` vous-même (comme pour `SortableListOptions.items`)."
+  },
+  "SortableTreeOptions.getKey": {
+    "source": "8bd06a8146",
+    "text": "Par défaut : `node.id`. Sert aussi de clé à `makeSortableItem({ item })`, aux copies et aux nœuds créés."
+  },
+  "SortableTreeOptions.setChildren": {
+    "source": "ebc9ed1493",
+    "text": "Comment l'écriture par défaut donne à un nœud ses nouveaux enfants. Par défaut : `node.children = children`."
+  },
+  "SortableTreeOptions.withChildren": {
+    "source": "f864a637ec",
+    "text": "Une copie de `node` avec `children`, pour `event.result` : un nouvel arbre qui laisse vos nœuds tels quels (l'écriture par défaut passe toujours par `setChildren`). Par défaut : `{ ...node }` auquel les enfants sont donnés via `setChildren` (`{ ...node, children }` sans `setChildren`). Passez-la pour des instances de classe et des nœuds qui demandent plus qu'une copie superficielle."
+  },
+  "SortableTreeOptions.id": {
+    "source": "c0adaf519f",
+    "text": "Par défaut : `useId()`, stable entre le rendu serveur et le rendu client. Lu une seule fois."
+  },
+  "SortableTreeOptions.overlay": {
+    "source": "99297d8dc8",
+    "text": "Composant d'overlay pour les lignes de cet arbre (l'`overlay` propre à une ligne l'emporte). Lu au début du glissement."
+  },
+  "SortableTreeOptions.modifiers": {
+    "source": "f6220f5795",
+    "text": "Modificateurs des glissements des lignes de cet arbre, appliqués après les `modifiers` du provider (les `modifiers` propres à une ligne l'emportent) : par exemple `[restrictToVerticalAxis]`. Lus au début du glissement. Un axe verrouillé permet quand même l'imbrication : la profondeur vient alors du survol du milieu d'une ligne."
+  },
+  "SortableTreeOptions.axis": {
+    "source": "6d30d4a81a",
+    "text": "Verrouille sur un axe les glissements des lignes de cet arbre (l'`axis` propre à une ligne l'emporte), après les modificateurs. Avec `'y'`, les lignes s'imbriquent quand même : la profondeur vient alors du survol du milieu d'une ligne. Lu au début du glissement."
+  },
+  "SortableTreeOptions.group": {
+    "source": "8f0583eca8",
+    "text": "Les listes et les arbres qui ont le même nom de groupe s'échangent des items. Par défaut : un groupe à lui seul. Lu une seule fois."
+  },
+  "SortableTreeOptions.acceptMode": {
+    "source": "045f22daca",
+    "text": "Multi-drag d'items de plusieurs types : `'all'` (par défaut) ou `'some'` doivent être acceptés (`group.put`)."
+  },
+  "SortableTreeOptions.indentation": {
+    "source": "f552924dcb",
+    "text": "Pixels de décalage horizontal par niveau de profondeur. 24 par défaut."
+  },
+  "SortableTreeOptions.nesting": {
+    "source": "38bbd60e7c",
+    "text": "Comment la profondeur est choisie : décalage horizontal, survol du milieu d'une ligne, ou les deux (par défaut)."
+  },
+  "SortableTreeOptions.placeholder": {
+    "source": "2cf98fc3a5",
+    "text": "`'item'` (par défaut) : le nœud glissé se déplace parmi les lignes à sa profondeur projetée. `'indicator'` : l'arbre ne bouge pas ; `indicator` (sur l'arbre et sur le `makeSortableItem` de chaque ligne) indique où va le dépôt, avec sa `depth` et son `parentKey`, et c'est vous qui dessinez la ligne. Un dépôt à l'extérieur annule alors le glissement."
+  },
+  "SortableTreeOptions.maxDepth": {
+    "source": "1e961e3456",
+    "text": "Profondeur maximale autorisée (les racines sont à 0). Les descendants des nœuds glissés comptent."
+  },
+  "SortableTreeOptions.canNest": {
+    "source": "91ce5cdc34",
+    "text": "Si `node` peut aller sous `parent` ; un multi-drag pose la question pour chaque nœud glissé."
+  },
+  "SortableTreeOptions.collapsed": {
+    "source": "8668ce809d",
+    "text": "Clés des nœuds dont les enfants sont masqués."
+  },
+  "SortableTreeOptions.clone": {
+    "source": "118c688670",
+    "text": "Crée des copies (`group.pull: 'clone'`, la touche modificatrice de copie). Obligatoire pour copier. Renvoyez la copie avec tout son sous-arbre : un dossier copié garde ses enfants. La copie et chacun de ses descendants ont besoin de leurs propres clés (lues avec `getKey`), comme chaque nœud d'un arbre."
+  },
+  "SortableTreeOptions.createItem": {
+    "source": "28224fdbf4",
+    "text": "Accepte des éléments déplaçables simples venus de l'extérieur : crée le nœud à insérer, à la position et à la profondeur projetées (`canNest` et `maxDepth` s'y appliquent). Au clavier, une flèche en direction de l'arbre y fait entrer l'élément déplaçable, au niveau de la ligne devant laquelle il va, et les flèches déplacent ensuite le nœud comme n'importe quel autre."
+  },
+  "SortableTreeOptions.dropOutside": {
+    "source": "324ddf9a40",
+    "text": "Un dépôt hors de toute cible : garder les nœuds là où se trouve le placeholder, annuler, ou les retirer. `'placeholder'` par défaut (`'cancel'` avec `placeholder: 'indicator'`). Lu au dépôt."
+  },
+  "SortableTreeOptions.animation": {
+    "source": "5d1e2c66c2",
+    "text": "Animation FLIP de cet arbre ; par défaut : l'`animation` du provider. Une valeur ou une ref (une fonction est une animation personnalisée)."
+  },
+  "SortableTreeOptions.animate": {
+    "source": "9004d33175",
+    "text": "Comme dans `SortableListOptions`, pour les lignes visibles : nœuds ajoutés, retirés ou déplacés, et lignes qu'un nœud affiche ou masque quand il se déplie ou se replie (`collapsed`)."
+  },
+  "SortableTreeOptions.autoScroll": {
+    "source": "3216318fc0",
+    "text": "Remplace l'`autoScroll` du provider pour le conteneur défilant de cet arbre. Lu au début du glissement."
+  },
+  "SortableTreeOptions.dropzone": {
+    "source": "26c5e98e4b",
+    "text": "Comme dans `SortableListOptions` : l'élément qui reçoit les dépôts pour l'arbre, par défaut celui de l'arbre lui-même."
+  },
+  "SortableTreeOptions.onBeforeDrop": {
+    "source": "94fc28e843",
+    "text": "Comme dans `SortableListOptions`."
+  },
+  "SortableTreeOptions.onDrop": {
+    "source": "cac25ac658",
+    "text": "Comme dans `SortableListOptions` : avant l'écriture, que `event.preventDefault()` empêche."
+  },
+  "SortableTreeReturn.items": {
+    "source": "7c78a356e7",
+    "text": "Les nœuds visibles dans l'ordre du brouillon ; le nœud actif porte sa profondeur projetée."
+  },
+  "SortableTreeReturn.projected": {
+    "source": "cb32fa0496",
+    "text": "Où atterrirait le nœud actif, `null` quand il n'est pas dans cet arbre."
+  },
+  "SortableTreeReturn.indicator": {
+    "source": "3f5878f4c5",
+    "text": "Mode indicateur : où va le dépôt, avec sa `depth` et son `parentKey` ; `null` quand ce n'est pas dans cet arbre."
+  },
+  "SortableTreeReturn.isAccepting": {
+    "source": "ae54d9827e",
+    "text": "Quelque chose est en cours de glissement et cet arbre l'accepte."
+  },
+  "SortableTreeReturn.activeKey": {
+    "source": "d4804b031e",
+    "text": "La ligne qu'un virtualiseur doit garder montée : l'emplacement tant qu'il est dans cet arbre (le nœud glissé, le nœud sélectionné dans lequel le nœud saisi est emporté, une copie, un nœud créé), sinon le nœud glissé."
+  },
+  "SortableTreeReturn.activeIndex": {
+    "source": "4d6761484d",
+    "text": "Index d'`activeKey` dans `items`, -1 quand il n'y est pas."
+  },
+  "SortableTreeReturn.activeSize": {
+    "source": "8337786343",
+    "text": "Taille de la ligne glissée au début du glissement."
+  }
+}

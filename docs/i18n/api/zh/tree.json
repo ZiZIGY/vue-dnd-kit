@@ -1,0 +1,142 @@
+{
+  "FlatNode.index": {
+    "source": "b24454e95d",
+    "text": "在兄弟节点中的索引。"
+  },
+  "SortableTreeDropEvent": {
+    "source": "eb47878c8b",
+    "text": "树的放置事件。`index` 是在 `parentKey` 之下兄弟节点中的位置（`from`：移动之前；`to`：移动之后，此时节点已从原位置移除）。对于根节点以及来自其他列表的项，`from.parentKey` 为 `null`。多项拖拽会把 `keys`（各自带着子树）并排移动：`from` 是带领这次拖拽的节点（抓起的节点，或它所在的那个选中节点）原来的位置，`to` 是其中第一个节点落下的位置。复制（`mode: 'copy'`）会把节点留在原处，并插入 `items`，即它们的副本；普通可拖拽元素（`mode: 'insert'`）则插入 `createItem` 创建的节点。"
+  },
+  "SortableTreeOptions": {
+    "source": "3b9c211f35",
+    "text": "`makeSortableTree` 的选项。多项拖拽会把选中的节点作为一个整体移动，各自带着子树，移到同一个位置和深度（按文档顺序）；位于另一个选中节点内部的选中节点会随其子树一起移动。抓起的节点也是如此（与 VS Code 一样）：它留在它所在的那个选中节点内部，跟随该节点及其子树一起移动，而浮层显示的仍是抓起的那一行。`canNest` 和 `maxDepth` 作用于整个整体。\n\n其他选项的含义与 `makeSortableList` 上的相同。它们接受值、ref 或 getter（`overlay`、`animation`：值或 ref），并在树需要时读取，所以变化最迟在下一次拖拽时生效。例外：`id` 和 `group` 只在创建树时读取一次；`items` 就是模型本身；函数（`getKey`、`getChildren`、`setChildren`、`canNest`、`clone`、`createItem`、各个回调）按原样传入。"
+  },
+  "SortableTreeOptions.items": {
+    "source": "210f1fb478",
+    "text": "根节点。可写的 ref：放置时，库会给发生变化的节点设置新的子节点（`setChildren`），并写入一个新的根数组。只读的数据源（getter、只读 ref、computed）：调用 `event.preventDefault()`，自己应用 `event.result`（与 `SortableListOptions.items` 相同）。"
+  },
+  "SortableTreeOptions.getKey": {
+    "source": "8bd06a8146",
+    "text": "默认：`node.id`。也用于为 `makeSortableItem({ item })`、副本和新创建的节点生成 key。"
+  },
+  "SortableTreeOptions.setChildren": {
+    "source": "ebc9ed1493",
+    "text": "默认写入如何给节点设置新的子节点。默认：`node.children = children`。"
+  },
+  "SortableTreeOptions.withChildren": {
+    "source": "f864a637ec",
+    "text": "带有 `children` 的 `node` 副本，用于 `event.result`：一棵保留你原有节点不变的新树（默认写入仍通过 `setChildren` 完成）。默认：通过 `setChildren` 设置了子节点的 `{ ...node }`（没有 `setChildren` 时为 `{ ...node, children }`）。对于类实例，以及需要比浅拷贝更多处理的节点，传入它。"
+  },
+  "SortableTreeOptions.id": {
+    "source": "c0adaf519f",
+    "text": "默认：`useId()`，在服务端和客户端渲染之间保持稳定。只读取一次。"
+  },
+  "SortableTreeOptions.overlay": {
+    "source": "99297d8dc8",
+    "text": "这棵树中行的浮层组件（行自己的 `overlay` 优先）。在拖拽开始时读取。"
+  },
+  "SortableTreeOptions.modifiers": {
+    "source": "f6220f5795",
+    "text": "这棵树中行的拖拽修饰器，在 provider 的 `modifiers` 之后应用（行自己的 `modifiers` 优先）：例如 `[restrictToVerticalAxis]`。在拖拽开始时读取。锁定轴向后仍然可以嵌套：此时深度来自悬停在某一行的中间。"
+  },
+  "SortableTreeOptions.axis": {
+    "source": "6d30d4a81a",
+    "text": "在修饰器之后，把这棵树中行的拖拽锁定在一个轴上（行自己的 `axis` 优先）。使用 `'y'` 时行仍然可以嵌套：此时深度来自悬停在某一行的中间。在拖拽开始时读取。"
+  },
+  "SortableTreeOptions.group": {
+    "source": "8f0583eca8",
+    "text": "分组名称相同的列表和树会互相交换项。默认：自成一组。只读取一次。"
+  },
+  "SortableTreeOptions.acceptMode": {
+    "source": "045f22daca",
+    "text": "多种类型项的多项拖拽：全部（`'all'`，默认）还是部分（`'some'`）项必须被接受（`group.put`）。"
+  },
+  "SortableTreeOptions.indentation": {
+    "source": "f552924dcb",
+    "text": "每一级深度对应的水平偏移像素数。默认 24。"
+  },
+  "SortableTreeOptions.nesting": {
+    "source": "38bbd60e7c",
+    "text": "如何选择深度：水平偏移、悬停在某一行的中间，或两者兼用（默认）。"
+  },
+  "SortableTreeOptions.placeholder": {
+    "source": "2cf98fc3a5",
+    "text": "`'item'`（默认）：被拖拽的节点以预测的深度在行之间移动。`'indicator'`：树不移动；`indicator`（在树上以及每一行的 `makeSortableItem` 上）指出放置的位置，以及它的 `depth` 和 `parentKey`，插入线由你来画。此时放到外面会取消。"
+  },
+  "SortableTreeOptions.maxDepth": {
+    "source": "1e961e3456",
+    "text": "允许的最大深度（根节点为 0）。被拖拽节点自己的后代也计算在内。"
+  },
+  "SortableTreeOptions.canNest": {
+    "source": "91ce5cdc34",
+    "text": "`node` 能否放到 `parent` 之下；多项拖拽时会对每个被拖拽的节点询问。"
+  },
+  "SortableTreeOptions.collapsed": {
+    "source": "8668ce809d",
+    "text": "子节点被隐藏的节点的 key。"
+  },
+  "SortableTreeOptions.clone": {
+    "source": "118c688670",
+    "text": "创建副本（`group.pull: 'clone'`、复制修饰键）。复制时必需。返回带有整棵子树的副本：被复制的文件夹会保留它的子节点。副本及其每个后代都需要自己的 key（用 `getKey` 读取），就像树中的每个节点一样。"
+  },
+  "SortableTreeOptions.createItem": {
+    "source": "28224fdbf4",
+    "text": "接收来自外部的普通可拖拽元素：在预测的位置和深度创建要插入的节点（`canNest` 和 `maxDepth` 对它同样适用）。使用键盘时，朝树的方向按方向键即可把可拖拽元素放进来，与它将插入其前方的那一行平齐，之后方向键会像移动其他节点一样移动这个节点。"
+  },
+  "SortableTreeOptions.dropOutside": {
+    "source": "324ddf9a40",
+    "text": "放在所有目标之外时：把节点留在占位所在的地方、取消，或者移除它们。默认为 `'placeholder'`（使用 `placeholder: 'indicator'` 时为 `'cancel'`）。在放置时读取。"
+  },
+  "SortableTreeOptions.animation": {
+    "source": "5d1e2c66c2",
+    "text": "这棵树的 FLIP 动画；默认：provider 的 `animation`。值或 ref（函数即自定义动画）。"
+  },
+  "SortableTreeOptions.animate": {
+    "source": "9004d33175",
+    "text": "与 `SortableListOptions` 中相同，作用于可见的行：被添加、删除或移动的节点，以及节点展开或折叠时显示或隐藏的行（`collapsed`）。"
+  },
+  "SortableTreeOptions.autoScroll": {
+    "source": "3216318fc0",
+    "text": "为这棵树的滚动容器覆盖 provider 的 `autoScroll`。在拖拽开始时读取。"
+  },
+  "SortableTreeOptions.dropzone": {
+    "source": "26c5e98e4b",
+    "text": "与 `SortableListOptions` 中相同：替树接收放置的元素，默认是树自己的元素。"
+  },
+  "SortableTreeOptions.onBeforeDrop": {
+    "source": "94fc28e843",
+    "text": "与 `SortableListOptions` 中相同。"
+  },
+  "SortableTreeOptions.onDrop": {
+    "source": "cac25ac658",
+    "text": "与 `SortableListOptions` 中相同：在写入之前调用，`event.preventDefault()` 会跳过写入。"
+  },
+  "SortableTreeReturn.items": {
+    "source": "7c78a356e7",
+    "text": "按草稿顺序排列的可见节点；当前节点带有它的预测深度。"
+  },
+  "SortableTreeReturn.projected": {
+    "source": "cb32fa0496",
+    "text": "当前节点将会落到哪里，不在这棵树中时为 `null`。"
+  },
+  "SortableTreeReturn.indicator": {
+    "source": "3f5878f4c5",
+    "text": "指示器模式：放置的位置，以及它的 `depth` 和 `parentKey`；不在这里时为 `null`。"
+  },
+  "SortableTreeReturn.isAccepting": {
+    "source": "ae54d9827e",
+    "text": "有东西正在被拖拽，并且这棵树接收它。"
+  },
+  "SortableTreeReturn.activeKey": {
+    "source": "d4804b031e",
+    "text": "虚拟化器必须保持挂载的行：当占位位于这棵树中时，是占位所在的行（被拖拽的节点、抓起的节点所在的那个选中节点、副本、新创建的节点），否则是被拖拽的节点。"
+  },
+  "SortableTreeReturn.activeIndex": {
+    "source": "4d6761484d",
+    "text": "`activeKey` 在 `items` 中的索引，不在这里时为 -1。"
+  },
+  "SortableTreeReturn.activeSize": {
+    "source": "8337786343",
+    "text": "拖拽开始时被拖拽行的尺寸。"
+  }
+}

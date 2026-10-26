@@ -1,0 +1,38 @@
+{
+  "DragAreaOptions": {
+    "source": "aedcd47d8d",
+    "text": "Opções de `makeDragArea`: regras para os arrastes que começam dentro do elemento da área (tanto draggables quanto itens ordenáveis), para que um único provider sirva o app inteiro enquanto partes da página arrastam do seu próprio jeito. Quando há áreas aninhadas, vence a mais próxima.\n\nToda opção aceita um valor, um ref ou um getter e é lida quando é necessária: quando um clique começa (`activation`, `disabled`) ou quando o arraste começa."
+  },
+  "DragAreaOptions.axis": {
+    "source": "904978157c",
+    "text": "Trava os arrastes em um eixo, depois dos modificadores. O `axis` do próprio draggable (ou da lista dele) prevalece."
+  },
+  "DragAreaOptions.modifiers": {
+    "source": "fd6af7b03a",
+    "text": "Modificadores para os arrastes, depois dos do provider e antes dos do próprio draggable (ou da lista dele): por exemplo, `[snapToGrid(20)]` para um quadro."
+  },
+  "DragAreaOptions.restrictToArea": {
+    "source": "9a08abdb40",
+    "text": "`true`: os arrastes ficam dentro do elemento da área (depois dos modificadores, antes da trava de eixo)."
+  },
+  "DragAreaOptions.autoScroll": {
+    "source": "42d0809672",
+    "text": "Sobrescreve o `autoScroll` do provider para o contêiner de rolagem da área: o próprio elemento, ou o ancestral rolável mais próximo dele. `false` a desliga ali. Diferente das outras opções, vale para todo arraste que rola o contêiner, onde quer que tenha começado."
+  },
+  "DragAreaOptions.activation": {
+    "source": "5bc47c8127",
+    "text": "Ativação dos arrastes por tipo de ponteiro, entre a do próprio draggable (que prevalece) e a do provider: por exemplo, um toque mais longo em um feed com rolagem."
+  },
+  "DragAreaOptions.disabled": {
+    "source": "238dd09834",
+    "text": "`true`: nenhum arraste começa na área, nem nas áreas dentro dela (diferente das outras opções, que vêm da área mais próxima). Os draggables dela informam `aria-disabled`."
+  },
+  "DragAreaReturn.isDragging": {
+    "source": "5e8f41c6fd",
+    "text": "Um arraste que começou nesta área está em andamento (até o drop dele ser decidido)."
+  },
+  "DragAreaReturn.isAutoScrolling": {
+    "source": "828bff5f0a",
+    "text": "A rolagem automática está movendo o contêiner de rolagem da área (o elemento, ou o ancestral rolável mais próximo dele)."
+  }
+}

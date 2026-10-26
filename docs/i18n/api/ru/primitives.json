@@ -1,0 +1,30 @@
+{
+  "MaybeReadonlyRefOrGetter": {
+    "source": "856e8d0c75",
+    "text": "Значение, геттер или любой ref (записываемый, shallow, computed, readonly — например, из `useTemplateRef`), который библиотека только читает. В отличие от `MaybeRefOrGetter` из Vue, принимает `Ref<string>` там, где ожидается `string | number`."
+  },
+  "MaybeReadonlyRef": {
+    "source": "e1366b62a5",
+    "text": "Значение или любой ref — для опций, где функция сама является значением (компонент оверлея, правило приёма, своя анимация), поэтому геттер от неё не отличить. Храните компоненты в `shallowRef` (или в computed): Vue не должен делать их реактивными."
+  },
+  "SensorType": {
+    "source": "ddccc05a96",
+    "text": "Как движется драг, какой бы сенсор им ни управлял (`SensorActivation.type`): `'pointer'` следует за точками, `'keyboard'` перемещается по элементам."
+  },
+  "ActivationConstraint.distance": {
+    "source": "70ede97eca",
+    "text": "Сколько пикселей должен пройти указатель, прежде чем начнётся драг."
+  },
+  "ActivationConstraint.delay": {
+    "source": "86a4e4ad54",
+    "text": "Сколько миллисекунд нужно удерживать указатель, прежде чем начнётся драг."
+  },
+  "ActivationConstraint.tolerance": {
+    "source": "f316a28dbe",
+    "text": "Вместе с `delay`: смещение в px, которое прерывает активацию, чтобы страницу можно было прокрутить."
+  },
+  "ActivationOptions": {
+    "source": "75a2dcce93",
+    "text": "Для каждого типа указателя. По умолчанию: мышь и перо — `{ distance: 4 }` (на ручке — сразу), касание — `{ delay: 200, tolerance: 5 }`."
+  }
+}

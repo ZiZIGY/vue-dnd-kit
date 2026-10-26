@@ -1,0 +1,130 @@
+{
+  "SensorDirection": {
+    "source": "7f9360b8f1",
+    "text": "一次键盘步进的方向键。"
+  },
+  "SortablePosition": {
+    "source": "9d6ffc08ba",
+    "text": "可排序列表中的一个位置，用于 `SensorDrag.place()`（以及 `@vue-dnd-kit/actions` 的 `moveItem`）。仅限列表：树通过它们自己的 key 放置项。"
+  },
+  "SortablePosition.list": {
+    "source": "acaba34476",
+    "text": "列表的 id（`SortableListOptions.id`）。默认：项当前所在的列表。"
+  },
+  "SortablePosition.index": {
+    "source": "879c486a9b",
+    "text": "项最终所在的索引，计算时不包含项本身（多项拖拽的整组只算一次）。被限制在列表范围内；默认：末尾。"
+  },
+  "SensorActivation": {
+    "source": "bee94513f8",
+    "text": "传感器的输入想要拖拽时，它所请求的内容（`SensorContext.activate()`）。"
+  },
+  "SensorActivation.target": {
+    "source": "3456b2c0b5",
+    "text": "输入落在哪里：可拖拽元素内部的某个元素，或某个可拖拽元素的 id。元素必须属于这个 provider；对于 `'pointer'` 拖拽，如果有手柄，它必须位于手柄上，并且不能位于可交互的子元素上（按钮、输入框）；对于 `'keyboard'` 拖拽，它必须是可拖拽元素的焦点目标（手柄，否则是可拖拽元素本身），并且不能是可编辑字段。id 会跳过这些检查：无论输入在哪里，拖拽都从该项开始。"
+  },
+  "SensorActivation.type": {
+    "source": "7a4cdb1638",
+    "text": "拖拽如何移动。`'pointer'`（默认）：它跟随传给 `move()` 的坐标点，在那里对目标做命中测试，容器在边缘自动滚动，页面显示抓取光标。`'keyboard'`：它像方向键那样通过 `step()` 和 `place()` 按项移动，目标会被滚动到视野中而不是自动滚动，结束时焦点回到该项上。`Active.sensor` 会告诉你是哪一种。"
+  },
+  "SensorActivation.point": {
+    "source": "7edeba1eec",
+    "text": "拖拽开始的位置，视口坐标。默认：可拖拽元素的中心。"
+  },
+  "SensorActivation.event": {
+    "source": "614ce932cb",
+    "text": "输入事件。它会交给可拖拽元素的 `canDrag`：没有事件时（游戏手柄、程序化拖拽），不会询问 `canDrag`。`pointerType` 为 `'touch'` 时，这次拖拽会成为触摸拖拽（`haptics`）。"
+  },
+  "SensorActivation.activation": {
+    "source": "39a1a2728a",
+    "text": "拖拽开始之前等待的条件（在此之前 `useDnD().status` 为 `'activating'`，并带有进度）。指针类型会先读取可拖拽元素的 `activation` 选项中对应的设置，然后是 provider 的，最后是默认值（鼠标和触控笔为 4px，在手柄上立即开始；触摸为 200ms 长按，容差 5px）。约束会按原样使用。默认：无，拖拽立即开始。"
+  },
+  "SensorActivation.onStart": {
+    "source": "e74975e61a",
+    "text": "拖拽已开始，在激活之后：例如捕获指针。"
+  },
+  "SensorActivation.onEnd": {
+    "source": "acfe1ac782",
+    "text": "拖拽已结束：它的激活被中止，或者它已放下或被取消（无论由谁）。"
+  },
+  "SensorActivation.onResume": {
+    "source": "7bea6fab0a",
+    "text": "传感器请求的放置没有发生，拖拽继续（`onBeforeDrop` 返回了 `'continue'`）：`move`、`drop` 和 `cancel` 再次生效。指针传感器会让项跟随指针，直到下一次松开。"
+  },
+  "SensorDragState": {
+    "source": "cede55f00c",
+    "text": "- `'pending'`：等待激活约束；\n- `'dragging'`：从开始直到放置结果确定或拖拽被取消；\n- `'ended'`：激活被中止，或者拖拽已放下或被取消，无论是由传感器还是其他原因（Escape、隐藏的标签页、`useDnD().cancel()`、provider 卸载）。"
+  },
+  "SensorStepOptions.event": {
+    "source": "a9cd22b651",
+    "text": "按键事件，会交给监听器的 `getKeyboardCoordinates`。默认：该方向键的一个 keydown 事件。"
+  },
+  "SensorStepOptions.fast": {
+    "source": "0155c06811",
+    "text": "自由拖拽中更大的步长（与 Shift 相同）。默认：`event.shiftKey`。"
+  },
+  "SensorDrag": {
+    "source": "6edb3afbc6",
+    "text": "传感器的一次拖拽，从 `activate()` 开始直到它结束。一旦调用不再适用就会被忽略：开始之前或结束之后的移动、第二次 `drop()`。"
+  },
+  "SensorDrag.id": {
+    "source": "407eb1b511",
+    "text": "被拖拽项的 id。"
+  },
+  "SensorDrag.started": {
+    "source": "0bc4410fb6",
+    "text": "拖拽已经开始过，即使之后已经结束（指针传感器会吞掉拖拽之后的那次点击）。"
+  },
+  "SensorDrag.move": {
+    "source": "e3bbe7bb94",
+    "text": "输入移动了。等待期间检查激活约束（移动超出容差会中止它）；拖拽期间，拖拽会移到那里。指针拖拽每帧取一个位置；键盘拖拽会在之前的步进完成后立即移动。"
+  },
+  "SensorDrag.step": {
+    "source": "8c21fcb6e2",
+    "text": "键盘拖拽：一次方向键步进，与键盘传感器的方向键效果相同（列表中的下一项、`'droppables'` 模式下下一个接收它的目标，或 `keyboard.step` 像素）。步进会排队：每一步都等前一步渲染完成后才执行，并且当仍有步进尚未完成时，重复按键（`event.repeat`）会被跳过。指针拖拽会忽略它。"
+  },
+  "SensorDrag.place": {
+    "source": "875a435278",
+    "text": "像键盘移动那样，把项放到可排序列表的某个位置（其他列表只有在接收它时才会接纳它），并把拖拽移到它的新位置。没有列表在那里接收它时 resolve 为 `false`。在键盘拖拽中与 `step()` 一样排队。"
+  },
+  "SensorDrag.drop": {
+    "source": "9e72401eb8",
+    "text": "放下：如果激活仍在等待中，则改为中止它。在拖拽结束并落位后 resolve：放置成功时为 `true`，被拒绝（被目标或 `onBeforeDrop`）或没有东西可放下时为 `false`。"
+  },
+  "SensorDrag.cancel": {
+    "source": "44f5c428fe",
+    "text": "取消拖拽（它会飞回原处），或中止等待中的激活。"
+  },
+  "SensorContext": {
+    "source": "876aed9a75",
+    "text": "传感器从它所运行的 provider 中得到的内容。"
+  },
+  "SensorContext.props": {
+    "source": "438e02e474",
+    "text": "provider 的 props（例如 `activation`、`keyboard`）。在需要时再读取：它们可能会变化。"
+  },
+  "SensorContext.status": {
+    "source": "12276bbfc2",
+    "text": "provider 的拖拽状态，无论是哪个传感器在执行拖拽。"
+  },
+  "SensorContext.drag": {
+    "source": "767f316252",
+    "text": "provider 的拖拽，等待中或拖拽中，无论是哪个传感器发起的；没有拖拽时为 `null`。传感器之间可以驱动彼此的拖拽：键盘传感器会移动并放下每一次键盘拖拽，例如由“移动”按钮拿起的拖拽（`@vue-dnd-kit/actions`）。"
+  },
+  "SensorContext.activate": {
+    "source": "e07116cbf5",
+    "text": "请求拖拽一个项。provider 会检查：它是否空闲（同一时间只有一次拖拽，放置落位期间也不行）、目标是否是它自己的、未被禁用的可拖拽元素、输入落在哪里（参见 `target`）以及可拖拽元素的 `canDrag`，然后等待激活约束并开始拖拽。返回这次拖拽（等待中；或者没有需要等待的条件时，已经在拖拽中），不能开始拖拽时返回 `null`。"
+  },
+  "SensorContext.cancel": {
+    "source": "72e590e04a",
+    "text": "取消 provider 的拖拽或等待中的激活，无论是哪个传感器在执行它（Escape、隐藏的标签页）。"
+  },
+  "Sensor": {
+    "source": "e8d26c9d5d",
+    "text": "发起拖拽的输入：指针、键盘，或你自己的输入（游戏手柄、屏幕上的摇杆、语音、脚本驱动的拖拽）。`setup` 在每个 provider 中运行一次，只在浏览器中运行，位于一个随 provider 结束的副作用作用域中（或者当传感器离开 `sensors`、或调用 `useSensor` 的组件卸载时结束）。用 `useEventListener` 注册监听器，或者返回一个清理函数；届时仍在进行的拖拽会被取消。\n\n要包装一个传感器，用你自己的上下文运行它的 `setup`。`Object.create(context, { activate: { value: … } })` 会保留实时的 getter（`status`、`drag`、`props`）：展开运算符会把它们冻结。"
+  },
+  "Sensor.name": {
+    "source": "f3f1afa08b",
+    "text": "用于调试。"
+  }
+}

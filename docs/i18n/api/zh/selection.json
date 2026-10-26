@@ -1,0 +1,30 @@
+{
+  "SelectionStrategy": {
+    "source": "e9f3f3d3ea",
+    "text": "- `'toggle'`：选框经过的项会在画选框之前的状态基础上切换；\n- `'select'`：只有选框内的项被选中。"
+  },
+  "SelectionModifier": {
+    "source": "c7f915cabf",
+    "text": "按下时必须按住才能画选框的按键（`KeyboardEvent.key` 或 `.code`）：全部按住，或只按住其中一部分（`'some'`）。"
+  },
+  "SelectionAreaOptions": {
+    "source": "395589bdaa",
+    "text": "`makeSelectionArea` 的选项。`modifier`、`strategy`、`accept` 和 `disabled` 接受值、ref 或 getter（`accept`：值或 ref，函数即规则），并在按下开始画选框时读取；开启 `disabled` 还会取消正在进行的选框。"
+  },
+  "SelectionAreaOptions.selection": {
+    "source": "294f767d3b",
+    "text": "默认使用 provider 的选中集合。"
+  },
+  "SelectionAreaOptions.strategy": {
+    "source": "0367d14627",
+    "text": "默认为 `'toggle'`。"
+  },
+  "SelectionAreaOptions.accept": {
+    "source": "6293487b0c",
+    "text": "选框选中哪些可拖拽元素；与放置目标使用相同的匹配器。"
+  },
+  "SelectionAreaReturn.style": {
+    "source": "e4525127b1",
+    "text": "选框矩形元素的样式（绝对定位，相对于容器）。"
+  }
+}

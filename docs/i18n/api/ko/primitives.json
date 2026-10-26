@@ -1,0 +1,30 @@
+{
+  "MaybeReadonlyRefOrGetter": {
+    "source": "856e8d0c75",
+    "text": "라이브러리가 읽기만 하는 값, getter, 또는 모든 종류의 ref(쓰기 가능, shallow, computed, readonly — 예: `useTemplateRef`의 반환값). Vue의 `MaybeRefOrGetter`와 달리, `string | number`가 필요한 곳에 `Ref<string>`도 받습니다."
+  },
+  "MaybeReadonlyRef": {
+    "source": "e1366b62a5",
+    "text": "값 또는 모든 종류의 ref. 함수 자체가 하나의 값인 옵션(오버레이 컴포넌트, accept 규칙, 커스텀 애니메이션)에 쓰이며, 그래서 getter와 구별할 수 없습니다. 컴포넌트는 `shallowRef`(또는 computed)에 담으세요. Vue가 컴포넌트를 반응형으로 만들면 안 됩니다."
+  },
+  "SensorType": {
+    "source": "ddccc05a96",
+    "text": "어떤 센서가 조종하든 드래그가 움직이는 방식(`SensorActivation.type`): `'pointer'`는 지점을 따라가고, `'keyboard'`는 항목 단위로 움직입니다."
+  },
+  "ActivationConstraint.distance": {
+    "source": "70ede97eca",
+    "text": "드래그가 시작되기 전에 포인터가 이동해야 하는 픽셀 수."
+  },
+  "ActivationConstraint.delay": {
+    "source": "86a4e4ad54",
+    "text": "드래그가 시작되기 전에 포인터를 누르고 있어야 하는 밀리초."
+  },
+  "ActivationConstraint.tolerance": {
+    "source": "f316a28dbe",
+    "text": "`delay`와 함께: 활성화를 중단시키는 이동 거리(px). 페이지가 스크롤될 수 있도록 합니다."
+  },
+  "ActivationOptions": {
+    "source": "75a2dcce93",
+    "text": "포인터 종류별 설정. 기본값: 마우스/펜 `{ distance: 4 }`(핸들에서는 즉시), 터치 `{ delay: 200, tolerance: 5 }`."
+  }
+}

@@ -27,7 +27,6 @@
     { passive: true },
   );
   const coordinate = (value: number | undefined) => (value === undefined ? '----' : String(Math.max(0, value)).padStart(4, '0'));
-  useDemoWords(paper);
 
   // The viewfinder's corners close in on the paper when it comes into view.
   const CORNERS = [

@@ -1,1 +1,237 @@
-{}
+{
+  "nav": {
+    "docs": "Dokumentation",
+    "examples": "Beispiele",
+    "api": "API",
+    "ecosystem": "Ökosystem",
+    "github": "GitHub",
+    "menu": "Menü",
+    "home": "Vue DnD Kit – Startseite"
+  },
+  "search": {
+    "button": "Suche",
+    "placeholder": "Dokumentation durchsuchen…"
+  },
+  "theme": {
+    "toggle": "Zwischen hellem und dunklem Design wechseln"
+  },
+  "language": {
+    "label": "Sprache",
+    "aiNote": "Übersetzungen werden von KI erstellt"
+  },
+  "version": {
+    "label": "Version",
+    "current": "v3 · aktuell",
+    "v2": "v2 · veraltet",
+    "v1": "v1 · veraltet",
+    "legacyBanner": "Du liest die Dokumentation der veralteten Version v{version}. Die aktuelle Version ist v3.",
+    "toCurrent": "Zu v3 wechseln"
+  },
+  "copy": {
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "command": "Installationsbefehl kopieren"
+  },
+  "home": {
+    "title": "Drag and Drop,\ngemacht für Vue.",
+    "lead": "Sortierbare Listen, Kanban-Boards, Bäume und Multi-Drag für Vue 3 – animiert, mit Tastatursteuerung und von Haus aus barrierefrei.",
+    "openSource": "Kostenlos und Open Source. MIT-Lizenz.",
+    "start": "Loslegen",
+    "hint": "Ziehe die Karten – oder springe mit Tab zu einer und nutze die Pfeiltasten",
+    "deck": {
+      "sortable": {
+        "label": "Sortierbar",
+        "title": "Listen, die sich selbst sortieren"
+      },
+      "kanban": {
+        "label": "Kanban",
+        "title": "Boards, die Karten tauschen"
+      },
+      "tree": {
+        "label": "Bäume",
+        "title": "Verschachteln mit einem Schubs"
+      },
+      "multi": {
+        "label": "Multi-Drag",
+        "title": "Viele Elemente, ein Zug"
+      },
+      "animate": {
+        "label": "Animiert",
+        "title": "Bewegung von Haus aus"
+      },
+      "keyboard": {
+        "label": "A11y",
+        "title": "Tastatur gleichberechtigt"
+      },
+      "virtual": {
+        "label": "Virtuell",
+        "title": "Zehntausend Zeilen"
+      }
+    },
+    "intro": {
+      "title": "Composables,\nkeine Komponenten.",
+      "text": "Dein Markup, deine Styles. Übergib einem Composable ein Template-Ref, und das Element lässt sich ziehen, sortieren und ablegen – die Arbeit für Animation, Tastatur und Screenreader ist schon für dich erledigt.",
+      "label": "So funktioniert es",
+      "apis": [
+        {
+          "code": "makeSortableList",
+          "text": "Listen, Raster und Kanban-Spalten, die sich beim Ziehen neu ordnen – und innerhalb einer Gruppe Elemente austauschen."
+        },
+        {
+          "code": "makeSortableTree",
+          "text": "Verschachtelte Daten, flach gerendert: Tiefe durch einen Schubs zur Seite, Drops in Ordner, Virtualisierung."
+        },
+        {
+          "code": "makeDraggable · makeDroppable",
+          "text": "Alles andere: Boards, Canvases, Uploads – deine eigenen Regeln dafür, was wohin darf."
+        }
+      ]
+    },
+    "showcase": {
+      "docs": "Dokumentation",
+      "lists": {
+        "title": "Listen und Raster",
+        "text": "Rendere einen Entwurf deines Arrays, und er ordnet sich schon während des Ziehens neu. Beim Drop wird die neue Reihenfolge in dein Ref geschrieben. Vertikal, horizontal oder als Raster beliebiger Größe.",
+        "hint": "Ziehe einen Track oder eine App",
+        "label": "Sortierbar"
+      },
+      "kanban": {
+        "title": "Kanban-Boards",
+        "text": "Listen einer Gruppe tauschen Elemente aus. Kopiere aus einer Palette, nimm einfache ziehbare Elemente auf oder tausche statt zu verschieben – die empfangende Liste macht Platz, während du darüber hoverst.",
+        "hint": "Verschiebe Karten zwischen den Spalten",
+        "label": "Kanban"
+      },
+      "tree": {
+        "title": "Bäume",
+        "text": "Flach mit Tiefen gerendert, deshalb lassen sie sich virtualisieren. Ziehe seitwärts, um die Ebene zu ändern, oder hovere über einem Ordner, um darin abzulegen; begrenze die Tiefe und entscheide, was wo verschachtelt wird.",
+        "hint": "Ziehe seitwärts, um die Tiefe zu ändern",
+        "label": "Bäume"
+      },
+      "multi": {
+        "title": "Multi-Drag",
+        "text": "Wähle mit Strg/Cmd-Klick aus oder ziehe einen Rahmen auf, dann ziehe eines: Die ganze Auswahl bewegt sich gemeinsam und landet in ihrer Reihenfolge, sogar über Listen hinweg.",
+        "hint": "Klicke mit Strg/Cmd oder ziehe einen Rahmen auf, dann ziehe",
+        "label": "Multi-Drag"
+      },
+      "drop": {
+        "label": "Drag & Drop",
+        "title": "Drag and Drop",
+        "text": "Ein ziehbares Element, ein Drop-Ziel und eine Regel dafür, was wohin darf. Ziele leuchten auf, wenn sie den Drag annehmen, und lehnen ab, was sie nicht wollen; was ein Drop bewirkt, entscheidest du.",
+        "hint": "Sortiere die Dateien in die Ordner"
+      },
+      "constraints": {
+        "label": "Einschränkungen",
+        "title": "Achsen, Grenzen und Raster",
+        "text": "Ein Drag-Bereich legt die Regeln für alles fest, was darin gezogen wird: eine Achse sperren, Drags innerhalb seiner Ränder halten, am Raster einrasten – und das alles ändern, während die App läuft.",
+        "hint": "Stelle die Regeln um, dann ziehe eine Notiz"
+      }
+    },
+    "more": [
+      {
+        "title": "Animiert",
+        "text": "FLIP beim Sortieren, ein Drop, der in seinem Slot landet, Datenänderungen, die animiert werden. Bring GSAP oder motion mit, wenn du magst."
+      },
+      {
+        "title": "Barrierefrei",
+        "text": "Ziehen per Tastatur von Slot zu Slot, Live-Ansagen und ARIA-Attribute, die deine nie überschreiben."
+      },
+      {
+        "title": "Virtuelle Listen",
+        "text": "TanStack Virtual und VueUse: Tausende Zeilen, weiterhin sortierbar, weiterhin animiert."
+      },
+      {
+        "title": "Kontrolliert",
+        "text": "Pinia, ein Server oder unveränderliche Daten: Überspringe das Standard-Schreiben und wende das Ergebnis selbst an."
+      }
+    ],
+    "ecosystem": {
+      "title": "Ein kleiner Kern, ein paar scharfe Werkzeuge.",
+      "text": "Mit dem Kern lässt sich alles ziehen. Füge den Rest hinzu, wenn du ihn brauchst.",
+      "devtools": {
+        "title": "DevTools",
+        "text": "Ein Tab in den Vue DevTools und den Nuxt DevTools: eine Live-Minimap, ein Joystick, der alles ziehen kann, und Optionen, die du bearbeitest, während die App läuft."
+      },
+      "actions": {
+        "title": "Programmatische Drags",
+        "text": "„Nach oben“, „nach Done verschieben“, geführte Touren und Tests – echte Drags, angesagt und animiert, aus dem Code."
+      },
+      "nuxt": {
+        "title": "Nuxt-Modul",
+        "text": "Automatisch importierte Composables, globale Komponenten und SSR-sichere Standardwerte."
+      },
+      "skill": {
+        "title": "Für KI-Agenten",
+        "text": "Ein Agent-Skill, der Claude Code und anderen Assistenten beibringt, wie die Bibliothek funktioniert."
+      }
+    },
+    "metrics": {
+      "e2e": "End-to-End-Tests in drei Browsern",
+      "unit": "Unit-Tests",
+      "size": "Ziehbare Elemente und Drop-Zonen, gzip-komprimiert",
+      "languages": "Sprachen dieser Dokumentation"
+    },
+    "next": {
+      "title": "Wähle, wo du anfängst.",
+      "guide": {
+        "title": "Leitfaden lesen",
+        "text": "Von der Installation zu deiner ersten sortierbaren Liste in fünf Minuten.",
+        "action": "Loslegen"
+      },
+      "examples": {
+        "title": "Beispiele ansehen",
+        "text": "Live-Demos mit ihrem Code, bereit zum Kopieren oder zum Öffnen in StackBlitz.",
+        "action": "Zu den Beispielen"
+      }
+    },
+    "tag": "Drag and Drop für Vue 3",
+    "moreLabel": "Und mehr",
+    "moreTitle": "Bereit für echte Apps."
+  },
+  "docs": {
+    "onThisPage": "Auf dieser Seite",
+    "edit": "Diese Seite bearbeiten",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "notTranslated": "Diese Seite ist noch nicht übersetzt. Du liest das englische Original.",
+    "aiNotice": "Diese Seite wurde von KI übersetzt und kann Ungenauigkeiten enthalten.",
+    "outdated": "Die englische Seite hat sich seit dieser Übersetzung geändert. Das Original ist aktuell.",
+    "readOriginal": "Englisches Original lesen",
+    "copyPage": "Seite kopieren",
+    "copied": "Kopiert"
+  },
+  "example": {
+    "preview": "Vorschau",
+    "code": "Code",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "stackblitz": "In StackBlitz öffnen",
+    "reset": "Demo zurücksetzen",
+    "loading": "Demo wird geladen…"
+  },
+  "api": {
+    "name": "Name",
+    "type": "Typ",
+    "description": "Beschreibung",
+    "optional": "optional",
+    "reactive": "Wert · Ref · Getter",
+    "reactiveRef": "Wert · Ref",
+    "deprecated": "Veraltet"
+  },
+  "footer": {
+    "about": "Drag and Drop für Vue 3. Open Source unter der MIT-Lizenz.",
+    "docs": "Dokumentation",
+    "ecosystem": "Ökosystem",
+    "community": "Community",
+    "issues": "Issues",
+    "changelog": "Changelog",
+    "rights": "MIT-Lizenz",
+    "aiNote": "Übersetzungen werden von KI erstellt und können Ungenauigkeiten enthalten."
+  },
+  "notFound": {
+    "label": "Fehler 404",
+    "title": "Seite nicht gefunden",
+    "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+    "home": "Zur Startseite",
+    "docs": "Dokumentation öffnen"
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "Announcements": {
+    "source": "35c177cf7f",
+    "text": "Screenreader-Texte pro Event. Ein Text wird von der Live-Region des Providers gesprochen (Bewegungen, sobald der Drag 500 ms ruht); `undefined` überlässt das Event der nächsten Quelle (den Texten von Integrationen wie den Positionen in sortierbaren Listen, dann den Standardtexten); `''` sagt nichts. Eine Bewegung wird für das Ziel, das beim Aufnehmen gefunden wird, nicht angesagt: Es hat sich noch nichts bewegt."
+  },
+  "Announcements.onDragResume": {
+    "source": "d4806359e7",
+    "text": "`onBeforeDrop` hat `'continue'` geantwortet: Der Drag geht weiter."
+  },
+  "KeyboardOptions.step": {
+    "source": "66a729c31a",
+    "text": "Pixel pro Druck auf eine Pfeiltaste bei freien (nicht sortierbaren) Drags. Standard 25."
+  },
+  "AutoScrollOptions.threshold": {
+    "source": "1b2cd0615c",
+    "text": "Randzone als Bruchteil der Containergröße. Standard 0.2 (begrenzt auf 24–96px)."
+  },
+  "AutoScrollOptions.maxSpeed": {
+    "source": "4ebcb33d64",
+    "text": "Höchstgeschwindigkeit in px pro Frame von 16ms."
+  },
+  "HapticPattern": {
+    "source": "1fb9df65e6",
+    "text": "Eine Vibration (`navigator.vibrate`): ihre Länge in ms oder ein Ein/Aus-Muster. `true` ist die Standardvibration (10ms; `[20, 40, 20]` für `refuse`), `false` oder `0` keine."
+  },
+  "HapticsOptions": {
+    "source": "8c813a52b6",
+    "text": "Wann Drags per Touch vibrieren. Das tun nur Drags, die per Touch gestartet wurden; wo der Browser nicht vibrieren kann (iOS Safari) oder es blockiert (noch kein Tippen auf der Seite), passiert nichts."
+  },
+  "HapticsOptions.start": {
+    "source": "e9e6d11084",
+    "text": "Der Drag beginnt, nach dem langen Drücken. Standard `true`."
+  },
+  "HapticsOptions.enter": {
+    "source": "8f9e55bdc7",
+    "text": "Der Drag betritt ein Drop-Ziel (eine Liste, eine Drop-Zone), das ihn annimmt. Standard `false`."
+  },
+  "HapticsOptions.drop": {
+    "source": "dbf3451ed3",
+    "text": "Der Drop wird ausgeführt. Standard `false`."
+  },
+  "HapticsOptions.refuse": {
+    "source": "54d244b821",
+    "text": "Der Drop wird abgelehnt (von einem Ziel oder von `onBeforeDrop`), und die Elemente fliegen zurück. Standard `false`."
+  },
+  "DnDProviderProps.animation": {
+    "source": "699c35a63c",
+    "text": "Standard-FLIP-Animation für sortierbare Listen."
+  },
+  "DnDProviderProps.animate": {
+    "source": "e7b8ee12ca",
+    "text": "Standardwert von `animate` für sortierbare Listen und Bäume: Änderungen ihrer Elemente, die kein Drag ausgelöst hat. Standardmäßig aus."
+  },
+  "DnDProviderProps.sensors": {
+    "source": "180c7efcc3",
+    "text": "Was Eingaben zu Drags macht. Standard `[pointerSensor, keyboardSensor]`: Lass einen weg, umhülle oder ersetze ihn oder füge eigene hinzu (`defineSensor`). Der Tastatursensor bricht außerdem jeden Drag mit Escape ab; `keyboard: false` schaltet seine Drags aus, behält das aber bei. Die Liste kann sich jederzeit ändern: Sensoren, die sie verlassen, stoppen und brechen dabei ihren Drag ab."
+  },
+  "DnDProviderProps.haptics": {
+    "source": "a072f3054b",
+    "text": "Vibration für Drags per Touch. Standard: eine kurze, wenn ein Drag nach dem langen Drücken beginnt; ein Objekt fügt weitere hinzu (`enter`, `drop`, `refuse`); `false` schaltet alle aus."
+  },
+  "DnDProviderProps.copyModifier": {
+    "source": "c45bff39ad",
+    "text": "Taste (KeyboardEvent.key), die eine Verschiebung in eine Kopie verwandelt. Standard `'Alt'`; `null` deaktiviert das."
+  },
+  "DnDProviderProps.overlayFit": {
+    "source": "2cebf1b9ab",
+    "text": "Größe des Overlays während des Ziehens. `'slot'` (Standard): Das Overlay folgt dem Slot, in dem das Element landen wird; über einer anderen Liste nimmt es also die Größe der Elemente dieser Liste an, und der Drop braucht keine Größenänderung. Es ändert seine Größe um den Zeiger herum, der immer beim selben Anteil der Box bleibt. `'source'`: Es behält die Größe des gezogenen Elements. Der Inhalt des Standard-Overlays wird in der neuen Größe neu angeordnet; er wird nie skaliert."
+  },
+  "DnDProviderProps.announcements": {
+    "source": "0729e8985f",
+    "text": "Eigene Texte für einige Events (siehe `Announcements`); `false` lässt die Live-Region stumm."
+  },
+  "DnDProviderProps.defaultStyles": {
+    "source": "b635d7cd38",
+    "text": "Standard-Styles ohne Spezifität einfügen (Deckkraft des Platzhalters, keine Textauswahl während des Ziehens)."
+  },
+  "DnDContext": {
+    "source": "224db9f60d",
+    "text": "Ein Provider, wie `useDnDContext()` ihn zurückgibt, zur Übergabe an `provideDnDContext()`: Eine andere Vue-App (z. B. eine in einem Shadow Root gemountete) arbeitet dann mit demselben Provider. Opak: Er hat keine öffentlichen Member und ändert sich daher nie mit den Interna der Bibliothek."
+  },
+  "OverlaySlotProps": {
+    "source": "38a21c4b6d",
+    "text": "Was das Overlay zeigt: die Props des Slots `#overlay` des Providers und von Overlay-Komponenten (Option `overlay` von ziehbaren Elementen, sortierbaren Elementen, Listen und Bäumen)."
+  },
+  "OverlaySlotProps.items": {
+    "source": "10d477a1e7",
+    "text": "Alle gezogenen Elemente, das primäre zuerst: ein Overlay für den ganzen Multi-Drag."
+  },
+  "OverlaySlotProps.over": {
+    "source": "a44f968644",
+    "text": "Das Drop-Ziel unter dem Drag. Während ein entschiedener Drop animiert wird, das Ziel, auf dem er landet (so, wie es beim Drop war); `null`, während ein abgebrochener Drag zurückfliegt."
+  },
+  "OverlaySlotProps.accepted": {
+    "source": "f7641f18e1",
+    "text": "Ob `over` die gezogenen Elemente annimmt; `false`, wenn der Drag über nichts ist."
+  },
+  "OverlayProps": {
+    "source": "8058170119",
+    "text": "Props einer Overlay-Komponente, für `defineProps<OverlayProps>()`.\n\nDie Komponente rendert innerhalb der Overlay-Box, die der Größe des Slots folgt (`overlayFit: 'slot'`) und diese beim Drop animiert. Gib dem Root-Element `width: 100%` (und `height: 100%`), damit es dieser Größe folgt; mit einer festen Größe behält die Komponente ihre eigene."
+  },
+  "DragPreviewProps": {
+    "source": "6c8d2b3c28",
+    "text": "Props von `DragPreview`: der Standardklon eines gezogenen Elements, für eigene Overlays (eine `overlay`-Komponente oder den Slot `#overlay` des Providers), die mehrere Elemente selbst anordnen, z. B. `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`.\n\nKlone werden beim Aufnehmen erstellt: vom gegriffenen Element und von bis zu vier weiteren, die in Drop-Reihenfolge daneben liegen (denen, die zu diesem Zeitpunkt gerendert sind). Für jedes andere Element rendert `DragPreview` seinen Default-Slot oder nichts. Der Klon füllt das DOM-Element aus, das beim Aufnehmen die Größe des Elements hat, sofern du es nicht stylst (`class` und `style` werden durchgereicht).\n\nBei einem sortierbaren Multi-Drag (`multiple: 'group'` oder `'gaps'`) landet die Vorschau eines anderen Elements als des gegriffenen mit dem Drop im Slot dieses Elements (bei einem Abbruch wieder auf seinem Platz), von wo auch immer das Layout sie hingesetzt hat: Mit `transform` gedrehte oder skalierte Wrapper werden unterwegs rückgängig gemacht, ihre Größe wird als Breite und Höhe animiert. Style die Vorschau selbst (Ecken, Schatten): Ihre Wrapper bleiben in der Box. Elemente ohne Klon werden stattdessen eingeblendet."
+  },
+  "DragPreviewProps.id": {
+    "source": "220d6dd174",
+    "text": "ID eines gezogenen Elements: eines aus `items` in `OverlayProps`."
+  }
+}

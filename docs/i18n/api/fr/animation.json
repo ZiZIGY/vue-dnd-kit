@@ -1,0 +1,102 @@
+{
+  "LayoutAnimationContext.from": {
+    "source": "c5845d8793",
+    "text": "Rectangle visuel avant le changement (là où une animation en cours affichait l'item)."
+  },
+  "LayoutAnimationContext.to": {
+    "source": "17f753cbe6",
+    "text": "Rectangle de mise en page après le changement."
+  },
+  "LayoutAnimationContext.reason": {
+    "source": "eceea904fa",
+    "text": "Ce qui a déplacé l'item : un glissement (`'drag'` : le tri, le dépôt, une annulation), ou un changement de vos données qui ne vient pas d'un glissement (`'change'`, avec l'option `animate` de la liste activée)."
+  },
+  "LayoutAnimationContext.signal": {
+    "source": "c8aa938f56",
+    "text": "Interrompu quand la bibliothèque arrête l'animation : l'item bouge de nouveau avant la fin (l'animation suivante part de l'endroit où il est affiché), ou les animations sont désactivées. Une `Animation` renvoyée est annulée pour vous. Arrêtez ici tout le reste et annulez immédiatement les styles appliqués : la mise en page est mesurée juste après."
+  },
+  "LayoutAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "`prefers-reduced-motion: reduce` est actif. Les animations propres à la bibliothèque ne s'exécutent alors pas ; les fonctions que vous fournissez s'exécutent toujours, et décident d'après cette valeur (sauter le mouvement, ou garder un fondu)."
+  },
+  "LayoutAnimation": {
+    "source": "233b130a9c",
+    "text": "Comment les items rejoignent leur nouvelle place : `true` (timing par défaut), des options, `false` (ils sautent directement), ou une fonction qui anime un item de `from` à `to` et renvoie son `Animation`, une promesse qui se résout à la fin, ou rien."
+  },
+  "DropAnimationContext.overlay": {
+    "source": "e272382994",
+    "text": "La boîte de l'overlay ; elle atterrit sur l'emplacement de l'item actif. En multi-drag, les clones des autres items qu'elle transporte (ceux de l'overlay par défaut, les `DragPreview` d'un overlay personnalisé) atterrissent d'eux-mêmes sur leurs propres emplacements (avec le timing par défaut quand il s'agit d'une fonction personnalisée)."
+  },
+  "DropAnimationContext.to": {
+    "source": "d0780ba408",
+    "text": "Rectangle final de l'item déposé ; `null` quand il n'est pas rendu ou pas visible (l'overlay disparaît alors en fondu)."
+  },
+  "DropAnimationContext.into": {
+    "source": "cecafada99",
+    "text": "L'item n'est pas affiché après un dépôt sur une zone (pas une liste triable), par exemple s'il a été déposé dans un autre item (un dossier) ou dans une zone de corbeille : le rectangle visible de la zone. L'animation par défaut y réduit l'overlay pendant qu'il disparaît en fondu, au lieu d'un fondu sur place."
+  },
+  "DropAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "`prefers-reduced-motion: reduce` est actif. Les animations propres à la bibliothèque ne s'exécutent alors pas ; les fonctions que vous fournissez s'exécutent toujours, et décident d'après cette valeur (sauter le mouvement, ou garder un fondu)."
+  },
+  "EnterAnimationContext": {
+    "source": "bef530cbfe",
+    "text": "Un item apparu dans une liste dont `animate` est activé : ajouté, ou de nouveau affiché (un filtre, un nœud d'arbre déplié)."
+  },
+  "EnterAnimationContext.element": {
+    "source": "120613b512",
+    "text": "L'élément de l'item, déjà à sa place."
+  },
+  "EnterAnimationContext.to": {
+    "source": "fd058782f5",
+    "text": "Là où il est apparu (rectangle de mise en page)."
+  },
+  "EnterAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "`prefers-reduced-motion: reduce` est actif. Les animations propres à la bibliothèque ne s'exécutent alors pas ; les fonctions que vous fournissez s'exécutent toujours, et décident d'après cette valeur (sauter le mouvement, ou garder un fondu)."
+  },
+  "LeaveAnimationContext": {
+    "source": "b67e70e13a",
+    "text": "Un item qui a quitté une liste dont `animate` est activé : retiré, ou masqué (un filtre, un nœud d'arbre replié)."
+  },
+  "LeaveAnimationContext.element": {
+    "source": "a4f7390241",
+    "text": "Une copie de l'élément de l'item, affichée là où était l'item (l'item lui-même a disparu) : positionnée en absolu dans son ancien parent, ignorant le pointeur, marquée `data-dnd-leaving`. La bibliothèque la retire quand votre animation se termine."
+  },
+  "LeaveAnimationContext.from": {
+    "source": "645084e2fd",
+    "text": "Là où était l'item."
+  },
+  "LeaveAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "`prefers-reduced-motion: reduce` est actif. Les animations propres à la bibliothèque ne s'exécutent alors pas ; les fonctions que vous fournissez s'exécutent toujours, et décident d'après cette valeur (sauter le mouvement, ou garder un fondu)."
+  },
+  "EnterAnimation": {
+    "source": "9a7cbcfe92",
+    "text": "`true`, des options, `false` (l'item apparaît simplement), ou une fonction qui anime son entrée."
+  },
+  "LeaveAnimation": {
+    "source": "fa236e4208",
+    "text": "`true`, des options, `false` (l'item disparaît simplement), ou une fonction qui anime la sortie de la copie laissée à sa place : renvoyez son `Animation` ou une promesse, et la copie est retirée à la fin (immédiatement quand la fonction ne renvoie rien)."
+  },
+  "AutoAnimationOptions": {
+    "source": "0130acd24e",
+    "text": "`animate` avec ses parties : `duration` et `easing` pour toutes, et, pour chaque type de changement, `true`, des options (par-dessus les options communes), `false`, ou votre propre fonction."
+  },
+  "AutoAnimationOptions.move": {
+    "source": "684eb0594d",
+    "text": "Les items qui ont changé de place (le FLIP par défaut, comme celui d'`animation` ; une fonction le remplace)."
+  },
+  "AutoAnimationOptions.enter": {
+    "source": "7d611358b7",
+    "text": "Les items apparus. Par défaut : ils s'affichent en fondu là où ils sont."
+  },
+  "AutoAnimationOptions.leave": {
+    "source": "de8fbd3ca4",
+    "text": "Les items partis. Par défaut : une copie de l'item disparaît en fondu là où il était, en rétrécissant un peu."
+  },
+  "AutoAnimation": {
+    "source": "eb08eca97d",
+    "text": "Anime les changements des items d'une liste (ou d'un arbre) qui ne viennent pas d'un glissement : items ajoutés, retirés, déplacés (un tri, un mélange, un déplacement entre les listes d'un même groupe) ou filtrés. Désactivé par défaut (`false`) ; `true` anime les déplacements, les entrées et les sorties d'items avec le timing par défaut. Les glissements gardent leurs propres animations (`animation`, `dropAnimation`). Avec `prefers-reduced-motion: reduce`, les animations par défaut ne s'exécutent pas ; les fonctions que vous fournissez s'exécutent toujours (avec `reducedMotion: true`). Seuls les items proches de la zone visible sont animés (les lignes non montées d'une liste virtuelle sont ignorées)."
+  }
+}

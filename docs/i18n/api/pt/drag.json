@@ -1,0 +1,98 @@
+{
+  "DragItem.item": {
+    "source": "7cfd4640f1",
+    "text": "Objeto do item quando o arraste vem de uma lista ordenável."
+  },
+  "DragItem.type": {
+    "source": "9189758463",
+    "text": "`type` normalizado do draggable; vazio significa que ele passa em qualquer alvo de drop."
+  },
+  "Active.id": {
+    "source": "f080aacddc",
+    "text": "Id do item a partir do qual o arraste começou."
+  },
+  "Active.ids": {
+    "source": "173336b06e",
+    "text": "Todos os ids arrastados, começando pelo principal (multi-drag)."
+  },
+  "Active.element": {
+    "source": "b0e7f2b9f5",
+    "text": "Elemento a partir do qual o arraste começou. Ele pode ser desconectado do DOM (listas virtuais, movimentos entre listas)."
+  },
+  "Active.rect": {
+    "source": "7964e6f559",
+    "text": "Retângulo de layout de `element` no início do arraste."
+  },
+  "Over.accepted": {
+    "source": "48997f2ee2",
+    "text": "Se a regra `accept` do alvo aceita os itens arrastados."
+  },
+  "DragSource.list": {
+    "source": "57db105431",
+    "text": "Lista ordenável de onde vêm os itens arrastados."
+  },
+  "DragSource.remove": {
+    "source": "5ef5100d7a",
+    "text": "Remove os itens arrastados da lista deles (zonas de lixeira)."
+  },
+  "DnDEvent.pointer": {
+    "source": "49759bca51",
+    "text": "Ponteiro em coordenadas da viewport, depois dos modificadores."
+  },
+  "DnDEvent.delta": {
+    "source": "292fe23ea1",
+    "text": "Deslocamento desde o início do arraste, depois dos modificadores."
+  },
+  "DnDEvent.position": {
+    "source": "226682e4e6",
+    "text": "Onde fica o canto superior esquerdo da caixa arrastada dentro de `over`, a partir da borda do padding dele e com a rolagem dele: o `left`/`top` que colocam um item com posicionamento absoluto onde ele foi solto (uma nota em um quadro). `null` quando não há nada embaixo. Da caixa do overlay, ou do próprio elemento com `overlay: false`."
+  },
+  "DnDEvent.source": {
+    "source": "d69f88797f",
+    "text": "Presente quando os itens arrastados vêm de uma lista ordenável."
+  },
+  "DnDEndEvent.dropped": {
+    "source": "8ada0b47b1",
+    "text": "False quando o arraste terminou fora de todos os alvos de drop."
+  },
+  "DnDEndEvent.accepted": {
+    "source": "bf82d1aeb9",
+    "text": "Ids aceitos pelo `onBeforeDrop` (todos os ids arrastados, a menos que um subconjunto tenha sido retornado)."
+  },
+  "BeforeDropResult": {
+    "source": "056be141e8",
+    "text": "O que o `onBeforeDrop` decide:\n- `'accept'` (ou `true`, ou nada): o drop é concluído;\n- `'reject'` (ou `false`): nenhum drop, os itens voltam ao lugar;\n- uma lista de ids: só esses itens são aceitos, os outros voltam ao lugar;\n- `'continue'`: nenhum drop, e o arraste continua. Com um ponteiro, o item volta a segui-lo (sem nenhum botão pressionado) e o próximo soltar, um clique, o solta; um toque o pega de novo; o teclado o move como antes. Escape o cancela. O drop consulta o `onBeforeDrop` de novo."
+  },
+  "AcceptRule": {
+    "source": "b40b673608",
+    "text": "`'*'` ou omitido aceita tudo. Itens sem tipo passam em qualquer regra de string (equivalente a `groups: []` da v2)."
+  },
+  "AcceptMode": {
+    "source": "2aa08aef31",
+    "text": "`'all'`: todos os itens arrastados precisam passar; `'some'`: pelo menos um (o resto pode ser rejeitado no `onBeforeDrop`)."
+  },
+  "KeyboardMoveContext.direction": {
+    "source": "a0b25b3b54",
+    "text": "Vetor unitário da seta pressionada."
+  },
+  "DnDMonitor.onBeforeDrop": {
+    "source": "7c0b37588d",
+    "text": "Roda antes de o drop ser efetivado (veja `BeforeDropResult`): `'reject'` o recusa, ids aceitam um subconjunto."
+  },
+  "DnDMonitor.onDragEnd": {
+    "source": "117782ceb2",
+    "text": "Uma notificação assim que o drop termina: as listas ordenáveis já rodaram o `onDrop` delas e o gravaram."
+  },
+  "DnDMonitor.onDragResume": {
+    "source": "8e5af01ef3",
+    "text": "`onBeforeDrop` respondeu `'continue'`: não houve drop, e o arraste continua."
+  },
+  "DnDMonitor.getKeyboardCoordinates": {
+    "source": "72d709477a",
+    "text": "Arrastes por teclado: a próxima posição do ponteiro para uma seta (por exemplo, a próxima posição ordenável)."
+  },
+  "DnDState": {
+    "source": "60baeb2f00",
+    "text": "O estado do arraste termina quando o drop é decidido: `active`, `over` e `pointer` passam a ser `null` (e os droppables deixam de aceitar) enquanto o overlay ainda está sendo animado até o lugar (`status` continua `'dropping'`). Uma UI derivada nunca mistura o arraste antigo com os dados novos. Enquanto um `onBeforeDrop` assíncrono decide, o estado é mantido como estava no momento em que o item foi solto, mas a página sai do modo de arraste: o cursor e a seleção de texto dela voltam (um diálogo de confirmação funciona normalmente), e o overlay espera onde foi solto."
+  }
+}

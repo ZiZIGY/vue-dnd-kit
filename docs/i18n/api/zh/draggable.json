@@ -1,0 +1,74 @@
+{
+  "DraggableOptions": {
+    "source": "6011f1e820",
+    "text": "`makeDraggable` 的选项。除 `canDrag` 外，每个选项都接受值、ref 或 getter（`overlay`：值或 ref），并在需要时读取，所以变化最迟在下一次拖拽时生效。"
+  },
+  "DraggableOptions.id": {
+    "source": "2dac667235",
+    "text": "稳定的 id。在元素会被回收的虚拟列表中，传入 getter。默认：`useId()`，在服务端和客户端渲染之间保持稳定，但每个组件实例都不同。"
+  },
+  "DraggableOptions.handle": {
+    "source": "1330de430e",
+    "text": "可拖拽元素内部用于开始拖拽的元素或选择器（它也会得到相关属性）。"
+  },
+  "DraggableOptions.activation": {
+    "source": "07b1465312",
+    "text": "覆盖 provider 的 `activation`。在按下开始时读取。"
+  },
+  "DraggableOptions.canDrag": {
+    "source": "ba9d01922f",
+    "text": "额外的关卡，例如只在按住某个键时才能拖拽。"
+  },
+  "DraggableOptions.overlay": {
+    "source": "f24fdc907d",
+    "text": "`true`（默认）：浮层跟随指针，由 provider 的 `#overlay` 插槽渲染，或者是元素的克隆。组件：浮层以 `OverlayProps` 渲染它，优先于插槽。`false`：没有浮层，元素本身通过返回的 `transform` 移动。值或 ref（函数即函数式组件），在拖拽开始时读取。克隆会排除 UI 库的按下效果（水波纹），以及内部任何标记了 `data-dnd-no-clone` 的元素。"
+  },
+  "DraggableOptions.modifiers": {
+    "source": "71eb5c6851",
+    "text": "从这里开始的拖拽的修饰器，在 provider 的 `modifiers` 之后应用：例如在一个其他拖拽都可以自由移动的页面上，为某个元素设置 `[restrictToVerticalAxis]`。在拖拽开始时读取。"
+  },
+  "DraggableOptions.axis": {
+    "source": "41cb212360",
+    "text": "把从这里开始的拖拽锁定在一个轴上：`'x'` 只水平移动，`'y'` 只垂直移动。锁定在 `modifiers` 之后执行（相当于把 `restrictToHorizontalAxis` / `restrictToVerticalAxis` 放在最后），所以无论修饰器做什么，锁定都成立。在拖拽开始时读取。"
+  },
+  "DraggableOptions.keyboard": {
+    "source": "fd726db037",
+    "text": "自由拖拽中的方向键：按像素移动（默认），或在接收它的放置目标之间跳转。每次按下方向键时读取。"
+  },
+  "DraggableOptions.attributes": {
+    "source": "f3f57590a6",
+    "text": "设置 role/tabindex/aria-* 属性（默认 `true`），永远不会覆盖用户自己设置的。provider 的操作说明 id 会作为又一个 token 加入已有的 `aria-describedby`（同一元素上 UI 库的提示框会保留它自己的），并且只有这个 token 会被移除。实时生效：关闭后，库设置的属性会被移除。"
+  },
+  "DraggableReturn.transform": {
+    "source": "3c2e7e5527",
+    "text": "使用 `overlay: false` 时要应用的偏移量。"
+  },
+  "DroppableOptions": {
+    "source": "6146f0758b",
+    "text": "`makeDroppable` 的选项。\n\n**放进一个项。** 位于可排序项元素上（或其内部）的放置目标与其他地方的放置目标一样工作，只有一条规则适用于该项所在列表本会对拖拽进行排序的情况：只有当指针位于项的中间部分时它才生效（沿列表轴向的 25–75%；网格中为 x 轴），此时放置会进入目标，列表也不会为它移动。靠近项的边缘时，列表照常排序。`accept` 拒绝这次拖拽的目标会被排除在外，所以列表会像对待其他项一样在这个项上方排序（无需禁用它）。键盘会在越过这个项之前先停在这样的目标上。目标永远不会属于它自己的拖拽：不会位于任何被拖拽的项之内（或之上），也不会位于某个项将落入的位置中。要在 `onDrop` 中把这些项移出它们的列表，调用 `e.source.remove()`。\n\n除回调外，每个选项都接受值、ref 或 getter（`accept`：值或 ref），并在拖拽查找目标时实时读取。"
+  },
+  "DroppableOptions.id": {
+    "source": "ea58d47829",
+    "text": "默认：`useId()`，在服务端和客户端渲染之间保持稳定。"
+  },
+  "DroppableOptions.accept": {
+    "source": "aae01588b5",
+    "text": "这个目标接收什么。在可排序项内部时，拒绝这次拖拽的目标会让列表在它上方排序。值或 ref：函数即规则。"
+  },
+  "DroppableOptions.acceptMode": {
+    "source": "05b17f13f4",
+    "text": "默认为 `'all'`。"
+  },
+  "DroppableOptions.priority": {
+    "source": "083ebc2847",
+    "text": "目标重叠但不嵌套时，值较高的优先（默认 0）。可排序项胜过容器。"
+  },
+  "DroppableReturn.isAccepting": {
+    "source": "520ef3c1da",
+    "text": "有东西正在被拖拽，并且这个目标接收它。"
+  },
+  "DroppableReturn.placement": {
+    "source": "4e1160d2d2",
+    "text": "悬停时，指针相对于目标各半部分的位置。"
+  }
+}

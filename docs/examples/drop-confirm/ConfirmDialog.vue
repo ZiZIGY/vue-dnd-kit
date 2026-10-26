@@ -30,7 +30,9 @@ const reply = (answer: Answer) => {
 
 <style scoped>
 .confirm {
-  width: min(320px, calc(100vw - 32px));
+  /* A modal dialog centers itself with auto margins: keep them if a CSS reset zeroes margins. */
+  margin: auto;
+  width: min(340px, calc(100vw - 32px));
   padding: 20px;
   border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
   border-radius: 14px;

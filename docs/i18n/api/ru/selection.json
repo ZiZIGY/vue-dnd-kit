@@ -1,0 +1,30 @@
+{
+  "SelectionStrategy": {
+    "source": "e9f3f3d3ea",
+    "text": "- `'toggle'`: элементы, которые пересекает рамка, меняют состояние на обратное тому, что было до рамки;\n- `'select'`: выделены только элементы внутри рамки."
+  },
+  "SelectionModifier": {
+    "source": "c7f915cabf",
+    "text": "Клавиши (`KeyboardEvent.key` или `.code`), которые нужно удерживать, чтобы нажатие рисовало рамку: все до одной или `'some'` — хотя бы одну из них."
+  },
+  "SelectionAreaOptions": {
+    "source": "395589bdaa",
+    "text": "Опции `makeSelectionArea`. `modifier`, `strategy`, `accept` и `disabled` принимают значение, ref или геттер (`accept` — значение или ref: функция здесь — это правило) и читаются, когда нажатие начинает рамку. Включение `disabled` также отменяет уже идущую рамку."
+  },
+  "SelectionAreaOptions.selection": {
+    "source": "294f767d3b",
+    "text": "По умолчанию — выделение провайдера."
+  },
+  "SelectionAreaOptions.strategy": {
+    "source": "0367d14627",
+    "text": "По умолчанию `'toggle'`."
+  },
+  "SelectionAreaOptions.accept": {
+    "source": "6293487b0c",
+    "text": "Какие перетаскиваемые элементы выделяет рамка; матчер такой же, как у целей."
+  },
+  "SelectionAreaReturn.style": {
+    "source": "e4525127b1",
+    "text": "Стили для элемента прямоугольника выделения (absolute, относительно контейнера)."
+  }
+}

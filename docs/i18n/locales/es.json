@@ -1,1 +1,237 @@
-{}
+{
+  "nav": {
+    "docs": "Documentación",
+    "examples": "Ejemplos",
+    "api": "API",
+    "ecosystem": "Ecosistema",
+    "github": "GitHub",
+    "menu": "Menú",
+    "home": "Vue DnD Kit — inicio"
+  },
+  "search": {
+    "button": "Buscar",
+    "placeholder": "Buscar en la documentación…"
+  },
+  "theme": {
+    "toggle": "Cambiar entre tema claro y oscuro"
+  },
+  "language": {
+    "label": "Idioma",
+    "aiNote": "Las traducciones las hace una IA"
+  },
+  "version": {
+    "label": "Versión",
+    "current": "v3 · actual",
+    "v2": "v2 · anterior",
+    "v1": "v1 · anterior",
+    "legacyBanner": "Estás leyendo la documentación de la versión anterior v{version}. La versión actual es la v3.",
+    "toCurrent": "Ir a la v3"
+  },
+  "copy": {
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "command": "Copiar el comando de instalación"
+  },
+  "home": {
+    "title": "Arrastrar y soltar,\nhecho para Vue.",
+    "lead": "Listas ordenables, tableros kanban, árboles y multi-drag para Vue 3 — con animaciones, listos para el teclado y accesibles de serie.",
+    "openSource": "Libre y de código abierto. Con licencia MIT.",
+    "start": "Empezar",
+    "hint": "Arrastra las tarjetas — o llega a una con Tab y usa las flechas",
+    "deck": {
+      "sortable": {
+        "label": "Ordenable",
+        "title": "Listas que se ordenan solas"
+      },
+      "kanban": {
+        "label": "Kanban",
+        "title": "Tableros que intercambian tarjetas"
+      },
+      "tree": {
+        "label": "Árboles",
+        "title": "Anidar con un leve gesto"
+      },
+      "multi": {
+        "label": "Multi-drag",
+        "title": "Muchos ítems, un solo movimiento"
+      },
+      "animate": {
+        "label": "Animado",
+        "title": "Movimiento por defecto"
+      },
+      "keyboard": {
+        "label": "A11y",
+        "title": "El teclado, de primera clase"
+      },
+      "virtual": {
+        "label": "Virtual",
+        "title": "Diez mil filas"
+      }
+    },
+    "intro": {
+      "title": "Composables,\nno componentes.",
+      "text": "Tu marcado, tus estilos. Pasa una ref de plantilla a un composable y el elemento se arrastra, se ordena y se suelta — con la animación, el teclado y el lector de pantalla ya resueltos.",
+      "label": "Cómo funciona",
+      "apis": [
+        {
+          "code": "makeSortableList",
+          "text": "Listas, cuadrículas y columnas de kanban que se reordenan mientras arrastras — e intercambian ítems dentro de un grupo."
+        },
+        {
+          "code": "makeSortableTree",
+          "text": "Datos anidados, renderizados en plano: profundidad con un leve gesto lateral, drops dentro de carpetas, virtualización."
+        },
+        {
+          "code": "makeDraggable · makeDroppable",
+          "text": "Todo lo demás: tableros, lienzos, subidas de archivos — tus propias reglas sobre qué va dónde."
+        }
+      ]
+    },
+    "showcase": {
+      "docs": "Documentación",
+      "lists": {
+        "title": "Listas y cuadrículas",
+        "text": "Renderiza un borrador de tu array y se reordenará en vivo mientras arrastras. Al soltar, el nuevo orden se escribe en tu ref. Vertical, horizontal o una cuadrícula de cualquier tamaño.",
+        "hint": "Arrastra una canción o una app",
+        "label": "Ordenable"
+      },
+      "kanban": {
+        "title": "Tableros kanban",
+        "text": "Las listas de un mismo grupo intercambian ítems. Copia desde una paleta, acepta elementos arrastrables simples o intercambia en lugar de desplazar — la lista que recibe hace sitio mientras pasas por encima.",
+        "hint": "Mueve las tarjetas entre las columnas",
+        "label": "Kanban"
+      },
+      "tree": {
+        "title": "Árboles",
+        "text": "Se renderizan en plano con profundidades, así que se pueden virtualizar. Arrastra hacia un lado para cambiar de nivel o pasa sobre una carpeta para soltar dentro; limita la profundidad y decide qué se anida dónde.",
+        "hint": "Arrastra hacia un lado para cambiar la profundidad",
+        "label": "Árboles"
+      },
+      "multi": {
+        "title": "Multi-drag",
+        "text": "Selecciona con Ctrl/Cmd-clic o dibuja un rectángulo, y luego arrastra uno: toda la selección viaja junta y aterriza en orden, incluso entre listas.",
+        "hint": "Ctrl/Cmd-clic o dibuja un rectángulo, y luego arrastra",
+        "label": "Multi-drag"
+      },
+      "drop": {
+        "label": "Arrastrar y soltar",
+        "title": "Arrastrar y soltar",
+        "text": "Un elemento arrastrable, un destino de drop y una regla sobre qué va dónde. Los destinos se iluminan cuando aceptan el arrastre y rechazan lo que no aceptan; lo que hace un drop lo decides tú.",
+        "hint": "Ordena los archivos en las carpetas"
+      },
+      "constraints": {
+        "label": "Restricciones",
+        "title": "Ejes, límites y cuadrículas",
+        "text": "Un área de arrastre fija las reglas de todo lo que se arrastra dentro de ella: bloquea un eje, mantén los arrastres dentro de sus bordes, ajusta a una cuadrícula — y cámbialas mientras la app se ejecuta.",
+        "hint": "Cambia las reglas y luego arrastra una nota"
+      }
+    },
+    "more": [
+      {
+        "title": "Animado",
+        "text": "FLIP al ordenar, un drop que aterriza en su hueco, cambios de datos animados. Usa GSAP o motion si quieres."
+      },
+      {
+        "title": "Accesible",
+        "text": "Arrastre con teclado por huecos, anuncios en vivo y atributos ARIA que nunca sobrescriben los tuyos."
+      },
+      {
+        "title": "Listas virtuales",
+        "text": "TanStack Virtual y VueUse: miles de filas, igual de ordenables, igual de animadas."
+      },
+      {
+        "title": "Controlado",
+        "text": "Pinia, un servidor o datos inmutables: omite la escritura por defecto y aplica tú el resultado."
+      }
+    ],
+    "ecosystem": {
+      "title": "Un núcleo pequeño y unas pocas herramientas afiladas.",
+      "text": "Todo se arrastra con el núcleo. Añade el resto cuando lo necesites.",
+      "devtools": {
+        "title": "DevTools",
+        "text": "Una pestaña en Vue DevTools y Nuxt DevTools: un minimapa en vivo, un joystick que arrastra cualquier cosa y opciones que editas mientras la app se ejecuta."
+      },
+      "actions": {
+        "title": "Arrastres programáticos",
+        "text": "«Subir», «mover a Done», recorridos guiados y tests — arrastres reales, anunciados y animados, desde el código."
+      },
+      "nuxt": {
+        "title": "Módulo de Nuxt",
+        "text": "Composables importados automáticamente, componentes globales y valores por defecto seguros para SSR."
+      },
+      "skill": {
+        "title": "Para agentes de IA",
+        "text": "Un skill para agentes que enseña a Claude Code y a otros asistentes cómo funciona la biblioteca."
+      }
+    },
+    "metrics": {
+      "e2e": "Tests end-to-end en tres navegadores",
+      "unit": "Tests unitarios",
+      "size": "Elementos arrastrables y zonas de drop, con gzip",
+      "languages": "Idiomas de esta documentación"
+    },
+    "next": {
+      "title": "Elige por dónde empezar.",
+      "guide": {
+        "title": "Lee la guía",
+        "text": "De la instalación a tu primera lista ordenable en cinco minutos.",
+        "action": "Empezar"
+      },
+      "examples": {
+        "title": "Explora los ejemplos",
+        "text": "Demos en vivo con su código, listas para copiar o abrir en StackBlitz.",
+        "action": "Ver ejemplos"
+      }
+    },
+    "tag": "Arrastrar y soltar para Vue 3",
+    "moreLabel": "Y más",
+    "moreTitle": "Listo para apps reales."
+  },
+  "docs": {
+    "onThisPage": "En esta página",
+    "edit": "Editar esta página",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "notTranslated": "Esta página aún no está traducida. Estás leyendo el original en inglés.",
+    "aiNotice": "Esta página la ha traducido una IA y puede contener imprecisiones.",
+    "outdated": "La página en inglés ha cambiado desde esta traducción. El original está actualizado.",
+    "readOriginal": "Leer el original en inglés",
+    "copyPage": "Copiar página",
+    "copied": "Copiado"
+  },
+  "example": {
+    "preview": "Vista previa",
+    "code": "Código",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "stackblitz": "Abrir en StackBlitz",
+    "reset": "Reiniciar la demo",
+    "loading": "Cargando la demo…"
+  },
+  "api": {
+    "name": "Nombre",
+    "type": "Tipo",
+    "description": "Descripción",
+    "optional": "opcional",
+    "reactive": "valor · ref · getter",
+    "reactiveRef": "valor · ref",
+    "deprecated": "Obsoleto"
+  },
+  "footer": {
+    "about": "Arrastrar y soltar para Vue 3. De código abierto con licencia MIT.",
+    "docs": "Documentación",
+    "ecosystem": "Ecosistema",
+    "community": "Comunidad",
+    "issues": "Issues",
+    "changelog": "Changelog",
+    "rights": "Licencia MIT",
+    "aiNote": "Las traducciones las hace una IA y pueden contener imprecisiones."
+  },
+  "notFound": {
+    "label": "Error 404",
+    "title": "Página no encontrada",
+    "description": "La página que buscas no existe o se ha movido.",
+    "home": "Volver al inicio",
+    "docs": "Abrir la documentación"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "CollisionCandidate.rect": {
+    "source": "6367b9d53a",
+    "text": "Partie visible de la cible : rognée par ses conteneurs défilants et par le viewport."
+  },
+  "CollisionCandidate.depth": {
+    "source": "87728867d4",
+    "text": "Niveau d'imbrication parmi les cibles de dépôt : 0 au sommet, les cibles plus profondes ont des valeurs plus élevées."
+  },
+  "CollisionArgs.hits": {
+    "source": "78fd5d5eeb",
+    "text": "Cibles de dépôt sous le pointeur, issues du test de collision (respecte l'ordre d'empilement et les shadow roots), la meilleure en premier."
+  },
+  "CollisionDetection": {
+    "source": "1248ad0f81",
+    "text": "Renvoie les ids des candidats, le meilleur en premier."
+  },
+  "ModifierArgs.transform": {
+    "source": "559160a1f5",
+    "text": "Décalage depuis le début du glissement, tel que modifié par les modificateurs précédents."
+  },
+  "ModifierArgs.activeRect": {
+    "source": "c410ca6675",
+    "text": "Rectangle de l'élément glissé au début du glissement."
+  },
+  "ModifierArgs.overlayRect": {
+    "source": "cbccda9a74",
+    "text": "Rectangle de la boîte de l'overlay si elle était déplacée de `transform`, à sa taille actuelle. Avec `overlayFit: 'slot'`, la boîte se redimensionne autour du pointeur : ce n'est donc pas toujours `activeRect` déplacé de `transform`."
+  },
+  "ModifierArgs.origin": {
+    "source": "f348437ad5",
+    "text": "Position du pointeur au début du glissement."
+  },
+  "ModifierArgs.containerRect": {
+    "source": "2a3d109ccb",
+    "text": "Conteneur de la liste triable (ou élément parent) de l'item glissé, mesuré au début du glissement."
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "DragItem.item": {
+    "source": "7cfd4640f1",
+    "text": "ドラッグが並べ替え可能なリストから来た場合のアイテムオブジェクト。"
+  },
+  "DragItem.type": {
+    "source": "9189758463",
+    "text": "ドラッグ可能な要素の正規化された `type`。空の場合は、どのドロップターゲットにも当てはまります。"
+  },
+  "Active.id": {
+    "source": "f080aacddc",
+    "text": "ドラッグが始まったアイテムの id。"
+  },
+  "Active.ids": {
+    "source": "173336b06e",
+    "text": "ドラッグ中のすべての id。主となるものが先頭です（マルチドラッグ）。"
+  },
+  "Active.element": {
+    "source": "b0e7f2b9f5",
+    "text": "ドラッグが始まった要素。DOM から切り離されることがあります（仮想リスト、リスト間の移動）。"
+  },
+  "Active.rect": {
+    "source": "7964e6f559",
+    "text": "ドラッグ開始時の `element` のレイアウト上の矩形。"
+  },
+  "Over.accepted": {
+    "source": "48997f2ee2",
+    "text": "ターゲットの `accept` ルールがドラッグ中のアイテムを受け入れるかどうか。"
+  },
+  "DragSource.list": {
+    "source": "57db105431",
+    "text": "ドラッグ中のアイテムの出どころである並べ替え可能なリスト。"
+  },
+  "DragSource.remove": {
+    "source": "5ef5100d7a",
+    "text": "ドラッグ中のアイテムをそのリストから取り除きます（ゴミ箱ゾーン）。"
+  },
+  "DnDEvent.pointer": {
+    "source": "49759bca51",
+    "text": "ビューポート座標でのポインター。モディファイア適用後の値です。"
+  },
+  "DnDEvent.delta": {
+    "source": "292fe23ea1",
+    "text": "ドラッグ開始位置からのオフセット。モディファイア適用後の値です。"
+  },
+  "DnDEvent.position": {
+    "source": "226682e4e6",
+    "text": "`over` の中で、ドラッグ中のボックスの左上の角がある位置。パディングの端から測り、スクロール量を含みます：絶対配置したアイテムをドロップされた場所に置くための `left`/`top` です（ボード上のメモなど）。何もない上では `null`。オーバーレイのボックスの位置で、`overlay: false` の場合は要素自体の位置です。"
+  },
+  "DnDEvent.source": {
+    "source": "d69f88797f",
+    "text": "ドラッグ中のアイテムが並べ替え可能なリストから来た場合に存在します。"
+  },
+  "DnDEndEvent.dropped": {
+    "source": "8ada0b47b1",
+    "text": "ドラッグがすべてのドロップターゲットの外で終わった場合は false。"
+  },
+  "DnDEndEvent.accepted": {
+    "source": "bf82d1aeb9",
+    "text": "`onBeforeDrop` が受け入れた id（一部が返されなかった限り、ドラッグ中のすべての id）。"
+  },
+  "BeforeDropResult": {
+    "source": "056be141e8",
+    "text": "`onBeforeDrop` の判断：\n- `'accept'`（または `true`、または何も返さない）：ドロップが成立します。\n- `'reject'`（または `false`）：ドロップせず、アイテムは元の位置に戻ります。\n- id のリスト：それらのアイテムだけを受け入れ、ほかは元の位置に戻ります。\n- `'continue'`：ドロップせず、ドラッグが続きます。ポインターでは、アイテムが再びポインターに追従し（ボタンを押していなくても）、次に離したとき、つまりクリックでドロップされます。タッチでは、もう一度アイテムを掴みます。キーボードでは、これまでどおりアイテムを動かします。Escape でキャンセルします。ドロップ時には再び `onBeforeDrop` に問い合わせます。"
+  },
+  "AcceptRule": {
+    "source": "b40b673608",
+    "text": "`'*'` または省略ですべてを受け入れます。型のないアイテムは、どの文字列ルールにも当てはまります（v2 の `groups: []` と同じ挙動）。"
+  },
+  "AcceptMode": {
+    "source": "2aa08aef31",
+    "text": "`'all'`：ドラッグ中のすべてのアイテムが一致する必要があります。`'some'`：少なくとも 1 つ（残りは `onBeforeDrop` で拒否できます）。"
+  },
+  "KeyboardMoveContext.direction": {
+    "source": "a0b25b3b54",
+    "text": "押された矢印キーの単位ベクトル。"
+  },
+  "DnDMonitor.onBeforeDrop": {
+    "source": "7c0b37588d",
+    "text": "ドロップが確定する前に実行されます（`BeforeDropResult` を参照）：`'reject'` で拒否し、id を返すとその一部だけを受け入れます。"
+  },
+  "DnDMonitor.onDragEnd": {
+    "source": "117782ceb2",
+    "text": "ドロップが完了したことの通知：並べ替え可能なリストは、それぞれの `onDrop` を実行し、書き込みを済ませています。"
+  },
+  "DnDMonitor.onDragResume": {
+    "source": "8e5af01ef3",
+    "text": "`onBeforeDrop` が `'continue'` を返した：ドロップは行われず、ドラッグが続きます。"
+  },
+  "DnDMonitor.getKeyboardCoordinates": {
+    "source": "72d709477a",
+    "text": "キーボードドラッグ：矢印キーに対する次のポインター位置（たとえば次の並べ替え位置）。"
+  },
+  "DnDState": {
+    "source": "60baeb2f00",
+    "text": "ドラッグの状態は、ドロップが決まった時点で終わります：オーバーレイがまだ所定の位置へアニメーションしている間（`status` は `'dropping'` のまま）でも、`active`、`over`、`pointer` は `null` になります（ドロップゾーンも受け入れをやめます）。派生した UI が古いドラッグと新しいデータを混ぜることはありません。非同期の `onBeforeDrop` が判断している間、状態は離した時点のまま保たれますが、ページはドラッグモードから抜けています：ページ自身のカーソルとテキスト選択が戻り（確認ダイアログは通常どおり動作します）、オーバーレイはドロップされた場所で待機します。"
+  }
+}

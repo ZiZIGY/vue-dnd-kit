@@ -1,0 +1,38 @@
+{
+  "CollisionCandidate.rect": {
+    "source": "6367b9d53a",
+    "text": "ターゲットの見えている部分：スクロールコンテナーとビューポートで切り取られたもの。"
+  },
+  "CollisionCandidate.depth": {
+    "source": "87728867d4",
+    "text": "ドロップターゲット間のネストの階層：最上位は 0 で、深いターゲットほど大きな値になります。"
+  },
+  "CollisionArgs.hits": {
+    "source": "78fd5d5eeb",
+    "text": "ヒットテストで得られた、ポインターの下のドロップターゲット（z 順序と shadow root を考慮）。良いものから順に並びます。"
+  },
+  "CollisionDetection": {
+    "source": "1248ad0f81",
+    "text": "候補の id を、良いものから順に返します。"
+  },
+  "ModifierArgs.transform": {
+    "source": "559160a1f5",
+    "text": "ドラッグ開始位置からのオフセット。それより前のモディファイアで変更された後の値です。"
+  },
+  "ModifierArgs.activeRect": {
+    "source": "c410ca6675",
+    "text": "ドラッグ開始時の、ドラッグ中の要素の矩形。"
+  },
+  "ModifierArgs.overlayRect": {
+    "source": "cbccda9a74",
+    "text": "オーバーレイのボックスを現在のサイズのまま `transform` だけ動かしたとした場合の矩形。`overlayFit: 'slot'` ではボックスがポインターを中心にサイズを変えるため、必ずしも `activeRect` を `transform` だけ動かしたものにはなりません。"
+  },
+  "ModifierArgs.origin": {
+    "source": "f348437ad5",
+    "text": "ドラッグ開始時のポインター位置。"
+  },
+  "ModifierArgs.containerRect": {
+    "source": "2a3d109ccb",
+    "text": "ドラッグ中のアイテムの並べ替え可能なリストのコンテナー（または親要素）。ドラッグ開始時に計測されます。"
+  }
+}

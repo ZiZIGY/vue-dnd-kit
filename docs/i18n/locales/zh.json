@@ -1,1 +1,237 @@
-{}
+{
+  "nav": {
+    "docs": "文档",
+    "examples": "示例",
+    "api": "API",
+    "ecosystem": "生态",
+    "github": "GitHub",
+    "menu": "菜单",
+    "home": "Vue DnD Kit — 首页"
+  },
+  "search": {
+    "button": "搜索",
+    "placeholder": "搜索文档…"
+  },
+  "theme": {
+    "toggle": "切换浅色和深色主题"
+  },
+  "language": {
+    "label": "语言",
+    "aiNote": "译文由 AI 生成"
+  },
+  "version": {
+    "label": "版本",
+    "current": "v3 · 当前版本",
+    "v2": "v2 · 旧版",
+    "v1": "v1 · 旧版",
+    "legacyBanner": "你正在阅读旧版 v{version} 的文档。当前版本是 v3。",
+    "toCurrent": "前往 v3"
+  },
+  "copy": {
+    "copy": "复制",
+    "copied": "已复制",
+    "command": "复制安装命令"
+  },
+  "home": {
+    "title": "拖放，\n为 Vue 而生。",
+    "lead": "适用于 Vue 3 的可排序列表、看板、树和多项拖拽——开箱即带动画、键盘支持和无障碍。",
+    "openSource": "免费开源，MIT 许可证。",
+    "start": "开始使用",
+    "hint": "拖动卡片——或者用 Tab 聚焦到一张卡片，再用方向键移动",
+    "deck": {
+      "sortable": {
+        "label": "可排序",
+        "title": "自动排序的列表"
+      },
+      "kanban": {
+        "label": "看板",
+        "title": "互换卡片的看板"
+      },
+      "tree": {
+        "label": "树",
+        "title": "轻推一下即可嵌套"
+      },
+      "multi": {
+        "label": "多项拖拽",
+        "title": "多个项，一次移动"
+      },
+      "animate": {
+        "label": "动画",
+        "title": "默认带动效"
+      },
+      "keyboard": {
+        "label": "无障碍",
+        "title": "键盘是一等公民"
+      },
+      "virtual": {
+        "label": "虚拟列表",
+        "title": "一万行数据"
+      }
+    },
+    "intro": {
+      "title": "是组合式函数，\n不是组件。",
+      "text": "标记是你的，样式也是你的。把模板引用交给组合式函数，元素就能拖拽、排序和放置——动画、键盘和屏幕阅读器的工作都已替你完成。",
+      "label": "工作方式",
+      "apis": [
+        {
+          "code": "makeSortableList",
+          "text": "拖拽时重新排序的列表、网格和看板列——还能在同一分组内交换项。"
+        },
+        {
+          "code": "makeSortableTree",
+          "text": "嵌套数据，扁平渲染：横向轻推改变深度，放进文件夹，支持虚拟化。"
+        },
+        {
+          "code": "makeDraggable · makeDroppable",
+          "text": "其他一切：面板、画布、上传——什么放到哪里由你自己定规则。"
+        }
+      ]
+    },
+    "showcase": {
+      "docs": "文档",
+      "lists": {
+        "title": "列表与网格",
+        "text": "渲染数组的一份草稿，拖拽时它会实时重新排序。放置时，新的顺序写入你的 ref。垂直、水平，或任意尺寸的网格。",
+        "hint": "拖动一首曲目或一个应用",
+        "label": "可排序"
+      },
+      "kanban": {
+        "title": "看板",
+        "text": "同一分组的列表互相交换项。从面板复制、接收普通的可拖拽元素，或用交换代替平移——悬停时，接收的列表会让出空间。",
+        "hint": "在列之间移动卡片",
+        "label": "看板"
+      },
+      "tree": {
+        "title": "树",
+        "text": "以带深度的扁平形式渲染，因此可以虚拟化。横向拖动改变层级，或悬停在文件夹上放进去；可以限制深度，并决定什么能嵌套在哪里。",
+        "hint": "横向拖动可改变深度",
+        "label": "树"
+      },
+      "multi": {
+        "title": "多项拖拽",
+        "text": "用 Ctrl/Cmd 点击或画框来选择，然后拖动其中一个：整个选中集合一起移动并按顺序落下，跨列表也可以。",
+        "hint": "Ctrl/Cmd 点击或画框选择，然后拖动",
+        "label": "多项拖拽"
+      },
+      "drop": {
+        "label": "拖放",
+        "title": "拖放",
+        "text": "一个可拖拽元素、一个放置目标，再加一条决定什么放到哪里的规则。目标接收拖拽时会亮起，不接收的则拒绝；放置后做什么由你决定。",
+        "hint": "把文件分类放进文件夹"
+      },
+      "constraints": {
+        "label": "约束",
+        "title": "轴、边界与网格",
+        "text": "拖拽区域为其中的所有拖拽设定规则：锁定一个轴、把拖拽限制在边界内、吸附到网格——还能在应用运行时修改它们。",
+        "hint": "切换规则，然后拖动一张便签"
+      }
+    },
+    "more": [
+      {
+        "title": "动画",
+        "text": "排序时的 FLIP、落到位置上的放置、带动画的数据变化。也可以引入 GSAP 或 motion。"
+      },
+      {
+        "title": "无障碍",
+        "text": "按位置移动的键盘拖拽、实时播报，以及永远不会覆盖你自己设置的 ARIA 属性。"
+      },
+      {
+        "title": "虚拟列表",
+        "text": "TanStack Virtual 和 VueUse：成千上万行，依然可排序，依然有动画。"
+      },
+      {
+        "title": "受控模式",
+        "text": "Pinia、服务端或不可变数据：跳过默认写入，自己应用结果。"
+      }
+    ],
+    "ecosystem": {
+      "title": "小巧的核心，几件趁手的工具。",
+      "text": "核心包就能实现所有拖拽。其余的按需添加。",
+      "devtools": {
+        "title": "DevTools",
+        "text": "Vue DevTools 和 Nuxt DevTools 中的一个标签页：实时小地图、能拖动任何东西的摇杆，以及可在应用运行时编辑的选项。"
+      },
+      "actions": {
+        "title": "程序化拖拽",
+        "text": "“上移”、“移到 Done”、引导和测试——从代码发起的真实拖拽，带播报和动画。"
+      },
+      "nuxt": {
+        "title": "Nuxt 模块",
+        "text": "自动导入的组合式函数、全局组件和 SSR 安全的默认设置。"
+      },
+      "skill": {
+        "title": "面向 AI 智能体",
+        "text": "一个 agent skill，教会 Claude Code 和其他助手这个库是如何工作的。"
+      }
+    },
+    "metrics": {
+      "e2e": "在三种浏览器中运行的端到端测试",
+      "unit": "单元测试",
+      "size": "可拖拽元素和放置区，gzip 后",
+      "languages": "本文档支持的语言"
+    },
+    "next": {
+      "title": "选择从哪里开始。",
+      "guide": {
+        "title": "阅读指南",
+        "text": "从安装到你的第一个可排序列表，只需五分钟。",
+        "action": "开始使用"
+      },
+      "examples": {
+        "title": "浏览示例",
+        "text": "附带代码的在线演示，可以直接复制，或在 StackBlitz 中打开。",
+        "action": "查看示例"
+      }
+    },
+    "tag": "适用于 Vue 3 的拖放库",
+    "moreLabel": "还有更多",
+    "moreTitle": "为真实应用而准备。"
+  },
+  "docs": {
+    "onThisPage": "本页目录",
+    "edit": "编辑此页",
+    "previous": "上一页",
+    "next": "下一页",
+    "notTranslated": "本页尚未翻译。你正在阅读英文原文。",
+    "aiNotice": "本页由 AI 翻译，可能存在不准确之处。",
+    "outdated": "自本译文完成以来，英文页面已有改动。原文是最新的。",
+    "readOriginal": "阅读英文原文",
+    "copyPage": "复制页面",
+    "copied": "已复制"
+  },
+  "example": {
+    "preview": "预览",
+    "code": "代码",
+    "copy": "复制",
+    "copied": "已复制",
+    "stackblitz": "在 StackBlitz 中打开",
+    "reset": "重置演示",
+    "loading": "正在加载演示…"
+  },
+  "api": {
+    "name": "名称",
+    "type": "类型",
+    "description": "说明",
+    "optional": "可选",
+    "reactive": "值 · ref · getter",
+    "reactiveRef": "值 · ref",
+    "deprecated": "已废弃"
+  },
+  "footer": {
+    "about": "适用于 Vue 3 的拖放库。基于 MIT 许可证开源。",
+    "docs": "文档",
+    "ecosystem": "生态",
+    "community": "社区",
+    "issues": "问题反馈",
+    "changelog": "更新日志",
+    "rights": "MIT 许可证",
+    "aiNote": "译文由 AI 生成，可能存在不准确之处。"
+  },
+  "notFound": {
+    "label": "错误 404",
+    "title": "页面未找到",
+    "description": "你要找的页面不存在或已被移动。",
+    "home": "返回首页",
+    "docs": "打开文档"
+  }
+}

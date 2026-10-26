@@ -13,6 +13,7 @@ import { extname, join, relative, resolve } from 'node:path';
 import { addTemplate, addVitePlugin, createResolver, defineNuxtModule, updateTemplates } from '@nuxt/kit';
 import { createHighlighter } from 'shiki';
 import { codeDark, codeLight } from '../shiki/themes';
+import { watchDirs } from '../tools/watch';
 
 const LANGS: Record<string, string> = { '.vue': 'vue', '.ts': 'ts', '.css': 'css', '.json': 'json' };
 const ENTRY = 'index.vue';
@@ -99,11 +100,10 @@ export default defineNuxtModule({
     });
     nuxt.options.alias['#examples'] = index.dst;
 
-    // New (or removed) folders join (or leave) the index.
-    nuxt.hook('builder:watch', async (_event, path) => {
-      const absolute = resolve(nuxt.options.rootDir, path);
-      if (!absolute.startsWith(root)) return;
-      await updateTemplates({ filter: (template) => template.filename === 'examples/index.mjs' });
+    // New (or removed) examples join (or leave) the index. Edits of their files are HMR's.
+    watchDirs('docs-examples-watch', [root], (path, event) => {
+      if (event === 'change' || (!path.endsWith(ENTRY) && !event.endsWith('Dir'))) return;
+      return updateTemplates({ filter: (template) => template.filename === 'examples/index.mjs' });
     });
   },
 });

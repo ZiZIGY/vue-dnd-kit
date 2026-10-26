@@ -1,0 +1,142 @@
+{
+  "FlatNode.index": {
+    "source": "b24454e95d",
+    "text": "兄弟の中でのインデックス。"
+  },
+  "SortableTreeDropEvent": {
+    "source": "eb47878c8b",
+    "text": "ツリーのドロップイベント。`index` は `parentKey` の下の兄弟の中での位置です（`from`：移動前。`to`：移動後で、ノードはすでに元の場所から取り除かれています）。ルートノードと、ほかのリストからのアイテムでは、`from.parentKey` は `null` です。マルチドラッグでは `keys`（それぞれサブツリーを伴う）を並べて移動します：`from` はドラッグを先導するノード（掴んだノード、またはそれが乗っている選択中のノード）があった場所、`to` はそのうち最初のものが着地する場所です。コピー（`mode: 'copy'`）はノードをその場に残し、そのコピーである `items` を挿入します。通常のドラッグ可能な要素（`mode: 'insert'`）では、`createItem` が作ったノードを挿入します。"
+  },
+  "SortableTreeOptions": {
+    "source": "3b9c211f35",
+    "text": "`makeSortableTree` のオプション。マルチドラッグでは、選択中のノードを、それぞれサブツリーを伴った 1 つのブロックとして、同じ位置と深さへ（ドキュメント順で）移動します。選択中のノードの中にある選択中のノードは、そのサブツリーに乗って一緒に移動します。掴んだノードも同様です（VS Code と同じ）：掴んだノードは、それが入っている選択中のノードの中に留まり、そのノードがサブツリーとともに移動します。オーバーレイは掴んだ行のままです。`canNest` と `maxDepth` はブロック全体に適用されます。\n\nほかのオプションは `makeSortableList` でのものと同じ意味を持ちます。値、ref、ゲッター（`overlay`、`animation`：値または ref）を受け付け、ツリーが必要とするときに読み取られるため、変更は遅くとも次のドラッグから反映されます。例外：`id` と `group` はツリーの作成時に一度だけ読み取られます。`items` はモデルそのものです。関数（`getKey`、`getChildren`、`setChildren`、`canNest`、`clone`、`createItem`、コールバック）はそのまま渡されます。"
+  },
+  "SortableTreeOptions.items": {
+    "source": "210f1fb478",
+    "text": "ルートノード。書き込み可能な ref：ドロップ時、ライブラリは変更されたノードに新しい子を設定し（`setChildren`）、新しいルート配列を書き込みます。読み取り専用のソース（ゲッター、readonly な ref、computed）：`event.preventDefault()` を呼んで、`event.result` を自分で適用してください（`SortableListOptions.items` と同様）。"
+  },
+  "SortableTreeOptions.getKey": {
+    "source": "8bd06a8146",
+    "text": "デフォルト：`node.id`。`makeSortableItem({ item })`、コピー、作成されたノードのキーにも使われます。"
+  },
+  "SortableTreeOptions.setChildren": {
+    "source": "ebc9ed1493",
+    "text": "デフォルトの書き込みが、ノードに新しい子をどう設定するか。デフォルト：`node.children = children`。"
+  },
+  "SortableTreeOptions.withChildren": {
+    "source": "f864a637ec",
+    "text": "`children` を持つ `node` のコピー。`event.result` 用です：あなたのノードをそのまま残す新しいツリーになります（デフォルトの書き込みは引き続き `setChildren` を通ります）。デフォルト：`setChildren` で子を設定した `{ ...node }`（`setChildren` がない場合は `{ ...node, children }`）。クラスのインスタンスや、浅いコピー以上のものが必要なノードには、これを渡してください。"
+  },
+  "SortableTreeOptions.id": {
+    "source": "c0adaf519f",
+    "text": "デフォルト：`useId()`。サーバーとクライアントの描画間で安定しています。一度だけ読み取られます。"
+  },
+  "SortableTreeOptions.overlay": {
+    "source": "99297d8dc8",
+    "text": "このツリーの行用のオーバーレイコンポーネント（行自身の `overlay` が優先）。ドラッグの開始時に読み取られます。"
+  },
+  "SortableTreeOptions.modifiers": {
+    "source": "f6220f5795",
+    "text": "このツリーの行のドラッグに使うモディファイア。プロバイダーの `modifiers` の後に適用されます（行自身の `modifiers` が優先）：たとえば `[restrictToVerticalAxis]`。ドラッグの開始時に読み取られます。軸を固定してもネストできます：その場合、深さは行の中央へのホバーで決まります。"
+  },
+  "SortableTreeOptions.axis": {
+    "source": "6d30d4a81a",
+    "text": "モディファイアの後に、このツリーの行のドラッグを 1 つの軸に固定します（行自身の `axis` が優先）。`'y'` でも行はネストできます：その場合、深さは行の中央へのホバーで決まります。ドラッグの開始時に読み取られます。"
+  },
+  "SortableTreeOptions.group": {
+    "source": "8f0583eca8",
+    "text": "グループ名が同じリストとツリーはアイテムをやり取りします。デフォルト：独自のグループ。一度だけ読み取られます。"
+  },
+  "SortableTreeOptions.acceptMode": {
+    "source": "045f22daca",
+    "text": "複数の型のアイテムのマルチドラッグ：すべて（`'all'`、デフォルト）と一部（`'some'`）のどちらが受け入れられる（`group.put`）必要があるか。"
+  },
+  "SortableTreeOptions.indentation": {
+    "source": "f552924dcb",
+    "text": "深さ 1 階層あたりの横方向のオフセット（ピクセル）。デフォルトは 24。"
+  },
+  "SortableTreeOptions.nesting": {
+    "source": "38bbd60e7c",
+    "text": "深さをどう選ぶか：横方向のオフセット、行の中央へのホバー、またはその両方（デフォルト）。"
+  },
+  "SortableTreeOptions.placeholder": {
+    "source": "2cf98fc3a5",
+    "text": "`'item'`（デフォルト）：ドラッグ中のノードが、予測された深さで行の間を移動します。`'indicator'`：ツリーは動かず、`indicator`（ツリーと各行の `makeSortableItem` にある）がドロップ先をその `depth` と `parentKey` とともに示し、ラインはあなたが描きます。このとき、外へのドロップはキャンセルされます。"
+  },
+  "SortableTreeOptions.maxDepth": {
+    "source": "1e961e3456",
+    "text": "許可される最大の深さ（ルートは 0）。ドラッグ中のノード自身の子孫も数えます。"
+  },
+  "SortableTreeOptions.canNest": {
+    "source": "91ce5cdc34",
+    "text": "`node` を `parent` の下に置けるかどうか。マルチドラッグでは、ドラッグ中のすべてのノードについて問い合わせます。"
+  },
+  "SortableTreeOptions.collapsed": {
+    "source": "8668ce809d",
+    "text": "子が非表示になっているノードのキー。"
+  },
+  "SortableTreeOptions.clone": {
+    "source": "118c688670",
+    "text": "コピーを作成します（`group.pull: 'clone'`、コピー用の修飾キー）。コピーには必須です。サブツリー全体を含むコピーを返してください：コピーしたフォルダーは子を保ちます。コピーとそのすべての子孫には、ツリーのすべてのノードと同じく、それぞれ独自のキー（`getKey` で読み取られる）が必要です。"
+  },
+  "SortableTreeOptions.createItem": {
+    "source": "28224fdbf4",
+    "text": "外部からの通常のドラッグ可能な要素を受け入れます：予測された位置と深さに挿入するノードを作成します（`canNest` と `maxDepth` が適用されます）。キーボードでは、ツリーの方向への矢印キーでドラッグ可能な要素を、その前に入る行と同じ高さに取り込み、その後は矢印キーでほかのノードと同じように動かせます。"
+  },
+  "SortableTreeOptions.dropOutside": {
+    "source": "324ddf9a40",
+    "text": "すべてのターゲットの外へのドロップ：ノードをプレースホルダーのある場所に置く、キャンセルする、または取り除く。デフォルトは `'placeholder'`（`placeholder: 'indicator'` では `'cancel'`）。ドロップ時に読み取られます。"
+  },
+  "SortableTreeOptions.animation": {
+    "source": "5d1e2c66c2",
+    "text": "このツリーの FLIP アニメーション。デフォルト：プロバイダーの `animation`。値または ref（関数はカスタムアニメーション）。"
+  },
+  "SortableTreeOptions.animate": {
+    "source": "9004d33175",
+    "text": "`SortableListOptions` と同じく、表示されている行が対象です：追加、削除、移動されたノードと、ノードの展開・折りたたみ（`collapsed`）で表示・非表示になる行。"
+  },
+  "SortableTreeOptions.autoScroll": {
+    "source": "3216318fc0",
+    "text": "このツリーのスクロールコンテナーについて、プロバイダーの `autoScroll` を上書きします。ドラッグの開始時に読み取られます。"
+  },
+  "SortableTreeOptions.dropzone": {
+    "source": "26c5e98e4b",
+    "text": "`SortableListOptions` と同じ：ツリーの代わりにドロップを受け付ける要素。デフォルトはツリー自身の要素です。"
+  },
+  "SortableTreeOptions.onBeforeDrop": {
+    "source": "94fc28e843",
+    "text": "`SortableListOptions` と同じ。"
+  },
+  "SortableTreeOptions.onDrop": {
+    "source": "cac25ac658",
+    "text": "`SortableListOptions` と同じ：書き込みの前に呼ばれ、`event.preventDefault()` で書き込みをスキップします。"
+  },
+  "SortableTreeReturn.items": {
+    "source": "7c78a356e7",
+    "text": "ドラフトの順序で並んだ表示中のノード。アクティブなノードは予測された深さを持ちます。"
+  },
+  "SortableTreeReturn.projected": {
+    "source": "cb32fa0496",
+    "text": "アクティブなノードが着地する場所。このツリーにない場合は `null`。"
+  },
+  "SortableTreeReturn.indicator": {
+    "source": "3f5878f4c5",
+    "text": "インジケーターモード：ドロップ先を、その `depth` と `parentKey` とともに。ここにない場合は `null`。"
+  },
+  "SortableTreeReturn.isAccepting": {
+    "source": "ae54d9827e",
+    "text": "何かがドラッグされていて、このツリーがそれを受け入れます。"
+  },
+  "SortableTreeReturn.activeKey": {
+    "source": "d4804b031e",
+    "text": "仮想化ライブラリがマウントし続けるべき行：着地位置がこのツリーにある間はその行（ドラッグ中のノード、掴んだノードが乗っている選択中のノード、コピー、作成されたノード）、それ以外はドラッグ中のノード。"
+  },
+  "SortableTreeReturn.activeIndex": {
+    "source": "4d6761484d",
+    "text": "`items` における `activeKey` のインデックス。ここにない場合は -1。"
+  },
+  "SortableTreeReturn.activeSize": {
+    "source": "8337786343",
+    "text": "ドラッグ開始時の、ドラッグ中の行のサイズ。"
+  }
+}

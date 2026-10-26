@@ -1,0 +1,38 @@
+{
+  "CollisionCandidate.rect": {
+    "source": "6367b9d53a",
+    "text": "Parte visible del destino: recortada por sus contenedores desplazables y por el viewport."
+  },
+  "CollisionCandidate.depth": {
+    "source": "87728867d4",
+    "text": "Nivel de anidamiento entre los destinos de drop: 0 en el nivel superior; los destinos más profundos tienen valores más altos."
+  },
+  "CollisionArgs.hits": {
+    "source": "78fd5d5eeb",
+    "text": "Destinos de drop bajo el puntero según la prueba de colisión (respeta el orden z y los shadow roots), el mejor primero."
+  },
+  "CollisionDetection": {
+    "source": "1248ad0f81",
+    "text": "Devuelve los ids de los candidatos, el mejor primero."
+  },
+  "ModifierArgs.transform": {
+    "source": "559160a1f5",
+    "text": "Desplazamiento desde el inicio del arrastre, tal como lo modificaron los modificadores anteriores."
+  },
+  "ModifierArgs.activeRect": {
+    "source": "c410ca6675",
+    "text": "Rectángulo del elemento arrastrado al inicio del arrastre."
+  },
+  "ModifierArgs.overlayRect": {
+    "source": "cbccda9a74",
+    "text": "Rectángulo de la caja del overlay si se moviera según `transform`, con el tamaño que tiene ahora. Con `overlayFit: 'slot'` la caja cambia de tamaño alrededor del puntero, así que no siempre es `activeRect` movido según `transform`."
+  },
+  "ModifierArgs.origin": {
+    "source": "f348437ad5",
+    "text": "Posición del puntero al inicio del arrastre."
+  },
+  "ModifierArgs.containerRect": {
+    "source": "2a3d109ccb",
+    "text": "Contenedor de la lista ordenable (o elemento padre) del ítem arrastrado, medido al inicio del arrastre."
+  }
+}

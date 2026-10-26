@@ -105,6 +105,40 @@
     background: var(--color-accent);
     color: var(--color-on-accent);
   }
+
+  /* Thin scrollbars in the site's colours, without the arrow buttons. Chromium and Safari
+     take the pseudo-elements (setting `scrollbar-color` there would switch them off);
+     Firefox, which has none of them, the standard properties. */
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--ui-border-accented) transparent;
+    }
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background: var(--ui-border-accented) padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--ui-text-dimmed);
+  }
+
+  ::-webkit-scrollbar-button {
+    display: none;
+  }
 }
 
 /* ---------------------------------------------------------------------------

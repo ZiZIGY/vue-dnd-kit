@@ -1,0 +1,110 @@
+{
+  "Announcements": {
+    "source": "35c177cf7f",
+    "text": "Textos para lectores de pantalla, por evento. La región viva del provider anuncia cada texto (los movimientos, cuando el arrastre lleva 500 ms quieto); `undefined` deja el evento a la siguiente fuente (los textos de las integraciones, como las posiciones de las listas ordenables, y luego los de por defecto); `''` no dice nada. No se anuncia ningún movimiento para el destino encontrado al agarrar: todavía no se ha movido nada."
+  },
+  "Announcements.onDragResume": {
+    "source": "d4806359e7",
+    "text": "`onBeforeDrop` respondió `'continue'`: el arrastre continúa."
+  },
+  "KeyboardOptions.step": {
+    "source": "66a729c31a",
+    "text": "Píxeles por pulsación de flecha en los arrastres libres (no ordenables). 25 por defecto."
+  },
+  "AutoScrollOptions.threshold": {
+    "source": "1b2cd0615c",
+    "text": "Zona del borde como fracción del tamaño del contenedor. 0.2 por defecto (limitado a 24–96 px)."
+  },
+  "AutoScrollOptions.maxSpeed": {
+    "source": "4ebcb33d64",
+    "text": "Velocidad máxima en px por frame de 16 ms."
+  },
+  "HapticPattern": {
+    "source": "1fb9df65e6",
+    "text": "Una vibración (`navigator.vibrate`): su duración en ms o un patrón de encendido/apagado. `true` es la de por defecto (10 ms; `[20, 40, 20]` para `refuse`), `false` o `0` ninguna."
+  },
+  "HapticsOptions": {
+    "source": "8c813a52b6",
+    "text": "Cuándo vibran los arrastres táctiles. Solo vibran los que se inician con el dedo; donde el navegador no puede vibrar (Safari en iOS) o lo bloquea (aún no se ha tocado la página), no pasa nada."
+  },
+  "HapticsOptions.start": {
+    "source": "e9e6d11084",
+    "text": "Empieza el arrastre, tras la pulsación larga. `true` por defecto."
+  },
+  "HapticsOptions.enter": {
+    "source": "8f9e55bdc7",
+    "text": "El arrastre entra en un destino de drop (una lista, una zona) que lo acepta. `false` por defecto."
+  },
+  "HapticsOptions.drop": {
+    "source": "dbf3451ed3",
+    "text": "El drop se completa. `false` por defecto."
+  },
+  "HapticsOptions.refuse": {
+    "source": "54d244b821",
+    "text": "El drop se rechaza (por un destino o por `onBeforeDrop`) y los ítems vuelven a su sitio. `false` por defecto."
+  },
+  "DnDProviderProps.animation": {
+    "source": "699c35a63c",
+    "text": "Animación FLIP por defecto para las listas ordenables."
+  },
+  "DnDProviderProps.animate": {
+    "source": "e7b8ee12ca",
+    "text": "`animate` por defecto de las listas y los árboles ordenables: los cambios de sus ítems que no vienen de un arrastre. Desactivado por defecto."
+  },
+  "DnDProviderProps.sensors": {
+    "source": "180c7efcc3",
+    "text": "Lo que convierte la entrada en arrastres. Por defecto `[pointerSensor, keyboardSensor]`: quita uno, envuélvelo o sustitúyelo, o añade el tuyo (`defineSensor`). El sensor de teclado también cancela cualquier arrastre con Escape; `keyboard: false` desactiva sus arrastres pero mantiene eso. La lista puede cambiar en cualquier momento: los sensores que salen de ella se detienen y cancelan su arrastre."
+  },
+  "DnDProviderProps.haptics": {
+    "source": "a072f3054b",
+    "text": "Vibración para los arrastres táctiles. Por defecto: una corta cuando un arrastre empieza tras la pulsación larga; un objeto añade otras (`enter`, `drop`, `refuse`); `false` las desactiva todas."
+  },
+  "DnDProviderProps.copyModifier": {
+    "source": "c45bff39ad",
+    "text": "Tecla (KeyboardEvent.key) que convierte un movimiento en una copia. `'Alt'` por defecto; `null` la desactiva."
+  },
+  "DnDProviderProps.overlayFit": {
+    "source": "2cebf1b9ab",
+    "text": "Tamaño del overlay mientras arrastras. `'slot'` (por defecto): sigue al hueco en el que aterrizará el ítem, así que sobre otra lista toma el tamaño de los ítems de esa lista, y el drop no necesita cambiar de tamaño. Cambia de tamaño alrededor del puntero, que se queda en la misma proporción de la caja. `'source'`: mantiene el tamaño del elemento arrastrado. El contenido del overlay por defecto se vuelve a maquetar con el nuevo tamaño; nunca se escala."
+  },
+  "DnDProviderProps.announcements": {
+    "source": "0729e8985f",
+    "text": "Textos propios para algunos eventos (consulta `Announcements`); `false` mantiene en silencio la región viva."
+  },
+  "DnDProviderProps.defaultStyles": {
+    "source": "b635d7cd38",
+    "text": "Inyecta estilos por defecto de especificidad cero (opacidad del placeholder, sin selección de texto mientras se arrastra)."
+  },
+  "DnDContext": {
+    "source": "224db9f60d",
+    "text": "Un provider tal como lo devuelve `useDnDContext()`, para pasarlo a `provideDnDContext()`: otra app de Vue (por ejemplo, una montada en un shadow root) funciona entonces con el mismo provider. Opaco: no tiene miembros públicos, así que nunca cambia con los detalles internos de la biblioteca."
+  },
+  "OverlaySlotProps": {
+    "source": "38a21c4b6d",
+    "text": "Lo que muestra el overlay: las props del slot `#overlay` del provider y de los componentes de overlay (opción `overlay` de los elementos arrastrables, los ítems ordenables, las listas y los árboles)."
+  },
+  "OverlaySlotProps.items": {
+    "source": "10d477a1e7",
+    "text": "Todos los ítems arrastrados, empezando por el principal: un solo overlay para todo el multi-drag."
+  },
+  "OverlaySlotProps.over": {
+    "source": "a44f968644",
+    "text": "El destino de drop bajo el arrastre. Mientras se anima un drop ya decidido, el destino en el que aterriza (tal como estaba al soltar); `null` mientras un arrastre cancelado vuelve a su sitio."
+  },
+  "OverlaySlotProps.accepted": {
+    "source": "f7641f18e1",
+    "text": "Si `over` acepta los ítems arrastrados; `false` cuando no hay nada debajo."
+  },
+  "OverlayProps": {
+    "source": "8058170119",
+    "text": "Props de un componente de overlay, para `defineProps<OverlayProps>()`.\n\nEl componente se renderiza dentro de la caja del overlay, que sigue el tamaño del hueco (`overlayFit: 'slot'`) y lo anima al soltar. Da a la raíz `width: 100%` (y `height: 100%`) para seguir ese tamaño; un tamaño fijo mantiene el del componente."
+  },
+  "DragPreviewProps": {
+    "source": "6c8d2b3c28",
+    "text": "Props de `DragPreview`: el clon por defecto de un ítem arrastrado, para overlays personalizados (un componente `overlay` o el slot `#overlay` del provider) que colocan ellos mismos varios ítems, por ejemplo `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`.\n\nLos clones se toman al agarrar: del ítem agarrado y de hasta otros cuatro junto a él en el orden del drop (los que estén renderizados en ese momento). Para cualquier otro ítem, `DragPreview` renderiza su slot por defecto, o nada. El clon llena el elemento, que tiene el tamaño del ítem en el momento de agarrarlo a menos que le des estilo (`class` y `style` se transmiten).\n\nEn un multi-drag ordenable (`multiple: 'group'` o `'gaps'`), la vista previa de un ítem distinto del agarrado aterriza con el drop en el hueco de ese ítem (de vuelta a su sitio si se cancela), desde donde la haya colocado el layout: los contenedores girados o escalados con `transform` se deshacen por el camino, y su tamaño se anima como ancho y alto. Da estilo a la propia vista previa (esquinas, sombra): sus contenedores se quedan en la caja. Los ítems sin clon surgen con un fundido en su lugar."
+  },
+  "DragPreviewProps.id": {
+    "source": "220d6dd174",
+    "text": "Id de un ítem arrastrado: uno de los `items` de `OverlayProps`."
+  }
+}

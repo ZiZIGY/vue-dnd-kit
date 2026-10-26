@@ -1,0 +1,30 @@
+{
+  "SelectionStrategy": {
+    "source": "e9f3f3d3ea",
+    "text": "- `'toggle'`: 사각형이 지나가는 항목은 사각형을 그리기 전의 상태에서 뒤집힙니다.\n- `'select'`: 사각형 안의 항목만 선택됩니다."
+  },
+  "SelectionModifier": {
+    "source": "c7f915cabf",
+    "text": "누르기로 사각형을 그리려면 누르고 있어야 하는 키(`KeyboardEvent.key` 또는 `.code`): 전부, 또는 그중 `'some'`."
+  },
+  "SelectionAreaOptions": {
+    "source": "395589bdaa",
+    "text": "`makeSelectionArea`의 옵션. `modifier`, `strategy`, `accept`, `disabled`는 값, ref, getter를 받으며(`accept`: 값 또는 ref, 함수는 규칙입니다) 누르기가 사각형을 시작할 때 읽습니다. `disabled`를 켜면 진행 중인 사각형도 취소합니다."
+  },
+  "SelectionAreaOptions.selection": {
+    "source": "294f767d3b",
+    "text": "기본값은 프로바이더의 선택입니다."
+  },
+  "SelectionAreaOptions.strategy": {
+    "source": "0367d14627",
+    "text": "기본값 `'toggle'`."
+  },
+  "SelectionAreaOptions.accept": {
+    "source": "6293487b0c",
+    "text": "사각형이 선택할 draggable. 드롭 대상과 같은 비교 방식을 씁니다."
+  },
+  "SelectionAreaReturn.style": {
+    "source": "e4525127b1",
+    "text": "선택 사각형 요소의 스타일(absolute, 컨테이너 기준)."
+  }
+}

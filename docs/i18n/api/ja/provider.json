@@ -1,0 +1,110 @@
+{
+  "Announcements": {
+    "source": "35c177cf7f",
+    "text": "イベントごとのスクリーンリーダー用テキスト。テキストはプロバイダーのライブリージョンが読み上げます（移動は、ドラッグが 500 ms 止まった時点で）。`undefined` はそのイベントを次のソースに任せます（並べ替え位置のような連携機能のテキスト、次にデフォルト）。`''` は何も読み上げません。持ち上げた時点で見つかったターゲットについては移動を読み上げません：まだ何も動いていないからです。"
+  },
+  "Announcements.onDragResume": {
+    "source": "d4806359e7",
+    "text": "`onBeforeDrop` が `'continue'` を返した：ドラッグが続きます。"
+  },
+  "KeyboardOptions.step": {
+    "source": "66a729c31a",
+    "text": "自由な（並べ替えではない）ドラッグで、矢印キーを 1 回押したときに動くピクセル数。デフォルトは 25。"
+  },
+  "AutoScrollOptions.threshold": {
+    "source": "1b2cd0615c",
+    "text": "端の領域。コンテナーのサイズに対する割合です。デフォルトは 0.2（24〜96px の範囲に制限）。"
+  },
+  "AutoScrollOptions.maxSpeed": {
+    "source": "4ebcb33d64",
+    "text": "最大速度。16ms のフレームあたりの px。"
+  },
+  "HapticPattern": {
+    "source": "1fb9df65e6",
+    "text": "振動（`navigator.vibrate`）：ms 単位の長さ、またはオン/オフのパターン。`true` はデフォルトの振動（10ms。`refuse` では `[20, 40, 20]`）、`false` または `0` は振動なし。"
+  },
+  "HapticsOptions": {
+    "source": "8c813a52b6",
+    "text": "タッチドラッグがいつ振動するか。振動するのはタッチで始まったドラッグだけです。ブラウザーが振動できない（iOS Safari）、またはブロックしている（まだページがタップされていない）場合は何も起きません。"
+  },
+  "HapticsOptions.start": {
+    "source": "e9e6d11084",
+    "text": "長押しの後にドラッグが始まったとき。デフォルトは `true`。"
+  },
+  "HapticsOptions.enter": {
+    "source": "8f9e55bdc7",
+    "text": "ドラッグが、それを受け入れるドロップターゲット（リスト、ゾーン）に入ったとき。デフォルトは `false`。"
+  },
+  "HapticsOptions.drop": {
+    "source": "dbf3451ed3",
+    "text": "ドロップが成立したとき。デフォルトは `false`。"
+  },
+  "HapticsOptions.refuse": {
+    "source": "54d244b821",
+    "text": "ドロップが（ターゲットまたは `onBeforeDrop` によって）拒否され、アイテムが元の位置に戻るとき。デフォルトは `false`。"
+  },
+  "DnDProviderProps.animation": {
+    "source": "699c35a63c",
+    "text": "並べ替え可能なリストのデフォルトの FLIP アニメーション。"
+  },
+  "DnDProviderProps.animate": {
+    "source": "e7b8ee12ca",
+    "text": "並べ替え可能なリストとツリーのデフォルトの `animate`：ドラッグ以外によるアイテムの変更。デフォルトはオフ。"
+  },
+  "DnDProviderProps.sensors": {
+    "source": "180c7efcc3",
+    "text": "何が入力をドラッグに変換するか。デフォルトは `[pointerSensor, keyboardSensor]`：どちらかを外す、ラップする、置き換える、あるいは独自のもの（`defineSensor`）を追加できます。キーボードセンサーは Escape でどのドラッグもキャンセルする役割も担います。`keyboard: false` はそのドラッグをオフにしますが、この役割は残します。リストはいつでも変更できます：リストから外れたセンサーは停止し、そのドラッグはキャンセルされます。"
+  },
+  "DnDProviderProps.haptics": {
+    "source": "a072f3054b",
+    "text": "タッチドラッグの振動。デフォルト：長押しの後にドラッグが始まったときに短く 1 回。オブジェクトでほかの振動（`enter`、`drop`、`refuse`）を追加でき、`false` ですべてオフにします。"
+  },
+  "DnDProviderProps.copyModifier": {
+    "source": "c45bff39ad",
+    "text": "移動をコピーに変えるキー（KeyboardEvent.key）。デフォルトは `'Alt'`。`null` で無効にします。"
+  },
+  "DnDProviderProps.overlayFit": {
+    "source": "2cebf1b9ab",
+    "text": "ドラッグ中のオーバーレイのサイズ。`'slot'`（デフォルト）：アイテムが着地する位置に追従するため、別のリストの上ではそのリストのアイテムのサイズになり、ドロップ時にサイズ変更が不要になります。ポインターを中心にサイズを変え、ポインターはボックス内の同じ比率の位置に留まります。`'source'`：ドラッグ中の要素のサイズを保ちます。デフォルトのオーバーレイのコンテンツは新しいサイズでレイアウトし直され、拡大縮小されることはありません。"
+  },
+  "DnDProviderProps.announcements": {
+    "source": "0729e8985f",
+    "text": "一部のイベント用の独自テキスト（`Announcements` を参照）。`false` でライブリージョンを無音にします。"
+  },
+  "DnDProviderProps.defaultStyles": {
+    "source": "b635d7cd38",
+    "text": "詳細度ゼロのデフォルトスタイル（プレースホルダーの不透明度、ドラッグ中のテキスト選択の無効化）を挿入します。"
+  },
+  "DnDContext": {
+    "source": "224db9f60d",
+    "text": "`useDnDContext()` が返すプロバイダーで、`provideDnDContext()` に渡すためのものです：これにより別の Vue アプリ（たとえば shadow root にマウントされたもの）が同じプロバイダーで動作します。中身は不透明です：公開メンバーを持たないため、ライブラリの内部実装によって変わることはありません。"
+  },
+  "OverlaySlotProps": {
+    "source": "38a21c4b6d",
+    "text": "オーバーレイが表示するもの：プロバイダーの `#overlay` スロットと、オーバーレイコンポーネント（ドラッグ可能な要素、並べ替え可能なアイテム、リスト、ツリーの `overlay` オプション）の props。"
+  },
+  "OverlaySlotProps.items": {
+    "source": "10d477a1e7",
+    "text": "ドラッグ中のすべてのアイテム。主となるものが先頭です：マルチドラッグ全体で 1 つのオーバーレイ。"
+  },
+  "OverlaySlotProps.over": {
+    "source": "a44f968644",
+    "text": "ドラッグの下のドロップターゲット。決まったドロップがアニメーションしている間は、着地先のターゲット（ドロップ時点のもの）。キャンセルされたドラッグが元の位置に戻る間は `null`。"
+  },
+  "OverlaySlotProps.accepted": {
+    "source": "f7641f18e1",
+    "text": "`over` がドラッグ中のアイテムを受け入れるかどうか。何もない上では `false`。"
+  },
+  "OverlayProps": {
+    "source": "8058170119",
+    "text": "オーバーレイコンポーネントの props。`defineProps<OverlayProps>()` 用です。\n\nコンポーネントはオーバーレイのボックスの中に描画されます。ボックスは着地位置のサイズに追従し（`overlayFit: 'slot'`）、ドロップ時にサイズをアニメーションさせます。そのサイズに追従するには、ルートに `width: 100%`（と `height: 100%`）を指定してください。固定サイズにすると、コンポーネント自身のサイズが保たれます。"
+  },
+  "DragPreviewProps": {
+    "source": "6c8d2b3c28",
+    "text": "`DragPreview` の props：ドラッグ中の 1 つのアイテムのデフォルトのクローンで、複数のアイテムを自分でレイアウトするカスタムオーバーレイ（`overlay` コンポーネントまたはプロバイダーの `#overlay` スロット）向けです。例：`<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`。\n\nクローンは持ち上げた時点で、掴んだアイテムと、ドロップ順でその隣にある最大 4 つのほかのアイテム（その時点で描画されているもの）について作られます。それ以外のアイテムでは、`DragPreview` はデフォルトスロットを描画するか、何も描画しません。クローンは要素いっぱいに表示され、その要素はスタイルを指定しない限り、持ち上げた時点のアイテムのサイズになります（`class` と `style` はそのまま渡されます）。\n\n並べ替え可能なリストのマルチドラッグ（`multiple: 'group'` または `'gaps'`）では、掴んだもの以外のアイテムのプレビューは、レイアウトがどこに置いていても、ドロップとともにそのアイテムの位置に着地します（キャンセル時は元の場所に戻ります）：`transform` で回転・拡大縮小されたラッパーは途中で打ち消され、サイズは幅と高さとしてアニメーションします。スタイル（角丸、影）はプレビュー自体に付けてください：ラッパーはボックスの中に留まります。クローンのないアイテムは、代わりにフェードインします。"
+  },
+  "DragPreviewProps.id": {
+    "source": "220d6dd174",
+    "text": "ドラッグ中のアイテムの id：`OverlayProps` の `items` のいずれか。"
+  }
+}

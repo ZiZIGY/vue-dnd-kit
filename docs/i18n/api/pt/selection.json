@@ -1,0 +1,30 @@
+{
+  "SelectionStrategy": {
+    "source": "e9f3f3d3ea",
+    "text": "- `'toggle'`: os itens que o retângulo cruza invertem o estado que tinham antes do retângulo;\n- `'select'`: só os itens dentro do retângulo ficam selecionados."
+  },
+  "SelectionModifier": {
+    "source": "c7f915cabf",
+    "text": "Teclas (`KeyboardEvent.key` ou `.code`) que precisam estar pressionadas para que um clique desenhe um retângulo: todas elas, ou `'some'` delas."
+  },
+  "SelectionAreaOptions": {
+    "source": "395589bdaa",
+    "text": "Opções de `makeSelectionArea`. `modifier`, `strategy`, `accept` e `disabled` aceitam um valor, um ref ou um getter (`accept`: um valor ou um ref, uma função é uma regra) e são lidos quando um clique inicia um retângulo; ligar `disabled` também cancela um que esteja em andamento."
+  },
+  "SelectionAreaOptions.selection": {
+    "source": "294f767d3b",
+    "text": "Por padrão, a seleção do provider."
+  },
+  "SelectionAreaOptions.strategy": {
+    "source": "0367d14627",
+    "text": "Padrão `'toggle'`."
+  },
+  "SelectionAreaOptions.accept": {
+    "source": "6293487b0c",
+    "text": "Quais draggables o retângulo seleciona; o mesmo comparador dos alvos de drop."
+  },
+  "SelectionAreaReturn.style": {
+    "source": "e4525127b1",
+    "text": "Estilo para o elemento do retângulo de seleção (absoluto, relativo ao contêiner)."
+  }
+}

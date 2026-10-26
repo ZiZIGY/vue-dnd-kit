@@ -1,0 +1,30 @@
+{
+  "SelectionStrategy": {
+    "source": "e9f3f3d3ea",
+    "text": "- `'toggle'`: los ítems que atraviesa el rectángulo invierten el estado que tenían antes del rectángulo;\n- `'select'`: solo se seleccionan los ítems dentro del rectángulo."
+  },
+  "SelectionModifier": {
+    "source": "c7f915cabf",
+    "text": "Teclas (`KeyboardEvent.key` o `.code`) que hay que mantener para que una pulsación dibuje un rectángulo: todas ellas, o solo alguna (`'some'`)."
+  },
+  "SelectionAreaOptions": {
+    "source": "395589bdaa",
+    "text": "Opciones de `makeSelectionArea`. `modifier`, `strategy`, `accept` y `disabled` aceptan un valor, una ref o un getter (`accept`: un valor o una ref, una función es una regla) y se leen cuando una pulsación inicia un rectángulo; activar `disabled` también cancela uno en curso."
+  },
+  "SelectionAreaOptions.selection": {
+    "source": "294f767d3b",
+    "text": "Por defecto, la selección del provider."
+  },
+  "SelectionAreaOptions.strategy": {
+    "source": "0367d14627",
+    "text": "`'toggle'` por defecto."
+  },
+  "SelectionAreaOptions.accept": {
+    "source": "6293487b0c",
+    "text": "Qué elementos arrastrables selecciona el rectángulo; el mismo criterio de coincidencia que los destinos de drop."
+  },
+  "SelectionAreaReturn.style": {
+    "source": "e4525127b1",
+    "text": "Estilo para el elemento del rectángulo de selección (absoluto, relativo al contenedor)."
+  }
+}

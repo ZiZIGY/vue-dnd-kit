@@ -1,0 +1,102 @@
+{
+  "LayoutAnimationContext.from": {
+    "source": "c5845d8793",
+    "text": "変化の前の見た目上の矩形（実行中のアニメーションがアイテムを表示していた位置）。"
+  },
+  "LayoutAnimationContext.to": {
+    "source": "17f753cbe6",
+    "text": "変化の後のレイアウト上の矩形。"
+  },
+  "LayoutAnimationContext.reason": {
+    "source": "eceea904fa",
+    "text": "何がアイテムを動かしたか：ドラッグ（`'drag'`：並べ替え、ドロップ、キャンセル）、またはドラッグ以外によるデータの変更（`'change'`。リストの `animate` がオンの場合）。"
+  },
+  "LayoutAnimationContext.signal": {
+    "source": "c8aa938f56",
+    "text": "ライブラリがアニメーションを中断すると abort されます：アニメーションが終わる前にアイテムが再び動いた場合（次のアニメーションは表示されている位置から始まります）、またはアニメーションがオフにされた場合です。返された `Animation` は自動でキャンセルされます。それ以外のものはここで止め、設定したスタイルをすぐに元に戻してください：直後にレイアウトが計測されます。"
+  },
+  "LayoutAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "`prefers-reduced-motion: reduce` が設定されています。このときライブラリ自身のアニメーションは実行されませんが、あなたの関数は常に実行され、これを見て判断します（省略するか、フェードだけ残すか）。"
+  },
+  "LayoutAnimation": {
+    "source": "233b130a9c",
+    "text": "アイテムが新しい位置へどう動くか：`true`（デフォルトのタイミング）、オプション、`false`（瞬時に移動）、または 1 つのアイテムを `from` から `to` へアニメーションさせ、その `Animation`、終了時に確定する Promise、または何も返さない関数。"
+  },
+  "DropAnimationContext.overlay": {
+    "source": "e272382994",
+    "text": "オーバーレイのボックス。アクティブなアイテムの位置に着地します。マルチドラッグでは、その中に乗っているほかのアイテムのクローン（デフォルトのオーバーレイのもの、カスタムのオーバーレイの `DragPreview`）は、それぞれ自分の位置に自動で着地します（これがカスタム関数の場合はデフォルトのタイミングで）。"
+  },
+  "DropAnimationContext.to": {
+    "source": "d0780ba408",
+    "text": "ドロップされたアイテムの最終的な矩形。描画されていない、または見えていない場合は `null`（オーバーレイはフェードアウトします）。"
+  },
+  "DropAnimationContext.into": {
+    "source": "cecafada99",
+    "text": "ゾーン（並べ替え可能なリストではないもの）へのドロップの後、アイテムが表示されない場合。たとえば別のアイテム（フォルダー）やゴミ箱ゾーンにドロップされた場合で、そのゾーンの見えている矩形です。デフォルトのアニメーションは、その場でフェードする代わりに、オーバーレイをフェードアウトさせながらこの中へ縮めます。"
+  },
+  "DropAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "`prefers-reduced-motion: reduce` が設定されています。このときライブラリ自身のアニメーションは実行されませんが、あなたの関数は常に実行され、これを見て判断します（省略するか、フェードだけ残すか）。"
+  },
+  "EnterAnimationContext": {
+    "source": "bef530cbfe",
+    "text": "`animate` がオンのリストに現れたアイテム：追加された、または再び表示された（フィルター、展開されたツリーノード）もの。"
+  },
+  "EnterAnimationContext.element": {
+    "source": "120613b512",
+    "text": "アイテムの要素。すでに自分の位置にあります。"
+  },
+  "EnterAnimationContext.to": {
+    "source": "fd058782f5",
+    "text": "現れた場所（レイアウト上の矩形）。"
+  },
+  "EnterAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "`prefers-reduced-motion: reduce` が設定されています。このときライブラリ自身のアニメーションは実行されませんが、あなたの関数は常に実行され、これを見て判断します（省略するか、フェードだけ残すか）。"
+  },
+  "LeaveAnimationContext": {
+    "source": "b67e70e13a",
+    "text": "`animate` がオンのリストから出ていったアイテム：削除された、または非表示になった（フィルター、折りたたまれたツリーノード）もの。"
+  },
+  "LeaveAnimationContext.element": {
+    "source": "a4f7390241",
+    "text": "アイテムの要素のコピー。アイテムがあった場所に表示されます（アイテム自体はもうありません）：元の親の中で絶対配置され、ポインターを無視し、`data-dnd-leaving` が付きます。あなたのアニメーションが終わると、ライブラリがこれを取り除きます。"
+  },
+  "LeaveAnimationContext.from": {
+    "source": "645084e2fd",
+    "text": "アイテムがあった場所。"
+  },
+  "LeaveAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "`prefers-reduced-motion: reduce` が設定されています。このときライブラリ自身のアニメーションは実行されませんが、あなたの関数は常に実行され、これを見て判断します（省略するか、フェードだけ残すか）。"
+  },
+  "EnterAnimation": {
+    "source": "9a7cbcfe92",
+    "text": "`true`、オプション、`false`（アイテムはそのまま現れます）、またはアイテムを登場させるアニメーションの関数。"
+  },
+  "LeaveAnimation": {
+    "source": "fa236e4208",
+    "text": "`true`、オプション、`false`（アイテムはそのまま消えます）、または元の場所に残されたコピーを退場させるアニメーションの関数：その `Animation` か Promise を返すと、終わったときにコピーが取り除かれます（関数が何も返さない場合はすぐに）。"
+  },
+  "AutoAnimationOptions": {
+    "source": "0130acd24e",
+    "text": "パーツごとに指定する `animate`：`duration` と `easing` はすべてのパーツに適用され、変更の種類ごとに `true`、オプション（共通のものを上書き）、`false`、または独自の関数を指定します。"
+  },
+  "AutoAnimationOptions.move": {
+    "source": "684eb0594d",
+    "text": "位置が変わったアイテム（デフォルトの FLIP で、`animation` のものと同じ。関数で置き換えられます）。"
+  },
+  "AutoAnimationOptions.enter": {
+    "source": "7d611358b7",
+    "text": "現れたアイテム。デフォルト：その場でフェードインします。"
+  },
+  "AutoAnimationOptions.leave": {
+    "source": "de8fbd3ca4",
+    "text": "出ていったアイテム。デフォルト：アイテムのコピーが元の場所で少し縮みながらフェードアウトします。"
+  },
+  "AutoAnimation": {
+    "source": "eb08eca97d",
+    "text": "ドラッグ以外によるリスト（またはツリー）のアイテムの変更をアニメーションさせます：アイテムの追加、削除、移動（ソート、シャッフル、同じグループのリスト間の移動）、フィルタリング。デフォルトはオフ（`false`）です。`true` は、移動・登場・退場するアイテムをデフォルトのタイミングでアニメーションさせます。ドラッグは独自のアニメーション（`animation`、`dropAnimation`）を保ちます。`prefers-reduced-motion: reduce` のときはデフォルトのアニメーションは実行されませんが、あなたの関数は（`reducedMotion: true` 付きで）実行されます。アニメーションするのは表示領域の近くのアイテムだけです（仮想リストのマウントされていない行はスキップされます）。"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "CollisionCandidate.rect": {
+    "source": "6367b9d53a",
+    "text": "目标的可见部分：经过其滚动容器和视口裁剪。"
+  },
+  "CollisionCandidate.depth": {
+    "source": "87728867d4",
+    "text": "在放置目标之间的嵌套层级：顶层为 0，越深的目标值越大。"
+  },
+  "CollisionArgs.hits": {
+    "source": "78fd5d5eeb",
+    "text": "通过命中测试得到的指针下方的放置目标（遵循 z 轴顺序和 shadow root），最佳的在前。"
+  },
+  "CollisionDetection": {
+    "source": "1248ad0f81",
+    "text": "返回候选 id，最佳的在前。"
+  },
+  "ModifierArgs.transform": {
+    "source": "559160a1f5",
+    "text": "相对拖拽起点的偏移量，已经过前面的修饰器处理。"
+  },
+  "ModifierArgs.activeRect": {
+    "source": "c410ca6675",
+    "text": "拖拽开始时被拖拽元素的矩形。"
+  },
+  "ModifierArgs.overlayRect": {
+    "source": "cbccda9a74",
+    "text": "假如浮层盒子按 `transform` 移动、并保持当前尺寸时的矩形。使用 `overlayFit: 'slot'` 时，盒子会围绕指针调整尺寸，所以它并不总是等于按 `transform` 移动后的 `activeRect`。"
+  },
+  "ModifierArgs.origin": {
+    "source": "f348437ad5",
+    "text": "拖拽开始时的指针位置。"
+  },
+  "ModifierArgs.containerRect": {
+    "source": "2a3d109ccb",
+    "text": "被拖拽项所在的可排序列表容器（或父元素），在拖拽开始时测量。"
+  }
+}

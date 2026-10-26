@@ -1,0 +1,226 @@
+{
+  "MultipleMode": {
+    "source": "d913df4640",
+    "text": "マルチドラッグで、ほかの選択中アイテムがどうするか：\n- `'group'`：元の位置を離れ、アクティブなアイテムと一緒に連続したプレースホルダーとして移動します。そのため、ホバー中にリストはすでにドロップの結果を表示しています。\n- `'gaps'`：ドロップまでその場に留まります。\n- `'stack'`：オーバーレイの中にまとめられます。\n\nデフォルトのオーバーレイは、ドラッグ中のアイテムをリストに沿った列で表示する（`'group'`、`'gaps'`。横方向のリストでは行、グリッドではアクティブなアイテムの後ろの山積み）か、アクティブなアイテムと件数を表示します（`'stack'`）。"
+  },
+  "SortablePutContext.from": {
+    "source": "3ade1d4f94",
+    "text": "出どころのリスト。外部のドラッグ可能な要素の場合は `null`。"
+  },
+  "SortableGroupOptions.pull": {
+    "source": "ea3b5c781f",
+    "text": "アイテムがこのリストから出られるか：移動、コピー（`'clone'`、パレット）、またはまったく出られない。"
+  },
+  "SortableGroupOptions.put": {
+    "source": "a59ba8af01",
+    "text": "アイテムがこのリストに入れるか。"
+  },
+  "SortableItems": {
+    "source": "ff96686528",
+    "text": "並べ替え可能なアイテムのソース。書き込み可能な ref：ライブラリは各ドロップをこれに書き込みます。読み取り専用のもの（ゲッター、readonly な ref、computed：イミュータブルなストア、サーバーの状態、アクション経由でしか変更しないストア）：`event.preventDefault()` の後、各ドロップを `event.result` から自分で適用します（`SortableDropEvent` を参照）。"
+  },
+  "SortableDropEvent": {
+    "source": "1cb69d3b8b",
+    "text": "並べ替え可能なリストまたはツリーへのドロップ。フックは順番に実行されます：`onBeforeDrop` が判断し、`onDrop` に通知され、次にデフォルトのアクションが、`result` が示すすべてのリストの `items` に書き込み、オーバーレイが着地します。どちらかのフックで `preventDefault()` を呼ぶとその書き込みがスキップされるため、`result` を自分で適用できます。"
+  },
+  "SortableDropEvent.to": {
+    "source": "f5bc49d9b2",
+    "text": "何も着地しなかった場合、`index` は -1 です：アイテムがリストから出ていきました（`e.source.remove()`、`dropOutside: 'remove'`）。"
+  },
+  "SortableDropEvent.partner": {
+    "source": "0dc90e4f32",
+    "text": "`mode: 'swap'`：ドラッグ中のアイテムと入れ替わったアイテム。逆方向に動き、`from` はドラッグ中のアイテムが占めた場所（上の `to`）、`to` はドラッグ中のアイテムが始まった場所（上の `from`）です。リスト間では、ドラッグ中のアイテムのリストへ移動します。"
+  },
+  "SortableDropEvent.result": {
+    "source": "88350b68d9",
+    "text": "ドロップで変わるすべてのリストの新しいアイテム。リストの id がキーです：デフォルトの書き込みがそれらの `items` に入れるものそのもので、新しい配列として渡されます。移動、コピー、作成されたアイテム、一部の受け入れ、入れ替えの両側、取り除かれたアイテム（アイテム内のターゲットでの `e.source.remove()`、ゴミ箱ゾーン、`dropOutside: 'remove'`）はすべて含まれ、ドロップで変わらないリストは含まれません。ツリーのエントリーは新しいルート配列です：変更されたパス上のノードはコピー（`withChildren`）で、変更のないサブツリーは共有され、あなたのノードが変更されることはありません。`onBeforeDrop` では、フックが答える前の時点のドロップです（一部のキーを返すと変わります）。`onDrop` は最終的なものを受け取ります。"
+  },
+  "SortableDropEvent.preventDefault": {
+    "source": "e42cc44015",
+    "text": "デフォルトの書き込みを、`result` のすべてのリストについてスキップします（一部だけに書き込むと、アイテムが失われたり重複したりします）。`onDrop` の中、または非同期の `onBeforeDrop` が resolve する前に `result` を自分で適用すれば、オーバーレイは新しい順序で着地します。どこにも適用しなければ、リストは元のままで、オーバーレイは元の位置に戻ります（まだ場所のないコピーや作成されたアイテムはフェードアウトします）。"
+  },
+  "SortableDropEvent.defaultPrevented": {
+    "source": "0d1dce05c0",
+    "text": "`onBeforeDrop` または `onDrop` で `preventDefault()` が呼ばれました。"
+  },
+  "SortableIndicator.index": {
+    "source": "0043b67077",
+    "text": "描画されたリストでの挿入位置。"
+  },
+  "SortableIndicator.key": {
+    "source": "12ba4e5060",
+    "text": "インジケーターが付くアイテム。空のリストでは `null`。"
+  },
+  "SortableIndicator.side": {
+    "source": "616c01270f",
+    "text": "ラインが `key` のどちら側に入るか。`'inside'`（ツリー）：ドラッグ中のノードを受け入れる行の中央にホバーしていて、ドロップはその行の中に、最初の子として入ります。"
+  },
+  "SortableIndicator.depth": {
+    "source": "d3a6c5b55c",
+    "text": "ツリー：ドロップされたノードが得る深さ（ルートは 0）。たとえばラインのインデントに使います。"
+  },
+  "SortableIndicator.parentKey": {
+    "source": "690c7fc50c",
+    "text": "ツリー：ドロップされたノードが得る親。ルートの階層では `null`。"
+  },
+  "SortableListOptions": {
+    "source": "ad5d98cc02",
+    "text": "`makeSortableList` のオプション。1 つのコンポーネントに 1 つのリスト（またはツリー）：リストはアイテムが読み取るコンテキストを提供するため、同じコンポーネントの 2 つ目のリストは 1 つ目のアイテムを奪ってしまいます（開発ビルドで警告が出ます）。\n\nオプションは値、ref、ゲッター（`overlay`、`animation`：値または ref）を受け付け、リストが必要とするときに読み取られるため、変更は遅くとも次のドラッグから反映されます。例外：`id` と `group` はリストの作成時に一度だけ読み取られます。`items` はモデルそのものです。関数（`getKey`、`clone`、`createItem`、コールバック）はそのまま渡されます。"
+  },
+  "SortableListOptions.items": {
+    "source": "bcf07acd7a",
+    "text": "信頼できる唯一の情報源。書き込み可能な ref は、ドロップ時、`onDrop` の直後に新しい配列を受け取ります。読み取り専用のソース（ゲッター、readonly な ref、computed）は受け取れないため、`event.preventDefault()` を呼んで `event.result` を自分で適用してください。そこでのドロップをライブラリに任せたままにすると開発ビルドで警告が出て、そのドロップは何も変更しません。"
+  },
+  "SortableListOptions.getKey": {
+    "source": "f5ae57e9ca",
+    "text": "デフォルト：`item.id`。プリミティブの場合はアイテムそのもの。`makeSortableItem({ item })` のキーにも使われます。"
+  },
+  "SortableListOptions.id": {
+    "source": "c0adaf519f",
+    "text": "デフォルト：`useId()`。サーバーとクライアントの描画間で安定しています。一度だけ読み取られます。"
+  },
+  "SortableListOptions.overlay": {
+    "source": "4d236710b1",
+    "text": "このリストのアイテム用のオーバーレイコンポーネント（アイテム自身の `overlay` が優先）。`OverlayProps` を受け取り、ほかのリストの上も含め、ドラッグの間ずっと同じものが使われます。ドラッグの開始時に読み取られます。"
+  },
+  "SortableListOptions.modifiers": {
+    "source": "16c37d217b",
+    "text": "このリストのアイテムのドラッグに使うモディファイア。プロバイダーの `modifiers` の後に適用されます（アイテム自身の `modifiers` が優先）：たとえば、縦のリストのアイテムを軸の上に留める `[restrictToVerticalAxis]`。ドラッグの開始時に読み取られます。"
+  },
+  "SortableListOptions.axis": {
+    "source": "96097df6fa",
+    "text": "このリストのアイテムのドラッグを 1 つの軸に固定します：縦のリストには `'y'`、横のリストには `'x'`（アイテム自身の `axis` が優先）。固定はモディファイアの後に来るため、モディファイアが何をしても保たれます。ドラッグの開始時に読み取られます。"
+  },
+  "SortableListOptions.group": {
+    "source": "2d636dda19",
+    "text": "グループ名が同じリストどうしはアイテムをやり取りします。デフォルト：独自のグループ。一度だけ読み取られます。"
+  },
+  "SortableListOptions.acceptMode": {
+    "source": "045f22daca",
+    "text": "複数の型のアイテムのマルチドラッグ：すべて（`'all'`、デフォルト）と一部（`'some'`）のどちらが受け入れられる（`group.put`）必要があるか。"
+  },
+  "SortableListOptions.strategy": {
+    "source": "3d22ac3d01",
+    "text": "デフォルトは `'vertical'`。"
+  },
+  "SortableListOptions.behavior": {
+    "source": "6f2761c488",
+    "text": "`'swap'`：ドラッグ中のアイテムがホバーしたアイテムとリアルタイムで位置を入れ替えます。その上に戻るか、リストの外に出ると元に戻ります。同じグループで両方が入れ替えを使うリストどうしは、互いにアイテムをやり取りします：ホバーしたアイテムがドラッグ中のアイテムの場所へ移動するため、それは自分のリストから出られ（`group.pull: true`）、ドラッグ中のアイテムのリストに入れる（`group.put`）必要があります。マルチドラッグは入れ替えではなく並べ替えになります。デフォルトは `'sort'`。"
+  },
+  "SortableListOptions.placeholder": {
+    "source": "1a678d916f",
+    "text": "`'indicator'`：リストは動かず、`indicator` がドロップ先を示します。デフォルトは `'item'`。"
+  },
+  "SortableListOptions.multiple": {
+    "source": "27faee6df8",
+    "text": "このリストで始まるドラッグのマルチドラッグモード。デフォルトは `'group'`。ドラッグの開始時に読み取られます。"
+  },
+  "SortableListOptions.sort": {
+    "source": "9640243d4c",
+    "text": "`false`：このリストの中ではアイテムを並べ替えられません（パレット）。"
+  },
+  "SortableListOptions.clone": {
+    "source": "f4b2c534cd",
+    "text": "コピーを作成します（`pull: 'clone'`、コピー用の修飾キー）。コピーには必須です。"
+  },
+  "SortableListOptions.createItem": {
+    "source": "5c9f1d3856",
+    "text": "外部からの通常のドラッグ可能な要素を受け入れます：挿入するアイテムを作成します。キーボードでは、リストの方向への矢印キーでドラッグ可能な要素を取り込み（リスト間の移動と同じく、その要素と同じ高さに）、その後、作成されたアイテムはほかのアイテムと同じく位置ごとに動きます。"
+  },
+  "SortableListOptions.dropOutside": {
+    "source": "bffdd0d062",
+    "text": "すべてのターゲットの外へのドロップ：アイテムをプレースホルダーのある場所に置く、キャンセルする、または取り除く。デフォルトは `'placeholder'`（`placeholder: 'indicator'` では `'cancel'`）。ドロップ時に読み取られます。"
+  },
+  "SortableListOptions.animation": {
+    "source": "cc6ad2ca6a",
+    "text": "このリストの FLIP アニメーション。デフォルト：プロバイダーの `animation`。値または ref（関数はカスタムアニメーション）。"
+  },
+  "SortableListOptions.animate": {
+    "source": "86283c7ec0",
+    "text": "ドラッグ以外による `items` の変更をアニメーションさせます：追加、削除、移動、フィルタリングされたアイテム（`AutoAnimation` を参照）。デフォルト：プロバイダーの `animate`。そこで設定しない限りオフです。`items` が変わったときに読み取られます。"
+  },
+  "SortableListOptions.autoScroll": {
+    "source": "0c0b0867b3",
+    "text": "このリストのスクロールコンテナーについて、プロバイダーの `autoScroll` を上書きします。ドラッグの開始時に読み取られます。"
+  },
+  "SortableListOptions.dropzone": {
+    "source": "6202e9c757",
+    "text": "リストの代わりにドロップを受け付ける要素。デフォルトはリストの要素自体です：たとえば短いカードのリストを囲む列全体にすれば、最後のカードの下で離したカードもリストに（末尾に）着地します。アイテムはリストの要素の中に留まります。"
+  },
+  "SortableListOptions.onBeforeDrop": {
+    "source": "75b3651128",
+    "text": "このリストへのドロップの前、および `dropOutside: 'remove'` がアイテムを取り出す前に問い合わせます：`false` で拒否し（アイテムは元の位置に戻ります）、一部のキーを返すとそれらだけを受け入れます。非同期にできます：オーバーレイはドロップされた場所で待機します。エラーが発生した場合もドロップは拒否されます。`result` と `preventDefault` については `SortableDropEvent` を参照してください。"
+  },
+  "SortableListOptions.onDrop": {
+    "source": "e1c7bf0125",
+    "text": "このリストへのドロップが受け入れられた後、書き込まれる前に呼ばれます：`items` はまだ古い順序で、`event.result` が新しい順序です。同期的です：`event.preventDefault()` を呼ばない限り、戻ると同時に書き込みが行われます。アイテムが取り除かれる場合（`to.index` が -1）は、アイテムの出どころのリストでも呼ばれます。"
+  },
+  "SortableListReturn.items": {
+    "source": "d650d61bc4",
+    "text": "ドラフトの順序：元の配列ではなく、これを描画してください。"
+  },
+  "SortableListReturn.activeIndex": {
+    "source": "eff30ad0eb",
+    "text": "このリストのドラフトにおけるアクティブなアイテムのインデックス。ここにない場合は -1。"
+  },
+  "SortableListReturn.captureLayout": {
+    "source": "4d1e38426d",
+    "text": "ライブラリによらないレイアウトの変化（たとえば仮想化ライブラリの再計測）をアニメーションさせます。"
+  },
+  "SortableItemOptions": {
+    "source": "b25e70a1fe",
+    "text": "`id` か `item` を渡してください（両方ある場合は `id` が優先）。並べ替えのキーはデータから取る必要があります：自動生成の id は、コンポーネントが作り直されるたび（別のリストへの移動、仮想リストによる再利用）に変わり、ドラッグがアイテムを見失ってしまいます。\n\n`canDrag` 以外のオプションは値、ref、ゲッター（`overlay`：値または ref）を受け付け、`makeDraggable` でのものと同じ意味を持ちます。`keyboard` はありません：キーボードは並べ替え可能なアイテムを位置ごとに動かします。"
+  },
+  "SortableItemOptions.id": {
+    "source": "f76ac37600",
+    "text": "リスト内でのアイテムのキー。仮想リストでは、ゲッターにすると常に最新に保たれます。"
+  },
+  "SortableItemOptions.item": {
+    "source": "e326c731e9",
+    "text": "この要素が描画するアイテム。例：`() => props.task`。キーは所属するリスト（またはツリー）の `getKey` から取られ、デフォルトは `item.id` です。"
+  },
+  "SortableItemOptions.overlay": {
+    "source": "2ded9454bb",
+    "text": "このアイテム用のオーバーレイコンポーネント。リストの `overlay` より優先されます。ドラッグの開始時に読み取られます。"
+  },
+  "SortableItemOptions.modifiers": {
+    "source": "55d5129188",
+    "text": "このアイテムのドラッグに使うモディファイア。プロバイダーのものの後に適用され、リストの `modifiers` より優先されます。"
+  },
+  "SortableItemOptions.axis": {
+    "source": "09e5ed09d6",
+    "text": "このアイテムのドラッグを 1 つの軸（`'x'`、`'y'`）に固定します。リストの `axis` より優先されます。"
+  },
+  "SortableItemOptions.handle": {
+    "source": "519bda20d7",
+    "text": "アイテムの中でドラッグを始める要素またはセレクター（属性もこちらに付きます）。"
+  },
+  "SortableItemOptions.activation": {
+    "source": "07b1465312",
+    "text": "プロバイダーの `activation` を上書きします。押下の開始時に読み取られます。"
+  },
+  "SortableItemOptions.canDrag": {
+    "source": "ba9d01922f",
+    "text": "追加の関門。たとえば、キーを押している間だけドラッグできるようにします。"
+  },
+  "SortableItemOptions.attributes": {
+    "source": "db7791f2d8",
+    "text": "role/tabindex/aria-* 属性を設定します（デフォルトは `true`）。ユーザー自身の設定を上書きすることはありません。ライブに反映：オフにすると、ライブラリが設定したものが取り除かれます。"
+  },
+  "SortableItemReturn.isDragging": {
+    "source": "f148b949fd",
+    "text": "このアイテムがドラッグされています（マルチドラッグのほかのアイテムでも true）。"
+  },
+  "SortableItemReturn.isPlaceholder": {
+    "source": "e31014eb2c",
+    "text": "この要素は、ドラッグ中のアイテムが着地する位置です：アクティブなアイテムの位置。マルチドラッグの `'group'` モードでは、一緒に移動するアイテムの位置も含みます。"
+  },
+  "SortableItemReturn.indicator": {
+    "source": "3e7f9ce50b",
+    "text": "インジケーターモード：リストの `indicator` がこのアイテムに付いている間はその値、それ以外は `null`。`side` はラインが入る場所を示し、ツリーでは `depth` と `parentKey` がドロップの着地先を示します（`side: 'inside'`：このアイテムの中へ）。"
+  },
+  "SortableItemReturn.index": {
+    "source": "de82731af7",
+    "text": "描画されたドラフトでのインデックス。不明な場合は -1。"
+  }
+}

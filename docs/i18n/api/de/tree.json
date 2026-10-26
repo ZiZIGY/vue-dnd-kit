@@ -1,0 +1,142 @@
+{
+  "FlatNode.index": {
+    "source": "b24454e95d",
+    "text": "Index unter den Geschwistern."
+  },
+  "SortableTreeDropEvent": {
+    "source": "eb47878c8b",
+    "text": "Drop-Event eines Baums. `index` ist die Position unter den Geschwistern unter `parentKey` (`from`: vor der Verschiebung; `to`: danach, wobei der Knoten bereits von seinem alten Platz entfernt ist). `from.parentKey` ist `null` für Wurzelknoten und für Elemente aus einer anderen Liste. Ein Multi-Drag verschiebt `keys` (jeden mit seinem Teilbaum) nebeneinander: `from` ist, wo der Knoten war, der den Drag anführt (der gegriffene oder der ausgewählte Knoten, in dem er mitfährt), `to`, wo der erste von ihnen landet. Eine Kopie (`mode: 'copy'`) lässt die Knoten, wo sie sind, und fügt `items` ein, ihre Kopien; ein einfaches ziehbares Element (`mode: 'insert'`) den Knoten, den `createItem` erstellt hat."
+  },
+  "SortableTreeOptions": {
+    "source": "3b9c211f35",
+    "text": "Optionen von `makeSortableTree`. Ein Multi-Drag verschiebt die ausgewählten Knoten als einen Block, jeden mit seinem Teilbaum, an einen Platz und eine Tiefe (in Dokumentreihenfolge); ein ausgewählter Knoten innerhalb eines anderen ausgewählten fährt in dessen Teilbaum mit. Das gilt auch für den gegriffenen Knoten (wie in VS Code): Er bleibt innerhalb des ausgewählten Knotens, in dem er liegt, und dieser bewegt sich mit seinem Teilbaum, während das Overlay auf der gegriffenen Zeile bleibt. `canNest` und `maxDepth` gelten für den ganzen Block.\n\nDie anderen Optionen bedeuten dasselbe wie bei `makeSortableList`. Sie nehmen einen Wert, ein Ref oder einen Getter entgegen (`overlay`, `animation`: einen Wert oder ein Ref) und werden gelesen, wenn der Baum sie braucht, sodass eine Änderung spätestens ab dem nächsten Drag gilt. Ausnahmen: `id` und `group` werden einmal gelesen, wenn der Baum erstellt wird; `items` ist das Modell selbst; Funktionen (`getKey`, `getChildren`, `setChildren`, `canNest`, `clone`, `createItem`, die Callbacks) werden so übergeben, wie sie sind."
+  },
+  "SortableTreeOptions.items": {
+    "source": "210f1fb478",
+    "text": "Die Wurzelknoten. Ein beschreibbares Ref: Beim Drop gibt die Bibliothek den geänderten Knoten ihre neuen Kinder (`setChildren`) und schreibt ein neues Wurzel-Array. Eine schreibgeschützte Quelle (ein Getter, ein readonly Ref, ein computed): Rufe `event.preventDefault()` auf und wende `event.result` selbst an (wie bei `SortableListOptions.items`)."
+  },
+  "SortableTreeOptions.getKey": {
+    "source": "8bd06a8146",
+    "text": "Standard: `node.id`. Liefert auch die Schlüssel für `makeSortableItem({ item })`, Kopien und erstellte Knoten."
+  },
+  "SortableTreeOptions.setChildren": {
+    "source": "ebc9ed1493",
+    "text": "Wie das Standard-Schreiben einem Knoten seine neuen Kinder gibt. Standard: `node.children = children`."
+  },
+  "SortableTreeOptions.withChildren": {
+    "source": "f864a637ec",
+    "text": "Eine Kopie von `node` mit `children`, für `event.result`: ein neuer Baum, der deine Knoten unverändert lässt (das Standard-Schreiben läuft weiterhin über `setChildren`). Standard: `{ ...node }`, dem die Kinder über `setChildren` gegeben werden (`{ ...node, children }` ohne `setChildren`). Übergib es für Klasseninstanzen und Knoten, die mehr als eine flache Kopie brauchen."
+  },
+  "SortableTreeOptions.id": {
+    "source": "c0adaf519f",
+    "text": "Standard: `useId()`, stabil zwischen Server- und Client-Rendering. Wird einmal gelesen."
+  },
+  "SortableTreeOptions.overlay": {
+    "source": "99297d8dc8",
+    "text": "Overlay-Komponente für die Zeilen dieses Baums (das eigene `overlay` einer Zeile gewinnt). Wird beim Start des Drags gelesen."
+  },
+  "SortableTreeOptions.modifiers": {
+    "source": "f6220f5795",
+    "text": "Modifier für Drags der Zeilen dieses Baums, angewendet nach den `modifiers` des Providers (die eigenen `modifiers` einer Zeile gewinnen): z. B. `[restrictToVerticalAxis]`. Wird beim Start des Drags gelesen. Auch mit gesperrter Achse wird verschachtelt: Die Tiefe ergibt sich dann aus dem Hovern über der Mitte einer Zeile."
+  },
+  "SortableTreeOptions.axis": {
+    "source": "6d30d4a81a",
+    "text": "Beschränkt Drags der Zeilen dieses Baums auf eine Achse (das eigene `axis` einer Zeile gewinnt), nach den Modifiern. Mit `'y'` lassen sich Zeilen weiterhin verschachteln: Die Tiefe ergibt sich dann aus dem Hovern über der Mitte einer Zeile. Wird beim Start des Drags gelesen."
+  },
+  "SortableTreeOptions.group": {
+    "source": "8f0583eca8",
+    "text": "Listen und Bäume mit demselben Gruppennamen tauschen Elemente aus. Standard: eine eigene Gruppe. Wird einmal gelesen."
+  },
+  "SortableTreeOptions.acceptMode": {
+    "source": "045f22daca",
+    "text": "Multi-Drag von Elementen mehrerer Typen: `'all'` (Standard) oder `'some'` müssen angenommen werden (`group.put`)."
+  },
+  "SortableTreeOptions.indentation": {
+    "source": "f552924dcb",
+    "text": "Pixel horizontaler Versatz pro Tiefenebene. Standard 24."
+  },
+  "SortableTreeOptions.nesting": {
+    "source": "38bbd60e7c",
+    "text": "Wie die Tiefe gewählt wird: horizontaler Versatz, Hovern über der Mitte einer Zeile oder beides (Standard)."
+  },
+  "SortableTreeOptions.placeholder": {
+    "source": "2cf98fc3a5",
+    "text": "`'item'` (Standard): Der gezogene Knoten bewegt sich in seiner projizierten Tiefe durch die Zeilen. `'indicator'`: Der Baum bewegt sich nicht; `indicator` (am Baum und am `makeSortableItem` jeder Zeile) sagt, wohin der Drop geht, mit seiner `depth` und seinem `parentKey`, und du zeichnest die Linie. Ein Drop außerhalb bricht dann ab."
+  },
+  "SortableTreeOptions.maxDepth": {
+    "source": "1e961e3456",
+    "text": "Größte erlaubte Tiefe (Wurzeln sind 0). Die eigenen Nachkommen der gezogenen Knoten zählen mit."
+  },
+  "SortableTreeOptions.canNest": {
+    "source": "91ce5cdc34",
+    "text": "Ob `node` unter `parent` darf; ein Multi-Drag fragt für jeden gezogenen Knoten."
+  },
+  "SortableTreeOptions.collapsed": {
+    "source": "8668ce809d",
+    "text": "Schlüssel der Knoten, deren Kinder verborgen sind."
+  },
+  "SortableTreeOptions.clone": {
+    "source": "118c688670",
+    "text": "Erstellt Kopien (`group.pull: 'clone'`, die Modifier-Taste zum Kopieren). Zum Kopieren erforderlich. Gib die Kopie mit ihrem ganzen Teilbaum zurück: Ein kopierter Ordner behält seine Kinder. Die Kopie und jeder ihrer Nachkommen brauchen eigene Schlüssel (gelesen mit `getKey`), wie jeder Knoten eines Baums."
+  },
+  "SortableTreeOptions.createItem": {
+    "source": "28224fdbf4",
+    "text": "Nimmt einfache ziehbare Elemente von außen an: erstellt den einzufügenden Knoten, an der projizierten Position und Tiefe (`canNest` und `maxDepth` gelten für ihn). Mit der Tastatur holt ein Pfeil in Richtung des Baums das ziehbare Element herein, auf Höhe der Zeile, vor der es eingefügt wird, und die Pfeiltasten bewegen den Knoten dann wie jeden anderen."
+  },
+  "SortableTreeOptions.dropOutside": {
+    "source": "324ddf9a40",
+    "text": "Ein Drop außerhalb aller Ziele: die Knoten dort behalten, wo der Platzhalter ist, abbrechen oder sie entfernen. Standard `'placeholder'` (`'cancel'` mit `placeholder: 'indicator'`). Wird beim Drop gelesen."
+  },
+  "SortableTreeOptions.animation": {
+    "source": "5d1e2c66c2",
+    "text": "FLIP-Animation dieses Baums; Standard: `animation` des Providers. Ein Wert oder ein Ref (eine Funktion ist eine eigene Animation)."
+  },
+  "SortableTreeOptions.animate": {
+    "source": "9004d33175",
+    "text": "Wie bei `SortableListOptions`, für die sichtbaren Zeilen: hinzugefügte, entfernte oder verschobene Knoten und die Zeilen, die ein Knoten beim Auf- oder Zuklappen zeigt oder verbirgt (`collapsed`)."
+  },
+  "SortableTreeOptions.autoScroll": {
+    "source": "3216318fc0",
+    "text": "Überschreibt `autoScroll` des Providers für den Scroll-Container dieses Baums. Wird beim Start des Drags gelesen."
+  },
+  "SortableTreeOptions.dropzone": {
+    "source": "26c5e98e4b",
+    "text": "Wie bei `SortableListOptions`: das Element, das Drops für den Baum annimmt, standardmäßig das Element des Baums selbst."
+  },
+  "SortableTreeOptions.onBeforeDrop": {
+    "source": "94fc28e843",
+    "text": "Wie bei `SortableListOptions`."
+  },
+  "SortableTreeOptions.onDrop": {
+    "source": "cac25ac658",
+    "text": "Wie bei `SortableListOptions`: vor dem Schreiben, das `event.preventDefault()` überspringt."
+  },
+  "SortableTreeReturn.items": {
+    "source": "7c78a356e7",
+    "text": "Sichtbare Knoten in Entwurfsreihenfolge; der aktive Knoten trägt seine projizierte Tiefe."
+  },
+  "SortableTreeReturn.projected": {
+    "source": "cb32fa0496",
+    "text": "Wo der aktive Knoten landen würde, `null`, wenn er nicht in diesem Baum ist."
+  },
+  "SortableTreeReturn.indicator": {
+    "source": "3f5878f4c5",
+    "text": "Indikator-Modus: wohin der Drop geht, mit seiner `depth` und seinem `parentKey`; `null`, wenn nicht hier."
+  },
+  "SortableTreeReturn.isAccepting": {
+    "source": "ae54d9827e",
+    "text": "Etwas wird gezogen, und dieser Baum nimmt es an."
+  },
+  "SortableTreeReturn.activeKey": {
+    "source": "d4804b031e",
+    "text": "Die Zeile, die ein Virtualizer gemountet lassen muss: der Slot, solange er in diesem Baum ist (der gezogene Knoten, der ausgewählte Knoten, in dem der gegriffene mitfährt, eine Kopie, ein erstellter Knoten), sonst der gezogene Knoten."
+  },
+  "SortableTreeReturn.activeIndex": {
+    "source": "4d6761484d",
+    "text": "Index von `activeKey` in `items`, -1, wenn er nicht hier ist."
+  },
+  "SortableTreeReturn.activeSize": {
+    "source": "8337786343",
+    "text": "Größe der gezogenen Zeile beim Start des Drags."
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "DragAreaOptions": {
+    "source": "aedcd47d8d",
+    "text": "Options de `makeDragArea` : des règles pour les glissements qui commencent à l'intérieur de l'élément de la zone (éléments déplaçables comme items triables), pour qu'un seul provider serve toute l'application tandis que certaines parties de la page ont leur propre façon de glisser. Quand des zones sont imbriquées, la plus proche l'emporte.\n\nChaque option accepte une valeur, une ref ou un getter, et est lue au moment où elle est nécessaire : au début d'un appui (`activation`, `disabled`) ou au début du glissement."
+  },
+  "DragAreaOptions.axis": {
+    "source": "904978157c",
+    "text": "Verrouille les glissements sur un axe, après les modificateurs. L'`axis` propre à un élément déplaçable (ou celui de sa liste) l'emporte."
+  },
+  "DragAreaOptions.modifiers": {
+    "source": "fd6af7b03a",
+    "text": "Modificateurs des glissements, après ceux du provider et avant ceux propres à l'élément déplaçable (ou ceux de sa liste) : par exemple `[snapToGrid(20)]` pour un tableau."
+  },
+  "DragAreaOptions.restrictToArea": {
+    "source": "9a08abdb40",
+    "text": "`true` : les glissements restent à l'intérieur de l'élément de la zone (après les modificateurs, avant le verrouillage d'axe)."
+  },
+  "DragAreaOptions.autoScroll": {
+    "source": "42d0809672",
+    "text": "Remplace l'`autoScroll` du provider pour le conteneur défilant de la zone : l'élément lui-même, ou son ancêtre défilable le plus proche. `false` le désactive à cet endroit. Contrairement aux autres options, elle s'applique à tout glissement qui fait défiler le conteneur, où qu'il ait commencé."
+  },
+  "DragAreaOptions.activation": {
+    "source": "5bc47c8127",
+    "text": "Activation des glissements par type de pointeur, entre celle propre à l'élément déplaçable (qui l'emporte) et celle du provider : par exemple un appui tactile plus long dans un fil qui défile."
+  },
+  "DragAreaOptions.disabled": {
+    "source": "238dd09834",
+    "text": "`true` : aucun glissement ne commence dans la zone, ni dans les zones qu'elle contient (contrairement aux autres options, qui viennent de la zone la plus proche). Ses éléments déplaçables indiquent `aria-disabled`."
+  },
+  "DragAreaReturn.isDragging": {
+    "source": "5e8f41c6fd",
+    "text": "Un glissement commencé dans cette zone est en cours (jusqu'à ce que son dépôt soit décidé)."
+  },
+  "DragAreaReturn.isAutoScrolling": {
+    "source": "828bff5f0a",
+    "text": "Le défilement automatique fait défiler le conteneur défilant de la zone (l'élément, ou son ancêtre défilable le plus proche)."
+  }
+}

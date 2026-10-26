@@ -1,0 +1,30 @@
+{
+  "MaybeReadonlyRefOrGetter": {
+    "source": "856e8d0c75",
+    "text": "Um valor, um getter ou qualquer ref (gravável, shallow, computed, readonly — por exemplo, de `useTemplateRef`) que a biblioteca apenas lê. Diferente do `MaybeRefOrGetter` do Vue, aceita `Ref<string>` onde se espera `string | number`."
+  },
+  "MaybeReadonlyRef": {
+    "source": "e1366b62a5",
+    "text": "Um valor ou qualquer ref, para opções em que uma função é um valor por si só (um componente de overlay, uma regra de accept, uma animação personalizada), então não dá para distinguir um getter. Guarde componentes em um `shallowRef` (ou em um computed): o Vue não deve torná-los reativos."
+  },
+  "SensorType": {
+    "source": "ddccc05a96",
+    "text": "Como um arraste se move, seja qual for o sensor que o conduz (`SensorActivation.type`): `'pointer'` segue pontos, `'keyboard'` se move de item em item."
+  },
+  "ActivationConstraint.distance": {
+    "source": "70ede97eca",
+    "text": "Pixels que o ponteiro precisa percorrer antes de o arraste começar."
+  },
+  "ActivationConstraint.delay": {
+    "source": "86a4e4ad54",
+    "text": "Milissegundos que o ponteiro precisa ficar pressionado antes de o arraste começar."
+  },
+  "ActivationConstraint.tolerance": {
+    "source": "f316a28dbe",
+    "text": "Com `delay`: movimento em px que aborta a ativação, para que a página possa rolar."
+  },
+  "ActivationOptions": {
+    "source": "75a2dcce93",
+    "text": "Por tipo de ponteiro. Padrões: mouse/caneta `{ distance: 4 }` (imediato em um handle), toque `{ delay: 200, tolerance: 5 }`."
+  }
+}

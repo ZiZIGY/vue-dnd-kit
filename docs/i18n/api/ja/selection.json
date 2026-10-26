@@ -1,0 +1,30 @@
+{
+  "SelectionStrategy": {
+    "source": "e9f3f3d3ea",
+    "text": "- `'toggle'`：枠が横切ったアイテムは、枠を描く前の状態から選択が反転します。\n- `'select'`：枠の内側のアイテムだけが選択されます。"
+  },
+  "SelectionModifier": {
+    "source": "c7f915cabf",
+    "text": "押下で枠を描くために押している必要があるキー（`KeyboardEvent.key` または `.code`）：そのすべて、またはそのうちのいくつか（`'some'`）。"
+  },
+  "SelectionAreaOptions": {
+    "source": "395589bdaa",
+    "text": "`makeSelectionArea` のオプション。`modifier`、`strategy`、`accept`、`disabled` は値、ref、ゲッター（`accept`：値または ref。関数はルール）を受け付け、押下で枠が始まるときに読み取られます。`disabled` をオンにすると、描画中の枠もキャンセルされます。"
+  },
+  "SelectionAreaOptions.selection": {
+    "source": "294f767d3b",
+    "text": "デフォルトはプロバイダーの選択。"
+  },
+  "SelectionAreaOptions.strategy": {
+    "source": "0367d14627",
+    "text": "デフォルトは `'toggle'`。"
+  },
+  "SelectionAreaOptions.accept": {
+    "source": "6293487b0c",
+    "text": "枠がどのドラッグ可能な要素を選択するか。ドロップターゲットと同じ照合方法です。"
+  },
+  "SelectionAreaReturn.style": {
+    "source": "e4525127b1",
+    "text": "選択矩形の要素のスタイル（絶対配置、コンテナー基準）。"
+  }
+}

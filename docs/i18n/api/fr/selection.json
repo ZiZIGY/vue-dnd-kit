@@ -1,0 +1,30 @@
+{
+  "SelectionStrategy": {
+    "source": "e9f3f3d3ea",
+    "text": "- `'toggle'` : les items que le rectangle traverse inversent l'état qu'ils avaient avant le rectangle ;\n- `'select'` : seuls les items à l'intérieur du rectangle sont sélectionnés."
+  },
+  "SelectionModifier": {
+    "source": "c7f915cabf",
+    "text": "Les touches (`KeyboardEvent.key` ou `.code`) à maintenir pour qu'un appui trace un rectangle : toutes, ou seulement certaines (`'some'`)."
+  },
+  "SelectionAreaOptions": {
+    "source": "395589bdaa",
+    "text": "Options de `makeSelectionArea`. `modifier`, `strategy`, `accept` et `disabled` acceptent une valeur, une ref ou un getter (`accept` : une valeur ou une ref, une fonction est une règle) et sont lues quand un appui lance un rectangle ; activer `disabled` annule aussi un rectangle en cours."
+  },
+  "SelectionAreaOptions.selection": {
+    "source": "294f767d3b",
+    "text": "Par défaut, la sélection du provider."
+  },
+  "SelectionAreaOptions.strategy": {
+    "source": "0367d14627",
+    "text": "`'toggle'` par défaut."
+  },
+  "SelectionAreaOptions.accept": {
+    "source": "6293487b0c",
+    "text": "Les éléments déplaçables que le rectangle sélectionne ; le même mécanisme de correspondance que pour les cibles de dépôt."
+  },
+  "SelectionAreaReturn.style": {
+    "source": "e4525127b1",
+    "text": "Style de l'élément du rectangle de sélection (absolu, relatif au conteneur)."
+  }
+}

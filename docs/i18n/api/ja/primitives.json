@@ -1,0 +1,30 @@
+{
+  "MaybeReadonlyRefOrGetter": {
+    "source": "856e8d0c75",
+    "text": "値、ゲッター、または任意の ref（書き込み可能、shallow、computed、readonly。たとえば `useTemplateRef` から得たもの）で、ライブラリは読み取るだけです。Vue の `MaybeRefOrGetter` と違い、`string | number` が期待される場所で `Ref<string>` を受け付けます。"
+  },
+  "MaybeReadonlyRef": {
+    "source": "e1366b62a5",
+    "text": "値または任意の ref。関数そのものが値になるオプション（オーバーレイコンポーネント、accept ルール、カスタムアニメーション）向けで、そのためゲッターとは区別できません。コンポーネントは `shallowRef`（または computed）で保持してください：Vue がそれらをリアクティブにしてはいけません。"
+  },
+  "SensorType": {
+    "source": "ddccc05a96",
+    "text": "ドラッグがどう動くか。どのセンサーが操作していても同じです（`SensorActivation.type`）：`'pointer'` は座標を追い、`'keyboard'` はアイテム単位で動きます。"
+  },
+  "ActivationConstraint.distance": {
+    "source": "70ede97eca",
+    "text": "ドラッグが始まる前にポインターが移動しなければならないピクセル数。"
+  },
+  "ActivationConstraint.delay": {
+    "source": "86a4e4ad54",
+    "text": "ドラッグが始まる前にポインターを押し続けなければならないミリ秒数。"
+  },
+  "ActivationConstraint.tolerance": {
+    "source": "f316a28dbe",
+    "text": "`delay` と組み合わせて：アクティベーションを中断する移動量（px）。これによりページはスクロールできます。"
+  },
+  "ActivationOptions": {
+    "source": "75a2dcce93",
+    "text": "ポインターの種類ごと。デフォルト：マウス/ペンは `{ distance: 4 }`（ハンドル上では即座）、タッチは `{ delay: 200, tolerance: 5 }`。"
+  }
+}

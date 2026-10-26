@@ -1,0 +1,30 @@
+{
+  "MaybeReadonlyRefOrGetter": {
+    "source": "856e8d0c75",
+    "text": "Ein Wert, ein Getter oder ein beliebiges Ref (beschreibbar, shallow, computed, readonly – z. B. aus `useTemplateRef`), das die Bibliothek nur liest. Anders als Vues `MaybeRefOrGetter` akzeptiert er `Ref<string>`, wo `string | number` erwartet wird."
+  },
+  "MaybeReadonlyRef": {
+    "source": "e1366b62a5",
+    "text": "Ein Wert oder ein beliebiges Ref, für Optionen, bei denen eine Funktion ein eigenständiger Wert ist (eine Overlay-Komponente, eine Annahmeregel, eine eigene Animation), sodass ein Getter nicht davon zu unterscheiden wäre. Halte Komponenten in einem `shallowRef` (oder einem computed): Vue darf sie nicht reaktiv machen."
+  },
+  "SensorType": {
+    "source": "ddccc05a96",
+    "text": "Wie sich ein Drag bewegt, egal welcher Sensor ihn steuert (`SensorActivation.type`): `'pointer'` folgt Punkten, `'keyboard'` bewegt sich von Element zu Element."
+  },
+  "ActivationConstraint.distance": {
+    "source": "70ede97eca",
+    "text": "Pixel, die der Zeiger zurücklegen muss, bevor der Drag beginnt."
+  },
+  "ActivationConstraint.delay": {
+    "source": "86a4e4ad54",
+    "text": "Millisekunden, die der Zeiger gedrückt bleiben muss, bevor der Drag beginnt."
+  },
+  "ActivationConstraint.tolerance": {
+    "source": "f316a28dbe",
+    "text": "Mit `delay`: Bewegung in px, die die Aktivierung abbricht, damit die Seite scrollen kann."
+  },
+  "ActivationOptions": {
+    "source": "75a2dcce93",
+    "text": "Pro Zeigerart. Standardwerte: Maus/Stift `{ distance: 4 }` (sofort bei einem Handle), Touch `{ delay: 200, tolerance: 5 }`."
+  }
+}

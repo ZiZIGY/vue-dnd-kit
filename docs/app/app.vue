@@ -24,7 +24,7 @@
   // search list every page, translated or not (untranslated ones open in English).
   const collection = computed(() => docsCollection(locale.value) as 'docs_en');
   const prefix = computed(() => localePrefix(locale.value));
-  const { data: sourceNavigation } = await useAsyncData('navigation-en', () => queryCollectionNavigation('docs_en'));
+  const { data: sourceNavigation } = await useAsyncData('navigation-source', () => queryCollectionNavigation('docs_en'));
   const { data: localeNavigation } = await useAsyncData(
     () => `navigation-${locale.value}`,
     () => (locale.value === 'en' ? Promise.resolve(null) : queryCollectionNavigation(collection.value)),

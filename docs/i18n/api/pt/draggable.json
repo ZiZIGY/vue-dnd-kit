@@ -1,0 +1,74 @@
+{
+  "DraggableOptions": {
+    "source": "6011f1e820",
+    "text": "Opções de `makeDraggable`. Toda opção, exceto `canDrag`, aceita um valor, um ref ou um getter (`overlay`: um valor ou um ref) e é lida quando é necessária, então uma mudança vale, no máximo, a partir do próximo arraste."
+  },
+  "DraggableOptions.id": {
+    "source": "2dac667235",
+    "text": "Id estável. Passe um getter em listas virtuais, onde os elementos são reciclados. Padrão: `useId()`, estável entre a renderização no servidor e no cliente, mas novo a cada instância do componente."
+  },
+  "DraggableOptions.handle": {
+    "source": "1330de430e",
+    "text": "Elemento ou seletor dentro do draggable que inicia o arraste (e recebe os atributos)."
+  },
+  "DraggableOptions.activation": {
+    "source": "07b1465312",
+    "text": "Sobrescreve a `activation` do provider. Lido quando um clique começa."
+  },
+  "DraggableOptions.canDrag": {
+    "source": "ba9d01922f",
+    "text": "Barreira extra, por exemplo, arrastar só enquanto uma tecla está pressionada."
+  },
+  "DraggableOptions.overlay": {
+    "source": "f24fdc907d",
+    "text": "`true` (padrão): um overlay segue o ponteiro, renderizado pelo slot `#overlay` do provider ou como um clone do elemento. Um componente: o overlay o renderiza com `OverlayProps`, antes do slot. `false`: sem overlay, o próprio elemento se move por meio do `transform` retornado. Um valor ou um ref (uma função é um componente funcional), lido quando o arraste começa. O clone deixa de fora os efeitos de clique de UI kits (ripples) e qualquer elemento interno marcado com `data-dnd-no-clone`."
+  },
+  "DraggableOptions.modifiers": {
+    "source": "71eb5c6851",
+    "text": "Modificadores para os arrastes que começam aqui, aplicados depois dos `modifiers` do provider: por exemplo, `[restrictToVerticalAxis]` para um elemento em uma página onde os outros arrastes se movem livremente. Lido quando o arraste começa."
+  },
+  "DraggableOptions.axis": {
+    "source": "41cb212360",
+    "text": "Trava em um eixo os arrastes que começam aqui: `'x'` move só na horizontal, `'y'` só na vertical. A trava vem depois de `modifiers` (por último, como `restrictToHorizontalAxis` / `restrictToVerticalAxis`), então se mantém não importa o que eles façam. Lido quando o arraste começa."
+  },
+  "DraggableOptions.keyboard": {
+    "source": "fd726db037",
+    "text": "Setas nos arrastes livres: mover em pixels (padrão) ou saltar entre os alvos de drop que aceitam o item. Lido a cada toque de seta."
+  },
+  "DraggableOptions.attributes": {
+    "source": "f3f57590a6",
+    "text": "Define os atributos role/tabindex/aria-* (padrão `true`), sem nunca sobrescrever os que o usuário definiu. O id das instruções do provider entra em um `aria-describedby` existente como mais um token (uma tooltip de UI kit no mesmo elemento mantém o seu), e só esse token é removido. Ao vivo: desligar remove o que a biblioteca definiu."
+  },
+  "DraggableReturn.transform": {
+    "source": "3c2e7e5527",
+    "text": "Deslocamento a aplicar quando `overlay: false`."
+  },
+  "DroppableOptions": {
+    "source": "6146f0758b",
+    "text": "Opções de `makeDroppable`.\n\n**Soltar dentro de um item.** Um alvo de drop no elemento de um item ordenável (ou dentro dele) funciona como em qualquer outro lugar, com uma regra para quando a lista desse item ordenaria o arraste: ele só conta enquanto o ponteiro está no meio do item (de 25 a 75% ao longo do eixo da lista; x nas grades), onde o drop vai para dentro do alvo e a lista não se mexe por causa dele. Perto das bordas do item, a lista ordena normalmente. Um alvo cujo `accept` recusa o arraste fica de fora, então a lista ordena sobre o item como sobre qualquer outro (não é preciso desabilitá-lo). O teclado para em um alvo assim antes de passar pelo item dele. Um alvo nunca é alvo do próprio arraste: nem dentro de (ou sobre) um item arrastado, nem na posição onde um deles pousa. Para tirar os itens da lista deles no `onDrop`, chame `e.source.remove()`.\n\nToda opção, exceto os callbacks, aceita um valor, um ref ou um getter (`accept`: um valor ou um ref) e é lida ao vivo, enquanto um arraste procura o seu alvo."
+  },
+  "DroppableOptions.id": {
+    "source": "ea58d47829",
+    "text": "Padrão: `useId()`, estável entre a renderização no servidor e no cliente."
+  },
+  "DroppableOptions.accept": {
+    "source": "aae01588b5",
+    "text": "O que este alvo aceita. Dentro de um item ordenável, um alvo que recusa o arraste deixa a lista ordenar sobre ele. Um valor ou um ref: uma função é uma regra."
+  },
+  "DroppableOptions.acceptMode": {
+    "source": "05b17f13f4",
+    "text": "Padrão `'all'`."
+  },
+  "DroppableOptions.priority": {
+    "source": "083ebc2847",
+    "text": "O maior vence quando os alvos se sobrepõem sem estarem aninhados (padrão 0). Itens ordenáveis vencem contêineres."
+  },
+  "DroppableReturn.isAccepting": {
+    "source": "520ef3c1da",
+    "text": "Algo está sendo arrastado e este alvo o aceita."
+  },
+  "DroppableReturn.placement": {
+    "source": "4e1160d2d2",
+    "text": "Posição do ponteiro em relação às metades do alvo enquanto ele está sob o ponteiro."
+  }
+}

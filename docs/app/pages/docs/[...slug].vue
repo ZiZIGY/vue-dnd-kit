@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { useClipboard } from '@vueuse/core';
   import type { ContentNavigationItem } from '@nuxt/content';
+  import { outdated } from '#translations';
   import { docsCollection } from '~~/i18n/locales';
 
   definePageMeta({ layout: 'docs' });
@@ -28,6 +29,11 @@
   }
 
   const page = computed(() => data.value!.page);
+  /** What the language notice says: not translated, translated but older than the English, or translated. */
+  const notice = computed(() => {
+    if (data.value!.fallback) return t('docs.notTranslated');
+    return outdated.includes(page.value.stem) ? t('docs.outdated') : t('docs.aiNotice');
+  });
 
   const { data: surround } = await useAsyncData(`docs-surround-${route.path}`, () =>
     queryCollectionItemSurroundings(docsCollection(locale.value) as 'docs_en', path.value, { fields: ['description'] }),
@@ -112,7 +118,7 @@
               class="mt-0.5 size-4 shrink-0 text-(--ui-primary)"
             />
             <p>
-              {{ data!.fallback ? t('docs.notTranslated') : t('docs.aiNotice') }}
+              {{ notice }}
               <NuxtLink
                 v-if="!data!.fallback"
                 :to="sourcePath"

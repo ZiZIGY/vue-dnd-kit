@@ -1,0 +1,102 @@
+{
+  "LayoutAnimationContext.from": {
+    "source": "c5845d8793",
+    "text": "变化之前的视觉矩形（正在运行的动画显示该项的位置）。"
+  },
+  "LayoutAnimationContext.to": {
+    "source": "17f753cbe6",
+    "text": "变化之后的布局矩形。"
+  },
+  "LayoutAnimationContext.reason": {
+    "source": "eceea904fa",
+    "text": "是什么移动了这个项：一次拖拽（`'drag'`：排序、放置、取消），或者非拖拽引起的数据变化（`'change'`，需开启列表的 `animate`）。"
+  },
+  "LayoutAnimationContext.signal": {
+    "source": "c8aa938f56",
+    "text": "库中断动画时中止：项在动画结束前再次移动（下一个动画从它当前显示的位置开始），或者动画被关闭。返回的 `Animation` 会自动帮你取消。其他任何东西都要在这里停止，并立即撤销它设置的样式：紧接着就会测量布局。"
+  },
+  "LayoutAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "设置了 `prefers-reduced-motion: reduce`。此时库自己的动画不会运行；你的函数总会运行，并据此做出决定（跳过，或保留一个淡入淡出）。"
+  },
+  "LayoutAnimation": {
+    "source": "233b130a9c",
+    "text": "项如何移动到新位置：`true`（默认时间）、选项、`false`（直接跳过去），或一个函数——它为一个项执行从 `from` 到 `to` 的动画，并返回它的 `Animation`、一个在动画结束时完成的 Promise，或者不返回任何东西。"
+  },
+  "DropAnimationContext.overlay": {
+    "source": "e272382994",
+    "text": "浮层盒子；它会落到当前项的位置上。在多项拖拽中，随它一起移动的其他项的克隆（默认浮层中的克隆、自定义浮层中的 `DragPreview`）会自行落到各自的位置上（如果这是一个自定义函数，则使用默认时间）。"
+  },
+  "DropAnimationContext.to": {
+    "source": "d0780ba408",
+    "text": "被放下的项的最终矩形；当它没有被渲染或不可见时为 `null`（浮层淡出）。"
+  },
+  "DropAnimationContext.into": {
+    "source": "cecafada99",
+    "text": "放到一个区域（而不是可排序列表）上之后，该项不再显示，例如它被放进了另一个项（文件夹）或回收区：此时为该区域的可见矩形。默认动画会让浮层在淡出时缩进这个区域，而不是在原地淡出。"
+  },
+  "DropAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "设置了 `prefers-reduced-motion: reduce`。此时库自己的动画不会运行；你的函数总会运行，并据此做出决定（跳过，或保留一个淡入淡出）。"
+  },
+  "EnterAnimationContext": {
+    "source": "bef530cbfe",
+    "text": "在开启了 `animate` 的列表中出现的项：新添加的，或重新显示的（过滤、展开的树节点）。"
+  },
+  "EnterAnimationContext.element": {
+    "source": "120613b512",
+    "text": "该项的元素，已经位于它的位置上。"
+  },
+  "EnterAnimationContext.to": {
+    "source": "fd058782f5",
+    "text": "它出现的位置（布局矩形）。"
+  },
+  "EnterAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "设置了 `prefers-reduced-motion: reduce`。此时库自己的动画不会运行；你的函数总会运行，并据此做出决定（跳过，或保留一个淡入淡出）。"
+  },
+  "LeaveAnimationContext": {
+    "source": "b67e70e13a",
+    "text": "从开启了 `animate` 的列表中离开的项：被删除的，或被隐藏的（过滤、折叠的树节点）。"
+  },
+  "LeaveAnimationContext.element": {
+    "source": "a4f7390241",
+    "text": "该项元素的副本，显示在该项原来的位置（项本身已经不在了）：在原来的父元素中绝对定位，忽略指针，并带有 `data-dnd-leaving` 标记。你的动画结束后，库会移除它。"
+  },
+  "LeaveAnimationContext.from": {
+    "source": "645084e2fd",
+    "text": "该项原来所在的位置。"
+  },
+  "LeaveAnimationContext.reducedMotion": {
+    "source": "d4c9ed8529",
+    "text": "设置了 `prefers-reduced-motion: reduce`。此时库自己的动画不会运行；你的函数总会运行，并据此做出决定（跳过，或保留一个淡入淡出）。"
+  },
+  "EnterAnimation": {
+    "source": "9a7cbcfe92",
+    "text": "`true`、选项、`false`（项直接出现），或一个为它执行进入动画的函数。"
+  },
+  "LeaveAnimation": {
+    "source": "fa236e4208",
+    "text": "`true`、选项、`false`（项直接消失），或一个为留在原处的副本执行离开动画的函数：返回它的 `Animation` 或一个 Promise，副本会在动画结束时被移除（函数什么都不返回时立即移除）。"
+  },
+  "AutoAnimationOptions": {
+    "source": "0130acd24e",
+    "text": "分部分设置的 `animate`：`duration` 和 `easing` 适用于所有部分；每种变化可以单独设为 `true`、选项（覆盖共享选项）、`false`，或你自己的函数。"
+  },
+  "AutoAnimationOptions.move": {
+    "source": "684eb0594d",
+    "text": "位置发生变化的项（默认的 FLIP，与 `animation` 的相同；函数会替换它）。"
+  },
+  "AutoAnimationOptions.enter": {
+    "source": "7d611358b7",
+    "text": "新出现的项。默认：在原地淡入。"
+  },
+  "AutoAnimationOptions.leave": {
+    "source": "de8fbd3ca4",
+    "text": "离开的项。默认：该项的副本在它原来的位置淡出，同时略微缩小。"
+  },
+  "AutoAnimation": {
+    "source": "eb08eca97d",
+    "text": "为非拖拽引起的列表（或树）项的变化添加动画：项被添加、删除、移动（排序、打乱、在同一分组的列表之间移动）或过滤。默认关闭（`false`）；`true` 会以默认时间为移动、进入和离开的项添加动画。拖拽保留它们自己的动画（`animation`、`dropAnimation`）。在 `prefers-reduced-motion: reduce` 下，默认动画不会运行；你的函数仍然会运行（并收到 `reducedMotion: true`）。只有可见区域附近的项才会执行动画（虚拟列表中未挂载的行会被跳过）。"
+  }
+}

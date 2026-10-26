@@ -1,0 +1,110 @@
+{
+  "Announcements": {
+    "source": "35c177cf7f",
+    "text": "Les textes pour lecteurs d'écran, par événement. Un texte est énoncé par la région live du provider (les déplacements, une fois que le glissement est resté immobile 500 ms) ; `undefined` laisse l'événement à la source suivante (les textes des intégrations, comme les positions des listes triables, puis ceux par défaut) ; `''` ne dit rien. Aucun déplacement n'est annoncé pour la cible trouvée à la saisie : rien n'a encore bougé."
+  },
+  "Announcements.onDragResume": {
+    "source": "d4806359e7",
+    "text": "`onBeforeDrop` a répondu `'continue'` : le glissement continue."
+  },
+  "KeyboardOptions.step": {
+    "source": "66a729c31a",
+    "text": "Pixels par appui sur une flèche pour les glissements libres (non triables). 25 par défaut."
+  },
+  "AutoScrollOptions.threshold": {
+    "source": "1b2cd0615c",
+    "text": "Zone de bord, en fraction de la taille du conteneur. 0.2 par défaut (limitée à 24–96 px)."
+  },
+  "AutoScrollOptions.maxSpeed": {
+    "source": "4ebcb33d64",
+    "text": "Vitesse maximale en px par frame de 16 ms."
+  },
+  "HapticPattern": {
+    "source": "1fb9df65e6",
+    "text": "Une vibration (`navigator.vibrate`) : sa durée en ms ou un motif marche/arrêt. `true` correspond à la vibration par défaut (10 ms ; `[20, 40, 20]` pour `refuse`), `false` ou `0` à aucune."
+  },
+  "HapticsOptions": {
+    "source": "8c813a52b6",
+    "text": "Quand les glissements tactiles vibrent. Seuls les glissements lancés au toucher vibrent ; là où le navigateur ne peut pas vibrer (Safari sur iOS) ou le bloque (pas encore de tap sur la page), rien ne se passe."
+  },
+  "HapticsOptions.start": {
+    "source": "e9e6d11084",
+    "text": "Le glissement commence, après l'appui long. `true` par défaut."
+  },
+  "HapticsOptions.enter": {
+    "source": "8f9e55bdc7",
+    "text": "Le glissement entre dans une cible de dépôt (une liste, une zone) qui l'accepte. `false` par défaut."
+  },
+  "HapticsOptions.drop": {
+    "source": "dbf3451ed3",
+    "text": "Le dépôt a lieu. `false` par défaut."
+  },
+  "HapticsOptions.refuse": {
+    "source": "54d244b821",
+    "text": "Le dépôt est refusé (par une cible ou par `onBeforeDrop`) et les items reviennent à leur place. `false` par défaut."
+  },
+  "DnDProviderProps.animation": {
+    "source": "699c35a63c",
+    "text": "Animation FLIP par défaut des listes triables."
+  },
+  "DnDProviderProps.animate": {
+    "source": "e7b8ee12ca",
+    "text": "`animate` par défaut des listes et des arbres triables : les changements de leurs items qui ne viennent pas d'un glissement. Désactivé par défaut."
+  },
+  "DnDProviderProps.sensors": {
+    "source": "180c7efcc3",
+    "text": "Ce qui transforme les entrées en glissements. Par défaut `[pointerSensor, keyboardSensor]` : retirez-en un, enveloppez-le ou remplacez-le, ou ajoutez le vôtre (`defineSensor`). Le capteur clavier annule aussi n'importe quel glissement avec Escape ; `keyboard: false` désactive ses glissements mais conserve ce comportement. La liste peut changer à tout moment : les capteurs qui en sortent s'arrêtent, en annulant leur glissement."
+  },
+  "DnDProviderProps.haptics": {
+    "source": "a072f3054b",
+    "text": "Vibration des glissements tactiles. Par défaut : une vibration courte quand un glissement commence après l'appui long ; un objet en ajoute d'autres (`enter`, `drop`, `refuse`) ; `false` les désactive toutes."
+  },
+  "DnDProviderProps.copyModifier": {
+    "source": "c45bff39ad",
+    "text": "La touche (KeyboardEvent.key) qui transforme un déplacement en copie. `'Alt'` par défaut ; `null` désactive."
+  },
+  "DnDProviderProps.overlayFit": {
+    "source": "2cebf1b9ab",
+    "text": "Taille de l'overlay pendant le glissement. `'slot'` (par défaut) : il suit l'emplacement où l'item va atterrir ; au-dessus d'une autre liste, il prend donc la taille des items de cette liste, et le dépôt n'a pas besoin de redimensionnement. Il se redimensionne autour du pointeur, qui reste à la même proportion de la boîte. `'source'` : il garde la taille de l'élément glissé. La mise en page du contenu de l'overlay par défaut est recalculée à la nouvelle taille ; il n'est jamais mis à l'échelle."
+  },
+  "DnDProviderProps.announcements": {
+    "source": "0729e8985f",
+    "text": "Vos propres textes pour certains événements (voir `Announcements`) ; `false` rend la région live muette."
+  },
+  "DnDProviderProps.defaultStyles": {
+    "source": "b635d7cd38",
+    "text": "Injecte des styles par défaut de spécificité nulle (opacité du placeholder, pas de sélection de texte pendant le glissement)."
+  },
+  "DnDContext": {
+    "source": "224db9f60d",
+    "text": "Un provider tel que le renvoie `useDnDContext()`, à transmettre à `provideDnDContext()` : une autre application Vue (par exemple montée dans un shadow root) fonctionne alors avec le même provider. Opaque : il n'a aucun membre public, et ne change donc jamais avec les rouages internes de la bibliothèque."
+  },
+  "OverlaySlotProps": {
+    "source": "38a21c4b6d",
+    "text": "Ce que montre l'overlay : les props du slot `#overlay` du provider et des composants d'overlay (option `overlay` des éléments déplaçables, des items triables, des listes et des arbres)."
+  },
+  "OverlaySlotProps.items": {
+    "source": "10d477a1e7",
+    "text": "Tous les items glissés, en commençant par l'item principal : un seul overlay pour tout le multi-drag."
+  },
+  "OverlaySlotProps.over": {
+    "source": "a44f968644",
+    "text": "La cible de dépôt sous le glissement. Pendant qu'un dépôt décidé s'anime, la cible sur laquelle il atterrit (telle qu'elle était au dépôt) ; `null` pendant qu'un glissement annulé revient à sa place."
+  },
+  "OverlaySlotProps.accepted": {
+    "source": "f7641f18e1",
+    "text": "Si `over` accepte les items glissés ; `false` au-dessus de rien."
+  },
+  "OverlayProps": {
+    "source": "8058170119",
+    "text": "Props d'un composant d'overlay, pour `defineProps<OverlayProps>()`.\n\nLe composant est rendu à l'intérieur de la boîte de l'overlay, qui suit la taille de l'emplacement (`overlayFit: 'slot'`) et l'anime au dépôt. Donnez à la racine `width: 100%` (et `height: 100%`) pour suivre cette taille ; une taille fixe garde celle du composant."
+  },
+  "DragPreviewProps": {
+    "source": "6c8d2b3c28",
+    "text": "Props de `DragPreview` : le clone par défaut d'un item glissé, pour les overlays personnalisés (un composant `overlay` ou le slot `#overlay` du provider) qui disposent eux-mêmes plusieurs items, par exemple `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`.\n\nLes clones sont pris à la saisie : celui de l'item saisi et ceux de quatre autres au plus, voisins dans l'ordre du dépôt (ceux qui sont rendus à ce moment-là). Pour tout autre item, `DragPreview` rend son slot par défaut, ou rien. Le clone remplit l'élément, qui a la taille de l'item au moment de la saisie, sauf si vous le stylisez (`class` et `style` sont transmis).\n\nDans un multi-drag triable (`multiple: 'group'` ou `'gaps'`), l'aperçu d'un item autre que celui qui a été saisi atterrit avec le dépôt sur l'emplacement de cet item (et revient à sa place en cas d'annulation), depuis l'endroit où la mise en page l'a placé : les conteneurs tournés ou mis à l'échelle avec `transform` sont neutralisés en chemin, et sa taille s'anime en largeur et en hauteur. Stylisez l'aperçu lui-même (coins, ombre) : ses conteneurs restent dans la boîte. Les items sans clone apparaissent en fondu à la place."
+  },
+  "DragPreviewProps.id": {
+    "source": "220d6dd174",
+    "text": "Id d'un item glissé : l'un des `items` de `OverlayProps`."
+  }
+}

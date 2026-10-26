@@ -1,0 +1,38 @@
+{
+  "CollisionCandidate.rect": {
+    "source": "6367b9d53a",
+    "text": "Parte visível do alvo: recortada pelos contêineres de rolagem dele e pela viewport."
+  },
+  "CollisionCandidate.depth": {
+    "source": "87728867d4",
+    "text": "Nível de aninhamento entre os alvos de drop: 0 no topo, alvos mais profundos têm valores maiores."
+  },
+  "CollisionArgs.hits": {
+    "source": "78fd5d5eeb",
+    "text": "Alvos de drop sob o ponteiro, obtidos por hit-testing (respeita z-order e shadow roots), o melhor primeiro."
+  },
+  "CollisionDetection": {
+    "source": "1248ad0f81",
+    "text": "Retorna os ids dos candidatos, o melhor primeiro."
+  },
+  "ModifierArgs.transform": {
+    "source": "559160a1f5",
+    "text": "Deslocamento desde o início do arraste, como modificado pelos modificadores anteriores."
+  },
+  "ModifierArgs.activeRect": {
+    "source": "c410ca6675",
+    "text": "Retângulo do elemento arrastado no início do arraste."
+  },
+  "ModifierArgs.overlayRect": {
+    "source": "cbccda9a74",
+    "text": "Retângulo da caixa do overlay se ela fosse movida por `transform`, no tamanho que tem agora. Com `overlayFit: 'slot'`, a caixa se redimensiona ao redor do ponteiro, então nem sempre é `activeRect` movido por `transform`."
+  },
+  "ModifierArgs.origin": {
+    "source": "f348437ad5",
+    "text": "Posição do ponteiro no início do arraste."
+  },
+  "ModifierArgs.containerRect": {
+    "source": "2a3d109ccb",
+    "text": "Contêiner da lista ordenável (ou elemento pai) do item arrastado, medido no início do arraste."
+  }
+}

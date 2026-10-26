@@ -1,0 +1,74 @@
+{
+  "DraggableOptions": {
+    "source": "6011f1e820",
+    "text": "Opciones de `makeDraggable`. Todas las opciones salvo `canDrag` aceptan un valor, una ref o un getter (`overlay`: un valor o una ref) y se leen cuando hacen falta, así que un cambio se aplica, como muy tarde, en el siguiente arrastre."
+  },
+  "DraggableOptions.id": {
+    "source": "2dac667235",
+    "text": "Id estable. Pasa un getter en las listas virtuales, donde los elementos se reciclan. Por defecto: `useId()`, estable entre el renderizado en el servidor y en el cliente, pero nuevo en cada instancia del componente."
+  },
+  "DraggableOptions.handle": {
+    "source": "1330de430e",
+    "text": "Elemento o selector dentro del elemento arrastrable que inicia el arrastre (y recibe los atributos)."
+  },
+  "DraggableOptions.activation": {
+    "source": "07b1465312",
+    "text": "Sustituye la `activation` del provider. Se lee cuando empieza una pulsación."
+  },
+  "DraggableOptions.canDrag": {
+    "source": "ba9d01922f",
+    "text": "Filtro adicional, por ejemplo arrastrar solo mientras se mantiene una tecla."
+  },
+  "DraggableOptions.overlay": {
+    "source": "f24fdc907d",
+    "text": "`true` (por defecto): un overlay sigue al puntero, renderizado por el slot `#overlay` del provider o como un clon del elemento. Un componente: el overlay lo renderiza con `OverlayProps`, antes que el slot. `false`: sin overlay, el propio elemento se mueve mediante el `transform` devuelto. Un valor o una ref (una función es un componente funcional), que se lee cuando empieza el arrastre. El clon deja fuera los efectos de pulsación de los kits de UI (ripples) y cualquier elemento interior marcado con `data-dnd-no-clone`."
+  },
+  "DraggableOptions.modifiers": {
+    "source": "71eb5c6851",
+    "text": "Modificadores para los arrastres que empiezan aquí, aplicados después de los `modifiers` del provider: por ejemplo `[restrictToVerticalAxis]` para un elemento en una página donde los demás arrastres se mueven libremente. Se leen cuando empieza el arrastre."
+  },
+  "DraggableOptions.axis": {
+    "source": "41cb212360",
+    "text": "Bloquea en un eje los arrastres que empiezan aquí: `'x'` solo mueve en horizontal, `'y'` solo en vertical. El bloqueo va después de `modifiers` (`restrictToHorizontalAxis` / `restrictToVerticalAxis` al final), así que se mantiene hagan lo que hagan. Se lee cuando empieza el arrastre."
+  },
+  "DraggableOptions.keyboard": {
+    "source": "fd726db037",
+    "text": "Las flechas en los arrastres libres: mover por píxeles (por defecto) o saltar entre los destinos de drop que lo aceptan. Se lee en cada pulsación de flecha."
+  },
+  "DraggableOptions.attributes": {
+    "source": "f3f57590a6",
+    "text": "Pone los atributos role/tabindex/aria-* (`true` por defecto), sin sobrescribir nunca los del usuario. El id de las instrucciones del provider se añade a un `aria-describedby` existente como un token más (el tooltip de un kit de UI en el mismo elemento conserva el suyo), y solo se elimina ese token. En vivo: desactivarlo elimina lo que puso la biblioteca."
+  },
+  "DraggableReturn.transform": {
+    "source": "3c2e7e5527",
+    "text": "Desplazamiento que hay que aplicar cuando `overlay: false`."
+  },
+  "DroppableOptions": {
+    "source": "6146f0758b",
+    "text": "Opciones de `makeDroppable`.\n\n**Soltar dentro de un ítem.** Un destino de drop en el elemento de un ítem ordenable (o dentro de él) funciona como en cualquier otro sitio, con una regla mientras la lista de ese ítem ordenaría el arrastre: solo cuenta mientras el puntero está en el centro del ítem (del 25 al 75 % a lo largo del eje de la lista; x en las cuadrículas), donde el drop va al destino y la lista no se mueve por él. Cerca de los bordes del ítem, la lista ordena como siempre. Un destino cuyo `accept` rechaza el arrastre se deja fuera, así que la lista ordena sobre el ítem como sobre cualquier otro (no hace falta desactivarlo). El teclado se detiene en un destino así antes de pasar de largo su ítem. Un destino nunca forma parte de su propio arrastre: ni dentro (ni encima) de un ítem arrastrado, ni en el hueco donde aterriza uno. Para sacar los ítems de su lista en `onDrop`, llama a `e.source.remove()`.\n\nTodas las opciones salvo los callbacks aceptan un valor, una ref o un getter (`accept`: un valor o una ref) y se leen en vivo, mientras un arrastre busca su destino."
+  },
+  "DroppableOptions.id": {
+    "source": "ea58d47829",
+    "text": "Por defecto: `useId()`, estable entre el renderizado en el servidor y en el cliente."
+  },
+  "DroppableOptions.accept": {
+    "source": "aae01588b5",
+    "text": "Lo que acepta este destino. Dentro de un ítem ordenable, uno que rechaza el arrastre deja que la lista ordene sobre él. Un valor o una ref: una función es una regla."
+  },
+  "DroppableOptions.acceptMode": {
+    "source": "05b17f13f4",
+    "text": "`'all'` por defecto."
+  },
+  "DroppableOptions.priority": {
+    "source": "083ebc2847",
+    "text": "Gana el más alto cuando los destinos se solapan sin estar anidados (0 por defecto). Los ítems ordenables ganan a los contenedores."
+  },
+  "DroppableReturn.isAccepting": {
+    "source": "520ef3c1da",
+    "text": "Se está arrastrando algo y este destino lo acepta."
+  },
+  "DroppableReturn.placement": {
+    "source": "4e1160d2d2",
+    "text": "Posición del puntero respecto a las mitades del destino mientras está encima."
+  }
+}
