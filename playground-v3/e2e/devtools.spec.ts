@@ -181,6 +181,7 @@ test.describe('drags from the inspector', () => {
 
   test("a node's buttons and its editable position move cards, by drags of the `devtools` sensor", async ({ page }) => {
     const errors = trackErrors(page);
+    const warnings = trackVueWarnings(page);
     const board = page.getByTestId('board');
     await nodeAction(page, 'arrow_downward', 'a1');
     await expect(board).toHaveText('todo:a2,a1,a3,a4 | doing:b1,b2 | done:');
@@ -213,10 +214,12 @@ test.describe('drags from the inspector', () => {
       'move doing[0] → done[0]',
     ]);
     expect(errors).toEqual([]);
+    expect(warnings).toEqual([]);
   });
 
   test('a card picked up from the inspector is stepped across columns and dropped from it', async ({ page }) => {
     const errors = trackErrors(page);
+    const warnings = trackVueWarnings(page);
     await nodeAction(page, 'open_with', 'a1');
     await expect(page.locator('[data-dnd-placeholder]')).toHaveCount(1);
     await action(page, 'keyboard_arrow_right');
@@ -240,5 +243,6 @@ test.describe('drags from the inspector', () => {
       'cancel: cancelled',
     ]);
     expect(errors).toEqual([]);
+    expect(warnings).toEqual([]);
   });
 });
