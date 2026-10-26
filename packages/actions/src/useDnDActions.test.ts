@@ -2,15 +2,19 @@ import { createApp, defineComponent, h, nextTick, ref, useTemplateRef, type Prop
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   DnDProvider,
+  defineSensor,
+  keyboardSensor,
   makeDraggable,
   makeDroppable,
   makeSortableItem,
   makeSortableList,
+  pointerSensor,
   useDnD,
   type DnDState,
+  type Sensor,
   type SortableListOptions,
 } from '@vue-dnd-kit/core';
-import { useDnDActions, type DnDActions } from './index';
+import { createDnDActions, useDnDActions, type DnDActions } from './index';
 
 /**
  * Lists `a`, `b` and `c` sit side by side, 300px apart, with 40px rows (happy-dom has no
@@ -73,12 +77,16 @@ const rectOf = (element: Element) => {
 
 const contains = (rect: DOMRect, x: number, y: number) => x >= rect.left && x < rect.right && y >= rect.top && y < rect.bottom;
 
-const mount = (lists: Record<string, SortableListOptions<Item>>, onZoneDrop: (id: unknown) => void = () => {}) => {
+const mount = (
+  lists: Record<string, SortableListOptions<Item>>,
+  onZoneDrop: (id: unknown) => void = () => {},
+  sensors?: Sensor[],
+) => {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const app = createApp({
     setup: () => () =>
-      h(DnDProvider, { animation: false, dropAnimation: false }, {
+      h(DnDProvider, { animation: false, dropAnimation: false, sensors }, {
         default: () => [
           h({
             setup() {
@@ -282,6 +290,25 @@ describe('startDrag', () => {
     drag.cancel();
     await settle();
     expect(actions.startDrag('a2')).not.toBeNull();
+  });
+});
+
+describe('createDnDActions', () => {
+  it("drives the provider through a sensor of one's own, with a queue of its own", async () => {
+    let tour: DnDActions | undefined;
+    const tourSensor = defineSensor({ name: 'tour', setup: (context) => void (tour = createDnDActions(context)) });
+    const a = ref(tasks('a1', 'a2', 'a3'));
+    const b = ref(tasks('b1'));
+    mount({ a: { items: a, group: 'g' }, b: { items: b, group: 'g' } }, () => {}, [pointerSensor, keyboardSensor, tourSensor]);
+    await nextTick();
+    // The sensor's actions and the provider's run one after another: each waits for the provider to be idle.
+    const moves = [tour!.moveItem('a3', { index: 0 }), actions.moveItem('a1', { list: 'b', index: 0 }), tour!.moveItem('a2', {})];
+    expect(await Promise.all(moves)).toEqual([true, true, true]);
+    expect([ids(a), ids(b)]).toEqual(['a3,a2', 'a1,b1']);
+    const drag = tour!.startDrag('a3', { type: 'keyboard' })!;
+    await drag.step('down');
+    expect(await drag.drop()).toBe(true);
+    expect(ids(a)).toBe('a2,a3');
   });
 });
 

@@ -8,7 +8,8 @@
  * app mounts: providers set up earlier aren't seen. Until a listener subscribes to the
  * events, a provider is only recorded; then it is followed. The bridge reads (snapshots) and
  * listens (events); the only things it changes are the explicit actions of a provider
- * (`cancel`, `clearSelection`). Providers shared with other apps through
+ * (`cancel`, `clearSelection`). It also hands out each provider's `context`, so the plugin
+ * can drag through the public sensor API. Providers shared with other apps through
  * `provideDnDContext` (shadow roots) are one provider: their items are in it.
  */
 

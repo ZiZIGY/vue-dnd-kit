@@ -16,6 +16,8 @@
       // The core's sources, not its build (as in the playground): the bridge is versioned with them.
       "@vue-dnd-kit/core": ["../core/src/index.ts"],
       "@vue-dnd-kit/core/devtools": ["../core/src/devtools/index.ts"],
+      // The inspector drags through the actions' sources, versioned with the core's.
+      "@vue-dnd-kit/actions": ["../actions/src/index.ts"],
       // One Vue for this package and the core's sources.
       "vue": ["./node_modules/vue"],
       "@vueuse/core": ["./node_modules/@vueuse/core"]

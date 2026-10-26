@@ -7,7 +7,7 @@ const accepts = <T>(value: T): T => value;
 
 describe('public exports', () => {
   it('values', () => {
-    expect(Object.keys(library)).toEqual(['useDnDActions']);
+    expect(Object.keys(library).sort()).toEqual(['createDnDActions', 'useDnDActions']);
   });
 
   it('types (compile-time)', () => {

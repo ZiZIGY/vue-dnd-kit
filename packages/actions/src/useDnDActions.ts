@@ -81,22 +81,6 @@ export interface DnDActions {
   startDrag(id: Key, options?: StartDragOptions): ActionDrag | null;
 }
 
-/** What every `useDnDActions()` of a provider shares. */
-interface Shared {
-  /** The context of the provider's actions sensor; `null` until it runs (never during SSR). */
-  context: SensorContext | null;
-  /** The last `moveItem`: the next one runs after it. */
-  queue: Promise<unknown>;
-}
-
-const providers = new WeakMap<DnDContext, Shared>();
-
-const sharedOf = (provider: DnDContext): Shared => {
-  let shared = providers.get(provider);
-  if (!shared) providers.set(provider, (shared = { context: null, queue: Promise.resolve() }));
-  return shared;
-};
-
 /** Frames stop in hidden tabs: wait at most this long for one. */
 const FRAME_TIMEOUT = 100;
 
@@ -136,31 +120,25 @@ const centerOf = (element: Element): Coordinates => {
 };
 
 /**
- * Programmatic drags in the provider above: `moveItem` for "move up", "to the top" or
- * "move to Done" buttons and menus (an accessible alternative to dragging), `startDrag`
- * for scripted drags. Call it in a component's `setup` under a `<DnDProvider>`.
+ * The actions of a sensor of your own: `moveItem` and `startDrag` as `useDnDActions()`
+ * gives them, with the drags started by the sensor whose `context` this is (its `name` is
+ * the drag's sensor in the devtools timeline). Create them in the sensor's `setup`: to
+ * drive a provider from outside its components (a store, a test harness, the devtools
+ * plugin), or under a name of your own. `moveItem` calls queue per actions object.
+ *
+ * @example
+ * let tour: DnDActions | undefined;
+ * const tourSensor = defineSensor({ name: 'tour', setup: (context) => void (tour = createDnDActions(context)) });
+ * // <DnDProvider :sensors="[pointerSensor, keyboardSensor, tourSensor]">
+ * await tour?.moveItem('card-1', { list: 'done' });
  */
-export function useDnDActions(): DnDActions {
-  const shared = sharedOf(useDnDContext());
-  if (!shared.context) {
-    // The provider's one sensor for actions outlives the component that calls this first:
-    // a row with "move" buttons is re-created when its drag takes it to another list, and
-    // the drag must go on. It has no listeners to clean up; the provider's unmount ends
-    // any drag it runs.
-    effectScope(true).run(() =>
-      useSensor(
-        defineSensor({
-          name: 'actions',
-          setup: (context) => void (shared.context = context),
-        }),
-      ),
-    );
-  }
-  const context = shared.context;
+export function createDnDActions(context: SensorContext): DnDActions {
+  /** The last `moveItem`: the next one runs after it. */
+  let queue: Promise<unknown> = Promise.resolve();
 
   /** Resolves once the provider has no drag (and no drop landing). */
   const whenIdle = (): Promise<void> => {
-    if (!context || context.status === 'idle') return Promise.resolve();
+    if (context.status === 'idle') return Promise.resolve();
     return new Promise((resolve) => {
       const stop = watch(
         () => context.status,
@@ -196,24 +174,66 @@ export function useDnDActions(): DnDActions {
   });
 
   const startDrag = (id: Key, options: StartDragOptions = {}): ActionDrag | null => {
-    const drag = context?.activate({ target: id, type: options.type, point: options.from });
+    const drag = context.activate({ target: id, type: options.type, point: options.from });
     return drag ? wrap(drag) : null;
   };
 
-  // One queue per provider: rows that each call `useDnDActions()` don't race for it.
+  /** A keyboard drag of `id` once the provider is idle; `null` when the item can't be dragged. */
+  const activateWhenIdle = async (id: Key): Promise<SensorDrag | null> => {
+    for (;;) {
+      await whenIdle();
+      const drag = context.activate({ target: id, type: 'keyboard' });
+      // Refused while idle: the item can't be dragged. Else a drag of another sensor (other
+      // actions, the user) started first: it is waited for too.
+      if (drag || context.status === 'idle') return drag;
+    }
+  };
+
   const moveItem = (id: Key, to: SortablePosition): Promise<boolean> => {
     const run = async () => {
-      await whenIdle();
-      const drag = context?.activate({ target: id, type: 'keyboard' });
+      const drag = await activateWhenIdle(id);
       if (!drag) return false;
       if (await drag.place(to)) return drag.drop();
       drag.cancel();
       return false;
     };
-    const result = shared.queue.then(run, run);
-    shared.queue = result;
+    const result = queue.then(run, run);
+    queue = result;
     return result;
   };
 
   return { moveItem, startDrag };
+}
+
+/** The actions of each provider: every `useDnDActions()` under it shares them (and their queue). */
+const providers = new WeakMap<DnDContext, DnDActions>();
+
+/** During server rendering nothing drags. */
+const serverActions: DnDActions = { moveItem: () => Promise.resolve(false), startDrag: () => null };
+
+/**
+ * Programmatic drags in the provider above: `moveItem` for "move up", "to the top" or
+ * "move to Done" buttons and menus (an accessible alternative to dragging), `startDrag`
+ * for scripted drags. Call it in a component's `setup` under a `<DnDProvider>`.
+ */
+export function useDnDActions(): DnDActions {
+  const provider = useDnDContext();
+  let actions = providers.get(provider);
+  if (actions) return actions;
+  const sensor: { context?: SensorContext } = {};
+  // The provider's one sensor for actions outlives the component that calls this first:
+  // a row with "move" buttons is re-created when its drag takes it to another list, and
+  // the drag must go on. It has no listeners to clean up; the provider's unmount ends
+  // any drag it runs. It never runs on the server.
+  effectScope(true).run(() =>
+    useSensor(
+      defineSensor({
+        name: 'actions',
+        setup: (context) => void (sensor.context = context),
+      }),
+    ),
+  );
+  actions = sensor.context ? createDnDActions(sensor.context) : serverActions;
+  providers.set(provider, actions);
+  return actions;
 }

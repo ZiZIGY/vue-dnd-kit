@@ -70,10 +70,34 @@ if (drag) {
   keyboard.
 - `moveTo` resolves once the move has rendered. `drop` resolves once the drop has landed.
 
+## A sensor of your own
+
+`useDnDActions()` drives drags through one sensor per provider, named `actions`. `createDnDActions(context)` gives
+the same actions over a sensor you run yourself. Its drags carry that sensor's name (the devtools timeline shows
+it), and the actions work from outside the provider's components: a store, a test harness. The inspector of
+`@vue-dnd-kit/devtools` drives its drags this way.
+
+```ts
+import { defineSensor } from '@vue-dnd-kit/core';
+import { createDnDActions, type DnDActions } from '@vue-dnd-kit/actions';
+
+export let tour: DnDActions | undefined;
+
+export const tourSensor = defineSensor({
+  name: 'tour',
+  setup: (context) => void (tour = createDnDActions(context)),
+});
+```
+
+Run the sensor in the provider: `<DnDProvider :sensors="[pointerSensor, keyboardSensor, tourSensor]">`, or
+`useSensor(tourSensor)` in a component under it. Each actions object queues its own `moveItem` calls; a move waits
+for any drag of the provider to end first, whichever sensor started it.
+
 ## API
 
 ```ts
 function useDnDActions(): DnDActions;
+function createDnDActions(context: SensorContext): DnDActions;
 
 interface DnDActions {
   moveItem(id: Key, to: SortablePosition): Promise<boolean>;

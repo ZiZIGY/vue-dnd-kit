@@ -1,9 +1,10 @@
-import { createApp, defineComponent, h, nextTick, ref, toRef, useTemplateRef, type PropType, type Ref } from 'vue';
+import { createApp, defineComponent, effectScope, h, nextTick, ref, toRef, useTemplateRef, type PropType, type Ref } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AcceptRule, Coordinates, Rect, Sensor, SensorContext } from '../types';
 import { containsPoint, createRect } from '../animation/layout';
 import { DnDProvider } from '../core/DnDProvider';
-import { useManager } from '../core/context';
+import { provideDnDContext, useManager } from '../core/context';
+import { useSensor } from '../core/sensors/host';
 import type { DnDManager } from '../core/manager';
 import { makeDraggable } from '../core/makeDraggable';
 import { makeDroppable } from '../core/makeDroppable';
@@ -424,6 +425,30 @@ describe('actions', () => {
     expect(manager.selection.size).toBe(0);
     await drag('a1', at(0, 0), at(0, 2, 0.75));
     provider!.cancel();
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+  });
+
+  it("hand out the provider's context: a sensor runs in it from outside its components", async () => {
+    const events = connect();
+    mount();
+    await nextTick();
+    const [provider] = bridge!.providers();
+    // What the plugin does: an app that is never mounted provides it to `useSensor`.
+    const holder = createApp({});
+    provideDnDContext(holder, provider!.context);
+    let context!: SensorContext;
+    const scope = effectScope(true);
+    scope.run(() => holder.runWithContext(() => useSensor({ name: 'devtools', setup: (sensorContext) => void (context = sensorContext) })));
+    const started = context.activate({ target: 'a1', type: 'keyboard' })!;
+    expect(manager.active.value?.id).toBe('a1');
+    expect(await started.place({ index: 2 })).toBe(true);
+    expect(await started.drop()).toBe(true);
+    expect(listItems.value.map((item) => item.id)).toEqual(['a2', 'a3', 'a1']);
+    expect(events.find((event) => event.type === 'start')).toMatchObject({ sensor: { name: 'devtools' } });
+    // Stopped with its scope, like any sensor: its drag is cancelled.
+    const next = context.activate({ target: 'a2', type: 'keyboard' })!;
+    scope.stop();
+    expect(next.state).toBe('ended');
     await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
   });
 });

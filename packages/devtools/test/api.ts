@@ -21,6 +21,16 @@ export interface FakeDevtools {
   tree(filter?: string): InspectorNode[];
   /** The state of a node, as the DevTools ask for it when it is selected. */
   state(nodeId: string): InspectorState | null;
+  /**
+   * Edits a field of a node's state, as the DevTools send it: `path` from the field's key
+   * down (`['position']`, `['position', 'index']`). Their `type` is the field's
+   * `stateType`, which the plugin's fields don't have.
+   */
+  edit(nodeId: string, path: string[], value: unknown): void;
+  /** Clicks a button above the tree (`actions`), by its icon: resolves once its command is done. */
+  action(icon: string): Promise<void>;
+  /** Clicks a button of the selected node (`nodeActions`), by its icon: resolves once its command is done. */
+  nodeAction(icon: string, nodeId: string): Promise<void>;
 }
 
 /** The plugin's registrations so far: descriptor and setup function. */
@@ -45,6 +55,16 @@ export const open = (app: App): FakeDevtools => {
       handlers.get('state')!(payload as never);
       return payload.state;
     },
+    edit(nodeId: string, path: string[], value: unknown) {
+      const state = { newKey: null, value, type: typeof value, remove: false };
+      handlers.get('edit')!({ app, inspectorId: 'vue-dnd-kit', nodeId, type: undefined, path, state, set: () => {} } as never);
+    },
+    async action(icon: string) {
+      await devtools.inspector.actions!.find((action) => action.icon === icon)!.action();
+    },
+    async nodeAction(icon: string, nodeId: string) {
+      await devtools.inspector.nodeActions!.find((action) => action.icon === icon)!.action(nodeId);
+    },
   } as unknown as FakeDevtools;
   const api = {
     addInspector: (options: InspectorOptions) => (devtools.inspector = options),
@@ -56,6 +76,7 @@ export const open = (app: App): FakeDevtools => {
     on: {
       getInspectorTree: (handler: Handler) => handlers.set('tree', handler),
       getInspectorState: (handler: Handler) => handlers.set('state', handler),
+      editInspectorState: (handler: Handler) => handlers.set('edit', handler),
     },
   };
   call[1](api as unknown as DevtoolsApi);
