@@ -2,12 +2,13 @@
  * A provider with a plain draggable, a drop target, a sortable list and a tree, mounted
  * in happy-dom with the layout it lacks: containers (`data-col`) sit side by side 300px
  * apart, their children stack 40px high. List `a` is column 0, tree `t` column 1, the
- * drop target `trash` column 2 and the draggable `chip` column 3.
+ * drop target `trash` column 2, the draggable `chip` column 3 and list `b` (in the group of
+ * `a`, when asked for) column 4.
  *
  * Drags are driven through the provider's manager, as the core's own tests do.
  */
 
-import { createApp, defineComponent, h, nextTick, ref, useTemplateRef, type App, type Plugin } from 'vue';
+import { createApp, defineComponent, h, nextTick, ref, useTemplateRef, type App, type Plugin, type Ref } from 'vue';
 import { expect, vi } from 'vitest';
 import {
   DnDProvider,
@@ -59,17 +60,22 @@ const Row = defineComponent({
 export interface FixtureOptions {
   /** Options of list `a` on top of its items. */
   list?: Partial<SortableListOptions<{ id: string }>>;
+  /** Adds list `b` (`b1`, `b2`) to the group of list `a`, in column 4. */
+  second?: boolean;
 }
 
 export interface Fixture {
   app: App;
   manager: DnDManager;
+  /** The ids of a list's items, in order. */
+  order(list: 'a' | 'b'): string[];
   unmount(): void;
 }
 
-/** The mounted board's manager and list options. */
+/** The mounted board's manager, its lists' items and options. */
 let manager: DnDManager;
-let listOptions: FixtureOptions['list'] = {};
+let options: FixtureOptions = {};
+const lists = new Map<string, Ref<Array<{ id: string }>>>();
 
 // Components defined once: inline ones would be new types on every render of the
 // provider's slot, and remount.
@@ -82,14 +88,18 @@ const Probe = defineComponent({
 });
 
 const List = defineComponent({
-  setup() {
+  props: { listId: { type: String, required: true }, column: { type: Number, required: true } },
+  setup(props) {
+    const source = ref([1, 2, 3].slice(0, props.listId === 'a' ? 3 : 2).map((n) => ({ id: `${props.listId}${n}` })));
+    lists.set(props.listId, source);
     const { items } = makeSortableList(useTemplateRef<HTMLElement>('list'), {
-      id: 'a',
+      id: props.listId,
       group: 'cards',
-      items: ref(['a1', 'a2', 'a3'].map((id) => ({ id }))),
-      ...listOptions,
+      items: source,
+      ...(props.listId === 'a' ? options.list : {}),
     });
-    return () => h('ul', { ref: 'list', 'data-col': 0 }, items.value.map((item) => h(Row, { key: item.id, rowId: item.id })));
+    return () =>
+      h('ul', { ref: 'list', 'data-col': props.column }, items.value.map((item) => h(Row, { key: item.id, rowId: item.id })));
   },
 });
 
@@ -114,12 +124,19 @@ const Zones = defineComponent({
 const Board = defineComponent({
   name: 'Board',
   setup: () => () =>
-    h(DnDProvider, { animation: false, dropAnimation: false }, () => [h(Probe), h(List), h(Tree), h(Zones)]),
+    h(DnDProvider, { animation: false, dropAnimation: false }, () => [
+      h(Probe),
+      h(List, { listId: 'a', column: 0 }),
+      h(Tree),
+      h(Zones),
+      ...(options.second ? [h(List, { listId: 'b', column: 4 })] : []),
+    ]),
 });
 
 /** Mounts the board; `install` runs on the app before it mounts (`app.use`). */
-export const mountBoard = async (options: FixtureOptions = {}, install?: Plugin): Promise<Fixture> => {
-  listOptions = options.list ?? {};
+export const mountBoard = async (fixtureOptions: FixtureOptions = {}, install?: Plugin): Promise<Fixture> => {
+  options = fixtureOptions;
+  lists.clear();
   const container = document.createElement('div');
   document.body.appendChild(container);
   const app = createApp(Board);
@@ -136,6 +153,7 @@ export const mountBoard = async (options: FixtureOptions = {}, install?: Plugin)
   return {
     app,
     manager,
+    order: (list) => lists.get(list)!.value.map((item) => item.id),
     unmount() {
       app.unmount();
       container.remove();

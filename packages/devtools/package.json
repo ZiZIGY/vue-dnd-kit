@@ -79,7 +79,8 @@
       "import": "{ DnDDevtools }",
       "ignore": [
         "vue",
-        "@vue-dnd-kit/core"
+        "@vue-dnd-kit/core",
+        "@vue-dnd-kit/actions"
       ],
       "gzip": true,
       "limit": "300 B"
@@ -90,7 +91,8 @@
       "import": "*",
       "ignore": [
         "vue",
-        "@vue-dnd-kit/core"
+        "@vue-dnd-kit/core",
+        "@vue-dnd-kit/actions"
       ],
       "gzip": true,
       "limit": "100 B"
@@ -101,6 +103,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "peerDependencies": {
+    "@vue-dnd-kit/actions": "^3.0.0",
     "@vue-dnd-kit/core": "^3.0.0",
     "vue": "^3.5.0"
   },

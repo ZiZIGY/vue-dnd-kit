@@ -8,7 +8,7 @@
  */
 
 import { effectScope, getCurrentInstance, watch, type ComponentInternalInstance, type EffectScope } from 'vue';
-import type { DnDEvent, DnDMonitor, Key, Sensor } from '../types';
+import type { DnDContext, DnDEvent, DnDMonitor, Key, Sensor } from '../types';
 import type { DnDManager } from '../core/manager';
 import type { GroupContext } from '../sortable/context';
 import { snapshotActive, snapshotOver, snapshotProvider } from './snapshot';
@@ -68,6 +68,8 @@ export function createProviderRecord(
     id: `provider-${++providers}`,
     label: labelOf(instance),
     app: instance?.appContext.app ?? null,
+    // What `useDnDContext()` hands out: the manager, opaque.
+    context: manager as unknown as DnDContext,
     snapshot() {
       // Released groups (their last list unmounted) are done.
       for (const [g, stop] of groups) {

@@ -14,6 +14,7 @@ import type {
   SessionSnapshot,
 } from '@vue-dnd-kit/core/devtools';
 import { acceptLabel, capped, elementValue, fields, keyLabel, type InspectorState } from './format';
+import { positionOf, type ItemPosition } from './moves';
 import type { NodeRef } from './tree';
 
 export interface NodeState {
@@ -90,7 +91,14 @@ const sessionState = (session: SessionSnapshot, groups: GroupSnapshot[]): Inspec
 
 // ─── Registry ──────────────────────────────────────────────────────────────────
 
-const draggableState = (entry: DraggableSnapshot): NodeState => ({
+/**
+ * Where an item of a sortable list is, editable: an edit moves it there by a drag
+ * (`plugin.ts`, `editedMove`). Its index has + and − buttons in the DevTools.
+ */
+const moveState = (position: ItemPosition | null): InspectorState =>
+  position ? { move: [{ key: 'position', value: { list: position.list, index: position.index }, editable: true }] } : {};
+
+const draggableState = (entry: DraggableSnapshot, position: ItemPosition | null): NodeState => ({
   state: {
     draggable: fields({
       id: entry.id,
@@ -101,6 +109,7 @@ const draggableState = (entry: DraggableSnapshot): NodeState => ({
       list: entry.list,
       handle: elementValue(entry.handle),
     }),
+    ...moveState(position),
     data: fields({ data: entry.data }),
     element: fields({ element: elementValue(entry.element) }),
   },
@@ -180,7 +189,7 @@ export const nodeState = (ref: NodeRef, snapshot: ProviderSnapshot): NodeState =
       return none({ lists: snapshot.groups.flatMap((group) => group.lists.map((list) => ({ key: keyLabel(list.id), value: group.name }))) });
     case 'draggable': {
       const entry = find(snapshot.draggables);
-      return entry ? draggableState(entry) : gone('draggable');
+      return entry ? draggableState(entry, positionOf(snapshot, entry.id)) : gone('draggable');
     }
     case 'droppable': {
       const entry = find(snapshot.droppables);

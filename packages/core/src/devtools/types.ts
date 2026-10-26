@@ -9,6 +9,7 @@ import type {
   AcceptMode,
   AcceptRule,
   Coordinates,
+  DnDContext,
   DnDStatus,
   DragMode,
   DropOutside,
@@ -285,6 +286,11 @@ export interface DevtoolsProvider {
   readonly label: string;
   /** The app the provider renders in. */
   readonly app: App | null;
+  /**
+   * The provider's handle (`useDnDContext()`): with `provideDnDContext`, a sensor runs in
+   * it from outside its components (the plugin's drags from the inspector).
+   */
+  readonly context: DnDContext;
   /** Everything the provider knows, now. */
   snapshot(): ProviderSnapshot;
   /** Cancels the current drag (or a press that is activating, a running rubber band). */

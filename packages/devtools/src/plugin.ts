@@ -8,11 +8,14 @@
 
 import type { App } from 'vue';
 import { setupDevtoolsPlugin } from '@vue/devtools-api';
+import type { SensorDirection } from '@vue-dnd-kit/core';
 import { connectDevtools, type DevtoolsBridge, type DevtoolsEvent, type DevtoolsProvider } from '@vue-dnd-kit/core/devtools';
 import { buildTree, type InspectorTree, type NodeRef } from './tree';
 import { nodeState } from './state';
 import { timelineEntries, type DragContext } from './timeline';
 import { highlight, reveal } from './highlight';
+import { editedMove, MOVES, resolveMove, type MoveTarget } from './moves';
+import type { Drive } from './drive';
 import { COLORS, keyLabel, type DevtoolsApi } from './format';
 
 export const PLUGIN_ID = 'dev.vue-dnd-kit';
@@ -59,12 +62,36 @@ const connect = (api: DevtoolsApi, app: App, bridge: DevtoolsBridge) => {
   /** The node whose element was highlighted: refreshes of its state don't flash it again. */
   let highlighted: string | null = null;
 
+  /** What a node stands for; asked before the tree was too (the DevTools keep the selection across reloads). */
+  const refOf = (nodeId: string) => tree.nodes.get(nodeId) ?? (tree = buildTree(shown())).nodes.get(nodeId);
+
   const stateOf = (nodeId: string) => {
-    let ref = tree.nodes.get(nodeId);
-    // Asked before the tree was (the DevTools keep the selection across reloads).
-    if (!ref) ref = (tree = buildTree(shown())).nodes.get(nodeId);
+    const ref = refOf(nodeId);
     return ref && { ref, ...nodeState(ref, ref.provider.snapshot()) };
   };
+
+  // ─── Drags from the inspector ────────────────────────────────────────────────
+
+  /** The inspector's drags (`drive.ts`), loaded on the first command. */
+  let drive: Promise<Drive> | null = null;
+  const loadDrive = () => (drive ??= import('./drive').then(({ createDrive }) => createDrive()));
+  /** The draggable (or sortable item) a node stands for. */
+  const itemOf = (nodeId: string) => {
+    const ref = refOf(nodeId);
+    return ref?.kind === 'draggable' ? ref : null;
+  };
+  /** Moves the item of a node, from where it is when the move's turn comes; other nodes have none to move. */
+  const move = (target: MoveTarget) => async (nodeId: string) => {
+    const item = itemOf(nodeId);
+    if (!item) return;
+    await (await loadDrive()).move(item.provider, item.id, () => resolveMove(item.provider.snapshot(), item.id, target));
+  };
+  /** For the drag of every provider shown (one drags, as a rule). */
+  const each = (command: (loaded: Drive, provider: DevtoolsProvider) => Promise<unknown>) => async () => {
+    const loaded = await loadDrive();
+    await Promise.all(shown().map((provider) => command(loaded, provider)));
+  };
+  const step = (direction: SensorDirection) => each((loaded, provider) => loaded.step(provider, direction));
 
   api.addInspector({
     id: INSPECTOR_ID,
@@ -75,6 +102,11 @@ const connect = (api: DevtoolsApi, app: App, bridge: DevtoolsBridge) => {
     actions: [
       { icon: 'cancel', tooltip: 'Cancel the current drag', action: () => shown().forEach((provider) => provider.cancel()) },
       { icon: 'deselect', tooltip: 'Clear the selection', action: () => shown().forEach((provider) => provider.clearSelection()) },
+      { icon: 'keyboard_arrow_up', tooltip: 'Step the current keyboard drag up', action: step('up') },
+      { icon: 'keyboard_arrow_down', tooltip: 'Step the current keyboard drag down', action: step('down') },
+      { icon: 'keyboard_arrow_left', tooltip: 'Step the current keyboard drag left', action: step('left') },
+      { icon: 'keyboard_arrow_right', tooltip: 'Step the current keyboard drag right', action: step('right') },
+      { icon: 'file_download_done', tooltip: 'Drop the current drag', action: each((loaded, provider) => loaded.drop(provider)) },
     ],
     nodeActions: [
       {
@@ -83,6 +115,18 @@ const connect = (api: DevtoolsApi, app: App, bridge: DevtoolsBridge) => {
         action: (nodeId) => {
           const found = stateOf(nodeId);
           if (found) reveal(found.element, nodeLabel(found.ref));
+        },
+      },
+      { icon: 'arrow_upward', tooltip: 'Move up: an item of a sortable list, by a drag', action: move(MOVES.up) },
+      { icon: 'arrow_downward', tooltip: 'Move down: an item of a sortable list, by a drag', action: move(MOVES.down) },
+      { icon: 'vertical_align_top', tooltip: 'Move to the start of its list, by a drag', action: move(MOVES.start) },
+      { icon: 'vertical_align_bottom', tooltip: 'Move to the end of its list, by a drag', action: move(MOVES.end) },
+      {
+        icon: 'open_with',
+        tooltip: 'Pick it up for a keyboard drag: step it, drop it or cancel it with the buttons above the tree',
+        action: async (nodeId) => {
+          const item = itemOf(nodeId);
+          if (item) (await loadDrive()).start(item.provider, item.id);
         },
       },
     ],
@@ -103,6 +147,13 @@ const connect = (api: DevtoolsApi, app: App, bridge: DevtoolsBridge) => {
     if (payload.nodeId === highlighted) return;
     highlighted = payload.nodeId;
     highlight(found.element, nodeLabel(found.ref));
+  });
+
+  // An edit of an item's `position` moves it there: the state follows once it has.
+  api.on.editInspectorState((payload) => {
+    if (!asked(payload) || payload.type !== 'move' || payload.state.remove || payload.state.newKey) return;
+    const target = editedMove(payload.path, payload.state.value);
+    if (target) void move(target)(payload.nodeId);
   });
 
   // ─── Updates ─────────────────────────────────────────────────────────────────
@@ -133,6 +184,7 @@ const connect = (api: DevtoolsApi, app: App, bridge: DevtoolsBridge) => {
     },
     removed: (provider) => {
       drags.delete(provider);
+      void drive?.then((loaded) => loaded.forget(provider));
       if (ours(provider)) refresh(true);
     },
     event: (provider, event) => {
@@ -159,6 +211,7 @@ const connect = (api: DevtoolsApi, app: App, bridge: DevtoolsBridge) => {
   app.onUnmount(() => {
     clearInterval(poll);
     unsubscribe();
+    void drive?.then((loaded) => loaded.stop());
   });
 };
 

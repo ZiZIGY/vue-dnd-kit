@@ -37,8 +37,8 @@ export default defineConfig({
       fileName: (format, name) => `${name}.${format === 'es' ? 'js' : 'cjs'}`,
     },
     rollupOptions: {
-      // The core (and its bridge) and the DevTools API come from the app.
-      external: ['vue', /^@vue\/devtools-api/, /^@vue-dnd-kit\/core/],
+      // The core (and its bridge), the actions and the DevTools API come from the app.
+      external: ['vue', /^@vue\/devtools-api/, /^@vue-dnd-kit\/(core|actions)/],
     },
     target: 'es2022',
     sourcemap: true,
