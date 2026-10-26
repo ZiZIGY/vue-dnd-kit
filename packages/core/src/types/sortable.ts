@@ -5,6 +5,7 @@ import type {
   ActivationOptions,
   Key,
   MaybeElement,
+  MaybeElementRef,
   MaybePromise,
   MaybeReadonlyRef,
   MaybeReadonlyRefOrGetter,
@@ -205,6 +206,12 @@ export interface SortableListOptions<T> {
   animate?: MaybeReadonlyRefOrGetter<AutoAnimation | undefined>;
   /** Overrides the provider's `autoScroll` for this list's scroll container. Read when the drag starts. */
   autoScroll?: MaybeReadonlyRefOrGetter<boolean | AutoScrollOptions | undefined>;
+  /**
+   * The element that takes drops for the list, default the list element itself: e.g. the
+   * whole column around a short list of cards, so a card let go below the last one still
+   * lands in the list (at its end). The items stay in the list element.
+   */
+  dropzone?: MaybeElementRef;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
   /**
    * Asked before a drop into this list, and before `dropOutside: 'remove'` takes its items

@@ -174,7 +174,8 @@ export function makeSortableList<T>(
   onScopeDispose(manager.registerAutoScroll(entry.getElement, () => read(options.autoScroll)));
 
   const droppable = createDroppable(
-    target,
+    // The list takes drops in its `dropzone` (a column around it), else in its element.
+    () => toElement(options.dropzone) ?? toElement(target),
     // Lists the current drag can never enter are not drop targets at all: in nested
     // sortables a column dragged over another column must reach the columns list,
     // not stop at the inner card list it happens to be over.

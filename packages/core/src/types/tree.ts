@@ -1,7 +1,7 @@
 /** `makeSortableTree`. */
 
 import type { Component, ComputedRef } from 'vue';
-import type { Key, MaybePromise, MaybeReadonlyRef, MaybeReadonlyRefOrGetter, Size } from './primitives';
+import type { Key, MaybeElementRef, MaybePromise, MaybeReadonlyRef, MaybeReadonlyRefOrGetter, Size } from './primitives';
 import type { AcceptMode, Active, BeforeDropResult } from './drag';
 import type { AutoAnimation, LayoutAnimation } from './animation';
 import type { Modifier } from './collision';
@@ -152,6 +152,8 @@ export interface SortableTreeOptions<T> {
   animate?: MaybeReadonlyRefOrGetter<AutoAnimation | undefined>;
   /** Overrides the provider's `autoScroll` for this tree's scroll container. Read when the drag starts. */
   autoScroll?: MaybeReadonlyRefOrGetter<boolean | AutoScrollOptions | undefined>;
+  /** As in `SortableListOptions`: the element that takes drops for the tree, default the tree's own. */
+  dropzone?: MaybeElementRef;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
   /** As in `SortableListOptions`. */
   onBeforeDrop?: (

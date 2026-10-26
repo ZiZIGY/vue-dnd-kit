@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { ref, shallowRef } from 'vue';
   import KanbanColumn from '../components/KanbanColumn.vue';
   import type { Column } from '../types';
 
@@ -16,16 +16,31 @@
     },
     { id: 'done', title: 'Done', tasks: [] },
   ]);
+
+  // Tall columns that take drops anywhere in their height (the lists' `dropzone`).
+  const wholeColumns = shallowRef(false);
 </script>
 
 <template>
   <section>
     <h2>Kanban</h2>
-    <div class="board">
+    <label>
+      <input
+        v-model="wholeColumns"
+        type="checkbox"
+        data-testid="whole-columns"
+      />
+      Tall columns that take drops anywhere (dropzone)
+    </label>
+    <div
+      class="board"
+      :class="{ tall: wholeColumns }"
+    >
       <KanbanColumn
         v-for="column in columns"
         :key="column.id"
         :column="column"
+        :whole-column="wholeColumns"
       />
     </div>
     <pre data-testid="board">{{

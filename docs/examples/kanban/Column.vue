@@ -6,17 +6,20 @@ import Card from './Card.vue';
 type Task = { id: string; title: string; tag: string };
 const props = defineProps<{ column: { id: string; title: string; color: string; cards: Task[] } }>();
 
+const zone = useTemplateRef<HTMLElement>('zone');
 const list = useTemplateRef<HTMLElement>('list');
 // Lists with the same `group` exchange items. The drop is written into `column.cards`.
+// `dropzone`: the whole column takes drops, below the last card too.
 const { items, isOver } = makeSortableList(list, {
   id: props.column.id,
   items: toRef(props.column, 'cards'),
   group: 'board',
+  dropzone: zone,
 });
 </script>
 
 <template>
-  <section class="column" :class="{ over: isOver }">
+  <section ref="zone" class="column" :class="{ over: isOver }">
     <h3>
       <span class="dot" :style="{ background: column.color }" />
       <span class="title">{{ column.title }}</span>
@@ -69,10 +72,8 @@ h3 {
   font: 11px/1 ui-monospace, Menlo, Consolas, monospace;
 }
 
-/* The list fills the column: a card dropped low in the column still lands in it. */
 .cards {
   display: flex;
-  flex: 1;
   flex-direction: column;
   gap: 8px;
   min-height: 160px;

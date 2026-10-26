@@ -128,7 +128,8 @@ export function makeSortableTree<T>(
   // ─── Droppable, context, output ──────────────────────────────────────────────
 
   const droppable = createDroppable(
-    target,
+    // As lists: its `dropzone`, else its element.
+    () => toElement(options.dropzone) ?? toElement(target),
     // Trees the current drag can never enter (a plain draggable without `createItem`)
     // are no drop targets, as lists.
     { id, disabled: () => !!read(options.disabled) || group.isInert(entry) },

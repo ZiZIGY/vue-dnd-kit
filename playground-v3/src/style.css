@@ -65,6 +65,18 @@ main {
   margin: 0 0 8px;
 }
 
+/* Columns taller than their lists, taking drops anywhere (`dropzone`). */
+.board.tall {
+  align-items: stretch;
+}
+
+.board.tall > div {
+  min-height: 320px;
+  padding: 8px;
+  border: 1px dashed #d1d5db;
+  border-radius: 8px;
+}
+
 pre {
   font-size: 12px;
   color: #6b7280;
