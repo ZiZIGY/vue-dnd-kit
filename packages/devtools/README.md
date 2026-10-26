@@ -1,8 +1,8 @@
 # @vue-dnd-kit/devtools
 
-A [Vue DevTools](https://devtools.vuejs.org/) plugin for [Vue DnD Kit](https://github.com/zizigy/vue-dnd-kit) v3: see what every `DnDProvider` knows, and what happened in each drag.
+DevTools for [Vue DnD Kit](https://github.com/zizigy/vue-dnd-kit) v3: a **Vue DnD Kit** tab in the [Nuxt DevTools](https://devtools.nuxt.com/) and in the [Vue DevTools](https://devtools.vuejs.org/) of `vite-plugin-vue-devtools`. Drag any item from it with a joystick, watch every list, tree and drop target live in a mini-map, edit the options of the providers, lists and items while the app runs, read what each provider knows, and follow the drags in a log.
 
-<!-- TODO screenshot: the "Vue DnD Kit" inspector with a provider expanded, and its timeline layer. -->
+<!-- TODO screenshot: the tab in the Vue DevTools during a drag (mini-map, joystick, overlay preview). -->
 > _Screenshot coming soon._
 
 ## Install
@@ -11,9 +11,35 @@ A [Vue DevTools](https://devtools.vuejs.org/) plugin for [Vue DnD Kit](https://g
 npm i -D @vue-dnd-kit/devtools @vue-dnd-kit/actions
 ```
 
-Peer dependencies: `vue ^3.5`, `@vue-dnd-kit/core ^3` and [`@vue-dnd-kit/actions`](https://www.npmjs.com/package/@vue-dnd-kit/actions) `^3` (the inspector drags through it; npm 7+ and pnpm install peer dependencies themselves, with Yarn 1 add it). The plugin talks to the DevTools through [`@vue/devtools-api`](https://www.npmjs.com/package/@vue/devtools-api) v8, which comes with it.
+Peer dependencies: `vue ^3.5`, `@vue-dnd-kit/core ^3` and [`@vue-dnd-kit/actions`](https://www.npmjs.com/package/@vue-dnd-kit/actions) `^3` (the tab's moves go through it; npm 7+ and pnpm install peer dependencies themselves, with Yarn 1 add it). The tab is a prebuilt page that the package ships: the dev server serves it next to your app.
 
-### `app.use()`
+### Vite
+
+Add the plugin next to [`vite-plugin-vue-devtools`](https://devtools.vuejs.org/guide/vite-plugin):
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import vueDevTools from 'vite-plugin-vue-devtools';
+import { vueDnDKitDevtools } from '@vue-dnd-kit/devtools/vite';
+
+export default defineConfig({
+  plugins: [vueDevTools(), vueDnDKitDevtools(), vue()],
+});
+```
+
+It works on the dev server only (`vite serve`; builds are untouched): it serves the tab at `/__vue-dnd-kit-devtools/` (under your `base`), adds it to the Vue DevTools, and makes the page report to it before your app starts. Nothing else to install in the app.
+
+With `vueDnDKitDevtools({ inject: false })` the page doesn't report by itself: install its side yourself (below). The same for pages Vite doesn't serve from an `index.html` (SSR frameworks).
+
+### Nuxt
+
+With [`@vue-dnd-kit/nuxt`](https://www.npmjs.com/package/@vue-dnd-kit/nuxt) in `modules`, there is nothing to configure: in development the module finds the package, serves the tab, adds it to the Nuxt DevTools and installs the page's side with a client plugin (`vueDndKit.devtools: false` turns it off).
+
+### Without the plugins
+
+The page's side alone, for a dev server of your own that serves the tab (`serveTab()` of `@vue-dnd-kit/devtools/vite` is its middleware):
 
 ```ts
 import { createApp } from 'vue';
@@ -25,90 +51,59 @@ app.use(DnDDevtools); // before mount: providers set up earlier aren't seen
 app.mount('#app');
 ```
 
-### Automatic
-
-Import it first in your entry file: every app a `DnDProvider` renders in gets the plugin, without `app.use()`.
-
-```ts
-import '@vue-dnd-kit/devtools/auto';
-```
-
-`setupDnDDevtools(app)` and `autoSetupDnDDevtools()` do the same as functions.
+Or first in the entry file, without `app.use()`: `import '@vue-dnd-kit/devtools/auto';`. `setupDnDDevtools(app)` and `autoSetupDnDDevtools()` do the same as functions. Every provider of the page shows, whichever app it renders in.
 
 ### Production
 
-The plugin does nothing in production builds: every entry point checks `process.env.NODE_ENV` first, so bundlers drop the plugin and `@vue/devtools-api` with it (what is left of `app.use(DnDDevtools)` is under 0.2 KB gzipped). It also does nothing on the server. To leave even that out, install it only in development:
-
-```ts
-if (import.meta.env.DEV) app.use(DnDDevtools);
-```
+Nothing of it reaches production builds: the Vite plugin and the Nuxt module only act on the dev server, and every entry point of the page's side checks `process.env.NODE_ENV` first, so bundlers drop it (what is left of `app.use(DnDDevtools)` is under 0.1 KB gzipped). It also does nothing on the server.
 
 ## Open it
 
-Run the app in development and open the Vue DevTools: the [browser extension](https://devtools.vuejs.org/getting-started/installation) or [`vite-plugin-vue-devtools`](https://devtools.vuejs.org/guide/vite-plugin) (<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>). The DevTools set plugins up once their panel is open; from then on the plugin follows the drags. It adds:
+Run the app in development:
 
-### The "Vue DnD Kit" inspector
+- **Vue DevTools** (`vite-plugin-vue-devtools`): <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>, or the Vue button at the bottom of the page, then the **Vue DnD Kit** tab in the sidebar.
+- **Nuxt DevTools**: <kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>D</kbd>, or the Nuxt button, then the **Vue DnD Kit** tab (in the sidebar, or its overflow menu).
+- **A window of its own**: open `http://localhost:5173/__vue-dnd-kit-devtools/` (your dev server's address), or the ⧉ button of the tab. Handy next to the app on a second screen.
 
-Every provider, as `DnDProvider · <the component that renders it>`, with:
+The tab talks to the page over a `BroadcastChannel` of the page's origin: in the DevTools it watches the page around it; in a window of its own the page that announced itself last (a select chooses among several open pages). Theme: the DevTools' (light or dark), the system's in a window; ◐ switches.
 
-- **Drag session**: status, the active ids, items and type, the sensor, the target it is over (and whether it accepts), the pointer and the overlay offset, the mode (`move`, `copy`, `swap`, `insert`), the landing key, the overlay's fit size and the drop target while the overlay lands; the session of the sortable group (origin, slot, block, swap partner, insertion line).
-- **Selection**: the selected ids.
-- **Draggables**: id, type, disabled, selected, dragging, handle, data and element.
-- **Drop targets**: id, `accept` rule and `acceptMode`, priority, disabled, and during a drag whether it is under the pointer and whether it takes the dragged items.
-- **Sortable lists and trees**: id, group, `strategy`, `placeholder`, `behavior`, `multiple`, `pull`, `sort`, `dropOutside`, `acceptMode`, whether `items` is read-only (controlled), the item count, the keys and the draft order during a drag; their mounted items are the nodes below them.
+## What it does
 
-Selecting a node highlights its element on the page; the node action (⌖) scrolls it into view first. The filter searches ids. The inspector's actions cancel the current drag and clear the selection.
+### Drive: the joystick
 
-Items mount and unmount without events: the tree catches up within a second.
+Choose an item (click it in the mini-map or the tree, or **Pick** on the page: the next press on a draggable chooses it, instead of doing what it does), then push the joystick's knob: the item is picked up and moves that way, faster the farther the knob is from the center, like a gamepad's stick. Let go and it stops; **Drop** or **Cancel** end the drag. It is a real pointer drag of a sensor named `devtools`, through the core's public sensor API (`useSensor`, `SensorContext.activate`, `SensorDrag.move/drop/cancel`): lists sort under it, containers auto-scroll at their edges, the overlay, the animations, the announcements and the drop pipeline (`onBeforeDrop`, `onDrop`, `event.result`, `preventDefault()`) run as for any drag. Disabled items aren't picked up. A drag the page started (the keyboard's) can be steered too.
 
-### Drag from the inspector
-
-The inspector drags too, for real: through the core's public sensor API, the way [`@vue-dnd-kit/actions`](https://www.npmjs.com/package/@vue-dnd-kit/actions) does. So these drags animate, the live region announces them, and the drop goes through `onBeforeDrop`, `onDrop`, `event.result` and `preventDefault()` like any other. They run as keyboard drags of a sensor named `devtools`, which the timeline's `drag start` names: `a1 · devtools (keyboard) · from todo`.
-
-**Move an item of a sortable list.** Select the item in the tree. The buttons of the selected node:
-
-| Button | Does |
+| Key (in the tab) | Does |
 | --- | --- |
-| ↑ `arrow_upward` | moves it up one place in its list |
-| ↓ `arrow_downward` | moves it down one place |
-| ⤒ `vertical_align_top` | moves it to the start of its list |
-| ⤓ `vertical_align_bottom` | moves it to the end of its list |
+| <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> / <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> | push the knob that way (half tilt; with <kbd>Shift</kbd> to the rim) |
+| <kbd>G</kbd> | pick the chosen item up |
+| <kbd>Space</kbd> / <kbd>Enter</kbd> | drop |
+| <kbd>Esc</kbd> | cancel |
+| <kbd>P</kbd> | pick on the page |
 
-Each move is one drag (picked up, placed, dropped). Clicks in a row queue: each move starts from where the item is once the one before has landed.
+Items of sortable lists also move by buttons (up, down, to the start, to the end, to another list of the group), each in one keyboard drag made with [`@vue-dnd-kit/actions`](https://www.npmjs.com/package/@vue-dnd-kit/actions). Below the joystick, what the overlay shows, copied from the page.
 
-**Move it to another list, at an index.** The item's state has a `move` section with its `position`, `{ list, index }`, which you can edit:
+### The mini-map
 
-- Edit `position` as a whole: `{ "list": "done", "index": 0 }` puts it at the top of the list `done` (any list that takes it: same group, `put` rules). Leave `index` out for the end of the list.
-- Expand it and use the `+` / `−` buttons of `index` (down / up), or edit `index`: a new place in its list.
-- Edit `list` alone: the same index in another list.
+A live card per list, tree and drop target of the page (and one for the draggables outside them), with copies of their items where they are: the library's own clones of the elements (what the overlay would show), with the page's CSS. During a drag it shows the placeholder, the target under the pointer, the lists that accept the drag (blue) or refuse it (red), the pointer, the overlay's box and the insertion line of `placeholder: 'indicator'` lists. A click chooses an item (and highlights it on the page), a double click scrolls the page to it.
 
-Trees aren't moved this way (their positions have a depth too); pick their items up instead.
+### Options: live editing
 
-**Pick an item up and step it.** The ✥ (`open_with`) button of a draggable or sortable item (a tree's too) starts a keyboard drag of it. Then use the buttons above the tree:
+Every option that isn't a callback, editable while the app runs: the provider's (`overlayFit`, `autoScroll`, `collision`, `modifiers` — the library's, by name —, `animation`, `dropAnimation`, `animate`, `activation`, `keyboard`, `haptics`, `copyModifier`, …), a list's (`disabled`, `strategy`, `placeholder`, `behavior`, `multiple`, `sort`, `dropOutside`, `acceptMode`, `animation`, `animate`, `autoScroll`, `modifiers`), a tree's (`placeholder`, `indentation`, `nesting`, `maxDepth`, …), a drop target's (`disabled`, `priority`, `accept`, `acceptMode`) and an item's (`disabled`, `keyboard`, `activation`). Choose the node in the tree (or the item in the map) and open **Options**.
 
-| Button | Does |
-| --- | --- |
-| `keyboard_arrow_up` / `down` / `left` / `right` | one arrow step, as the arrow keys do (the next place in a list, the next column of a kanban, a tree's depth; `keyboard.step` pixels in a free drag) |
-| `file_download_done` | drops it |
-| `cancel` | cancels it: it flies back |
+An edit applies at once, to this page only, and is never written to your code: the core's devtools bridge reads the option's new value where the library reads it, until you reset it (↺ per option, **Reset all**), the provider unmounts or the page reloads. An edited option shows the code's value too. Items remounted while an edit is set (virtual lists) get it as well.
 
-The step and drop buttons work on any keyboard drag of the provider, whoever started it. One drag at a time: while one runs, nothing else is picked up, and moves wait until it has ended.
+### State
 
-The plugin loads this part on the first drag from the inspector. Production builds leave it out with the rest of the plugin.
+What each provider knows, as the tree on the left: its drag session, its lists and trees (their mounted items in the order shown), drop targets and plain draggables, with what a drag makes of them (over, accepts, refuses, the draft). **State** shows a node's details: the session (status, the active ids, items and sensor, the target and whether it accepts, the pointer, the overlay, the sortable group's session and insertion line), a list's order and draft, an item's type, data and position, a drop target's rule. Items mount and unmount without events: the tree catches up within a second.
 
-### The "Vue DnD Kit" timeline layer
+### Log
 
-Turn the layer on in the Timeline tab (the DevTools record a plugin's layer only when it is on). One group per drag: `drag start` (ids, the sensor that started it and whether by touch, the list it comes from), `over` and `left` (target changes, and whether the target accepts), `release`, `onBeforeDrop` (the verdict: accepted, accepted some, rejected by a hook, or refused by the target's `accept`, and how long the hooks took), `drop` (the target, and for sortable lists the move, `event.result` and whether `preventDefault()` was called) or `cancel` (and why), `announcement` (what the live region said) and `auto-scroll on` / `off`.
-
-Outside drags, `animate` logs the changes of a list's items that no drag made and that its `animate` option plays: items added, removed, reordered.
-
-## Several apps, shadow roots
-
-Each app with the plugin shows its own providers. A provider shared with an app mounted in a shadow root (`provideDnDContext`) is one provider: the items of both apps are in it, and their elements are highlighted where they are.
+What happened in each drag (one band per drag): `drag start` (ids, the sensor and whether by touch, the list it comes from), `over` and `left` (and whether the target accepts), `release`, `onBeforeDrop` (accepted, accepted some, rejected by a hook, refused by the target's `accept`, and how long the hooks took), `drop` (the target, and for sortable lists the move, `event.result` and whether `preventDefault()` was called) or `cancel` (and why), `announcement` (hidden by default), `auto-scroll on` / `off`, and outside drags `animate` (changes of a list's items that no drag made and its `animate` option plays). Click an entry for its data. A tab that opens later gets the drags so far.
 
 ## How it works
 
-Providers report to a hook the plugin installs (through the core's internal bridge, `@vue-dnd-kit/core/devtools`). Without the plugin nothing reports and nothing runs. With it, a provider is only recorded until the DevTools panel is open; from then on the plugin listens like any monitor, and reads snapshots. It changes nothing but what you ask it to (cancel, clear the selection, the drags above). Drags from the inspector use public API only: a sensor (`useSensor`) in the provider, with the actions of `createDnDActions` from `@vue-dnd-kit/actions`.
+Providers report to a hook that the page's side installs (the core's internal bridge, `@vue-dnd-kit/core/devtools`): without it nothing reports and nothing runs. Until a tab watches the page, providers are only recorded; then the page listens like any monitor, reads snapshots and sends the tab what it shows, paced (every 40 ms during a drag, twice a second otherwise), and stops once no tab has watched for a few seconds. It changes nothing but what you ask: the drags, the selection, the option overrides.
 
 ## License
 

@@ -3,9 +3,10 @@
    * The mini-map: a live card per list, tree and drop target of the page (and one for the
    * plain draggables outside them), in page order. Clicking an item chooses it (for the
    * joystick, the details, a highlight on the page); a double click scrolls the page to it.
+   * Clicking a card's title chooses its list or drop target.
    */
   import { computed } from 'vue';
-  import type { Key, NodeRef } from '../../src/protocol';
+  import type { Key, NodeRef, ZoneFrame } from '../../src/protocol';
   import { frame, select, send, store } from '../utils/connection';
   import ZoneCard from './ZoneCard.vue';
 
@@ -21,6 +22,10 @@
   };
 
   const node = (provider: string, id: Key): NodeRef => ({ provider, kind: 'draggable', id });
+
+  /** The zone itself: its options and state (a list or a drop target). */
+  const zoneNode = (zone: ZoneFrame): NodeRef | null =>
+    zone.id == null ? null : { provider: zone.provider, kind: zone.kind === 'droppable' ? 'droppable' : 'list', id: zone.id };
 </script>
 
 <template>
@@ -36,6 +41,7 @@
         :chosen="chosen(zone.provider)"
         @pick="(id) => select(node(zone.provider, id))"
         @open="(id) => send({ type: 'reveal', node: node(zone.provider, id) })"
+        @zone="select(zoneNode(zone))"
       />
     </div>
   </div>

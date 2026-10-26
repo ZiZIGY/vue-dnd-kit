@@ -11,7 +11,7 @@
   import { createRoot, fromHtml, release } from '../utils/shadow';
 
   const props = defineProps<{ zone: ZoneFrame; frame: MapFrame; chosen: Key | null }>();
-  const emit = defineEmits<{ pick: [id: Key]; open: [id: Key] }>();
+  const emit = defineEmits<{ pick: [id: Key]; open: [id: Key]; zone: [] }>();
 
   /** Tallest a card gets: a long list scrolls in it. */
   const MAX_HEIGHT = 260;
@@ -151,7 +151,7 @@
     :data-accepting="zone.accepting === null ? undefined : String(zone.accepting)"
     :data-testid="`zone-${zone.id ?? 'free'}`"
   >
-    <header>
+    <header :title="zone.id == null ? undefined : 'Its options and state'" @click="zone.id != null && emit('zone')">
       <span class="name mono">{{ title }}</span>
       <span class="chip">{{ zone.items.length }}</span>
       <span v-if="zone.over" class="chip green">over</span>
@@ -199,6 +199,10 @@
     padding: 3px 6px;
     background: var(--bg-soft);
     border-bottom: 1px solid var(--border);
+  }
+
+  header[title] {
+    cursor: pointer;
   }
 
   .name {

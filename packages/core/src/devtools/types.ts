@@ -330,7 +330,7 @@ export interface DevtoolsProvider {
   readonly app: App | null;
   /**
    * The provider's handle (`useDnDContext()`): with `provideDnDContext`, a sensor runs in
-   * it from outside its components (the plugin's drags from the inspector).
+   * it from outside its components (the drags of the devtools tab).
    */
   readonly context: DnDContext;
   /** Everything the provider knows, now. */

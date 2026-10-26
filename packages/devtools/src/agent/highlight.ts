@@ -1,8 +1,8 @@
 /**
  * Highlights an element on the page for a moment, with a label: the node chosen in the
- * tab, the draggable under the pointer while picking. One box in `<body>`, fixed over the element's rect
- * (shadow roots included); it takes no pointer events, so no drop target detection
- * (`elementFromPoint`) ever sees it.
+ * tab, the draggable under the pointer while picking. One box in `<body>`, fixed over the
+ * element's rect (shadow roots included); it takes no pointer events, so no drop target
+ * detection (`elementFromPoint`) ever sees it.
  */
 
 const SHOWN_FOR = 1600;
