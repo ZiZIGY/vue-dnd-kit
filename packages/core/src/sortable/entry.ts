@@ -38,6 +38,8 @@ export interface ListEntry {
   draft: ShallowRef<Key[] | null>;
   /** A flat list (`flatLayout`) or a tree. */
   layout: ListLayout;
+  /** The options it was made with, for the devtools (their live overrides). */
+  options?: object;
   strategy(): SortableStrategy;
   placeholder(): SortablePlaceholder;
   animation(): LayoutAnimation | undefined;

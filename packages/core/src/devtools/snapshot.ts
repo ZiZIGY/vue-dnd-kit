@@ -51,6 +51,7 @@ const snapshotSession = (manager: DnDManager): SessionSnapshot => {
     landings: [...manager.landings.value],
     fitSize: manager.fitSize.value,
     overlay: !!active && manager.hasOverlay,
+    overlayElement: manager.overlayElement.value,
     previews: [...manager.previewIds],
     settling: manager.settling.value,
     dropTarget: snapshotOver(manager.dropTarget.value),

@@ -20,6 +20,11 @@ export interface ModuleOptions {
   components?: boolean;
   /** What to auto-import; `false` turns auto-imports off. */
   autoImports?: AutoImportOptions | false;
+  /**
+   * The "Vue DnD Kit" tab in the Nuxt DevTools, in development, when the app has
+   * `@vue-dnd-kit/devtools` installed. Default `true`.
+   */
+  devtools?: boolean;
 }
 
 export interface ImportEntry {

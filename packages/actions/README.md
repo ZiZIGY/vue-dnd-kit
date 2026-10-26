@@ -73,9 +73,9 @@ if (drag) {
 ## A sensor of your own
 
 `useDnDActions()` drives drags through one sensor per provider, named `actions`. `createDnDActions(context)` gives
-the same actions over a sensor you run yourself. Its drags carry that sensor's name (the devtools timeline shows
-it), and the actions work from outside the provider's components: a store, a test harness. The inspector of
-`@vue-dnd-kit/devtools` drives its drags this way.
+the same actions over a sensor you run yourself. Its drags carry that sensor's name (the devtools log shows it),
+and the actions work from outside the provider's components: a store, a test harness. The tab of
+`@vue-dnd-kit/devtools` moves items this way.
 
 ```ts
 import { defineSensor } from '@vue-dnd-kit/core';

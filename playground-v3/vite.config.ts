@@ -4,14 +4,20 @@ import ui from '@nuxt/ui/vite';
 import vueDevTools from 'vite-plugin-vue-devtools';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+// The devtools' Vite plugin from its sources (as the packages below are aliased).
+import { vueDnDKitDevtools } from '../packages/devtools/src/vite';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ mode }) => ({
   plugins: [
-    // `yarn dev:devtools`: the Vue DevTools in the page (Alt+Shift+D), with the Vue DnD Kit
-    // plugin (src/main.ts). Off otherwise: the browser extension shows the plugin too.
+    // `yarn dev:devtools`: the Vue DevTools in the page (Alt+Shift+D), with the "Vue DnD Kit"
+    // tab. Off otherwise.
     mode === 'devtools' && vueDevTools(),
+    // The devtools tab, always in dev: at /__vue-dnd-kit-devtools/ (a window of its own),
+    // and in the Vue DevTools above. Compiled from its sources here, with hot updates. It
+    // makes every page report to it (no `app.use` in src/main.ts).
+    vueDnDKitDevtools(),
     vue(),
     // Nuxt UI for the kits/nuxt-ui.html page only. Auto-imports are off (the kit page
     // imports components explicitly), so the plugin never rewrites the main

@@ -81,6 +81,7 @@ export function makeSortableTree<T>(
     getKeys: () => keys.value,
     getItem: (key) => rows(t).get(key)?.item,
     layout: treeLayout(t),
+    options,
     strategy: () => 'vertical',
     placeholder: () => read(options.placeholder) ?? 'item',
     animation: () => unref(options.animation) ?? manager.props.animation,

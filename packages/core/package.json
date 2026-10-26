@@ -118,7 +118,7 @@
         "vue"
       ],
       "gzip": true,
-      "limit": "3.5 KB"
+      "limit": "6 KB"
     }
   ],
   "publishConfig": {

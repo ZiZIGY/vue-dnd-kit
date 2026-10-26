@@ -13,6 +13,7 @@ import type { DnDManager } from '../core/manager';
 import type { GroupContext } from '../sortable/context';
 import { snapshotActive, snapshotOver, snapshotProvider } from './snapshot';
 import { followGroup } from './group';
+import { createOverrides } from './overrides';
 import type { CancelReason, DevtoolsEvent, DevtoolsProvider, SensorSnapshot, SortableDropSnapshot } from './types';
 
 export interface ProviderRecord extends DevtoolsProvider {
@@ -56,6 +57,8 @@ export function createProviderRecord(
   /** The sensor about to start a drag, and of which item. */
   let starting: { id: Key; sensor: SensorSnapshot } | null = null;
 
+  const overrides = createOverrides(manager, () => [...groups.keys()].flatMap((g) => [...g.lists.values()]));
+
   const watchGroup = (g: GroupContext) =>
     scope!.run(() =>
       followGroup(g, {
@@ -81,6 +84,7 @@ export function createProviderRecord(
     },
     cancel: () => manager.cancel(),
     clearSelection: () => manager.selection.clear(),
+    overrides,
     addGroup(g) {
       if (!groups.has(g)) groups.set(g, scope && watchGroup(g));
     },
@@ -99,6 +103,7 @@ export function createProviderRecord(
       removeMonitor?.();
       scope = removeMonitor = null;
       groups.clear();
+      overrides.reset();
     },
   };
 

@@ -122,7 +122,7 @@ const centerOf = (element: Element): Coordinates => {
 /**
  * The actions of a sensor of your own: `moveItem` and `startDrag` as `useDnDActions()`
  * gives them, with the drags started by the sensor whose `context` this is (its `name` is
- * the drag's sensor in the devtools timeline). Create them in the sensor's `setup`: to
+ * the drag's sensor in the devtools log). Create them in the sensor's `setup`: to
  * drive a provider from outside its components (a store, a test harness, the devtools
  * plugin), or under a name of your own. `moveItem` calls queue per actions object.
  *

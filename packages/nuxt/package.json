@@ -40,6 +40,7 @@
     "test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
   },
   "dependencies": {
+    "@nuxt/devtools-kit": "^3.2.4",
     "@nuxt/kit": "^4.4.2"
   },
   "peerDependencies": {
