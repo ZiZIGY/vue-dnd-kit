@@ -121,7 +121,8 @@ export function createFrames(): Frames {
   let signature = '';
 
   const itemHtml = (element: Element, id: Key) => {
-    const copy = element instanceof HTMLElement ? clonePreview(element, { opaque: true }).outerHTML : '';
+    // On the mini-map the copy sits in a copy of its list's shell, which paints behind it.
+    const copy = element instanceof HTMLElement ? clonePreview(element).outerHTML : '';
     return copy && copy.length <= MAX_COPY ? copy : `<div data-devtools-box>${escape(String(id))}</div>`;
   };
 
