@@ -27,8 +27,9 @@ export interface PreviewSource {
 
 /**
  * Most items cloned at pickup: the grabbed one and the others next to it in drop order.
- * Cloning reads computed styles, the most expensive part of a pickup, and a column of
- * more clones covers most of the screen; the overlay counts the rest instead.
+ * Cloning lays out each clone and reads its computed styles (`snapshot.ts`), the most
+ * expensive part of a pickup, and a column of more clones covers most of the screen;
+ * the overlay counts the rest instead.
  */
 const MAX_PREVIEWS = 5;
 /** A placeholder styled smaller than this share of the source (a drop line) keeps the source size on that axis. */
@@ -63,8 +64,15 @@ export function createOverlay(ctx: ManagerContext) {
     const entry = ctx.draggables.get(id);
     const element = entry?.getElement();
     if (!entry || !element?.isConnected) return null;
+    const to = ctx.props.overlayTo;
     // Sortable items (they have a container) stay opaque: their background is often the list's.
-    return { element: clonePreview(element, { opaque: !!entry.getContainer }), rect: getRect(element) };
+    return {
+      element: clonePreview(element, {
+        opaque: !!entry.getContainer,
+        container: typeof to === 'string' ? document.querySelector(to) : to,
+      }),
+      rect: getRect(element),
+    };
   };
 
   /**

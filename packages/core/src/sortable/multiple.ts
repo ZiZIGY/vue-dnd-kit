@@ -31,7 +31,8 @@ export const collapseIntoOverlay = (
   const resolved = resolveAnimation(option, DEFAULT_LAYOUT_ANIMATION);
   if (!resolved || resolved.custom || typeof document === 'undefined') return;
   const viewport = getWindowRect();
-  // All reads (rects, computed styles in clonePreview) happen before the first append.
+  // All reads (rects, computed styles in clonePreview) happen before the first append. Each
+  // clone gets the styles its source has in the list (`snapshot.ts`): ghosts fly in <body>.
   const ghosts = elements
     .map((element) => ({ element, rect: getRect(element) }))
     .filter(({ rect }) => rect.width > 0 && intersects(rect, viewport))
