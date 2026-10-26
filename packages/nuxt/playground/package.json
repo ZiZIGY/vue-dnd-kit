@@ -8,8 +8,10 @@
     "generate": "nuxt generate"
   },
   "dependencies": {
-    "@vue-dnd-kit/nuxt": "link:..",
+    "@vue-dnd-kit/actions": "link:../../actions",
     "@vue-dnd-kit/core": "link:../../core",
+    "@vue-dnd-kit/devtools": "link:../../devtools",
+    "@vue-dnd-kit/nuxt": "link:..",
     "nuxt": "^4.4.2"
   }
 }

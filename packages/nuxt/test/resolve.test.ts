@@ -7,11 +7,12 @@ const names = (options: Parameters<typeof resolveImports>[0], type = false) =>
     .map((entry) => entry.name);
 
 describe('module options', () => {
-  it('registers only DnDProvider, with an optional prefix', () => {
+  it('registers DnDProvider and DragPreview, with an optional prefix', () => {
     expect(resolveComponents({})).toEqual([
       { name: 'DnDProvider', export: 'DnDProvider', filePath: '@vue-dnd-kit/core' },
+      { name: 'DragPreview', export: 'DragPreview', filePath: '@vue-dnd-kit/core' },
     ]);
-    expect(resolveComponents({ prefix: 'Dnd' }).map((entry) => entry.name)).toEqual(['DndDnDProvider']);
+    expect(resolveComponents({ prefix: 'Dnd' }).map((entry) => entry.name)).toEqual(['DndDnDProvider', 'DndDragPreview']);
     expect(resolveComponents({ components: false })).toEqual([]);
   });
 

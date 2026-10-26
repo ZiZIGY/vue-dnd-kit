@@ -12,11 +12,12 @@ Official Nuxt module for [Vue DnD Kit](https://zizigy.github.io/vue-dnd-kit/) v3
 
 ## Features
 
-- Registers `<DnDProvider>` as a global component (with an optional prefix).
+- Registers `<DnDProvider>` and `<DragPreview>` (the clone of a dragged item, for custom overlays) as global components (with an optional prefix).
 - Auto-imports the composables: `makeDraggable`, `makeDroppable`, `makeSortableList`, `makeSortableItem`, `makeSortableTree`, `makeSelectionArea`, `useDnD`, `useDnDMonitor`.
 - Auto-imports the main option and event types (`SortableListOptions`, `SortableDropEvent`, `DnDEvent`, …) as type-only imports.
 - Modifiers and collision helpers are opt-in, because their names (`snapToGrid`, `restrictToParent`, `closestCenter`) are generic.
 - SSR-safe: lists render on the server; the overlay, the screen reader instructions and the live region mount on the client.
+- With [`@vue-dnd-kit/devtools`](https://www.npmjs.com/package/@vue-dnd-kit/devtools) installed: a "Vue DnD Kit" tab in the Nuxt DevTools (development only, see [DevTools](#devtools)).
 
 ## Quick setup
 
@@ -90,7 +91,7 @@ export default defineNuxtConfig({
   vueDndKit: {
     // Component name prefix: 'Dnd' registers <DndDnDProvider>. Default: none.
     prefix: '',
-    // Register <DnDProvider> globally. Default: true.
+    // Register <DnDProvider> and <DragPreview> globally. Default: true.
     components: true,
     // `false` turns all auto-imports off.
     autoImports: {
@@ -99,6 +100,8 @@ export default defineNuxtConfig({
       modifiers: false, // restrictToVerticalAxis, snapToGrid, …
       collision: false, // pointerFirst, closestCenter, …
     },
+    // The Nuxt DevTools tab when @vue-dnd-kit/devtools is installed (development only). Default: true.
+    devtools: true,
   },
 });
 ```
@@ -109,10 +112,20 @@ export default defineNuxtConfig({
 import type { Key } from '@vue-dnd-kit/core';
 ```
 
+## DevTools
+
+Install [`@vue-dnd-kit/devtools`](https://www.npmjs.com/package/@vue-dnd-kit/devtools) as a dev dependency and the module does the rest, in development only:
+
+```bash
+npm i -D @vue-dnd-kit/devtools @vue-dnd-kit/actions
+```
+
+Run `nuxt dev`, open the Nuxt DevTools (<kbd>Shift</kbd>+<kbd>Alt</kbd>+<kbd>D</kbd>, or the Nuxt icon at the bottom of the page) and pick the **Vue DnD Kit** tab: a joystick that drags any item for real, a live mini-map of every list, tree and drop target, live editing of every option, the providers' state and a log of the drags. The module serves the tab at `/__vue-dnd-kit-devtools/` (open it in a window of its own too) and installs the page's side with a client plugin. Production builds get nothing of it. `vueDndKit.devtools: false` turns it off.
+
 ## Migrating from 1.x (Vue DnD Kit v2)
 
 - Requires `@vue-dnd-kit/core` v3. See the core migration guide for the API changes.
-- `DragPreview` is gone: the provider renders the overlay itself; use its `#overlay` slot to customize it.
+- The overlay is the provider's own; customize it with its `#overlay` slot. `DragPreview` is a new component: the clone of one dragged item, for overlays that lay several out themselves.
 - `makeAutoScroll`, `makeConstraintArea`, `useDnDProvider` and `injectionKey` are no longer exported or auto-imported. Auto-scroll is built in; use modifiers (`restrictToParent`, `restrictToElement`) instead of constraint areas, and `useDnD()` instead of `useDnDProvider()`.
 - Types are auto-imported now, so explicit `import type` lines can go (except for the generic names above).
 

@@ -9,8 +9,8 @@
 
 export const CORE_PACKAGE = '@vue-dnd-kit/core';
 
-/** Registered as global components. */
-export const components = ['DnDProvider'] as const;
+/** Registered as global components: the provider, and the clone of a dragged item for custom overlays. */
+export const components = ['DnDProvider', 'DragPreview'] as const;
 
 /** Auto-imported by default. */
 export const composables = [
