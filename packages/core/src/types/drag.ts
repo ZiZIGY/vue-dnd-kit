@@ -54,6 +54,13 @@ export interface DnDEvent<T = unknown> {
   pointer: Coordinates;
   /** Offset from the drag start, after modifiers. */
   delta: Coordinates;
+  /**
+   * Where the dragged box's top-left corner is in `over`, from its padding edge and with
+   * its scroll: the `left`/`top` that put an absolutely positioned item where it was
+   * dropped (a note on a board). `null` over nothing. Of the overlay box, or of the
+   * element itself with `overlay: false`.
+   */
+  readonly position: Coordinates | null;
   /** Present when the dragged items come from a sortable list. */
   source?: DragSource;
 }

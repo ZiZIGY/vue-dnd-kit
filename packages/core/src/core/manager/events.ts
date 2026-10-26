@@ -8,7 +8,7 @@
  * defaults; moves are debounced, only the target the drag rests on is spoken.
  */
 
-import type { Announcements, DnDEndEvent, DnDEvent, DnDMonitor, DragSource } from '../../types';
+import type { Active, Announcements, Coordinates, DnDEndEvent, DnDEvent, DnDMonitor, DragSource, Over } from '../../types';
 import { defaultAnnouncements } from '../a11y';
 import type { ManagerContext } from './state';
 
@@ -24,6 +24,20 @@ export function createEvents(ctx: ManagerContext) {
 
   // ─── Events ──────────────────────────────────────────────────────────────────
 
+  /**
+   * Where the dragged box's top-left corner is in `over`: from its padding edge, with its
+   * scroll. What `left`/`top` inside it take to put the item where it was dropped.
+   */
+  const positionIn = (current: Active, over: Over | null, offset: Coordinates): Coordinates | null => {
+    if (!over) return null;
+    const box = ctx.overlay.getOverlayRect(current, offset);
+    const { element, rect } = over;
+    return {
+      x: box.left - rect.left - element.clientLeft + element.scrollLeft,
+      y: box.top - rect.top - element.clientTop + element.scrollTop,
+    };
+  };
+
   const createEvent = (): DnDEvent => {
     const current = ctx.active.value!;
     const { origin } = ctx;
@@ -33,12 +47,20 @@ export function createEvents(ctx: ManagerContext) {
       source = resolve(current);
       if (source) break;
     }
+    const over = ctx.over.value;
+    const offset = ctx.transform.value;
+    let position: Coordinates | null | undefined;
     return {
       active: current,
-      over: ctx.over.value,
+      over,
       pointer: p,
       delta: { x: p.x - origin.x, y: p.y - origin.y },
       source,
+      // Measured when read (it reads the target's layout), once.
+      get position() {
+        if (position === undefined) position = positionIn(current, over, offset);
+        return position;
+      },
     };
   };
 

@@ -31,13 +31,13 @@
   makeDragArea(freeRef, { modifiers: [snapToGrid({ x: 20, y: 20, smooth: { duration: 80 } })] });
 
   useDnDMonitor({
-    onDragEnd({ active, over, delta }) {
+    onDragEnd({ active, over, position }) {
       const piece = pieces.value.find((item) => item.id === active.id);
       if (!piece || !over) return;
-      if (over.id === 'board') {
-        // Where the overlay was dropped, relative to the board.
-        piece.x = Math.round(active.rect.left + delta.x - over.rect.left);
-        piece.y = Math.round(active.rect.top + delta.y - over.rect.top);
+      if (over.id === 'board' && position) {
+        // Where the overlay was dropped, as `left`/`top` inside the board.
+        piece.x = Math.round(position.x);
+        piece.y = Math.round(position.y);
         piece.zone = null;
       } else {
         piece.zone = String(over.id);

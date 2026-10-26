@@ -278,6 +278,8 @@ export function createSession(ctx: ManagerContext) {
     // overlay stay as they are until the drop is decided.
     restoreDocument();
     const event = ctx.events.createEvent();
+    // Measured now: the handlers below may change the page before anyone reads it.
+    void event.position;
     const target = event.over;
 
     let verdict: BeforeDropResult = true;

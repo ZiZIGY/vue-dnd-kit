@@ -23,14 +23,15 @@ makeDragArea(board, {
   modifiers: () => (snap.value ? [snapToGrid(GRID)] : []),
 });
 
-// The board is also the drop target: a note stays where it is dropped.
+// The board is also the drop target: a note stays where it is dropped. `position` is
+// where it landed, as `left`/`top` inside the board.
 makeDroppable(board, { id: 'board' });
 useDnDMonitor({
-  onDragEnd({ active, over, delta }) {
+  onDragEnd({ active, over, position }) {
     const note = notes.value.find((item) => item.id === active.id);
-    if (!note || over?.id !== 'board') return;
-    note.x = Math.round(active.rect.left + delta.x - over.rect.left);
-    note.y = Math.round(active.rect.top + delta.y - over.rect.top);
+    if (!note || over?.id !== 'board' || !position) return;
+    note.x = Math.round(position.x);
+    note.y = Math.round(position.y);
   },
 });
 
