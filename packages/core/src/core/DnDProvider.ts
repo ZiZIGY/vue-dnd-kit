@@ -31,6 +31,7 @@ import type {
 } from '../types';
 import { createDnDManager } from './manager';
 import { DND_CONTEXT, useManager } from './context';
+import { devtoolsHook } from './devtoolsHook';
 import { useSensors } from './sensors/host';
 import { pointerSensor } from './sensors/pointer';
 import { keyboardSensor } from './sensors/keyboard';
@@ -94,6 +95,8 @@ export const DnDProvider = /* @__PURE__ */ defineComponent({
     const manager = createDnDManager(props as DnDProviderProps);
     manager.instructionsId = `dnd-kit-instructions-${useId()}`;
     provide(DND_CONTEXT, manager);
+    // Reports to the devtools only when the plugin is installed (`devtoolsHook.ts`).
+    devtoolsHook()?.provider(manager);
 
     manager.addMonitor({
       onDragStart: (event) => emit('dragStart', event),

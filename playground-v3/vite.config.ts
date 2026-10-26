@@ -1,13 +1,17 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import ui from '@nuxt/ui/vite';
+import vueDevTools from 'vite-plugin-vue-devtools';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
+    // `yarn dev:devtools`: the Vue DevTools in the page (Alt+Shift+D), with the Vue DnD Kit
+    // plugin (src/main.ts). Off otherwise: the browser extension shows the plugin too.
+    mode === 'devtools' && vueDevTools(),
     vue(),
     // Nuxt UI for the kits/nuxt-ui.html page only. Auto-imports are off (the kit page
     // imports components explicitly), so the plugin never rewrites the main
@@ -40,12 +44,16 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      // Library sources, not the build: edits show up immediately.
+      // Library sources, not the build: edits show up immediately. The devtools bridge
+      // first: '@vue-dnd-kit/core' would take its subpath too.
+      '@vue-dnd-kit/core/devtools': resolve(__dirname, '../packages/core/src/devtools/index.ts'),
       '@vue-dnd-kit/core': resolve(__dirname, '../packages/core/src/index.ts'),
       '@vue-dnd-kit/actions': resolve(__dirname, '../packages/actions/src/index.ts'),
+      '@vue-dnd-kit/devtools': resolve(__dirname, '../packages/devtools/src/index.ts'),
     },
-    // The core's own node_modules must not provide a second copy of Vue or VueUse.
-    dedupe: ['vue', '@vueuse/core'],
+    // The packages' own node_modules must not provide a second copy of Vue, VueUse or
+    // the DevTools API.
+    dedupe: ['vue', '@vueuse/core', '@vue/devtools-api'],
   },
   build: {
     // One page per UI kit: their global CSS (Tailwind preflight, Vuetify's reset)
@@ -64,4 +72,4 @@ export default defineConfig({
     strictPort: true,
     fs: { allow: ['..'] },
   },
-});
+}));

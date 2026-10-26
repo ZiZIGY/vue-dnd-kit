@@ -18,6 +18,7 @@
 import { effectScope, type ShallowRef } from 'vue';
 import type { Active, Coordinates, Key, SortableIndicator } from '../types';
 import type { DnDManager } from '../core/manager';
+import { devtoolsHook } from '../core/devtoolsHook';
 import { createContext, indexOf, keysOf, lookup, type Session } from './context';
 import type { ListEntry } from './entry';
 import { accepts, isInert } from './accept';
@@ -63,6 +64,7 @@ const registries = new WeakMap<DnDManager, Map<string, SortableGroup>>();
 
 function createGroup(manager: DnDManager, name: string, release: () => void): SortableGroup {
   const g = createContext(manager, name);
+  devtoolsHook()?.group(g);
   const { lists, items, session } = g;
   const scope = effectScope(true);
   scope.run(() => {

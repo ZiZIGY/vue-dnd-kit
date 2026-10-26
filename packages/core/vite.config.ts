@@ -6,6 +6,15 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+/**
+ * The library, and the devtools bridge (`@vue-dnd-kit/core/devtools`). The bridge takes
+ * only types from the library, so the two share no chunk: `index.js` stays one file.
+ */
+const entries = {
+  index: resolve(__dirname, 'src/index.ts'),
+  devtools: resolve(__dirname, 'src/devtools/index.ts'),
+};
+
 export default defineConfig({
   publicDir: false,
   plugins: [
@@ -13,21 +22,23 @@ export default defineConfig({
       tsconfigPath: resolve(__dirname, 'tsconfig.json'),
       include: [resolve(__dirname, 'src')],
       exclude: ['**/*.test.ts'],
-      // One self-contained index.d.ts (only `vue` and `@vueuse/core` imports): no
+      // One self-contained .d.ts per entry (only `vue` and `@vueuse/core` imports): no
       // extensionless relative imports, which `node16`/`nodenext` can't resolve.
       rollupTypes: true,
       // The same declarations as .d.cts for the `require` condition: a .d.ts is
       // ESM in a `"type": "module"` package (publint, arethetypeswrong).
       afterBuild: () => {
-        copyFileSync(resolve(__dirname, 'dist/index.d.ts'), resolve(__dirname, 'dist/index.d.cts'));
+        for (const name of Object.keys(entries)) {
+          copyFileSync(resolve(__dirname, `dist/${name}.d.ts`), resolve(__dirname, `dist/${name}.d.cts`));
+        }
       },
     }),
   ],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: entries,
       formats: ['es', 'cjs'],
-      fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
+      fileName: (format, name) => `${name}.${format === 'es' ? 'js' : 'cjs'}`,
     },
     rollupOptions: {
       external: ['vue', /^@vueuse\//],

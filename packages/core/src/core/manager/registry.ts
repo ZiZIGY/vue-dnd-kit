@@ -15,6 +15,7 @@ import type {
   DnDEvent,
   DnDMonitor,
   DragSource,
+  DroppableOptions,
   Key,
   Modifier,
   SortablePosition,
@@ -54,6 +55,8 @@ export interface DroppableEntry {
   getPriority(): number;
   /** A sortable list or tree: what drops on it is shown in it, as a slot. */
   sortable?: boolean;
+  /** The options it was made with, for the devtools (its `accept` rule). */
+  options?: DroppableOptions;
   onDragEnter?(event: DnDEvent): void;
   onDragLeave?(event: DnDEvent): void;
   onBeforeDrop?(event: DnDEvent): BeforeDropResult | Promise<BeforeDropResult>;

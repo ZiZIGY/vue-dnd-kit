@@ -28,6 +28,7 @@ interface Owner {
   active: boolean;
   /** Its drag, until it ends. */
   current: DragControl | null;
+  sensor: Sensor;
 }
 
 interface Host {
@@ -113,6 +114,7 @@ function createHost(manager: DnDManager): Host {
         origin: options.point ?? getCenter(getRect(element)),
         constraint: resolveConstraint(options.activation, entry, manager.props.activation),
         touch: (event as Partial<PointerEvent> | undefined)?.pointerType === 'touch',
+        sensor: owner.sensor,
         callbacks: options,
         onEnded: () => {
           forget(control);
@@ -125,7 +127,7 @@ function createHost(manager: DnDManager): Host {
   };
 
   const run = (sensor: Sensor) => {
-    const owner: Owner = { active: true, current: null };
+    const owner: Owner = { active: true, current: null, sensor };
     const context: SensorContext = {
       get props() {
         return manager.props;
