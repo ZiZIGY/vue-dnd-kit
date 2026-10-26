@@ -4,7 +4,7 @@
  * (`sortOver`); only the item itself can be exchanged instead, over a list that swaps.
  */
 
-import type { DnDEvent } from '../../types';
+import type { DnDEvent, SortableStrategy } from '../../types';
 import type { GroupContext, Session } from '../context';
 import type { ListEntry } from '../entry';
 import { blocksKey } from '../stability';
@@ -15,6 +15,25 @@ import { atLead } from '../landing';
 import { bandsAt } from '../combine';
 import { asItself, itself, movingDragMode, type SortableMode } from './mode';
 import { swap } from './swap';
+
+/**
+ * The event to project, its point along the list's axis. A modifier that keeps the overlay
+ * in a box (`restrictToParent`, a drag area's `restrictToArea`) holds the point where the
+ * item is held while the pointer goes on past the box's edge: held near its leading edge,
+ * the item could never pass the center of the last item (or of the first). Once the pointer
+ * has left the overlay along the axis, the projection follows the pointer. Grids keep the
+ * point: there the overlay held at the edge covers the edge cell, and the point is in it.
+ */
+const heldBack = (g: GroupContext, event: DnDEvent, strategy: SortableStrategy): DnDEvent => {
+  const { manager } = g;
+  const active = manager.active.value;
+  if (strategy === 'grid' || !active) return event;
+  const [axis, start, end] = strategy === 'horizontal' ? (['x', 'left', 'right'] as const) : (['y', 'top', 'bottom'] as const);
+  const pointer = manager.getRawPointer()[axis];
+  const box = manager.getOverlayRect(active, manager.transform.value);
+  if (pointer >= box[start] && pointer <= box[end]) return event;
+  return { ...event, pointer: { ...event.pointer, [axis]: pointer } };
+};
 
 /** The slot goes to the index the pointer projects in `target` (see `SortableMode.over`). */
 export const sortOver = (
@@ -38,12 +57,13 @@ export const sortOver = (
   const keys = viewOf(target, current);
   const items = collect(g, target);
   const activeIndex = sameList ? keys.indexOf(current.slot) : -1;
-  const projection = target.layout.project(atLead(g, current, event), {
+  const strategy = target.strategy();
+  const projection = target.layout.project(atLead(g, current, heldBack(g, event, strategy)), {
     keys,
     items,
     activeKey: current.slot,
     activeIndex,
-    strategy: target.strategy(),
+    strategy,
     lock: current.lock,
     targets: bandsAt(g, event),
   });

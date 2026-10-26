@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { reactive, shallowRef } from 'vue';
+  import { restrictToParent } from '@vue-dnd-kit/core';
   import DemoList from '../components/DemoList.vue';
   import { describeLists, makeTasks } from '../data';
 
@@ -14,6 +15,8 @@
   // exchange items side by side, so they move freely.
   const lockAxis = shallowRef(true);
   const lockedTo = (axis: 'x' | 'y') => () => (lockAxis.value ? axis : undefined);
+  // The custom-placeholder list can keep its items inside it: its ends must stay in reach.
+  const bounded = shallowRef(false);
 </script>
 
 <template>
@@ -24,6 +27,14 @@
       data-testid="lock-axis"
     />
     Lock the single lists to their axis
+  </label>
+  <label>
+    <input
+      v-model="bounded"
+      type="checkbox"
+      data-testid="bound-list"
+    />
+    Keep the custom-placeholder list's items inside it
   </label>
   <section>
     <h2>Horizontal list</h2>
@@ -55,7 +66,7 @@
     <DemoList
       class="custom-placeholder"
       :list="custom"
-      :options="{ axis: lockedTo('y') }"
+      :options="{ axis: lockedTo('y'), modifiers: () => (bounded ? [restrictToParent] : undefined) }"
     />
   </section>
   <pre data-testid="state">{{ describeLists([horizontal, indicator, indicatorB, custom]) }}</pre>

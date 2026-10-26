@@ -11,10 +11,13 @@ import { vibrate } from '../haptics';
 
 export type FrameLoop = ReturnType<typeof createFrameLoop>;
 
+const samePoint = (a: Coordinates, b: Coordinates | null) => !!b && a.x === b.x && a.y === b.y;
+
 export function createFrameLoop(ctx: ManagerContext) {
   let frame = 0;
-  /** Pointer of the last target detection. */
+  /** Pointer of the last target detection (after modifiers), and the pointer as reported then. */
   let detectedAt: Coordinates | null = null;
+  let detectedRaw: Coordinates | null = null;
   /** Scroll, resize or an external request since the last frame: detect even if the pointer stood still. */
   let refreshRequested = false;
 
@@ -35,10 +38,13 @@ export function createFrameLoop(ctx: ManagerContext) {
 
     // The target follows the pointer, scrolling and resizing, never a layout shift
     // alone: a frame where none of them changed (a repeated pointermove) does nothing.
-    if (!refresh && detectedAt && point.x === detectedAt.x && point.y === detectedAt.y) return;
+    // A point a modifier holds still (at the edge of a box) runs on while the pointer
+    // moves: lists project from the pointer there (`sortable/modes/sort.ts`).
+    if (!refresh && detectedAt && samePoint(point, detectedAt) && samePoint(raw, detectedRaw)) return;
     // The first detection of the drag: the target found under the item at pickup isn't news.
     const pickup = !detectedAt;
     detectedAt = point;
+    detectedRaw = { x: raw.x, y: raw.y };
     ctx.transform.value = offset;
     ctx.pointer.value = point;
     ctx.measurer.nextFrame();
@@ -98,6 +104,7 @@ export function createFrameLoop(ctx: ManagerContext) {
     /** A new session (or none): its first detection is the pickup's. */
     reset() {
       detectedAt = null;
+      detectedRaw = null;
       refreshRequested = false;
     },
   };

@@ -145,6 +145,42 @@ test.describe('table rows', () => {
   });
 });
 
+test.describe('a list that keeps its items inside it (restrictToParent)', () => {
+  /**
+   * Presses on `id` at `yRatio` of its height, pushes the pointer `beyond` px past the
+   * list's edge (the overlay stays inside) and drops. Held near the edge it travels away
+   * from, the point would stop short of the end item's center: the end must stay in reach.
+   */
+  const pushPast = async (page: Page, id: string, yRatio: number, beyond: number) => {
+    // In the middle of the window: a pointer released outside it ends no drag in Firefox.
+    await page.locator('.list.custom-placeholder').evaluate((list) => list.scrollIntoView({ block: 'center' }));
+    const list = (await page.locator('.list.custom-placeholder').boundingBox())!;
+    const start = await center(item(page, id), yRatio);
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+    await page.mouse.move(start.x, start.y + Math.sign(beyond) * 8, { steps: 2 });
+    await glide(page, { x: start.x, y: beyond > 0 ? list.y + list.height + beyond : list.y + beyond }, 16);
+    await frames(page, 2);
+    const overlay = (await page.locator('[data-dnd-overlay]').boundingBox())!;
+    await page.mouse.up();
+    await waitForIdle(page);
+    return { list, overlay };
+  };
+
+  test('an item held near its top edge reaches the last place, one held low the first', async ({ page }) => {
+    const errors = trackErrors(page);
+    await page.goto('/#lists');
+    await page.getByTestId('bound-list').check();
+    const { list, overlay } = await pushPast(page, 'c1', 0.1, 40);
+    // The overlay stayed inside the list.
+    expect(overlay.y + overlay.height).toBeLessThanOrEqual(list.y + list.height + 1);
+    await expect(state(page)).toContainText('custom:c2,c3,c4,c5,c1');
+    await pushPast(page, 'c1', 0.9, -40);
+    await expect(state(page)).toContainText('custom:c1,c2,c3,c4,c5');
+    expect(errors).toEqual([]);
+  });
+});
+
 test.describe('axis lock (list modifiers)', () => {
   /** Left edge of the overlay box while dragging `id` 120px right and down to `target`. */
   const overlayLeftAfterDiagonal = async (page: Page, id: string, target: string) => {
