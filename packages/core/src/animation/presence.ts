@@ -14,7 +14,7 @@ import type {
   LeaveAnimationContext,
   Rect,
 } from '../types';
-import { copyElement } from '../core/clone';
+import { copyElement, removeTransient } from '../core/clone';
 import {
   DEFAULT_LAYOUT_ANIMATION,
   STALL_MARGIN,
@@ -109,6 +109,7 @@ export const leave = (part: Resolved<LeaveAnimationContext>, items: Leaving[]): 
   const ghosts = items.flatMap(({ key, element, parent, from }) => {
     if (!(element instanceof HTMLElement) || element.tagName === 'TR' || !parent.isConnected) return [];
     const ghost = copyElement(element);
+    removeTransient(ghost);
     ghost.setAttribute('data-dnd-leaving', '');
     ghost.setAttribute('inert', '');
     const style: Record<string, string> = { ...GHOST_STYLE, width: `${from.width}px`, height: `${from.height}px` };
