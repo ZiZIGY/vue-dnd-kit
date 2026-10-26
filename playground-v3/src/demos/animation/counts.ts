@@ -31,9 +31,14 @@ export interface HookCounts {
   enter: number;
   leave: number;
   drop: number;
+  /**
+   * `data-id` of the element the last leave hook animated, when it was the library's copy
+   * (`data-dnd-leaving`). Kept here: the copy itself is gone a moment later.
+   */
+  left: string;
 }
 
-export const emptyCounts = (): HookCounts => ({ drag: 0, move: 0, enter: 0, leave: 0, drop: 0 });
+export const emptyCounts = (): HookCounts => ({ drag: 0, move: 0, enter: 0, leave: 0, drop: 0, left: '' });
 
 const counting =
   <C>(hook: (context: C) => Result, count: (context: C) => void) =>
@@ -52,7 +57,10 @@ export const counted = (recipe: Recipe, counts: HookCounts): Recipe => {
     animate: {
       move,
       enter: counting(recipe.animate.enter, () => counts.enter++),
-      leave: counting(recipe.animate.leave, () => counts.leave++),
+      leave: counting(recipe.animate.leave, ({ element }) => {
+        counts.leave++;
+        counts.left = element.hasAttribute('data-dnd-leaving') ? (element.getAttribute('data-id') ?? '') : '';
+      }),
     },
   };
 };

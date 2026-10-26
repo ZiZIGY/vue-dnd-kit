@@ -164,8 +164,11 @@ test.describe("multi-drag 'group'", () => {
     await pickUp(page, item(page, 'a3'));
     await layoutSettled(page);
     await glide(page, await center(item(page, 'a7'), 0.8));
+    // The grabbed a3 sits under the pointer (where a7 was), a1 and a4 around it. Polled: a
+    // loaded run may render the last move a frame after the glide.
+    const hovered = ['a2', 'a5', 'a6', 'a7', 'a8', 'a1', 'a3', 'a4'];
+    await expect.poll(() => order(list(page, 'group-a'))).toEqual(hovered);
     await layoutSettled(page);
-    const hovered = await order(list(page, 'group-a'));
     const marked = await placeholders(page);
     expect(marked.contiguous).toBe(true);
     expect(marked.ids).toEqual(['a1', 'a3', 'a4']);
@@ -175,8 +178,6 @@ test.describe("multi-drag 'group'", () => {
     const recorded = await landings();
     await waitForIdle(page);
     await expect(state(page)).toContainText(`group-a:${hovered.join(',')}`);
-    // The grabbed a3 sits under the pointer (where a7 was), a1 and a4 around it.
-    expect(hovered).toEqual(['a2', 'a5', 'a6', 'a7', 'a8', 'a1', 'a3', 'a4']);
     await expectLanded(page, recorded, ['a1', 'a4']);
     check();
   });
@@ -187,9 +188,10 @@ test.describe("multi-drag 'group'", () => {
     await pickUp(page, item(page, 'a2'));
     await layoutSettled(page);
     await glide(page, await center(item(page, 'b3'), 0.3));
+    // Polled: a loaded run may render the move into the other list a frame after the glide.
+    await expect.poll(() => order(list(page, 'group-b'))).toEqual(['b2', 'a2', 'b1', 'b3']);
     await layoutSettled(page);
     const hovered = { a: await order(list(page, 'group-a')), b: await order(list(page, 'group-b')) };
-    expect(hovered.b).toEqual(['b2', 'a2', 'b1', 'b3']);
     expect(await placeholders(page)).toEqual({ ids: ['a2', 'b1'], contiguous: true });
     const landings = await watchLandings(page);
     await page.mouse.up();

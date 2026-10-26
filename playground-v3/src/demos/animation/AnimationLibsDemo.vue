@@ -16,7 +16,7 @@
     const counts = reactive(emptyCounts());
     return { ...lib, counts, hooks: counted(lib.recipe, counts) };
   });
-  const kinds: Array<keyof HookCounts> = ['drag', 'drop', 'move', 'enter', 'leave'];
+  const kinds: Array<Exclude<keyof HookCounts, 'left'>> = ['drag', 'drop', 'move', 'enter', 'leave'];
 </script>
 
 <template>
@@ -54,6 +54,9 @@
             :key="kind"
           >
             {{ kind }} <output :data-testid="`${lib.name}-${kind}`">{{ lib.counts[kind] }}</output>
+          </span>
+          <span v-if="lib.counts.left">
+            left <output :data-testid="`${lib.name}-left`">{{ lib.counts.left }}</output>
           </span>
         </p>
       </div>

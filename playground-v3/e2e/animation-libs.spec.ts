@@ -101,8 +101,9 @@ test.describe('animation libraries through the hooks (animation-libs)', () => {
 
       await button(page, lib, 'remove').click();
       await expect(count(page, lib, 'leave')).toHaveText('1');
-      // The copy of card 6 shrinks away where it was, then goes.
-      await expect(list(page, lib).locator('[data-dnd-leaving]')).toHaveAttribute('data-id', `${lib}-6`);
+      // The hook animated the copy of card 6 (`data-dnd-leaving`), recorded by the demo: the
+      // copy itself is gone a moment later, too soon to catch under a full parallel run.
+      await expect(page.getByTestId(`${lib}-left`)).toHaveText(`${lib}-6`);
       await settled(page, lib);
       await showsOrder(page, lib, '5,4,3,2,1');
 
