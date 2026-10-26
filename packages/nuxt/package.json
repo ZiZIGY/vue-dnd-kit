@@ -1,6 +1,6 @@
 {
   "name": "@vue-dnd-kit/nuxt",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Nuxt module for Vue DnD Kit v3: registers DnDProvider and auto-imports the composables and types",
   "author": "ZiZIGY",
   "license": "MIT",

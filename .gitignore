@@ -31,3 +31,8 @@ docs/.vitepress/cache
 # Playwright
 test-results
 playwright-report
+
+# Claude Code: personal settings and agent worktrees
+.claude/settings.json
+.claude/settings.local.json
+.claude/worktrees/
