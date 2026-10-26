@@ -1,6 +1,6 @@
 /**
- * Highlights an element on the page for a moment, with a label: the element of the
- * inspector node just selected. One box in `<body>`, fixed over the element's rect
+ * Highlights an element on the page for a moment, with a label: the node chosen in the
+ * tab, the draggable under the pointer while picking. One box in `<body>`, fixed over the element's rect
  * (shadow roots included); it takes no pointer events, so no drop target detection
  * (`elementFromPoint`) ever sees it.
  */
@@ -47,8 +47,8 @@ export const unhighlight = (): void => {
   if (box) box.style.opacity = '0';
 };
 
-/** Shows `element` with `text` for a moment; nothing for an element that isn't on the page. */
-export const highlight = (element: Element | null, text: string): void => {
+/** Shows `element` with `text` for `shownFor` ms (`Infinity`: until the next call); nothing for an element that isn't on the page. */
+export const highlight = (element: Element | null, text: string, shownFor = SHOWN_FOR): void => {
   if (!element?.isConnected) return unhighlight();
   if (!box?.isConnected) create();
   const rect = element.getBoundingClientRect();
@@ -62,7 +62,7 @@ export const highlight = (element: Element | null, text: string): void => {
   label!.textContent = text;
   if (!box!.isConnected) document.body.appendChild(box!);
   clearTimeout(timer);
-  timer = setTimeout(unhighlight, SHOWN_FOR);
+  if (shownFor !== Infinity) timer = setTimeout(unhighlight, shownFor);
 };
 
 /** Scrolls `element` into view (when it is out of it), then highlights it. */

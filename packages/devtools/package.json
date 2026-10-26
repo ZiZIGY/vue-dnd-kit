@@ -114,6 +114,7 @@
     "@arethetypeswrong/cli": "^0.18.5",
     "@size-limit/preset-small-lib": "^12.1.0",
     "@types/node": "^24.10.0",
+    "@vitejs/plugin-vue": "^6.0.10",
     "@vue/tsconfig": "^0.8.1",
     "@vueuse/core": "^15.0.0",
     "happy-dom": "^21.0.4",

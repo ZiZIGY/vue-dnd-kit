@@ -1,43 +1,46 @@
 /**
- * `@vue-dnd-kit/devtools`: a Vue DevTools plugin for Vue DnD Kit. It adds the "Vue DnD
- * Kit" inspector (providers, their draggables, drop targets, sortable lists and trees,
- * the selection and the drag session; a selected node is highlighted on the page; its
- * items can be moved and dragged from it, through `@vue-dnd-kit/actions`) and a timeline
- * layer (drag start, targets, `onBeforeDrop` verdicts, drops, cancels, announcements,
- * auto-scroll).
+ * `@vue-dnd-kit/devtools`: devtools for Vue DnD Kit, as a "Vue DnD Kit" tab in the Nuxt
+ * DevTools and in the Vue DevTools of `vite-plugin-vue-devtools` (or a window of its
+ * own): a joystick that drags any item for real, a live mini-map of every list, tree and
+ * drop target, live editing of the options, the providers' registry and state, and a log
+ * of the drags. This entry runs in the app: it makes the page report to the tab. The tab
+ * is served by the Vite plugin (`@vue-dnd-kit/devtools/vite`) or the Nuxt module.
  *
  * Production builds drop it: every entry point checks `process.env.NODE_ENV` first, so
- * bundlers remove the plugin and `@vue/devtools-api` with it.
+ * bundlers remove the page's side and everything it loads.
  */
 
 import type { App, Plugin } from 'vue';
-import { autoSetup, setup } from './plugin';
+import { start } from './plugin';
 
-/** Bundlers replace it: development builds keep the plugin, production drops it. */
+/** Bundlers replace it: development builds keep the devtools, production drops them. */
 declare const process: { env: { NODE_ENV?: string } };
 
+const enabled = () => process.env.NODE_ENV !== 'production' && typeof window !== 'undefined';
+
 /**
- * Sets the plugin up for `app`, as `app.use(DnDDevtools)` does. Call it before
- * `app.mount()`: providers set up earlier are not seen. Does nothing in production
- * builds and on the server.
+ * Makes the page report to the devtools tab, as `app.use(DnDDevtools)` does. Call it
+ * before `app.mount()`: providers set up earlier are not seen. Every provider of the page
+ * is shown, whichever app it renders in. Does nothing in production builds and on the
+ * server.
  */
-export function setupDnDDevtools(app: App): void {
-  if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined') setup(app);
+export function setupDnDDevtools(_app?: App): void {
+  if (enabled()) start();
 }
 
 /**
- * Sets the plugin up for every app a `DnDProvider` renders in, from now on: what
- * `import '@vue-dnd-kit/devtools/auto'` does. Call it before the apps mount. Does
- * nothing in production builds and on the server.
+ * The same without an app: what `import '@vue-dnd-kit/devtools/auto'` does (and what the
+ * Vite plugin injects). Call it before the apps mount. Does nothing in production builds
+ * and on the server.
  */
 export function autoSetupDnDDevtools(): void {
-  if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined') autoSetup();
+  if (enabled()) start();
 }
 
 /**
- * The plugin: `app.use(DnDDevtools)` before `app.mount()`. Open the Vue DevTools (the
- * browser extension or `vite-plugin-vue-devtools`): the "Vue DnD Kit" inspector and
- * timeline layer are there. Does nothing in production builds.
+ * The plugin: `app.use(DnDDevtools)` before `app.mount()`. Then open the "Vue DnD Kit" tab
+ * of the Nuxt DevTools or the Vue DevTools (`vite-plugin-vue-devtools`). Does nothing in
+ * production builds.
  */
 export const DnDDevtools: Plugin = {
   install: (app: App) => setupDnDDevtools(app),
