@@ -1,8 +1,9 @@
 <script setup lang="ts">
   import { onMounted, useTemplateRef } from 'vue';
+  import type { ConfirmAnswer } from './board';
 
   defineProps<{ title: string; message: string; confirmLabel: string }>();
-  const emit = defineEmits<{ answer: [ok: boolean] }>();
+  const emit = defineEmits<{ answer: [answer: ConfirmAnswer] }>();
   const accept = useTemplateRef<HTMLButtonElement>('accept');
 
   // The drop is pending while the dialog is open: Escape answers "no".
@@ -12,7 +13,7 @@
 <template>
   <div
     class="tb-backdrop"
-    @pointerdown.self="emit('answer', false)"
+    @pointerdown.self="emit('answer', 'reject')"
   >
     <div
       class="tb-dialog"
@@ -20,7 +21,7 @@
       aria-modal="true"
       aria-labelledby="tb-dialog-title"
       data-testid="confirm"
-      @keydown.esc.prevent="emit('answer', false)"
+      @keydown.esc.prevent="emit('answer', 'reject')"
     >
       <h3 id="tb-dialog-title">{{ title }}</h3>
       <p>{{ message }}</p>
@@ -29,16 +30,25 @@
           type="button"
           class="tb-secondary"
           data-testid="confirm-cancel"
-          @click="emit('answer', false)"
+          @click="emit('answer', 'reject')"
         >
           Cancel
+        </button>
+        <!-- No drop, and the drag goes on: the card follows the pointer to another column. -->
+        <button
+          type="button"
+          class="tb-secondary"
+          data-testid="confirm-continue"
+          @click="emit('answer', 'continue')"
+        >
+          Keep dragging
         </button>
         <button
           ref="accept"
           type="button"
           class="tb-primary"
           data-testid="confirm-accept"
-          @click="emit('answer', true)"
+          @click="emit('answer', 'accept')"
         >
           {{ confirmLabel }}
         </button>
@@ -78,6 +88,7 @@
 
   footer {
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-end;
     gap: 8px;
   }

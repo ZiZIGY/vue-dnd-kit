@@ -15,6 +15,7 @@ export const defaultAnnouncements: Announcements = {
       : `Draggable item ${active.id} was dropped.`,
   onDragCancel: ({ active }) =>
     `Dragging was cancelled. Draggable item ${active.id} was dropped.`,
+  onDragResume: ({ active }) => `Draggable item ${active.id} was not dropped. It is still being moved.`,
 };
 
 export const VISUALLY_HIDDEN = {

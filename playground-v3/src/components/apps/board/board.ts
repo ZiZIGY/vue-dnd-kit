@@ -55,10 +55,15 @@ export const createBoard = (): BoardColumn[] => [
 export const describeBoard = (columns: readonly BoardColumn[]): string =>
   columns.map((column) => `${column.id}:${column.cards.map((item) => item.id).join(',')}`).join(' | ');
 
+export type ConfirmAnswer = 'accept' | 'reject' | 'continue';
+
 /** Board-wide services the columns use. */
 export interface BoardContext {
-  /** Resolves `true` when the user confirms moving the cards into `column`. */
-  confirmMove(event: SortableDropEvent<BoardCard>, column: BoardColumn): Promise<boolean>;
+  /**
+   * Asks the user about moving the cards into `column`: `'accept'`, `'reject'`, or
+   * `'continue'` to keep dragging them (the drop doesn't happen, the drag goes on).
+   */
+  confirmMove(event: SortableDropEvent<BoardCard>, column: BoardColumn): Promise<ConfirmAnswer>;
   recordMove(event: SortableDropEvent<BoardCard>, column: BoardColumn): void;
   addCard(column: BoardColumn, title: string): void;
 }

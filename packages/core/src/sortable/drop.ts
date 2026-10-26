@@ -18,6 +18,7 @@ import { HYSTERESIS, distance } from './stability';
 import { cancelText, endText } from './announcements';
 import { settleBlock } from './session';
 import { modeOf } from './modes/swap';
+import { isFinal, toVerdict } from '../core/verdict';
 
 export interface DropResult {
   next: Map<ListEntry, Key[]>;
@@ -207,8 +208,22 @@ const isOutside = (current: Session, event: DnDEvent) =>
   !event.over && !(current.target && distance(event.pointer, current.target.at) < HYSTERESIS);
 
 /** The verdict of `onBeforeDrop`, the keys a partial accept took unless it named its own. */
-const withPartial = (verdict: BeforeDropResult, partial: Key[] | undefined): BeforeDropResult =>
-  verdict === false ? false : Array.isArray(verdict) ? verdict : (partial ?? verdict);
+const withPartial = (value: BeforeDropResult, partial: Key[] | undefined): BeforeDropResult => {
+  const verdict = toVerdict(value);
+  return isFinal(verdict) || Array.isArray(verdict) ? verdict : (partial ?? verdict);
+};
+
+/**
+ * `onBeforeDrop` answered `'continue'`: the drop it was asked about won't happen. What it
+ * prepared goes, and the session moves on; the next drop decides afresh.
+ */
+export const resume = (g: GroupContext) => {
+  const current = g.session.value;
+  if (!current) return;
+  current.result = null;
+  current.marker = null;
+  current.removed = false;
+};
 
 const decide = (g: GroupContext, current: Session, event: DnDEvent): MaybePromise<BeforeDropResult> => {
   if (g.session.value !== current) return;

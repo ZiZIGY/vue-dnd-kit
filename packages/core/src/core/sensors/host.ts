@@ -88,9 +88,10 @@ function createHost(manager: DnDManager): Host {
         );
         control.adopt();
       },
-      // A running drag hears how it ended, whoever ended it.
+      // A running drag hears how it ended, whoever ended it, or that it goes on.
       onDragEnd: () => current?.conclude(true),
       onDragCancel: () => current?.conclude(false),
+      onDragResume: () => current?.resume(),
     },
     true,
   );

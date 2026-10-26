@@ -19,6 +19,8 @@ export interface Announcements {
   onDragOver(event: DnDEvent): string | undefined;
   onDragEnd(event: DnDEndEvent): string | undefined;
   onDragCancel(event: DnDEvent): string | undefined;
+  /** `onBeforeDrop` answered `'continue'`: the drag goes on. */
+  onDragResume(event: DnDEvent): string | undefined;
 }
 
 export interface KeyboardOptions {

@@ -8,7 +8,6 @@
 import { nextTick } from 'vue';
 import type {
   Active,
-  BeforeDropResult,
   Coordinates,
   DnDEndEvent,
   DnDEvent,
@@ -22,6 +21,7 @@ import { fadeInPlace, runDropAnimation, type OverlayItemLanding } from '../../an
 import { isFocusLost, nextFrame } from '../../utils/dom';
 import { markDocumentDragging } from '../styles';
 import { vibrate } from '../haptics';
+import { isFinal, toVerdict, type Verdict } from '../verdict';
 import { NO_LANDINGS, type ManagerContext } from './state';
 
 export function createSession(ctx: ManagerContext) {
@@ -268,6 +268,20 @@ export function createSession(ctx: ManagerContext) {
     void conclude('onDragCancel', ctx.events.createEvent());
   };
 
+  /**
+   * `onBeforeDrop` answered `'continue'`: nothing dropped, and the drag goes on from where
+   * it stood, the page back in drag mode. The sensor takes it up again (`onResume`): a
+   * pointer moves it without a button, and its next release drops.
+   */
+  const resume = (event: DnDEvent) => {
+    ctx.status.value = 'dragging';
+    ctx.restoreDocument = markDocumentDragging(event.active.sensor);
+    ctx.events.emit('onDragResume', event);
+    ctx.events.announce('onDragResume', event);
+    // Where the pointer is now: the user may have moved it during the wait.
+    ctx.loop.scheduleFrame();
+  };
+
   const drop = async () => {
     if (ctx.status.value !== 'dragging' || !ctx.active.value) return;
     ctx.loop.flushFrame();
@@ -282,22 +296,21 @@ export function createSession(ctx: ManagerContext) {
     void event.position;
     const target = event.over;
 
-    let verdict: BeforeDropResult = true;
+    let verdict: Verdict = true;
     try {
       // The user's monitors decide first: a list may apply a controlled drop's result in
       // its own `onBeforeDrop`, and a veto after that would strand the applied result.
       for (const monitor of ctx.events.orderMonitors(false)) {
-        const result = await monitor.onBeforeDrop?.(event);
-        if (result === false) {
-          verdict = false;
+        const result = toVerdict(await monitor.onBeforeDrop?.(event));
+        if (isFinal(result)) {
+          verdict = result;
           break;
         }
         if (Array.isArray(result)) verdict = result;
       }
-      if (verdict !== false && target?.accepted) {
-        const result = await ctx.droppables.get(target.id)?.onBeforeDrop?.(event);
-        if (result === false) verdict = false;
-        else if (Array.isArray(result)) verdict = result;
+      if (!isFinal(verdict) && target?.accepted) {
+        const result = toVerdict(await ctx.droppables.get(target.id)?.onBeforeDrop?.(event));
+        if (isFinal(result) || Array.isArray(result)) verdict = result;
       }
     } catch (error) {
       console.error(error);
@@ -305,6 +318,7 @@ export function createSession(ctx: ManagerContext) {
     }
     if (id !== session) return;
 
+    if (verdict === 'continue') return resume(event);
     if (verdict === false || (target && !target.accepted)) {
       vibrate(ctx.props.haptics, 'refuse', ctx.touch);
       return conclude('onDragCancel', event);

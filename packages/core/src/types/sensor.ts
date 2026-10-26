@@ -63,6 +63,12 @@ export interface SensorActivation {
   onStart?(drag: SensorDrag): void;
   /** The drag is over: its activation was aborted, or it dropped or was cancelled (by anyone). */
   onEnd?(drag: SensorDrag): void;
+  /**
+   * The drop the sensor asked for didn't happen and the drag goes on (`onBeforeDrop`
+   * answered `'continue'`): `move`, `drop` and `cancel` apply again. A pointer sensor
+   * lets the item follow the pointer until the next release.
+   */
+  onResume?(drag: SensorDrag): void;
 }
 
 /**

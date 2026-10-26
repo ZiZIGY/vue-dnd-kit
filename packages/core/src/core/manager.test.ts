@@ -78,3 +78,54 @@ describe('the document while a drop waits for onBeforeDrop', () => {
     await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
   });
 });
+
+describe('onBeforeDrop answers', () => {
+  afterEach(() => {
+    unmount?.();
+    unmount = null;
+  });
+
+  it("'accept' and 'reject' read as true and false", async () => {
+    mountCard();
+    const ended: string[] = [];
+    let answer: BeforeDropResult = 'reject';
+    manager.addMonitor({
+      onBeforeDrop: () => answer,
+      onDragEnd: () => ended.push('end'),
+      onDragCancel: () => ended.push('cancel'),
+    });
+    manager.start('card', { x: 1, y: 1 }, 'pointer');
+    await manager.drop();
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+    answer = 'accept';
+    manager.start('card', { x: 1, y: 1 }, 'pointer');
+    await manager.drop();
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+    expect(ended).toEqual(['cancel', 'end']);
+  });
+
+  it("'continue': no drop, the drag goes on in drag mode; the next drop asks again", async () => {
+    mountCard();
+    const heard: string[] = [];
+    const answers: BeforeDropResult[] = ['continue', 'accept'];
+    manager.addMonitor({
+      onBeforeDrop: () => answers.shift(),
+      onDragResume: () => heard.push('resume'),
+      onDragEnd: () => heard.push('end'),
+      onDragCancel: () => heard.push('cancel'),
+    });
+    manager.start('card', { x: 1, y: 1 }, 'pointer');
+    await manager.drop();
+    expect(manager.status.value).toBe('dragging');
+    expect(manager.active.value?.id).toBe('card');
+    expect(dragging()).toBe('pointer');
+    expect(heard).toEqual(['resume']);
+    // It moves again, and drops when asked.
+    manager.move({ x: 40, y: 30 });
+    manager.flushFrame();
+    expect(manager.pointer.value).toEqual({ x: 40, y: 30 });
+    await manager.drop();
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+    expect(heard).toEqual(['resume', 'end']);
+  });
+});

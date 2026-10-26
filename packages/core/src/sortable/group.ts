@@ -30,7 +30,7 @@ import { captureLayout, watchLayout } from './flip';
 import { watchChanges } from './autoAnimate';
 import { useCopyModifier } from './modifier';
 import { move, start } from './session';
-import { beforeDrop, cancel, end } from './drop';
+import { beforeDrop, cancel, end, resume } from './drop';
 import { getKeyboardCoordinates } from './keyboard';
 import { placeAt } from './place';
 import { createAnnouncer } from './announcements';
@@ -80,6 +80,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
       onBeforeDrop: (event) => beforeDrop(g, event),
       onDragEnd: (event) => end(g, event),
       onDragCancel: (event) => cancel(g, event),
+      onDragResume: () => resume(g),
       getKeyboardCoordinates: (_event, context) => getKeyboardCoordinates(g, context),
       placeAt: (active, position) => placeAt(g, active, position),
     },

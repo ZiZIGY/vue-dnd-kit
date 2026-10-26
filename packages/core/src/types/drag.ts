@@ -72,8 +72,16 @@ export interface DnDEndEvent<T = unknown> extends DnDEvent<T> {
   accepted: Key[];
 }
 
-/** `false` rejects the drop (animated return); a list of ids accepts only those items. */
-export type BeforeDropResult = boolean | void | Key[];
+/**
+ * What `onBeforeDrop` decides:
+ * - `'accept'` (or `true`, or nothing): the drop goes through;
+ * - `'reject'` (or `false`): no drop, the items fly back;
+ * - a list of ids: only those items are accepted, the others fly back;
+ * - `'continue'`: no drop, and the drag goes on. With a pointer the item follows it again
+ *   (no button held) and the next release drops it, a click does; a touch takes it again;
+ *   the keyboard moves it as before. Escape cancels it. The drop asks `onBeforeDrop` again.
+ */
+export type BeforeDropResult = boolean | void | Key[] | 'accept' | 'reject' | 'continue';
 
 // ─── Accept rules ──────────────────────────────────────────────────────────────
 
@@ -106,11 +114,13 @@ export interface DnDMonitor {
   onDragStart?(event: DnDEvent): void;
   onDragMove?(event: DnDEvent): void;
   onDragOver?(event: DnDEvent): void;
-  /** Runs before the drop is committed: `false` rejects, a list of ids accepts a subset. */
+  /** Runs before the drop is committed (see `BeforeDropResult`): `'reject'` refuses it, ids accept a subset. */
   onBeforeDrop?(event: DnDEvent): MaybePromise<BeforeDropResult>;
   /** A notification once the drop is done: sortable lists have run their `onDrop` and written it. */
   onDragEnd?(event: DnDEndEvent): void;
   onDragCancel?(event: DnDEvent): void;
+  /** `onBeforeDrop` answered `'continue'`: there was no drop, and the drag goes on. */
+  onDragResume?(event: DnDEvent): void;
   /** Keyboard drags: next pointer position for an arrow key (e.g. the next sortable slot). */
   getKeyboardCoordinates?(
     event: KeyboardEvent,

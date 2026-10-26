@@ -3,7 +3,15 @@
   import { makeDroppable, makeSortableList, useDnD, type SortableDropEvent } from '@vue-dnd-kit/core';
   import BoardColumnView from './BoardColumn.vue';
   import ConfirmDialog from './ConfirmDialog.vue';
-  import { BOARD, cardCount, createBoard, describeBoard, type BoardCard, type BoardColumn } from './board';
+  import {
+    BOARD,
+    cardCount,
+    createBoard,
+    describeBoard,
+    type BoardCard,
+    type BoardColumn,
+    type ConfirmAnswer,
+  } from './board';
 
   const columns = ref<BoardColumn[]>(createBoard());
   const { selection, active } = useDnD();
@@ -27,26 +35,26 @@
     title: string;
     message: string;
     confirmLabel: string;
-    resolve(ok: boolean): void;
+    resolve(answer: ConfirmAnswer): void;
   }
   const request = shallowRef<Request | null>(null);
-  const answer = (ok: boolean) => {
+  const answer = (value: ConfirmAnswer) => {
     const current = request.value;
     request.value = null;
-    current?.resolve(ok);
+    current?.resolve(value);
   };
 
   let created = 0;
   provide(BOARD, {
     confirmMove: (event, column) =>
-      new Promise<boolean>((resolve) => {
+      new Promise<ConfirmAnswer>((resolve) => {
         request.value = {
           title: `Move to ${column.title}?`,
           message: `${subject(event.items)} will be marked as finished.`,
           confirmLabel: `Move to ${column.title}`,
-          resolve: (ok) => {
-            if (!ok) log(`Kept ${subject(event.items)} out of ${column.title}`);
-            resolve(ok);
+          resolve: (value) => {
+            if (value === 'reject') log(`Kept ${subject(event.items)} out of ${column.title}`);
+            resolve(value);
           },
         };
       }),

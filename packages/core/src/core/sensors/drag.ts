@@ -38,7 +38,7 @@ export interface DragSetup {
   sensor?: Sensor;
   /** The element the input pressed, inside the dragged `item` (a sensor that gave an element). */
   pressed?: { target: Element; item: Element };
-  callbacks: Pick<SensorActivation, 'onStart' | 'onEnd'>;
+  callbacks: Pick<SensorActivation, 'onStart' | 'onEnd' | 'onResume'>;
   /** The drag ended: whoever tracks it lets it go. */
   onEnded(): void;
 }
@@ -51,6 +51,8 @@ export interface DragControl {
   adopt(): void;
   /** The provider's drag ended: dropped (`onDragEnd`) or not (`onDragCancel`). */
   conclude(dropped: boolean): void;
+  /** The drop didn't happen and the drag goes on (`'continue'`): the sensor drives it again. */
+  resume(): void;
   /** Aborts a pending activation (Escape, a hidden tab). */
   abort(): void;
 }
@@ -251,6 +253,15 @@ export function createSensorDrag(setup: DragSetup): DragControl {
       if (state !== 'dragging') return;
       dropped = value;
       end();
+    },
+    resume() {
+      if (state !== 'dragging') return;
+      released = false;
+      try {
+        callbacks.onResume?.(drag);
+      } catch (error) {
+        report(error);
+      }
     },
     abort,
   };

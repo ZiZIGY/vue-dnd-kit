@@ -23,7 +23,7 @@
     items: toRef(props.column, 'cards'),
     group: { name: 'board-cards', put: ({ keys }) => fits(keys.length) },
     // Only cards coming from another column need a confirmation.
-    onBeforeDrop: (event) => (props.column.confirm && !event.sameList ? board.confirmMove(event, props.column) : true),
+    onBeforeDrop: (event) => (props.column.confirm && !event.sameList ? board.confirmMove(event, props.column) : 'accept'),
     onDrop: (event) => board.recordMove(event, props.column),
   });
 

@@ -100,6 +100,67 @@ test.describe('app: trello board', () => {
     await expect(state(page)).toHaveText(INITIAL);
   });
 
+  test("'Keep dragging' (onBeforeDrop: 'continue'): no drop, the card follows the pointer and a click puts it down", async ({
+    page,
+  }) => {
+    await drag(page, byId(page, 'c6'), await at(cards(page, 'done'), 0.5, 0.8));
+    await expect(page.getByTestId('confirm')).toBeVisible();
+    await page.getByTestId('confirm-continue').click();
+    await expect(page.getByTestId('confirm')).toHaveCount(0);
+    // Still dragging, the page back in drag mode, with no button held.
+    await expect(page.locator('html')).toHaveAttribute('data-dnd-dragging', 'pointer');
+    await expect(overlay(page)).toBeVisible();
+    await expect(state(page)).toHaveText(INITIAL);
+    // The card follows the pointer into the backlog...
+    const target = await at(cards(page, 'backlog'), 0.5, 0.85);
+    await page.mouse.move(target.x, target.y, { steps: 12 });
+    await expect(cards(page, 'backlog')).toHaveAttribute('data-accepting');
+    const box = (await page.locator('[data-dnd-overlay]').boundingBox())!;
+    expect(target.x).toBeGreaterThan(box.x);
+    expect(target.x).toBeLessThan(box.x + box.width);
+    // ...and a click puts it down there (the backlog asks nothing).
+    await page.mouse.down();
+    await page.mouse.up();
+    await settled(page);
+    await expect(state(page)).toHaveText('backlog:c1,c2,c6 | todo:c3,c4,c5 | doing:c7 | review:c8,c9 | done:c10');
+    await expect(activity(page).locator('li').first()).toHaveText('Moved “Dark mode” to Backlog');
+  });
+
+  test("a keyboard drag goes on after 'continue': the arrows move it, Space drops it", async ({ page }) => {
+    const slotIn = () =>
+      page.evaluate(() =>
+        document.querySelector('[data-dnd-placeholder]')?.closest('[data-testid^="cards-"]')?.getAttribute('data-testid'),
+      );
+    await byId(page, 'c6').focus();
+    await press(page, 'Space');
+    // Past the full Review, into Done.
+    for (let i = 0; i < 3 && (await slotIn()) !== 'cards-done'; i++) await press(page, 'ArrowRight');
+    expect(await slotIn()).toBe('cards-done');
+    await press(page, 'Space');
+    await page.getByTestId('confirm-continue').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('html')).toHaveAttribute('data-dnd-dragging', 'keyboard');
+    // Back past In progress into To do, and dropped there.
+    await press(page, 'ArrowLeft', 'ArrowLeft');
+    expect(await slotIn()).toBe('cards-todo');
+    await press(page, 'Space');
+    await settled(page);
+    await expect(state(page)).toHaveText(/^backlog:c1,c2 \| todo:[^|]*c6[^|]* \| doing:c7 \|/);
+  });
+
+  test("Escape cancels a drag that goes on after 'continue'", async ({ page }) => {
+    await drag(page, byId(page, 'c6'), await at(cards(page, 'done'), 0.5, 0.8));
+    await page.getByTestId('confirm-continue').click();
+    await expect(page.locator('html')).toHaveAttribute('data-dnd-dragging', 'pointer');
+    await page.mouse.move(...(Object.values(await at(cards(page, 'backlog'), 0.5, 0.85)) as [number, number]), { steps: 8 });
+    await page.keyboard.press('Escape');
+    await settled(page);
+    await expect(state(page)).toHaveText(INITIAL);
+    // Nothing is left carried: a click on a card is just a click.
+    await byId(page, 'c3').click();
+    await expect(page.locator('[data-dnd-overlay]')).toHaveCount(0);
+  });
+
   test('moving into Done waits for the confirmation dialog', async ({ page }) => {
     await drag(page, byId(page, 'c6'), await at(cards(page, 'done'), 0.5, 0.8));
     const dialog = page.getByTestId('confirm');

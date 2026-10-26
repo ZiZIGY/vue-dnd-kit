@@ -70,7 +70,8 @@ export const makeSelectableForPress = (element: Element): (() => void) => {
 
 /** A press on a draggable, from pointerdown to pointerup (or cancel). */
 interface Press {
-  pointerId: number;
+  /** `null` while a resumed drag is carried with no button held: any primary pointer moves it. */
+  pointerId: number | null;
   drag: SensorDrag;
   /** Undoes `makeSelectableForPress` once the press has been handled. */
   restoreSelectable: () => void;
@@ -87,14 +88,18 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
       if (!press) return;
       press.stops.forEach((stop) => stop());
       press.restoreSelectable();
-      if (document.body.hasPointerCapture?.(press.pointerId)) {
+      if (press.pointerId !== null && document.body.hasPointerCapture?.(press.pointerId)) {
         document.body.releasePointerCapture(press.pointerId);
       }
       press = null;
     };
 
+    /** The pointer of the press; a carried drag (no button held) follows the primary one. */
+    const isOurs = (event: PointerEvent) =>
+      !!press && (press.pointerId === null ? event.isPrimary : event.pointerId === press.pointerId);
+
     const onPointerMove = (event: PointerEvent) => {
-      if (!press || event.pointerId !== press.pointerId) return;
+      if (!press || !isOurs(event)) return;
       // The mousedown that came with the press has been handled by now.
       press.restoreSelectable();
       press.drag.move({ x: event.clientX, y: event.clientY });
@@ -142,6 +147,47 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
       if (event.cancelable && press?.drag.state === 'dragging') event.preventDefault();
     };
 
+    /**
+     * A carried drag's press: it takes the item in hand where it lands (a touch has no
+     * hover, the item comes to the finger) and its release drops. The page under the item
+     * never sees it.
+     */
+    const onCarriedDown = (event: PointerEvent) => {
+      if (!press || press.pointerId !== null || !event.isPrimary) return;
+      event.preventDefault();
+      event.stopPropagation();
+      press.pointerId = event.pointerId;
+      try {
+        document.body.setPointerCapture(event.pointerId);
+      } catch {
+        // The pointer may already be gone; document listeners still work.
+      }
+      press.drag.move({ x: event.clientX, y: event.clientY });
+    };
+
+    /**
+     * The drop the pointer asked for didn't happen and the drag goes on (`'continue'`),
+     * with no button held any more: the item follows the pointer, and the next release
+     * drops it, so a click does.
+     */
+    const carry = (drag: SensorDrag) => {
+      release();
+      press = {
+        pointerId: null,
+        drag,
+        restoreSelectable: () => {},
+        stops: [
+          useEventListener(window, 'pointerdown', onCarriedDown, { capture: true }),
+          useEventListener(document, 'pointermove', onPointerMove),
+          useEventListener(document, 'pointerup', onPointerUp),
+          useEventListener(document, 'pointercancel', onPointerCancel),
+          useEventListener(window, 'contextmenu', preventWhileActive),
+          useEventListener(window, 'dragstart', preventWhileActive),
+          useEventListener(document, 'selectstart', cancelSelection, { capture: true }),
+        ],
+      };
+    };
+
     useEventListener(defaultDocument, 'pointerdown', (event: PointerEvent) => {
       if (press || !event.isPrimary || event.button !== 0) return;
       const target = event.composedPath()[0];
@@ -165,7 +211,10 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
         // that ended keeps it until the pointerup, whose click it swallows.
         onEnd(ended) {
           if (!ended.started && press?.drag === ended) release();
+          // A carried drag ended otherwise (Escape): nothing to release with a click.
+          else if (press?.drag === ended && press.pointerId === null) release();
         },
+        onResume: carry,
       });
       if (!drag) return;
 
