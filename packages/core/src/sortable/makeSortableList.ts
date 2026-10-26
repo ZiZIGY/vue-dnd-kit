@@ -127,6 +127,7 @@ export function makeSortableList<T>(
     getKeys: () => keys.value,
     getItem: (key) => byKey.value.get(key),
     layout: flatLayout,
+    options,
     strategy: () => read(options.strategy) ?? 'vertical',
     placeholder: () => read(options.placeholder) ?? 'item',
     animation: () => unref(options.animation) ?? manager.props.animation,

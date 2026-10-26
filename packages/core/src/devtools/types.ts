@@ -164,6 +164,8 @@ export interface SessionSnapshot {
   fitSize: Size | null;
   /** Whether the drag has an overlay (without one the element itself moves). */
   overlay: boolean;
+  /** The overlay box while it is shown (what the user sees dragged). */
+  overlayElement: HTMLElement | null;
   /** Ids with a clone taken at pickup, in drop order. */
   previews: Key[];
   /** The drop is decided; only the overlay animation is left. */
@@ -276,6 +278,46 @@ export type DevtoolsEvent =
    */
   | { type: 'change'; group: string; list: Key; added: Key[]; removed: Key[]; reordered: boolean };
 
+// ─── Overrides ─────────────────────────────────────────────────────────────────
+
+/** What an option override applies to: the provider, or one of its lists (trees too), draggables or drop targets by id. */
+export type OverrideTarget = { kind: 'provider' } | { kind: 'list' | 'draggable' | 'droppable'; id: Key };
+
+/** An option as the library reads it, and as the code gives it. */
+export interface OptionRead {
+  /** The value the library uses now (an override's, else the code's, refs and getters read). */
+  value: unknown;
+  /** The option as the code gives it (a ref or a getter as given), underneath any override. */
+  code: unknown;
+  overridden: boolean;
+}
+
+export interface OptionOverride {
+  target: OverrideTarget;
+  option: string;
+  value: unknown;
+}
+
+/**
+ * Live overrides of a provider's option values, for the devtools' editing: development
+ * only, never written to the code, gone with the provider. An override applies where the
+ * library reads the option, and what read it re-reads it.
+ *
+ * Options: the provider's props; a list's or tree's options; a plain drop target's
+ * (`disabled`, `priority`, `accept`, `acceptMode`); a draggable's or sortable item's
+ * `disabled`, `keyboard` and `activation` (overriding what it computes from its list too).
+ */
+export interface DevtoolsOverrides {
+  /** Overrides `option` of `target` with `value`: `false` when it can't (no such target or option, a frozen options object). */
+  set(target: OverrideTarget, option: string, value: unknown): boolean;
+  /** Removes the override of `option` of `target`, of every option of `target`, or (no target) every override. */
+  reset(target?: OverrideTarget, option?: string): void;
+  /** `option` of `target`; `undefined` when the target isn't mounted (or isn't one: a list's own drop target). */
+  read(target: OverrideTarget, option: string): OptionRead | undefined;
+  /** Every override set (its target may be unmounted: it applies again when it mounts). */
+  list(): OptionOverride[];
+}
+
 // ─── Bridge ────────────────────────────────────────────────────────────────────
 
 /** A provider as the devtools see it. */
@@ -297,6 +339,8 @@ export interface DevtoolsProvider {
   cancel(): void;
   /** Empties the selection. */
   clearSelection(): void;
+  /** Live overrides of its options (the devtools' editing). */
+  readonly overrides: DevtoolsOverrides;
 }
 
 export interface DevtoolsListener {
