@@ -86,6 +86,20 @@ test.describe('app: trello board', () => {
     await expect(activity(page).locator('li').first()).toHaveText('Moved 2 cards to Backlog');
   });
 
+  test('over a full column the slot goes home: what is shown is where the card lands', async ({ page }) => {
+    // Through "In progress", which takes the card: its slot moves there...
+    await hold(page, byId(page, 'c5'), await at(cards(page, 'doing'), 0.5, 0.85));
+    await expect(cards(page, 'doing').locator('[data-dnd-placeholder]')).toHaveCount(1);
+    // ...then over the full "Review": a drop there is refused, so the slot is back in "To do".
+    await glideTo(page, await at(cards(page, 'review'), 0.5, 0.85), 12);
+    await expect(overlay(page)).toHaveAttribute('data-refused');
+    await expect(cards(page, 'doing').locator('[data-dnd-placeholder]')).toHaveCount(0);
+    await expect(cards(page, 'todo').locator('[data-dnd-placeholder]')).toHaveCount(1);
+    await page.mouse.up();
+    await settled(page);
+    await expect(state(page)).toHaveText(INITIAL);
+  });
+
   test('moving into Done waits for the confirmation dialog', async ({ page }) => {
     await drag(page, byId(page, 'c6'), await at(cards(page, 'done'), 0.5, 0.8));
     const dialog = page.getByTestId('confirm');

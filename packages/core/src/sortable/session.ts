@@ -15,6 +15,7 @@ import { listOf, listOfKey, orderedLists, type GroupContext, type Session, type 
 import { gather, pickUp } from './block';
 import { setIndicator, updateIndicator } from './indicator';
 import { syncManager } from './landing';
+import { returnToOrigin } from './slot';
 import { pickedUpAt } from './announcements';
 import { bump } from './flip';
 import { HYSTERESIS, blocksList, distance, settleHysteresis } from './stability';
@@ -91,6 +92,17 @@ const leave = (g: GroupContext, current: Session) => {
   modeOf(current).leave?.(g, current);
 };
 
+/**
+ * The pointer is over a target that refuses the drag: a drop there is cancelled and the
+ * items fly back. The slot goes home first, so the lists show where they would land
+ * instead of the last list that took it. Trees keep it: their places have a depth.
+ */
+const refused = (g: GroupContext, current: Session, event: DnDEvent) => {
+  leave(g, current);
+  if (current.list == null || listOf(g, current.list)?.layout.nested || listOf(g, current.origin.list)?.layout.nested) return;
+  returnToOrigin(g, event.pointer);
+};
+
 /** Extension hook: runs on every move over a valid target, guarded or not (trees update depth here). */
 const afterMove = (g: GroupContext, current: Session, event: DnDEvent) => {
   listOf(g, current.list)?.layout.afterMove(event);
@@ -151,8 +163,12 @@ export const move = (g: GroupContext, event: DnDEvent) => {
     current.target = null;
     return leave(g, current);
   }
+  if (!over.accepted) {
+    current.target = null;
+    return refused(g, current, event);
+  }
   const target = lists.get(over.id);
-  if (!target || !over.accepted || target.isDisabled()) {
+  if (!target || target.isDisabled()) {
     current.target = null;
     return leave(g, current);
   }
