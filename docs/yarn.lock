@@ -6415,7 +6415,7 @@ motion-utils@14.1.1, motion-utils@~14.1.1:
   resolved "https://registry.yarnpkg.com/motion-utils/-/motion-utils-14.1.1.tgz#aa34a30a91da308178b60e98fbf3d06590773470"
   integrity sha512-3VvN5Uvf8B6qG+OfOui6Nht5EWp+vLuU3IqcAj7ItZGKqtmTjCebl5sGZF7/08gEHRnEl1AP/fIwbcEyVrcQGQ==
 
-motion-v@^2.6.0:
+motion-v@^2.6.0, motion-v@^2.8.0:
   version "2.8.0"
   resolved "https://registry.yarnpkg.com/motion-v/-/motion-v-2.8.0.tgz#117a755a3d3897679af73d26aa8f71db0428317e"
   integrity sha512-kCwxm+EUbXW/lUdhTyozTKCX2WmQ5aDrjrPtFnUKByw99cz6mQAJyqtIubGdecnDM4VvNz8JOhWy2upp3m5b3w==

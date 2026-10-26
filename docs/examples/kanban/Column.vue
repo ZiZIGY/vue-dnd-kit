@@ -30,6 +30,8 @@ const { items, isOver } = makeSortableList(list, {
 
 <style scoped>
 .column {
+  display: flex;
+  flex-direction: column;
   padding: 10px;
   border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
   border-radius: 14px;
@@ -67,8 +69,10 @@ h3 {
   font: 11px/1 ui-monospace, Menlo, Consolas, monospace;
 }
 
+/* The list fills the column: a card dropped low in the column still lands in it. */
 .cards {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 8px;
   min-height: 160px;

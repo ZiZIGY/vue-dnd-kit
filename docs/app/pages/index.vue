@@ -31,12 +31,32 @@
   const list = <T extends string>(key: string, fields: T[]) =>
     (tm(key) as Record<T, unknown>[]).map((item) => Object.fromEntries(fields.map((field) => [field, rt(item[field] as never)])) as Record<T, string>);
 
-  const showcases = computed(() => [
-    { key: 'lists', label: t('home.deck.sortable.label'), example: 'lists', focus: 'Playlist.vue', docs: docs('getting-started/quick-start'), height: '34rem' },
-    { key: 'kanban', label: t('home.deck.kanban.label'), example: 'kanban', focus: 'Column.vue', docs: docs('getting-started/quick-start'), height: '30rem' },
-    { key: 'tree', label: t('home.deck.tree.label'), example: 'tree', focus: 'FileTree.vue', docs: docs('getting-started/quick-start'), height: '34rem' },
-    { key: 'multi', label: t('home.deck.multi.label'), example: 'multi-drag', focus: 'Gallery.vue', docs: docs('getting-started/quick-start'), height: '30rem' },
-  ]);
+  const SHOWCASES = [
+    { key: 'drop', example: 'drop-zones', focus: 'Folder.vue', height: '32rem' },
+    { key: 'lists', example: 'lists', focus: 'Playlist.vue', height: '34rem' },
+    { key: 'kanban', example: 'kanban', focus: 'Column.vue', height: '30rem' },
+    { key: 'tree', example: 'tree', focus: 'FileTree.vue', height: '34rem' },
+    { key: 'multi', example: 'multi-drag', focus: 'Gallery.vue', height: '30rem', bleed: true },
+    { key: 'constraints', example: 'constraints', focus: 'Board.vue', height: '32rem' },
+  ];
+  const showcases = computed(() => SHOWCASES.map((showcase) => ({ ...showcase, docs: docs('getting-started/quick-start') })));
+
+  // The hero's title, word by word: each one comes in a little after the one before.
+  const titleWords = computed(() => {
+    let count = 0;
+    return lines(t('home.title')).map((line) => line.split(' ').map((word) => ({ word, delay: 0.15 + 0.07 * count++ })));
+  });
+
+  /** A cell of a grid: it comes into view after the cells before it; its icon tile springs on hover. */
+  const cellMotion = (at: number) =>
+    ({
+      initial: { opacity: 0, y: 28 },
+      whileInView: { opacity: 1, y: 0 },
+      inViewOptions: { once: true, margin: '0px 0px -10% 0px' },
+      transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: at * 0.08 },
+      whileHover: 'hover',
+    }) as const;
+  const TILE_VARIANTS = { hover: { rotate: -8, scale: 1.1, transition: { type: 'spring', stiffness: 420, damping: 14 } } };
 
   const apis = computed(() => list('home.intro.apis', ['code', 'text']));
   const MORE_ICONS = ['i-lucide-wand-sparkles', 'i-lucide-accessibility', 'i-lucide-rows-3', 'i-lucide-database'];
@@ -91,16 +111,32 @@
     <SiteSection>
       <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <div class="px-(--gutter) py-14 lg:py-20">
-          <h1 class="display text-5xl sm:text-6xl lg:text-7xl xl:text-[6rem] 2xl:text-[6.75rem]">
+          <h1 class="display text-balance text-5xl sm:text-6xl lg:text-7xl xl:text-[6rem] 2xl:text-[6.75rem]">
             <template
-              v-for="(line, at) in lines(t('home.title'))"
+              v-for="(line, at) in titleWords"
               :key="at"
             >
-              <br v-if="at" />{{ line }}
+              <br v-if="at" />
+              <template
+                v-for="(part, w) in line"
+                :key="w"
+              >
+                <Motion
+                  as="span"
+                  class="inline-block"
+                  :initial="{ opacity: 0, y: '0.32em', filter: 'blur(12px)' }"
+                  :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
+                  :transition="{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: part.delay }"
+                  >{{ part.word }}</Motion
+                >{{ w < line.length - 1 ? ' ' : '' }}
+              </template>
             </template>
           </h1>
         </div>
-        <div class="flex flex-col justify-end gap-8 border-default px-(--gutter) pb-14 max-lg:pt-0 lg:border-s lg:py-20">
+        <Reveal
+          class="flex flex-col justify-end gap-8 border-default px-(--gutter) pb-14 max-lg:pt-0 lg:border-s lg:py-20"
+          :delay="0.45"
+        >
           <p class="max-w-md text-lg leading-relaxed text-muted">{{ t('home.lead') }}</p>
           <div class="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
             <SiteCopyCommand command="npm i @vue-dnd-kit/core" />
@@ -113,7 +149,7 @@
             />
           </div>
           <p class="label text-[10px] text-dimmed">{{ t('home.openSource') }}</p>
-        </div>
+        </Reveal>
       </div>
     </SiteSection>
 
@@ -125,25 +161,36 @@
             aria-hidden="true"
             class="dot-paper fade-right pointer-events-none absolute inset-0 opacity-60"
           />
-          <p class="label relative flex items-center gap-3 text-[11px] text-dimmed">
-            <span class="text-(--ui-primary)">00</span>
-            <span class="h-px w-8 bg-(--ui-border-accented)" />
-            {{ t('home.intro.label') }}
-          </p>
-          <h2 class="heading relative mt-6 text-4xl sm:text-5xl lg:text-6xl">
+          <SiteEyebrow
+            :index="0"
+            :label="t('home.intro.label')"
+            class="relative"
+          />
+          <Reveal
+            as="h2"
+            class="heading relative mt-6 text-4xl sm:text-5xl lg:text-6xl"
+            :delay="0.1"
+          >
             <template
               v-for="(line, at) in lines(t('home.intro.title'))"
               :key="at"
             >
               <br v-if="at" />{{ line }}
             </template>
-          </h2>
-          <p class="relative mt-6 max-w-lg text-base leading-relaxed text-muted lg:text-lg">{{ t('home.intro.text') }}</p>
+          </Reveal>
+          <Reveal
+            as="p"
+            class="relative mt-6 max-w-lg text-base leading-relaxed text-muted lg:text-lg"
+            :delay="0.2"
+            >{{ t('home.intro.text') }}</Reveal
+          >
         </div>
         <ul class="flex flex-col border-default max-lg:border-t lg:border-s">
-          <li
+          <Reveal
             v-for="(api, at) in apis"
             :key="api.code"
+            as="li"
+            :delay="0.1 + at * 0.08"
             class="group flex flex-1 flex-col justify-center gap-3 border-dashed border-default px-(--gutter) py-8 transition-colors duration-300 hover:bg-muted"
             :class="at ? 'border-t' : ''"
           >
@@ -152,7 +199,7 @@
               <code class="font-mono text-[15px] font-medium text-highlighted transition-colors group-hover:text-(--ui-primary)">{{ api.code }}</code>
             </span>
             <span class="max-w-md text-[15px] leading-relaxed text-muted">{{ api.text }}</span>
-          </li>
+          </Reveal>
         </ul>
       </div>
     </SiteSection>
@@ -162,7 +209,7 @@
       v-for="(showcase, at) in showcases"
       :key="showcase.key"
       :index="at + 1"
-      :label="showcase.label"
+      :label="t(`home.showcase.${showcase.key}.label`)"
       :title="t(`home.showcase.${showcase.key}.title`)"
       :text="t(`home.showcase.${showcase.key}.text`)"
       :hint="t(`home.showcase.${showcase.key}.hint`)"
@@ -171,34 +218,47 @@
       :docs="showcase.docs"
       :docs-label="t('home.showcase.docs')"
       :height="showcase.height"
+      :bleed="showcase.bleed"
     />
 
     <!-- And the rest -->
     <SiteSection>
-      <p class="label flex items-center gap-3 px-(--gutter) pt-16 text-[11px] text-dimmed lg:pt-20">
-        <span class="text-(--ui-primary)">05</span>
-        <span class="h-px w-8 bg-(--ui-border-accented)" />
-        {{ t('home.moreLabel') }}
-      </p>
-      <h2 class="heading mt-6 px-(--gutter) text-4xl sm:text-5xl lg:text-6xl">{{ t('home.moreTitle') }}</h2>
-      <div class="cells-dashed grid-cols-1 mt-12 border-t border-default sm:grid-cols-2 lg:grid-cols-4 lg:mt-16">
-        <article
+      <SiteEyebrow
+        :index="showcases.length + 1"
+        :label="t('home.moreLabel')"
+        class="px-(--gutter) pt-16 lg:pt-20"
+      />
+      <Reveal
+        as="h2"
+        class="heading mt-6 px-(--gutter) text-4xl sm:text-5xl lg:text-6xl"
+        :delay="0.1"
+      >
+        {{ t('home.moreTitle') }}
+      </Reveal>
+      <div class="cells-dashed mt-12 grid-cols-1 border-t border-default sm:grid-cols-2 lg:mt-16 lg:grid-cols-4">
+        <Motion
           v-for="(item, at) in more"
           :key="item.title"
+          as="article"
           class="group flex flex-col bg-default px-(--gutter) py-10 transition-colors duration-300 hover:bg-muted lg:py-12"
+          v-bind="cellMotion(at)"
         >
           <div class="flex items-center justify-between">
-            <span class="grid size-10 place-items-center text-highlighted ring-1 ring-inset ring-default transition-colors duration-300 group-hover:bg-(--color-accent) group-hover:text-(--color-on-accent) group-hover:ring-(--color-accent)">
+            <Motion
+              as="span"
+              class="grid size-10 place-items-center text-highlighted ring-1 ring-inset ring-default transition-colors duration-300 group-hover:bg-(--color-accent) group-hover:text-(--color-on-accent) group-hover:ring-(--color-accent)"
+              :variants="TILE_VARIANTS"
+            >
               <UIcon
                 :name="item.icon!"
                 class="size-[18px]"
               />
-            </span>
+            </Motion>
             <span class="font-mono text-[11px] text-dimmed">{{ index(at + 1) }}</span>
           </div>
           <h3 class="heading mt-12 text-xl lg:text-2xl">{{ item.title }}</h3>
           <p class="mt-3 text-[15px] leading-relaxed text-muted">{{ item.text }}</p>
-        </article>
+        </Motion>
       </div>
     </SiteSection>
 
@@ -209,27 +269,45 @@
           aria-hidden="true"
           class="hatch-paper fade-right pointer-events-none absolute inset-0 text-(--ui-border-accented) opacity-60"
         />
-        <p class="label relative flex items-center gap-3 text-[11px] text-dimmed">
-          <span class="text-(--ui-primary)">06</span>
-          <span class="h-px w-8 bg-(--ui-border-accented)" />
-          {{ t('nav.ecosystem') }}
-        </p>
-        <h2 class="heading relative mt-6 max-w-3xl text-4xl sm:text-5xl lg:text-6xl">{{ t('home.ecosystem.title') }}</h2>
-        <p class="relative mt-5 max-w-xl text-base leading-relaxed text-muted lg:text-lg">{{ t('home.ecosystem.text') }}</p>
+        <SiteEyebrow
+          :index="showcases.length + 2"
+          :label="t('nav.ecosystem')"
+          class="relative"
+        />
+        <Reveal
+          as="h2"
+          class="heading relative mt-6 max-w-3xl text-4xl sm:text-5xl lg:text-6xl"
+          :delay="0.1"
+        >
+          {{ t('home.ecosystem.title') }}
+        </Reveal>
+        <Reveal
+          as="p"
+          class="relative mt-5 max-w-xl text-base leading-relaxed text-muted lg:text-lg"
+          :delay="0.2"
+        >
+          {{ t('home.ecosystem.text') }}
+        </Reveal>
       </div>
       <div class="cells-dashed grid-cols-1 border-t border-default md:grid-cols-2 xl:grid-cols-4">
-        <article
+        <Motion
           v-for="(item, at) in ecosystem"
           :key="item.key"
+          as="article"
           class="group flex flex-col bg-default px-(--gutter) py-10 transition-colors duration-300 hover:bg-muted lg:py-12"
+          v-bind="cellMotion(at)"
         >
           <div class="flex items-center justify-between">
-            <span class="grid size-10 place-items-center text-(--ui-primary) ring-1 ring-inset ring-default transition-colors duration-300 group-hover:bg-(--color-accent) group-hover:text-(--color-on-accent) group-hover:ring-(--color-accent)">
+            <Motion
+              as="span"
+              class="grid size-10 place-items-center text-(--ui-primary) ring-1 ring-inset ring-default transition-colors duration-300 group-hover:bg-(--color-accent) group-hover:text-(--color-on-accent) group-hover:ring-(--color-accent)"
+              :variants="TILE_VARIANTS"
+            >
               <UIcon
                 :name="item.icon"
                 class="size-[18px]"
               />
-            </span>
+            </Motion>
             <span class="font-mono text-[11px] text-dimmed">{{ index(at + 1) }}</span>
           </div>
           <span class="mt-10 font-mono text-xs text-muted">{{ item.tag }}</span>
@@ -240,7 +318,7 @@
             command="npx skills add ZiZIGY/vue-dnd-kit"
             class="mt-6 self-start"
           />
-        </article>
+        </Motion>
       </div>
     </SiteSection>
 
@@ -254,24 +332,30 @@
         class="hatch-paper fade-bottom pointer-events-none absolute inset-0 opacity-[0.09]"
       />
       <div class="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <div
+        <Motion
           v-for="(metric, at) in metrics"
           :key="metric.label"
           class="border-dashed border-(--color-on-accent)/25 px-(--gutter) py-12 lg:py-16"
           :class="[at ? 'max-sm:border-t' : '', at % 2 ? 'sm:border-s' : '', at > 1 ? 'sm:max-lg:border-t' : '', at === 2 ? 'lg:border-s' : '']"
+          v-bind="cellMotion(at)"
         >
           <p class="font-mono text-[11px] font-semibold opacity-60">{{ index(at + 1) }}</p>
           <p class="mt-6 text-6xl font-bold tracking-[-0.05em] tabular-nums lg:text-7xl">
             <CountUp :value="metric.value" /><span class="text-4xl lg:text-5xl">{{ metric.suffix }}</span>
           </p>
           <p class="label mt-3 text-[11px] opacity-75">{{ metric.label }}</p>
-        </div>
+        </Motion>
       </div>
     </SiteSection>
 
     <!-- Where to start -->
     <SiteSection>
-      <h2 class="heading px-(--gutter) pt-16 pb-12 text-4xl sm:text-5xl lg:pt-24 lg:pb-16 lg:text-6xl">{{ t('home.next.title') }}</h2>
+      <Reveal
+        as="h2"
+        class="heading px-(--gutter) pt-16 pb-12 text-4xl sm:text-5xl lg:pt-24 lg:pb-16 lg:text-6xl"
+      >
+        {{ t('home.next.title') }}
+      </Reveal>
       <div class="grid grid-cols-1 border-t border-default md:grid-cols-2">
         <NuxtLink
           v-for="(card, at) in ['guide', 'examples']"
@@ -292,7 +376,10 @@
               class="size-6 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
             />
           </span>
-          <div class="relative">
+          <Reveal
+            class="relative"
+            :delay="at * 0.1"
+          >
             <h3 class="text-3xl font-bold tracking-[-0.04em] lg:text-5xl">{{ t(`home.next.${card}.title`) }}</h3>
             <p
               class="mt-4 max-w-sm text-[15px] leading-relaxed"
@@ -300,7 +387,7 @@
             >
               {{ t(`home.next.${card}.text`) }}
             </p>
-          </div>
+          </Reveal>
         </NuxtLink>
       </div>
     </SiteSection>

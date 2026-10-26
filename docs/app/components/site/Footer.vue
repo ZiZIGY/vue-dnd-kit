@@ -78,12 +78,17 @@
         <span>{{ t('footer.aiNote') }}</span>
       </div>
       <!-- The name, larger than the page, cut by its bottom edge. -->
-      <p
+      <Motion
+        as="p"
         aria-hidden="true"
+        :initial="{ y: '35%', opacity: 0 }"
+        :while-in-view="{ y: 0, opacity: 1 }"
+        :in-view-options="{ once: true }"
+        :transition="{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }"
         class="-mb-[0.22em] select-none whitespace-nowrap bg-linear-to-b from-(--ui-text-highlighted)/20 to-(--ui-text-highlighted)/0 bg-clip-text px-(--gutter) pt-4 text-center text-[clamp(3.5rem,15vw,16.5rem)] leading-none font-bold tracking-[-0.065em] text-transparent"
       >
         vue-dnd-kit
-      </p>
+      </Motion>
     </SiteSection>
   </footer>
 </template>

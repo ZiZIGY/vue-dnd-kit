@@ -4,9 +4,10 @@
 
   /**
    * Where a live demo plays: a bar on top (LIVE, a hint, the pointer's coordinates, reset),
-   * then dotted paper with the demo in the middle, framed by viewfinder corners.
+   * then dotted paper with the demo in the middle, framed by viewfinder corners. `bleed`:
+   * the demo takes the whole paper (a selection box drawn anywhere on it).
    */
-  defineProps<{ demo: Component | null; minHeight?: string; hint?: string }>();
+  defineProps<{ demo: Component | null; minHeight?: string; hint?: string; bleed?: boolean }>();
   const { t } = useI18n();
   const runs = ref(0);
 
@@ -28,11 +29,12 @@
   const coordinate = (value: number | undefined) => (value === undefined ? '----' : String(Math.max(0, value)).padStart(4, '0'));
   useDemoWords(paper);
 
+  // The viewfinder's corners close in on the paper when it comes into view.
   const CORNERS = [
-    'top-3 left-3 border-t border-s',
-    'top-3 right-3 border-t border-e',
-    'bottom-3 left-3 border-b border-s',
-    'bottom-3 right-3 border-b border-e',
+    { class: 'top-3 left-3 border-t border-s', from: { x: -14, y: -14 } },
+    { class: 'top-3 right-3 border-t border-e', from: { x: 14, y: -14 } },
+    { class: 'bottom-3 left-3 border-b border-s', from: { x: -14, y: 14 } },
+    { class: 'bottom-3 right-3 border-b border-e', from: { x: 14, y: 14 } },
   ];
 </script>
 
@@ -73,20 +75,29 @@
 
     <div
       ref="paper"
-      class="relative flex flex-1 items-center justify-center px-5 py-14 sm:px-12"
+      class="relative flex flex-1 items-center justify-center"
+      :class="bleed ? '' : 'px-5 py-14 sm:px-12'"
     >
       <div
         aria-hidden="true"
         class="dot-paper fade-radial pointer-events-none absolute inset-0 opacity-70"
       />
-      <span
+      <Motion
         v-for="corner in CORNERS"
-        :key="corner"
+        :key="corner.class"
+        as="span"
         aria-hidden="true"
         class="pointer-events-none absolute size-3 border-(--ui-text-dimmed)"
-        :class="corner"
+        :class="corner.class"
+        :initial="{ opacity: 0, ...corner.from }"
+        :while-in-view="{ opacity: 1, x: 0, y: 0 }"
+        :in-view-options="{ once: true }"
+        :transition="{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.2 }"
       />
-      <div class="relative w-full">
+      <div
+        class="w-full"
+        :class="bleed ? 'absolute inset-0' : 'relative'"
+      >
         <ClientOnly>
           <component
             :is="demo"

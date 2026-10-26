@@ -6,8 +6,9 @@ type Track = { id: string; title: string; artist: string; seconds: number; hue: 
 const props = defineProps<{ track: Track }>();
 
 const el = useTemplateRef<HTMLElement>('el');
-// `index` follows the draft: the numbers change while you drag, and the first track plays.
-const { index } = makeSortableItem(el, { item: () => props.track });
+// Dragged by its grip only. `index` follows the draft: the numbers change while you drag,
+// and the first track plays.
+const { index } = makeSortableItem(el, { item: () => props.track, handle: '.grip' });
 
 const time = computed(() => `${Math.floor(props.track.seconds / 60)}:${String(props.track.seconds % 60).padStart(2, '0')}`);
 const cover = computed(() => `linear-gradient(135deg, hsl(${props.track.hue} 85% 66%), hsl(${props.track.hue + 50} 70% 38%))`);
@@ -25,9 +26,11 @@ const cover = computed(() => `linear-gradient(135deg, hsl(${props.track.hue} 85%
       <small>{{ track.artist }}</small>
     </span>
     <span class="time">{{ time }}</span>
-    <svg class="grip" viewBox="0 0 10 16" aria-hidden="true">
-      <circle v-for="dot in 6" :key="dot" :cx="dot % 2 ? 2 : 8" :cy="Math.ceil(dot / 2) * 5 - 2" r="1.5" />
-    </svg>
+    <button type="button" class="grip" aria-label="Reorder">
+      <svg viewBox="0 0 10 16" aria-hidden="true">
+        <circle v-for="dot in 6" :key="dot" :cx="dot % 2 ? 2 : 8" :cy="Math.ceil(dot / 2) * 5 - 2" r="1.5" />
+      </svg>
+    </button>
   </li>
 </template>
 
@@ -39,18 +42,12 @@ const cover = computed(() => `linear-gradient(135deg, hsl(${props.track.hue} 85%
   gap: 12px;
   padding: 8px 10px;
   border-radius: 10px;
-  cursor: grab;
   user-select: none;
   transition: background 0.2s;
 }
 
 .track:hover {
   background: color-mix(in srgb, currentColor 7%, Canvas);
-}
-
-.track:focus-visible {
-  outline: 2px solid #42b883;
-  outline-offset: -2px;
 }
 
 /* The slot the dragged track will land in: an empty, dashed row. */
@@ -148,11 +145,38 @@ small {
 }
 
 .grip {
+  display: grid;
   flex: none;
+  place-items: center;
+  width: 20px;
+  height: 28px;
+  margin-right: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  opacity: 0.35;
+  cursor: grab;
+  transition:
+    opacity 0.2s,
+    background 0.2s;
+}
+
+.grip svg {
   width: 10px;
   height: 16px;
   fill: currentColor;
-  opacity: 0.3;
+}
+
+.grip:hover {
+  opacity: 0.8;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.grip:focus-visible {
+  outline: 2px solid #42b883;
+  opacity: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -25,17 +25,24 @@ const { isSelecting, style } = makeSelectionArea(area);
 </template>
 
 <style scoped>
+/* The area fills its box: a selection box starts anywhere in it. */
 .area {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 320px;
   padding: 24px;
   user-select: none;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 120px));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
-  justify-content: center;
+  width: min(100%, 528px);
 }
 
 .band {

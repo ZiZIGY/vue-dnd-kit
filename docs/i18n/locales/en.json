@@ -92,22 +92,38 @@
       "lists": {
         "title": "Lists and grids",
         "text": "Render a draft of your array and it reorders live while you drag. On drop, the new order is written into your ref. Vertical, horizontal or a grid of any size.",
-        "hint": "Drag a track or an app"
+        "hint": "Drag a track or an app",
+        "label": "Sortable"
       },
       "kanban": {
         "title": "Kanban boards",
         "text": "Lists in one group trade items. Copy from a palette, take plain draggables in, or swap instead of shifting — the receiving list makes room as you hover.",
-        "hint": "Move cards between the columns"
+        "hint": "Move cards between the columns",
+        "label": "Kanban"
       },
       "tree": {
         "title": "Trees",
         "text": "Rendered flat with depths, so they virtualize. Drag sideways to change the level or hover a folder to drop inside; limit depth and decide what nests where.",
-        "hint": "Drag sideways to change the depth"
+        "hint": "Drag sideways to change the depth",
+        "label": "Trees"
       },
       "multi": {
         "title": "Multi-drag",
         "text": "Select with Ctrl/Cmd-click or draw a box, then drag one: the whole selection travels together and lands in order, even across lists.",
-        "hint": "Ctrl/Cmd-click or draw a box, then drag"
+        "hint": "Ctrl/Cmd-click or draw a box, then drag",
+        "label": "Multi-drag"
+      },
+      "drop": {
+        "label": "Drag & drop",
+        "title": "Drag and drop",
+        "text": "A draggable, a drop target and a rule for what goes where. Targets light up when they take the drag and refuse what they don't; what a drop does is up to you.",
+        "hint": "Sort the files into the folders"
+      },
+      "constraints": {
+        "label": "Constraints",
+        "title": "Axes, bounds and grids",
+        "text": "A drag area sets the rules for everything dragged inside it: lock an axis, keep drags within its edges, snap to a grid — and change them while the app runs.",
+        "hint": "Switch the rules, then drag a note"
       }
     },
     "more": [

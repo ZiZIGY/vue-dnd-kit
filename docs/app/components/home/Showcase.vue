@@ -12,6 +12,8 @@
     /** The file shown first: the one the feature is about. */
     focus?: string;
     hint?: string;
+    /** The demo takes the whole stage (see `ExampleStage`). */
+    bleed?: boolean;
     docs: string;
     docsLabel: string;
     height?: string;
@@ -23,14 +25,19 @@
   <SiteSection>
     <div class="grid grid-cols-1 gap-8 px-(--gutter) pt-16 pb-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:items-end lg:gap-16 lg:pt-24 lg:pb-16">
       <div>
-        <p class="label flex items-center gap-3 text-[11px] text-dimmed">
-          <span class="text-(--ui-primary) tabular-nums">{{ String(index).padStart(2, '0') }}</span>
-          <span class="h-px w-8 bg-(--ui-border-accented)" />
-          {{ label }}
-        </p>
-        <h2 class="heading mt-6 text-4xl sm:text-5xl lg:text-6xl">{{ title }}</h2>
+        <SiteEyebrow
+          :index="index"
+          :label="label"
+        />
+        <Reveal
+          as="h2"
+          class="heading mt-6 text-4xl sm:text-5xl lg:text-6xl"
+          :delay="0.1"
+        >
+          {{ title }}
+        </Reveal>
       </div>
-      <div>
+      <Reveal :delay="0.2">
         <p class="text-base leading-relaxed text-muted">{{ text }}</p>
         <NuxtLink
           :to="docs"
@@ -42,12 +49,13 @@
             class="size-3.5"
           />
         </NuxtLink>
-      </div>
+      </Reveal>
     </div>
     <div class="grid grid-cols-1 border-t border-default xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
       <ExampleStage
         :demo="Demo"
         :hint="hint"
+        :bleed="bleed"
         :min-height="height ?? '32rem'"
         class="border-default xl:border-e"
       />

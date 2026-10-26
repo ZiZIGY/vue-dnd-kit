@@ -30,7 +30,7 @@ const ORIGIN = 'https://zizigy.github.io';
 
 export default defineNuxtConfig({
   // Nuxt UI before Content: its prose components must be registered first.
-  modules: ['@nuxt/ui', '@nuxt/content', '@nuxtjs/i18n', '@nuxtjs/seo', './modules/examples', './modules/api'],
+  modules: ['@nuxt/ui', '@nuxt/content', '@nuxtjs/i18n', '@nuxtjs/seo', 'motion-v/nuxt', './modules/examples', './modules/api'],
 
   compatibilityDate: '2026-10-01',
   devtools: { enabled: true },
@@ -47,6 +47,12 @@ export default defineNuxtConfig({
   alias: {
     '@vue-dnd-kit/core': fromRoot('packages/core/src/index.ts'),
     '@vue-dnd-kit/actions': fromRoot('packages/actions/src/index.ts'),
+  },
+
+  // The live examples are app code too: their SFCs resolve the library's types
+  // (`defineProps<OverlayProps>()`), and the typecheck covers them.
+  typescript: {
+    tsConfig: { include: ['../examples/**/*'] },
   },
 
   vite: {

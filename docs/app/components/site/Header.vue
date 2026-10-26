@@ -9,6 +9,8 @@
     { label: 'GitHub', to: 'https://github.com/ZiZIGY/vue-dnd-kit', active: false, external: true },
   ]);
 
+  const hovered = ref<string | null>(null);
+
   // The bar gets its panel once the page scrolls under it.
   const scrolled = ref(false);
   const open = ref(false);
@@ -40,16 +42,27 @@
       <nav
         :aria-label="t('nav.menu')"
         class="mx-auto hidden items-center gap-1 md:flex"
+        @mouseleave="hovered = null"
       >
         <NuxtLink
           v-for="link in links"
           :key="link.label"
           :to="link.to"
           :target="link.external ? '_blank' : undefined"
-          class="label rounded-(--ui-radius) px-3 py-2 text-[11px] transition-colors"
+          class="label relative rounded-(--ui-radius) px-3 py-2 text-[11px] transition-colors"
           :class="link.active ? 'text-(--ui-primary)' : 'text-highlighted hover:text-(--ui-primary)'"
-          >{{ link.label }}</NuxtLink
+          @mouseenter="hovered = link.label"
         >
+          <!-- One plate under the hovered link: it slides from link to link. -->
+          <Motion
+            v-if="hovered === link.label"
+            layout-id="nav-plate"
+            aria-hidden="true"
+            class="absolute inset-0 -z-10 rounded-(--ui-radius) bg-elevated"
+            :transition="{ type: 'spring', stiffness: 500, damping: 38 }"
+          />
+          {{ link.label }}
+        </NuxtLink>
       </nav>
 
       <div class="ms-auto flex items-center gap-1 md:ms-0">

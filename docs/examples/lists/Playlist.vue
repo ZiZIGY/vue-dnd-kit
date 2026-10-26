@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from 'vue';
-import { makeSortableList } from '@vue-dnd-kit/core';
+import { makeSortableList, restrictToParent } from '@vue-dnd-kit/core';
 import Track from './Track.vue';
 
 const tracks = ref([
@@ -17,7 +17,8 @@ const total = computed(() => {
 
 const list = useTemplateRef<HTMLElement>('list');
 // A vertical list: the rows make room while you drag; on drop, `tracks` gets the new order.
-const { items } = makeSortableList(list, { items: tracks });
+// The tracks move on one axis and stay inside the list.
+const { items } = makeSortableList(list, { items: tracks, axis: 'y', modifiers: [restrictToParent] });
 </script>
 
 <template>

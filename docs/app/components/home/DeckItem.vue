@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { makeSortableItem } from '@vue-dnd-kit/core';
-  import type { DeckCard } from '~/data/deck';
+  import { DECK, type DeckCard } from '~/data/deck';
 
   /**
    * A card of the deck. Its angle and size follow its place, so the deck fans out around
@@ -12,6 +12,14 @@
   const { index, isPlaceholder } = makeSortableItem(el, { item: () => props.card });
 
   const offset = computed(() => index.value - (props.count - 1) / 2);
+  // Dealt on load: each card flies out of the middle of the deck, the outer ones last
+  // (its place in the deck: the list hasn't measured it yet).
+  const dealt = DECK.findIndex((entry) => entry.id === props.card.id) - (DECK.length - 1) / 2;
+  const deal = {
+    initial: { opacity: 0, x: -dealt * 140, y: 90, scale: 0.86 },
+    animate: { opacity: 1, x: 0, y: 0, scale: 1 },
+    transition: { type: 'spring', stiffness: 140, damping: 18, delay: 0.1 + Math.abs(dealt) * 0.07 },
+  } as const;
   const style = computed(() => ({
     rotate: `y ${offset.value * -12}deg`,
     scale: String(1 - Math.abs(offset.value) * 0.05),
@@ -25,10 +33,15 @@
     class="deck-item relative -mx-3 h-[220px] w-[150px] shrink-0 cursor-grab select-none rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-(--ui-primary) focus-visible:ring-offset-4 focus-visible:ring-offset-(--ui-bg) lg:-mx-2 lg:h-[260px] lg:w-[180px]"
     :style="style"
   >
-    <HomeDeckFace
-      :card="card"
-      :class="isPlaceholder ? 'opacity-25' : ''"
-    />
+    <Motion
+      class="size-full"
+      v-bind="deal"
+    >
+      <HomeDeckFace
+        :card="card"
+        :class="isPlaceholder ? 'opacity-25' : ''"
+      />
+    </Motion>
   </div>
 </template>
 

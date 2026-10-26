@@ -2,6 +2,7 @@
 import { ref, useTemplateRef } from 'vue';
 import { makeSortableList } from '@vue-dnd-kit/core';
 import AppTile from './AppTile.vue';
+import AppOverlay from './AppOverlay.vue';
 
 const apps = ref([
   { id: 'mail', name: 'Mail' },
@@ -20,7 +21,8 @@ const apps = ref([
 
 const grid = useTemplateRef<HTMLElement>('grid');
 // `strategy: 'grid'` sorts in two dimensions: the tiles flow around the dragged one.
-const { items } = makeSortableList(grid, { items: apps, strategy: 'grid' });
+// `overlay`: what follows the pointer, here the icon alone.
+const { items } = makeSortableList(grid, { items: apps, strategy: 'grid', overlay: AppOverlay });
 </script>
 
 <template>

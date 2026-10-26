@@ -51,13 +51,16 @@
 
 <template>
   <UApp :locale="uiLocale">
-    <SiteHeader />
-    <main>
-      <NuxtLayout>
-        <NuxtPage />
-      </NuxtLayout>
-    </main>
-    <SiteFooter />
+    <!-- Motion follows the visitor's reduced-motion setting. -->
+    <MotionConfig reduced-motion="user">
+      <SiteHeader />
+      <main>
+        <NuxtLayout>
+          <NuxtPage />
+        </NuxtLayout>
+      </main>
+      <SiteFooter />
+    </MotionConfig>
     <ClientOnly>
       <LazyUContentSearch
         :files="searchFiles"
