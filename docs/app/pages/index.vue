@@ -24,393 +24,194 @@
     });
   }
 
-  const list = (key: string) => (tm(key) as unknown[]).map((entry) => rt(entry as never));
-  const specs = computed(() => list('home.specs'));
-  const SPEC_ICONS = ['i-lucide-layers', 'i-lucide-gauge', 'i-lucide-accessibility', 'i-lucide-rows-4'];
+  const docs = (path: string) => localePath(`/docs/${path}`);
+  const lines = (text: string) => text.split('\n');
 
-  const FEATURE_ICONS = [
-    'i-lucide-list-ordered',
-    'i-lucide-kanban',
-    'i-lucide-list-tree',
-    'i-lucide-boxes',
-    'i-lucide-move',
-    'i-lucide-accessibility',
-    'i-lucide-rows-4',
-    'i-lucide-database',
-    'i-lucide-monitor-cog',
-  ];
-  const features = computed(() =>
-    (tm('home.features.items') as { title: unknown; text: unknown }[]).map((item, index) => ({
-      title: rt(item.title as never),
-      text: rt(item.text as never),
-      icon: FEATURE_ICONS[index]!,
-    })),
+  const showcases = computed(() => [
+    { key: 'lists', example: 'sortable-grid', focus: 'AppGrid.vue', docs: docs('getting-started/quick-start'), height: '24rem' },
+    { key: 'kanban', example: 'kanban', focus: 'Column.vue', docs: docs('getting-started/quick-start'), height: '26rem' },
+    { key: 'tree', example: 'tree', focus: 'FileTree.vue', docs: docs('getting-started/quick-start'), height: '24rem' },
+    { key: 'multi', example: 'multi-drag', focus: 'Gallery.vue', docs: docs('getting-started/quick-start'), height: '24rem' },
+  ]);
+
+  const more = computed(() =>
+    (tm('home.more') as { title: unknown; text: unknown }[]).map((item) => ({ title: rt(item.title as never), text: rt(item.text as never) })),
   );
 
-  const packages = computed(() => [
-    { name: '@vue-dnd-kit/core', text: t('home.ecosystem.core'), icon: 'i-lucide-box', to: localePath('/docs/getting-started/installation') },
-    { name: '@vue-dnd-kit/actions', text: t('home.ecosystem.actions'), icon: 'i-lucide-mouse-pointer-click' },
-    { name: '@vue-dnd-kit/devtools', text: t('home.ecosystem.devtools'), icon: 'i-lucide-monitor-cog' },
-    { name: '@vue-dnd-kit/nuxt', text: t('home.ecosystem.nuxt'), icon: 'i-simple-icons-nuxt' },
+  const ecosystem = computed(() => [
+    { key: 'devtools', tag: '@vue-dnd-kit/devtools', icon: 'i-lucide-monitor-cog' },
+    { key: 'actions', tag: '@vue-dnd-kit/actions', icon: 'i-lucide-mouse-pointer-click' },
+    { key: 'nuxt', tag: '@vue-dnd-kit/nuxt', icon: 'i-simple-icons-nuxt' },
+    { key: 'skill', tag: 'npx skills add', icon: 'i-lucide-sparkles' },
   ]);
 
   const metrics = computed(() => [
     { value: 1243, suffix: '', label: t('home.metrics.e2e') },
     { value: 469, suffix: '', label: t('home.metrics.unit') },
-    { value: 21, suffix: ' KB', label: t('home.metrics.size') },
+    { value: 21, suffix: 'KB', label: t('home.metrics.size') },
     { value: 9, suffix: '', label: t('home.metrics.languages') },
   ]);
 </script>
 
 <template>
   <div>
-    <!-- Hero -->
-    <section class="relative border-b border-default">
-      <DecorPattern
-        variant="glow"
-        fade="none"
-        class="hidden lg:block"
+    <!-- Hero: the deck, then the pitch. -->
+    <section class="relative overflow-x-clip">
+      <div
+        aria-hidden="true"
+        class="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_45%_at_50%_30%,rgba(66,184,131,0.14),transparent_70%)]"
       />
-      <div class="grid lg:grid-cols-12">
-        <div class="relative px-6 pt-20 pb-16 lg:col-span-7 lg:px-12 lg:pt-28 lg:pb-24">
-          <DecorPattern
-            variant="dots"
-            fade="top-right"
-            class="opacity-60 lg:hidden"
-          />
-          <div class="relative">
-            <div
-              v-reveal
-              style="--reveal-distance: 140%"
-            >
-              <span
-                class="inline-flex items-center gap-2.5 px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-muted ring-1 ring-inset ring-default"
+      <div class="relative mx-auto max-w-(--ui-container) px-5 pt-8 pb-20 lg:px-8 lg:pb-28">
+        <div class="flex h-[320px] items-center justify-center lg:h-[380px]">
+          <HomeDeck />
+        </div>
+        <p class="label mt-2 text-center text-[10px] text-dimmed">{{ t('home.hint') }}</p>
+
+        <div class="mt-16 grid items-end gap-10 lg:mt-20 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+          <div>
+            <h1 class="display text-5xl sm:text-6xl lg:text-7xl xl:text-[5.25rem]">
+              <template
+                v-for="(line, index) in lines(t('home.title'))"
+                :key="index"
               >
-                <span
-                  aria-hidden="true"
-                  class="size-1.5 animate-blink bg-primary"
-                />{{ t('home.badge') }}
-              </span>
-            </div>
-            <RevealText
-              tag="h1"
-              :text="t('home.title')"
-              :delay="0.1"
-              :stagger="0.06"
-              :duration="1"
-              class="mt-8 text-4xl font-medium leading-[1.05] tracking-[-0.03em] text-highlighted sm:text-6xl sm:leading-[1.02] lg:text-7xl xl:text-[5.5rem]"
-            />
-            <RevealText
-              tag="p"
-              :text="t('home.lead')"
-              :delay="0.45"
-              :stagger="0.014"
-              :duration="0.8"
-              class="mt-8 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl"
-            />
-            <div
-              v-reveal="0.7"
-              style="--reveal-distance: 120%"
-              class="mt-10"
-            >
-              <div class="flex flex-col gap-3 sm:flex-row">
-                <UButton
-                  size="xl"
-                  trailing-icon="i-lucide-arrow-right"
-                  :to="localePath('/docs/getting-started/introduction')"
-                  :label="t('home.start')"
-                  class="justify-center"
-                />
-                <UButton
-                  size="xl"
-                  color="neutral"
-                  variant="outline"
-                  :to="localePath('/docs/getting-started/quick-start')"
-                  :label="t('home.examples')"
-                  class="justify-center"
-                />
-              </div>
-            </div>
-            <div
-              v-reveal="0.85"
-              style="--reveal-distance: 120%"
-              class="mt-4"
-            >
-              <SiteCopyCommand
-                command="npm i @vue-dnd-kit/core"
-                class="w-full justify-center sm:w-auto sm:justify-start"
+                <br v-if="index" />{{ line }}
+              </template>
+            </h1>
+            <p class="mt-6 max-w-xl text-lg leading-relaxed text-muted">{{ t('home.lead') }}</p>
+          </div>
+          <div class="flex flex-col gap-4 lg:items-end">
+            <p class="text-sm text-muted">{{ t('home.openSource') }}</p>
+            <div class="flex flex-col gap-3 sm:flex-row">
+              <SiteCopyCommand command="npm i @vue-dnd-kit/core" />
+              <UButton
+                size="xl"
+                trailing-icon="i-lucide-chevron-right"
+                :to="docs('getting-started/introduction')"
+                :label="t('home.start')"
+                class="justify-center"
               />
             </div>
           </div>
         </div>
-        <div class="relative hidden divider-dashed-s lg:col-span-5 lg:block">
-          <HomeHeroVisual />
-        </div>
-      </div>
-      <DecorGridCircle side="bottom-left" />
-      <DecorGridCircle
-        side="bottom-right"
-        reverse
-      />
-    </section>
-
-    <!-- Specs -->
-    <div class="cells-dashed border-b border-default sm:grid-cols-2 lg:grid-cols-4">
-      <div
-        v-for="(spec, index) in specs"
-        :key="spec"
-        class="bg-default"
-      >
-        <div
-          v-reveal="1 + index * 0.08"
-          class="h-full"
-        >
-          <div
-            class="flex h-full items-center gap-3 px-6 py-5 font-mono text-xs uppercase tracking-[0.14em] text-muted transition-colors hover:bg-muted lg:px-12"
-          >
-            <UIcon
-              :name="SPEC_ICONS[index]!"
-              class="size-4 shrink-0 text-dimmed"
-            />{{ spec }}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Features -->
-    <section class="relative border-b border-default">
-      <DecorGridCross side="top-left" />
-      <DecorGridCross side="top-right" />
-      <SectionHeader
-        :eyebrow="t('home.features.eyebrow')"
-        :title="t('home.features.title')"
-        :description="t('home.features.description')"
-        pattern="hatch"
-      />
-      <div class="cells-dashed sm:grid-cols-2 lg:grid-cols-3">
-        <div
-          v-for="(feature, index) in features"
-          :key="feature.title"
-          class="bg-default"
-        >
-          <div
-            v-reveal="(index % 3) * 0.08"
-            class="h-full"
-          >
-            <article class="group flex h-full flex-col p-8 transition-colors duration-300 hover:bg-muted lg:p-12">
-              <div class="flex items-center justify-between">
-                <div
-                  class="flex size-10 items-center justify-center text-highlighted ring-1 ring-inset ring-default transition-colors duration-300 group-hover:bg-primary group-hover:text-inverted"
-                >
-                  <UIcon
-                    :name="feature.icon"
-                    class="size-5"
-                  />
-                </div>
-                <span class="font-mono text-xs text-dimmed">{{ String(index + 1).padStart(2, '0') }}</span>
-              </div>
-              <h3 class="mt-12 text-lg font-medium tracking-tight text-highlighted lg:text-xl">{{ feature.title }}</h3>
-              <p class="mt-3 max-w-md text-sm leading-relaxed text-muted lg:text-base">{{ feature.text }}</p>
-            </article>
-          </div>
-        </div>
       </div>
     </section>
 
-    <!-- How it works -->
-    <section class="relative border-b border-default">
-      <DecorGridCross side="top-left" />
-      <DecorGridCross side="top-right" />
-      <SectionHeader
-        :eyebrow="t('home.how.eyebrow')"
-        :title="t('home.how.title')"
-        :description="t('home.how.description')"
-        pattern="cross"
-        fade="right"
-      />
-      <div class="px-6 py-10 lg:px-12 lg:py-14">
-        <Example
-          name="quick-start"
-          title="Quick start"
-          height="22rem"
-          class="my-0!"
-        />
+    <!-- Intro -->
+    <section class="mx-auto max-w-(--ui-container) px-5 lg:px-8">
+      <div class="border-b border-default pb-16 lg:pb-20">
+        <h2 class="heading text-4xl sm:text-5xl">
+          <template
+            v-for="(line, index) in lines(t('home.intro.title'))"
+            :key="index"
+          >
+            <br v-if="index" />{{ line }}
+          </template>
+        </h2>
+        <p class="mt-5 max-w-xl text-base leading-relaxed text-muted lg:text-lg">{{ t('home.intro.text') }}</p>
+      </div>
+    </section>
+
+    <!-- Features, each running live -->
+    <HomeShowcase
+      v-for="showcase in showcases"
+      :key="showcase.key"
+      :title="t(`home.showcase.${showcase.key}.title`)"
+      :text="t(`home.showcase.${showcase.key}.text`)"
+      :example="showcase.example"
+      :focus="showcase.focus"
+      :docs="showcase.docs"
+      :docs-label="t('home.showcase.docs')"
+      :height="showcase.height"
+    />
+
+    <!-- And the rest -->
+    <section class="mx-auto max-w-(--ui-container) px-5 pb-24 lg:px-8">
+      <div class="grid border-t border-default pt-14 sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          v-for="(item, index) in more"
+          :key="item.title"
+          class="py-6 sm:pe-8 lg:py-0"
+          :class="index ? 'lg:border-s lg:border-default lg:ps-8' : ''"
+        >
+          <h3 class="heading text-xl">{{ item.title }}</h3>
+          <p class="mt-3 text-[15px] leading-relaxed text-muted">{{ item.text }}</p>
+        </div>
       </div>
     </section>
 
     <!-- Ecosystem -->
-    <section class="relative border-b border-default">
-      <DecorGridCross side="top-left" />
-      <DecorGridCross side="top-right" />
-      <SectionHeader
-        :eyebrow="t('home.ecosystem.eyebrow')"
-        :title="t('home.ecosystem.title')"
-        pattern="grid"
-        fade="top-right"
-      />
-      <div class="cells-dashed md:grid-cols-2 lg:grid-cols-3">
-        <div
-          v-for="(pkg, index) in packages"
-          :key="pkg.name"
-          class="bg-default"
+    <section class="mx-auto max-w-(--ui-container) px-5 py-20 lg:px-8 lg:py-28">
+      <h2 class="heading max-w-2xl text-4xl sm:text-5xl">{{ t('home.ecosystem.title') }}</h2>
+      <p class="mt-5 max-w-xl text-base leading-relaxed text-muted lg:text-lg">{{ t('home.ecosystem.text') }}</p>
+      <div class="mt-12 grid gap-px overflow-hidden rounded-(--ui-radius) bg-(--ui-border) ring-1 ring-default md:grid-cols-2">
+        <article
+          v-for="item in ecosystem"
+          :key="item.key"
+          class="group flex flex-col bg-default p-8 transition-colors duration-200 hover:bg-muted lg:p-10"
         >
-          <div
-            v-reveal="(index % 3) * 0.08"
-            class="h-full"
-          >
-            <article class="group flex h-full flex-col p-8 transition-colors duration-300 hover:bg-muted lg:p-12">
-              <div class="flex items-center justify-between">
-                <div
-                  class="flex size-10 items-center justify-center text-highlighted ring-1 ring-inset ring-default transition-colors duration-300 group-hover:bg-primary group-hover:text-inverted"
-                >
-                  <UIcon
-                    :name="pkg.icon"
-                    class="size-5"
-                  />
-                </div>
-                <span class="font-mono text-xs text-dimmed">{{ String(index + 1).padStart(2, '0') }}</span>
-              </div>
-              <h3 class="mt-12 font-mono text-sm tracking-tight text-highlighted">{{ pkg.name }}</h3>
-              <p class="mt-3 max-w-md text-sm leading-relaxed text-muted lg:text-base">{{ pkg.text }}</p>
-            </article>
-          </div>
-        </div>
-        <div class="bg-default md:col-span-2">
-          <div
-            v-reveal="0.16"
-            class="h-full"
-          >
-            <article class="relative flex h-full flex-col justify-between gap-8 p-8 lg:p-12">
-              <DecorPattern
-                variant="hatch"
-                fade="left"
-                class="opacity-50"
+          <div class="flex items-center gap-3">
+            <span class="grid size-9 place-items-center rounded-(--ui-radius) bg-elevated text-(--ui-primary) transition-colors group-hover:bg-(--color-accent) group-hover:text-(--color-on-accent)">
+              <UIcon
+                :name="item.icon"
+                class="size-[18px]"
               />
-              <div class="relative flex items-center justify-between">
-                <div class="flex size-10 items-center justify-center text-highlighted ring-1 ring-inset ring-default">
-                  <UIcon
-                    name="i-lucide-sparkles"
-                    class="size-5"
-                  />
-                </div>
-                <span class="font-mono text-xs text-dimmed">05</span>
-              </div>
-              <div class="relative">
-                <p class="max-w-md text-sm leading-relaxed text-muted lg:text-base">{{ t('home.ecosystem.skill') }}</p>
-                <SiteCopyCommand
-                  command="npx skills add ZiZIGY/vue-dnd-kit"
-                  class="mt-6"
-                />
-              </div>
-            </article>
+            </span>
+            <span class="font-mono text-xs text-muted">{{ item.tag }}</span>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Metrics -->
-    <section class="relative border-b border-default">
-      <DecorGridCircle
-        side="top-left"
-        :size="56"
-      />
-      <DecorGridCircle
-        side="top-right"
-        :size="56"
-        reverse
-      />
-      <div class="cells-dashed sm:grid-cols-2 lg:grid-cols-4">
-        <div
-          v-for="(metric, index) in metrics"
-          :key="metric.label"
-          class="relative bg-default"
-        >
-          <DecorPattern
-            variant="hatch"
-            fade="bottom"
-            class="opacity-40"
+          <h3 class="heading mt-8 text-2xl">{{ t(`home.ecosystem.${item.key}.title`) }}</h3>
+          <p class="mt-3 max-w-md text-[15px] leading-relaxed text-muted">{{ t(`home.ecosystem.${item.key}.text`) }}</p>
+          <SiteCopyCommand
+            v-if="item.key === 'skill'"
+            command="npx skills add ZiZIGY/vue-dnd-kit"
+            class="mt-6 self-start"
           />
-          <div
-            v-reveal="index * 0.08"
-            class="relative h-full"
-          >
-            <div class="px-8 py-10 lg:px-12 lg:py-16">
-              <p class="text-5xl font-medium tracking-tight text-highlighted lg:text-6xl">
-                <CountUp
-                  :value="metric.value"
-                  :delay="0.2 + index * 0.08"
-                /><span class="text-dimmed">{{ metric.suffix }}</span>
-              </p>
-              <p class="mt-4 font-mono text-[11px] uppercase tracking-[0.16em] text-muted">{{ metric.label }}</p>
-            </div>
-          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Numbers -->
+    <section class="bg-(--color-accent) text-(--color-on-accent)">
+      <div class="mx-auto grid max-w-(--ui-container) gap-10 px-5 py-16 sm:grid-cols-2 lg:grid-cols-4 lg:px-8 lg:py-20">
+        <div
+          v-for="metric in metrics"
+          :key="metric.label"
+        >
+          <p class="text-6xl font-bold tracking-[-0.05em] tabular-nums lg:text-7xl">
+            <CountUp :value="metric.value" /><span class="text-4xl lg:text-5xl">{{ metric.suffix }}</span>
+          </p>
+          <p class="label mt-3 text-[11px] opacity-75">{{ metric.label }}</p>
         </div>
       </div>
     </section>
 
-    <!-- CTA -->
-    <section class="relative border-b border-default">
-      <DecorGridCross side="top-left" />
-      <DecorGridCross side="top-right" />
-      <DecorPattern
-        variant="dots"
-        fade="radial"
-        class="opacity-70"
-      />
-      <div class="relative flex flex-col items-center px-6 py-24 text-center lg:px-12 lg:py-40">
-        <div v-reveal>
-          <p class="mb-6 flex items-center justify-center gap-2.5 font-mono text-xs uppercase tracking-[0.18em] text-muted">
-            <span
-              aria-hidden="true"
-              class="size-1.5 bg-primary"
-            />{{ t('home.cta.eyebrow') }}
-          </p>
-        </div>
-        <RevealText
-          tag="h2"
-          :text="t('home.cta.title')"
-          :delay="0.05"
-          class="max-w-4xl text-4xl font-medium leading-[1.05] tracking-tight text-highlighted sm:text-5xl lg:text-6xl"
-        />
-        <RevealText
-          tag="p"
-          :text="t('home.cta.description')"
-          :delay="0.2"
-          :stagger="0.012"
-          class="mt-6 max-w-lg text-base leading-relaxed text-muted sm:text-lg"
-        />
-        <div
-          v-reveal="0.35"
-          style="--reveal-distance: 120%"
-          class="mt-10"
+    <!-- Where to start -->
+    <section class="mx-auto max-w-(--ui-container) px-5 py-20 lg:px-8 lg:py-28">
+      <h2 class="heading text-center text-4xl sm:text-5xl">{{ t('home.next.title') }}</h2>
+      <div class="mt-12 grid gap-4 md:grid-cols-2">
+        <NuxtLink
+          v-for="(card, index) in ['guide', 'examples']"
+          :key="card"
+          :to="index ? docs('getting-started/quick-start') : docs('getting-started/introduction')"
+          class="group flex min-h-64 flex-col justify-between rounded-(--ui-radius) p-8 transition-colors lg:p-10"
+          :class="index ? 'bg-elevated hover:bg-accented' : 'bg-(--color-accent) text-(--color-on-accent) hover:bg-(--color-accent-strong)'"
         >
-          <div class="flex flex-col gap-3 sm:flex-row">
-            <UButton
-              size="xl"
-              trailing-icon="i-lucide-arrow-right"
-              :to="localePath('/docs/getting-started/introduction')"
-              :label="t('home.cta.primary')"
-              class="justify-center"
-            />
-            <UButton
-              size="xl"
-              color="neutral"
-              variant="outline"
-              icon="i-simple-icons-github"
-              to="https://github.com/ZiZIGY/vue-dnd-kit"
-              target="_blank"
-              :label="t('home.cta.secondary')"
-              class="justify-center"
-            />
+          <h3 class="text-3xl font-bold tracking-[-0.04em] lg:text-4xl">{{ t(`home.next.${card}.title`) }}</h3>
+          <div>
+            <p
+              class="max-w-sm text-[15px] leading-relaxed"
+              :class="index ? 'text-muted' : 'opacity-80'"
+            >
+              {{ t(`home.next.${card}.text`) }}
+            </p>
+            <span class="label mt-6 inline-flex items-center gap-1 text-[11px]">
+              {{ t(`home.next.${card}.action`) }}
+              <UIcon
+                name="i-lucide-chevron-right"
+                class="size-3.5 transition-transform group-hover:translate-x-0.5"
+              />
+            </span>
           </div>
-        </div>
-        <div
-          v-reveal="0.45"
-          style="--reveal-distance: 120%"
-          class="mt-4"
-        >
-          <SiteCopyCommand command="npm i @vue-dnd-kit/core" />
-        </div>
+        </NuxtLink>
       </div>
     </section>
   </div>

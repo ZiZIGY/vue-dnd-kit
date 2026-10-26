@@ -12,7 +12,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, relative, resolve } from 'node:path';
 import { addTemplate, createResolver, defineNuxtModule, updateTemplates } from '@nuxt/kit';
 import { createHighlighter } from 'shiki';
-import { monoDark, monoLight } from '../shiki/mono';
+import { codeDark, codeLight } from '../shiki/themes';
 
 const LANGS: Record<string, string> = { '.vue': 'vue', '.ts': 'ts', '.css': 'css', '.json': 'json' };
 const ENTRY = 'index.vue';
@@ -36,7 +36,7 @@ export default defineNuxtModule({
   async setup(_, nuxt) {
     const { resolve: resolvePath } = createResolver(import.meta.url);
     const root = resolve(resolvePath('..'), 'examples');
-    const highlighter = await createHighlighter({ themes: [monoLight, monoDark], langs: Object.values(LANGS) });
+    const highlighter = await createHighlighter({ themes: [codeLight, codeDark], langs: Object.values(LANGS) });
 
     const names = () =>
       existsSync(root) ? readdirSync(root).filter((name) => existsSync(join(root, name, ENTRY))).sort() : [];
@@ -49,7 +49,7 @@ export default defineNuxtModule({
         const code = readFileSync(join(dir, file), 'utf8').replace(/\r\n/g, '\n').trimEnd();
         const html = highlighter.codeToHtml(code, {
           lang,
-          themes: { light: 'dnd-mono-light', dark: 'dnd-mono-dark' },
+          themes: { light: 'dnd-light', dark: 'dnd-dark' },
           defaultColor: false,
         });
         return { name: file, lang, code, html };

@@ -14,19 +14,10 @@
     htmlAttrs: i18nHead.value.htmlAttrs,
     link: i18nHead.value.link,
     meta: i18nHead.value.meta,
-    script: [
-      {
-        // Before the first paint: hide what reveals (unless motion is reduced), and show it
-        // again if the app never starts. Without JS nothing is hidden.
-        key: 'reveal-guard',
-        innerHTML:
-          "(function(){var d=document.documentElement;if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.classList.add('reveal-ready');setTimeout(function(){if(!window.__revealOn)d.classList.remove('reveal-ready')},3000)})()",
-      },
-    ],
   }));
 
   useSeoMeta({
-    titleTemplate: (title) => (title ? `${title} · Vue DnD Kit` : 'Vue DnD Kit'),
+    titleTemplate: (title) => (title ? `${title} · Vue DnD Kit` : 'Vue DnD Kit — drag and drop for Vue'),
   });
 
   // The docs of the current language, on top of the English source: the sidebar and the
@@ -61,14 +52,12 @@
 <template>
   <UApp :locale="uiLocale">
     <SiteHeader />
-    <UMain>
-      <div class="relative mx-auto w-full max-w-(--ui-container) border-x border-default">
-        <NuxtLayout>
-          <NuxtPage />
-        </NuxtLayout>
-        <SiteFooter />
-      </div>
-    </UMain>
+    <main>
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
+    </main>
+    <SiteFooter />
     <ClientOnly>
       <LazyUContentSearch
         :files="searchFiles"

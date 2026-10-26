@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import { DnDProvider } from '@vue-dnd-kit/core';
 
-  /** The hero's live demo: a 3×3 sortable grid of tiles on the blueprint. */
+  /** The hero's deck: its own provider, so its drags never meet the page's examples. */
 </script>
 
 <template>
   <DnDProvider>
-    <HomeHeroGrid />
+    <HomeDeckList />
   </DnDProvider>
 </template>

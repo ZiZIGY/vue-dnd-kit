@@ -33,45 +33,101 @@
     "command": "Copy the install command"
   },
   "home": {
-    "badge": "v3 — rebuilt from scratch",
-    "title": "Drag and drop,\nengineered for Vue",
-    "lead": "Sortable lists, kanban boards, trees, multi-drag and drop zones — animated, keyboard-ready and screen-reader friendly out of the box. Composables, not wrappers: your markup, your styles.",
+    "title": "Drag and drop,\nbuilt for Vue.",
+    "lead": "Sortable lists, kanban boards, trees and multi-drag for Vue 3 — animated, keyboard-ready and accessible out of the box.",
+    "openSource": "Free and open source. MIT licensed.",
     "start": "Get started",
-    "examples": "Browse examples",
-    "visual": {
-      "hint": "Drag the tiles — or Tab to one and press Space",
-      "corners": ["01 — Sortable", "02 — Kanban", "03 — Trees", "04 — Free drag"]
+    "hint": "Drag the cards — or Tab to one and use the arrow keys",
+    "deck": {
+      "sortable": {
+        "label": "Sortable",
+        "title": "Lists that sort themselves"
+      },
+      "kanban": {
+        "label": "Kanban",
+        "title": "Boards that trade cards"
+      },
+      "tree": {
+        "label": "Trees",
+        "title": "Nesting by a nudge"
+      },
+      "multi": {
+        "label": "Multi-drag",
+        "title": "Many items, one move"
+      },
+      "animate": {
+        "label": "Animated",
+        "title": "Motion by default"
+      },
+      "keyboard": {
+        "label": "A11y",
+        "title": "Keyboard first-class"
+      },
+      "virtual": {
+        "label": "Virtual",
+        "title": "Ten thousand rows"
+      }
     },
-    "specs": ["Vue 3.5 · TypeScript", "From 21 KB gzip", "Keyboard & screen readers", "10 000+ rows virtualized"],
-    "features": {
-      "eyebrow": "Features",
-      "title": "Everything drag and drop needs.\nNothing it doesn't.",
-      "description": "One provider, a handful of composables, and the hard parts handled: geometry, animation, accessibility, edge cases.",
-      "items": [
-        { "title": "Sortable lists and grids", "text": "Vertical, horizontal and grid layouts with live reordering. Render the draft, the library writes the drop." },
-        { "title": "Kanban boards", "text": "Lists in one group exchange items. Copy from palettes, take plain draggables in, swap instead of shifting." },
-        { "title": "Trees", "text": "Nest by dragging sideways or by hovering a row. Depth limits, nesting rules, collapsed branches." },
-        { "title": "Multi-drag", "text": "Ctrl-click or a rubber band selects; the whole block travels together and lands in order." },
-        { "title": "Animated by default", "text": "FLIP while sorting, a drop that lands on its slot, data changes that animate. Bring GSAP or motion if you like." },
-        { "title": "Accessible", "text": "Keyboard drags by slots, live announcements, ARIA attributes that never override yours." },
-        { "title": "Virtual lists", "text": "Works with TanStack Virtual and VueUse: thousands of rows, still animated, still sortable." },
-        { "title": "Controlled mode", "text": "Pinia, a server, immutable data: prevent the default write and apply the result yourself." },
-        { "title": "DevTools", "text": "A live mini-map, a joystick that drags anything, options you can edit while the app runs." }
-      ]
+    "intro": {
+      "title": "Composables,\nnot components.",
+      "text": "Your markup, your styles. Hand a template ref to a composable and the element drags, sorts and drops — with the animation, keyboard and screen reader work done for you."
     },
-    "how": {
-      "eyebrow": "How it works",
-      "title": "Three files.\nA list that sorts.",
-      "description": "A provider at the top, a list that renders its draft, rows that register themselves. Drag it here — this is the code below, running."
+    "showcase": {
+      "docs": "Docs",
+      "lists": {
+        "title": "Lists and grids",
+        "text": "Render a draft of your array and it reorders live while you drag. On drop, the new order is written into your ref. Vertical, horizontal or a grid of any size."
+      },
+      "kanban": {
+        "title": "Kanban boards",
+        "text": "Lists in one group trade items. Copy from a palette, take plain draggables in, or swap instead of shifting — the receiving list makes room as you hover."
+      },
+      "tree": {
+        "title": "Trees",
+        "text": "Rendered flat with depths, so they virtualize. Drag sideways to change the level or hover a folder to drop inside; limit depth and decide what nests where."
+      },
+      "multi": {
+        "title": "Multi-drag",
+        "text": "Select with Ctrl/Cmd-click or draw a box, then drag one: the whole selection travels together and lands in order, even across lists."
+      }
     },
+    "more": [
+      {
+        "title": "Animated",
+        "text": "FLIP while sorting, a drop that lands on its slot, data changes that animate. Bring GSAP or motion if you like."
+      },
+      {
+        "title": "Accessible",
+        "text": "Keyboard drags by slots, live announcements and ARIA attributes that never override yours."
+      },
+      {
+        "title": "Virtual lists",
+        "text": "TanStack Virtual and VueUse: thousands of rows, still sortable, still animated."
+      },
+      {
+        "title": "Controlled",
+        "text": "Pinia, a server or immutable data: skip the default write and apply the result yourself."
+      }
+    ],
     "ecosystem": {
-      "eyebrow": "Ecosystem",
-      "title": "One core, a few focused packages",
-      "core": "The provider, composables, sensors, modifiers and animations.",
-      "actions": "Programmatic drags: “move up” buttons, menus, tours, tests.",
-      "devtools": "A tab in Vue DevTools and Nuxt DevTools with a live mini-map.",
-      "nuxt": "Auto-imports, global components and SSR-safe defaults.",
-      "skill": "An agent skill: AI assistants learn how the library works."
+      "title": "A small core, a few sharp tools.",
+      "text": "Everything drags with the core. Add the rest when you need it.",
+      "devtools": {
+        "title": "DevTools",
+        "text": "A tab in Vue DevTools and Nuxt DevTools: a live mini-map, a joystick that drags anything, options you edit while the app runs."
+      },
+      "actions": {
+        "title": "Programmatic drags",
+        "text": "“Move up”, “move to Done”, guided tours and tests — real drags, announced and animated, from code."
+      },
+      "nuxt": {
+        "title": "Nuxt module",
+        "text": "Auto-imported composables, global components and SSR-safe defaults."
+      },
+      "skill": {
+        "title": "For AI agents",
+        "text": "An agent skill that teaches Claude Code and other assistants how the library works."
+      }
     },
     "metrics": {
       "e2e": "End-to-end tests in three browsers",
@@ -79,12 +135,18 @@
       "size": "Draggables and drop zones, gzipped",
       "languages": "Languages of these docs"
     },
-    "cta": {
-      "eyebrow": "Start",
-      "title": "Start dragging\nin five minutes",
-      "description": "Install the core, wrap your app in a provider, make a list sortable.",
-      "primary": "Read the guide",
-      "secondary": "GitHub"
+    "next": {
+      "title": "Choose where to start.",
+      "guide": {
+        "title": "Read the guide",
+        "text": "From installation to your first sortable list in five minutes.",
+        "action": "Get started"
+      },
+      "examples": {
+        "title": "Browse examples",
+        "text": "Live demos with their code, ready to copy or open in StackBlitz.",
+        "action": "See examples"
+      }
     }
   },
   "docs": {
@@ -94,7 +156,9 @@
     "next": "Next",
     "notTranslated": "This page isn't translated yet. You're reading the English original.",
     "aiNotice": "This page was translated by AI and may contain inaccuracies.",
-    "readOriginal": "Read the English original"
+    "readOriginal": "Read the English original",
+    "copyPage": "Copy page",
+    "copied": "Copied"
   },
   "example": {
     "preview": "Preview",

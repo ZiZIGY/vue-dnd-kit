@@ -7,19 +7,26 @@
 </script>
 
 <template>
-  <div class="lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
-    <aside class="hidden border-e border-default lg:block">
-      <div class="sticky top-(--ui-header-height) max-h-[calc(100dvh-var(--ui-header-height))] overflow-y-auto px-6 py-8">
+  <div class="mx-auto max-w-(--ui-container) px-5 lg:grid lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10 lg:px-8">
+    <aside class="hidden lg:block">
+      <div class="sticky top-(--ui-header-height) max-h-[calc(100dvh-var(--ui-header-height))] overflow-y-auto py-10 pe-2">
         <UContentNavigation
           :navigation="items"
+          :collapsible="false"
           highlight
+          highlight-color="primary"
+          color="primary"
+          variant="link"
           :ui="{
-            root: 'text-sm',
-            linkLeadingIcon: 'size-4',
-            listWithChildren: 'ms-0',
-            link: 'rounded-none before:rounded-none py-1.5',
-            linkTrailingBadge: 'font-mono',
-            trigger: 'font-mono text-[10px] uppercase tracking-[0.2em] text-dimmed rounded-none',
+            root: 'text-[14px]',
+            content: 'mt-2',
+            list: 'ms-0 mx-0',
+            listWithChildren: 'ms-0 border-s-0',
+            itemWithChildren: 'mb-7',
+            trigger: 'label text-[11px] text-highlighted px-0 py-1 pointer-events-none',
+            linkTrailingIcon: 'hidden',
+            linkLeadingIcon: 'hidden',
+            link: 'px-0 py-1.5 text-muted hover:text-highlighted data-active:text-(--ui-primary)',
           }"
         />
       </div>

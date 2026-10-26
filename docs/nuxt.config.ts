@@ -2,7 +2,7 @@ import { readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DEFAULT_LOCALE, LOCALES } from './i18n/locales';
-import { monoDark, monoLight } from './shiki/mono';
+import { codeDark, codeLight } from './shiki/themes';
 
 const fromRoot = (path: string) => fileURLToPath(new URL(`../${path}`, import.meta.url));
 
@@ -62,10 +62,6 @@ export default defineNuxtConfig({
     server: { fs: { allow: [fromRoot('')] } },
   },
 
-  experimental: {
-    viewTransition: true,
-  },
-
   colorMode: {
     preference: 'dark',
     fallback: 'dark',
@@ -86,8 +82,8 @@ export default defineNuxtConfig({
     // Both families come from Google Fonts: the other providers are never asked.
     providers: { fontshare: false, adobe: false, bunny: false, fontsource: false },
     families: [
-      { name: 'Onest', provider: 'google', weights: [400, 500, 600] },
-      { name: 'Geist Mono', provider: 'google', weights: [400, 500] },
+      { name: 'Geist', provider: 'google', weights: [400, 500, 600, 700] },
+      { name: 'Geist Mono', provider: 'google', weights: [400, 500, 600] },
     ],
   },
 
@@ -97,8 +93,8 @@ export default defineNuxtConfig({
       markdown: {
         toc: { depth: 3, searchDepth: 3 },
         highlight: {
-          // Every key Nuxt UI uses (`light` too), or its own colourful themes fill the gaps.
-          theme: { default: monoLight, light: monoLight, dark: monoDark },
+          // Every key Nuxt UI uses (`light` too), or its own themes fill the gaps.
+          theme: { default: codeLight, light: codeLight, dark: codeDark },
           langs: ['vue', 'ts', 'js', 'json', 'bash', 'css', 'html', 'md', 'yaml', 'diff'],
         },
       },
@@ -107,8 +103,8 @@ export default defineNuxtConfig({
 
   mdc: {
     highlight: {
-      theme: { default: 'dnd-mono-light', light: 'dnd-mono-light', dark: 'dnd-mono-dark' },
-      themes: [monoLight, monoDark],
+      theme: { default: 'dnd-light', light: 'dnd-light', dark: 'dnd-dark' },
+      themes: [codeLight, codeDark],
     },
   },
 
@@ -137,7 +133,6 @@ export default defineNuxtConfig({
   robots: { robotsTxt: false },
   ogImage: { enabled: false },
   linkChecker: { enabled: false },
-
 
   nitro: {
     preset: 'github_pages',
