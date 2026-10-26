@@ -11,7 +11,8 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
-    "types": [],
+    // The Vite plugin (`src/vite.ts`) runs in Node.
+    "types": ["node"],
     "paths": {
       // The core's sources, not its build (as in the playground): the bridge is versioned with them.
       "@vue-dnd-kit/core": ["../core/src/index.ts"],
@@ -23,6 +24,7 @@
       "@vueuse/core": ["./node_modules/@vueuse/core"]
     }
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"],
+  // The tab (`client/`) too: a Vue app of its own, typechecked with the rest.
+  "include": ["src/**/*.ts", "test/**/*.ts", "client/**/*.ts", "client/**/*.vue"],
   "exclude": ["node_modules", "dist"]
 }

@@ -16,8 +16,6 @@ import { start } from './plugin';
 /** Bundlers replace it: development builds keep the devtools, production drops them. */
 declare const process: { env: { NODE_ENV?: string } };
 
-const enabled = () => process.env.NODE_ENV !== 'production' && typeof window !== 'undefined';
-
 /**
  * Makes the page report to the devtools tab, as `app.use(DnDDevtools)` does. Call it
  * before `app.mount()`: providers set up earlier are not seen. Every provider of the page
@@ -25,7 +23,8 @@ const enabled = () => process.env.NODE_ENV !== 'production' && typeof window !==
  * server.
  */
 export function setupDnDDevtools(_app?: App): void {
-  if (enabled()) start();
+  // Inline, for bundlers to fold it.
+  if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined') start();
 }
 
 /**
@@ -34,7 +33,7 @@ export function setupDnDDevtools(_app?: App): void {
  * and on the server.
  */
 export function autoSetupDnDDevtools(): void {
-  if (enabled()) start();
+  if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined') start();
 }
 
 /**

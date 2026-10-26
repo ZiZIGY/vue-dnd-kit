@@ -1,199 +1,132 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { connectDevtools } from '@vue-dnd-kit/core/devtools';
 import { DnDDevtools } from '../src/index';
-import { MOVES, editedMove } from '../src/moves';
-import type { InspectorNode, TimelineEvent } from '../src/format';
-import { open, type FakeDevtools } from './api';
+import { stop } from '../src/plugin';
+import { MOVES } from '../src/agent/moves';
+import { speedOf, DEAD_ZONE, MAX_SPEED } from '../src/agent/stick';
 import { mountBoard, type Fixture, type FixtureOptions } from './fixture';
+import { installChannel, openTab, type Tab } from './harness';
 import type { DnDManager } from '../../core/src/core/manager';
 
-vi.mock('@vue/devtools-api', () => ({ setupDevtoolsPlugin: vi.fn() }));
-
 let fixture: Fixture | null = null;
+let tab: Tab | null = null;
 
-/** Label → node id of every node. */
-const collect = (nodes: InspectorNode[]): Array<[string, string]> =>
-  nodes.flatMap((node) => [[node.label, node.id] as [string, string], ...collect(node.children ?? [])]);
-
-/** Mounts the board with the plugin installed, opens the DevTools; `node(label)` is the id of a node. */
-const mountWithDevtools = async (options: FixtureOptions = {}) => {
+const open = async (options: FixtureOptions = {}) => {
   fixture = await mountBoard(options, DnDDevtools);
-  const devtools = open(fixture.app);
-  const ids = new Map(collect(devtools.tree()));
-  return { ...fixture, devtools, node: (label: string) => ids.get(label)! };
+  tab = await openTab();
+  const provider = tab.last('state')!.providers[0]!.id;
+  return { ...fixture, tab, provider };
 };
 
 const idle = (manager: DnDManager) => vi.waitFor(() => expect(manager.status.value).toBe('idle'));
 
-/** The timeline without announcements. */
-const logged = (devtools: FakeDevtools): TimelineEvent[] =>
-  devtools.timeline.map(({ event }) => event).filter((event) => event.title !== 'announcement');
-const subtitles = (devtools: FakeDevtools, title: string) =>
-  logged(devtools)
-    .filter((event) => event.title === title)
-    .map((event) => event.subtitle);
+beforeEach(installChannel);
 
-afterEach(() => {
+afterEach(async () => {
+  tab?.close();
+  tab = null;
   fixture?.unmount();
   fixture = null;
+  await stop();
   connectDevtools().disconnect();
-  vi.clearAllMocks();
+  vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
-describe('moves from the inspector', () => {
-  it("the node's buttons move an item of a sortable list, each by a drag of the `devtools` sensor", async () => {
-    const { devtools, order, node } = await mountWithDevtools();
-    await devtools.nodeAction('arrow_downward', node('a1'));
-    expect(order('a')).toEqual(['a2', 'a1', 'a3']);
-    await devtools.nodeAction('arrow_upward', node('a3'));
-    expect(order('a')).toEqual(['a2', 'a3', 'a1']);
-    await devtools.nodeAction('vertical_align_top', node('a1'));
-    expect(order('a')).toEqual(['a1', 'a2', 'a3']);
-    await devtools.nodeAction('vertical_align_bottom', node('a2'));
-    expect(order('a')).toEqual(['a1', 'a3', 'a2']);
-    // Real drags: the timeline logs each, started by the inspector's sensor (as a keyboard drag).
-    expect(subtitles(devtools, 'drag start')).toEqual([
-      'a1 · devtools (keyboard) · from a',
-      'a3 · devtools (keyboard) · from a',
-      'a1 · devtools (keyboard) · from a',
-      'a2 · devtools (keyboard) · from a',
-    ]);
-    expect(subtitles(devtools, 'drop').map((subtitle) => subtitle!.replace(/^on \S+ · /, ''))).toEqual([
-      'move a[0] → a[1]',
-      'move a[2] → a[1]',
-      'move a[2] → a[0]',
-      'move a[1] → a[2]',
-    ]);
-    expect(subtitles(devtools, 'onBeforeDrop')).toHaveLength(4);
-  });
-
-  it('moves clicked in a row read where the item is when their turn comes', async () => {
-    const { devtools, order, node } = await mountWithDevtools();
-    await Promise.all([devtools.nodeAction('arrow_downward', node('a1')), devtools.nodeAction('arrow_downward', node('a1'))]);
-    expect(order('a')).toEqual(['a2', 'a3', 'a1']);
-  });
-
-  it('nothing moves at the ends of a list, nor tree items, plain draggables and other nodes', async () => {
-    const { devtools, order, node, manager } = await mountWithDevtools();
-    await devtools.nodeAction('arrow_upward', node('a1'));
-    await devtools.nodeAction('vertical_align_bottom', node('a3'));
-    // Trees place items by depth too: `moveItem` doesn't take them.
-    await devtools.nodeAction('arrow_downward', node('f'));
-    await devtools.nodeAction('arrow_downward', node('chip'));
-    await devtools.nodeAction('arrow_downward', node('DnDProvider · Board'));
-    await devtools.nodeAction('arrow_downward', node('list a'));
-    expect(order('a')).toEqual(['a1', 'a2', 'a3']);
-    expect(logged(devtools)).toEqual([]);
-    expect(manager.status.value).toBe('idle');
-  });
-
-  it('the editable position of an item moves it: to another list at an index, or by one of its fields', async () => {
-    const { devtools, order, node, manager } = await mountWithDevtools({ second: true });
-    expect(devtools.state(node('a1'))!.move).toEqual([{ key: 'position', value: { list: 'a', index: 0 }, editable: true }]);
-    // Only items of sortable lists have one.
-    for (const label of ['f1', 'chip', 'list a']) expect(devtools.state(node(label))!.move).toBeUndefined();
-
-    devtools.edit(node('a1'), ['position'], { list: 'b', index: 1 });
-    await vi.waitFor(() => expect(order('b')).toEqual(['b1', 'a1', 'b2']));
-    await idle(manager);
-    expect(order('a')).toEqual(['a2', 'a3']);
-    expect(devtools.state(node('a1'))!.move![0]!.value).toEqual({ list: 'b', index: 1 });
-    // Its index (the DevTools' − button), then its list: the index is kept.
-    devtools.edit(node('a1'), ['position', 'index'], 0);
-    await vi.waitFor(() => expect(order('b')).toEqual(['a1', 'b1', 'b2']));
-    await idle(manager);
-    devtools.edit(node('a1'), ['position', 'list'], 'a');
+describe('moves', () => {
+  it("move an item of a sortable list by a keyboard drag of the `devtools` sensor, one after another", async () => {
+    const { tab, order, provider } = await open({ second: true });
+    tab.send({ type: 'move', provider, id: 'a1', to: 'down' });
+    tab.send({ type: 'move', provider, id: 'a1', to: 'down' });
+    await vi.waitFor(() => expect(order('a')).toEqual(['a2', 'a3', 'a1']));
+    tab.send({ type: 'move', provider, id: 'a1', to: 'start' });
     await vi.waitFor(() => expect(order('a')).toEqual(['a1', 'a2', 'a3']));
-    await idle(manager);
-    expect(subtitles(devtools, 'drag start')).toHaveLength(3);
-
-    // Values that are no position, and other fields, move nothing.
-    devtools.edit(node('a1'), ['position'], 'b');
-    devtools.edit(node('a1'), ['position', 'index'], 'last');
-    devtools.edit(node('a1'), ['position', 'list'], { id: 'b' });
-    devtools.edit(node('a1'), ['list'], 'b');
-    devtools.edit(node('chip'), ['position'], { list: 'a', index: 0 });
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    expect(subtitles(devtools, 'drag start')).toHaveLength(3);
-    expect([order('a'), order('b')]).toEqual([
-      ['a1', 'a2', 'a3'],
-      ['b1', 'b2'],
+    // To another list (the end, or an index).
+    tab.send({ type: 'move', provider, id: 'a3', to: { list: 'b', index: 0 } });
+    await vi.waitFor(() => expect(order('b')).toEqual(['a3', 'b1', 'b2']));
+    await tab.until(() => tab.logged().filter((line) => line.startsWith('drop')).length === 4);
+    expect(tab.logged().filter((line) => line.startsWith('drag start'))).toEqual([
+      'drag start: a1 · devtools (keyboard) · from a',
+      'drag start: a1 · devtools (keyboard) · from a',
+      'drag start: a1 · devtools (keyboard) · from a',
+      'drag start: a3 · devtools (keyboard) · from a',
     ]);
+    expect([MOVES.up({ list: 'a', index: 2, count: 3 }), MOVES.end()]).toEqual([{ index: 1 }, {}]);
   });
 
-  it('reads edits as the DevTools send them', () => {
-    const at = { list: 'a', index: 2, count: 3 };
-    expect(editedMove(['position'], { list: 'b', index: 0 })?.(at)).toEqual({ list: 'b', index: 0 });
-    expect(editedMove(['position'], { list: 7 })?.(at)).toEqual({ list: 7 });
-    expect(editedMove(['position'], {})?.(at)).toEqual({});
-    expect(editedMove(['position', 'index'], 1)?.(at)).toEqual({ index: 1 });
-    expect(editedMove(['position', 'list'], 'b')?.(at)).toEqual({ list: 'b', index: 2 });
-    expect(editedMove('position', { index: 0 })?.(at)).toEqual({ index: 0 });
-    for (const [path, value] of [
-      [['position'], null],
-      [['position'], [1]],
-      [['position'], { index: 1.5 }],
-      [['position', 'index'], '1'],
-      [['position', 'list'], true],
-      [['position', 'other'], 1],
-      [['data'], { index: 0 }],
-    ] as Array<[string[], unknown]>) {
-      expect(editedMove(path, value)).toBeNull();
-    }
-    expect([MOVES.up(at), MOVES.down(at), MOVES.start(), MOVES.end()]).toEqual([{ index: 1 }, { index: 3 }, { index: 0 }, {}]);
+  it('nothing moves at the ends of a list, nor tree items and plain draggables', async () => {
+    const { tab, order, provider, manager } = await open();
+    tab.send({ type: 'move', provider, id: 'a1', to: 'up' });
+    tab.send({ type: 'move', provider, id: 'f', to: 'down' });
+    tab.send({ type: 'move', provider, id: 'chip', to: 'down' });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(order('a')).toEqual(['a1', 'a2', 'a3']);
+    expect(tab.logged()).toEqual([]);
+    expect(manager.status.value).toBe('idle');
   });
 });
 
-describe('a drag from the inspector', () => {
-  it('is picked up, stepped and dropped from the inspector, through the whole drop pipeline', async () => {
-    const onBeforeDrop = vi.fn();
+describe('the joystick', () => {
+  it('speeds up with the tilt, nothing in the dead zone', () => {
+    expect(speedOf(DEAD_ZONE)).toBe(0);
+    expect(speedOf(1)).toBe(MAX_SPEED);
+    expect(speedOf(0.5)).toBeGreaterThan(0);
+    expect(speedOf(0.5)).toBeLessThan(MAX_SPEED / 2);
+  });
+
+  it('picks the chosen item up, steers it as a pointer drag and drops it through the whole pipeline', async () => {
     const onDrop = vi.fn();
-    const { devtools, order, node, manager } = await mountWithDevtools({ list: { onBeforeDrop, onDrop } });
-    await devtools.nodeAction('open_with', node('a1'));
-    expect(manager.active.value).toMatchObject({ id: 'a1', sensor: 'keyboard' });
-    await devtools.action('keyboard_arrow_down');
-    await devtools.action('keyboard_arrow_down');
-    expect(devtools.state(node('list a'))!.order).toContainEqual({ key: 'draft', value: ['a2', 'a3', 'a1'] });
-    await devtools.action('file_download_done');
+    const { tab, order, provider, manager } = await open({ list: { onDrop } });
+    tab.send({ type: 'stick', x: 0, y: 1, grab: { provider, id: 'a1' } });
+    await vi.waitFor(() => expect(manager.active.value).toMatchObject({ id: 'a1', sensor: 'pointer' }));
+    // Down the list: past the middle of a3 (rows are 40px high, a1's center is at 20).
+    await vi.waitFor(() => expect(manager.pointer.value!.y).toBeGreaterThan(105), { timeout: 3000 });
+    tab.send({ type: 'stick', x: 0, y: 0 });
+    expect(manager.pointer.value!.x).toBe(100);
+    tab.send({ type: 'drop' });
     await idle(manager);
     expect(order('a')).toEqual(['a2', 'a3', 'a1']);
-    expect(onBeforeDrop).toHaveBeenCalledTimes(1);
     expect(onDrop.mock.calls[0]![0]).toMatchObject({ from: { list: 'a', index: 0 }, to: { list: 'a', index: 2 } });
-    const events = logged(devtools);
-    expect(events.map((event) => event.title)).toEqual(expect.arrayContaining(['drag start', 'release', 'onBeforeDrop', 'drop']));
-    expect(subtitles(devtools, 'drag start')).toEqual(['a1 · devtools (keyboard) · from a']);
-    expect(subtitles(devtools, 'drop')[0]).toMatch(/move a\[0\] → a\[2\]$/);
-    // One drag, one group.
-    expect(new Set(events.map((event) => event.groupId)).size).toBe(1);
+    await tab.until(() => tab.logged().some((line) => line.startsWith('drop')));
+    expect(tab.logged()[0]).toBe('drag start: a1 · devtools (pointer) · from a');
   });
 
-  it('is cancelled by the cancel button; without a drag the step and drop buttons do nothing', async () => {
-    const { devtools, order, node, manager } = await mountWithDevtools();
-    await devtools.action('keyboard_arrow_down');
-    await devtools.action('file_download_done');
-    expect(logged(devtools)).toEqual([]);
-
-    await devtools.nodeAction('open_with', node('a2'));
-    await devtools.action('keyboard_arrow_up');
-    // One drag at a time: another can't start.
-    await devtools.nodeAction('open_with', node('a3'));
-    expect(manager.active.value?.id).toBe('a2');
-    await devtools.action('cancel');
+  it("steers a drag the page started, cancels it; a disabled item isn't picked up", async () => {
+    const { tab, provider, manager } = await open();
+    expect(manager.start('chip', { x: 1000, y: 20 }, 'pointer')).toBe(true);
+    tab.send({ type: 'stick', x: -1, y: 0, grab: { provider, id: 'a1' } });
+    await vi.waitFor(() => expect(manager.pointer.value!.x).toBeLessThan(900));
+    expect(manager.active.value!.id).toBe('chip');
+    tab.send({ type: 'cancel' });
     await idle(manager);
-    expect(order('a')).toEqual(['a1', 'a2', 'a3']);
-    expect(subtitles(devtools, 'cancel')).toEqual(['cancelled']);
+
+    tab.send({ type: 'override', provider, target: { kind: 'draggable', id: 'a1' }, option: 'disabled', value: true });
+    await tab.next('state', (message) => message.providers[0]!.overrides.length === 1);
+    tab.send({ type: 'stick', x: 0, y: 1, grab: { provider, id: 'a1' } });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(manager.status.value).toBe('idle');
+    tab.send({ type: 'stick', x: 0, y: 0 });
   });
+});
 
-  it('a plain draggable too: arrows move it by pixels, and a drop on no target is a drop outside', async () => {
-    const { devtools, node, manager } = await mountWithDevtools();
-    await devtools.nodeAction('open_with', node('chip'));
-    expect(manager.active.value?.id).toBe('chip');
-    const start = manager.pointer.value!;
-    await devtools.action('keyboard_arrow_right');
-    expect(manager.pointer.value).toEqual({ x: start.x + 25, y: start.y });
-    await devtools.action('file_download_done');
-    await idle(manager);
-    expect(subtitles(devtools, 'drag start')).toEqual(['chip · devtools (keyboard)']);
+describe('picking on the page', () => {
+  it('the next press on a draggable chooses it, and does nothing else', async () => {
+    const { tab, manager } = await open();
+    tab.send({ type: 'pick', on: true });
+    await tab.next('pick', (message) => message.on);
+    const chip = manager.getDraggable('chip')!.getElement()!;
+    const press = new PointerEvent('pointerdown', { bubbles: true, composed: true, cancelable: true });
+    chip.dispatchEvent(press);
+    expect(press.defaultPrevented).toBe(true);
+    const picked = await tab.next('pick', (message) => !message.on);
+    expect(picked.picked).toMatchObject({ kind: 'draggable', id: 'chip' });
+    await tab.next('state', (message) => message.detail?.node.kind === 'draggable');
+    expect(manager.status.value).toBe('idle');
+
+    // Escape ends it without a pick.
+    tab.send({ type: 'pick', on: true });
+    await tab.next('pick', (message) => message.on);
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect((await tab.next('pick')).picked).toBeUndefined();
   });
 });

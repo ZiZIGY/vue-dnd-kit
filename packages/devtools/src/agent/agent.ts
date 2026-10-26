@@ -26,7 +26,7 @@ import { detailView, providerView } from './views';
 const FRAME = { dragging: 40, idle: 500 };
 const STATE = { dragging: 150, idle: 1000 };
 const PREVIEW_EVERY = 200;
-const STYLES_EVERY = 2000;
+const STYLES_EVERY = 1000;
 
 export interface Agent {
   /** A tab says it watches the page. */
@@ -35,7 +35,7 @@ export interface Agent {
   stop(): void;
 }
 
-const nodeLabel = (node: NodeRef) => (node.kind === 'provider' || node.kind === 'session' ? node.kind : `${node.kind} ${keyLabel(node.id)}`);
+const nodeLabel = (node: NodeRef) => ('id' in node ? `${node.kind} ${keyLabel(node.id)}` : node.kind);
 
 export function createAgent(bridge: DevtoolsBridge, page: string, post: (message: PageMessage) => void): Agent {
   const drive = createDrive();

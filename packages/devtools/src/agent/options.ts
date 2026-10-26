@@ -124,7 +124,7 @@ const nameOf = (spec: Spec, value: unknown): Preview => {
 };
 
 const shown = (spec: Spec, value: unknown): Preview =>
-  spec.input !== 'names' ? preview(value) : Array.isArray(value) ? value.map((entry) => nameOf(spec, entry)) : value == null ? null : nameOf(spec, value);
+  spec.input !== 'names' || value == null ? preview(value) : Array.isArray(value) ? value.map((entry) => nameOf(spec, entry)) : nameOf(spec, value);
 
 /** Options whose functions are values (an animation, an accept rule), not getters. */
 const FUNCTION_VALUES = new Set(['animation', 'dropAnimation', 'accept', 'collision']);

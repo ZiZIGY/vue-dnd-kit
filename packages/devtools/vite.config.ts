@@ -6,10 +6,15 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-/** The plugin, and `@vue-dnd-kit/devtools/auto` (a side effect: it imports the plugin's entry). */
+/**
+ * The page's side, `@vue-dnd-kit/devtools/auto` (a side effect: it imports the page's
+ * entry) and the Vite plugin (it runs in Node). The tab is built on its own
+ * (`vite.client.config.ts`, into `dist/client`).
+ */
 const entries = {
   index: resolve(__dirname, 'src/index.ts'),
   auto: resolve(__dirname, 'src/auto.ts'),
+  vite: resolve(__dirname, 'src/vite.ts'),
 };
 
 export default defineConfig({
@@ -20,7 +25,7 @@ export default defineConfig({
       include: [resolve(__dirname, 'src')],
       // tsconfig's `paths` serve development (one Vue, the core's sources): imports stay as written.
       pathsToAliases: false,
-      // One self-contained .d.ts per entry (only `vue` imports).
+      // One self-contained .d.ts per entry (only `vue` and `vite` imports).
       rollupTypes: true,
       // The same declarations as .d.cts for the `require` condition (publint, arethetypeswrong).
       afterBuild: () => {
@@ -37,8 +42,9 @@ export default defineConfig({
       fileName: (format, name) => `${name}.${format === 'es' ? 'js' : 'cjs'}`,
     },
     rollupOptions: {
-      // The core (and its bridge), the actions and the DevTools API come from the app.
-      external: ['vue', /^@vue\/devtools-api/, /^@vue-dnd-kit\/(core|actions)/],
+      // The core (and its bridge), the actions and the DevTools API come from the app;
+      // Node's modules and Vite from the dev server.
+      external: ['vue', 'vite', /^node:/, /^@vue\/devtools-api/, /^@vue-dnd-kit\/(core|actions)/],
     },
     target: 'es2022',
     sourcemap: true,

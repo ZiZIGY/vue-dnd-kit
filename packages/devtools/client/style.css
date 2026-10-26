@@ -1,0 +1,208 @@
+/* The tab's looks: compact, in the DevTools' colors (light and dark, `lib/theme.ts`). */
+
+:root {
+  --bg: #ffffff;
+  --bg-soft: #f6f7f9;
+  --bg-mute: #eceef2;
+  --border: #e2e5ea;
+  --text: #1f2328;
+  --text-soft: #57606a;
+  --text-mute: #8b949e;
+  --accent: #42b883;
+  --accent-soft: rgb(66 184 131 / 0.14);
+  --blue: #3b82f6;
+  --red: #ef4444;
+  --orange: #f59e0b;
+  --purple: #8b5cf6;
+  --radius: 6px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #121212;
+  --bg-soft: #1a1b1e;
+  --bg-mute: #25262b;
+  --border: #2c2e33;
+  --text: #e6e6e6;
+  --text-soft: #a7adb5;
+  --text-mute: #6e7681;
+  --accent-soft: rgb(66 184 131 / 0.18);
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 12px/1.4 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  min-width: 0;
+}
+
+textarea {
+  font-family: var(--mono);
+  font-size: 11px;
+  resize: vertical;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Small reusable pieces. */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--bg-mute);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.btn.danger {
+  color: var(--red);
+}
+
+.btn.on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.chip {
+  display: inline-block;
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  line-height: 16px;
+  background: var(--bg-mute);
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+.chip.green {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.chip.blue {
+  background: rgb(59 130 246 / 0.15);
+  color: var(--blue);
+}
+
+.chip.red {
+  background: rgb(239 68 68 / 0.15);
+  color: var(--red);
+}
+
+.chip.orange {
+  background: rgb(245 158 11 / 0.15);
+  color: var(--orange);
+}
+
+.chip.purple {
+  background: rgb(139 92 246 / 0.15);
+  color: var(--purple);
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 6px;
+  border-bottom: 1px solid var(--border);
+  flex: none;
+}
+
+.tabs button {
+  border: 0;
+  background: none;
+  padding: 6px 8px;
+  color: var(--text-soft);
+  border-bottom: 2px solid transparent;
+}
+
+.tabs button.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+.mono {
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.mute {
+  color: var(--text-mute);
+}
+
+.empty {
+  padding: 16px;
+  color: var(--text-mute);
+  text-align: center;
+}
+
+.section-title {
+  margin: 10px 0 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+kbd {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 0 4px;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  background: var(--bg-soft);
+}

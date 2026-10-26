@@ -127,4 +127,3 @@ export function vueDnDKitDevtools(options: DnDDevtoolsViteOptions = {}): Plugin 
   };
 }
 
-export default vueDnDKitDevtools;

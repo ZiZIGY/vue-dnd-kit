@@ -50,16 +50,22 @@ const shellHtml = (zone: Element): string => {
     ancestors.unshift(parent);
   }
   const computed = getComputedStyle(zone);
+  const value = (property: string) => computed.getPropertyValue(property);
+  const border = value('border-top-width');
   const own = [
     'position: relative',
     'display: block',
     'margin: 0',
+    'padding: 0',
     'overflow: hidden',
     'transform: none',
     'box-sizing: border-box',
-    ...['background-color', 'background-image', 'border', 'border-radius', 'color', 'font-family', 'font-size'].map(
-      (property) => `${property}: ${computed.getPropertyValue(property)}`,
-    ),
+    'border: none',
+    ...['background-color', 'background-image', 'border-radius', 'color', 'font-family', 'font-size']
+      .filter((property) => value(property))
+      .map((property) => `${property}: ${value(property)}`),
+    // Its border as an outline inside: the items are placed from its border box.
+    ...(border ? [`outline: ${border} ${value('border-top-style')} ${value('border-top-color')}`, `outline-offset: -${border}`] : []),
   ].join('; ');
   const open = ancestors.map((element) => openTag(element, 'display: contents')).join('');
   const close = ancestors
@@ -67,6 +73,23 @@ const shellHtml = (zone: Element): string => {
     .map((element) => `</${element.localName}>`)
     .join('');
   return `${open}${openTag(zone, own).replace(/>$/, ' data-devtools-zone>')}</${zone.localName}>${close}`;
+};
+
+/**
+ * What the copies inherit in the page and not in the tab's shadow roots: the body's font
+ * and color, and the custom properties of the root (`:root` matches no shadow root).
+ */
+const pageRoot = (): string => {
+  const root = getComputedStyle(document.documentElement);
+  const body = getComputedStyle(document.body);
+  const declarations = ['font-family', 'font-size', 'font-weight', 'line-height', 'letter-spacing', 'color'].map(
+    (property) => `${property}: ${body.getPropertyValue(property)};`,
+  );
+  for (let index = 0; index < root.length; index++) {
+    const property = root.item(index);
+    if (property.startsWith('--')) declarations.push(`${property}: ${root.getPropertyValue(property)};`);
+  }
+  return `:host { ${declarations.join(' ')} }`;
 };
 
 export interface Frames {
@@ -286,13 +309,14 @@ export function createFrames(): Frames {
         .join('|');
       if (next === signature) return null;
       signature = next;
-      return sheets
+      const text = sheets
         .map((sheet) => {
           const list = rules(sheet);
           if (list) return list.map((rule) => rule.cssText).join('\n');
           return sheet.href ? `@import url("${sheet.href}");` : '';
         })
         .join('\n');
+      return `${text}\n${pageRoot()}`;
     },
 
     resend() {
