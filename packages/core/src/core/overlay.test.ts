@@ -199,6 +199,20 @@ describe('overlay precedence (mounted)', () => {
     await end();
   });
 
+  it("takes every item's clone with the styles the item has in its list", async () => {
+    const style = document.createElement('style');
+    style.textContent = 'ul > li { padding: 3px }';
+    document.head.appendChild(style);
+    mountBoard();
+    await nextTick();
+    manager.selection.add('b1').add('b2');
+    expect(await drag('b2')).toBe('clone');
+    // What `DragPreview` shows: the overlay and the multi-drag column.
+    for (const id of ['b1', 'b2']) expect(manager.getPreview(id)!.element.style.padding).toBe('3px');
+    await end();
+    style.remove();
+  });
+
   it('renders one overlay with every item of a multi-drag', async () => {
     mountBoard();
     await nextTick();

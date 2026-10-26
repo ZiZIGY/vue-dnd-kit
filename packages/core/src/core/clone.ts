@@ -4,22 +4,7 @@
  */
 
 import { parentOf } from '../utils/dom';
-
-const INHERITED = [
-  'font-family',
-  'font-size',
-  'font-weight',
-  'font-style',
-  'line-height',
-  'letter-spacing',
-  'color',
-  'text-align',
-  'direction',
-  // A cloned <li> outside its list would show a marker.
-  'list-style-type',
-] as const;
-
-const OWN = ['background-color', 'border-radius'] as const;
+import { snapshotStyles } from './snapshot';
 
 let radioGroup = 0;
 
@@ -92,6 +77,8 @@ export interface CloneOptions {
    * table; a transparent clone floating over other items would let them show through.
    */
   opaque?: boolean;
+  /** Where the clone will be shown (the overlay's parent): the styles it loses there are inlined. */
+  container?: Element | null;
 }
 
 /**
@@ -114,18 +101,16 @@ export const copyElement = (source: HTMLElement): HTMLElement => {
   return clone;
 };
 
-export const clonePreview = (source: HTMLElement, { opaque = false }: CloneOptions = {}): HTMLElement => {
+/**
+ * The overlay's clone of `source`: a copy that fills the overlay box, with the computed
+ * styles it would lose outside its list inlined (`snapshot.ts`). A table row comes in a
+ * table of its own.
+ */
+export const clonePreview = (source: HTMLElement, { opaque = false, container }: CloneOptions = {}): HTMLElement => {
   const clone = copyElement(source);
   const computed = getComputedStyle(source);
-
-  for (const property of [...INHERITED, ...OWN]) {
-    clone.style.setProperty(property, computed.getPropertyValue(property));
-  }
   const hasImage = !!computed.backgroundImage && computed.backgroundImage !== 'none';
-  if (opaque && !hasImage && isTransparent(computed.backgroundColor)) {
-    const backdrop = findBackdrop(source);
-    if (backdrop) clone.style.setProperty('background-color', backdrop);
-  }
+  const backdrop = opaque && !hasImage && isTransparent(computed.backgroundColor) ? findBackdrop(source) : null;
   for (let index = 0; index < computed.length; index++) {
     const property = computed.item(index);
     if (property.startsWith('--')) {
@@ -144,9 +129,13 @@ export const clonePreview = (source: HTMLElement, { opaque = false }: CloneOptio
     transition: 'none',
     pointerEvents: 'none',
   });
+
+  const preview = source.tagName === 'TR' ? wrapTableRow(clone, source) : clone;
+  // Laid out as the overlay will show it: the root's styles above are in place.
+  snapshotStyles(source, clone, preview, container ?? document.body);
+  if (backdrop) clone.style.setProperty('background-color', backdrop);
   // A positioned source (a piece on a board) would keep its offsets inside the overlay.
   // `relative` keeps it a containing block for its own positioned children.
   if (computed.position !== 'static') Object.assign(clone.style, { position: 'relative', inset: 'auto' });
-
-  return source.tagName === 'TR' ? wrapTableRow(clone, source) : clone;
+  return preview;
 };
