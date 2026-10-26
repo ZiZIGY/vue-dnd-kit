@@ -24,7 +24,8 @@ export interface Picker {
 export function createPicker(providers: () => DevtoolsProvider[], done: (node: NodeRef | null) => void): Picker {
   let on = false;
   let elements = new Map<Element, NodeRef & { kind: 'draggable' }>();
-  let builtAt = 0;
+  /** When `elements` was looked up; never, at first. */
+  let builtAt = -Infinity;
   let style: HTMLStyleElement | null = null;
 
   const lookup = () => {
@@ -94,7 +95,7 @@ export function createPicker(providers: () => DevtoolsProvider[], done: (node: N
     start() {
       if (on) return;
       on = true;
-      builtAt = 0;
+      builtAt = -Infinity;
       window.addEventListener('pointermove', onMove, true);
       window.addEventListener('keydown', onKey, true);
       for (const type of SWALLOWED) window.addEventListener(type, onPress, { capture: true, passive: false });
