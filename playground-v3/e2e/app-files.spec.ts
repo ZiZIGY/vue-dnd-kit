@@ -40,6 +40,11 @@ test.describe('app: file manager', () => {
 
     await hold(page, tile(page, 'budget'), await at(row(page, 'archive'), 0.5, 0.5));
     await expect(row(page, 'archive')).toHaveAttribute('data-target');
+    // In a grid the overlay is a pile: the grabbed file on top, the others turned behind
+    // it, the whole count on it (a row of tiles would cover the page).
+    await expect(page.locator('[data-dnd-overlay] > div > span')).toHaveText('3');
+    const behind = page.locator('[data-dnd-overlay] [data-dnd-overlay-item]');
+    expect(await behind.evaluateAll((cells) => cells.map((cell) => /rotate/.test((cell as HTMLElement).style.transform)))).toEqual([true, true]);
     await page.mouse.up();
     await settled(page);
     await expect(files(page)).toContainText(folder('archive', 'cv', 'budget', 'notes'));

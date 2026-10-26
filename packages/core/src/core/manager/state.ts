@@ -33,6 +33,8 @@ export interface OverlayColumn {
   ids: Key[];
   axis: 'x' | 'y';
   gap: number;
+  /** `'column'` (default): the items in a row along `axis`. `'pile'` (grids): stacked behind the active one. */
+  layout?: 'column' | 'pile';
   /** The list's layout animation: the clones gather into the column with it. */
   animation?: LayoutAnimation;
   /** Renders the column in the default overlay. The sortable layer brings it: plain drags don't bundle it. */

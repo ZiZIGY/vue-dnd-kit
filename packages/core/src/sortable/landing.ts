@@ -8,7 +8,7 @@ import { landOverlayItems } from '../animation/drop';
 import { listOf, type GroupContext, type Session } from './context';
 import type { ListEntry } from './entry';
 import type { DropResult } from './drop';
-import { ColumnPreview, layoutColumn } from './column';
+import { ColumnPreview, layoutCells } from './column';
 
 const NO_OFFSET: Coordinates = { x: 0, y: 0 };
 
@@ -36,8 +36,8 @@ const columnIds = (current: Session): Key[] =>
 
 /**
  * The default overlay of a multi-drag that isn't `'stack'`: every item in drop order,
- * in a column along the list holding the slot (a row in horizontal lists and grids:
- * consecutive grid items sit side by side), with that list's gap.
+ * in a column along the list holding the slot (a row in horizontal lists), with that
+ * list's gap. In grids a row of whole cells would cover the page: they pile up instead.
  */
 const syncColumn = (g: GroupContext, current: Session) => {
   if (current.stacked) return;
@@ -46,11 +46,13 @@ const syncColumn = (g: GroupContext, current: Session) => {
   const list = listOf(g, current.list ?? current.origin.list);
   if (!list || list.id === g.columnList) return;
   g.columnList = list.id;
-  const axis = list.strategy() === 'vertical' ? 'y' : 'x';
+  const strategy = list.strategy();
+  const axis = strategy === 'vertical' ? 'y' : 'x';
   g.manager.overlayColumn.value = {
     ids,
     axis,
     gap: gapOf(list, axis),
+    layout: strategy === 'grid' ? 'pile' : 'column',
     animation: list.animation(),
     preview: ColumnPreview,
     land: landOverlayItems,
@@ -119,7 +121,7 @@ export const leadOffset = (g: GroupContext, current: Session | null): Coordinate
   const items = manager.previewIds.map((id) => ({ id, size: manager.getPreview(id)!.rect }));
   const box = manager.fitSize.value ?? active.rect;
   const source = manager.getPreview(active.id)?.rect ?? active.rect;
-  const cell = layoutColumn(items, active.id, box, source, column.axis, column.gap).find((at) => at.id === current.lead);
+  const cell = layoutCells(column, items, active.id, box, source).find((at) => at.id === current.lead);
   return cell ? { x: cell.x, y: cell.y } : NO_OFFSET;
 };
 

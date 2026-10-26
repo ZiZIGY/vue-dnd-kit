@@ -356,9 +356,10 @@ test.describe("multi-drag 'group'", () => {
     await select(page, 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7');
     await pickUp(page, item(page, 'a4'));
     await layoutSettled(page);
-    // The grabbed a4 and the four nearest to it in drop order; a1 and a7 are counted.
+    // The grabbed a4 and the four nearest to it in drop order; a1 and a7 are counted, each
+    // at the end of the column where it drops: before a2, after a6.
     expect(await columnIds(page)).toEqual(['a2', 'a3', 'a5', 'a6']);
-    await expect(overlay(page)).toContainText('+2');
+    await expect(page.locator('[data-dnd-overlay] > div > span')).toHaveText(['+1', '+1']);
     expect(await placeholders(page)).toEqual({ ids: ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7'], contiguous: true });
     await page.evaluate(() => {
       const win = window as Window & { __fades?: string[] };

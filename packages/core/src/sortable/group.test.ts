@@ -7,7 +7,7 @@ import { DragPreview } from '../core/DragPreview';
 import { useManager } from '../core/context';
 import type { DnDManager } from '../core/manager';
 import { makeDraggable } from '../core/makeDraggable';
-import { layoutColumn } from './column';
+import { layoutColumn, layoutPile } from './column';
 import { makeSortableItem } from './makeSortableItem';
 import { makeSortableList } from './makeSortableList';
 
@@ -450,5 +450,18 @@ describe('layoutColumn', () => {
       { id: 'a', x: 0, y: 0, width: 100, height: 20 },
       { id: 'b', x: 108, y: 0, width: 60, height: 20 },
     ]);
+  });
+});
+
+describe('layoutPile', () => {
+  it('puts the active item on top, up to three others fanned out behind it at the box size', () => {
+    const cells = layoutPile([{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }], 'c', { width: 80, height: 60 });
+    // Behind first (painted under), the active one last; a fifth item doesn't show.
+    expect(cells.map((cell) => cell.id)).toEqual(['a', 'b', 'd', 'c']);
+    expect(cells.at(-1)).toEqual({ id: 'c', x: 0, y: 0, width: 80, height: 60 });
+    for (const cell of cells.slice(0, -1)) {
+      expect(cell).toMatchObject({ width: 80, height: 60 });
+      expect(cell.rotate).not.toBe(0);
+    }
   });
 });
