@@ -128,7 +128,9 @@ const connect = (api: DevtoolsApi, app: App, bridge: DevtoolsBridge) => {
   };
 
   const unsubscribe = bridge.subscribe({
-    added: (provider) => ours(provider) && refresh(true),
+    added: (provider) => {
+      if (ours(provider)) refresh(true);
+    },
     removed: (provider) => {
       drags.delete(provider);
       if (ours(provider)) refresh(true);
