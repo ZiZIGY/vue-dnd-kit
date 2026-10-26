@@ -13,7 +13,7 @@ Official Nuxt module for [Vue DnD Kit](https://zizigy.github.io/vue-dnd-kit/) v3
 ## Features
 
 - Registers `<DnDProvider>` and `<DragPreview>` (the clone of a dragged item, for custom overlays) as global components (with an optional prefix).
-- Auto-imports the composables: `makeDraggable`, `makeDroppable`, `makeSortableList`, `makeSortableItem`, `makeSortableTree`, `makeSelectionArea`, `useDnD`, `useDnDMonitor`.
+- Auto-imports the composables: `makeDraggable`, `makeDroppable`, `makeSortableList`, `makeSortableItem`, `makeSortableTree`, `makeSelectionArea`, `makeDragArea`, `useDnD`, `useDnDMonitor`.
 - Auto-imports the main option and event types (`SortableListOptions`, `SortableDropEvent`, `DnDEvent`, …) as type-only imports.
 - Modifiers and collision helpers are opt-in, because their names (`snapToGrid`, `restrictToParent`, `closestCenter`) are generic.
 - SSR-safe: lists render on the server; the overlay, the screen reader instructions and the live region mount on the client.

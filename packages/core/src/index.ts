@@ -7,6 +7,7 @@ export { makeSortableList } from './sortable/makeSortableList';
 export { makeSortableItem } from './sortable/makeSortableItem';
 export { makeSortableTree } from './sortable/makeSortableTree';
 export { makeSelectionArea } from './core/makeSelectionArea';
+export { makeDragArea } from './core/makeDragArea';
 export { defineSensor, useSensor } from './core/sensors/host';
 export { pointerSensor } from './core/sensors/pointer';
 export { keyboardSensor } from './core/sensors/keyboard';
@@ -147,4 +148,8 @@ export type {
   SelectionAreaReturn,
   SelectionStrategy,
   SelectionModifier,
+
+  // makeDragArea
+  DragAreaOptions,
+  DragAreaReturn,
 } from './types';

@@ -2,8 +2,12 @@
 
 ## DnDProvider
 
-Wrap the part of the app that drags. Nested providers are independent: a drag never
-crosses providers.
+Usually one provider wraps the whole app (in a layout or `App.vue`). Give parts of the
+page their own rules with `makeDragArea` (modifiers, axis, bounds, auto-scroll,
+activation, disabled). Nest a second provider only when a part needs its own
+provider-wide settings (collision, keyboard keys, announcements) and its items never
+leave it: nested providers are independent, a drag never crosses them, and the closest
+provider owns an element.
 
 ```vue
 <DnDProvider

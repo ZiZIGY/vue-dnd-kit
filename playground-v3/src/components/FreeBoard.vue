@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ref, useTemplateRef } from 'vue';
-  import { makeDroppable, useDnD, useDnDMonitor } from '@vue-dnd-kit/core';
+  import { makeDragArea, makeDroppable, snapToGrid, useDnD, useDnDMonitor } from '@vue-dnd-kit/core';
   import FreePiece from './FreePiece.vue';
   import FreeZone from './FreeZone.vue';
   import type { Piece } from '../types';
@@ -25,6 +25,11 @@
   const boardRef = useTemplateRef<HTMLElement>('board');
   makeDroppable(boardRef, { id: 'board', accept: '*' });
 
+  // Every piece, on the board or in a zone, snaps to a 20px grid: a drag area's rule for
+  // the drags that start in it, with no provider of its own needed for that.
+  const freeRef = useTemplateRef<HTMLElement>('free');
+  makeDragArea(freeRef, { modifiers: [snapToGrid({ x: 20, y: 20, smooth: { duration: 80 } })] });
+
   useDnDMonitor({
     onDragEnd({ active, over, delta }) {
       const piece = pieces.value.find((item) => item.id === active.id);
@@ -42,7 +47,10 @@
 </script>
 
 <template>
-  <div class="free">
+  <div
+    ref="free"
+    class="free"
+  >
     <div
       ref="board"
       class="free-board"

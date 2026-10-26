@@ -14,7 +14,9 @@ nothing of its own except a floating overlay (a clone of the dragged element by
 default). You render your own elements and pass their template refs to the composables.
 
 > This skill describes `@vue-dnd-kit/core` 3.x. v2 had a different API (`useDnDProvider`,
-> `makeConstraintArea`, `groups`), so don't mix the two.
+> `makeConstraintArea`, `makeAutoScroll`, `groups`), so don't mix the two. In v3,
+> `makeDragArea` replaces `makeConstraintArea` and `makeAutoScroll`, and `useDnD` replaces
+> `useDnDProvider`.
 
 ```bash
 npm i @vue-dnd-kit/core            # required (peer: vue ^3.5)
@@ -117,6 +119,7 @@ mount on the client.
 | File tree / nested outline | `makeSortableTree` (flat rendering by depth) | [tree](references/tree.md) |
 | Free drag, drop zones, drop into a folder item | `makeDraggable` + `makeDroppable` | [draggable-droppable](references/draggable-droppable.md) |
 | Lock drags to one axis; snap, restrict to a container | `axis: 'x' \| 'y'`, `modifiers` | [draggable-droppable](references/draggable-droppable.md#modifiers) |
+| Rules for a part of the page (a board, a canvas, a feed) under one app-wide provider | `makeDragArea` | [draggable-droppable](references/draggable-droppable.md#drag-areas-makedragarea) |
 | Provider options, global events, `useDnD`, monitors | `DnDProvider`, `useDnD`, `useDnDMonitor` | [provider](references/provider.md) |
 | Drag several items; rubber-band selection | `selected`, `multiple`, `makeSelectionArea` | [multi-drag](references/multi-drag.md) |
 | Custom drag preview, preview size | `overlay`, `#overlay` slot, `DragPreview`, `overlayFit` | [overlay](references/overlay.md) |
@@ -136,6 +139,7 @@ import {
   makeDraggable, makeDroppable,                                  // free drag, drop zones
   makeSortableList, makeSortableItem, makeSortableTree,          // sortable
   makeSelectionArea,                                             // rubber band
+  makeDragArea,                                                  // rules for drags starting in a region
   useDnD, useDnDMonitor, useDnDContext, provideDnDContext,       // state, events, sharing
   defineSensor, useSensor, pointerSensor, keyboardSensor,        // input
   pointerFirst, pointerWithin, rectIntersection, closestCenter, closestCorners,  // collisions

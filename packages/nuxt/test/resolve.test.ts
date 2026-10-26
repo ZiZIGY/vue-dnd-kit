@@ -25,6 +25,7 @@ describe('module options', () => {
       'makeSortableItem',
       'makeSortableTree',
       'makeSelectionArea',
+      'makeDragArea',
       'useDnD',
       'useDnDMonitor',
     ]);

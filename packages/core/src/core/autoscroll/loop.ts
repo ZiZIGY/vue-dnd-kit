@@ -177,9 +177,14 @@ export function useAutoScroll(manager: DnDManager): void {
       if (x) step(current, x.scroller, x.speed * scale, 0);
       if (y) step(current, y.scroller, 0, y.speed * scale);
     }
-    current.previous = [x?.scroller, y?.scroller].filter(
-      (scroller): scroller is Element => !!scroller && scroller !== window,
+    const scrolled = [x?.scroller, y?.scroller].filter(
+      (scroller, index, all): scroller is Element => !!scroller && scroller !== window && all.indexOf(scroller) === index,
     );
+    const { autoScrollers } = manager;
+    if (scrolled.length !== autoScrollers.value.length || scrolled.some((element, i) => element !== autoScrollers.value[i])) {
+      autoScrollers.value = scrolled;
+    }
+    current.previous = scrolled;
     manager.isAutoScrolling.value = !!(x || y);
     frame = requestAnimationFrame(tick);
   };
@@ -221,6 +226,7 @@ export function useAutoScroll(manager: DnDManager): void {
     if (session) restoreSnapping(session);
     session = null;
     manager.isAutoScrolling.value = false;
+    if (manager.autoScrollers.value.length) manager.autoScrollers.value = [];
   };
 
   watch(isPointerDrag, (dragging) => (dragging ? start() : stop()), { flush: 'sync' });

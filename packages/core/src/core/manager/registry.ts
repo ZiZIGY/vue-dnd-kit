@@ -4,7 +4,7 @@
  * target rules, announcers, auto-scroll overrides).
  */
 
-import type { Component } from 'vue';
+import { shallowRef, type Component } from 'vue';
 import type {
   ActivationOptions,
   Active,
@@ -85,6 +85,17 @@ export interface AutoScrollEntry {
   getOptions(): boolean | AutoScrollOptions | undefined;
 }
 
+/** A drag area (`makeDragArea`): rules for the drags that start in its element. */
+export interface AreaEntry {
+  getElement(): HTMLElement | null;
+  isDisabled(): boolean;
+  getActivation(): ActivationOptions | undefined;
+  getModifiers(): Modifier[] | undefined;
+  getAxis(): 'x' | 'y' | undefined;
+  /** `restrictToArea`: the drag stays inside the area's element. */
+  restricts(): boolean;
+}
+
 /** Elements owned by any provider, so nested providers ignore each other's items. */
 const owners = new WeakMap<Element, object>();
 
@@ -109,6 +120,10 @@ export function createRegistry() {
   const selectionAborts = new Set<() => void>();
   /** This provider, as `owners` records it. */
   const owner = {};
+  const areas = new WeakMap<Element, AreaEntry>();
+  let areaCount = 0;
+  /** Bumped when an area binds or unbinds an element: whatever reads `findArea` follows. */
+  const areasVersion = shallowRef(0);
 
   const registerDraggable = (entry: DraggableEntry): (() => void) => {
     draggables.set(entry.id, entry);
@@ -150,6 +165,37 @@ export function createRegistry() {
     }
     return null;
   };
+
+  const bindArea = (element: Element, entry: AreaEntry) => {
+    if (!areas.has(element)) areaCount++;
+    areas.set(element, entry);
+    areasVersion.value++;
+  };
+
+  const unbindArea = (element: Element, entry: AreaEntry) => {
+    if (areas.get(element) !== entry) return;
+    areas.delete(element);
+    areaCount--;
+    areasVersion.value++;
+  };
+
+  /** The areas of this provider around `element` (or on it), the closest first, while `visit` returns `false`. */
+  const walkAreas = (element: Element | null, visit: (area: AreaEntry) => boolean): AreaEntry | null => {
+    // Read even without areas: an effect asking now hears about the first one.
+    void areasVersion.value;
+    if (!areaCount) return null;
+    for (let node = element; node; node = parentOf(node)) {
+      const area = areas.get(node);
+      if (area && visit(area)) return area;
+    }
+    return null;
+  };
+
+  /** The closest area around `element`: the one whose rules its drags follow. */
+  const findArea = (element: Element | null): AreaEntry | null => walkAreas(element, () => true);
+
+  /** Some area around `element` is disabled: a disabled area turns off the areas inside it too. */
+  const inDisabledArea = (element: Element | null): boolean => !!walkAreas(element, (area) => area.isDisabled());
 
   /**
    * `integration`: a library layer (sortable groups). Its notifications run before the
@@ -211,6 +257,10 @@ export function createRegistry() {
       bindDraggableElement,
       unbindDraggableElement,
       findDraggable,
+      bindArea,
+      unbindArea,
+      findArea,
+      inDisabledArea,
       addMonitor,
       addSourceResolver,
       addTargetRule,

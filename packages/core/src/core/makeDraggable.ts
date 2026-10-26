@@ -3,7 +3,7 @@ import type { DraggableOptions, DraggableReturn, Key, MaybeElementRef } from '..
 import type { DraggableEntry } from './manager';
 import { useManager } from './context';
 import { normalizeTypes } from './accept';
-import { withAxis } from './modifiers';
+import { dragModifiers } from './modifiers';
 import { createId, isNativelyFocusable, toElement } from '../utils/dom';
 import { read } from '../utils/read';
 
@@ -140,11 +140,19 @@ export function createDraggable<TData>(
     return toElement(handle);
   };
 
+  /** The drag area (`makeDragArea`) the draggable is in, whose rules its drags follow. */
+  const area = () => manager.findArea(getElement());
+
   const entry: DraggableEntry = {
     id: id.value,
     getOverlay: () => toOverlay(unref(options.overlay) ?? internals.getOverlay?.()),
-    getModifiers: () => withAxis(read(options.modifiers), read(options.axis)),
-    getActivation: () => read(options.activation),
+    getModifiers: () => dragModifiers(read(options.modifiers), read(options.axis), area()),
+    // Per pointer kind: the draggable's own constraint, else its area's.
+    getActivation: () => {
+      const own = read(options.activation);
+      const inherited = area()?.getActivation();
+      return own && inherited ? { ...inherited, ...own } : (own ?? inherited);
+    },
     canDrag: options.canDrag,
     getKeyboard: () => read(options.keyboard),
     getElement,
@@ -155,7 +163,7 @@ export function createDraggable<TData>(
     getFocusTarget: () => getHandleElement() ?? getElement(),
     getData: () => read(options.data),
     getTypes: () => normalizeTypes(read(options.type)),
-    isDisabled: () => !!read(options.disabled),
+    isDisabled: () => !!read(options.disabled) || manager.inDisabledArea(getElement()),
     getItem: internals.getItem,
     getContainer: internals.getContainer,
   };

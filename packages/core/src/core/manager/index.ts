@@ -24,7 +24,7 @@ import { createDetection } from './detection';
 import { createFrameLoop } from './frame';
 import { createSession } from './session';
 
-export type { AutoScrollEntry, DraggableEntry, DroppableEntry, IntegrationMonitor, TargetRule } from './registry';
+export type { AreaEntry, AutoScrollEntry, DraggableEntry, DroppableEntry, IntegrationMonitor, TargetRule } from './registry';
 export type { OverlayColumn } from './state';
 export type { PreviewSource } from './overlay';
 

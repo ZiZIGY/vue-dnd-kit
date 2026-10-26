@@ -1,4 +1,5 @@
 import type { AnimationOptions, Coordinates, MaybeElementRef, Modifier, Rect } from '../types';
+import type { AreaEntry } from './manager';
 import { getCenter, getRect } from '../animation/layout';
 import { toElement } from '../utils/dom';
 
@@ -28,6 +29,22 @@ export const restrictToHorizontalAxis: Modifier = ({ transform }) => ({ x: trans
 /** `modifiers` with the lock of the `axis` option last, so it holds whatever they do. */
 export const withAxis = (modifiers: Modifier[] | undefined, axis: 'x' | 'y' | null | undefined): Modifier[] | undefined =>
   axis ? [...(modifiers ?? []), axis === 'x' ? restrictToHorizontalAxis : restrictToVerticalAxis] : modifiers;
+
+/**
+ * The modifiers of a drag after the provider's: those of its area (`makeDragArea`), the
+ * draggable's own (or its list's), the area's bounds (`restrictToArea`), and the axis
+ * lock last. The draggable's `axis` (or its list's) wins over the area's.
+ */
+export const dragModifiers = (
+  own: Modifier[] | undefined,
+  axis: 'x' | 'y' | undefined,
+  area: AreaEntry | null,
+): Modifier[] | undefined => {
+  if (!area) return withAxis(own, axis);
+  const modifiers = [...(area.getModifiers() ?? []), ...(own ?? [])];
+  if (area.restricts()) modifiers.push(restrictToElement(area.getElement));
+  return withAxis(modifiers, axis ?? area.getAxis());
+};
 
 export const restrictToWindowEdges: Modifier = ({ transform, overlayRect, windowRect }) =>
   restrictToRect(transform, baseRect(overlayRect, transform), windowRect);

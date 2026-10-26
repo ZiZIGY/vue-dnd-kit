@@ -121,9 +121,16 @@ already clipped by scroll containers and the viewport.
 
 ## Modifiers
 
-Modifiers adjust the drag offset every frame. The provider's `modifiers` always run
-first. After them run the dragged item's own `modifiers` (`makeDraggable` or
-`makeSortableItem`), or, when the item has none, its list's or tree's.
+Modifiers adjust the drag offset every frame. Their result moves the overlay and is also
+the point where targets are looked for, so a list sorts by the locked or snapped position.
+They run in this order:
+
+1. the provider's `modifiers`;
+2. the `modifiers` of the drag area the drag started in (`makeDragArea`, below);
+3. the dragged item's own `modifiers` (`makeDraggable` or `makeSortableItem`), or, when it
+   has none, its list's or tree's;
+4. the area's `restrictToArea`;
+5. the axis lock (`axis`).
 
 ```ts
 import {
@@ -147,3 +154,30 @@ makeDraggable(el, { modifiers: [snapToGrid({ x: 32, y: 32, origin: 'container', 
   item's own `axis` wins over its list's.
 - Options read "when the drag starts" accept getters, so an axis lock can be toggled:
   `axis: () => (locked.value ? 'y' : undefined)`.
+
+## Drag areas: makeDragArea
+
+Rules for the drags that **start inside** an element: plain draggables and sortable items
+alike. Use one app-wide `DnDProvider`, and give a board, a canvas or a feed its own rules
+without a provider of its own. (A nested provider would also isolate the items: they
+could never leave it.) It replaces v2's `makeConstraintArea` and `makeAutoScroll`.
+
+```ts
+const board = useTemplateRef<HTMLElement>('board');
+const { isDragging, isAutoScrolling } = makeDragArea(board, {
+  modifiers: [snapToGrid(20)],     // after the provider's, before the draggable's own
+  restrictToArea: true,            // the drags stay inside the area
+  axis: 'y',                       // a draggable's own axis (or its list's) wins
+  autoScroll: { maxSpeed: 15 },    // this container's auto-scroll (false: off)
+  activation: { touch: { delay: 400 } }, // per pointer kind; a draggable's own wins
+  disabled: () => readOnly.value,  // no drag starts here (nor in areas inside)
+});
+```
+
+- The closest area wins when areas are nested. `disabled` is the exception: it is inherited.
+- Every option takes a value, a ref or a getter, and is read when a press or a drag starts.
+- `autoScroll` applies to the area's scroll container (the element or its closest
+  scrollable ancestor) for any drag that scrolls it.
+- `isDragging`: a drag that started in this area runs. `isAutoScrolling`: auto-scroll is
+  moving the area's container.
+- Collision detection, keyboard keys and announcements stay provider-wide.

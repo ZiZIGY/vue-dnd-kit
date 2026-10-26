@@ -19,6 +19,7 @@
 | Overlay hidden under a modal, or offset inside `<dialog>` / a shadow root | Teleported to `body` under a top-layer element. | `overlayTo` to the dialog or shadow root container. |
 | Vue warns "made a component reactive" | A component stored in a deep `ref` / `reactive` (e.g. `overlay`). | Pass it directly or use `shallowRef` / `markRaw`. |
 | Buttons inside a row don't start a drag | By design: interactive children don't start pointer drags. | Use a `handle`, or move the control outside. |
+| Items can't move between two parts of the page | Each part has its own `DnDProvider`: drags never cross providers. | One provider for the app; per-part rules with `makeDragArea`. |
 | Touch drag doesn't start; the page scrolls | Touch needs a 200 ms long press without moving more than 5 px first. | Tune `activation.touch`. To drag at once from a handle, give the handle `touch-action: none` and the item `activation: { touch: { distance: 4 } }`. |
 | Slow with thousands of items | Deep `ref` of a big array. | `shallowRef`, and virtualize (see [virtualization](virtualization.md)). |
 | Virtual list shows stale rows after a reorder (TanStack) | Options passed as a static object, or a stable `getItemKey`. | One `computed` that reads `items.value` and creates `getItemKey` / `rangeExtractor` inside it. |

@@ -43,6 +43,7 @@ describe('public exports', () => {
         'makeSortableItem',
         'makeSortableTree',
         'makeSelectionArea',
+        'makeDragArea',
         'defineSensor',
         'useSensor',
         'pointerSensor',

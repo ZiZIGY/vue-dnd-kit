@@ -1,9 +1,8 @@
 <script setup lang="ts">
-  import { DnDProvider, snapToGrid } from '@vue-dnd-kit/core';
+  import { DnDProvider } from '@vue-dnd-kit/core';
   import FreeBoard from '../components/FreeBoard.vue';
 
-  // Own provider: modifiers are provider-wide, and nested providers ignore each other.
-  const modifiers = [snapToGrid({ x: 20, y: 20, smooth: { duration: 80 } })];
+  // Own provider: the keys are provider-wide (the snapping is the board's drag area).
   // G also grabs ("rebinding" example); drop and cancel keep their defaults.
   const keyboard = { keys: { start: ['Space', 'Enter', 'KeyG'] } };
 </script>
@@ -16,10 +15,7 @@
       <code>keyboard: 'droppables'</code> (arrows jump between accepting zones); Free moves by
       25px per arrow (Shift: 100px); Shift needs Shift held for pointer drags. G also picks up.
     </p>
-    <DnDProvider
-      :modifiers="modifiers"
-      :keyboard="keyboard"
-    >
+    <DnDProvider :keyboard="keyboard">
       <FreeBoard />
     </DnDProvider>
   </section>

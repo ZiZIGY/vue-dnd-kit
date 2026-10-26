@@ -63,6 +63,8 @@ export const createDragState = () => ({
   transform: shallowRef<Coordinates>({ x: 0, y: 0 }),
   activationProgress: shallowRef(0),
   isAutoScrolling: shallowRef(false),
+  /** The containers auto-scroll moved in its last frame (the window aside): a new array when they change. */
+  autoScrollers: shallowRef<readonly Element[]>([]),
   overlayElement: shallowRef<HTMLElement | null>(null),
   /** Size the overlay box has while dragging (see `updateFitSize`). */
   fitSize: shallowRef<Size | null>(null),

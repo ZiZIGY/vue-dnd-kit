@@ -20,6 +20,7 @@ export const composables = [
   'makeSortableItem',
   'makeSortableTree',
   'makeSelectionArea',
+  'makeDragArea',
   'useDnD',
   'useDnDMonitor',
 ] as const;
@@ -65,6 +66,8 @@ export const types = [
   'DnDSelection',
   'DnDState',
   'DnDStatus',
+  'DragAreaOptions',
+  'DragAreaReturn',
   'DraggableOptions',
   'DraggableReturn',
   'DroppableOptions',
