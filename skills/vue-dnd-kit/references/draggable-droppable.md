@@ -57,7 +57,7 @@ const { isOver, isAccepting, placement } = makeDroppable(zone, {
   disabled: false,
   onDragEnter(e) {},
   onDragLeave(e) {},
-  onBeforeDrop(e) { return true; },  // false rejects (items fly back); Key[] accepts a subset; may be async
+  onBeforeDrop(e) { return 'accept'; }, // 'reject' (or false): items fly back; Key[]: a subset; 'continue': the drag goes on; may be async
   onDrop(e) {
     // e.active.ids, e.active.items[i].data, e.over, e.source?.remove()
   },
@@ -69,6 +69,25 @@ const { isOver, isAccepting, placement } = makeDroppable(zone, {
   (e.g. "drop before/after this card"). `null` when not hovered.
 - **Untyped draggables fit any string rule.** Omitting `accept` (or `'*'`) takes everything.
 - `onDrop` of a plain droppable is where *you* change your data. The library moves nothing.
+
+### Leaving an item where it was dropped (a board, a canvas)
+
+Every event has `position`: the dragged box's top-left corner in `over`, from its padding
+edge and with its scroll, i.e. the `left`/`top` that put an absolutely positioned item
+where it was dropped. `null` over nothing. Don't compute it from `active.rect` and `delta`
+(that misses the target's border and scroll).
+
+```ts
+makeDroppable(board, { id: 'board' });
+useDnDMonitor({
+  onDragEnd({ active, over, position }) {
+    const note = notes.value.find((item) => item.id === active.id);
+    if (!note || over?.id !== 'board' || !position) return;
+    note.x = Math.round(position.x);
+    note.y = Math.round(position.y);
+  },
+});
+```
 
 ### Removing items from a sortable list (trash zone)
 

@@ -111,18 +111,19 @@ mount on the client.
 
 | Task | Use | Reference |
 | --- | --- | --- |
-| Reorder a list or grid; kanban columns that exchange cards | `makeSortableList` + `makeSortableItem`, `group` | [sortable](references/sortable.md) |
+| Reorder a list or grid; kanban columns that exchange cards | `makeSortableList` + `makeSortableItem`, `group`, `dropzone` (the whole column takes drops) | [sortable](references/sortable.md) |
+| Confirm a drop: move / keep dragging / cancel | async `onBeforeDrop` → `'accept'`, `'continue'`, `'reject'` | [sortable](references/sortable.md) |
 | Palette that copies into a list, trash zone, drop outside to remove | `group: { pull: 'clone' }`, `clone`, `e.source.remove()`, `dropOutside` | [sortable](references/sortable.md) |
 | Swap two items instead of shifting | `behavior: 'swap'` | [sortable](references/sortable.md) |
 | Insertion line instead of moving items | `placeholder: 'indicator'` + `indicator` | [sortable](references/sortable.md) |
 | Store, server or immutable state (controlled) | read-only `items` + `e.preventDefault()` + `e.result` | [sortable](references/sortable.md) |
 | File tree / nested outline | `makeSortableTree` (flat rendering by depth) | [tree](references/tree.md) |
-| Free drag, drop zones, drop into a folder item | `makeDraggable` + `makeDroppable` | [draggable-droppable](references/draggable-droppable.md) |
+| Free drag, drop zones, drop into a folder item; leave it where dropped | `makeDraggable` + `makeDroppable`, `event.position` | [draggable-droppable](references/draggable-droppable.md) |
 | Lock drags to one axis; snap, restrict to a container | `axis: 'x' \| 'y'`, `modifiers` | [draggable-droppable](references/draggable-droppable.md#modifiers) |
 | Rules for a part of the page (a board, a canvas, a feed) under one app-wide provider | `makeDragArea` | [draggable-droppable](references/draggable-droppable.md#drag-areas-makedragarea) |
 | Provider options, global events, `useDnD`, monitors | `DnDProvider`, `useDnD`, `useDnDMonitor` | [provider](references/provider.md) |
 | Drag several items; rubber-band selection | `selected`, `multiple`, `makeSelectionArea` | [multi-drag](references/multi-drag.md) |
-| Custom drag preview, preview size | `overlay`, `#overlay` slot, `DragPreview`, `overlayFit` | [overlay](references/overlay.md) |
+| Custom drag preview, preview size; a see-through dragged row | `overlay`, `#overlay` slot, `DragPreview`, `overlayFit`, `[data-dnd-overlay]` CSS | [overlay](references/overlay.md) |
 | Tune or replace animations (GSAP, motion) | `animation`, `dropAnimation`, `animate` | [animations](references/animations.md) |
 | 10k+ rows (TanStack Virtual, VueUse) | `activeIndex`, `captureLayout`, keys by id | [virtualization](references/virtualization.md) |
 | Keyboard, screen readers, "Move up" buttons | `announcements`, `keyboard`, `useDnDActions` | [accessibility](references/accessibility.md) |

@@ -89,9 +89,10 @@ useDnDMonitor({
   onDragStart(e) {},
   onDragMove(e) {},
   onDragOver(e) {},                      // the target changed
-  onBeforeDrop(e) { return true; },      // false rejects; Key[] accepts a subset; may be async
-  onDragEnd(e) {},                       // after the write: e.dropped, e.accepted
+  onBeforeDrop(e) { return 'accept'; },  // 'reject' / false; Key[]: a subset; 'continue': keep dragging; may be async
+  onDragEnd(e) {},                       // after the write: e.dropped, e.accepted, e.position
   onDragCancel(e) {},
+  onDragResume(e) {},                    // onBeforeDrop answered 'continue': the drag goes on
   getKeyboardCoordinates(event, { active, pointer, direction }) {}, // custom arrow-key moves
 });
 ```

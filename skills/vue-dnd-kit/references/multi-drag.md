@@ -57,8 +57,8 @@ Set on the list where the drag starts (`makeSortableList({ multiple })`), defaul
 
 | Mode | While dragging | Default overlay |
 | --- | --- | --- |
-| `'group'` | The other selected items leave their places and travel with the grabbed one as adjacent placeholders, so the list already shows the result. | Every dragged item, in a column along the list (a row in horizontal lists and grids). |
-| `'gaps'` | The others stay where they are (marked `data-dnd-dragging`) until the drop. | Same column. |
+| `'group'` | The other selected items leave their places and travel with the grabbed one as adjacent placeholders, so the list already shows the result. | Up to five dragged items in a column along the list (a row in horizontal lists), `+N` at each end for those past it; in grids, a pile behind the grabbed item with the whole count. |
+| `'gaps'` | The others stay where they are (marked `data-dnd-dragging`) until the drop. | Same column (pile in grids). |
 | `'stack'` | The others fly into the overlay. | The grabbed item with a count. |
 
 On drop the items land together at the target index, in the order they had. In

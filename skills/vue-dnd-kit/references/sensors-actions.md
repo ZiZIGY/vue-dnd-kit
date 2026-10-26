@@ -51,6 +51,8 @@ export function createJoystick() {
       activation: { delay: 300 },          // or 'mouse' | 'touch' | 'pen' to use the configured one
       type: 'pointer',                     // 'pointer' follows points; 'keyboard' moves by items (step/place)
       onEnd: (ended) => { if (drag === ended) drag = null; },
+      // onBeforeDrop answered 'continue': no drop, `move`/`drop`/`cancel` apply again.
+      onResume: (resumed) => { drag = resumed; },
     });                                    // null: refused (busy, disabled, a button inside the item…)
   };
   const move = (dx: number, dy: number) => {

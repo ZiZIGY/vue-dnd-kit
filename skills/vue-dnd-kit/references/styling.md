@@ -24,7 +24,7 @@ per document, so any rule of yours overrides it:
 | `data-dnd-placeholder` | sortable item | It is the slot a dragged item will land in (`isPlaceholder`). |
 | `data-dnd-dragging` | sortable item | Dragged but left in place (multi-drag `'gaps'`). |
 | `data-dnd-dragging="pointer" \| "keyboard"` | `<html>` | For the whole drag. |
-| `data-dnd-overlay` | overlay box | Always (the box is `position: fixed`, `pointer-events: none`). |
+| `data-dnd-overlay="dragging" \| "dropping"` | overlay box | Always (`position: fixed`, `pointer-events: none`): `dropping` while it lands or an async `onBeforeDrop` waits. The clone inside keeps the element's classes: style it with `[data-dnd-overlay] .row`. |
 | `data-dnd-leaving` | leave copies of `animate` | While an item that left fades out. |
 | `data-dnd-no-clone` | **you** set it | Leaves that element out of the overlay clone. |
 

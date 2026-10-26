@@ -89,8 +89,9 @@ const { isDragging, isPlaceholder, selected, index } = makeSortableItem(el, { it
 | `animation` | provider's | FLIP while sorting. |
 | `animate` | provider's (`false`) | Animate data changes that no drag made. |
 | `autoScroll` | provider's | Per list. |
+| `dropzone` | the list element | Element that takes drops for the list: e.g. the whole kanban column around a short `<ul>` (below the last card: at the end). |
 | `disabled` | `false` | No drags from, or drops into, this list. |
-| `onBeforeDrop` | — | `(e) => boolean \| Key[] \| Promise<…>`: decide. |
+| `onBeforeDrop` | — | `(e) => 'accept' \| 'reject' \| 'continue' \| boolean \| Key[] \| Promise<…>`: decide. |
 | `onDrop` | — | `(e) => void`: told, **before** the write. |
 
 Returns `{ id, items, isOver, isAccepting, indicator, activeKey, activeIndex, activeSize, captureLayout }`.
@@ -130,8 +131,15 @@ interface SortableDropEvent<T> {
 
 - `onDrop` is called on the target list. When items leave their list, the source list's
   `onDrop` is called too, with `to.index === -1`.
-- `onBeforeDrop` returning `false` rejects (the items fly back). An array of keys accepts
-  only those. A throw rejects too. It may be `async`: the overlay waits where it was dropped.
+- `onBeforeDrop` returning `'reject'` (or `false`) rejects (the items fly back); `'accept'`
+  (or `true`, or nothing) lets the drop through. An array of keys accepts only those. A throw
+  rejects too. It may be `async`: the overlay waits where it was dropped.
+- `'continue'`: no drop, and the drag goes on (a confirmation dialog's "keep dragging"). With
+  a pointer the item follows it without a button and the next release (a click) drops it; a
+  touch takes it again; the keyboard moves it as before; Escape cancels. The next drop asks
+  `onBeforeDrop` again. Monitors hear `onDragResume`.
+- Over a list (or any target) that refuses the drag, the slot goes back home: a drop there is
+  cancelled, and the lists show it.
 
 ```ts
 makeSortableList(listRef, {

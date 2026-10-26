@@ -25,7 +25,13 @@ colors, table cell widths…) inlined. Ids and `data-dnd-*` marks are stripped, 
 (Vuetify, Quasar, PrimeVue, Naive UI) are left out.
 
 - Mark parts that shouldn't be copied with **`data-dnd-no-clone`** (a tooltip, a menu button, a badge).
-- A sortable item without a background of its own (it often takes the list's) gets the one painted behind it, so its clone is never see-through.
+- The clone shows the element as it is: no background is guessed. A row without one of its own (the list paints it: `<li>` in a white `<ul>`, `v-list-item`, table rows) gives a see-through clone. Give it the list's background with CSS (the overlay lives in `<body>`, so not in a scoped style, or use `:global()`):
+
+  ```css
+  [data-dnd-overlay] .row { background: var(--surface); }
+  ```
+
+  Or give the row a background of its own. Icons and tiles meant to float stay transparent.
 
 ## A custom overlay component
 
@@ -82,11 +88,13 @@ A fixed size on your component's root keeps that size inside the box.
 
 ## Styling the box
 
-The box is `[data-dnd-overlay]` (`position: fixed`, `pointer-events: none`). Add a
-lifted look on your component or with CSS:
+The box is `[data-dnd-overlay]` (`position: fixed`, `pointer-events: none`). Its value
+says what it does: `dragging`, then `dropping` while it lands (or waits for an async
+`onBeforeDrop`). Add a lifted look on your component or with CSS, and drop it as it lands:
 
 ```css
-[data-dnd-overlay] > * { box-shadow: 0 12px 24px -8px rgb(0 0 0 / 0.35); border-radius: 8px; }
+[data-dnd-overlay='dragging'] > * { box-shadow: 0 12px 24px -8px rgb(0 0 0 / 0.35); border-radius: 8px; }
+[data-dnd-overlay] .row { background: white; } /* the clone of a row the list paints */
 ```
 
 ## Over another Vue app or a shadow root

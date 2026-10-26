@@ -83,7 +83,7 @@ The dragged node's `depth` is its **projected** depth, so the placeholder indent
 | `collapsed` | A `Set` of keys (ref or getter). Collapsed nodes' children aren't in `items`. |
 | `placeholder: 'indicator'` | The tree stays still. Draw a line from `indicator` (`side`, `depth`, `parentKey`). `side: 'inside'` means into that row. |
 
-All `makeSortableList` options also apply (`group`, `clone`, `createItem`,
+All `makeSortableList` options also apply (`group`, `clone`, `createItem`, `dropzone`,
 `dropOutside`, `modifiers`, `animation`, `animate`, `onBeforeDrop`, `onDrop`, …). Lists
 and trees in the same `group` exchange nodes: a node moved into a list keeps its subtree.
 
