@@ -76,6 +76,8 @@ export interface Session {
   prevented: boolean;
   /** Keyboard: resting on a drop target in the item `key`, reached with the arrow `direction`. */
   stop: { key: Key; direction: Coordinates } | null;
+  /** Keyboard: on the plain drop target `away` (a trash zone) the arrows took the drag to, past the list. */
+  away: Key | null;
 }
 
 /** What every session starts with, whatever is dragged. */

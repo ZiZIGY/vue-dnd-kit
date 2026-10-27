@@ -67,18 +67,22 @@ export const pickInDirection = (
 /** Center of the part of `rect` inside the viewport, so the hit test lands on it. */
 const visibleCenter = (rect: Rect): Coordinates => getCenter(intersectRect(rect, getWindowRect()) ?? rect);
 
-/** Next accepting drop target in `direction`, scrolled into view; `undefined` when there is none. */
-const jumpToDroppable = (
+/**
+ * Next accepting drop target in `direction` from `pointer` (but the one under the drag and
+ * those `skip` leaves out), scrolled into view, and the point that lands on it.
+ */
+export const findDroppable = (
   manager: DnDManager,
   current: Active,
   pointer: Coordinates,
   direction: Coordinates,
-): Coordinates | undefined => {
+  skip?: (id: Key) => boolean,
+): { id: Key; point: Coordinates } | undefined => {
   const overId = manager.over.value?.id;
   const candidates: Array<{ id: Key; rect: Rect }> = [];
   const elements = new Map<Key, HTMLElement>();
   for (const entry of manager.getDroppables()) {
-    if (entry.id === overId || entry.isDisabled()) continue;
+    if (entry.id === overId || entry.isDisabled() || skip?.(entry.id)) continue;
     const element = entry.getElement();
     if (!element?.isConnected || manager.isOwned(element, current)) continue;
     if (!entry.accepts(current)) continue;
@@ -87,9 +91,9 @@ const jumpToDroppable = (
   }
   const id = pickInDirection(pointer, direction, candidates);
   const element = id == null ? undefined : elements.get(id);
-  if (!element) return undefined;
+  if (id == null || !element) return undefined;
   revealElement(element);
-  return visibleCenter(getRect(element));
+  return { id, point: visibleCenter(getRect(element)) };
 };
 
 /** The drag `current` is still the provider's running drag (a step may have awaited a render). */
@@ -120,7 +124,7 @@ export const step = async (
   if (!isRunning(manager, current)) return;
   if (!next) {
     if (manager.getDraggable(current.id)?.getKeyboard?.() === 'droppables') {
-      next = jumpToDroppable(manager, current, pointer, direction);
+      next = findDroppable(manager, current, pointer, direction)?.point;
     } else {
       const keyboard = manager.props.keyboard || undefined;
       const size = (keyboard?.step ?? DEFAULT_STEP) * (fast ? FAST_STEP_FACTOR : 1);

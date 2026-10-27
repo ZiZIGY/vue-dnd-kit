@@ -56,6 +56,7 @@ export const start = (g: GroupContext, event: DnDEvent) => {
     removed: false,
     prevented: false,
     stop: null,
+    away: null,
   };
 
   if (!sources.has(activeKey)) {

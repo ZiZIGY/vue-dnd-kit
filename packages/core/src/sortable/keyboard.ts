@@ -16,6 +16,7 @@ import type { ListEntry } from './entry';
 import { nextRowIndex, pickAdjacent, projectIndex } from './projection';
 import { accepts, canSwap, isSwapping } from './accept';
 import { applySwap } from './modes/swap';
+import { findDroppable } from '../core/sensors/steps';
 import { collect, viewOf } from './block';
 import { keepSlotHome, moveActive, returnToOrigin } from './slot';
 import { indicateAt, markSwapAt, setIndicator } from './indicator';
@@ -187,6 +188,23 @@ const keyboardIndicator = async (
 };
 
 /**
+ * Past the end of the lists: the arrow takes the drag to the next plain drop target that way
+ * (a trash zone), which a drop then goes to. `undefined` without one.
+ */
+const jumpAway = (
+  g: GroupContext,
+  current: Session,
+  active: Active,
+  from: Coordinates,
+  direction: Coordinates,
+): Coordinates | undefined => {
+  const found = findDroppable(g.manager, active, from, direction, (id) => g.lists.has(id));
+  if (!found) return undefined;
+  current.away = found.id;
+  return found.point;
+};
+
+/**
  * Keyboard sorting by items (see above). The item a list made for an external draggable
  * moves like any other.
  */
@@ -208,8 +226,22 @@ export const getKeyboardCoordinates = async (
     const element = items.get(current.slot)?.() ?? items.get(current.activeKey)?.();
     return element?.isConnected ? getCenter(getLayoutRect(element)) : pointer;
   };
+  // On a plain drop target the arrows took the drag to: on to the next one that way, or back
+  // to the slot when it is nearer that way.
+  if (current.away != null) {
+    const back = current.away;
+    current.away = null;
+    if (g.manager.over.value?.id === back) {
+      const home = center();
+      const along = (point: Coordinates) => (point.x - pointer.x) * direction.x + (point.y - pointer.y) * direction.y;
+      const next = jumpAway(g, current, active, pointer, direction);
+      if (next && !(along(home) > 0 && along(home) < along(next))) return next;
+      current.away = null;
+      return home;
+    }
+  }
   if (list.placeholder() === 'indicator') {
-    return (await keyboardIndicator(g, current, list, context)) ?? center();
+    return (await keyboardIndicator(g, current, list, context)) ?? jumpAway(g, current, active, pointer, direction) ?? center();
   }
 
   const strategy = list.strategy();
@@ -262,6 +294,11 @@ export const getKeyboardCoordinates = async (
       returnToOrigin(g, null);
       index = null;
     }
+  }
+  // Past the end of the list, and no list that way: on to a plain drop target (a trash zone).
+  if (index === null) {
+    const away = jumpAway(g, current, active, getCenter(slotRect), direction);
+    if (away) return away;
   }
   // A list that swaps (as the origin does): the arrow exchanges the item with the one it
   // reaches; reaching the partner, back where the item started, undoes the exchange.

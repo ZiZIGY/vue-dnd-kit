@@ -99,6 +99,9 @@ the list without them.
 makeDroppable(trash, { onDrop: (e) => e.source?.remove() });
 ```
 
+With the keyboard, an arrow past the end of the lists takes the item on to the next drop
+target that way (the trash), and the opposite arrow brings it back to its slot.
+
 ### Drop into an item (folders, combining)
 
 Put a droppable on (or inside) a sortable item's element. While the item's list would sort
