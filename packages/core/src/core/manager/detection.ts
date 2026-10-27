@@ -8,7 +8,7 @@
 import type { Active, CollisionCandidate, Coordinates, Key, Over, Rect } from '../../types';
 import { containsPoint, unionRect } from '../../animation/layout';
 import { createTargetStabilizer, pointerFirst } from '../collision';
-import { containsComposed, elementFromPoint, parentOf } from '../../utils/dom';
+import { containsComposed, elementBelow, elementFromPoint, parentOf } from '../../utils/dom';
 import type { DroppableEntry } from './registry';
 import type { ManagerContext } from './state';
 
@@ -25,9 +25,13 @@ export function createDetection(ctx: ManagerContext) {
    * Drop targets under the point: the topmost element (shadow roots included) and its
    * flat-tree ancestors. Higher priority first, then the deepest.
    */
-  const hitTest = (point: Coordinates, byElement: Map<Element, DroppableEntry>): Key[] => {
+  const hitTest = (point: Coordinates, byElement: Map<Element, DroppableEntry>, current: Active): Key[] => {
     const hits: DroppableEntry[] = [];
-    const top = elementFromPoint(point.x, point.y);
+    let top = elementFromPoint(point.x, point.y);
+    // A drag without an overlay moves the element itself under the pointer: look through it.
+    if (top && current.element.isConnected && containsComposed(current.element, top)) {
+      top = elementBelow(point.x, point.y, current.element);
+    }
     ctx.pointerElement = point.x === ctx.raw.x && point.y === ctx.raw.y ? top : null;
     for (let element = top; element; element = parentOf(element)) {
       const entry = byElement.get(element);
@@ -97,7 +101,7 @@ export function createDetection(ctx: ManagerContext) {
         candidates.push({ id: entry.id, rect, priority: entry.getPriority(), depth: depthOf(element, all) });
       }
     }
-    const hits = hitTest(point, byElement);
+    const hits = hitTest(point, byElement, current);
     const detect = ctx.props.collision ?? pointerFirst;
     const ranked = detect({
       pointer: point,

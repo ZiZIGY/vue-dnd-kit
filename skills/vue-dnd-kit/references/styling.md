@@ -6,11 +6,15 @@ refs and from a few `data-dnd-*` attributes.
 ## Default styles
 
 With `defaultStyles` (on by default), zero-specificity CSS (`:where()`) is injected once
-per document, so any rule of yours overrides it:
+per document, first in `<head>`, so any rule of yours overrides it. The opacities sit in
+the cascade layer `vue-dnd-kit`, declared before any other, so layered CSS (Tailwind v4
+utilities like `data-[dnd-placeholder]:opacity-100`, UI kits) overrides them too:
 
 ```css
-:where([data-dnd-placeholder]) { opacity: 0.4; }                 /* the slot a dragged item lands in */
-:where([data-dnd-dragging]:not(html)) { opacity: 0.4; }          /* multi-drag 'gaps': left behind */
+@layer vue-dnd-kit {
+  :where([data-dnd-placeholder]) { opacity: 0.4; }               /* the slot a dragged item lands in */
+  :where([data-dnd-dragging]:not(html)) { opacity: 0.4; }        /* multi-drag 'gaps': left behind */
+}
 :where(html[data-dnd-dragging], html[data-dnd-dragging] *) { user-select: none !important; overflow-anchor: none !important; }
 :where(html[data-dnd-dragging="pointer"], html[data-dnd-dragging="pointer"] *) { cursor: grabbing !important; }
 ```

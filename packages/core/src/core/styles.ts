@@ -1,6 +1,8 @@
 /**
  * Default styles, injected once per document when a provider mounts.
- * `:where()` keeps specificity at zero, so any user CSS overrides them.
+ * `:where()` keeps specificity at zero, so any user CSS overrides them. The looks
+ * (opacity) sit in the cascade layer `vue-dnd-kit`, first in the document, so layered
+ * CSS (Tailwind v4 utilities, UI kits) overrides them too.
  * While dragging, `<html>` gets `data-dnd-dragging` instead of inline body styles,
  * so nothing the page set inline is ever overwritten.
  */
@@ -11,9 +13,12 @@ const STYLE_ID = 'vue-dnd-kit-styles';
 // <html> carries the same attribute for the whole drag, hence `:not(html)`.
 // A touch drag starts (200ms) before iOS shows its link callout and magnifier (~500ms),
 // and WebKit reads `-webkit-touch-callout` when it recognises that long press.
+// The `!important` rules stay out of the layer: in one, they would beat the page's own.
 const CSS = `
-:where([data-dnd-placeholder]) { opacity: 0.4; }
-:where([data-dnd-dragging]:not(html)) { opacity: 0.4; }
+@layer vue-dnd-kit {
+  :where([data-dnd-placeholder]) { opacity: 0.4; }
+  :where([data-dnd-dragging]:not(html)) { opacity: 0.4; }
+}
 :where(html[data-dnd-dragging]),
 :where(html[data-dnd-dragging] *) { user-select: none !important; -webkit-user-select: none !important; overflow-anchor: none !important; }
 :where(html[data-dnd-dragging="pointer"]),
@@ -25,7 +30,8 @@ export const injectDefaultStyles = (): void => {
   const style = document.createElement('style');
   style.id = STYLE_ID;
   style.textContent = CSS;
-  document.head.appendChild(style);
+  // First: the layer is declared before the page's, which makes it the weakest.
+  document.head.prepend(style);
 };
 
 /** Marks the document as dragging; returns the restore function. */

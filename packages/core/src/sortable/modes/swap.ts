@@ -20,7 +20,7 @@ import { asItself, itself, movingDragMode, type SortableMode } from './mode';
  * Restores the drafts to the drag start, then exchanges the active item with `partner`:
  * each takes the other's place, in one list or across two.
  */
-const applySwap = (g: GroupContext, partner: Key | null, pointer: Coordinates | null) => {
+export const applySwap = (g: GroupContext, partner: Key | null, pointer: Coordinates | null) => {
   const { lists } = g;
   const current = g.session.value!;
   const previous = current.swap;

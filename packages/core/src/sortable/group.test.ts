@@ -455,6 +455,58 @@ describe('swap between two lists of a group', () => {
     });
   });
 
+  describe('keyboard', () => {
+    const press = async (key: string) => {
+      const before = manager.pointer.value;
+      document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+      await vi.waitFor(() => expect(manager.pointer.value).not.toBe(before));
+      await nextTick();
+    };
+
+    it('the arrows exchange the item with the next one, from where it started; back home undoes it', async () => {
+      const container = mountPair();
+      await nextTick();
+      manager.start('a1', at('a', 0), 'keyboard');
+      await nextTick();
+      await press('ArrowDown');
+      expect(keys(container, 'a')).toEqual(['a2', 'a1', 'a3']);
+      await press('ArrowDown');
+      expect(keys(container, 'a')).toEqual(['a3', 'a2', 'a1']);
+      await press('ArrowUp');
+      await press('ArrowUp');
+      expect(keys(container, 'a')).toEqual(['a1', 'a2', 'a3']);
+      await press('ArrowDown');
+      await drop();
+      expect(data.a!.value.map((item) => item.id)).toEqual(['a2', 'a1', 'a3']);
+      expect(drops[0]).toMatchObject({ mode: 'swap', partner: { key: 'a2' } });
+    });
+
+    it('across, the arrow exchanges with the item of the other list level with it', async () => {
+      const container = mountPair();
+      await nextTick();
+      manager.start('a2', at('a', 1), 'keyboard');
+      await nextTick();
+      await press('ArrowRight');
+      expect(keys(container, 'a')).toEqual(['a1', 'b2', 'a3']);
+      expect(keys(container, 'b')).toEqual(['b1', 'a2', 'b3']);
+      await drop();
+      expect(data.b!.value.map((item) => item.id)).toEqual(['b1', 'a2', 'b3']);
+      expect(drops[0]).toMatchObject({ mode: 'swap', partner: { key: 'b2' } });
+    });
+
+    it("with placeholder: 'indicator', the arrow across marks the item level with it", async () => {
+      mountPair({ placeholder: 'indicator' }, { placeholder: 'indicator' });
+      await nextTick();
+      manager.start('a2', at('a', 1), 'keyboard');
+      await nextTick();
+      await press('ArrowRight');
+      expect(manager.pointer.value).toEqual(at('b', 1));
+      await drop();
+      expect(data.a!.value.map((item) => item.id)).toEqual(['a1', 'b2', 'a3']);
+      expect(data.b!.value.map((item) => item.id)).toEqual(['b1', 'a2', 'b3']);
+    });
+  });
+
   describe("with placeholder: 'indicator'", () => {
     const INDICATOR = { placeholder: 'indicator' } as const;
 

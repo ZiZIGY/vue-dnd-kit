@@ -87,6 +87,18 @@ export const elementFromPoint = (x: number, y: number): Element | null => {
   return element;
 };
 
+/**
+ * Topmost element at a point outside `skip`: what is under an element that sits on the
+ * point itself (a draggable moved without an overlay). Its parent when nothing else is.
+ */
+export const elementBelow = (x: number, y: number, skip: Element): Element | null => {
+  const stack = document.elementsFromPoint?.(x, y) ?? [];
+  const below = stack.find((element) => !containsComposed(skip, element)) ?? parentOf(skip);
+  if (!below?.shadowRoot) return below;
+  const inner = elementFromPoint(x, y);
+  return inner && !containsComposed(skip, inner) ? inner : below;
+};
+
 const EDITABLE = 'input, textarea, select, [contenteditable]:not([contenteditable="false"])';
 const INTERACTIVE = `${EDITABLE}, option, button`;
 const FOCUSABLE = `${EDITABLE}, a[href], button`;

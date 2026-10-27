@@ -14,7 +14,8 @@ import { isFocusLost } from '../utils/dom';
 import { keysOf, type GroupContext, type Session } from './context';
 import type { ListEntry } from './entry';
 import { nextRowIndex, pickAdjacent, projectIndex } from './projection';
-import { accepts, isSwapping } from './accept';
+import { accepts, canSwap, isSwapping } from './accept';
+import { applySwap } from './modes/swap';
 import { collect, viewOf } from './block';
 import { keepSlotHome, moveActive, returnToOrigin } from './slot';
 import { indicateAt, markSwapAt, setIndicator } from './indicator';
@@ -161,6 +162,12 @@ const keyboardIndicator = async (
     if (!other || !enters(g, current, other)) return undefined;
     // The line, where the keyboard took the drag, stands for the slot.
     const from = createRect(pointer.x, pointer.y, 0, 0);
+    // Into another list that swaps: the mark goes on its item level with the line.
+    if (isSwapping(g, current, other)) {
+      const keys = keysOf(other);
+      const level = keys[Math.min(insertionIndex(g, other, from, current), keys.length - 1)];
+      return level === undefined ? undefined : markSwapAt(g, other, level);
+    }
     if (other.placeholder() === 'indicator') return indicateAcross(g, current, other, from);
     // A list that moves takes the slot; the line goes away.
     setIndicator(g, null);
@@ -255,6 +262,19 @@ export const getKeyboardCoordinates = async (
       returnToOrigin(g, null);
       index = null;
     }
+  }
+  // A list that swaps (as the origin does): the arrow exchanges the item with the one it
+  // reaches; reaching the partner, back where the item started, undoes the exchange.
+  if (index !== null && isSwapping(g, current, target)) {
+    const shown = target === list ? keys : keysOf(target);
+    const reached = shown[Math.min(index, shown.length - 1)];
+    if (reached === undefined || reached === current.slot) return center();
+    const partner = reached === current.swap ? null : reached;
+    if (partner != null && !canSwap(g, current, target, partner)) return center();
+    applySwap(g, partner, null);
+    await nextTick();
+    if (g.session.value !== current) return;
+    return slotCenter(g, current, target !== list || isFocusLost()) ?? center();
   }
   // Passing an item with a drop target that takes the drag stops on the target first:
   // the next press drops into the item (or goes on past it, as the pointer does).
