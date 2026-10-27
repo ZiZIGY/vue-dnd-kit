@@ -8,6 +8,7 @@ import {
 } from 'vue';
 import type { DnDContext, DnDMonitor, DnDSelection, DnDState, Key } from '../types';
 import type { DnDManager } from './manager';
+import { positionInTarget } from './manager/events';
 
 export const DND_CONTEXT: InjectionKey<DnDManager> = Symbol('vue-dnd-kit');
 
@@ -61,6 +62,13 @@ export const useDnD = (): DnDState => {
     active: computed(() => (manager.settling.value ? null : manager.active.value)),
     over: readonly(manager.over) as DnDState['over'],
     pointer: readonly(manager.pointer),
+    // Measured only for those who read it: an overlay component showing where it would land.
+    position: computed(() => {
+      const current = manager.active.value;
+      const over = manager.over.value;
+      if (!current || !over || manager.settling.value) return null;
+      return positionInTarget(manager.getOverlayRect(current, manager.transform.value), over);
+    }),
     activation: { progress: readonly(manager.activationProgress) },
     isAutoScrolling: readonly(manager.isAutoScrolling),
     selection: createSelection(manager.selection),

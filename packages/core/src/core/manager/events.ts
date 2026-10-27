@@ -8,7 +8,7 @@
  * defaults; moves are debounced, only the target the drag rests on is spoken.
  */
 
-import type { Active, AnnouncementContext, Announcements, Coordinates, DnDEndEvent, DnDEvent, DnDMonitor, DragSource, Over } from '../../types';
+import type { Active, AnnouncementContext, Announcements, Coordinates, DnDEndEvent, DnDEvent, DnDMonitor, DragSource, Over, Rect } from '../../types';
 import { defaultAnnouncements } from '../a11y';
 import type { ManagerContext } from './state';
 
@@ -18,25 +18,24 @@ const OVER_ANNOUNCE_DELAY = 500;
 
 export type Events = ReturnType<typeof createEvents>;
 
+/**
+ * Where `box`'s top-left corner is in `over`: from its padding edge, with its scroll. What
+ * `left`/`top` inside it take to put the item where it was dropped.
+ */
+export const positionInTarget = (box: Rect, { element, rect }: Over): Coordinates => ({
+  x: box.left - rect.left - element.clientLeft + element.scrollLeft,
+  y: box.top - rect.top - element.clientTop + element.scrollTop,
+});
+
 export function createEvents(ctx: ManagerContext) {
   let announceTimer: ReturnType<typeof setTimeout> | undefined;
   let lastAnnouncement = '';
 
   // ─── Events ──────────────────────────────────────────────────────────────────
 
-  /**
-   * Where the dragged box's top-left corner is in `over`: from its padding edge, with its
-   * scroll. What `left`/`top` inside it take to put the item where it was dropped.
-   */
-  const positionIn = (current: Active, over: Over | null, offset: Coordinates): Coordinates | null => {
-    if (!over) return null;
-    const box = ctx.overlay.getOverlayRect(current, offset);
-    const { element, rect } = over;
-    return {
-      x: box.left - rect.left - element.clientLeft + element.scrollLeft,
-      y: box.top - rect.top - element.clientTop + element.scrollTop,
-    };
-  };
+  /** Where the dragged box is in `over` (`DnDEvent.position`). */
+  const positionIn = (current: Active, over: Over | null, offset: Coordinates): Coordinates | null =>
+    over ? positionInTarget(ctx.overlay.getOverlayRect(current, offset), over) : null;
 
   const createEvent = (): DnDEvent => {
     const current = ctx.active.value!;
@@ -55,6 +54,7 @@ export function createEvents(ctx: ManagerContext) {
       over,
       pointer: p,
       delta: { x: p.x - origin.x, y: p.y - origin.y },
+      mode: ctx.mode.value,
       source,
       // Measured when read (it reads the target's layout), once.
       get position() {

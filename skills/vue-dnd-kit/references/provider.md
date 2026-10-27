@@ -69,7 +69,9 @@ and client.
 ## useDnD(): reactive drag state
 
 ```ts
-const { status, active, over, pointer, activation, isAutoScrolling, selection, cancel } = useDnD();
+const { status, active, over, pointer, position, activation, isAutoScrolling, selection, cancel } = useDnD();
+// position: where the dragged box's top-left is in `over`, live (`DnDEvent.position` on every
+//           move); an overlay component shows where it would land with it
 // status: 'idle' | 'activating' | 'dragging' | 'dropping' | 'selecting'
 // active: { id, ids, items, data, type, element, rect, sensor } | null
 // over:   { id, data, element, rect, accepted } | null
@@ -98,8 +100,10 @@ useDnDMonitor({
 ```
 
 It is removed when the calling component unmounts. `DnDEvent` has `active`, `over`,
-`pointer` (viewport, after modifiers), `delta` (offset from the start), and `source`
-(when the items come from a sortable list: `{ list, remove() }`).
+`pointer` (viewport, after modifiers), `delta` (offset from the start), `position` (the box
+in `over`), `mode` (`'move' | 'copy' | 'swap' | 'insert'`: a plain drop target copies when
+it is `'copy'`, e.g. Alt held over items whose list can `clone`), and `source` (when the
+items come from a sortable list: `{ list, remove() }`).
 
 ## Sharing a provider with another Vue app
 

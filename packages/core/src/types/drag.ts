@@ -61,6 +61,12 @@ export interface DnDEvent<T = unknown> {
    * element itself with `overlay: false`.
    */
   readonly position: Coordinates | null;
+  /**
+   * What a drop would do: `'move'`, `'copy'` (a list's `pull: 'clone'`, or the copy
+   * modifier held over items whose list can `clone`), `'swap'` or `'insert'`. A plain drop
+   * target reads it to copy instead of moving.
+   */
+  mode: DragMode;
   /** Present when the dragged items come from a sortable list. */
   source?: DragSource;
 }
@@ -153,6 +159,12 @@ export interface DnDState {
   active: Readonly<Ref<Active | null>>;
   over: Readonly<Ref<Over | null>>;
   pointer: Readonly<Ref<Coordinates | null>>;
+  /**
+   * Where the dragged box's top-left corner is in `over`, live: `DnDEvent.position` on every
+   * move. `null` over nothing. An overlay component reads it to show where it would land
+   * (a time on a calendar).
+   */
+  position: Readonly<Ref<Coordinates | null>>;
   activation: { progress: Readonly<Ref<number>> };
   isAutoScrolling: Readonly<Ref<boolean>>;
   selection: DnDSelection;

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, provide, ref, shallowRef } from 'vue';
-import { useKeyModifier } from '@vueuse/core';
 import { useDnD, type DnDEvent, type Key } from '@vue-dnd-kit/core';
 import FileGrid from './FileGrid.vue';
 import FolderRow from './FolderRow.vue';
@@ -24,14 +23,12 @@ const open = (folder: FolderEntry) => {
 const canDrop = (ids: Key[], folder: FolderEntry) =>
   folder.id !== current.value.id && !pathTo(home.value, folder.id).some((step) => ids.includes(step.id));
 
-// A folder is a plain drop target: unlike a sortable list, it isn't told that Alt turned
-// the drag into a copy, so it reads the key itself.
-const copying = useKeyModifier('Alt', { initial: false });
-
+// A folder is a plain drop target: `event.mode` says whether Alt turned the drag into a copy.
 const dropInto = (event: DnDEvent, folder: FolderEntry) => {
+  const copying = event.mode === 'copy';
   // Every drag starts in the grid: the dragged entries, in the open folder's order.
   const dragged = entries.value.filter((entry) => event.active.ids.includes(entry.id));
-  if (copying.value) {
+  if (copying) {
     folder.children.push(...dragged.map((entry) => copyEntry(entry)));
   } else {
     folder.children.push(...dragged);
@@ -39,7 +36,7 @@ const dropInto = (event: DnDEvent, folder: FolderEntry) => {
     event.source?.remove();
     selection.delete(...event.active.ids);
   }
-  lastAction.value = `${copying.value ? 'Copied' : 'Moved'} ${describe(dragged)} to ${folder.name}`;
+  lastAction.value = `${copying ? 'Copied' : 'Moved'} ${describe(dragged)} to ${folder.name}`;
 };
 
 provide(FILES, { current, entries, lastAction, open, canDrop, dropInto });
