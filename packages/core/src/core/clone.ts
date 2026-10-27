@@ -137,6 +137,9 @@ export const clonePreview = (source: HTMLElement, { container }: CloneOptions = 
   // Laid out as the overlay will show it: the root's styles above are in place.
   snapshotStyles(source, clone, preview, container ?? document.body);
   removeTransient(clone);
+  // No transitions while the snapshot inlined its styles; the page's own run on the
+  // overlay again (its `dragging` / `dropping` looks).
+  clone.style.removeProperty('transition');
   // A positioned source (a piece on a board) would keep its offsets inside the overlay.
   // `relative` keeps it a containing block for its own positioned children.
   if (computed.position !== 'static') Object.assign(clone.style, { position: 'relative', inset: 'auto' });
