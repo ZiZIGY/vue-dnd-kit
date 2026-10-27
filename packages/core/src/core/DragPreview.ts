@@ -54,7 +54,11 @@ export const DragPreview = /* @__PURE__ */ defineComponent({
 
     return () => {
       const preview = manager.getPreview(props.id as Key);
-      if (!preview) return slots.default?.();
+      if (!preview) {
+        // In an element of its own, so `class` and `style` apply to the fallback as to a clone.
+        const fallback = slots.default?.();
+        return fallback?.length ? h('div', null, fallback) : null;
+      }
       const { width, height } = preview.rect;
       return h('div', { ref: host, 'aria-hidden': 'true', style: { width: `${width}px`, height: `${height}px` } });
     };

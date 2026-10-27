@@ -180,7 +180,8 @@ export type OverlayProps = OverlaySlotProps;
  *
  * Clones are taken at pickup, of the grabbed item and of up to four others next to it in
  * drop order (those that are rendered then). For any other item `DragPreview` renders its
- * default slot, or nothing. The clone fills the element, which has the item's size at
+ * default slot in an element that takes `class` and `style` as a clone's does, or nothing
+ * without one. The clone fills the element, which has the item's size at
  * pickup, set inline: change it with `style` (`:style="{ width: '100%', height: '100%' }"`),
  * which falls through; a class can't override it.
  *
