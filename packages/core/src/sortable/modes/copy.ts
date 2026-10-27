@@ -12,6 +12,7 @@ import { partitionMoved } from '../accept';
 import { blockFor, withoutBlock } from '../block';
 import { setLandings, syncManager } from '../landing';
 import { bump } from '../flip';
+import { enterNearest } from '../keyboard';
 import type { SortableMode } from './mode';
 import { sort, sortOver } from './sort';
 
@@ -130,5 +131,7 @@ export const copy: SortableMode = {
   },
   // Copies vanish: their clones fly back to the originals.
   cancel: (g) => setLandings(g, []),
+  // Over its palette the copy has no slot: the arrow takes it into a list, or it stays.
+  enterByKey: async (g, current, context) => (await enterNearest(g, current, context)) ?? context.pointer,
 };
 

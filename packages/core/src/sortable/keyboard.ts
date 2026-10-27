@@ -91,6 +91,28 @@ export const slotCenter = (g: GroupContext, current: Session, recreated: boolean
 };
 
 /**
+ * While no list holds the slot (a plain draggable from outside, a copy over the palette it
+ * comes from), the arrow takes the drag into the closest list in its direction that takes
+ * it, level with the drag, as moves between lists do. `undefined` without one.
+ */
+export const enterNearest = async (
+  g: GroupContext,
+  current: Session,
+  { active, pointer, direction }: KeyboardMoveContext,
+): Promise<Coordinates | undefined> => {
+  const from = createRect(pointer.x, pointer.y, 0, 0);
+  const target = adjacentList(g, null, active, direction, from);
+  if (!target || !enters(g, current, target)) return undefined;
+  const index = insertionIndex(g, target, from, current);
+  if (target.placeholder() === 'indicator') return indicateAt(g, target, index) ?? pointer;
+  moveActive(g, target, index, null);
+  await nextTick();
+  if (g.session.value !== current) return undefined;
+  // The dragged element is still where it was, and keeps the focus.
+  return slotCenter(g, current, false) ?? pointer;
+};
+
+/**
  * The arrow takes the drag across into an indicator list, level with `from`. Such
  * lists never move: the slot stays (or goes back) home and only the line goes there.
  */

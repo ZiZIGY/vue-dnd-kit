@@ -146,7 +146,8 @@ export type OverlayProps = OverlaySlotProps;
  * Clones are taken at pickup, of the grabbed item and of up to four others next to it in
  * drop order (those that are rendered then). For any other item `DragPreview` renders its
  * default slot, or nothing. The clone fills the element, which has the item's size at
- * pickup unless you style it (`class` and `style` fall through).
+ * pickup, set inline: change it with `style` (`:style="{ width: '100%', height: '100%' }"`),
+ * which falls through; a class can't override it.
  *
  * In a sortable multi-drag (`multiple: 'group'` or `'gaps'`), the preview of an item other
  * than the grabbed one lands on that item's slot with the drop (back on its place when

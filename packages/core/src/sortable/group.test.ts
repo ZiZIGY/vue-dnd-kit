@@ -248,6 +248,96 @@ describe('keyboard: a plain draggable over a list with createItem', () => {
   });
 });
 
+describe('keyboard: a copy from a palette', () => {
+  const ROW = 40;
+  /** Left edge of each list: the palette and the page side by side, 200px wide, 40px rows. */
+  const LEFT: Record<string, number> = { palette: 0, page: 300 };
+  let page: Ref<Array<{ id: string }>>;
+
+  const mountPalette = () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    page = ref([{ id: 'b1' }, { id: 'b2' }]);
+    const list = (id: string, items: Ref<Array<{ id: string }>>, options: Partial<SortableListOptions<{ id: string }>>) =>
+      h({
+        setup() {
+          const { items: draft } = makeSortableList(useTemplateRef<HTMLElement>('list'), { id, items, ...options });
+          return () => h('ul', { ref: 'list', 'data-list': id }, draft.value.map((item) => h(Row, { key: item.id, rowId: item.id })));
+        },
+      });
+    const app = createApp({
+      setup: () => () =>
+        h(DnDProvider, { dropAnimation: false, animation: false }, {
+          default: () => [
+            h({ setup: () => ((manager = useManager()), () => null) }),
+            list('palette', ref([{ id: 'heading' }, { id: 'text' }]), {
+              group: { name: 'blocks', pull: 'clone', put: false },
+              sort: false,
+              clone: (item) => ({ id: `${item.id}-copy` }),
+            }),
+            list('page', page, { group: 'blocks' }),
+          ],
+        }),
+    });
+    app.mount(container);
+    unmount = () => {
+      app.unmount();
+      container.remove();
+    };
+    return container;
+  };
+
+  const rectOf = (element: Element) => {
+    if (element.closest('[data-dnd-overlay]')) return createRect(0, 0, 0, 0);
+    const list = element.getAttribute('data-list') ?? element.parentElement?.getAttribute('data-list');
+    if (!list) return createRect(0, 0, 0, 0);
+    if (element.hasAttribute('data-list')) return createRect(LEFT[list]!, 0, 200, element.children.length * ROW);
+    return createRect(LEFT[list]!, [...element.parentElement!.children].indexOf(element) * ROW, 200, ROW);
+  };
+
+  const press = async (key: string) => {
+    const before = manager.pointer.value;
+    document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+    await vi.waitFor(() => expect(manager.pointer.value).not.toBe(before));
+    await nextTick();
+  };
+
+  afterEach(() => {
+    unmount?.();
+    unmount = null;
+    vi.restoreAllMocks();
+  });
+
+  it('Right takes the copy into the page, level with it; the drop inserts the copy and the palette keeps its block', async () => {
+    const container = mountPalette();
+    await nextTick();
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+      return rectOf(this) as DOMRect;
+    });
+    const pageRows = () => [...container.querySelectorAll('[data-list="page"] > li')].map((row) => row.getAttribute('data-id'));
+
+    expect(manager.start('text', { x: 100, y: 1.5 * ROW }, 'keyboard')).toBe(true);
+    await nextTick();
+    expect(manager.mode.value).toBe('copy');
+    // The copied block stays as it is: no slot in the palette.
+    expect(slots(container)).toEqual([]);
+    await press('ArrowRight');
+    // Level with the second block: before the first row whose center is at or past its own.
+    expect(pageRows()).toEqual(['b1', 'text-copy', 'b2']);
+    await press('ArrowDown');
+    expect(pageRows()).toEqual(['b1', 'b2', 'text-copy']);
+
+    await manager.drop();
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+    await nextTick();
+    expect(page.value.map((item) => item.id)).toEqual(['b1', 'b2', 'text-copy']);
+    expect([...container.querySelectorAll('[data-list="palette"] > li')].map((row) => row.getAttribute('data-id'))).toEqual([
+      'heading',
+      'text',
+    ]);
+  });
+});
+
 describe('swap between two lists of a group', () => {
   const ROW = 40;
   /** Left edge of each list: `a` and `b` side by side, 200px wide, 40px rows. */
