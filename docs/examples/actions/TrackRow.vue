@@ -9,10 +9,8 @@ const el = useTemplateRef<HTMLElement>('el');
 makeSortableItem(el, { item: () => props.track });
 
 // Each move is a whole drag: animated, announced, through the list's onBeforeDrop.
-const { moveItem, startDrag } = useDnDActions();
+const { moveItem } = useDnDActions();
 const move = (to: SortablePosition) => moveItem(props.track.id, to);
-// Hands the row to the arrow keys: Space or Enter drops it, Escape cancels.
-const pickUp = () => startDrag(props.track.id, { type: 'keyboard' });
 </script>
 
 <template>
@@ -26,7 +24,6 @@ const pickUp = () => startDrag(props.track.id, { type: 'keyboard' });
       <button type="button" aria-label="Move up" :disabled="index === 0" @click="move({ index: index - 1 })">↑</button>
       <button type="button" aria-label="Move down" :disabled="index === last" @click="move({ index: index + 1 })">↓</button>
       <button type="button" aria-label="Move to the top" :disabled="index === 0" @click="move({ index: 0 })">⤒</button>
-      <button type="button" aria-label="Move with the arrow keys" @click="pickUp">⌨</button>
     </span>
     <span class="length">{{ track.length }}</span>
   </li>

@@ -56,6 +56,7 @@ const play = async () => {
 <style scoped>
 .queue {
   width: min(460px, 100%);
+  margin: 0 auto;
   padding: 14px;
   border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
   border-radius: 16px;

@@ -39,6 +39,7 @@ const mounted = computed(() => list.value.length);
 <style scoped>
 .panel {
   width: min(420px, 100%);
+  margin: 0 auto;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
   border-radius: 14px;

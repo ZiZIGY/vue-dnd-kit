@@ -1,5 +1,26 @@
 import type { ExampleFile } from '#examples';
 
+/** The packages examples may import, at the versions they are written for. */
+const VERSIONS: Record<string, string> = {
+  vue: '^3.5.0',
+  '@vue-dnd-kit/core': '^3.0.0',
+  '@vue-dnd-kit/actions': '^3.0.0',
+  '@vueuse/core': '^15.0.0',
+  '@tanstack/vue-virtual': '^3.13.0',
+  'motion-v': '^2.8.0',
+};
+
+/** `vue`, the core, and every other package the files import. */
+const dependenciesOf = (files: ExampleFile[]) => {
+  const names = new Set(['vue', '@vue-dnd-kit/core']);
+  for (const file of files) {
+    for (const [, name] of file.code.matchAll(/(?:from|import)\s*\(?\s*'((?:@[\w.-]+\/)?[\w.-]+)[^']*'/g)) {
+      if (VERSIONS[name!]) names.add(name!);
+    }
+  }
+  return Object.fromEntries([...names].map((name) => [name, VERSIONS[name]!]));
+};
+
 /**
  * Opens an example in StackBlitz as a small Vite + Vue project: its files go to `src/`
  * as they are (`index.vue` becomes `App.vue`), next to a `main.ts` that mounts it.
@@ -32,7 +53,7 @@ export async function openStackBlitz(name: string, title: string, files: Example
             private: true,
             type: 'module',
             scripts: { dev: 'vite', build: 'vite build' },
-            dependencies: { vue: '^3.5.0', '@vue-dnd-kit/core': '^3.0.0' },
+            dependencies: dependenciesOf(files),
             devDependencies: { vite: '^7.0.0', '@vitejs/plugin-vue': '^6.0.0', typescript: '^5.9.0' },
           },
           null,

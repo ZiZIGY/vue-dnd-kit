@@ -19,6 +19,7 @@
     "@nuxtjs/i18n": "^10.6.0",
     "@nuxtjs/seo": "^6.0.1",
     "@stackblitz/sdk": "^1.11.1",
+    "@tanstack/vue-virtual": "^3.13.49",
     "@vueuse/core": "^15.0.0",
     "motion-v": "^2.8.0",
     "nuxt": "^4.6.2",
