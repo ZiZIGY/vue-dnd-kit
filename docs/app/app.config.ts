@@ -100,22 +100,25 @@ export default defineAppConfig({
           },
         },
       },
+      // Code blocks look like the file tabs of the live examples: the name as it is, mono.
       pre: {
         slots: {
-          root: 'relative my-6 group',
-          header: 'flex items-center gap-2 px-4 py-2.5 bg-(--code-bg) border-0 border-b border-default label text-[10px] text-dimmed',
-          filename: 'text-dimmed',
-          icon: 'size-3.5 shrink-0',
+          root: 'relative my-6 group overflow-hidden rounded-(--ui-radius) ring-1 ring-default',
+          header: 'flex h-11 items-center gap-2 px-4 bg-default border-0 border-b border-default font-mono text-[12px] text-highlighted',
+          filename: 'text-highlighted',
+          icon: 'size-4 shrink-0',
           copy: 'absolute top-2 end-2 lg:opacity-0 lg:group-hover:opacity-100 lg:focus-visible:opacity-100 transition',
           base: 'group font-mono text-[13px]/6 border-0 bg-(--code-bg) px-5 py-4 whitespace-pre overflow-x-auto focus-visible:outline-2 focus-visible:outline-(--ui-primary) **:[.line]:block',
         },
       },
       codeGroup: {
         slots: {
-          list: 'relative flex items-center gap-1 border-0 border-b border-default bg-(--code-bg) overflow-x-auto px-2',
-          indicator: 'absolute left-0 bottom-0 h-0.5 w-(--reka-tabs-indicator-size) translate-x-(--reka-tabs-indicator-position) bg-(--ui-primary) transition-[translate,width] duration-200',
-          trigger: 'relative inline-flex items-center gap-1.5 px-3 py-2.5 label text-[10px] text-muted data-[state=active]:text-highlighted hover:text-highlighted transition-colors',
-          triggerIcon: 'size-3.5 shrink-0',
+          // Its blocks sit inside its frame: no frame of their own.
+          root: 'relative my-6 overflow-hidden rounded-(--ui-radius) ring-1 ring-default *:not-first:ring-0 *:not-first:rounded-none',
+          list: 'relative flex items-stretch border-0 border-b border-default bg-(--code-bg) overflow-x-auto',
+          indicator: 'hidden',
+          trigger: 'relative inline-flex h-11 shrink-0 items-center gap-2 px-4 border-e border-default font-mono text-[12px] text-dimmed data-[state=active]:bg-default data-[state=active]:text-highlighted hover:text-highlighted transition-colors',
+          triggerIcon: 'size-4 shrink-0 [[data-state=inactive]_&]:opacity-60 [[data-state=inactive]_&]:grayscale',
         },
       },
       callout: {
