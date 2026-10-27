@@ -100,8 +100,8 @@
     "text": "浮层组件的 props，用于 `defineProps<OverlayProps>()`。\n\n组件渲染在浮层盒子内部，盒子跟随位置的尺寸（`overlayFit: 'slot'`），并在放置时以动画方式变化。给根元素设置 `width: 100%`（以及 `height: 100%`）以跟随这个尺寸；固定尺寸会保持组件自己的尺寸。"
   },
   "DragPreviewProps": {
-    "source": "6c8d2b3c28",
-    "text": "`DragPreview` 的 props：某一个被拖拽项的默认克隆，用于自行布局多个项的自定义浮层（`overlay` 组件或 provider 的 `#overlay` 插槽），例如 `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`。\n\n克隆在拿起时生成：抓起的项，以及按放置顺序与它相邻的最多四个其他项（当时已渲染的那些）。对于其他任何项，`DragPreview` 渲染它的默认插槽，或者什么都不渲染。克隆会填满这个元素，元素的尺寸是该项在拿起时的尺寸，除非你为它设置样式（`class` 和 `style` 会透传）。\n\n在可排序的多项拖拽中（`multiple: 'group'` 或 `'gaps'`），抓起的项以外的项的预览会随放置落到该项的位置上（取消时回到原处），无论布局把它放在哪里：途中会撤销用 `transform` 旋转或缩放的包裹元素，它的尺寸以宽度和高度的方式执行动画。为预览本身设置样式（圆角、阴影）：它的包裹元素留在盒子里。没有克隆的项则改为淡入。"
+    "source": "c757ceda27",
+    "text": "`DragPreview` 的 props：某一个被拖拽项的默认克隆，用于自行布局多个项的自定义浮层（`overlay` 组件或 provider 的 `#overlay` 插槽），例如 `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`。\n\n克隆在拿起时生成：抓起的项，以及按放置顺序与它相邻的最多四个其他项（当时已渲染的那些）。对于其他任何项，`DragPreview` 渲染它的默认插槽，或者什么都不渲染。克隆会填满这个元素，元素的尺寸是该项在拿起时的尺寸，以内联样式设置：用 `style` 修改它（`:style=\"{ width: '100%', height: '100%' }\"`），`style` 会透传；class 无法覆盖它。\n\n在可排序的多项拖拽中（`multiple: 'group'` 或 `'gaps'`），抓起的项以外的项的预览会随放置落到该项的位置上（取消时回到原处），无论布局把它放在哪里：途中会撤销用 `transform` 旋转或缩放的包裹元素，它的尺寸以宽度和高度的方式执行动画。为预览本身设置样式（圆角、阴影）：它的包裹元素留在盒子里。没有克隆的项则改为淡入。"
   },
   "DragPreviewProps.id": {
     "source": "220d6dd174",
