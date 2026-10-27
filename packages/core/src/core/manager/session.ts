@@ -24,6 +24,9 @@ import { vibrate } from '../haptics';
 import { isFinal, toVerdict, type Verdict } from '../verdict';
 import { NO_LANDINGS, type ManagerContext } from './state';
 
+/** Frames a keyboard drag's item has to take the focus back after the drop. */
+const FOCUS_FRAMES = 10;
+
 export function createSession(ctx: ManagerContext) {
   /** Counts sessions: an awaited step of one that has settled since does nothing. */
   let session = 0;
@@ -124,12 +127,18 @@ export function createSession(ctx: ManagerContext) {
     const attempt = () => {
       const target = ctx.draggables.get(id)?.getFocusTarget();
       if (!target?.isConnected) return false;
-      if (isFocusLost()) target.focus({ preventScroll: true });
-      return true;
+      if (!isFocusLost()) return true;
+      target.focus({ preventScroll: true });
+      // A target that can't take the focus yet (still hidden as the slot) is tried again.
+      return document.activeElement === target;
     };
     void nextTick(() => {
-      // Virtualizers may mount the row a frame later.
-      if (!attempt()) requestAnimationFrame(attempt);
+      // Virtualizers may mount the row a frame later; a slot may stay hidden a few frames.
+      let frames = 0;
+      const retry = () => {
+        if (!attempt() && ++frames < FOCUS_FRAMES) requestAnimationFrame(retry);
+      };
+      retry();
     });
   };
 

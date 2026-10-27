@@ -54,7 +54,7 @@ provider owns an element.
 | `copyModifier` | `'Alt'` | Held during a drag between lists, it turns the move into a copy (lists need `clone`). `null` disables it. |
 | `overlayTo` | `'body'` | Teleport target of the overlay. |
 | `overlayFit` | `'slot'` | `'slot'`: the overlay takes the size of the slot it will land in. `'source'`: it keeps the dragged element's size. |
-| `announcements` | built-in texts | `Partial<Announcements>` to override events (`undefined` = default, `''` = silent). `false` silences the live region. |
+| `announcements` | built-in texts | `Partial<Announcements>` to override events (`undefined` = default, `''` = silent). Each gets `(event, context)`: `context.position` is the sortable position the built-in text speaks (`{ list, index (from 0), length }`), plus `count`, `copy`, a swap's `partner` — for texts in another language. `false` silences the live region. |
 | `screenReaderInstructions` | built-in | Text linked to every draggable through `aria-describedby`. |
 | `defaultStyles` | `true` | Injects zero-specificity CSS (placeholder opacity, no text selection, grabbing cursor). |
 

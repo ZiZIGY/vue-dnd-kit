@@ -5,17 +5,12 @@
  * involve a sortable list.
  */
 
-import type { Announcements, DnDEndEvent, DnDEvent, Key } from '../types';
+import type { AnnouncedPosition, AnnouncementContext, Announcer, DnDEndEvent, DnDEvent, Key } from '../types';
 import { isForeign, keysOf, spotIn, type GroupContext, type Session } from './context';
 import type { DropResult } from './drop';
 import { isInto } from './combine';
 
-export interface SortableSpot {
-  list: Key;
-  /** Zero-based position in the list. */
-  index: number;
-  length: number;
-}
+export type SortableSpot = AnnouncedPosition;
 
 export interface SortableSubject {
   key: Key;
@@ -82,6 +77,28 @@ const spotOf = (g: GroupContext, current: Session): SortableSpot | null => {
   return { list: current.list, index: keys.indexOf(current.block[0]!), length: keys.length };
 };
 
+/** What a text says, for the provider's own texts (`AnnouncementContext`). */
+const contextOf = (
+  who: SortableSubject,
+  spot?: SortableSpot | null,
+  partner?: SortablePartner,
+): Partial<AnnouncementContext> => ({
+  count: who.count,
+  copy: who.copy,
+  ...(spot && { position: spot }),
+  ...(partner && { partner: { key: partner.key, position: partner.spot } }),
+});
+
+/** A swap partner sits where the active item started. */
+const partnerOf = (g: GroupContext, current: Session): SortablePartner | undefined =>
+  current.swap == null ? undefined : { key: current.swap, spot: spotIn(g, current.origin.list!, current.origin.index) };
+
+/** The text of a drag's end, and what it is about. */
+export interface SortableAnnouncement {
+  text: string | undefined;
+  context: Partial<AnnouncementContext>;
+}
+
 /** The pickup announcement names where the drag starts: the first target of the drag doesn't repeat it. */
 export const pickedUpAt = (g: GroupContext, current: Session) => {
   const origin = current.origin.list!;
@@ -92,43 +109,60 @@ export const pickedUpAt = (g: GroupContext, current: Session) => {
 };
 
 /** What the end of the drag says, computed while the session still exists. */
-export const endText = (
+export const endAnnouncement = (
   g: GroupContext,
   current: Session,
   event: DnDEndEvent,
   result: DropResult | null,
-): string | undefined => {
+): SortableAnnouncement => {
   const who = subjectOf(current);
-  if (isInto(g, event)) return sortableTexts.into(who, event.over!.id);
-  if (current.removed) return result ? sortableTexts.removed(who, result.event.to.list) : undefined;
+  if (isInto(g, event)) return { text: sortableTexts.into(who, event.over!.id), context: contextOf(who) };
+  if (current.removed) {
+    return { text: result ? sortableTexts.removed(who, result.event.to.list) : undefined, context: contextOf(who) };
+  }
   if (result && result.event.to.index >= 0) {
     const list = g.lists.get(result.event.to.list);
     // The committed keys: a `defineModel` ref only shows the new array after the parent re-renders.
     const committed = list ? (result.next.get(list) ?? list.getKeys()) : [];
+    const spot = { list: result.event.to.list, index: result.event.to.index, length: committed.length };
     // A swap changes no list's length.
-    const partner = result.event.partner;
-    return sortableTexts.end(
-      who,
-      { list: result.event.to.list, index: result.event.to.index, length: committed.length },
-      partner && { key: partner.key, spot: spotIn(g, partner.to.list, partner.to.index) },
-    );
+    const swapped = result.event.partner;
+    const partner = swapped && { key: swapped.key, spot: spotIn(g, swapped.to.list, swapped.to.index) };
+    return { text: sortableTexts.end(who, spot, partner), context: contextOf(who, spot, partner) };
   }
   if (!result && !isForeign(g, event) && current.mode.moves && current.origin.list != null) {
-    return sortableTexts.end(who, spotIn(g, current.origin.list, current.origin.index));
+    const spot = spotIn(g, current.origin.list, current.origin.index);
+    return { text: sortableTexts.end(who, spot), context: contextOf(who, spot) };
   }
-  return undefined;
+  return { text: undefined, context: contextOf(who) };
 };
 
 /** What a cancel says: the items went back home. */
-export const cancelText = (g: GroupContext, current: Session) =>
-  sortableTexts.cancel(subjectOf(current), spotIn(g, current.origin.list!, current.origin.index));
+export const cancelAnnouncement = (g: GroupContext, current: Session): SortableAnnouncement => {
+  const who = subjectOf(current);
+  const spot = spotIn(g, current.origin.list!, current.origin.index);
+  return { text: sortableTexts.cancel(who, spot), context: contextOf(who, spot) };
+};
 
 const ours = (g: GroupContext, event: DnDEvent) => {
   const current = g.session.value;
   return current && current.activeKey === event.active.id && !isForeign(g, event) ? current : null;
 };
 
-export const createAnnouncer = (g: GroupContext): Partial<Announcements> => ({
+export const createAnnouncer = (g: GroupContext): Announcer => ({
+  describe: (name, event) => {
+    if (name === 'onDragEnd' || name === 'onDragCancel') {
+      return g.announced?.key === event.active.id ? g.announced.context : undefined;
+    }
+    const current = ours(g, event);
+    if (!current) return undefined;
+    const who = subjectOf(current);
+    if (name === 'onDragStart') {
+      return contextOf(who, current.origin.list == null ? null : spotIn(g, current.origin.list, current.origin.index));
+    }
+    // Over a drop target in an item, the drop goes into it: no position in the list.
+    return isInto(g, event) ? contextOf(who) : contextOf(who, spotOf(g, current), partnerOf(g, current));
+  },
   onDragStart: (event) => {
     const current = ours(g, event);
     if (!current || current.origin.list == null) return undefined;
@@ -148,13 +182,7 @@ export const createAnnouncer = (g: GroupContext): Partial<Announcements> => ({
     const key = spotKey(spot);
     if (key === g.spokenSpot) return '';
     g.spokenSpot = key;
-    // A swap partner sits where the active item started.
-    const partner = current.swap;
-    return sortableTexts.over(
-      subjectOf(current),
-      spot,
-      partner == null ? undefined : { key: partner, spot: spotIn(g, current.origin.list!, current.origin.index) },
-    );
+    return sortableTexts.over(subjectOf(current), spot, partnerOf(g, current));
   },
   onDragEnd: (event) => (g.announced?.key === event.active.id ? g.announced.text : undefined),
   onDragCancel: (event) => (g.announced?.key === event.active.id ? g.announced.text : undefined),

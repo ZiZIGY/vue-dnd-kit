@@ -10,7 +10,7 @@ import type { DnDManager } from '../core/manager';
 import type { ListEntry } from './entry';
 import type { DropResult } from './drop';
 import type { Hysteresis } from './stability';
-import type { SortableSpot } from './announcements';
+import type { SortableAnnouncement, SortableSpot } from './announcements';
 import type { SortableMode } from './modes/mode';
 import type { NearSet } from './flip';
 import type { AutoPass } from './autoAnimate';
@@ -135,8 +135,8 @@ export interface GroupContext {
   /** A pending `followBlock` pass: the drop waits for it. */
   following: Promise<void> | null;
 
-  /** Text for the end or cancel announcement, computed while the session still existed. */
-  announced: { key: Key; text: string | undefined } | null;
+  /** Text for the end or cancel announcement, and what it is about, computed while the session still existed. */
+  announced: ({ key: Key } & SortableAnnouncement) | null;
   /** Last position announced (or picked up at), so an unchanged position isn't spoken again. */
   spokenSpot: string | null;
 }

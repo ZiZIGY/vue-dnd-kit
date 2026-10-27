@@ -8,7 +8,7 @@
  * defaults; moves are debounced, only the target the drag rests on is spoken.
  */
 
-import type { Active, Announcements, Coordinates, DnDEndEvent, DnDEvent, DnDMonitor, DragSource, Over } from '../../types';
+import type { Active, AnnouncementContext, Announcements, Coordinates, DnDEndEvent, DnDEvent, DnDMonitor, DragSource, Over } from '../../types';
 import { defaultAnnouncements } from '../a11y';
 import type { ManagerContext } from './state';
 
@@ -94,17 +94,28 @@ export function createEvents(ctx: ManagerContext) {
   const announce = (name: keyof Announcements, event: DnDEvent = createEvent()) => {
     const custom = ctx.props.announcements;
     if (custom === false) return clearTimeout(announceTimer);
-    type Announce = (this: unknown, event: DnDEvent) => string | undefined;
+    type Announce = (this: unknown, event: DnDEvent, context: AnnouncementContext) => string | undefined;
     let text: string | undefined;
     try {
+      // What the text is about, as the integrations know it (sortable positions).
+      let described: Partial<AnnouncementContext> | undefined;
+      for (const announcer of ctx.announcers) {
+        described = announcer.describe?.(name, event);
+        if (described) break;
+      }
+      const context: AnnouncementContext = {
+        count: event.active.ids.length,
+        copy: ctx.mode.value === 'copy',
+        ...described,
+      };
       // The provider's own text wins, then announcers (sortable positions), then defaults.
       // `undefined`: not this source's business, the next one speaks; '': nothing to say.
-      text = (custom?.[name] as Announce | undefined)?.call(custom, event);
+      text = (custom?.[name] as Announce | undefined)?.call(custom, event, context);
       for (const announcer of ctx.announcers) {
         if (text !== undefined) break;
-        text = (announcer[name] as Announce | undefined)?.call(announcer, event);
+        text = (announcer[name] as Announce | undefined)?.call(announcer, event, context);
       }
-      text ??= (defaultAnnouncements[name] as Announce).call(defaultAnnouncements, event);
+      text ??= (defaultAnnouncements[name] as Announce).call(defaultAnnouncements, event, context);
     } catch (error) {
       // A throwing announcement must not break the session (§13).
       clearTimeout(announceTimer);

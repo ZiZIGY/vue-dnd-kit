@@ -84,6 +84,8 @@ export type {
   DnDState,
   DnDSelection,
   Announcements,
+  AnnouncementContext,
+  AnnouncedPosition,
 
   // Accept rules
   AcceptContext,

@@ -8,7 +8,7 @@ import { shallowRef, type Component } from 'vue';
 import type {
   ActivationOptions,
   Active,
-  Announcements,
+  Announcer,
   AutoScrollOptions,
   BeforeDropResult,
   Coordinates,
@@ -113,7 +113,7 @@ export function createRegistry() {
   const sourceResolvers = new Set<(active: Active) => DragSource | undefined>();
   const targetRules = new Set<TargetRule>();
   /** Integration announcers (sortable positions): after the user's `announcements`, before the defaults. */
-  const announcers = new Set<Partial<Announcements>>();
+  const announcers = new Set<Announcer>();
   const activationAborts = new Set<() => void>();
   const autoScrollEntries = new Set<AutoScrollEntry>();
   /** Cancels the running rubber-band selection (`status === 'selecting'`). */
@@ -232,7 +232,7 @@ export function createRegistry() {
   };
 
   /** Extra announcers (sortable positions): after the provider's own texts, before the defaults. */
-  const addAnnouncer = (announcer: Partial<Announcements>): (() => void) => {
+  const addAnnouncer = (announcer: Announcer): (() => void) => {
     announcers.add(announcer);
     return () => announcers.delete(announcer);
   };

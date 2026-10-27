@@ -15,7 +15,7 @@ import { setIndicator } from './indicator';
 import { landDrop } from './landing';
 import { bump } from './flip';
 import { HYSTERESIS, distance } from './stability';
-import { cancelText, endText } from './announcements';
+import { cancelAnnouncement, endAnnouncement } from './announcements';
 import { settleBlock } from './session';
 import { modeOf } from './modes/swap';
 import { isFinal, toVerdict } from '../core/verdict';
@@ -298,7 +298,7 @@ export const end = (g: GroupContext, event: DnDEndEvent) => {
   // The drop as it was made, for the devtools: they read it as the session ends.
   current.result = result;
   landDrop(g, current, result);
-  g.announced = { key: current.activeKey, text: endText(g, current, event, result) };
+  g.announced = { key: current.activeKey, ...endAnnouncement(g, current, event, result) };
   reset(g);
 };
 
@@ -307,7 +307,7 @@ export const cancel = (g: GroupContext, event: DnDEvent) => {
   if (current && current.activeKey === event.active.id) {
     // Copies vanish (`copy.cancel`). Moved block members stay placeholders until the overlay is home.
     current.mode.cancel?.(g, current);
-    if (current.origin.list != null) g.announced = { key: current.activeKey, text: cancelText(g, current) };
+    if (current.origin.list != null) g.announced = { key: current.activeKey, ...cancelAnnouncement(g, current) };
   }
   reset(g);
 };

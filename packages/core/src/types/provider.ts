@@ -14,13 +14,48 @@ import type { Sensor } from './sensor';
  * texts of integrations such as sortable positions, then the defaults); `''` says
  * nothing. A move isn't announced for the target found at pickup: nothing moved yet.
  */
+/** A place in a sortable list or tree (its visible rows): `index` counts from 0, out of `length`. */
+export interface AnnouncedPosition {
+  list: Key;
+  index: number;
+  length: number;
+}
+
+/**
+ * What an announcement is about, beyond the event: for texts of your own (another
+ * language, other words) that say what the built-in ones say.
+ */
+export interface AnnouncementContext {
+  /**
+   * In a sortable list or tree: where the dragged items are. At the start, where they
+   * were picked up; while moving, where they would land (none outside the lists); at the
+   * end, where they landed, or where they went back to.
+   */
+  position?: AnnouncedPosition;
+  /** A swap: the item exchanged with the dragged one, and where it is now. */
+  partner?: { key: Key; position: AnnouncedPosition };
+  /** How many items the drag carries. */
+  count: number;
+  /** The drag copies (`group.pull: 'clone'`, the copy modifier). */
+  copy: boolean;
+}
+
+/**
+ * Texts for screen readers. Return `undefined` for the built-in text, `''` for none.
+ * `context` has the positions the built-in texts of sortable lists speak.
+ */
 export interface Announcements {
-  onDragStart(event: DnDEvent): string | undefined;
-  onDragOver(event: DnDEvent): string | undefined;
-  onDragEnd(event: DnDEndEvent): string | undefined;
-  onDragCancel(event: DnDEvent): string | undefined;
+  onDragStart(event: DnDEvent, context: AnnouncementContext): string | undefined;
+  onDragOver(event: DnDEvent, context: AnnouncementContext): string | undefined;
+  onDragEnd(event: DnDEndEvent, context: AnnouncementContext): string | undefined;
+  onDragCancel(event: DnDEvent, context: AnnouncementContext): string | undefined;
   /** `onBeforeDrop` answered `'continue'`: the drag goes on. */
-  onDragResume(event: DnDEvent): string | undefined;
+  onDragResume(event: DnDEvent, context: AnnouncementContext): string | undefined;
+}
+
+/** An integration's texts (sortable lists), and the context it knows for the provider's own. */
+export interface Announcer extends Partial<Announcements> {
+  describe?(name: keyof Announcements, event: DnDEvent): Partial<AnnouncementContext> | undefined;
 }
 
 export interface KeyboardOptions {
