@@ -41,7 +41,7 @@ export interface ModifierArgs {
   overlayRect: Rect;
   /** Pointer position at drag start. */
   origin: Coordinates;
-  /** Sortable list container (or parent element) of the dragged item, measured at drag start. */
+  /** Sortable list container (or parent element) of the dragged item, where it is now (it follows scrolling). */
   containerRect: Rect | null;
   windowRect: Rect;
   over: Over | null;

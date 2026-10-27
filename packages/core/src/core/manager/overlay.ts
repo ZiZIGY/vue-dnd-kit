@@ -48,7 +48,8 @@ export function createOverlay(ctx: ManagerContext) {
   let overlayComponent: Component | null = null;
   /** Where the pointer holds the overlay box, as fractions of its size: it resizes around this point. */
   let grab: Coordinates = { x: 0, y: 0 };
-  let containerRect: Rect | null = null;
+  /** The container the drag started in (`restrictToParent`, `snapToGrid`), measured on every move. */
+  let container: Element | null = null;
   /** Modifiers of the draggable the drag started from, taken at start like the overlay. */
   let sourceModifiers: readonly Modifier[] = [];
   /**
@@ -107,6 +108,8 @@ export function createOverlay(ctx: ManagerContext) {
 
   const applyModifiers = (current: Active, offset: Coordinates): Coordinates => {
     let result = offset;
+    // Where it is now: the page may have scrolled since the drag started.
+    const containerRect = container?.isConnected ? getRect(container) : null;
     for (const modifier of getModifiers()) {
       result = modifier({
         transform: result,
@@ -207,12 +210,12 @@ export function createOverlay(ctx: ManagerContext) {
     },
 
     /**
-     * The box of a new drag, at the source size; `container` is measured for
+     * The box of a new drag, at the source size; `parent` is the container of
      * `restrictToParent`. The modifiers run: `origin` and `over` must be set.
      */
-    place(current: Active, coordinates: Coordinates, modifiers: readonly Modifier[], container: Element | null) {
+    place(current: Active, coordinates: Coordinates, modifiers: readonly Modifier[], parent: Element | null) {
       sourceModifiers = modifiers;
-      containerRect = container ? getRect(container) : null;
+      container = parent;
       ctx.fitSize.value = { width: current.rect.width, height: current.rect.height };
       resize = null;
       // Where the pointer holds the box on the first frame, after modifiers (the center
@@ -229,7 +232,7 @@ export function createOverlay(ctx: ManagerContext) {
       previewEnabled = false;
       overlayComponent = null;
       sourceModifiers = [];
-      containerRect = null;
+      container = null;
     },
   };
 }
