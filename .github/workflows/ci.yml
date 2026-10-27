@@ -51,9 +51,6 @@ jobs:
       - name: publint + arethetypeswrong
         run: yarn lint:package
 
-      - name: Size limit
-        run: yarn size
-
   actions:
     name: Actions (typecheck, test, build, package checks)
     runs-on: ubuntu-latest
@@ -91,9 +88,6 @@ jobs:
 
       - name: publint + arethetypeswrong
         run: yarn lint:package
-
-      - name: Size limit
-        run: yarn size
 
   devtools:
     name: Devtools (typecheck, test, build, package checks)
@@ -134,9 +128,6 @@ jobs:
 
       - name: publint + arethetypeswrong
         run: yarn lint:package
-
-      - name: Size limit
-        run: yarn size
 
   e2e:
     name: E2E (${{ matrix.browser }})

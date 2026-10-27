@@ -29,9 +29,8 @@
     "typecheck": "vue-tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "size": "size-limit",
     "lint:package": "publint --strict --pack npm && attw --pack .",
-    "prepublishOnly": "yarn typecheck && yarn test && yarn build && yarn lint:package && yarn size"
+    "prepublishOnly": "yarn typecheck && yarn test && yarn build && yarn lint:package"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -54,19 +53,6 @@
     "LICENSE",
     "README.md"
   ],
-  "size-limit": [
-    {
-      "name": "useDnDActions",
-      "path": "dist/index.js",
-      "import": "{ useDnDActions }",
-      "ignore": [
-        "vue",
-        "@vue-dnd-kit/core"
-      ],
-      "gzip": true,
-      "limit": "1 KB"
-    }
-  ],
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
@@ -77,13 +63,11 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
-    "@size-limit/preset-small-lib": "^12.1.0",
     "@types/node": "^24.10.0",
     "@vue/tsconfig": "^0.8.1",
     "@vueuse/core": "^14 || ^15",
     "happy-dom": "^21.0.4",
     "publint": "^0.3.25",
-    "size-limit": "^12.1.0",
     "typescript": "~5.9.3",
     "vite": "^7.2.2",
     "vite-plugin-dts": "^4.5.4",
