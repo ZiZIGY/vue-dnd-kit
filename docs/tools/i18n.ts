@@ -90,12 +90,12 @@ const count = (states: State[]) =>
 const status = (code?: string) => {
   const files = sourceFiles();
   if (!code) {
-    console.log('lang  pages            API texts        UI strings');
+    console.log('lang  pages                API texts            UI strings');
     for (const { code } of LOCALES.filter(({ code }) => code !== DEFAULT_LOCALE)) {
       const pages = count(files.map((file) => pageState(code, file).state));
       const api = count(apiState(code).map(({ state }) => state));
       const ui = uiMissing(code);
-      console.log(`${code.padEnd(6)}${pages.padEnd(17)}${api.padEnd(17)}${ui.total - ui.missing.length}/${ui.total}`);
+      console.log(`${code.padEnd(6)}${pages.padEnd(21)}${api.padEnd(21)}${ui.total - ui.missing.length}/${ui.total}`);
     }
     return;
   }
