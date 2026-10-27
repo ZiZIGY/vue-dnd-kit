@@ -34,25 +34,27 @@
 </script>
 
 <template>
-  <footer>
+  <!-- Its own top rule: a docs page ends without one. Over a section's rule, it lies on it. -->
+  <footer class="-mt-px border-t border-default">
     <SiteSection tag="div">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
-        <div class="relative overflow-hidden px-(--gutter) py-12 max-lg:sm:col-span-2 lg:py-16">
-          <div
-            aria-hidden="true"
-            class="dot-paper fade-right pointer-events-none absolute inset-0 opacity-50"
+      <DecorCross at="top-left" />
+      <DecorCross at="top-right" />
+      <div class="grid grid-cols-2 gap-x-10 gap-y-8 px-(--gutter) py-10 sm:grid-cols-3 lg:grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,1fr))]">
+        <div class="col-span-2 sm:col-span-3 lg:col-span-1">
+          <SiteLogo />
+          <p class="mt-3 max-w-xs text-[13px] leading-relaxed text-muted">{{ t('footer.about') }}</p>
+          <SiteCopyCommand
+            command="npm i @vue-dnd-kit/core"
+            class="mt-5 h-10! text-[12px]!"
           />
-          <SiteLogo class="relative" />
-          <p class="relative mt-5 max-w-xs text-sm leading-relaxed text-muted">{{ t('footer.about') }}</p>
         </div>
         <nav
           v-for="column in columns"
           :key="column.title"
           :aria-label="column.title"
-          class="border-default px-(--gutter) py-12 max-lg:border-t lg:border-s lg:py-16 sm:[&:nth-child(3)]:border-s"
         >
-          <h3 class="label text-[11px] text-dimmed">{{ column.title }}</h3>
-          <ul class="mt-6 space-y-3">
+          <h3 class="text-[13px] font-medium text-highlighted">{{ column.title }}</h3>
+          <ul class="mt-3 space-y-2">
             <li
               v-for="link in column.links"
               :key="link.label"
@@ -60,7 +62,7 @@
               <NuxtLink
                 :to="link.to"
                 :target="link.to.startsWith('http') ? '_blank' : undefined"
-                class="text-sm text-muted transition-colors hover:text-highlighted"
+                class="text-[13px] text-muted transition-colors hover:text-highlighted"
                 >{{ link.label }}</NuxtLink
               >
             </li>
@@ -71,24 +73,11 @@
     <SiteSection
       tag="div"
       :rule="false"
-      frame-class="overflow-hidden"
     >
-      <div class="flex flex-col gap-2 border-b border-dashed border-default px-(--gutter) py-5 text-xs text-dimmed sm:flex-row sm:justify-between">
-        <span class="font-mono">© {{ year }} ZiZIGY · {{ t('footer.rights') }}</span>
+      <div class="flex flex-col gap-1 px-(--gutter) py-4 text-xs text-dimmed sm:flex-row sm:justify-between">
+        <span>© {{ year }} ZiZIGY · {{ t('footer.rights') }}</span>
         <span>{{ t('footer.aiNote') }}</span>
       </div>
-      <!-- The name, larger than the page, cut by its bottom edge. -->
-      <Motion
-        as="p"
-        aria-hidden="true"
-        :initial="{ y: '35%', opacity: 0 }"
-        :while-in-view="{ y: 0, opacity: 1 }"
-        :in-view-options="{ once: true }"
-        :transition="{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }"
-        class="-mb-[0.22em] select-none whitespace-nowrap bg-linear-to-b from-(--ui-text-highlighted)/20 to-(--ui-text-highlighted)/0 bg-clip-text px-(--gutter) pt-4 text-center text-[clamp(3.5rem,15vw,16.5rem)] leading-none font-bold tracking-[-0.065em] text-transparent"
-      >
-        vue-dnd-kit
-      </Motion>
     </SiteSection>
   </footer>
 </template>

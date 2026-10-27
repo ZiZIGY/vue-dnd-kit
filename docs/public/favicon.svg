@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none">
-  <style>rect { stroke: #000; } .fill { fill: #000; stroke: none; } @media (prefers-color-scheme: dark) { rect { stroke: #fff; } .fill { fill: #fff; } }</style>
-  <rect x="0.5" y="0.5" width="13" height="13" stroke-dasharray="2 2"/>
-  <rect class="fill" x="7" y="7" width="13" height="13"/>
-</svg>

@@ -40,7 +40,13 @@ export default defineNuxtConfig({
   app: {
     baseURL: BASE_URL,
     head: {
-      link: [{ rel: 'icon', type: 'image/svg+xml', href: `${BASE_URL}favicon.svg` }],
+      link: [
+        { rel: 'icon', href: `${BASE_URL}favicon/favicon.ico`, sizes: '48x48' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: `${BASE_URL}favicon/favicon-32x32.png` },
+        { rel: 'icon', type: 'image/png', sizes: '16x16', href: `${BASE_URL}favicon/favicon-16x16.png` },
+        { rel: 'apple-touch-icon', href: `${BASE_URL}favicon/apple-touch-icon.png` },
+        { rel: 'manifest', href: `${BASE_URL}favicon/site.webmanifest` },
+      ],
     },
   },
 

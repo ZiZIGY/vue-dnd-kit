@@ -1,40 +1,23 @@
 <script setup lang="ts">
-  /** A square lifted out of its slot: the mark of Vue DnD Kit. */
+  /** Vue's inner chevron lifted out of its place: the mark of Vue DnD Kit. */
   withDefaults(defineProps<{ wordmark?: boolean }>(), { wordmark: true });
+  const src = `${useRuntimeConfig().app.baseURL}logo.png`;
 </script>
 
 <template>
   <span class="inline-flex items-center gap-2 text-highlighted">
-    <svg
-      aria-hidden="true"
-      class="size-6 shrink-0"
-      viewBox="0 0 24 24"
-      fill="none"
-    >
-      <rect
-        x="1.5"
-        y="1.5"
-        width="13"
-        height="13"
-        rx="1.5"
-        stroke="currentColor"
-        stroke-opacity="0.45"
-        stroke-width="1.5"
-        stroke-dasharray="2.5 2.5"
-      />
-      <rect
-        x="8.5"
-        y="8.5"
-        width="14"
-        height="14"
-        rx="2"
-        fill="#42b883"
-      />
-    </svg>
+    <!-- The white chevron needs an edge on a light page; on a dark one it has its own. -->
+    <img
+      :src="src"
+      alt=""
+      width="28"
+      height="28"
+      class="size-7 shrink-0 object-contain drop-shadow-[0_1px_1.5px_rgb(0_0_0/0.35)] dark:drop-shadow-none"
+    />
     <span
       v-if="wordmark"
       class="text-[17px] font-bold tracking-[-0.04em] whitespace-nowrap"
-      >DnD Kit</span
+      ><span class="font-semibold text-muted">vue-</span>dnd-kit</span
     >
   </span>
 </template>
