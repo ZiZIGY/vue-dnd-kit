@@ -6,7 +6,7 @@
     "dev": "nuxt dev",
     "build": "nuxt build",
     "generate": "nuxt generate",
-    "preview": "nuxt preview",
+    "preview": "node tools/preview.ts",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck"
   },
