@@ -47,6 +47,10 @@
     "source": "226682e4e6",
     "text": "Onde fica o canto superior esquerdo da caixa arrastada dentro de `over`, a partir da borda do padding dele e com a rolagem dele: o `left`/`top` que colocam um item com posicionamento absoluto onde ele foi solto (uma nota em um quadro). `null` quando não há nada embaixo. Da caixa do overlay, ou do próprio elemento com `overlay: false`."
   },
+  "DnDEvent.mode": {
+    "source": "bdec70ffdc",
+    "text": "O que um drop faria: `'move'`, `'copy'` (o `pull: 'clone'` de uma lista, ou a tecla modificadora de cópia segurada com itens cuja lista sabe fazer `clone`), `'swap'` ou `'insert'`. Um alvo de drop simples o lê para copiar em vez de mover."
+  },
   "DnDEvent.source": {
     "source": "d69f88797f",
     "text": "Presente quando os itens arrastados vêm de uma lista ordenável."
@@ -94,5 +98,9 @@
   "DnDState": {
     "source": "60baeb2f00",
     "text": "O estado do arraste termina quando o drop é decidido: `active`, `over` e `pointer` passam a ser `null` (e os droppables deixam de aceitar) enquanto o overlay ainda está sendo animado até o lugar (`status` continua `'dropping'`). Uma UI derivada nunca mistura o arraste antigo com os dados novos. Enquanto um `onBeforeDrop` assíncrono decide, o estado é mantido como estava no momento em que o item foi solto, mas a página sai do modo de arraste: o cursor e a seleção de texto dela voltam (um diálogo de confirmação funciona normalmente), e o overlay espera onde foi solto."
+  },
+  "DnDState.position": {
+    "source": "4795780b8f",
+    "text": "Onde está o canto superior esquerdo da caixa arrastada dentro de `over`, ao vivo: o `DnDEvent.position` de cada movimento. `null` sobre nada. Um componente de overlay o lê para mostrar onde pousaria (um horário em um calendário)."
   }
 }

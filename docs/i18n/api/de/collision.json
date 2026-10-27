@@ -32,7 +32,7 @@
     "text": "Position des Zeigers beim Start des Drags."
   },
   "ModifierArgs.containerRect": {
-    "source": "2a3d109ccb",
-    "text": "Container der sortierbaren Liste (oder Elternelement) des gezogenen Elements, gemessen beim Start des Drags."
+    "source": "ce6a1ebd7e",
+    "text": "Container der sortierbaren Liste (oder Elternelement) des gezogenen Elements, dort, wo er jetzt ist (er folgt dem Scrollen)."
   }
 }

@@ -52,8 +52,8 @@
     "text": "Element, an dem der Indikator hängt; `null` in einer leeren Liste."
   },
   "SortableIndicator.side": {
-    "source": "616c01270f",
-    "text": "Seite von `key`, an der die Linie erscheint. `'inside'` (Bäume): Der Zeiger ist über der Mitte einer Zeile, die die gezogenen Knoten aufnimmt; der Drop geht als ihr erstes Kind hinein."
+    "source": "14e5fe3167",
+    "text": "Seite von `key`, an der die Linie erscheint. `'inside'` (Bäume): Der Zeiger ist über der Mitte einer Zeile, die die gezogenen Knoten aufnimmt; der Drop geht als ihr erstes Kind hinein. `'swap'` (`behavior: 'swap'`): `key` ist das Element, mit dem der Drop tauscht; markiere das Element selbst."
   },
   "SortableIndicator.depth": {
     "source": "d3a6c5b55c",

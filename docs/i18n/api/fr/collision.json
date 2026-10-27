@@ -32,7 +32,7 @@
     "text": "Position du pointeur au début du glissement."
   },
   "ModifierArgs.containerRect": {
-    "source": "2a3d109ccb",
-    "text": "Conteneur de la liste triable (ou élément parent) de l'item glissé, mesuré au début du glissement."
+    "source": "ce6a1ebd7e",
+    "text": "Conteneur de la liste triable (ou élément parent) de l'item glissé, là où il se trouve maintenant (il suit le défilement)."
   }
 }

@@ -47,6 +47,10 @@
     "source": "226682e4e6",
     "text": "Où se trouve le coin supérieur gauche de la boîte glissée dans `over`, depuis le bord de son padding et défilement compris : le `left`/`top` qui place un item positionné en absolu là où il a été déposé (une note sur un tableau). `null` au-dessus de rien. Celui de la boîte de l'overlay, ou de l'élément lui-même avec `overlay: false`."
   },
+  "DnDEvent.mode": {
+    "source": "bdec70ffdc",
+    "text": "Ce que ferait un dépôt : `'move'`, `'copy'` (le `pull: 'clone'` d'une liste, ou la touche de copie maintenue au-dessus d'items dont la liste peut faire `clone`), `'swap'` ou `'insert'`. Une simple cible de dépôt le lit pour copier au lieu de déplacer."
+  },
   "DnDEvent.source": {
     "source": "d69f88797f",
     "text": "Présent quand les items glissés viennent d'une liste triable."
@@ -94,5 +98,9 @@
   "DnDState": {
     "source": "60baeb2f00",
     "text": "L'état du glissement prend fin quand le dépôt est décidé : `active`, `over` et `pointer` valent `null` (et les droppables cessent d'accepter) pendant que l'overlay s'anime encore jusqu'à sa place (`status` reste `'dropping'`). Une UI dérivée ne mélange jamais l'ancien glissement avec les nouvelles données. Pendant qu'un `onBeforeDrop` asynchrone décide, l'état est conservé tel qu'il était au relâchement, mais la page est sortie du mode glissement : son propre curseur et la sélection de texte sont revenus (une boîte de dialogue de confirmation fonctionne normalement), et l'overlay attend là où il a été déposé."
+  },
+  "DnDState.position": {
+    "source": "4795780b8f",
+    "text": "Où se trouve le coin supérieur gauche de la boîte glissée dans `over`, en direct : `DnDEvent.position` à chaque déplacement. `null` au-dessus de rien. Un composant d'overlay le lit pour montrer où il atterrirait (une heure sur un calendrier)."
   }
 }

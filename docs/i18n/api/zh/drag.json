@@ -47,6 +47,10 @@
     "source": "226682e4e6",
     "text": "被拖拽盒子的左上角在 `over` 中的位置，从其内边距边缘量起，并计入其滚动量：即能把一个绝对定位的项放到被放下位置的 `left`/`top`（面板上的便签）。下方没有目标时为 `null`。取的是浮层盒子的位置；使用 `overlay: false` 时则是元素本身的位置。"
   },
+  "DnDEvent.mode": {
+    "source": "bdec70ffdc",
+    "text": "放置将做什么：`'move'`、`'copy'`（列表的 `pull: 'clone'`，或拖拽来自可 `clone` 的列表的项时按住复制键）、`'swap'` 或 `'insert'`。普通放置目标可以读取它，以复制代替移动。"
+  },
   "DnDEvent.source": {
     "source": "d69f88797f",
     "text": "当被拖拽的项来自可排序列表时存在。"
@@ -94,5 +98,9 @@
   "DnDState": {
     "source": "60baeb2f00",
     "text": "放置结果确定时，拖拽状态即告结束：`active`、`over` 和 `pointer` 变为 `null`（放置目标也不再接收），而浮层仍在以动画方式就位（`status` 保持为 `'dropping'`）。派生的 UI 永远不会把旧的拖拽和新数据混在一起。在异步的 `onBeforeDrop` 做决定期间，状态保持松开时的样子，但页面已退出拖拽模式：它自己的光标和文本选择恢复正常（确认对话框可以照常工作），浮层停在被放下的位置等待。"
+  },
+  "DnDState.position": {
+    "source": "4795780b8f",
+    "text": "被拖拽盒子的左上角在 `over` 中的实时位置：即每次移动时的 `DnDEvent.position`。下方没有目标时为 `null`。浮层组件可以读取它来显示将落到哪里（日历上的某个时间）。"
   }
 }

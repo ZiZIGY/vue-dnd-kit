@@ -52,8 +52,8 @@
     "text": "Item ao qual o indicador está preso; `null` em uma lista vazia."
   },
   "SortableIndicator.side": {
-    "source": "616c01270f",
-    "text": "Lado de `key` em que a linha fica. `'inside'` (árvores): o ponteiro está sobre o meio de uma linha que aceita os nós arrastados, e o drop vai para dentro dela como o primeiro filho."
+    "source": "14e5fe3167",
+    "text": "Lado de `key` em que a linha fica. `'inside'` (árvores): o ponteiro está sobre o meio de uma linha que aceita os nós arrastados, e o drop vai para dentro dela como o primeiro filho. `'swap'` (`behavior: 'swap'`): `key` é o item com o qual o drop troca de lugar; marque o próprio item."
   },
   "SortableIndicator.depth": {
     "source": "d3a6c5b55c",

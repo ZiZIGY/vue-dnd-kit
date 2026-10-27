@@ -1,11 +1,39 @@
 {
+  "AnnouncedPosition": {
+    "source": "957ec8f6ce",
+    "text": "Um lugar em uma lista ordenável ou árvore (nas linhas visíveis dela): `index` conta a partir de 0, de um total de `length`."
+  },
+  "AnnouncementContext": {
+    "source": "884af39ecf",
+    "text": "Do que trata um anúncio, além do evento: para textos seus (outro idioma, outras palavras) que dizem o mesmo que os textos embutidos."
+  },
+  "AnnouncementContext.position": {
+    "source": "fa8542b2eb",
+    "text": "Em uma lista ordenável ou árvore: onde estão os itens arrastados. No início, onde foram pegos; durante o movimento, onde pousariam (nenhuma posição fora das listas); no fim, onde pousaram, ou para onde voltaram."
+  },
+  "AnnouncementContext.partner": {
+    "source": "b1b3ed75df",
+    "text": "Uma troca: o item trocado com o arrastado, e onde ele está agora."
+  },
+  "AnnouncementContext.count": {
+    "source": "cbc27f6283",
+    "text": "Quantos itens o arraste carrega."
+  },
+  "AnnouncementContext.copy": {
+    "source": "000515c91f",
+    "text": "O arraste copia (`group.pull: 'clone'`, a tecla modificadora de cópia)."
+  },
   "Announcements": {
-    "source": "35c177cf7f",
-    "text": "Textos para leitores de tela por evento. Um texto é anunciado pela live region do provider (os movimentos, depois que o arraste fica parado por 500 ms); `undefined` deixa o evento para a próxima fonte (os textos de integrações, como as posições das listas ordenáveis, depois os padrões); `''` não diz nada. Um movimento não é anunciado para o alvo encontrado no momento em que o item é pego: nada se moveu ainda."
+    "source": "08ba8bd127",
+    "text": "Textos para leitores de tela. Retorne `undefined` para o texto embutido, `''` para nenhum. `context` traz as posições de que falam os textos embutidos das listas ordenáveis."
   },
   "Announcements.onDragResume": {
     "source": "d4806359e7",
     "text": "`onBeforeDrop` respondeu `'continue'`: o arraste continua."
+  },
+  "Announcer": {
+    "source": "35562b8590",
+    "text": "Os textos de uma integração (listas ordenáveis), e o contexto que ela conhece para os textos do próprio provider."
   },
   "KeyboardOptions.step": {
     "source": "66a729c31a",
@@ -100,8 +128,8 @@
     "text": "Props de um componente de overlay, para `defineProps<OverlayProps>()`.\n\nO componente é renderizado dentro da caixa do overlay, que acompanha o tamanho da posição (`overlayFit: 'slot'`) e o anima no drop. Dê à raiz `width: 100%` (e `height: 100%`) para acompanhar esse tamanho; um tamanho fixo mantém o do próprio componente."
   },
   "DragPreviewProps": {
-    "source": "c757ceda27",
-    "text": "Props de `DragPreview`: o clone padrão de um item arrastado, para overlays personalizados (um componente `overlay` ou o slot `#overlay` do provider) que organizam vários itens por conta própria, por exemplo, `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`.\n\nOs clones são feitos quando o item é pego: do item pego e de até quatro outros ao lado dele na ordem do drop (os que estão renderizados nesse momento). Para qualquer outro item, `DragPreview` renderiza o seu slot padrão, ou nada. O clone preenche o elemento, que tem o tamanho que o item tinha ao ser pego, definido inline: mude-o com `style` (`:style=\"{ width: '100%', height: '100%' }\"`), que é repassado; uma classe não consegue sobrescrevê-lo.\n\nEm um multi-drag ordenável (`multiple: 'group'` ou `'gaps'`), a prévia de um item que não é o pego pousa na posição desse item com o drop (de volta ao seu lugar quando cancelado), de onde quer que o layout a tenha colocado: wrappers girados ou escalados com `transform` são desfeitos no caminho, e o tamanho dela é animado como largura e altura. Estilize a própria prévia (cantos, sombra): os wrappers dela ficam na caixa. Itens sem clone surgem aos poucos em vez disso."
+    "source": "5ca62fbc15",
+    "text": "Props de `DragPreview`: o clone padrão de um item arrastado, para overlays personalizados (um componente `overlay` ou o slot `#overlay` do provider) que organizam vários itens por conta própria, por exemplo, `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`.\n\nOs clones são feitos quando o item é pego: do item pego e de até quatro outros ao lado dele na ordem do drop (os que estão renderizados nesse momento). Para qualquer outro item, `DragPreview` renderiza o seu slot padrão em um elemento que recebe `class` e `style` como o de um clone, ou nada quando não há slot. O clone preenche o elemento, que tem o tamanho que o item tinha ao ser pego, definido inline: mude-o com `style` (`:style=\"{ width: '100%', height: '100%' }\"`), que é repassado; uma classe não consegue sobrescrevê-lo.\n\nEm um multi-drag ordenável (`multiple: 'group'` ou `'gaps'`), a prévia de um item que não é o pego pousa na posição desse item com o drop (de volta ao seu lugar quando cancelado), de onde quer que o layout a tenha colocado: wrappers girados ou escalados com `transform` são desfeitos no caminho, e o tamanho dela é animado como largura e altura. Estilize a própria prévia (cantos, sombra): os wrappers dela ficam na caixa. Itens sem clone surgem aos poucos em vez disso."
   },
   "DragPreviewProps.id": {
     "source": "220d6dd174",

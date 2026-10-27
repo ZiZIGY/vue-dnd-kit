@@ -32,7 +32,7 @@
     "text": "ドラッグ開始時のポインター位置。"
   },
   "ModifierArgs.containerRect": {
-    "source": "2a3d109ccb",
+    "source": "ce6a1ebd7e",
     "text": "ドラッグ中のアイテムの並べ替え可能なリストのコンテナー（または親要素）。ドラッグ開始時に計測されます。"
   }
 }

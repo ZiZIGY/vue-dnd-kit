@@ -1,11 +1,39 @@
 {
+  "AnnouncedPosition": {
+    "source": "957ec8f6ce",
+    "text": "可排序列表或树（其可见行）中的一个位置：`index` 从 0 开始计数，总数为 `length`。"
+  },
+  "AnnouncementContext": {
+    "source": "884af39ecf",
+    "text": "播报所涉及的、事件之外的信息：供你自己的文本（其他语言、其他措辞）表达内置文本所表达的内容。"
+  },
+  "AnnouncementContext.position": {
+    "source": "fa8542b2eb",
+    "text": "在可排序列表或树中：被拖拽项所在的位置。开始时，是它们被拿起的位置；移动时，是它们将要落到的位置（在列表之外时没有）；结束时，是它们落到的位置，或返回的位置。"
+  },
+  "AnnouncementContext.partner": {
+    "source": "b1b3ed75df",
+    "text": "交换：与被拖拽项交换的那个项，以及它现在的位置。"
+  },
+  "AnnouncementContext.count": {
+    "source": "cbc27f6283",
+    "text": "这次拖拽携带了多少项。"
+  },
+  "AnnouncementContext.copy": {
+    "source": "000515c91f",
+    "text": "这次拖拽是复制（`group.pull: 'clone'`、复制键）。"
+  },
   "Announcements": {
-    "source": "35c177cf7f",
-    "text": "每个事件对应的屏幕阅读器文本。文本由 provider 的实时区域播报（移动会在拖拽停留 500 ms 后播报）；`undefined` 把该事件交给下一个来源（先是集成提供的文本，例如可排序列表的位置，然后是默认文本）；`''` 什么都不播报。拿起时找到的目标不会播报移动：此时还没有任何东西移动。"
+    "source": "08ba8bd127",
+    "text": "给屏幕阅读器的文本。返回 `undefined` 使用内置文本，返回 `''` 则不播报。`context` 包含可排序列表的内置文本所播报的位置。"
   },
   "Announcements.onDragResume": {
     "source": "d4806359e7",
     "text": "`onBeforeDrop` 返回了 `'continue'`：拖拽继续。"
+  },
+  "Announcer": {
+    "source": "35562b8590",
+    "text": "某个集成（可排序列表）的文本，以及它为 provider 自身的文本所知道的上下文。"
   },
   "KeyboardOptions.step": {
     "source": "66a729c31a",
@@ -100,8 +128,8 @@
     "text": "浮层组件的 props，用于 `defineProps<OverlayProps>()`。\n\n组件渲染在浮层盒子内部，盒子跟随位置的尺寸（`overlayFit: 'slot'`），并在放置时以动画方式变化。给根元素设置 `width: 100%`（以及 `height: 100%`）以跟随这个尺寸；固定尺寸会保持组件自己的尺寸。"
   },
   "DragPreviewProps": {
-    "source": "c757ceda27",
-    "text": "`DragPreview` 的 props：某一个被拖拽项的默认克隆，用于自行布局多个项的自定义浮层（`overlay` 组件或 provider 的 `#overlay` 插槽），例如 `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`。\n\n克隆在拿起时生成：抓起的项，以及按放置顺序与它相邻的最多四个其他项（当时已渲染的那些）。对于其他任何项，`DragPreview` 渲染它的默认插槽，或者什么都不渲染。克隆会填满这个元素，元素的尺寸是该项在拿起时的尺寸，以内联样式设置：用 `style` 修改它（`:style=\"{ width: '100%', height: '100%' }\"`），`style` 会透传；class 无法覆盖它。\n\n在可排序的多项拖拽中（`multiple: 'group'` 或 `'gaps'`），抓起的项以外的项的预览会随放置落到该项的位置上（取消时回到原处），无论布局把它放在哪里：途中会撤销用 `transform` 旋转或缩放的包裹元素，它的尺寸以宽度和高度的方式执行动画。为预览本身设置样式（圆角、阴影）：它的包裹元素留在盒子里。没有克隆的项则改为淡入。"
+    "source": "5ca62fbc15",
+    "text": "`DragPreview` 的 props：某一个被拖拽项的默认克隆，用于自行布局多个项的自定义浮层（`overlay` 组件或 provider 的 `#overlay` 插槽），例如 `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`。\n\n克隆在拿起时生成：抓起的项，以及按放置顺序与它相邻的最多四个其他项（当时已渲染的那些）。对于其他任何项，`DragPreview` 把它的默认插槽渲染在一个像克隆一样接受 `class` 和 `style` 的元素中；没有默认插槽时什么都不渲染。克隆会填满这个元素，元素的尺寸是该项在拿起时的尺寸，以内联样式设置：用 `style` 修改它（`:style=\"{ width: '100%', height: '100%' }\"`），`style` 会透传；class 无法覆盖它。\n\n在可排序的多项拖拽中（`multiple: 'group'` 或 `'gaps'`），抓起的项以外的项的预览会随放置落到该项的位置上（取消时回到原处），无论布局把它放在哪里：途中会撤销用 `transform` 旋转或缩放的包裹元素，它的尺寸以宽度和高度的方式执行动画。为预览本身设置样式（圆角、阴影）：它的包裹元素留在盒子里。没有克隆的项则改为淡入。"
   },
   "DragPreviewProps.id": {
     "source": "220d6dd174",

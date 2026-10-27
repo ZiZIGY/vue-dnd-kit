@@ -52,8 +52,8 @@
     "text": "指示器所依附的项；在空列表中为 `null`。"
   },
   "SortableIndicator.side": {
-    "source": "616c01270f",
-    "text": "插入线位于 `key` 的哪一侧。`'inside'`（树）：悬停在一个接收被拖拽节点的行的中间，放置会进入这一行，成为它的第一个子节点。"
+    "source": "14e5fe3167",
+    "text": "插入线位于 `key` 的哪一侧。`'inside'`（树）：悬停在一个接收被拖拽节点的行的中间，放置会进入这一行，成为它的第一个子节点。`'swap'`（`behavior: 'swap'`）：`key` 是放置时与之交换的项；标记该项本身。"
   },
   "SortableIndicator.depth": {
     "source": "d3a6c5b55c",

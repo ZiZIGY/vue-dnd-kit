@@ -1,11 +1,39 @@
 {
+  "AnnouncedPosition": {
+    "source": "957ec8f6ce",
+    "text": "Ein Platz in einer sortierbaren Liste oder einem Baum (unter seinen sichtbaren Zeilen): `index` zählt ab 0, von `length`."
+  },
+  "AnnouncementContext": {
+    "source": "884af39ecf",
+    "text": "Worum es in einer Ansage geht, über das Event hinaus: für eigene Texte (eine andere Sprache, andere Worte), die sagen, was die eingebauten sagen."
+  },
+  "AnnouncementContext.position": {
+    "source": "fa8542b2eb",
+    "text": "In einer sortierbaren Liste oder einem Baum: wo die gezogenen Elemente sind. Am Anfang, wo sie aufgenommen wurden; während der Bewegung, wo sie landen würden (keine außerhalb der Listen); am Ende, wo sie gelandet sind oder wohin sie zurückgekehrt sind."
+  },
+  "AnnouncementContext.partner": {
+    "source": "b1b3ed75df",
+    "text": "Ein Tausch: das Element, mit dem das gezogene getauscht wurde, und wo es jetzt ist."
+  },
+  "AnnouncementContext.count": {
+    "source": "cbc27f6283",
+    "text": "Wie viele Elemente der Drag trägt."
+  },
+  "AnnouncementContext.copy": {
+    "source": "000515c91f",
+    "text": "Der Drag kopiert (`group.pull: 'clone'`, die Kopier-Taste)."
+  },
   "Announcements": {
-    "source": "35c177cf7f",
-    "text": "Screenreader-Texte pro Event. Ein Text wird von der Live-Region des Providers gesprochen (Bewegungen, sobald der Drag 500 ms ruht); `undefined` überlässt das Event der nächsten Quelle (den Texten von Integrationen wie den Positionen in sortierbaren Listen, dann den Standardtexten); `''` sagt nichts. Eine Bewegung wird für das Ziel, das beim Aufnehmen gefunden wird, nicht angesagt: Es hat sich noch nichts bewegt."
+    "source": "08ba8bd127",
+    "text": "Texte für Screenreader. Gib `undefined` für den eingebauten Text zurück, `''` für keinen. `context` enthält die Positionen, die die eingebauten Texte sortierbarer Listen sprechen."
   },
   "Announcements.onDragResume": {
     "source": "d4806359e7",
     "text": "`onBeforeDrop` hat `'continue'` geantwortet: Der Drag geht weiter."
+  },
+  "Announcer": {
+    "source": "35562b8590",
+    "text": "Die Texte einer Integration (sortierbare Listen) und der Kontext, den sie für die eigenen Texte des Providers kennt."
   },
   "KeyboardOptions.step": {
     "source": "66a729c31a",
@@ -100,8 +128,8 @@
     "text": "Props einer Overlay-Komponente, für `defineProps<OverlayProps>()`.\n\nDie Komponente rendert innerhalb der Overlay-Box, die der Größe des Slots folgt (`overlayFit: 'slot'`) und diese beim Drop animiert. Gib dem Root-Element `width: 100%` (und `height: 100%`), damit es dieser Größe folgt; mit einer festen Größe behält die Komponente ihre eigene."
   },
   "DragPreviewProps": {
-    "source": "c757ceda27",
-    "text": "Props von `DragPreview`: der Standardklon eines gezogenen Elements, für eigene Overlays (eine `overlay`-Komponente oder den Slot `#overlay` des Providers), die mehrere Elemente selbst anordnen, z. B. `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`.\n\nKlone werden beim Aufnehmen erstellt: vom gegriffenen Element und von bis zu vier weiteren, die in Drop-Reihenfolge daneben liegen (denen, die zu diesem Zeitpunkt gerendert sind). Für jedes andere Element rendert `DragPreview` seinen Default-Slot oder nichts. Der Klon füllt das DOM-Element aus, das beim Aufnehmen die Größe des Elements bekommt, inline gesetzt: Ändere sie mit `style` (`:style=\"{ width: '100%', height: '100%' }\"`), das durchgereicht wird; eine Klasse kann sie nicht überschreiben.\n\nBei einem sortierbaren Multi-Drag (`multiple: 'group'` oder `'gaps'`) landet die Vorschau eines anderen Elements als des gegriffenen mit dem Drop im Slot dieses Elements (bei einem Abbruch wieder auf seinem Platz), von wo auch immer das Layout sie hingesetzt hat: Mit `transform` gedrehte oder skalierte Wrapper werden unterwegs rückgängig gemacht, ihre Größe wird als Breite und Höhe animiert. Style die Vorschau selbst (Ecken, Schatten): Ihre Wrapper bleiben in der Box. Elemente ohne Klon werden stattdessen eingeblendet."
+    "source": "5ca62fbc15",
+    "text": "Props von `DragPreview`: der Standardklon eines gezogenen Elements, für eigene Overlays (eine `overlay`-Komponente oder den Slot `#overlay` des Providers), die mehrere Elemente selbst anordnen, z. B. `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`.\n\nKlone werden beim Aufnehmen erstellt: vom gegriffenen Element und von bis zu vier weiteren, die in Drop-Reihenfolge daneben liegen (denen, die zu diesem Zeitpunkt gerendert sind). Für jedes andere Element rendert `DragPreview` seinen Default-Slot in einem DOM-Element, das `class` und `style` so annimmt wie das eines Klons, oder nichts, wenn es keinen gibt. Der Klon füllt das DOM-Element aus, das beim Aufnehmen die Größe des Elements bekommt, inline gesetzt: Ändere sie mit `style` (`:style=\"{ width: '100%', height: '100%' }\"`), das durchgereicht wird; eine Klasse kann sie nicht überschreiben.\n\nBei einem sortierbaren Multi-Drag (`multiple: 'group'` oder `'gaps'`) landet die Vorschau eines anderen Elements als des gegriffenen mit dem Drop im Slot dieses Elements (bei einem Abbruch wieder auf seinem Platz), von wo auch immer das Layout sie hingesetzt hat: Mit `transform` gedrehte oder skalierte Wrapper werden unterwegs rückgängig gemacht, ihre Größe wird als Breite und Höhe animiert. Style die Vorschau selbst (Ecken, Schatten): Ihre Wrapper bleiben in der Box. Elemente ohne Klon werden stattdessen eingeblendet."
   },
   "DragPreviewProps.id": {
     "source": "220d6dd174",

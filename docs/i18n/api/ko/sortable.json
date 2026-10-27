@@ -52,8 +52,8 @@
     "text": "인디케이터가 붙은 항목. 빈 리스트에서는 `null`."
   },
   "SortableIndicator.side": {
-    "source": "616c01270f",
-    "text": "선이 들어갈 `key`의 방향. `'inside'`(트리): 드래그 중인 노드를 받아들이는 행의 가운데에 포인터가 있으며, 드롭이 그 행 안의 첫 번째 자식으로 들어갑니다."
+    "source": "14e5fe3167",
+    "text": "선이 들어갈 `key`의 방향. `'inside'`(트리): 드래그 중인 노드를 받아들이는 행의 가운데에 포인터가 있으며, 드롭이 그 행 안의 첫 번째 자식으로 들어갑니다. `'swap'`(`behavior: 'swap'`): `key`는 드롭이 자리를 맞바꿀 항목입니다. 항목 자체를 표시하세요."
   },
   "SortableIndicator.depth": {
     "source": "d3a6c5b55c",

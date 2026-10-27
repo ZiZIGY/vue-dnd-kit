@@ -47,6 +47,10 @@
     "source": "226682e4e6",
     "text": "Dónde está la esquina superior izquierda de la caja arrastrada dentro de `over`, desde el borde de su padding y con su scroll: el `left`/`top` que coloca un ítem con posición absoluta donde se soltó (una nota en un tablero). `null` cuando no hay nada debajo. De la caja del overlay, o del propio elemento con `overlay: false`."
   },
+  "DnDEvent.mode": {
+    "source": "bdec70ffdc",
+    "text": "Lo que haría un drop: `'move'`, `'copy'` (el `pull: 'clone'` de una lista, o la tecla de copia mantenida sobre ítems cuya lista puede hacer `clone`), `'swap'` o `'insert'`. Un destino de drop simple lo lee para copiar en lugar de mover."
+  },
   "DnDEvent.source": {
     "source": "d69f88797f",
     "text": "Presente cuando los ítems arrastrados vienen de una lista ordenable."
@@ -94,5 +98,9 @@
   "DnDState": {
     "source": "60baeb2f00",
     "text": "El estado del arrastre termina cuando se decide el drop: `active`, `over` y `pointer` pasan a valer `null` (y los droppables dejan de aceptar) mientras el overlay todavía se anima hasta su sitio (`status` sigue en `'dropping'`). La UI derivada nunca mezcla el arrastre anterior con los datos nuevos. Mientras decide un `onBeforeDrop` asíncrono, el estado se conserva como estaba al soltar, pero la página sale del modo de arrastre: vuelven su propio cursor y la selección de texto (un diálogo de confirmación funciona con normalidad), y el overlay espera donde se soltó."
+  },
+  "DnDState.position": {
+    "source": "4795780b8f",
+    "text": "Dónde está la esquina superior izquierda de la caja arrastrada dentro de `over`, en vivo: `DnDEvent.position` en cada movimiento. `null` si no hay nada debajo. Un componente de overlay lo lee para mostrar dónde aterrizaría (una hora en un calendario)."
   }
 }

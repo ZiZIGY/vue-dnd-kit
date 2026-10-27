@@ -32,7 +32,7 @@
     "text": "Posição do ponteiro no início do arraste."
   },
   "ModifierArgs.containerRect": {
-    "source": "2a3d109ccb",
-    "text": "Contêiner da lista ordenável (ou elemento pai) do item arrastado, medido no início do arraste."
+    "source": "ce6a1ebd7e",
+    "text": "Contêiner da lista ordenável (ou elemento pai) do item arrastado, onde ele está agora (acompanha a rolagem)."
   }
 }

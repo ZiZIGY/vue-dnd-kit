@@ -32,7 +32,7 @@
     "text": "拖拽开始时的指针位置。"
   },
   "ModifierArgs.containerRect": {
-    "source": "2a3d109ccb",
-    "text": "被拖拽项所在的可排序列表容器（或父元素），在拖拽开始时测量。"
+    "source": "ce6a1ebd7e",
+    "text": "被拖拽项所在的可排序列表容器（或父元素）的当前位置（它会跟随滚动）。"
   }
 }

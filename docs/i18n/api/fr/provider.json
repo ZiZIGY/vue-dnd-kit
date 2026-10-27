@@ -1,11 +1,39 @@
 {
+  "AnnouncedPosition": {
+    "source": "957ec8f6ce",
+    "text": "Une place dans une liste ou un arbre triable (ses lignes visibles) : `index` compte à partir de 0, sur un total de `length`."
+  },
+  "AnnouncementContext": {
+    "source": "884af39ecf",
+    "text": "Ce dont parle une annonce, au-delà de l'événement : pour vos propres textes (une autre langue, d'autres mots) qui disent ce que disent les textes intégrés."
+  },
+  "AnnouncementContext.position": {
+    "source": "fa8542b2eb",
+    "text": "Dans une liste ou un arbre triable : où se trouvent les items glissés. Au début, là où ils ont été saisis ; pendant le déplacement, là où ils atterriraient (aucune position en dehors des listes) ; à la fin, là où ils ont atterri, ou là où ils sont revenus."
+  },
+  "AnnouncementContext.partner": {
+    "source": "b1b3ed75df",
+    "text": "Un échange : l'item échangé avec l'item glissé, et où il se trouve maintenant."
+  },
+  "AnnouncementContext.count": {
+    "source": "cbc27f6283",
+    "text": "Combien d'items le glissement transporte."
+  },
+  "AnnouncementContext.copy": {
+    "source": "000515c91f",
+    "text": "Le glissement copie (`group.pull: 'clone'`, la touche de copie)."
+  },
   "Announcements": {
-    "source": "35c177cf7f",
-    "text": "Les textes pour lecteurs d'écran, par événement. Un texte est énoncé par la région live du provider (les déplacements, une fois que le glissement est resté immobile 500 ms) ; `undefined` laisse l'événement à la source suivante (les textes des intégrations, comme les positions des listes triables, puis ceux par défaut) ; `''` ne dit rien. Aucun déplacement n'est annoncé pour la cible trouvée à la saisie : rien n'a encore bougé."
+    "source": "08ba8bd127",
+    "text": "Les textes pour les lecteurs d'écran. Renvoyez `undefined` pour le texte intégré, `''` pour aucun texte. `context` contient les positions qu'énoncent les textes intégrés des listes triables."
   },
   "Announcements.onDragResume": {
     "source": "d4806359e7",
     "text": "`onBeforeDrop` a répondu `'continue'` : le glissement continue."
+  },
+  "Announcer": {
+    "source": "35562b8590",
+    "text": "Les textes d'une intégration (les listes triables), et le contexte qu'elle connaît pour les textes propres au provider."
   },
   "KeyboardOptions.step": {
     "source": "66a729c31a",
@@ -100,8 +128,8 @@
     "text": "Props d'un composant d'overlay, pour `defineProps<OverlayProps>()`.\n\nLe composant est rendu à l'intérieur de la boîte de l'overlay, qui suit la taille de l'emplacement (`overlayFit: 'slot'`) et l'anime au dépôt. Donnez à la racine `width: 100%` (et `height: 100%`) pour suivre cette taille ; une taille fixe garde celle du composant."
   },
   "DragPreviewProps": {
-    "source": "c757ceda27",
-    "text": "Props de `DragPreview` : le clone par défaut d'un item glissé, pour les overlays personnalisés (un composant `overlay` ou le slot `#overlay` du provider) qui disposent eux-mêmes plusieurs items, par exemple `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`.\n\nLes clones sont pris à la saisie : celui de l'item saisi et ceux de quatre autres au plus, voisins dans l'ordre du dépôt (ceux qui sont rendus à ce moment-là). Pour tout autre item, `DragPreview` rend son slot par défaut, ou rien. Le clone remplit l'élément, qui reçoit à la saisie la taille de l'item, définie en style inline : changez-la avec `style` (`:style=\"{ width: '100%', height: '100%' }\"`), qui est transmis ; une classe ne peut pas la surcharger.\n\nDans un multi-drag triable (`multiple: 'group'` ou `'gaps'`), l'aperçu d'un item autre que celui qui a été saisi atterrit avec le dépôt sur l'emplacement de cet item (et revient à sa place en cas d'annulation), depuis l'endroit où la mise en page l'a placé : les conteneurs tournés ou mis à l'échelle avec `transform` sont neutralisés en chemin, et sa taille s'anime en largeur et en hauteur. Stylisez l'aperçu lui-même (coins, ombre) : ses conteneurs restent dans la boîte. Les items sans clone apparaissent en fondu à la place."
+    "source": "5ca62fbc15",
+    "text": "Props de `DragPreview` : le clone par défaut d'un item glissé, pour les overlays personnalisés (un composant `overlay` ou le slot `#overlay` du provider) qui disposent eux-mêmes plusieurs items, par exemple `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`.\n\nLes clones sont pris à la saisie : celui de l'item saisi et ceux de quatre autres au plus, voisins dans l'ordre du dépôt (ceux qui sont rendus à ce moment-là). Pour tout autre item, `DragPreview` rend son slot par défaut dans un élément qui reçoit `class` et `style` comme celui d'un clone, ou rien en l'absence de slot. Le clone remplit l'élément, qui reçoit à la saisie la taille de l'item, définie en style inline : changez-la avec `style` (`:style=\"{ width: '100%', height: '100%' }\"`), qui est transmis ; une classe ne peut pas la surcharger.\n\nDans un multi-drag triable (`multiple: 'group'` ou `'gaps'`), l'aperçu d'un item autre que celui qui a été saisi atterrit avec le dépôt sur l'emplacement de cet item (et revient à sa place en cas d'annulation), depuis l'endroit où la mise en page l'a placé : les conteneurs tournés ou mis à l'échelle avec `transform` sont neutralisés en chemin, et sa taille s'anime en largeur et en hauteur. Stylisez l'aperçu lui-même (coins, ombre) : ses conteneurs restent dans la boîte. Les items sans clone apparaissent en fondu à la place."
   },
   "DragPreviewProps.id": {
     "source": "220d6dd174",

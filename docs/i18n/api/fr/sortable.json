@@ -52,8 +52,8 @@
     "text": "Item auquel l'indicateur est rattaché ; `null` dans une liste vide."
   },
   "SortableIndicator.side": {
-    "source": "616c01270f",
-    "text": "Côté de `key` où va la ligne. `'inside'` (arbres) : le milieu d'une ligne qui accepte les nœuds glissés est survolé, et le dépôt va à l'intérieur, comme son premier enfant."
+    "source": "14e5fe3167",
+    "text": "Côté de `key` où va la ligne. `'inside'` (arbres) : le milieu d'une ligne qui accepte les nœuds glissés est survolé, et le dépôt va à l'intérieur, comme son premier enfant. `'swap'` (`behavior: 'swap'`) : `key` est l'item avec lequel le dépôt fait l'échange ; marquez l'item lui-même."
   },
   "SortableIndicator.depth": {
     "source": "d3a6c5b55c",

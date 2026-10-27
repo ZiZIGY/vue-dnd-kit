@@ -52,7 +52,7 @@
     "text": "インジケーターが付くアイテム。空のリストでは `null`。"
   },
   "SortableIndicator.side": {
-    "source": "616c01270f",
+    "source": "14e5fe3167",
     "text": "ラインが `key` のどちら側に入るか。`'inside'`（ツリー）：ドラッグ中のノードを受け入れる行の中央にホバーしていて、ドロップはその行の中に、最初の子として入ります。"
   },
   "SortableIndicator.depth": {

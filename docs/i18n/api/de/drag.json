@@ -47,6 +47,10 @@
     "source": "226682e4e6",
     "text": "Wo die linke obere Ecke der gezogenen Box in `over` liegt, gemessen von dessen Padding-Kante und mit dessen Scrollposition: das `left`/`top`, das ein absolut positioniertes Element dorthin setzt, wo es abgelegt wurde (eine Notiz auf einem Board). `null` über nichts. Bezieht sich auf die Overlay-Box oder, mit `overlay: false`, auf das Element selbst."
   },
+  "DnDEvent.mode": {
+    "source": "bdec70ffdc",
+    "text": "Was ein Drop tun würde: `'move'`, `'copy'` (`pull: 'clone'` einer Liste oder die Kopier-Taste, gehalten über Elementen, deren Liste `clone` kann), `'swap'` oder `'insert'`. Ein einfaches Drop-Ziel liest es, um zu kopieren statt zu verschieben."
+  },
   "DnDEvent.source": {
     "source": "d69f88797f",
     "text": "Vorhanden, wenn die gezogenen Elemente aus einer sortierbaren Liste kommen."
@@ -94,5 +98,9 @@
   "DnDState": {
     "source": "60baeb2f00",
     "text": "Der Zustand des Drags endet, wenn über den Drop entschieden ist: `active`, `over` und `pointer` sind `null` (und Drop-Zonen nehmen nichts mehr an), während das Overlay noch an seinen Platz animiert (`status` bleibt `'dropping'`). Abgeleitete UI mischt nie den alten Drag mit den neuen Daten. Während ein asynchrones `onBeforeDrop` entscheidet, bleibt der Zustand so, wie er beim Loslassen war, aber die Seite ist nicht mehr im Drag-Modus: Ihr eigener Cursor und die Textauswahl sind zurück (ein Bestätigungsdialog funktioniert normal), und das Overlay wartet dort, wo es abgelegt wurde."
+  },
+  "DnDState.position": {
+    "source": "4795780b8f",
+    "text": "Wo die linke obere Ecke der gezogenen Box gerade in `over` liegt, live: `DnDEvent.position` bei jeder Bewegung. `null` über nichts. Eine Overlay-Komponente liest es, um zu zeigen, wo sie landen würde (eine Uhrzeit in einem Kalender)."
   }
 }
