@@ -113,9 +113,10 @@ export interface SortableIndicator {
   key: Key | null;
   /**
    * Side of `key` the line goes on. `'inside'` (trees): the middle of a row that takes
-   * the dragged nodes is hovered, the drop goes into it as its first child.
+   * the dragged nodes is hovered, the drop goes into it as its first child. `'swap'`
+   * (`behavior: 'swap'`): `key` is the item the drop exchanges with; mark the item itself.
    */
-  side: 'before' | 'after' | 'inside';
+  side: 'before' | 'after' | 'inside' | 'swap';
   /** Trees: depth the dropped nodes get (roots are 0), e.g. to indent the line. */
   depth?: number;
   /** Trees: parent the dropped nodes get, `null` at the root level. */

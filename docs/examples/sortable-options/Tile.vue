@@ -4,7 +4,8 @@ import { makeSortableItem } from '@vue-dnd-kit/core';
 
 const props = defineProps<{ tile: { id: string; hue: number }; across: boolean }>();
 const el = useTemplateRef<HTMLElement>('el');
-// With `placeholder: 'indicator'`: the drop line, while it is next to this tile.
+// With `placeholder: 'indicator'`: the drop line while it is next to this tile, or, in a list
+// that swaps, `side: 'swap'` on the tile the drop exchanges with.
 const { indicator } = makeSortableItem(el, { item: () => props.tile });
 </script>
 
@@ -54,6 +55,11 @@ const { indicator } = makeSortableItem(el, { item: () => props.tile });
   height: 22px;
   border-radius: 7px;
   background: hsl(var(--hue) 70% 55%);
+}
+
+/* `behavior: 'swap'`: the tile the drop exchanges with. */
+.tile.drop-swap {
+  box-shadow: 0 0 0 2px #42b883;
 }
 
 /* The drop line: above or below in a column, left or right across. */

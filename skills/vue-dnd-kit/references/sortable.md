@@ -238,7 +238,9 @@ const { indicator } = makeSortableItem(el, { item: () => props.row });
 </style>
 ```
 
-`indicator` is `{ list, index, key, side: 'before' | 'after' | 'inside', depth?, parentKey? }`.
+`indicator` is `{ list, index, key, side: 'before' | 'after' | 'inside' | 'swap', depth?, parentKey? }`.
+In a list with `behavior: 'swap'`, the indicator marks the item the drop exchanges with
+(`side: 'swap'`): outline that item instead of drawing a line.
 `key` is `null` in an empty list (show the line in the list instead). Dropping outside
 cancels by default.
 

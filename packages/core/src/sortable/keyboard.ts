@@ -14,10 +14,10 @@ import { isFocusLost } from '../utils/dom';
 import { keysOf, type GroupContext, type Session } from './context';
 import type { ListEntry } from './entry';
 import { nextRowIndex, pickAdjacent, projectIndex } from './projection';
-import { accepts } from './accept';
+import { accepts, isSwapping } from './accept';
 import { collect, viewOf } from './block';
 import { keepSlotHome, moveActive, returnToOrigin } from './slot';
-import { indicateAt, setIndicator } from './indicator';
+import { indicateAt, markSwapAt, setIndicator } from './indicator';
 import { intoPoint } from './combine';
 import { enters } from './modes/mode';
 
@@ -139,6 +139,23 @@ const keyboardIndicator = async (
 ): Promise<Coordinates | undefined> => {
   const strategy = list.strategy();
   const step = strategy === 'vertical' ? direction.y : direction.x;
+  // A list that swaps: the mark goes from item to item (by rows in grids); back on the
+  // dragged item, there is none.
+  if (isSwapping(g, current, list)) {
+    const keys = keysOf(list);
+    const shown = g.indicator.value;
+    const from = shown?.list === list.id && shown.side === 'swap' ? shown.index : keys.indexOf(current.slot);
+    const element = from < 0 ? null : g.items.get(keys[from]!)?.();
+    let next: number | null = null;
+    if (strategy === 'grid' && direction.y && element?.isConnected) {
+      const others = collect(g, list).filter((item) => item.index !== from);
+      next = nextRowIndex(others, getLayoutRect(element), direction.y > 0 ? 1 : -1);
+    } else if (step && from >= 0) {
+      next = from + step;
+    }
+    if (next !== null && next >= 0 && next < keys.length) return markSwapAt(g, list, keys[next]!);
+    if (step || strategy === 'grid') return undefined;
+  }
   if (!step) {
     const other = adjacentList(g, list, active, direction);
     if (!other || !enters(g, current, other)) return undefined;

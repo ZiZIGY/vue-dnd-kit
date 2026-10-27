@@ -89,7 +89,23 @@ const computeResult = (
   const drafts = new Map<ListEntry, Key[]>();
   for (const list of lists.values()) drafts.set(list, keysOf(list));
   let target = listOf(g, current.list);
-  if (marker) {
+  if (marker?.side === 'swap') {
+    // An indicator list that swaps: the drop exchanges the item with the marked one.
+    const own = listOf(g, current.origin.list);
+    const list = lists.get(marker.list);
+    if (own && list && marker.key != null) {
+      const a = [...drafts.get(own)!];
+      const b = list === own ? a : [...drafts.get(list)!];
+      const i = a.indexOf(current.activeKey);
+      const j = b.indexOf(marker.key);
+      a[i] = marker.key;
+      b[j] = current.activeKey;
+      drafts.set(own, a);
+      drafts.set(list, b);
+      current.swap = marker.key;
+      target = list;
+    }
+  } else if (marker) {
     const list = lists.get(marker.list);
     if (list) {
       if (target && target !== list) drafts.set(target, drafts.get(target)!.filter((key) => key !== slot));
@@ -220,6 +236,8 @@ const withPartial = (value: BeforeDropResult, partial: Key[] | undefined): Befor
 export const resume = (g: GroupContext) => {
   const current = g.session.value;
   if (!current) return;
+  // An exchange that only the drop made (an indicator list) is undone with it.
+  if (current.marker?.side === 'swap') current.swap = null;
   current.result = null;
   current.marker = null;
   current.removed = false;

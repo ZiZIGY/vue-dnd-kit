@@ -455,6 +455,58 @@ describe('swap between two lists of a group', () => {
     });
   });
 
+  describe("with placeholder: 'indicator'", () => {
+    const INDICATOR = { placeholder: 'indicator' } as const;
+
+    it('nothing moves while dragging; the drop exchanges with the marked item, in the list and across', async () => {
+      const container = mountPair(INDICATOR, INDICATOR);
+      await nextTick();
+      manager.start('a1', at('a', 0), 'pointer');
+      await nextTick();
+      await moveTo(at('a', 2));
+      expect(keys(container, 'a')).toEqual(['a1', 'a2', 'a3']);
+      await moveTo(at('b', 1));
+      expect(keys(container, 'b')).toEqual(['b1', 'b2', 'b3']);
+      await drop();
+      expect(data.a!.value.map((item) => item.id)).toEqual(['b2', 'a2', 'a3']);
+      expect(data.b!.value.map((item) => item.id)).toEqual(['b1', 'a1', 'b3']);
+      expect(drops[0]).toMatchObject({
+        mode: 'swap',
+        to: { list: 'b', index: 1 },
+        partner: { key: 'b2', from: { list: 'b', index: 1 }, to: { list: 'a', index: 0 } },
+      });
+    });
+
+    it('back over the dragged item, the mark goes and the drop changes nothing', async () => {
+      mountPair(INDICATOR, INDICATOR);
+      await nextTick();
+      manager.start('a1', at('a', 0), 'pointer');
+      await nextTick();
+      await moveTo(at('a', 2));
+      await moveTo(at('a', 0));
+      await drop();
+      expect(data.a!.value.map((item) => item.id)).toEqual(['a1', 'a2', 'a3']);
+      expect(drops).toHaveLength(0);
+    });
+
+    it('the arrows move the mark from item to item; Space exchanges', async () => {
+      mountPair(INDICATOR, INDICATOR);
+      await nextTick();
+      manager.start('a1', at('a', 0), 'keyboard');
+      await nextTick();
+      for (const key of ['ArrowDown', 'ArrowDown']) {
+        const before = manager.pointer.value;
+        document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+        await vi.waitFor(() => expect(manager.pointer.value).not.toBe(before));
+        await nextTick();
+      }
+      expect(manager.pointer.value).toEqual(at('a', 2));
+      await drop();
+      expect(data.a!.value.map((item) => item.id)).toEqual(['a3', 'a2', 'a1']);
+      expect(drops[0]).toMatchObject({ mode: 'swap', partner: { key: 'a3' } });
+    });
+  });
+
   it("an item the dragged item's list refuses (group.put) is not swapped in; another one is", async () => {
     const container = mountPair({ group: { name: 'pair', put: ({ keys: incoming }) => !incoming.includes('b2') } });
     await nextTick();

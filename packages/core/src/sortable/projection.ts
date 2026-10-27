@@ -278,14 +278,19 @@ export interface SwapArgs {
  * partner sits in the active item's original slot, so hovering it reverts the swap.
  * `partner: undefined` keeps the current state (pointer on the active slot or in a gap).
  */
+/** The item under `pointer`: in its band along the list, anywhere in it in grids. */
+export const hitItem = (strategy: SortableStrategy, pointer: Coordinates, items: ProjectionItem[]) => {
+  const axis = axisOf(strategy);
+  return items.find((item) =>
+    strategy === 'grid' ? containsPoint(item.rect, pointer) : inBand(item.rect, pointer[axis.axis], axis),
+  );
+};
+
 export const projectSwap = ({ strategy, pointer, items, activeKey, partner }: SwapArgs): {
   partner: Key | null | undefined;
   key: Key | null;
 } => {
-  const axis = axisOf(strategy);
-  const hit = items.find((item) =>
-    strategy === 'grid' ? containsPoint(item.rect, pointer) : inBand(item.rect, pointer[axis.axis], axis),
-  );
+  const hit = hitItem(strategy, pointer, items);
   if (!hit || hit.key === activeKey) return { partner: undefined, key: null };
   return { partner: hit.key === partner ? null : hit.key, key: hit.key };
 };
