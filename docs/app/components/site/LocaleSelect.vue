@@ -20,6 +20,9 @@
     LOCALES.map((entry) => ({
       label: entry.name,
       to: switchLocalePath(entry.code),
+      // The path is in that language already: Nuxt UI's links would put an unprefixed one
+      // (the English) back into the current language.
+      locale: false,
       active: entry.code === locale.value,
       icon: entry.code === locale.value ? 'i-lucide-check' : undefined,
       onSelect: () => remember(entry.code),

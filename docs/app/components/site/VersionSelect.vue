@@ -13,8 +13,9 @@
 
   const items = computed<DropdownMenuItem[]>(() => [
     { label: t('version.current'), to: localePath('/docs/getting-started/introduction'), active: current.value === 'v3' },
-    { label: t('version.v2'), to: '/legacy/v2/guide/introduction', active: current.value === 'v2' },
-    { label: t('version.v1'), to: '/legacy/v1/guide/introduction', active: current.value === 'v1' },
+    // English only: Nuxt UI's links would add the current language.
+    { label: t('version.v2'), to: '/legacy/v2/guide/introduction', locale: false, active: current.value === 'v2' },
+    { label: t('version.v1'), to: '/legacy/v1/guide/introduction', locale: false, active: current.value === 'v1' },
   ]);
 </script>
 
