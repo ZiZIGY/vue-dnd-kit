@@ -54,8 +54,14 @@ test.describe('Vuetify on a phone: lists @touch', () => {
     await swipe(finger, start, { x: start.x, y: start.y - 300 });
     await expect.poll(() => windowScrollY(page)).toBeGreaterThan(100);
 
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await expect.poll(() => windowScrollY(page)).toBe(0);
+    // The swipe flings the page: back to the top once the fling has come to rest.
+    await expect
+      .poll(async () => {
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await page.waitForTimeout(150);
+        return windowScrollY(page);
+      })
+      .toBe(0);
     const onHandle = await center(handle(page, 't5'));
     await swipe(finger, onHandle, { x: onHandle.x, y: onHandle.y - 300 });
     await expect.poll(() => windowScrollY(page)).toBeGreaterThan(100);

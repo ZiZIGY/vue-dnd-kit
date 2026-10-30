@@ -99,7 +99,7 @@ export function createPlayer() {
   /** Pick-up text and spot: until the entry really moves there is nothing new to say. */
   let start: { text: string; spot: string | null } | null = null;
 
-  const texts: Announcements = {
+  const texts: Partial<Announcements> = {
     onDragStart: ({ active }) => {
       pending = null;
       const spot = isTrack(active) ? null : position(queue.value, active.id);
@@ -149,7 +149,7 @@ export function createPlayer() {
   const logged = (kind: keyof Announcements) => (event: DnDEvent) => {
     clearTimeout(timer);
     // The announcement types are distinct per kind; the end event is a DnDEvent too.
-    const text = (texts[kind] as (event: DnDEvent) => string | undefined)(event);
+    const text = (texts[kind] as ((event: DnDEvent) => string | undefined) | undefined)?.(event);
     if (!text) return text;
     if (kind === 'onDragOver') {
       timer = setTimeout(() => text !== last && write(kind, text), OVER_DELAY);
@@ -159,7 +159,7 @@ export function createPlayer() {
     return text;
   };
 
-  const announcements: Announcements = {
+  const announcements: Partial<Announcements> = {
     onDragStart: logged('onDragStart'),
     onDragOver: logged('onDragOver'),
     onDragEnd: logged('onDragEnd'),
