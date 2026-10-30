@@ -7,7 +7,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zizigy/vue-dnd-kit.git",
+    "url": "git+https://github.com/ZiZIGY/vue-dnd-kit.git",
     "directory": "packages/nuxt"
   },
   "exports": {
