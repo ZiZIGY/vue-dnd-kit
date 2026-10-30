@@ -1,6 +1,6 @@
 {
-  "packages/core": "3.0.0-beta.0",
-  "packages/actions": "3.0.0-beta.0",
-  "packages/devtools": "3.0.0-beta.0",
-  "packages/nuxt": "3.0.0-beta.0"
+  "packages/core": "3.0.0-beta.1",
+  "packages/actions": "3.0.0-beta.1",
+  "packages/devtools": "3.0.0-beta.1",
+  "packages/nuxt": "3.0.0-beta.1"
 }

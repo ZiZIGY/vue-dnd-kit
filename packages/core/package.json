@@ -1,6 +1,6 @@
 {
   "name": "@vue-dnd-kit/core",
-  "version": "3.0.0-beta.0",
+  "version": "3.0.0-beta.1",
   "description": "Drag and drop for Vue 3: sortable lists, kanban boards, trees, multi-drag and animations out of the box",
   "author": "ZiZIGY",
   "license": "MIT",
