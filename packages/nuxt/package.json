@@ -1,6 +1,6 @@
 {
   "name": "@vue-dnd-kit/nuxt",
-  "version": "3.0.0",
+  "version": "3.0.0-beta.0",
   "description": "Nuxt module for Vue DnD Kit v3: registers DnDProvider and auto-imports the composables and types",
   "author": "ZiZIGY",
   "license": "MIT",
@@ -32,7 +32,6 @@
     "dev": "npm run dev:prepare && nuxt dev playground",
     "dev:build": "nuxt build playground",
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxt prepare playground",
-    "release": "npm run prepack && changelogen --release && npm publish && git push --follow-tags",
     "lint": "eslint .",
     "pretest": "nuxt-module-build prepare",
     "test": "vitest run",
@@ -44,7 +43,7 @@
     "@nuxt/kit": "^4.4.2"
   },
   "peerDependencies": {
-    "@vue-dnd-kit/core": "^3.0.0",
+    "@vue-dnd-kit/core": "^3.0.0-0",
     "nuxt": "^4.0.0"
   },
   "devDependencies": {
@@ -54,7 +53,6 @@
     "@nuxt/schema": "^4.4.2",
     "@nuxt/test-utils": "^4.0.0",
     "@types/node": "latest",
-    "changelogen": "^0.6.2",
     "eslint": "^10.1.0",
     "nuxt": "^4.4.2",
     "typescript": "~6.0.2",

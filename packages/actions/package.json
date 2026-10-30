@@ -1,6 +1,6 @@
 {
   "name": "@vue-dnd-kit/actions",
-  "version": "3.0.0",
+  "version": "3.0.0-beta.0",
   "description": "Programmatic drags for Vue DnD Kit: move items from buttons, menus and tests, with the normal animations and drop pipeline",
   "author": "ZiZIGY",
   "license": "MIT",
@@ -58,7 +58,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "peerDependencies": {
-    "@vue-dnd-kit/core": "^3.0.0",
+    "@vue-dnd-kit/core": "^3.0.0-0",
     "vue": "^3.5.0"
   },
   "devDependencies": {

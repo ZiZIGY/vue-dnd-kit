@@ -2807,7 +2807,7 @@ bundle-name@^4.1.0:
   dependencies:
     run-applescript "^7.0.0"
 
-c12@^3.0.4, c12@^3.3.3, c12@^3.3.4:
+c12@^3.3.3, c12@^3.3.4:
   version "3.3.4"
   resolved "https://registry.npmjs.org/c12/-/c12-3.3.4.tgz#1253a5faf8b61244884d42459b4a6412571fe9f3"
   integrity sha512-cM0ApFQSBXuourJejzwv/AuPRvAxordTyParRVcHjjtXirtkzM0uK2L9TTn9s0cXZbG7E55jCivRQzoxYmRAlA==
@@ -2854,25 +2854,6 @@ change-case@^5.4.4:
   version "5.4.4"
   resolved "https://registry.npmjs.org/change-case/-/change-case-5.4.4.tgz#0d52b507d8fb8f204343432381d1a6d7bff97a02"
   integrity sha512-HRQyTk2/YPEkt9TnUPbOpr64Uw3KOicFWPVBb+xiHvd6eBx/qPr9xqfBFDT8P2vWsvvz4jbEkfDe71W3VyNu2w==
-
-changelogen@^0.6.2:
-  version "0.6.2"
-  resolved "https://registry.npmjs.org/changelogen/-/changelogen-0.6.2.tgz#53161a6d83a20027e0186c92af9392dfd4f14ae9"
-  integrity sha512-QtC7+r9BxoUm+XDAwhLbz3CgU134J1ytfE3iCpLpA4KFzX2P1e6s21RrWDwUBzfx66b1Rv+6lOA2nS2btprd+A==
-  dependencies:
-    c12 "^3.0.4"
-    confbox "^0.2.2"
-    consola "^3.4.2"
-    convert-gitmoji "^0.1.5"
-    mri "^1.2.0"
-    node-fetch-native "^1.6.6"
-    ofetch "^1.4.1"
-    open "^10.1.2"
-    pathe "^2.0.3"
-    pkg-types "^2.2.0"
-    scule "^1.3.0"
-    semver "^7.7.2"
-    std-env "^3.9.0"
 
 chokidar@^4.0.3:
   version "4.0.3"
@@ -2993,11 +2974,6 @@ consola@^3.2.3, consola@^3.4.2:
   version "3.4.2"
   resolved "https://registry.npmjs.org/consola/-/consola-3.4.2.tgz#5af110145397bb67afdab77013fdc34cae590ea7"
   integrity sha512-5IKcdX0nnYavi6G7TtOhwkYzyjfJlatbjMjuLSfE2kYT5pMDOilZ4OvMhi637CcDICTmz3wARPoyhqyX1Y+XvA==
-
-convert-gitmoji@^0.1.5:
-  version "0.1.5"
-  resolved "https://registry.npmjs.org/convert-gitmoji/-/convert-gitmoji-0.1.5.tgz#82ad633b29243acd19e683f349d94854fe3423d9"
-  integrity sha512-4wqOafJdk2tqZC++cjcbGcaJ13BZ3kwldf06PTiAQRAB76Z1KJwZNL1SaRZMi2w1FM9RYTgZ6QErS8NUl/GBmQ==
 
 convert-source-map@^2.0.0:
   version "2.0.0"
@@ -4707,11 +4683,6 @@ mocked-exports@^0.1.1:
   resolved "https://registry.npmjs.org/mocked-exports/-/mocked-exports-0.1.1.tgz#6916efea9a9dd0f4abd6a0a72526f56a76c966ea"
   integrity sha512-aF7yRQr/Q0O2/4pIXm6PZ5G+jAd7QS4Yu8m+WEeEHGnbo+7mE36CbLSDQiXYV8bVL3NfmdeqPJct0tUlnjVSnA==
 
-mri@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.npmjs.org/mri/-/mri-1.2.0.tgz#6721480fec2a11a4889861115a48b6cbe7cc8f0b"
-  integrity sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==
-
 mrmime@^2.0.0:
   version "2.0.1"
   resolved "https://registry.npmjs.org/mrmime/-/mrmime-2.0.1.tgz#bc3e87f7987853a54c9850eeb1f1078cd44adddc"
@@ -4833,7 +4804,7 @@ node-addon-api@^7.0.0:
   resolved "https://registry.npmjs.org/node-addon-api/-/node-addon-api-7.1.1.tgz#1aba6693b0f255258a049d621329329322aad558"
   integrity sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ==
 
-node-fetch-native@^1.6.6, node-fetch-native@^1.6.7:
+node-fetch-native@^1.6.7:
   version "1.6.7"
   resolved "https://registry.npmjs.org/node-fetch-native/-/node-fetch-native-1.6.7.tgz#9d09ca63066cc48423211ed4caf5d70075d76a71"
   integrity sha512-g9yhqoedzIUm0nTnTqAQvueMPVOuIY16bqgAJJC8XOOubYFNwz6IER9qs0Gq2Xd0+CecCKFjtdDTMA4u4xG06Q==
@@ -4985,7 +4956,7 @@ obug@^2.1.1:
   resolved "https://registry.npmjs.org/obug/-/obug-2.1.1.tgz#2cba74ff241beb77d63055ddf4cd1e9f90b538be"
   integrity sha512-uTqF9MuPraAQ+IsnPf366RG4cP9RtUi7MLO1N3KEc+wb0a6yKpeL0lmk2IB1jY5KHPAlTc6T/JRdC/YqxHNwkQ==
 
-ofetch@^1.4.1, ofetch@^1.5.1:
+ofetch@^1.5.1:
   version "1.5.1"
   resolved "https://registry.npmjs.org/ofetch/-/ofetch-1.5.1.tgz#5c43cc56e03398b273014957060344254505c5c7"
   integrity sha512-2W4oUZlVaqAPAil6FUg/difl6YhqhUR7x2eZY4bQCko22UXg3hptq9KLQdqFClV+Wu85UX7hNtdGTngi/1BxcA==
@@ -5023,7 +4994,7 @@ onetime@^6.0.0:
   dependencies:
     mimic-fn "^4.0.0"
 
-open@^10.1.2, open@^10.2.0:
+open@^10.2.0:
   version "10.2.0"
   resolved "https://registry.npmjs.org/open/-/open-10.2.0.tgz#b9d855be007620e80b6fb05fac98141fe62db73c"
   integrity sha512-YgBpdJHPyQ2UE5x+hlSXcnejzAvD0b22U2OuAP+8OnlJT+PjWPxtgmGqKKc+RgTM63U9gN0YzrYc71R2WT/hTA==
@@ -6008,7 +5979,7 @@ statuses@^2.0.2, statuses@~2.0.2:
   resolved "https://registry.npmjs.org/statuses/-/statuses-2.0.2.tgz#8f75eecef765b5e1cfcdc080da59409ed424e382"
   integrity sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw==
 
-std-env@^3.10.0, std-env@^3.9.0:
+std-env@^3.10.0:
   version "3.10.0"
   resolved "https://registry.npmjs.org/std-env/-/std-env-3.10.0.tgz#d810b27e3a073047b2b5e40034881f5ea6f9c83b"
   integrity sha512-5GS12FdOZNliM5mAOxFRg7Ir0pWz8MdpYm6AY6VPkGpbA7ZzmbzNcBJQ0GPvvyWgcY7QAhCgf9Uy89I03faLkg==

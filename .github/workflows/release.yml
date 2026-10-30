@@ -1,0 +1,90 @@
+name: Release
+
+# The release bot (release-please). On every push it keeps a release pull request up to date:
+# each package's next version and changelog, from the Conventional Commits that touched it.
+# Merging that pull request tags the packages it bumps, creates their GitHub releases and
+# publishes them to npm.
+#
+# v3 is in beta: releases come from the v3 branch as 3.0.0-beta.N under the npm tag `next`,
+# and `latest` stays on v2. For 3.0.0: merge v3 into master, set the branch below to master,
+# and in release-please-config.json drop `prerelease`, `versioning` and `prerelease-type`;
+# then a commit with a `Release-As: 3.0.0` footer releases it as `latest`.
+
+on:
+  push:
+    branches: [v3]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 22
+
+jobs:
+  release-please:
+    name: Release pull request
+    runs-on: ubuntu-latest
+    outputs:
+      created: ${{ steps.release.outputs.releases_created }}
+      paths: ${{ steps.release.outputs.paths_released }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          target-branch: ${{ github.ref_name }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  publish:
+    name: Publish ${{ matrix.path }}
+    needs: release-please
+    if: needs.release-please.outputs.created == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      # npm Trusted Publishing: no token, the package is published with provenance.
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        path: ${{ fromJSON(needs.release-please.outputs.paths) }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.path }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: https://registry.npmjs.org
+
+      # Trusted Publishing needs npm 11.5.1 or newer.
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      # As in CI: actions and devtools are built against the core's (and actions') sources.
+      - name: Install
+        run: |
+          yarn install --frozen-lockfile
+          case "${{ matrix.path }}" in
+            packages/actions) yarn --cwd ../core install --frozen-lockfile ;;
+            packages/devtools)
+              yarn --cwd ../core install --frozen-lockfile
+              yarn --cwd ../actions install --frozen-lockfile
+              ;;
+          esac
+
+      # `prepublishOnly` (typecheck, tests, build, package checks) or `prepack` (the Nuxt
+      # module's build) run first. A prerelease goes out under `next`, a release under `latest`.
+      - name: Publish
+        run: |
+          tag=$(node -p "require('./package.json').version.includes('-') ? 'next' : 'latest'")
+          npm publish --tag "$tag"

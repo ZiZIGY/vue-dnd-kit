@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "4082d62269dcbc529654ebb63766e93feb3ddbad",
+  "release-type": "node",
+  "include-component-in-tag": true,
+  "prerelease": true,
+  "versioning": "prerelease",
+  "prerelease-type": "beta",
+  "packages": {
+    "packages/core": { "component": "core" },
+    "packages/actions": { "component": "actions" },
+    "packages/devtools": { "component": "devtools" },
+    "packages/nuxt": { "component": "nuxt" }
+  }
+}
