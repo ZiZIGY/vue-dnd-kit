@@ -1,6 +1,6 @@
 {
   "name": "@vue-dnd-kit/devtools",
-  "version": "3.0.0-beta.0",
+  "version": "3.0.0-beta.1",
   "description": "DevTools for Vue DnD Kit: a tab in the Nuxt DevTools and the Vue DevTools with a joystick that drags for real, a live mini-map of every list and drop target, live option editing, the providers' state and a log of the drags",
   "author": "ZiZIGY",
   "license": "MIT",
