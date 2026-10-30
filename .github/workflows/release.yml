@@ -14,6 +14,11 @@ on:
   push:
     branches: [v3]
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish every package's current version that npm doesn't have yet
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -44,7 +49,7 @@ jobs:
   publish:
     name: Publish ${{ matrix.path }}
     needs: release-please
-    if: needs.release-please.outputs.created == 'true'
+    if: needs.release-please.outputs.created == 'true' || inputs.publish
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -54,7 +59,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        path: ${{ fromJSON(needs.release-please.outputs.paths) }}
+        # The packages just released, or all of them when run by hand with `publish`.
+        path: ${{ fromJSON(inputs.publish && '["packages/core","packages/actions","packages/devtools","packages/nuxt"]' || needs.release-please.outputs.paths) }}
     defaults:
       run:
         working-directory: ${{ matrix.path }}
