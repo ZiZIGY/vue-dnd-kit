@@ -1,10 +1,10 @@
 import type { ExampleFile } from '#examples';
 
-/** The packages examples may import, at the versions they are written for (`-0`: v3 betas too). */
+/** The packages examples may import, at the versions they are written for (`-0`: the betas too). */
 const VERSIONS: Record<string, string> = {
   vue: '^3.5.0',
   '@vue-dnd-kit/core': '^3.0.0-0',
-  '@vue-dnd-kit/actions': '^3.0.0-0',
+  '@vue-dnd-kit/actions': '^1.0.0-0',
   '@vueuse/core': '^15.0.0',
   '@tanstack/vue-virtual': '^3.13.0',
   'motion-v': '^2.8.0',
