@@ -43,7 +43,6 @@ const nested = computed(() => {
   font-size: 13px;
   cursor: grab;
   user-select: none;
-  transition: margin-left 0.15s;
 }
 
 .work:focus-visible {

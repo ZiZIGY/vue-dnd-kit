@@ -11,9 +11,11 @@ makeSortableItem(el, { id: () => props.node.key });
 </script>
 
 <template>
-  <div ref="el" class="row" :style="{ '--pad': `${8 + node.depth * indent}px` }">
-    <!-- One guide per level, like an editor's file explorer. -->
-    <span v-for="level in node.depth" :key="level" class="guide" :style="{ left: `${15 + (level - 1) * indent}px` }" />
+  <!-- Indented by its margin, not its padding: the row itself moves with its depth, so the
+       overlay takes the slot's width and lands on its level, and a depth change slides. -->
+  <div ref="el" class="row" :style="{ marginInlineStart: `${node.depth * indent}px` }">
+    <!-- One guide per level, like an editor's file explorer: left of the row, in its margin. -->
+    <span v-for="level in node.depth" :key="level" class="guide" :style="{ left: `${15 - (node.depth - level + 1) * indent}px` }" />
     <button
       v-if="node.item.folder"
       type="button"
@@ -37,7 +39,7 @@ makeSortableItem(el, { id: () => props.node.key });
   align-items: center;
   gap: 6px;
   height: 30px;
-  padding: 0 10px 0 var(--pad);
+  padding: 0 10px 0 8px;
   border-radius: 6px;
   /* Its own background, the explorer's: the overlay, a copy of the row, isn't see-through. */
   background: color-mix(in srgb, currentColor 3%, Canvas);
@@ -63,7 +65,7 @@ makeSortableItem(el, { id: () => props.node.key });
 .row[data-dnd-placeholder]::after {
   content: '';
   position: absolute;
-  inset: 2px 4px 2px calc(var(--pad) - 2px);
+  inset: 2px 4px 2px 6px;
   border: 1.5px dashed #42b883;
   border-radius: 6px;
   background: color-mix(in srgb, #42b883 8%, Canvas);
@@ -75,6 +77,11 @@ makeSortableItem(el, { id: () => props.node.key });
   bottom: 0;
   width: 1px;
   background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+/* The overlay is the row alone: its levels stay in the tree. */
+[data-dnd-overlay] .guide {
+  display: none;
 }
 
 .toggle {

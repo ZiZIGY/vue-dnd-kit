@@ -59,7 +59,7 @@ makeSortableItem(el, { id: () => props.node.key });
 </script>
 
 <template>
-  <div ref="el" :style="{ paddingLeft: `${node.depth * indent}px` }">
+  <div ref="el" :style="{ marginInlineStart: `${node.depth * indent}px` }">
     <button v-if="node.hasChildren" type="button" :aria-expanded="!node.collapsed" @click="emit('toggle', node.key)">
       {{ node.collapsed ? '▸' : '▾' }}
     </button>
@@ -71,13 +71,20 @@ makeSortableItem(el, { id: () => props.node.key });
 `FlatNode<T>` is `{ key, item, depth, parentKey, index (among siblings), hasChildren, collapsed }`.
 The dragged node's `depth` is its **projected** depth, so the placeholder indents live.
 
+**Indent rows with a margin, never a padding.** With a margin the row element itself moves
+with its depth: the overlay box takes the slot's width and lands on its level, and a depth
+change is a move FLIP animates. With a padding only the content shifts: the overlay (a
+clone of the row at pickup) keeps the starting level, lands misaligned and jumps at the
+end, and depth changes snap. Per-level guide lines go left of the row (negative `left`);
+hide them in the clone with `[data-dnd-overlay] .guide { display: none }`.
+
 ## Options beyond the list's
 
 | Option | Notes |
 | --- | --- |
 | `getChildren` / `setChildren` | How to read and write children. The default write sets `node.children`. |
 | `withChildren` | `(node, children) => copy`, for `e.result` (an immutable new tree). Default `{ ...node }` + children. Pass it for class instances. |
-| `indentation` | Px per level (default 24). Must match your row padding for the offset projection to feel right. |
+| `indentation` | Px per level (default 24). Must match your rows' indentation (their margin) for the offset projection to feel right. |
 | `nesting` | `'offset'` (drag sideways), `'hover'` (middle of a row = inside), `'both'` (default). |
 | `maxDepth`, `canNest` | Limits. Both apply to the whole dragged block, descendants included. |
 | `collapsed` | A `Set` of keys (ref or getter). Collapsed nodes' children aren't in `items`. |

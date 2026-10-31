@@ -16,7 +16,9 @@ const hue = computed(() => [...member.value.id].reduce((sum, char) => sum + char
 </script>
 
 <template>
-  <div ref="el" class="member" :class="[member.kind, { locked: member.locked }]" :style="{ '--indent': `${node.depth * indent}px` }">
+  <!-- Indented by its margin: the row itself moves with its depth, so the overlay lands on
+       its level and a depth change slides. -->
+  <div ref="el" class="member" :class="[member.kind, { locked: member.locked }]" :style="{ marginInlineStart: `${node.depth * indent}px` }">
     <template v-if="member.kind === 'team'">
       <button
         type="button"
@@ -50,7 +52,7 @@ const hue = computed(() => [...member.value.id].reduce((sum, char) => sum + char
   align-items: center;
   gap: 8px;
   height: 38px;
-  padding: 0 10px 0 calc(8px + var(--indent));
+  padding: 0 10px 0 8px;
   border-radius: 8px;
   background: color-mix(in srgb, currentColor 3%, Canvas);
   font-size: 13px;
@@ -83,7 +85,7 @@ const hue = computed(() => [...member.value.id].reduce((sum, char) => sum + char
 .member[data-dnd-placeholder]::after {
   content: '';
   position: absolute;
-  inset: 2px 2px 2px calc(var(--indent) + 4px);
+  inset: 2px 2px 2px 4px;
   border: 1.5px dashed #42b883;
   border-radius: 8px;
   background: color-mix(in srgb, #42b883 10%, Canvas);

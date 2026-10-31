@@ -12,8 +12,9 @@ makeSortableItem(el, { id: () => props.node.key });
 </script>
 
 <template>
-  <!-- The padding indents by `indentation` per level, as far as a sideways drag moves. -->
-  <li ref="el" class="section" :class="`level-${node.depth}`" :style="{ '--indent': `${node.depth * indentation}px` }">
+  <!-- The margin indents by `indentation` per level, as far as a sideways drag moves. The
+       section itself moves with its depth: the overlay lands on its level, a change slides. -->
+  <li ref="el" class="section" :class="`level-${node.depth}`" :style="{ marginInlineStart: `${node.depth * indentation}px` }">
     <span class="number">{{ number }}</span>
     <span class="title">{{ node.item.title }}</span>
   </li>
@@ -25,13 +26,12 @@ makeSortableItem(el, { id: () => props.node.key });
   display: flex;
   align-items: baseline;
   gap: 10px;
-  padding: 7px 10px 7px calc(10px + var(--indent));
+  padding: 7px 10px;
   border-radius: 7px;
   background: color-mix(in srgb, currentColor 3%, Canvas);
   font-size: 13px;
   cursor: grab;
   user-select: none;
-  transition: padding-left 0.15s;
 }
 
 .section:hover {
@@ -67,7 +67,7 @@ makeSortableItem(el, { id: () => props.node.key });
 .section[data-dnd-placeholder]::after {
   content: '';
   position: absolute;
-  inset: 1px 2px 1px calc(var(--indent) + 4px);
+  inset: 1px 2px 1px 4px;
   border: 1.5px dashed #42b883;
   border-radius: 7px;
   background: color-mix(in srgb, #42b883 8%, transparent);
