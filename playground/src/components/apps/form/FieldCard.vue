@@ -79,21 +79,21 @@
     flex-direction: column;
     gap: 8px;
     padding: 6px 10px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius);
     cursor: grab;
   }
 
   .fb-field:focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid var(--ui-focus);
     outline-offset: 2px;
   }
 
   .fb-field.section {
     padding-bottom: 10px;
-    background: #fffbeb;
-    border-color: #fcd34d;
+    background: var(--ui-warning-soft);
+    border-color: color-mix(in srgb, var(--ui-warning) 45%, var(--ui-bg));
   }
 
   /* Indicator mode: the dragged field stays dimmed in place, a line marks the drop. */
@@ -108,8 +108,8 @@
     right: -4px;
     height: 3px;
     border-radius: 2px;
-    background: #2563eb;
-    box-shadow: 0 0 0 2px rgb(37 99 235 / 0.2);
+    background: var(--ui-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-primary) 25%, transparent);
     pointer-events: none;
   }
 
@@ -129,13 +129,14 @@
   }
 
   .fb-grip {
-    color: #94a3b8;
+    color: var(--ui-text-dimmed);
     font-size: 12px;
     letter-spacing: -2px;
   }
 
   .fb-kind {
-    color: #94a3b8;
+    color: var(--ui-text-dimmed);
+    font-family: var(--font-mono);
     font-size: 11px;
     white-space: nowrap;
   }
@@ -145,23 +146,29 @@
     min-width: 0;
     padding: 2px 6px;
     border: 1px solid transparent;
-    border-radius: 4px;
+    border-radius: var(--ui-radius-sm);
     background: none;
+    color: var(--ui-text-highlighted);
     font: inherit;
     font-weight: 600;
   }
 
   .fb-label:hover,
   .fb-label:focus {
-    border-color: #cbd5e1;
-    background: #fff;
+    border-color: var(--ui-border-accented);
+    background: var(--ui-bg);
+  }
+
+  .fb-label:focus {
+    border-color: var(--ui-primary);
+    outline: none;
   }
 
   .fb-required {
     display: flex;
     align-items: center;
     gap: 4px;
-    color: #64748b;
+    color: var(--ui-text-muted);
     font-size: 12px;
     cursor: pointer;
   }
@@ -171,16 +178,16 @@
     height: 24px;
     padding: 0;
     border: 0;
-    border-radius: 6px;
+    border-radius: var(--ui-radius-sm);
     background: none;
-    color: #94a3b8;
+    color: var(--ui-text-dimmed);
     font-size: 18px;
     line-height: 1;
     cursor: pointer;
   }
 
   .fb-remove:hover {
-    background: #fee2e2;
-    color: #dc2626;
+    background: var(--ui-danger-soft);
+    color: var(--ui-danger);
   }
 </style>

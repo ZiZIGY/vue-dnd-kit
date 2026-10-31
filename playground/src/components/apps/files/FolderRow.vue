@@ -64,38 +64,50 @@
     gap: 6px;
     height: 32px;
     padding-right: 8px;
-    border-radius: 6px;
-    color: #334155;
+    border-radius: var(--ui-radius);
+    color: var(--ui-text);
     cursor: pointer;
     user-select: none;
   }
 
   .fm-row:hover {
-    background: #e2e8f0;
+    background: var(--ui-bg-elevated);
   }
 
   .fm-row:focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid var(--ui-focus);
   }
 
   .fm-row.current {
-    background: #dbeafe;
-    color: #1e3a8a;
+    background: var(--ui-selection-soft);
+    color: var(--ui-text-highlighted);
     font-weight: 600;
   }
 
   .fm-row.accepting {
-    box-shadow: inset 0 0 0 1px #93c5fd;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-primary) 55%, transparent);
   }
 
   .fm-row.target {
-    background: #2563eb;
-    color: #fff;
+    background: var(--ui-primary);
+    color: var(--ui-on-primary);
   }
 
   .fm-row[data-dnd-placeholder] {
     opacity: 1;
-    background: repeating-linear-gradient(-45deg, #e2e8f0, #e2e8f0 6px, #f1f5f9 6px, #f1f5f9 12px);
+    background: repeating-linear-gradient(
+      -45deg,
+      var(--ui-bg-accented) 0 6px,
+      var(--ui-bg-muted) 6px 12px
+    );
+  }
+
+  /* The row has no background of its own: the copy in the overlay gets one. */
+  [data-dnd-overlay] .fm-row {
+    background: var(--ui-bg-elevated);
+    box-shadow:
+      inset 0 0 0 1px var(--ui-border-accented),
+      var(--ui-shadow-overlay);
   }
 
   .fm-chevron {
@@ -125,8 +137,9 @@
 
   .fm-count {
     padding: 0 6px;
-    border-radius: 999px;
-    background: rgb(100 116 139 / 0.15);
+    border-radius: var(--ui-radius-sm);
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 400;
   }

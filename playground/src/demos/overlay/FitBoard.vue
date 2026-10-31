@@ -57,9 +57,9 @@
 <style scoped>
   .ov-board {
     padding: 12px 16px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--ui-radius-lg);
   }
 
   h2 {
@@ -73,7 +73,7 @@
   small {
     font-size: 12px;
     font-weight: 400;
-    color: #6b7280;
+    color: var(--ui-text-muted);
   }
 
   .lists {

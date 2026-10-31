@@ -60,7 +60,7 @@
 
   small {
     font-weight: 400;
-    color: #6b7280;
+    color: var(--ui-text-muted);
   }
 
   .ov-cards {
@@ -71,17 +71,18 @@
     margin: 0;
     padding: 8px;
     list-style: none;
-    background: #e5e7eb;
-    border-radius: 10px;
+    background: var(--ui-bg-muted);
+    border-radius: var(--ui-radius-lg);
+    box-shadow: inset 0 0 0 1px var(--ui-border);
     outline: 2px dashed transparent;
     transition: outline-color 120ms;
   }
 
   .ov-cards[data-over] {
-    outline-color: #2563eb;
+    outline-color: var(--ui-primary);
   }
 
   .ov-cards[data-over]:not([data-accepting]) {
-    outline-color: #dc2626;
+    outline-color: var(--ui-danger);
   }
 </style>

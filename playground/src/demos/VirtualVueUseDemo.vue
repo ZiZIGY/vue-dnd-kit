@@ -62,6 +62,7 @@
 
   .scroller {
     height: 600px;
-    background: #e5e7eb;
+    background: var(--ui-bg-muted);
+    box-shadow: inset 0 0 0 1px var(--ui-border);
   }
 </style>

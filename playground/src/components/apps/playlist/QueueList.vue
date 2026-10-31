@@ -52,16 +52,17 @@
     padding: 10px;
     overflow-x: auto;
     list-style: none;
-    background: rgb(255 255 255 / 0.06);
-    border-radius: 12px;
+    background: var(--ui-bg-muted);
+    border-radius: var(--ui-radius-lg);
+    box-shadow: inset 0 0 0 1px var(--ui-border);
   }
 
   .pl-queue[data-accepting] {
-    box-shadow: inset 0 0 0 2px rgb(167 139 250 / 0.7);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ui-primary) 60%, transparent);
   }
 
   .pl-queue-empty {
     align-self: center;
-    color: #94a3b8;
+    color: var(--ui-text-dimmed);
   }
 </style>

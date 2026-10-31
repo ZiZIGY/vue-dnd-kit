@@ -50,7 +50,8 @@
     padding: 8px;
     margin: 0;
     list-style: none;
-    background: #f3f4f6;
-    border-radius: 10px;
+    background: var(--ui-bg-muted);
+    border-radius: var(--ui-radius-lg);
+    box-shadow: inset 0 0 0 1px var(--ui-border);
   }
 </style>

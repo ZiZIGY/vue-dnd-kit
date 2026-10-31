@@ -146,14 +146,15 @@
     width: 208px;
     min-height: 280px;
     padding: 8px;
-    background: #f1f5f9;
-    border-radius: 12px;
+    background: var(--ui-bg-elevated);
+    border-radius: var(--ui-radius-lg);
+    box-shadow: inset 0 0 0 1px var(--ui-border);
     list-style: none;
   }
 
   .tb-column.refusing {
-    background: #fef2f2;
-    box-shadow: inset 0 0 0 2px #fca5a5;
+    background: var(--ui-danger-soft);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ui-danger) 55%, transparent);
   }
 
   .tb-column-header {
@@ -161,16 +162,16 @@
     align-items: center;
     gap: 6px;
     padding: 4px 6px;
-    border-radius: 6px;
+    border-radius: var(--ui-radius);
     cursor: grab;
   }
 
   .tb-column-header:focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid var(--ui-focus);
   }
 
   .tb-grip {
-    color: #94a3b8;
+    color: var(--ui-text-dimmed);
     font-size: 12px;
     letter-spacing: -2px;
   }
@@ -183,16 +184,17 @@
 
   .tb-count {
     padding: 1px 8px;
-    border-radius: 999px;
-    background: #e2e8f0;
-    color: #475569;
+    border-radius: var(--ui-radius-sm);
+    background: color-mix(in srgb, var(--ui-text) 9%, transparent);
+    color: var(--ui-text-muted);
+    font-family: var(--font-mono);
     font-size: 12px;
     font-variant-numeric: tabular-nums;
   }
 
   .tb-count.full {
-    background: #fee2e2;
-    color: #b91c1c;
+    background: color-mix(in srgb, var(--ui-danger) 16%, transparent);
+    color: var(--ui-danger);
   }
 
   /* The whole column body takes cards, including the space below the last one. */
@@ -205,18 +207,18 @@
     margin: 0;
     padding: 0;
     list-style: none;
-    border-radius: 8px;
+    border-radius: var(--ui-radius);
   }
 
   .tb-cards[data-accepting] {
-    background: rgb(37 99 235 / 0.05);
+    background: color-mix(in srgb, var(--ui-primary) 7%, transparent);
   }
 
   .tb-limit {
     padding: 8px;
-    border: 1px dashed #f87171;
-    border-radius: 8px;
-    color: #b91c1c;
+    border: 1px dashed color-mix(in srgb, var(--ui-danger) 70%, transparent);
+    border-radius: var(--ui-radius);
+    color: var(--ui-danger);
     font-size: 12px;
     text-align: center;
   }
@@ -224,25 +226,33 @@
   .tb-add {
     padding: 6px 8px;
     border: 0;
-    border-radius: 6px;
+    border-radius: var(--ui-radius);
     background: none;
-    color: #475569;
+    color: var(--ui-text-muted);
     font: inherit;
     text-align: left;
     cursor: pointer;
   }
 
   .tb-add:hover {
-    background: #e2e8f0;
+    background: var(--ui-bg-accented);
+    color: var(--ui-text);
   }
 
   .tb-add-form textarea {
     width: 100%;
     padding: 8px;
-    border: 1px solid #94a3b8;
-    border-radius: 8px;
+    border: 1px solid var(--ui-border-strong);
+    border-radius: var(--ui-radius);
+    background: var(--ui-bg);
+    color: var(--ui-text);
     font: inherit;
     resize: none;
+  }
+
+  .tb-add-form textarea:focus {
+    border-color: var(--ui-primary);
+    outline: none;
   }
 
   .tb-add-actions {
@@ -254,9 +264,9 @@
   .tb-add-actions button {
     padding: 6px 10px;
     border: 0;
-    border-radius: 6px;
-    background: #2563eb;
-    color: #fff;
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-primary);
+    color: var(--ui-on-primary);
     font: inherit;
     font-weight: 600;
     cursor: pointer;
@@ -264,7 +274,7 @@
 
   .tb-add-actions .tb-link {
     background: none;
-    color: #475569;
+    color: var(--ui-text-muted);
     font-weight: 400;
   }
 </style>

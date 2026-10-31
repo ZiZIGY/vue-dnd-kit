@@ -50,9 +50,9 @@
     align-items: center;
     gap: 10px;
     padding: 10px 12px;
-    background: #fff;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius);
     cursor: grab;
     user-select: none;
   }
@@ -62,15 +62,16 @@
     place-items: center;
     width: 24px;
     height: 24px;
-    border-radius: 6px;
-    background: #f3f4f6;
-    color: #4b5563;
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-bg-elevated);
+    color: var(--ui-text-muted);
     font-size: 13px;
   }
 
+  /* A sticky note: yellow on either theme. */
   .note {
-    background: hsl(48 96% 89%);
-    border-color: hsl(45 93% 70%);
+    background: color-mix(in srgb, hsl(48 96% 58%) 18%, var(--ui-bg));
+    border-color: color-mix(in srgb, hsl(45 93% 52%) 55%, var(--ui-bg));
   }
 
   .photo .icon {
@@ -79,7 +80,7 @@
   }
 
   .link .title {
-    color: #2563eb;
+    color: var(--ui-info);
     text-decoration: underline;
   }
 
@@ -100,7 +101,7 @@
   }
 
   .selected {
-    outline: 2px solid #2563eb;
+    outline: 2px solid var(--ui-selection);
     outline-offset: 1px;
   }
 </style>

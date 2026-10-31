@@ -64,18 +64,18 @@
 <style scoped>
   .check {
     padding: 12px;
-    background: #fff;
-    border: 1px solid #d1d5db;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-accented);
     border-left-width: 4px;
-    border-radius: 10px;
+    border-radius: var(--ui-radius-lg);
   }
 
   .check.pass {
-    border-left-color: #16a34a;
+    border-left-color: var(--ui-primary);
   }
 
   .check.fail {
-    border-left-color: #dc2626;
+    border-left-color: var(--ui-danger);
   }
 
   header {
@@ -91,22 +91,23 @@
   }
 
   .platforms {
-    color: #6b7280;
+    color: var(--ui-text-muted);
+    font-family: var(--font-mono);
     font-size: 12px;
   }
 
   .steps {
     margin: 8px 0 12px;
     padding-left: 20px;
-    color: #374151;
+    color: var(--ui-text);
   }
 
   .expected {
     margin: 12px 0 0;
     padding: 8px 10px;
-    background: #f0fdf4;
-    border-radius: 6px;
-    color: #14532d;
+    background: var(--ui-primary-soft);
+    border-radius: var(--ui-radius);
+    color: color-mix(in srgb, var(--ui-primary) 55%, var(--ui-text-highlighted));
   }
 
   .verdict {
@@ -120,23 +121,24 @@
     min-width: 72px;
     min-height: 40px;
     padding: 0 14px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    background: #f9fafb;
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius);
+    background: var(--ui-bg-muted);
+    color: var(--ui-text);
     font: inherit;
     font-weight: 600;
   }
 
   .verdict .pass[aria-pressed='true'] {
-    border-color: #16a34a;
-    background: #16a34a;
-    color: #fff;
+    border-color: var(--ui-primary);
+    background: var(--ui-primary);
+    color: var(--ui-on-primary);
   }
 
   .verdict .fail[aria-pressed='true'] {
-    border-color: #dc2626;
-    background: #dc2626;
-    color: #fff;
+    border-color: var(--ui-danger);
+    background: var(--ui-danger);
+    color: var(--ui-on-solid);
   }
 
   .verdict input {
@@ -144,9 +146,11 @@
     min-width: 0;
     min-height: 40px;
     padding: 0 10px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius);
+    background: var(--ui-bg);
+    color: var(--ui-text);
     /* 16px: iOS zooms into smaller text fields on focus. */
-    font: 16px system-ui, sans-serif;
+    font: 16px var(--font-sans);
   }
 </style>

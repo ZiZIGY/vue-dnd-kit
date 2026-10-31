@@ -70,34 +70,34 @@
     width: 96px;
     height: 104px;
     padding: 10px 6px 6px;
-    border-radius: 10px;
-    background: #fff;
-    box-shadow: inset 0 0 0 1px #e2e8f0;
+    border-radius: var(--ui-radius);
+    background: var(--ui-surface);
+    box-shadow: inset 0 0 0 1px var(--ui-border-accented);
     cursor: default;
     user-select: none;
   }
 
   .fm-file:focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid var(--ui-focus);
   }
 
   .fm-file.selected {
-    background: #dbeafe;
-    box-shadow: inset 0 0 0 2px #3b82f6;
+    background: var(--ui-selection-soft);
+    box-shadow: inset 0 0 0 2px var(--ui-selection);
   }
 
   .fm-file.accepting {
-    box-shadow: inset 0 0 0 2px #93c5fd;
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ui-primary) 45%, transparent);
   }
 
   .fm-file.target {
-    background: #2563eb;
-    color: #fff;
+    background: var(--ui-primary);
+    color: var(--ui-on-primary);
     box-shadow: none;
   }
 
   .fm-file.target .fm-size {
-    color: #dbeafe;
+    color: color-mix(in srgb, var(--ui-on-primary) 75%, transparent);
   }
 
   .fm-file[data-dnd-placeholder] {
@@ -111,19 +111,21 @@
     width: 36px;
     height: 44px;
     padding-bottom: 4px;
-    border-radius: 4px 12px 4px 4px;
-    background: #64748b;
+    border-radius: 2px 10px 2px 2px;
+    background: #71717a;
     color: #fff;
+    font-family: var(--font-mono);
     font-size: 9px;
     font-weight: 700;
     text-transform: uppercase;
   }
 
+  /* File kinds keep their hues: they read on both themes. */
   .fm-icon.folder {
     width: 44px;
     height: 34px;
     margin: 6px 0 4px;
-    border-radius: 3px 6px 6px 6px;
+    border-radius: 2px 4px 4px 4px;
     background: #f59e0b;
     box-shadow: inset 0 7px 0 #fbbf24;
   }
@@ -157,7 +159,7 @@
   }
 
   .fm-size {
-    color: #94a3b8;
+    color: var(--ui-text-dimmed);
     font-size: 11px;
   }
 </style>

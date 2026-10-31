@@ -100,9 +100,12 @@
   button {
     width: 44px;
     height: 44px;
-    border-radius: 8px;
-    border: 1px solid #9ca3af;
-    background: #fff;
+    /* The browser's padding: the page's plain-button padding (style.css) makes up for a thinner border. */
+    padding: 1px 6px;
+    border-radius: var(--ui-radius);
+    border: 1px solid var(--ui-border-strong);
+    background: var(--ui-surface);
+    color: var(--ui-text);
     font-size: 16px;
     touch-action: manipulation;
   }
@@ -119,7 +122,11 @@
 
   /* The hold fills the button. */
   .a {
-    background: linear-gradient(to top, #93c5fd var(--progress), #fff var(--progress));
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--ui-primary) 45%, var(--ui-bg)) var(--progress),
+      var(--ui-surface) var(--progress)
+    );
   }
 
   .cursor {
@@ -127,9 +134,9 @@
     width: 14px;
     height: 14px;
     margin: -7px 0 0 -7px;
-    border: 2px solid #2563eb;
+    border: 2px solid var(--ui-primary);
     border-radius: 50%;
-    background: rgb(37 99 235 / 0.2);
+    background: color-mix(in srgb, var(--ui-primary) 20%, transparent);
     /* Never what a hit test finds. */
     pointer-events: none;
     z-index: 2000;

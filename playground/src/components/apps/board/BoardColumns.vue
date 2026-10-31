@@ -162,15 +162,16 @@
   }
 
   .tb-selection {
-    color: #475569;
+    color: var(--ui-text-muted);
   }
 
   .tb-selection button {
     margin-left: 6px;
     padding: 2px 10px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    background: #fff;
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-bg);
+    color: var(--ui-text);
     font: inherit;
     cursor: pointer;
   }
@@ -182,9 +183,9 @@
     gap: 8px;
     width: 220px;
     height: 56px;
-    border: 2px dashed #cbd5e1;
-    border-radius: 10px;
-    color: #94a3b8;
+    border: 2px dashed var(--ui-border-strong);
+    border-radius: var(--ui-radius-lg);
+    color: var(--ui-text-dimmed);
     transition:
       background 120ms,
       border-color 120ms,
@@ -192,15 +193,16 @@
   }
 
   .tb-trash.armed {
-    border-color: #f87171;
-    color: #dc2626;
+    border-color: color-mix(in srgb, var(--ui-danger) 70%, transparent);
+    color: var(--ui-danger);
   }
 
   .tb-trash.over {
-    background: #fee2e2;
+    background: var(--ui-danger-soft);
     border-style: solid;
   }
 
+  /* The board: a stage of its own, dotted like the docs' paper. */
   .tb-board {
     display: flex;
     align-items: stretch;
@@ -209,8 +211,11 @@
     margin: 0;
     padding: 12px;
     list-style: none;
-    background: linear-gradient(135deg, #1e3a8a, #6d28d9);
-    border-radius: 14px;
+    background-color: var(--ui-bg-muted);
+    background-image: radial-gradient(color-mix(in srgb, var(--ui-text-dimmed) 45%, transparent) 1px, transparent 1.4px);
+    background-size: 22px 22px;
+    border-radius: var(--ui-radius-lg);
+    box-shadow: inset 0 0 0 1px var(--ui-border);
   }
 
   .tb-footer {
@@ -230,6 +235,6 @@
     overflow: auto;
     margin: 0;
     padding-left: 20px;
-    color: #334155;
+    color: var(--ui-text-muted);
   }
 </style>

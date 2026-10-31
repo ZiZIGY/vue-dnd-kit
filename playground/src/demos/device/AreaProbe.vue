@@ -180,7 +180,7 @@
     flex-wrap: wrap;
     gap: 2px 12px;
     margin: 8px 0 0;
-    font: 12px/1.4 ui-monospace, monospace;
-    color: #4b5563;
+    font: 12px/1.4 var(--font-mono);
+    color: var(--ui-text-muted);
   }
 </style>

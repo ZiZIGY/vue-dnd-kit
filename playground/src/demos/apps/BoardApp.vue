@@ -36,6 +36,6 @@
   .tb-head p {
     max-width: 760px;
     margin: 0 0 12px;
-    color: #475569;
+    color: var(--ui-text-muted);
   }
 </style>

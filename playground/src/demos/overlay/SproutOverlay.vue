@@ -30,9 +30,10 @@
     right: -8px;
     padding: 2px 8px;
     font-size: 12px;
-    background: #dcfce7;
-    border: 1px solid #86efac;
-    border-radius: 999px;
+    background: var(--ui-primary-soft);
+    border: 1px solid color-mix(in srgb, var(--ui-primary) 50%, var(--ui-bg));
+    border-radius: var(--ui-radius-sm);
+    color: var(--ui-text-highlighted);
     animation: grow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1.4) both;
   }
 

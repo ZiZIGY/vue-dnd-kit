@@ -30,18 +30,18 @@
     align-items: center;
     gap: 10px;
     padding: 8px 10px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius);
     cursor: grab;
     user-select: none;
   }
 
   .fb-template:hover {
-    border-color: #93c5fd;
+    border-color: var(--ui-border-strong);
   }
 
   .fb-template:focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid var(--ui-focus);
   }
 </style>

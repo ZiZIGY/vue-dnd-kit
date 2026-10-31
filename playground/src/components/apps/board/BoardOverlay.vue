@@ -87,8 +87,8 @@
     position: relative;
     width: 100%;
     height: 100%;
-    font: 14px/1.4 system-ui, sans-serif;
-    color: #1f2937;
+    font: 14px/1.4 var(--font-sans);
+    color: var(--ui-text);
     transform: rotate(3deg) scale(1.02);
     transition: transform 180ms ease;
   }
@@ -105,27 +105,25 @@
     height: 100%;
     padding: 10px 12px;
     overflow: hidden;
-    background: #fff;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    box-shadow:
-      0 18px 32px -8px rgb(15 23 42 / 0.45),
-      0 2px 6px rgb(15 23 42 / 0.15);
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-strong);
+    border-radius: var(--ui-radius);
+    box-shadow: var(--ui-shadow-overlay);
   }
 
   .tb-ghost-card.refused {
-    border-color: #ef4444;
+    border-color: var(--ui-danger);
     box-shadow:
-      0 18px 32px -8px rgb(185 28 28 / 0.45),
-      0 0 0 2px #fecaca;
+      var(--ui-shadow-overlay),
+      0 0 0 2px color-mix(in srgb, var(--ui-danger) 30%, transparent);
   }
 
   .tb-ghost-layer {
     position: absolute;
     inset: 0;
-    background: #f8fafc;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
+    background: var(--ui-bg-muted);
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius);
     transform: translate(6px, 6px) rotate(-2deg);
   }
 
@@ -133,34 +131,34 @@
     transform: translate(12px, 11px) rotate(-4deg);
   }
 
+  /* As on the cards (BoardCard.vue). */
   .tb-ghost-label {
+    --tag: var(--ui-text-dimmed);
     align-self: flex-start;
     padding: 1px 8px;
-    border-radius: 999px;
-    background: #e2e8f0;
-    color: #475569;
+    border-radius: var(--ui-radius-sm);
+    background: color-mix(in srgb, var(--tag) 15%, transparent);
+    color: color-mix(in srgb, var(--tag) 75%, var(--ui-text-highlighted));
+    font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
   }
 
   .tb-ghost-label.bug {
-    background: #fee2e2;
-    color: #b91c1c;
+    --tag: #ef4444;
   }
 
   .tb-ghost-label.feature {
-    background: #dbeafe;
-    color: #1d4ed8;
+    --tag: #3b82f6;
   }
 
   .tb-ghost-label.design {
-    background: #f3e8ff;
-    color: #7e22ce;
+    --tag: #a855f7;
   }
 
   .tb-ghost-more {
-    color: #64748b;
+    color: var(--ui-text-muted);
     font-size: 12px;
   }
 
@@ -171,9 +169,10 @@
     min-width: 22px;
     height: 22px;
     padding: 0 6px;
-    border-radius: 11px;
-    background: #2563eb;
-    color: #fff;
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-primary);
+    color: var(--ui-on-primary);
+    font-family: var(--font-mono);
     font-size: 12px;
     line-height: 22px;
     text-align: center;
@@ -184,9 +183,9 @@
     bottom: -26px;
     left: 0;
     padding: 2px 8px;
-    border-radius: 6px;
-    background: #dc2626;
-    color: #fff;
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-danger);
+    color: var(--ui-on-solid);
     font-size: 12px;
     font-style: normal;
     white-space: nowrap;
@@ -198,21 +197,24 @@
     gap: 6px;
     padding: 8px;
     overflow: hidden;
-    background: #f1f5f9;
-    border-radius: 12px;
-    box-shadow: 0 24px 40px -12px rgb(15 23 42 / 0.5);
+    background: var(--ui-bg-elevated);
+    border-radius: var(--ui-radius-lg);
+    box-shadow:
+      inset 0 0 0 1px var(--ui-border-accented),
+      var(--ui-shadow-overlay);
   }
 
   .tb-ghost-column header {
     display: flex;
     justify-content: space-between;
     padding: 4px 6px;
+    color: var(--ui-text-highlighted);
   }
 
   .tb-ghost-mini {
     padding: 8px 10px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+    background: var(--ui-surface);
+    border-radius: var(--ui-radius);
+    box-shadow: inset 0 0 0 1px var(--ui-border-accented);
   }
 </style>

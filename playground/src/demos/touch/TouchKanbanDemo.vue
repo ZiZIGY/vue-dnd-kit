@@ -57,7 +57,7 @@
     z-index: 10;
     display: flex;
     flex-direction: column;
-    background: #f3f4f6;
+    background: var(--stage);
   }
 
   header {
@@ -73,7 +73,7 @@
   }
 
   .back {
-    color: #2563eb;
+    color: var(--ui-primary);
     text-decoration: none;
   }
 

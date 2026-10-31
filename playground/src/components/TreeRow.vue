@@ -53,15 +53,15 @@
     gap: 6px;
     height: 36px;
     padding-right: 12px;
-    background: #fff;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius);
     cursor: grab;
   }
 
   .tree-row.selected {
-    background: #dbeafe;
-    border-color: #3b82f6;
+    background: var(--ui-selection-soft);
+    border-color: var(--ui-selection);
   }
 
   .tree-row.folder .name {
@@ -75,7 +75,7 @@
     border: 0;
     background: none;
     font: inherit;
-    color: #6b7280;
+    color: var(--ui-text-dimmed);
     cursor: pointer;
   }
 </style>

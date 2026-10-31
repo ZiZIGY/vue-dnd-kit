@@ -38,14 +38,14 @@
     padding: 0 12px;
     box-sizing: border-box;
     overflow: hidden;
-    background: #eef2ff;
-    border: 2px solid #6366f1;
-    border-radius: 8px;
-    box-shadow: 0 12px 24px -10px rgb(30 27 75 / 0.45);
+    background: var(--ui-primary-soft);
+    border: 2px solid var(--ui-primary);
+    border-radius: var(--ui-radius);
+    box-shadow: var(--ui-shadow-overlay);
   }
 
   code {
-    color: #4f46e5;
+    color: var(--ui-primary);
     font-size: 11px;
     white-space: nowrap;
   }

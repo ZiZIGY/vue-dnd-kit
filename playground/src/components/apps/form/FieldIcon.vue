@@ -31,15 +31,18 @@
     justify-content: center;
     width: 26px;
     height: 26px;
-    border-radius: 6px;
-    background: #e0e7ff;
-    color: #4338ca;
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-bg-elevated);
+    box-shadow: inset 0 0 0 1px var(--ui-border);
+    color: var(--ui-text-muted);
+    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 700;
   }
 
   .fb-icon.section {
-    background: #fef3c7;
-    color: #b45309;
+    background: color-mix(in srgb, var(--ui-warning) 18%, var(--ui-bg));
+    box-shadow: none;
+    color: var(--ui-warning);
   }
 </style>

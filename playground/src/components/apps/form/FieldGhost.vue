@@ -39,17 +39,16 @@
     height: 100%;
     max-height: 48px;
     padding: 8px 12px;
-    background: #fff;
-    border: 1px solid #2563eb;
-    border-radius: 10px;
-    box-shadow: 0 12px 28px -6px rgb(30 64 175 / 0.4);
-    font: 14px/1.4 system-ui, sans-serif;
-    color: #1e293b;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-strong);
+    border-radius: var(--ui-radius);
+    box-shadow: var(--ui-shadow-overlay);
+    font: 14px/1.4 var(--font-sans);
+    color: var(--ui-text-highlighted);
   }
 
   .fb-ghost.copy {
-    border-color: #16a34a;
-    box-shadow: 0 12px 28px -6px rgb(22 101 52 / 0.4);
+    border-color: var(--ui-primary);
   }
 
   .fb-ghost-label {
@@ -62,16 +61,17 @@
 
   em {
     padding: 1px 8px;
-    border-radius: 999px;
-    background: #dbeafe;
-    color: #1d4ed8;
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-bg-elevated);
+    color: var(--ui-text-muted);
+    font-family: var(--font-mono);
     font-size: 11px;
     font-style: normal;
     white-space: nowrap;
   }
 
   .copy em {
-    background: #dcfce7;
-    color: #15803d;
+    background: var(--ui-primary-soft);
+    color: var(--ui-primary);
   }
 </style>

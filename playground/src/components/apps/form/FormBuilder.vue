@@ -98,70 +98,77 @@
 
   .fb-side {
     padding: 12px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background: var(--ui-bg-muted);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--ui-radius-lg);
   }
 
   .fb-tip {
     margin: 0 0 10px;
-    color: #64748b;
+    color: var(--ui-text-muted);
     font-size: 12px;
   }
 
   kbd {
     padding: 0 4px;
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
-    background: #f8fafc;
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-bg);
+    color: var(--ui-text);
     font: inherit;
   }
 
   .fb-canvas {
     padding: 16px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgb(15 23 42 / 0.06);
+    background: var(--ui-bg-muted);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--ui-radius-lg);
   }
 
   .fb-title {
     width: 100%;
     padding: 4px 6px;
     border: 1px solid transparent;
-    border-radius: 6px;
+    border-radius: var(--ui-radius-sm);
+    background: none;
+    color: var(--ui-text-highlighted);
     font: inherit;
     font-size: 20px;
     font-weight: 700;
+    letter-spacing: -0.02em;
   }
 
   .fb-title:hover,
   .fb-title:focus {
-    border-color: #cbd5e1;
+    border-color: var(--ui-border-accented);
+  }
+
+  .fb-title:focus {
+    border-color: var(--ui-primary);
+    outline: none;
   }
 
   .fb-meta {
     margin: 0 6px 12px;
-    color: #94a3b8;
+    color: var(--ui-text-dimmed);
+    font-family: var(--font-mono);
     font-size: 12px;
   }
 
+  /* The schema: a code panel, as in the docs. */
   .fb-json {
     min-width: 0;
     padding: 12px;
-    background: #0f172a;
-    border-radius: 12px;
-  }
-
-  .fb-json h3 {
-    color: #e2e8f0;
+    background: var(--ui-bg-muted);
+    border-radius: var(--ui-radius-lg);
+    box-shadow: inset 0 0 0 1px var(--ui-border);
   }
 
   .fb-json pre {
     max-height: 560px;
     margin: 0;
     overflow: auto;
-    color: #a5f3fc;
+    color: var(--ui-text);
     font-size: 11px;
   }
 </style>

@@ -55,8 +55,8 @@
     width: 48px;
     height: 48px;
     margin: -4px -8px -4px 0;
-    border-radius: 8px;
-    color: #6b7280;
+    border-radius: var(--ui-radius);
+    color: var(--ui-text-dimmed);
     font-size: 22px;
     touch-action: none;
     cursor: grab;
@@ -68,11 +68,11 @@
     gap: 12px;
     min-height: 60px;
     padding: 8px 12px;
-    background: #fff;
-    border: 1px solid #d1d5db;
-    border-radius: 10px;
-    color: #111827;
-    font: 15px/1.3 system-ui, sans-serif;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius-lg);
+    color: var(--ui-text-highlighted);
+    font: 15px/1.3 var(--font-sans);
   }
 
   .text {
@@ -87,7 +87,7 @@
   }
 
   .note {
-    color: #6b7280;
+    color: var(--ui-text-muted);
     font-size: 13px;
   }
 </style>

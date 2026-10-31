@@ -26,9 +26,10 @@
     align-items: center;
     height: 36px;
     padding-right: 12px;
-    background: #fff;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius);
+    font-family: var(--font-mono);
     cursor: grab;
   }
 </style>

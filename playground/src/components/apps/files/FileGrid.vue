@@ -61,7 +61,7 @@
     flex: 1;
     padding: 16px;
     overflow: auto;
-    background: #f8fafc;
+    background: var(--ui-bg-muted);
   }
 
   .fm-grid {
@@ -75,11 +75,11 @@
   }
 
   .fm-empty {
-    color: #94a3b8;
+    color: var(--ui-text-dimmed);
   }
 
   .fm-band {
-    background: rgb(37 99 235 / 0.12);
-    border: 1px solid #2563eb;
+    background: color-mix(in srgb, var(--ui-selection) 12%, transparent);
+    border: 1px solid var(--ui-selection);
   }
 </style>

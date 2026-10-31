@@ -28,24 +28,24 @@
   .fm-crumb {
     padding: 4px 8px;
     border: 0;
-    border-radius: 6px;
+    border-radius: var(--ui-radius);
     background: none;
-    color: #1d4ed8;
+    color: var(--ui-primary);
     font: inherit;
     cursor: pointer;
   }
 
   .fm-crumb:hover {
-    background: #e0e7ff;
+    background: var(--ui-bg-elevated);
   }
 
   .accepting {
-    box-shadow: inset 0 0 0 2px #93c5fd;
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ui-primary) 45%, transparent);
   }
 
   .target {
-    background: #2563eb;
-    color: #fff;
+    background: var(--ui-primary);
+    color: var(--ui-on-primary);
     box-shadow: none;
   }
 </style>

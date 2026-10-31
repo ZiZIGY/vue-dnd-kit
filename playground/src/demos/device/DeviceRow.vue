@@ -80,11 +80,11 @@
     gap: 12px;
     min-height: 60px;
     padding: 8px 12px;
-    background: #fff;
-    border: 1px solid #d1d5db;
-    border-radius: 10px;
-    color: #111827;
-    font: 15px/1.3 system-ui, sans-serif;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius-lg);
+    color: var(--ui-text-highlighted);
+    font: 15px/1.3 var(--font-sans);
   }
 
   .avatar,
@@ -92,15 +92,17 @@
     flex: none;
     width: 40px;
     height: 40px;
-    border-radius: 8px;
+    border-radius: var(--ui-radius);
   }
 
   .avatar {
     display: grid;
     place-items: center;
     border-radius: 50%;
-    background: #dbeafe;
-    color: #1d4ed8;
+    background: var(--ui-bg-elevated);
+    box-shadow: inset 0 0 0 1px var(--ui-border-accented);
+    color: var(--ui-text-muted);
+    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 600;
   }
@@ -118,14 +120,14 @@
 
   .note {
     overflow: hidden;
-    color: #6b7280;
+    color: var(--ui-text-muted);
     font-size: 13px;
     white-space: nowrap;
     text-overflow: ellipsis;
   }
 
   .note a {
-    color: #1d4ed8;
+    color: var(--ui-primary);
   }
 
   /* As in the touch-handle demo: only the handle refuses to pan, the rest scrolls. */
@@ -136,8 +138,8 @@
     width: 48px;
     height: 48px;
     margin: -4px -8px -4px 0;
-    border-radius: 8px;
-    color: #6b7280;
+    border-radius: var(--ui-radius);
+    color: var(--ui-text-dimmed);
     font-size: 22px;
     touch-action: none;
     cursor: grab;

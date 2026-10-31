@@ -34,15 +34,17 @@
     place-items: center;
     width: 220px;
     height: 120px;
+    /* Water: blue on either theme. */
+    --water: #3b82f6;
     font-weight: 600;
-    color: #1d4ed8;
-    background: #eff6ff;
-    border: 2px dashed #93c5fd;
-    border-radius: 12px;
+    color: color-mix(in srgb, var(--water) 75%, var(--ui-text-highlighted));
+    background: color-mix(in srgb, var(--water) 8%, var(--ui-bg));
+    border: 2px dashed color-mix(in srgb, var(--water) 50%, var(--ui-bg));
+    border-radius: var(--ui-radius-lg);
     transition: background-color 120ms;
   }
 
   .water[data-over] {
-    background: #dbeafe;
+    background: color-mix(in srgb, var(--water) 18%, var(--ui-bg));
   }
 </style>

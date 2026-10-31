@@ -38,24 +38,25 @@
     padding: 2px 6px;
     overflow: hidden;
     border-left: 3px solid var(--color);
-    border-radius: 4px;
-    background: color-mix(in srgb, var(--color) 22%, white);
-    box-shadow: 0 10px 24px -6px rgb(15 23 42 / 0.35);
-    color: #0f172a;
-    font: 12px/1.3 system-ui, sans-serif;
+    border-radius: var(--ui-radius-sm);
+    background: color-mix(in srgb, var(--color) 24%, var(--ui-bg));
+    box-shadow: var(--ui-shadow-overlay);
+    color: var(--ui-text-highlighted);
+    font: 12px/1.3 var(--font-sans);
   }
 
   .cal-ghost.refused {
-    border-left-color: #dc2626;
-    background: #fee2e2;
+    border-left-color: var(--ui-danger);
+    background: var(--ui-danger-soft);
   }
 
   span {
+    font-variant-numeric: tabular-nums;
     font-weight: 600;
     white-space: nowrap;
   }
 
   .refused span {
-    color: #b91c1c;
+    color: var(--ui-danger);
   }
 </style>

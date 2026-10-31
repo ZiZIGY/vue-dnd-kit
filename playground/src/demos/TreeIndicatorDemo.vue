@@ -135,12 +135,13 @@
     gap: 4px;
     width: 360px;
     padding: 8px;
-    background: #e5e7eb;
-    border-radius: 8px;
+    background: var(--ui-bg-muted);
+    border-radius: var(--ui-radius-lg);
+    box-shadow: inset 0 0 0 1px var(--ui-border);
   }
 
   .hint {
     max-width: 600px;
-    color: #4b5563;
+    color: var(--ui-text-muted);
   }
 </style>

@@ -150,15 +150,18 @@
     grid-template-columns: repeat(8, 64px);
     grid-template-rows: repeat(8, 64px);
     overflow: hidden;
-    border-radius: 4px;
-    box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.5);
+    border-radius: var(--ui-radius);
+    box-shadow:
+      0 0 0 1px var(--ui-border-accented),
+      var(--ui-shadow-overlay);
   }
 
   .ch-ranks {
     display: grid;
     grid-template-rows: repeat(8, 64px);
     align-items: center;
-    color: #64748b;
+    color: var(--ui-text-dimmed);
+    font-family: var(--font-mono);
     font-size: 12px;
   }
 
@@ -166,7 +169,8 @@
     grid-column: 2;
     display: grid;
     grid-template-columns: repeat(8, 64px);
-    color: #64748b;
+    color: var(--ui-text-dimmed);
+    font-family: var(--font-mono);
     font-size: 12px;
     text-align: center;
   }
@@ -181,14 +185,17 @@
   .ch-status {
     margin: 0;
     padding: 8px 12px;
-    border-radius: 8px;
-    background: #fff;
+    border-radius: var(--ui-radius);
+    background: var(--ui-surface);
+    box-shadow: inset 0 0 0 1px var(--ui-border-accented);
+    color: var(--ui-text-highlighted);
     font-weight: 600;
   }
 
   .ch-status.done {
-    background: #dcfce7;
-    color: #166534;
+    background: var(--ui-primary-soft);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-primary) 50%, transparent);
+    color: var(--ui-primary);
   }
 
   .ch-taken {
@@ -202,10 +209,11 @@
 
   .ch-taken small {
     width: 100%;
-    color: #64748b;
-    font: 12px system-ui, sans-serif;
+    color: var(--ui-text-muted);
+    font: 12px var(--font-sans);
   }
 
+  /* The pieces keep their colors; an outline in the page's text color keeps them on any page. */
   .ch-taken .white {
     color: #fff;
     text-shadow:
@@ -215,6 +223,9 @@
 
   .ch-taken .black {
     color: #1f2937;
+    text-shadow:
+      0 0 1px var(--ui-text-dimmed),
+      0 0 1px var(--ui-text-dimmed);
   }
 
   .ch-moves {
@@ -223,18 +234,29 @@
     margin: 0;
     padding: 8px 8px 8px 32px;
     overflow: auto;
-    border-radius: 8px;
-    background: #fff;
-    font: 13px ui-monospace, monospace;
+    border-radius: var(--ui-radius);
+    background: var(--ui-surface);
+    box-shadow: inset 0 0 0 1px var(--ui-border-accented);
+    color: var(--ui-text);
+    font: 13px var(--font-mono);
+  }
+
+  .ch-moves li::marker {
+    color: var(--ui-text-dimmed);
   }
 
   button {
     align-self: flex-start;
     padding: 6px 14px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    background: #fff;
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-bg);
+    color: var(--ui-text);
     font: inherit;
     cursor: pointer;
+  }
+
+  button:hover {
+    background: var(--ui-bg-elevated);
   }
 </style>

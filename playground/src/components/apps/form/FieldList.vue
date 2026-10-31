@@ -61,18 +61,18 @@
   .fb-list.nested {
     min-height: 52px;
     padding: 8px;
-    border-radius: 8px;
-    background: #f8fafc;
-    box-shadow: inset 0 0 0 1px #e2e8f0;
+    border-radius: var(--ui-radius);
+    background: var(--ui-bg);
+    box-shadow: inset 0 0 0 1px var(--ui-border-accented);
   }
 
   .fb-list.nested[data-accepting] {
-    box-shadow: inset 0 0 0 1px #93c5fd;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-primary) 60%, transparent);
   }
 
   .fb-list.nested[data-refusing] {
-    background: #fef2f2;
-    box-shadow: inset 0 0 0 1px #fca5a5;
+    background: var(--ui-danger-soft);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-danger) 55%, transparent);
   }
 
   .fb-empty {
@@ -80,14 +80,14 @@
     align-items: center;
     justify-content: center;
     min-height: 40px;
-    border: 1px dashed #cbd5e1;
-    border-radius: 8px;
-    color: #94a3b8;
+    border: 1px dashed var(--ui-border-strong);
+    border-radius: var(--ui-radius);
+    color: var(--ui-text-dimmed);
     font-size: 13px;
   }
 
   .fb-empty.active {
-    border: 2px solid #2563eb;
-    color: #1d4ed8;
+    border: 2px solid var(--ui-primary);
+    color: var(--ui-primary);
   }
 </style>

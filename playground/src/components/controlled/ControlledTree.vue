@@ -48,7 +48,8 @@
     gap: 4px;
     width: 320px;
     padding: 8px;
-    background: #e5e7eb;
-    border-radius: 8px;
+    background: var(--ui-bg-muted);
+    border-radius: var(--ui-radius-lg);
+    box-shadow: inset 0 0 0 1px var(--ui-border);
   }
 </style>

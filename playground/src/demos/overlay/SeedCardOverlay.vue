@@ -26,10 +26,10 @@
     width: 100%;
     height: 100%;
     padding: 0 12px;
-    background: #fff;
-    border: 1px solid #a3a3a3;
-    border-radius: 8px;
-    box-shadow: 0 12px 24px -10px rgb(0 0 0 / 0.4);
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-strong);
+    border-radius: var(--ui-radius);
+    box-shadow: var(--ui-shadow-overlay);
     rotate: 2deg;
   }
 </style>

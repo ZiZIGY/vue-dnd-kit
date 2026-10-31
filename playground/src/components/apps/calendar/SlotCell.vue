@@ -27,23 +27,27 @@
 
 <style scoped>
   .cal-slot {
-    border-right: 1px solid #e2e8f0;
-    border-top: 1px dashed #f1f5f9;
+    border-right: 1px solid var(--ui-border);
+    border-top: 1px dashed var(--ui-border-muted);
   }
 
   .cal-slot.hour {
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--ui-border);
   }
 
   .cal-slot.weekend {
-    background: repeating-linear-gradient(-45deg, #f8fafc, #f8fafc 6px, #f1f5f9 6px, #f1f5f9 12px);
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent 0 6px,
+      color-mix(in srgb, var(--ui-text) 4%, transparent) 6px 12px
+    );
   }
 
   .cal-slot.over {
-    background: #dbeafe;
+    background: var(--ui-primary-soft);
   }
 
   .cal-slot.refused {
-    background: #fee2e2;
+    background: var(--ui-danger-soft);
   }
 </style>

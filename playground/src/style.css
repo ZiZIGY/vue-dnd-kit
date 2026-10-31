@@ -1,17 +1,201 @@
+/* ---------------------------------------------------------------------------
+ * Tokens: the docs' palette (docs/app/assets/css/main.css), light and dark.
+ * `useDark()` (src/main.ts) puts `dark` on <html>: the Lab's color mode, or the system's.
+ * Demos use these, never raw grays; content hues (file kinds, chess, events) mix with
+ * `--ui-bg` so they read on both.
+ * ------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Sharp, as in the docs: controls and chips, items and cards, lists and panels. */
+  --ui-radius-sm: 2px;
+  --ui-radius: 4px;
+  --ui-radius-lg: 6px;
+
+  /* The page is a demo stage; lists sit on it, items in them. */
+  --stage: #f1f1f2;
+  --ui-bg: #fafafa;
+  --ui-bg-muted: #f3f3f4;
+  --ui-bg-elevated: #ececee;
+  --ui-bg-accented: #e2e2e5;
+  /* Items and cards. */
+  --ui-surface: var(--ui-bg);
+
+  --ui-border: #e4e4e7;
+  --ui-border-muted: #ececee;
+  --ui-border-accented: #d4d4d8;
+  /* Dashed drop zones, free pieces. */
+  --ui-border-strong: #a1a1aa;
+
+  --ui-text-highlighted: #09090b;
+  --ui-text: #27272a;
+  --ui-text-muted: #5b5b63;
+  --ui-text-dimmed: #85858d;
+  --ui-text-inverted: #fafafa;
+
+  --ui-primary: #2f9e6e;
+  --ui-accent: #42b883;
+  --ui-on-primary: #ffffff;
+
+  /* Meaning: refusing and deleting, groups and warnings, a second accent. */
+  --ui-danger: #dc2626;
+  --ui-warning: #c2780a;
+  --ui-info: #2563eb;
+  /* Text on a danger or info fill. */
+  --ui-on-solid: #ffffff;
+
+  --ui-primary-soft: color-mix(in srgb, var(--ui-primary) 12%, var(--ui-bg));
+  --ui-danger-soft: color-mix(in srgb, var(--ui-danger) 10%, var(--ui-bg));
+  --ui-warning-soft: color-mix(in srgb, var(--ui-warning) 13%, var(--ui-bg));
+  --ui-info-soft: color-mix(in srgb, var(--ui-info) 10%, var(--ui-bg));
+
+  /* Selected items, keyboard focus, the rubber band. */
+  --ui-selection: var(--ui-primary);
+  --ui-selection-soft: var(--ui-primary-soft);
+  --ui-focus: var(--ui-primary);
+
+  --ui-shadow-sm: 0 1px 2px rgb(9 9 11 / 0.06);
+  /* What the pointer holds: overlays, ghosts, dialogs. */
+  --ui-shadow-overlay: 0 14px 28px -12px rgb(9 9 11 / 0.32), 0 2px 6px -2px rgb(9 9 11 / 0.12);
+  --ui-backdrop: rgb(9 9 11 / 0.32);
+}
+
+:root.dark {
+  color-scheme: dark;
+
+  --stage: #101012;
+  --ui-bg: #0b0b0c;
+  --ui-bg-muted: #111113;
+  --ui-bg-elevated: #18181b;
+  --ui-bg-accented: #232326;
+  --ui-surface: var(--ui-bg);
+
+  --ui-border: #1f1f22;
+  --ui-border-muted: #18181b;
+  --ui-border-accented: #2e2e33;
+  --ui-border-strong: #4a4a52;
+
+  --ui-text-highlighted: #f4f4f5;
+  --ui-text: #d4d4d8;
+  --ui-text-muted: #9f9fa9;
+  --ui-text-dimmed: #6e6e78;
+  --ui-text-inverted: #0b0b0c;
+
+  --ui-primary: #42b883;
+  --ui-on-primary: #04130c;
+
+  --ui-danger: #ef4444;
+  --ui-warning: #f5a524;
+  --ui-info: #3b82f6;
+  --ui-on-solid: #ffffff;
+
+  --ui-primary-soft: color-mix(in srgb, var(--ui-primary) 14%, var(--ui-bg));
+  --ui-danger-soft: color-mix(in srgb, var(--ui-danger) 16%, var(--ui-bg));
+  --ui-warning-soft: color-mix(in srgb, var(--ui-warning) 14%, var(--ui-bg));
+  --ui-info-soft: color-mix(in srgb, var(--ui-info) 16%, var(--ui-bg));
+
+  --ui-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.5);
+  --ui-shadow-overlay: 0 16px 32px -12px rgb(0 0 0 / 0.75), 0 2px 6px -2px rgb(0 0 0 / 0.5);
+  --ui-backdrop: rgb(0 0 0 / 0.55);
+}
+
+/* ---------------------------------------------------------------------------
+ * Base
+ * ------------------------------------------------------------------------- */
+
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font: 14px/1.4 system-ui, sans-serif;
-  color: #1f2937;
-  background: #f3f4f6;
+  font: 14px/1.4 var(--font-sans);
+  color: var(--ui-text);
+  background: var(--stage);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--ui-accent) 35%, transparent);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--ui-text-highlighted);
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--ui-primary);
+}
+
+code,
+kbd,
+samp {
+  font-family: var(--font-mono);
+}
+
+code {
+  color: var(--ui-text-highlighted);
+}
+
+input[type='checkbox'],
+input[type='radio'],
+input[type='range'] {
+  accent-color: var(--ui-primary);
+}
+
+/*
+ * Plain buttons in the docs' colors. Zero specificity: a demo's own button styles win.
+ * The box stays the browser's (2px border, 1px 6px padding): 1px of border, 1px more padding.
+ */
+:where(button) {
+  padding: 2px 7px;
+  border: 1px solid var(--ui-border-accented);
+  border-radius: var(--ui-radius-sm);
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+:where(button:hover:not(:disabled)) {
+  background: var(--ui-bg-elevated);
+}
+
+:where(button:disabled) {
+  color: var(--ui-text-dimmed);
+  cursor: default;
+}
+
+:where(button:focus-visible, [tabindex]:focus-visible) {
+  outline: 2px solid var(--ui-focus);
+  outline-offset: 1px;
 }
 
 main {
   padding: 16px;
 }
+
+/* Helper text, and the state readouts the e2e specs read. */
+:where(main p) {
+  color: var(--ui-text-muted);
+}
+
+pre {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ui-text-muted);
+}
+
+/* ---------------------------------------------------------------------------
+ * Lists and items
+ * ------------------------------------------------------------------------- */
 
 .list {
   list-style: none;
@@ -19,8 +203,9 @@ main {
   padding: 8px;
   width: 320px;
   min-height: 60px;
-  background: #e5e7eb;
-  border-radius: 8px;
+  background: var(--ui-bg-muted);
+  border-radius: var(--ui-radius-lg);
+  box-shadow: inset 0 0 0 1px var(--ui-border);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -28,9 +213,9 @@ main {
 
 .row {
   padding: 10px 12px;
-  background: #fff;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border-accented);
+  border-radius: var(--ui-radius);
   cursor: grab;
 }
 
@@ -56,13 +241,8 @@ main {
 .board.tall > div {
   min-height: 320px;
   padding: 8px;
-  border: 1px dashed #d1d5db;
-  border-radius: 8px;
-}
-
-pre {
-  font-size: 12px;
-  color: #6b7280;
+  border: 1px dashed var(--ui-border-accented);
+  border-radius: var(--ui-radius-lg);
 }
 
 pre.order {
@@ -74,7 +254,7 @@ pre.order {
 .scroller {
   height: 300px;
   overflow: auto;
-  border-radius: 8px;
+  border-radius: var(--ui-radius-lg);
 }
 
 .free {
@@ -88,11 +268,11 @@ pre.order {
   position: relative;
   width: 400px;
   height: 300px;
-  background-color: #fff;
-  background-image: linear-gradient(#e5e7eb 1px, transparent 1px),
-    linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
+  background-color: var(--ui-surface);
+  background-image: linear-gradient(var(--ui-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ui-border) 1px, transparent 1px);
   background-size: 20px 20px;
-  outline: 1px solid #d1d5db;
+  outline: 1px solid var(--ui-border-accented);
 }
 
 .piece {
@@ -102,9 +282,9 @@ pre.order {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: #fff;
-  border: 1px solid #9ca3af;
-  border-radius: 6px;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--ui-radius);
   cursor: grab;
 }
 
@@ -112,13 +292,14 @@ pre.order {
   position: absolute;
 }
 
+/* Game pieces: their hue is what they are. */
 .piece.red {
-  background: #fee2e2;
+  background: color-mix(in srgb, #ef4444 14%, var(--ui-bg));
   border-color: #ef4444;
 }
 
 .piece.blue {
-  background: #dbeafe;
+  background: color-mix(in srgb, #3b82f6 14%, var(--ui-bg));
   border-color: #3b82f6;
 }
 
@@ -140,21 +321,23 @@ pre.order {
   flex-wrap: wrap;
   gap: 6px;
   align-content: flex-start;
-  background: #e5e7eb;
-  border-radius: 8px;
+  background: var(--ui-bg-muted);
+  border-radius: var(--ui-radius-lg);
+  box-shadow: inset 0 0 0 1px var(--ui-border);
   outline: 2px dashed transparent;
 }
 
 .zone strong {
   width: 100%;
+  color: var(--ui-text-highlighted);
 }
 
 .zone.accepting {
-  outline-color: #10b981;
+  outline-color: var(--ui-primary);
 }
 
 .zone.over {
-  background: #d1fae5;
+  background: var(--ui-primary-soft);
 }
 
 /* Selection */
@@ -174,8 +357,9 @@ pre.order {
   height: 320px;
   overflow: auto;
   padding: 24px;
-  background: #e5e7eb;
-  border-radius: 8px;
+  background: var(--ui-bg-muted);
+  border-radius: var(--ui-radius-lg);
+  box-shadow: inset 0 0 0 1px var(--ui-border);
 }
 
 .card-grid {
@@ -192,9 +376,9 @@ pre.order {
   align-items: center;
   justify-content: center;
   height: 64px;
-  background: #fff;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border-accented);
+  border-radius: var(--ui-radius);
   cursor: grab;
 }
 
@@ -204,9 +388,9 @@ pre.order {
 }
 
 .card.selected {
-  background: #dbeafe;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 1px #2563eb;
+  background: var(--ui-selection-soft);
+  border-color: var(--ui-selection);
+  box-shadow: 0 0 0 1px var(--ui-selection);
 }
 
 .nested pre {
@@ -217,9 +401,9 @@ pre.order {
   position: relative;
   width: 200px;
   padding: 16px;
-  background: #f9fafb;
-  border: 1px dashed #9ca3af;
-  border-radius: 8px;
+  background: var(--ui-bg);
+  border: 1px dashed var(--ui-border-strong);
+  border-radius: var(--ui-radius-lg);
 }
 
 .nested-cards {
@@ -230,8 +414,8 @@ pre.order {
 }
 
 .selection-band {
-  background: rgb(37 99 235 / 0.12);
-  border: 1px solid #2563eb;
+  background: color-mix(in srgb, var(--ui-selection) 12%, transparent);
+  border: 1px solid var(--ui-selection);
 }
 
 .page-spacer {
@@ -249,9 +433,9 @@ pre.order {
 
 .chip {
   padding: 8px 12px;
-  background: #fff;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border-accented);
+  border-radius: var(--ui-radius);
 }
 
 .a11y-zone {
@@ -260,13 +444,15 @@ pre.order {
   justify-content: center;
   width: 160px;
   height: 96px;
-  background: #e5e7eb;
-  border: 2px dashed #9ca3af;
-  border-radius: 8px;
+  background: var(--ui-bg-muted);
+  border: 2px dashed var(--ui-border-strong);
+  border-radius: var(--ui-radius-lg);
+  color: var(--ui-text-muted);
 }
 
 .a11y-zone.over {
-  border-color: #2563eb;
+  border-color: var(--ui-primary);
+  color: var(--ui-text-highlighted);
 }
 
 section + section {
@@ -280,17 +466,18 @@ section + section {
   flex-wrap: wrap;
 }
 
+/* Lists that take the dragged items, and lists that refuse them. */
 .list[data-accepting] {
-  outline: 2px dashed #93c5fd;
+  outline: 2px dashed color-mix(in srgb, var(--ui-primary) 55%, transparent);
 }
 
 .list[data-over]:not([data-accepting]) {
-  outline: 2px solid #fca5a5;
+  outline: 2px solid color-mix(in srgb, var(--ui-danger) 55%, transparent);
 }
 
 .row.selected {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px #bfdbfe;
+  border-color: var(--ui-selection);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-selection) 30%, transparent);
 }
 
 /* Multi-drag 'gaps': the other dragged items stay put, dimmed. */
@@ -309,7 +496,7 @@ section + section {
 }
 
 .touching .list + .list {
-  background: #d1d5db;
+  background: var(--ui-bg-accented);
 }
 
 .stacked {
@@ -323,7 +510,7 @@ section + section {
 }
 
 .stacked .list + .list {
-  background: #d1d5db;
+  background: var(--ui-bg-accented);
 }
 
 /* ─── Horizontal ─── */
@@ -350,7 +537,7 @@ section + section {
   right: 0;
   height: 3px;
   border-radius: 2px;
-  background: #2563eb;
+  background: var(--ui-primary);
   pointer-events: none;
 }
 
@@ -365,8 +552,13 @@ section + section {
 /* ─── Custom placeholder ─── */
 .list.custom-placeholder .row[data-dnd-placeholder] {
   opacity: 1;
-  background: repeating-linear-gradient(45deg, #e0e7ff, #e0e7ff 6px, #c7d2fe 6px, #c7d2fe 12px);
+  background: repeating-linear-gradient(
+    45deg,
+    color-mix(in srgb, var(--ui-primary) 8%, var(--ui-bg)) 0 6px,
+    color-mix(in srgb, var(--ui-primary) 20%, var(--ui-bg)) 6px 12px
+  );
   border-style: dashed;
+  border-color: var(--ui-primary);
   color: transparent;
 }
 
@@ -379,8 +571,9 @@ section + section {
   grid-template-columns: repeat(4, 80px);
   grid-auto-rows: 80px;
   gap: 8px;
-  background: #e5e7eb;
-  border-radius: 8px;
+  background: var(--ui-bg-muted);
+  border-radius: var(--ui-radius-lg);
+  box-shadow: inset 0 0 0 1px var(--ui-border);
   width: max-content;
 }
 
@@ -397,14 +590,19 @@ section + section {
 /* ─── Tables ─── */
 table.sortable-table {
   border-collapse: collapse;
-  background: #fff;
+  background: var(--ui-surface);
 }
 
 table.sortable-table th,
 table.sortable-table td {
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--ui-border-accented);
   padding: 8px 12px;
   text-align: left;
+}
+
+table.sortable-table th {
+  background: var(--ui-bg-muted);
+  color: var(--ui-text-highlighted);
 }
 
 table.sortable-table tr.row {
@@ -416,26 +614,26 @@ table.sortable-table tr.row {
 .drop-target {
   width: 160px;
   height: 120px;
-  border: 2px dashed #9ca3af;
-  border-radius: 8px;
+  border: 2px dashed var(--ui-border-strong);
+  border-radius: var(--ui-radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
+  color: var(--ui-text-muted);
 }
 
 .drop-target[data-over] {
-  border-color: #dc2626;
-  color: #dc2626;
-  background: #fee2e2;
+  border-color: var(--ui-danger);
+  color: var(--ui-danger);
+  background: var(--ui-danger-soft);
 }
 
 .ext-chip {
   display: inline-block;
   padding: 8px 12px;
-  background: #fef3c7;
-  border: 1px solid #f59e0b;
-  border-radius: 6px;
+  background: var(--ui-warning-soft);
+  border: 1px solid color-mix(in srgb, var(--ui-warning) 70%, var(--ui-bg));
+  border-radius: var(--ui-radius);
   cursor: grab;
 }
 
@@ -447,8 +645,9 @@ table.sortable-table tr.row {
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  background: #e5e7eb;
-  border-radius: 8px;
+  background: var(--ui-bg-muted);
+  border-radius: var(--ui-radius-lg);
+  box-shadow: inset 0 0 0 1px var(--ui-border);
   width: max-content;
 }
 
@@ -456,9 +655,9 @@ table.sortable-table tr.row {
   width: 220px;
   min-height: 160px;
   padding: 8px;
-  background: #f9fafb;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  background: var(--ui-bg-elevated);
+  border: 1px solid var(--ui-border-accented);
+  border-radius: var(--ui-radius-lg);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -466,6 +665,7 @@ table.sortable-table tr.row {
 
 .column header {
   font-weight: 600;
+  color: var(--ui-text-highlighted);
   cursor: grab;
   padding: 4px;
 }

@@ -92,6 +92,6 @@
 
   dd {
     margin: 0;
-    color: #4b5563;
+    color: var(--ui-text-muted);
   }
 </style>

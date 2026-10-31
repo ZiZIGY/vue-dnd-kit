@@ -26,9 +26,9 @@
     align-items: center;
     height: 40px;
     padding: 0 12px;
-    background: #fff;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius);
     cursor: grab;
     user-select: none;
   }

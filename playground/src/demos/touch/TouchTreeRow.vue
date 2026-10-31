@@ -46,11 +46,11 @@
     gap: 4px;
     height: 48px;
     padding-right: 12px;
-    background: #fff;
-    border: 1px solid #d1d5db;
-    border-radius: 10px;
-    color: #111827;
-    font: 15px/1.3 system-ui, sans-serif;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius-lg);
+    color: var(--ui-text-highlighted);
+    font: 15px/1.3 var(--font-sans);
   }
 
   .tree-row.folder .name {
@@ -65,9 +65,9 @@
     height: 40px;
     padding: 0;
     border: 0;
-    border-radius: 8px;
+    border-radius: var(--ui-radius);
     background: none;
-    color: #6b7280;
+    color: var(--ui-text-dimmed);
     font: inherit;
   }
 </style>

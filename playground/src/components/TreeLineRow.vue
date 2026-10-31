@@ -71,21 +71,21 @@
     gap: 6px;
     height: 36px;
     padding-right: 12px;
-    background: #fff;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius);
     cursor: grab;
   }
 
   .tree-row.selected {
-    background: #dbeafe;
-    border-color: #3b82f6;
+    background: var(--ui-selection-soft);
+    border-color: var(--ui-selection);
   }
 
   .tree-row.into {
-    background: #e0e7ff;
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 2px #c7d2fe;
+    background: var(--ui-primary-soft);
+    border-color: var(--ui-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-primary) 30%, transparent);
   }
 
   .tree-row.folder .name {
@@ -99,7 +99,7 @@
     border: 0;
     background: none;
     font: inherit;
-    color: #6b7280;
+    color: var(--ui-text-dimmed);
     cursor: pointer;
   }
 
@@ -109,7 +109,7 @@
     right: 0;
     height: 3px;
     border-radius: 2px;
-    background: #4f46e5;
+    background: var(--ui-primary);
     pointer-events: none;
   }
 
@@ -121,9 +121,9 @@
     width: 9px;
     height: 9px;
     box-sizing: border-box;
-    border: 2px solid #4f46e5;
+    border: 2px solid var(--ui-primary);
     border-radius: 50%;
-    background: #fff;
+    background: var(--ui-bg);
   }
 
   .drop-line.before {

@@ -28,10 +28,11 @@
     height: 100%;
     padding: 0 12px;
     box-sizing: border-box;
-    background: #111827;
-    color: #f9fafb;
-    border-radius: 999px;
-    box-shadow: 0 12px 24px -8px rgb(17 24 39 / 0.6);
+    /* Inverted: dark on a light page, light on a dark one. */
+    background: var(--ui-text-highlighted);
+    color: var(--ui-text-inverted);
+    border-radius: var(--ui-radius);
+    box-shadow: var(--ui-shadow-overlay);
   }
 
   .icon {
@@ -45,9 +46,10 @@
 
   .tag {
     padding: 1px 8px;
-    border-radius: 999px;
+    border-radius: var(--ui-radius-sm);
     background: #f59e0b;
     color: #111827;
+    font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;

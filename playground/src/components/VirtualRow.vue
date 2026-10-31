@@ -35,12 +35,13 @@
     display: flex;
     align-items: center;
     padding: 0 12px;
-    background: #fff;
-    border-bottom: 1px solid #e5e7eb;
+    background: var(--ui-surface);
+    border-bottom: 1px solid var(--ui-border);
     cursor: grab;
   }
 
   .vrow.selected {
-    box-shadow: inset 3px 0 #2563eb;
+    background: var(--ui-selection-soft);
+    box-shadow: inset 3px 0 var(--ui-selection);
   }
 </style>

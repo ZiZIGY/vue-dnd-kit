@@ -318,8 +318,8 @@
     gap: 16px;
     max-width: 560px;
     margin: 0 auto;
-    color: #111827;
-    font: 15px/1.4 system-ui, sans-serif;
+    color: var(--ui-text);
+    font: 15px/1.4 var(--font-sans);
   }
 
   .top {
@@ -334,9 +334,9 @@
 
   .how {
     padding: 12px var(--gutter);
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-radius: 10px;
+    background: var(--ui-info-soft);
+    border: 1px solid color-mix(in srgb, var(--ui-info) 35%, var(--ui-bg));
+    border-radius: var(--ui-radius-lg);
   }
 
   .how ol {
@@ -353,7 +353,7 @@
   }
 
   .warning {
-    color: #b45309;
+    color: var(--ui-warning);
     font-weight: 600;
   }
 
@@ -379,9 +379,10 @@
   .actions button {
     min-height: 40px;
     padding: 0 14px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    background: #f9fafb;
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius);
+    background: var(--ui-bg-muted);
+    color: var(--ui-text);
     font: inherit;
     font-weight: 600;
   }
@@ -389,9 +390,11 @@
   .results textarea {
     width: 100%;
     padding: 8px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    font: 12px/1.4 ui-monospace, monospace;
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius);
+    background: var(--ui-bg);
+    color: var(--ui-text);
+    font: 12px/1.4 var(--font-mono);
   }
 
   .results h3,

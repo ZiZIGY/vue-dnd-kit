@@ -28,10 +28,10 @@
     height: 100%;
     padding: 0 12px;
     box-sizing: border-box;
-    background: #ecfdf5;
-    border: 2px solid #10b981;
-    border-radius: 8px;
-    box-shadow: 0 12px 24px -10px rgb(6 95 70 / 0.5);
+    background: var(--ui-primary-soft);
+    border: 2px solid var(--ui-primary);
+    border-radius: var(--ui-radius);
+    box-shadow: var(--ui-shadow-overlay);
   }
 
   .check {
@@ -39,17 +39,19 @@
     place-items: center;
     width: 20px;
     height: 20px;
-    border-radius: 4px;
-    background: #10b981;
-    color: #fff;
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-primary);
+    color: var(--ui-on-primary);
     font-size: 12px;
   }
 
   .title {
     flex: 1;
+    color: var(--ui-text-highlighted);
   }
 
   small {
-    color: #047857;
+    color: var(--ui-primary);
+    font-family: var(--font-mono);
   }
 </style>

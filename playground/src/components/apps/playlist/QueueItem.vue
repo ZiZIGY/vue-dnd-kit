@@ -69,27 +69,29 @@
     gap: 10px;
     width: 172px;
     padding: 8px;
-    border-radius: 10px;
-    background: #1e293b;
-    color: #e2e8f0;
+    border-radius: var(--ui-radius);
+    background: var(--ui-surface);
+    box-shadow: inset 0 0 0 1px var(--ui-border-accented);
+    color: var(--ui-text);
     cursor: grab;
     user-select: none;
   }
 
   .pl-entry:focus-visible {
-    outline: 2px solid #a78bfa;
+    outline: 2px solid var(--ui-focus);
     outline-offset: 2px;
   }
 
   .pl-entry.playing {
-    background: #312e81;
+    background: var(--ui-primary-soft);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-primary) 55%, transparent);
   }
 
-  /* The slot keeps its size; only a dashed frame is left. */
+  /* The slot keeps its size; only a frame is left. */
   .pl-entry.placeholder {
     opacity: 1;
     background: transparent;
-    box-shadow: inset 0 0 0 2px rgb(167 139 250 / 0.6);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ui-primary) 55%, transparent);
   }
 
   .pl-entry.placeholder > * {
@@ -103,8 +105,9 @@
     justify-content: center;
     width: 40px;
     height: 40px;
-    border-radius: 6px;
+    border-radius: var(--ui-radius-sm);
     color: rgb(255 255 255 / 0.85);
+    font-family: var(--font-mono);
   }
 
   .pl-bars {
@@ -159,8 +162,12 @@
     white-space: nowrap;
   }
 
+  .pl-entry-text strong {
+    color: var(--ui-text-highlighted);
+  }
+
   .pl-entry-text small {
-    color: #94a3b8;
+    color: var(--ui-text-muted);
   }
 
   .pl-remove {
@@ -170,12 +177,12 @@
     padding: 0 4px;
     border: 0;
     background: none;
-    color: #64748b;
+    color: var(--ui-text-dimmed);
     font-size: 14px;
     cursor: pointer;
   }
 
   .pl-remove:hover {
-    color: #f87171;
+    color: var(--ui-danger);
   }
 </style>

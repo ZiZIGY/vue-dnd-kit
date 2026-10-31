@@ -103,7 +103,7 @@
 <style>
   .nested-demo p {
     max-width: 760px;
-    color: #4b5563;
+    color: var(--ui-text-muted);
   }
 
   .tray {
@@ -112,18 +112,21 @@
     min-height: 52px;
     padding: 8px;
     margin-bottom: 16px;
-    background: #e5e7eb;
-    border-radius: 8px;
+    background: var(--ui-bg-muted);
+    border-radius: var(--ui-radius-lg);
+    box-shadow: inset 0 0 0 1px var(--ui-border);
     width: 520px;
   }
 
+  /* Game pieces: their hue is what they are. */
   .nz-piece {
     width: 48px;
     height: 32px;
     display: grid;
     place-items: center;
-    border-radius: 6px;
+    border-radius: var(--ui-radius);
     color: #fff;
+    font-family: var(--font-mono);
     font-weight: 600;
     cursor: grab;
     user-select: none;
@@ -153,24 +156,25 @@
     gap: 12px;
     padding: 8px 12px 12px;
     min-height: 72px;
-    background: rgb(255 255 255 / 0.6);
-    border: 2px dashed #9ca3af;
-    border-radius: 8px;
+    background: color-mix(in srgb, var(--ui-bg) 60%, transparent);
+    border: 2px dashed var(--ui-border-strong);
+    border-radius: var(--ui-radius-lg);
   }
 
   .nz-zone[data-over='accepted'] {
-    border-color: #16a34a;
-    background: #dcfce7;
+    border-color: var(--ui-primary);
+    background: var(--ui-primary-soft);
   }
 
   .nz-zone[data-over='rejected'] {
-    border-color: #dc2626;
-    background: #fee2e2;
+    border-color: var(--ui-danger);
+    background: var(--ui-danger-soft);
   }
 
   .nz-zone-label {
+    font-family: var(--font-mono);
     font-size: 12px;
-    color: #4b5563;
+    color: var(--ui-text-muted);
   }
 
   .nz-zone-pieces {
@@ -200,8 +204,9 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    background: #e5e7eb;
-    border-radius: 8px;
+    background: var(--ui-bg-muted);
+    border-radius: var(--ui-radius-lg);
+    box-shadow: inset 0 0 0 1px var(--ui-border);
   }
 
   .shelf > .nz-zone {

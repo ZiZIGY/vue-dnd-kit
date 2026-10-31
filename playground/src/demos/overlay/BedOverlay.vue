@@ -35,12 +35,14 @@
     width: 100%;
     height: 100%;
     padding: 0 12px;
-    background: #fff;
-    border: 1px solid #a3a3a3;
-    border-radius: 8px;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-strong);
+    border-radius: var(--ui-radius);
+    box-shadow: var(--ui-shadow-overlay);
   }
 
   small {
-    color: #15803d;
+    color: var(--ui-primary);
+    font-family: var(--font-mono);
   }
 </style>

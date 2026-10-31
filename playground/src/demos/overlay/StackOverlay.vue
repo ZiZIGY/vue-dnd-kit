@@ -54,16 +54,16 @@
     position: absolute;
     inset: 0;
     box-sizing: border-box;
-    border-radius: 8px;
-    background: #fff;
-    border: 1px solid #c7d2fe;
+    border-radius: var(--ui-radius);
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-accented);
   }
 
-  /* Each sheet sits a little lower, to the right and turned. */
+  /* Each sheet sits a little lower, to the right and turned, a shade further back. */
   .sheet {
     transform: translate(calc(var(--depth) * 5px), calc(var(--depth) * 5px)) rotate(calc(var(--depth) * 1.5deg));
-    background: hsl(230 80% calc(98% - var(--depth) * 3%));
-    box-shadow: 0 4px 10px -6px rgb(30 27 75 / 0.4);
+    background: color-mix(in srgb, var(--ui-text) calc(3% + var(--depth) * 3%), var(--ui-bg));
+    box-shadow: var(--ui-shadow-sm);
   }
 
   .sheet:nth-of-type(1) {
@@ -84,17 +84,18 @@
     align-items: center;
     gap: 10px;
     padding: 0 12px;
-    border-color: #6366f1;
-    box-shadow: 0 14px 28px -12px rgb(30 27 75 / 0.55);
+    border-color: var(--ui-primary);
+    box-shadow: var(--ui-shadow-overlay);
   }
 
   .title {
+    color: var(--ui-text-highlighted);
     font-weight: 600;
   }
 
   .others {
     overflow: hidden;
-    color: #6b7280;
+    color: var(--ui-text-muted);
     font-size: 12px;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -109,10 +110,10 @@
     height: 24px;
     padding: 0 7px;
     box-sizing: border-box;
-    border-radius: 12px;
-    background: #4f46e5;
-    color: #fff;
-    font: 700 12px/24px system-ui, sans-serif;
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-primary);
+    color: var(--ui-on-primary);
+    font: 700 12px/24px var(--font-mono);
     text-align: center;
   }
 </style>

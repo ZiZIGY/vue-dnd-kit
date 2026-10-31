@@ -49,34 +49,37 @@
 
 <style scoped>
   .entry.group {
-    background: #fef3c7;
-    border-color: #f59e0b;
+    background: var(--ui-warning-soft);
+    border-color: color-mix(in srgb, var(--ui-warning) 70%, var(--ui-bg));
   }
 
   .entry.locked {
-    background: #f1f5f9;
-    border-color: #94a3b8;
+    background: var(--ui-bg-muted);
+    border-color: var(--ui-border-strong);
     border-style: dashed;
+    color: var(--ui-text-muted);
   }
 
   .entry.selected {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--ui-selection);
   }
 
   .entry[data-accepting] {
-    box-shadow: inset 0 0 0 1px #93c5fd;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-primary) 55%, transparent);
   }
 
   .entry[data-target] {
-    background: #2563eb;
-    color: #fff;
+    background: var(--ui-primary);
+    border-color: var(--ui-primary);
+    color: var(--ui-on-primary);
   }
 
   .count {
     float: right;
     padding: 0 6px;
-    border-radius: 999px;
-    background: rgb(15 23 42 / 0.1);
+    border-radius: var(--ui-radius-sm);
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    font-family: var(--font-mono);
     font-size: 12px;
   }
 </style>

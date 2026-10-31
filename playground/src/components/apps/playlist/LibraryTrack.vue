@@ -52,18 +52,26 @@
     align-items: center;
     gap: 12px;
     padding: 8px 10px;
-    border-radius: 8px;
-    color: #e2e8f0;
+    border-radius: var(--ui-radius);
+    color: var(--ui-text);
     cursor: grab;
     user-select: none;
   }
 
   .pl-track:hover {
-    background: rgb(255 255 255 / 0.05);
+    background: var(--ui-bg-elevated);
   }
 
   .pl-track:focus-visible {
-    outline: 2px solid #a78bfa;
+    outline: 2px solid var(--ui-focus);
+  }
+
+  /* The row has no background of its own: the copy in the overlay gets one. */
+  [data-dnd-overlay] .pl-track {
+    background: var(--ui-bg-elevated);
+    box-shadow:
+      inset 0 0 0 1px var(--ui-border-accented),
+      var(--ui-shadow-overlay);
   }
 
   .pl-track.dragging {
@@ -73,16 +81,21 @@
   .pl-dot {
     width: 12px;
     height: 12px;
-    border-radius: 3px;
+    border-radius: var(--ui-radius-sm);
   }
 
   .pl-track-title {
+    color: var(--ui-text-highlighted);
     font-weight: 600;
   }
 
   .pl-track-artist,
   .pl-time {
-    color: #94a3b8;
+    color: var(--ui-text-muted);
+  }
+
+  .pl-time {
+    font-family: var(--font-mono);
   }
 
   .pl-time {
@@ -97,26 +110,29 @@
   .pl-queued {
     justify-self: start;
     padding: 0 6px;
-    border-radius: 999px;
-    background: rgb(167 139 250 / 0.2);
-    color: #c4b5fd;
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-primary-soft);
+    color: var(--ui-primary);
+    font-family: var(--font-mono);
     font-size: 11px;
   }
 
   .pl-add {
     width: 26px;
     height: 26px;
-    border: 1px solid #475569;
-    border-radius: 50%;
-    background: none;
-    color: #e2e8f0;
+    /* The browser's padding: the page's plain-button padding (style.css) makes up for a thinner border. */
+    padding: 1px 6px;
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-bg);
+    color: var(--ui-text);
     font-size: 16px;
     line-height: 1;
     cursor: pointer;
   }
 
   .pl-add:hover {
-    border-color: #a78bfa;
-    color: #c4b5fd;
+    border-color: var(--ui-primary);
+    color: var(--ui-primary);
   }
 </style>

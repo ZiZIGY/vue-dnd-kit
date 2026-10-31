@@ -38,10 +38,10 @@
     height: 100%;
     padding: 0 12px;
     box-sizing: border-box;
-    background: #fff;
-    border: 1px solid #a78bfa;
-    border-radius: 10px;
-    box-shadow: 0 18px 30px -12px rgb(76 29 149 / 0.45);
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-primary);
+    border-radius: var(--ui-radius);
+    box-shadow: var(--ui-shadow-overlay);
   }
 
   .icon {
@@ -49,8 +49,8 @@
     place-items: center;
     width: 24px;
     height: 24px;
-    border-radius: 6px;
-    background: #8b5cf6;
-    color: #fff;
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-primary);
+    color: var(--ui-on-primary);
   }
 </style>

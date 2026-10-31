@@ -53,7 +53,7 @@
   }
 
   .cal-event:focus-visible .cal-card {
-    box-shadow: 0 0 0 2px #0f172a;
+    box-shadow: 0 0 0 2px var(--ui-focus);
   }
 
   .cal-event.dragging {
@@ -67,14 +67,15 @@
     padding: 2px 6px;
     overflow: hidden;
     border-left: 3px solid var(--color);
-    border-radius: 4px;
-    background: color-mix(in srgb, var(--color) 14%, white);
-    color: #0f172a;
+    border-radius: var(--ui-radius-sm);
+    background: color-mix(in srgb, var(--color) 16%, var(--ui-bg));
+    color: var(--ui-text-highlighted);
     font-size: 12px;
     line-height: 1.3;
   }
 
   small {
-    color: #475569;
+    color: var(--ui-text-muted);
+    font-variant-numeric: tabular-nums;
   }
 </style>

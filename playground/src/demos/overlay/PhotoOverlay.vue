@@ -28,11 +28,11 @@
     height: 100%;
     padding: 5px;
     box-sizing: border-box;
-    background: #fff;
-    border-radius: 4px;
+    background: var(--ui-surface);
+    border-radius: var(--ui-radius-sm);
     box-shadow:
-      0 0 0 1px rgb(0 0 0 / 0.06),
-      0 16px 28px -12px rgb(0 0 0 / 0.45);
+      0 0 0 1px var(--ui-border-accented),
+      var(--ui-shadow-overlay);
     transform: rotate(1.5deg);
   }
 
@@ -47,6 +47,6 @@
 
   .caption {
     font: italic 13px Georgia, serif;
-    color: #374151;
+    color: var(--ui-text-muted);
   }
 </style>

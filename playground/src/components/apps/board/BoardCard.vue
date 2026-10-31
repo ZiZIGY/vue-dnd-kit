@@ -42,33 +42,33 @@
     flex-direction: column;
     gap: 6px;
     padding: 10px 12px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius);
+    box-shadow: var(--ui-shadow-sm);
     cursor: grab;
     user-select: none;
   }
 
   .tb-card:hover {
-    border-color: #cbd5e1;
+    border-color: var(--ui-border-strong);
   }
 
   .tb-card:focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid var(--ui-focus);
     outline-offset: 2px;
   }
 
   .tb-card.selected {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 2px #bfdbfe;
+    border-color: var(--ui-selection);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-selection) 30%, transparent);
   }
 
   /* The slot where the card lands: an empty dashed frame instead of a faded card. */
   .tb-card.placeholder {
     opacity: 1;
-    background: #e2e8f0;
-    border: 1px dashed #94a3b8;
+    background: color-mix(in srgb, var(--ui-text) 4%, transparent);
+    border: 1px dashed var(--ui-border-strong);
     box-shadow: none;
   }
 
@@ -80,10 +80,15 @@
     line-height: 1.3;
   }
 
+  /* Tag hues: darker on light, lighter on dark (mixed with the highlighted text). */
   .tb-label {
+    --tag: var(--ui-text-dimmed);
     align-self: flex-start;
     padding: 1px 8px;
-    border-radius: 999px;
+    border-radius: var(--ui-radius-sm);
+    background: color-mix(in srgb, var(--tag) 15%, transparent);
+    color: color-mix(in srgb, var(--tag) 75%, var(--ui-text-highlighted));
+    font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
@@ -91,22 +96,14 @@
   }
 
   .tb-label.bug {
-    background: #fee2e2;
-    color: #b91c1c;
+    --tag: #ef4444;
   }
 
   .tb-label.feature {
-    background: #dbeafe;
-    color: #1d4ed8;
+    --tag: #3b82f6;
   }
 
   .tb-label.design {
-    background: #f3e8ff;
-    color: #7e22ce;
-  }
-
-  .tb-label.chore {
-    background: #e2e8f0;
-    color: #475569;
+    --tag: #a855f7;
   }
 </style>

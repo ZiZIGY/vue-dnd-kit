@@ -30,12 +30,12 @@
     gap: 4px 12px;
     margin: 0 0 8px;
     font-size: 12px;
-    color: #4b5563;
+    color: var(--ui-text-muted);
   }
 
   .touch-status output {
     font-variant-numeric: tabular-nums;
-    color: #111827;
+    color: var(--ui-text-highlighted);
   }
 
   .press-bar {
@@ -45,7 +45,7 @@
     right: 0;
     z-index: 20;
     height: 4px;
-    background: #2563eb;
+    background: var(--ui-primary);
     transform-origin: left center;
     pointer-events: none;
   }

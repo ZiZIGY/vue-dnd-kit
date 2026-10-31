@@ -27,8 +27,9 @@
   span {
     padding: 4px 10px;
     font-size: 13px;
-    color: #fff;
-    background: #16a34a;
-    border-radius: 999px;
+    color: var(--ui-on-primary);
+    background: var(--ui-primary);
+    border-radius: var(--ui-radius-sm);
+    box-shadow: var(--ui-shadow-overlay);
   }
 </style>

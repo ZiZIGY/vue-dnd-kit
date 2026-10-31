@@ -22,23 +22,25 @@
     justify-content: space-between;
     width: 200px;
     padding: 10px 12px;
-    background: #fff;
-    border: 1px solid #2563eb;
-    border-radius: 6px;
-    box-shadow: 0 8px 20px rgb(0 0 0 / 0.15);
-    font: 14px/1.4 system-ui, sans-serif;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-strong);
+    border-radius: var(--ui-radius);
+    box-shadow: var(--ui-shadow-overlay);
+    font: 14px/1.4 var(--font-sans);
   }
 
   .overlay-card[data-mode='copy'] {
-    border-color: #16a34a;
+    border-color: var(--ui-primary);
   }
 
   .overlay-card.rejected {
-    border-color: #dc2626;
+    border-color: var(--ui-danger);
   }
 
   em {
+    font-family: var(--font-mono);
     font-size: 11px;
-    color: #6b7280;
+    font-style: normal;
+    color: var(--ui-text-muted);
   }
 </style>

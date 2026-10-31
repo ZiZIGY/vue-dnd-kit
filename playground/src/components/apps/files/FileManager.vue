@@ -185,10 +185,10 @@
     width: 900px;
     height: 460px;
     overflow: hidden;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgb(15 23 42 / 0.08);
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius-lg);
+    box-shadow: var(--ui-shadow-sm);
   }
 
   .fm-sidebar {
@@ -198,8 +198,8 @@
     width: 230px;
     padding: 10px 8px;
     overflow: auto;
-    background: #f8fafc;
-    border-right: 1px solid #e2e8f0;
+    background: var(--ui-bg-muted);
+    border-right: 1px solid var(--ui-border);
   }
 
   .fm-home {
@@ -208,24 +208,24 @@
     gap: 8px;
     height: 32px;
     padding: 0 10px;
-    border-radius: 6px;
-    color: #334155;
+    border-radius: var(--ui-radius);
+    color: var(--ui-text);
     cursor: pointer;
   }
 
   .fm-home.current {
-    background: #dbeafe;
-    color: #1e3a8a;
+    background: var(--ui-selection-soft);
+    color: var(--ui-text-highlighted);
     font-weight: 600;
   }
 
   .fm-home.accepting {
-    box-shadow: inset 0 0 0 1px #93c5fd;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-primary) 55%, transparent);
   }
 
   .fm-home.target {
-    background: #2563eb;
-    color: #fff;
+    background: var(--ui-primary);
+    color: var(--ui-on-primary);
   }
 
   .fm-main {
@@ -241,15 +241,16 @@
     gap: 2px;
     height: 44px;
     padding: 0 12px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--ui-border);
   }
 
   .fm-crumbs strong {
     padding: 4px 8px;
+    color: var(--ui-text-highlighted);
   }
 
   .fm-sep {
-    color: #94a3b8;
+    color: var(--ui-text-dimmed);
   }
 
   .fm-status {
@@ -259,8 +260,9 @@
     height: 32px;
     padding: 0 12px;
     align-items: center;
-    border-top: 1px solid #e2e8f0;
-    color: #64748b;
+    border-top: 1px solid var(--ui-border);
+    color: var(--ui-text-muted);
+    font-family: var(--font-mono);
     font-size: 12px;
   }
 

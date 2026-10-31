@@ -65,15 +65,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgb(15 23 42 / 0.35);
+    background: var(--ui-backdrop);
   }
 
   .tb-dialog {
     width: 340px;
     padding: 20px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 24px 48px rgb(15 23 42 / 0.25);
+    background: var(--ui-bg);
+    border-radius: var(--ui-radius-lg);
+    box-shadow:
+      0 0 0 1px var(--ui-border-accented),
+      var(--ui-shadow-overlay);
   }
 
   h3 {
@@ -83,7 +85,7 @@
 
   p {
     margin: 0 0 20px;
-    color: #475569;
+    color: var(--ui-text-muted);
   }
 
   footer {
@@ -95,21 +97,25 @@
 
   button {
     padding: 8px 14px;
-    border-radius: 6px;
+    border-radius: var(--ui-radius-sm);
     font: inherit;
     font-weight: 600;
     cursor: pointer;
   }
 
   .tb-secondary {
-    border: 1px solid #cbd5e1;
-    background: #fff;
-    color: #334155;
+    border: 1px solid var(--ui-border-accented);
+    background: var(--ui-bg);
+    color: var(--ui-text);
+  }
+
+  .tb-secondary:hover {
+    background: var(--ui-bg-elevated);
   }
 
   .tb-primary {
-    border: 1px solid #16a34a;
-    background: #16a34a;
-    color: #fff;
+    border: 1px solid var(--ui-primary);
+    background: var(--ui-primary);
+    color: var(--ui-on-primary);
   }
 </style>

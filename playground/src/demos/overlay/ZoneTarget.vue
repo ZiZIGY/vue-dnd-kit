@@ -44,29 +44,33 @@
     width: 220px;
     height: 84px;
     padding: 0 16px;
-    background: #f9fafb;
-    border: 2px dashed #9ca3af;
-    border-radius: 10px;
+    background: var(--ui-bg-muted);
+    border: 2px dashed var(--ui-border-strong);
+    border-radius: var(--ui-radius-lg);
     transition:
       background-color 120ms,
       border-color 120ms;
   }
 
+  strong {
+    color: var(--ui-text-highlighted);
+  }
+
   .danger {
-    border-color: #fdba74;
+    border-color: color-mix(in srgb, var(--ui-warning) 55%, var(--ui-bg));
   }
 
   .ov-zone[data-over][data-accepting] {
-    background: #fff7ed;
-    border-color: #ea580c;
+    background: var(--ui-warning-soft);
+    border-color: var(--ui-warning);
   }
 
   .ov-zone[data-over]:not([data-accepting]) {
-    background: #fef2f2;
-    border-color: #dc2626;
+    background: var(--ui-danger-soft);
+    border-color: var(--ui-danger);
   }
 
   small {
-    color: #6b7280;
+    color: var(--ui-text-muted);
   }
 </style>

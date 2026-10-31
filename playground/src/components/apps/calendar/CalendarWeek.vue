@@ -106,23 +106,25 @@
   .cal {
     width: max-content;
     padding: 12px 16px 4px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius-lg);
   }
 
   .cal-head {
     display: grid;
     grid-template-columns: 48px repeat(7, 110px);
     margin-bottom: 4px;
-    color: #475569;
+    color: var(--ui-text-muted);
+    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 600;
     text-align: center;
+    text-transform: uppercase;
   }
 
   .cal-head .weekend {
-    color: #94a3b8;
+    color: var(--ui-text-dimmed);
   }
 
   .cal-main {
@@ -135,7 +137,8 @@
     flex-direction: column;
     width: 48px;
     margin-top: -7px;
-    color: #94a3b8;
+    color: var(--ui-text-dimmed);
+    font-family: var(--font-mono);
     font-size: 11px;
     line-height: 14px;
   }
@@ -152,7 +155,7 @@
     position: relative;
     width: 770px;
     height: 480px;
-    box-shadow: 0 0 0 1px #e2e8f0;
+    box-shadow: 0 0 0 1px var(--ui-border-accented);
   }
 
   .cal-cells {
@@ -166,7 +169,7 @@
   .cal-last {
     min-height: 20px;
     margin: 8px 0 0;
-    color: #475569;
+    color: var(--ui-text-muted);
     font-size: 12px;
   }
 </style>

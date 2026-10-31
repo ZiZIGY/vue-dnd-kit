@@ -76,8 +76,8 @@
   }
 
   .deck-face {
-    border-radius: 8px;
-    box-shadow: 0 10px 24px -14px rgb(15 23 42 / 0.6);
+    border-radius: var(--ui-radius);
+    box-shadow: var(--ui-shadow-overlay);
   }
 
   .fallback {
@@ -88,9 +88,9 @@
     height: 100%;
     padding: 0 12px;
     box-sizing: border-box;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    background: #fff;
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius);
+    background: var(--ui-surface);
   }
 
   .count {
@@ -102,10 +102,10 @@
     height: 24px;
     padding: 0 7px;
     box-sizing: border-box;
-    border-radius: 12px;
-    background: #0f766e;
-    color: #fff;
-    font: 700 12px/24px system-ui, sans-serif;
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-primary);
+    color: var(--ui-on-primary);
+    font: 700 12px/24px var(--font-mono);
     text-align: center;
   }
 </style>

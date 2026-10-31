@@ -47,7 +47,7 @@
   }
 
   .ch-piece:focus-visible {
-    outline: 3px solid #2563eb;
+    outline: 3px solid var(--ui-focus);
     outline-offset: -3px;
   }
 

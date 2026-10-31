@@ -50,7 +50,7 @@
   }
 
   small {
-    font: 11px system-ui, sans-serif;
+    font: 11px var(--font-sans);
     opacity: 0.7;
   }
 </style>

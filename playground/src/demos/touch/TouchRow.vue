@@ -39,11 +39,11 @@
     gap: 12px;
     min-height: 60px;
     padding: 8px 12px;
-    background: #fff;
-    border: 1px solid #d1d5db;
-    border-radius: 10px;
-    color: #111827;
-    font: 15px/1.3 system-ui, sans-serif;
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius-lg);
+    color: var(--ui-text-highlighted);
+    font: 15px/1.3 var(--font-sans);
   }
 
   .avatar {
@@ -53,8 +53,10 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #dbeafe;
-    color: #1d4ed8;
+    background: var(--ui-bg-elevated);
+    box-shadow: inset 0 0 0 1px var(--ui-border-accented);
+    color: var(--ui-text-muted);
+    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 600;
   }
@@ -71,7 +73,7 @@
 
   .note {
     overflow: hidden;
-    color: #6b7280;
+    color: var(--ui-text-muted);
     font-size: 13px;
     white-space: nowrap;
     text-overflow: ellipsis;

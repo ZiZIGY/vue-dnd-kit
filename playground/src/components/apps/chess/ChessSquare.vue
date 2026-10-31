@@ -78,6 +78,6 @@
   }
 
   .ch-square.refused {
-    box-shadow: inset 0 0 0 4px #dc2626;
+    box-shadow: inset 0 0 0 4px var(--ui-danger);
   }
 </style>

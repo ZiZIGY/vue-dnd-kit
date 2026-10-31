@@ -51,7 +51,7 @@
 
 <style scoped>
   .zone-overlay {
-    --accent: #2563eb;
+    --accent: var(--ui-primary);
     position: relative;
     display: flex;
     align-items: center;
@@ -60,10 +60,10 @@
     height: 100%;
     padding: 0 12px;
     box-sizing: border-box;
-    background: #fff;
+    background: var(--ui-surface);
     border: 2px solid var(--accent);
-    border-radius: 8px;
-    box-shadow: 0 12px 24px -10px rgb(0 0 0 / 0.35);
+    border-radius: var(--ui-radius);
+    box-shadow: var(--ui-shadow-overlay);
     transition:
       border-color 120ms,
       background-color 120ms,
@@ -71,18 +71,18 @@
   }
 
   .zone-overlay[data-state='free'] {
-    --accent: #9ca3af;
+    --accent: var(--ui-border-strong);
   }
 
   .zone-overlay[data-tone='danger'] {
-    --accent: #ea580c;
-    background: #fff7ed;
+    --accent: var(--ui-warning);
+    background: var(--ui-warning-soft);
     transform: rotate(-1.5deg);
   }
 
   .zone-overlay[data-state='rejected'] {
-    --accent: #dc2626;
-    background: #fef2f2;
+    --accent: var(--ui-danger);
+    background: var(--ui-danger-soft);
     cursor: not-allowed;
   }
 
@@ -91,9 +91,13 @@
     place-items: center;
     width: 24px;
     height: 24px;
-    border-radius: 6px;
+    border-radius: var(--ui-radius-sm);
     background: var(--accent);
-    color: #fff;
+    color: var(--ui-bg);
+  }
+
+  .text strong {
+    color: var(--ui-text-highlighted);
   }
 
   .text {
@@ -112,9 +116,10 @@
     top: -9px;
     right: -9px;
     padding: 1px 8px;
-    border-radius: 999px;
-    background: #16a34a;
-    color: #fff;
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-primary);
+    color: var(--ui-on-primary);
+    font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 700;
   }

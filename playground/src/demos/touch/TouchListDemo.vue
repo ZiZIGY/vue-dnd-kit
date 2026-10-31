@@ -51,7 +51,7 @@
 
   .hint {
     margin: 0 0 8px;
-    color: #4b5563;
+    color: var(--ui-text-muted);
   }
 
   .touch-list {

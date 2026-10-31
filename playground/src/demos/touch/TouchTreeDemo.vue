@@ -78,7 +78,7 @@
 
   .hint {
     margin: 0 0 8px;
-    color: #4b5563;
+    color: var(--ui-text-muted);
   }
 
   /* Wrapped: a line wider than the phone would let the whole page pan sideways. */
@@ -92,7 +92,8 @@
     flex-direction: column;
     gap: 6px;
     padding: 6px;
-    background: #e5e7eb;
-    border-radius: 12px;
+    background: var(--ui-bg-muted);
+    border-radius: var(--ui-radius-lg);
+    box-shadow: inset 0 0 0 1px var(--ui-border);
   }
 </style>

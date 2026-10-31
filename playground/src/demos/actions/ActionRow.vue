@@ -93,9 +93,19 @@
     min-width: 28px;
     height: 28px;
     padding: 0 6px;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    background: #f9fafb;
+    border: 1px solid var(--ui-border-accented);
+    border-radius: var(--ui-radius-sm);
+    background: var(--ui-bg-muted);
+    color: var(--ui-text);
     cursor: pointer;
+  }
+
+  .tools button:hover:not(:disabled) {
+    background: var(--ui-bg-elevated);
+  }
+
+  .tools button:disabled {
+    color: var(--ui-text-dimmed);
+    cursor: default;
   }
 </style>

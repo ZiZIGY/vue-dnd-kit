@@ -73,7 +73,8 @@
   .counts {
     display: flex;
     gap: 12px;
+    font-family: var(--font-mono);
     font-size: 12px;
-    color: #6b7280;
+    color: var(--ui-text-muted);
   }
 </style>
