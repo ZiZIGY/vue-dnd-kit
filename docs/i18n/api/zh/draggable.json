@@ -1,7 +1,7 @@
 {
   "DraggableOptions": {
-    "source": "6011f1e820",
-    "text": "`makeDraggable` 的选项。除 `canDrag` 外，每个选项都接受值、ref 或 getter（`overlay`：值或 ref），并在需要时读取，所以变化最迟在下一次拖拽时生效。"
+    "source": "6550255f37",
+    "text": "`makeDraggable` 的选项。除 `canDrag` 外，每个选项都接受值、ref 或 getter（`overlay`、`dropAnimation`：值或 ref），并在需要时读取，所以变化最迟在下一次拖拽时生效。"
   },
   "DraggableOptions.id": {
     "source": "2dac667235",
@@ -20,8 +20,12 @@
     "text": "额外的关卡，例如只在按住某个键时才能拖拽。"
   },
   "DraggableOptions.overlay": {
-    "source": "f24fdc907d",
-    "text": "`true`（默认）：浮层跟随指针，由 provider 的 `#overlay` 插槽渲染，或者是元素的克隆。组件：浮层以 `OverlayProps` 渲染它，优先于插槽。`false`：没有浮层，元素本身通过返回的 `transform` 移动。值或 ref（函数即函数式组件），在拖拽开始时读取。克隆会排除 UI 库的按下效果（水波纹），以及内部任何标记了 `data-dnd-no-clone` 的元素。"
+    "source": "c9686248ff",
+    "text": "`true`（默认）：浮层跟随指针，由 provider 的 `#overlay` 插槽渲染，或者是元素的克隆。组件：浮层以 `OverlayProps` 渲染它，优先于插槽。`false`：没有浮层，元素本身通过返回的 `transform` 移动。值或 ref（函数即函数式组件，所以 `(props) => <Card {...props} />` 也可以）。是否有浮层在拖拽开始时决定；在拖拽过程中切换的 ref 会立即替换组件（见 provider 的 `overlayTransition`）。拖拽位于放置目标上方时，目标自己的 `overlay` 优先。克隆会排除 UI 库的按下效果（水波纹），以及内部任何标记了 `data-dnd-no-clone` 的元素。"
+  },
+  "DraggableOptions.dropAnimation": {
+    "source": "965316ffc5",
+    "text": "这个元素的拖拽结束时浮层如何落位，替代 provider 的 `dropAnimation`；放置目标自己的 `dropAnimation` 优先。值或 ref（函数即动画），在放置时读取。"
   },
   "DraggableOptions.modifiers": {
     "source": "71eb5c6851",
@@ -40,12 +44,12 @@
     "text": "设置 role/tabindex/aria-* 属性（默认 `true`），永远不会覆盖用户自己设置的。provider 的操作说明 id 会作为又一个 token 加入已有的 `aria-describedby`（同一元素上 UI 库的提示框会保留它自己的），并且只有这个 token 会被移除。实时生效：关闭后，库设置的属性会被移除。"
   },
   "DraggableReturn.transform": {
-    "source": "3c2e7e5527",
-    "text": "使用 `overlay: false` 时要应用的偏移量。"
+    "source": "3d7102b110",
+    "text": "使用 `overlay: false` 时要应用的偏移量：拖拽的偏移量，减去元素所在的内容自开始以来移动的距离（页面或某个容器滚动了），这样元素会一直停在指针下方。"
   },
   "DroppableOptions": {
-    "source": "6146f0758b",
-    "text": "`makeDroppable` 的选项。\n\n**放进一个项。** 位于可排序项元素上（或其内部）的放置目标与其他地方的放置目标一样工作，只有一条规则适用于该项所在列表本会对拖拽进行排序的情况：只有当指针位于项的中间部分时它才生效（沿列表轴向的 25–75%；网格中为 x 轴），此时放置会进入目标，列表也不会为它移动。靠近项的边缘时，列表照常排序。`accept` 拒绝这次拖拽的目标会被排除在外，所以列表会像对待其他项一样在这个项上方排序（无需禁用它）。键盘会在越过这个项之前先停在这样的目标上。目标永远不会属于它自己的拖拽：不会位于任何被拖拽的项之内（或之上），也不会位于某个项将落入的位置中。要在 `onDrop` 中把这些项移出它们的列表，调用 `e.source.remove()`。\n\n除回调外，每个选项都接受值、ref 或 getter（`accept`：值或 ref），并在拖拽查找目标时实时读取。"
+    "source": "c1de31b385",
+    "text": "`makeDroppable` 的选项。\n\n**放进一个项。** 位于可排序项元素上（或其内部）的放置目标与其他地方的放置目标一样工作，只有一条规则适用于该项所在列表本会对拖拽进行排序的情况：只有当指针位于项的中间部分时它才生效（沿列表轴向的 25–75%；网格中为 x 轴），此时放置会进入目标，列表也不会为它移动。靠近项的边缘时，列表照常排序。`accept` 拒绝这次拖拽的目标会被排除在外，所以列表会像对待其他项一样在这个项上方排序（无需禁用它）。键盘会在越过这个项之前先停在这样的目标上。目标永远不会属于它自己的拖拽：不会位于任何被拖拽的项之内（或之上），也不会位于某个项将落入的位置中。要在 `onDrop` 中把这些项移出它们的列表，调用 `e.source.remove()`。\n\n除回调外，每个选项都接受值、ref 或 getter（`accept`、`overlay`、`dropAnimation`：值或 ref），并在拖拽查找目标时实时读取。"
   },
   "DroppableOptions.id": {
     "source": "ea58d47829",
@@ -62,6 +66,14 @@
   "DroppableOptions.priority": {
     "source": "083ebc2847",
     "text": "目标重叠但不嵌套时，值较高的优先（默认 0）。可排序项胜过容器。"
+  },
+  "DroppableOptions.overlay": {
+    "source": "9ef772f9a5",
+    "text": "当这个目标接受的拖拽位于它上方时，浮层显示什么：一个获得 `OverlayProps` 的组件，代替拖拽自己的浮层（被拖拽项的组件、provider 的插槽或克隆）渲染，并把后者作为默认插槽获得，可以包裹它，也可以省略它（`<slot />`）。放置落到这里时它保持显示。没有浮层的拖拽（`overlay: false`）仍然没有浮层。值或 ref，实时读取；组件的切换使用 provider 的 `overlayTransition` 动画。"
+  },
+  "DroppableOptions.dropAnimation": {
+    "source": "0f0a6dd259",
+    "text": "浮层被放到这里时如何落位，替代被拖拽项和 provider 的 `dropAnimation`：`false` 让它停在放下的地方（浮层组件自己的动画，比如溅开，会在那里播放），函数则为它添加动画。值或 ref，在放置时读取。"
   },
   "DroppableReturn.isAccepting": {
     "source": "520ef3c1da",

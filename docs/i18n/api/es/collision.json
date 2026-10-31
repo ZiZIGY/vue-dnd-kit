@@ -34,5 +34,9 @@
   "ModifierArgs.containerRect": {
     "source": "ce6a1ebd7e",
     "text": "Contenedor de la lista ordenable (o elemento padre) del ítem arrastrado, donde está ahora (sigue al scroll)."
+  },
+  "ModifierArgs.containerShift": {
+    "source": "f4f9413e80",
+    "text": "Cuánto se ha movido en pantalla, desde el inicio, el contenido donde empezó el arrastre: el contenedor se movió (la página o un contenedor a su alrededor se desplazó, la maquetación cambió) y su contenido se desplazó dentro de él. Los bloqueos de eje mantienen ahí el otro eje, así que el arrastre se queda en su fila o columna de ese contenido."
   }
 }

@@ -34,5 +34,9 @@
   "ModifierArgs.containerRect": {
     "source": "ce6a1ebd7e",
     "text": "Conteneur de la liste triable (ou élément parent) de l'item glissé, là où il se trouve maintenant (il suit le défilement)."
+  },
+  "ModifierArgs.containerShift": {
+    "source": "f4f9413e80",
+    "text": "De combien le contenu où le glissement a commencé s'est déplacé à l'écran depuis le début : le conteneur a bougé (la page ou un conteneur autour a défilé, la mise en page s'est décalée), et son contenu a défilé à l'intérieur. Les verrouillages d'axe y maintiennent l'autre axe, si bien que le glissement reste sur sa ligne ou sa colonne de ce contenu."
   }
 }

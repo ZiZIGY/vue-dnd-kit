@@ -80,8 +80,20 @@
     "text": "Par défaut : `useId()`, stable entre le rendu serveur et le rendu client. Lu une seule fois."
   },
   "SortableListOptions.overlay": {
-    "source": "4d236710b1",
-    "text": "Composant d'overlay pour les items de cette liste (l'`overlay` propre à un item l'emporte). Il reçoit `OverlayProps` et est conservé pendant tout le glissement, y compris au-dessus d'autres listes. Lu au début du glissement."
+    "source": "47e3eb4c8a",
+    "text": "Composant d'overlay pour les items de cette liste (l'`overlay` propre à un item l'emporte). Il reçoit `OverlayProps` et est conservé pendant tout le glissement, y compris au-dessus d'autres listes, sauf si la cible sous le glissement a son propre overlay (`overOverlay`). Une ref changée en plein glissement le remplace aussitôt."
+  },
+  "SortableListOptions.overOverlay": {
+    "source": "ac8fff8632",
+    "text": "Ce que montre l'overlay pendant qu'un glissement que cette liste accepte la survole, quelle que soit la liste d'où il vient : un composant qui reçoit `OverlayProps` et l'overlay propre au glissement comme slot par défaut (voir `DroppableOptions.overlay`). Lu en direct."
+  },
+  "SortableListOptions.dropAnimation": {
+    "source": "9b8f883d95",
+    "text": "Comment l'overlay atterrit quand un glissement des items de cette liste se termine, à la place de la `dropAnimation` du provider (celle propre à un item l'emporte ; celle d'une cible de dépôt l'emporte sur les deux). Lu au dépôt."
+  },
+  "SortableListOptions.overDropAnimation": {
+    "source": "afd18ed23d",
+    "text": "Comment l'overlay atterrit quand il est déposé dans cette liste, quelle que soit la liste d'où il vient : l'emporte sur la `dropAnimation` de l'item glissé et sur celle du provider. Lu au dépôt."
   },
   "SortableListOptions.modifiers": {
     "source": "16c37d217b",
@@ -180,8 +192,12 @@
     "text": "L'item que rend cet élément, par exemple `() => props.task`. Sa clé vient du `getKey` de la liste (ou de l'arbre) propriétaire, par défaut `item.id`."
   },
   "SortableItemOptions.overlay": {
-    "source": "2ded9454bb",
-    "text": "Composant d'overlay pour cet item ; l'emporte sur l'`overlay` de la liste. Lu au début du glissement."
+    "source": "e39a5caf13",
+    "text": "Composant d'overlay pour cet item ; l'emporte sur l'`overlay` de la liste. Une ref changée en plein glissement le remplace aussitôt."
+  },
+  "SortableItemOptions.dropAnimation": {
+    "source": "dd326b61e0",
+    "text": "Comment l'overlay atterrit quand un glissement de cet item se termine ; l'emporte sur la `dropAnimation` de la liste. Lu au dépôt."
   },
   "SortableItemOptions.modifiers": {
     "source": "55d5129188",

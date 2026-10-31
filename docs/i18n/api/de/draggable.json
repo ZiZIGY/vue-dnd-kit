@@ -1,7 +1,7 @@
 {
   "DraggableOptions": {
-    "source": "6011f1e820",
-    "text": "Optionen von `makeDraggable`. Jede Option außer `canDrag` nimmt einen Wert, ein Ref oder einen Getter entgegen (`overlay`: einen Wert oder ein Ref) und wird gelesen, wenn sie gebraucht wird, sodass eine Änderung spätestens ab dem nächsten Drag gilt."
+    "source": "6550255f37",
+    "text": "Optionen von `makeDraggable`. Jede Option außer `canDrag` nimmt einen Wert, ein Ref oder einen Getter entgegen (`overlay`, `dropAnimation`: einen Wert oder ein Ref) und wird gelesen, wenn sie gebraucht wird, sodass eine Änderung spätestens ab dem nächsten Drag gilt."
   },
   "DraggableOptions.id": {
     "source": "2dac667235",
@@ -20,8 +20,12 @@
     "text": "Zusätzliche Bedingung, z. B. nur ziehen, solange eine Taste gedrückt ist."
   },
   "DraggableOptions.overlay": {
-    "source": "f24fdc907d",
-    "text": "`true` (Standard): Ein Overlay folgt dem Zeiger, gerendert vom Slot `#overlay` des Providers oder als Klon des Elements. Eine Komponente: Das Overlay rendert sie mit `OverlayProps`, vor dem Slot. `false`: kein Overlay, das Element selbst bewegt sich über das zurückgegebene `transform`. Ein Wert oder ein Ref (eine Funktion ist eine funktionale Komponente), gelesen beim Start des Drags. Der Klon lässt die Druckeffekte von UI-Kits (Ripples) weg sowie jedes Element darin, das mit `data-dnd-no-clone` markiert ist."
+    "source": "c9686248ff",
+    "text": "`true` (Standard): Ein Overlay folgt dem Zeiger, gerendert vom Slot `#overlay` des Providers oder als Klon des Elements. Eine Komponente: Das Overlay rendert sie mit `OverlayProps`, vor dem Slot. `false`: kein Overlay, das Element selbst bewegt sich über das zurückgegebene `transform`. Ein Wert oder ein Ref (eine Funktion ist eine funktionale Komponente, `(props) => <Card {...props} />` funktioniert also). Ob es ein Overlay gibt, wird beim Start des Drags entschieden; ein mitten im Drag umgeschaltetes Ref tauscht die Komponente sofort (siehe `overlayTransition` des Providers). Das eigene `overlay` eines Drop-Ziels gewinnt, solange der Drag darüber ist. Der Klon lässt die Druckeffekte von UI-Kits (Ripples) weg sowie jedes Element darin, das mit `data-dnd-no-clone` markiert ist."
+  },
+  "DraggableOptions.dropAnimation": {
+    "source": "965316ffc5",
+    "text": "Wie das Overlay landet, wenn ein Drag dieses Elements endet, statt der `dropAnimation` des Providers; die eigene `dropAnimation` eines Drop-Ziels gewinnt. Ein Wert oder ein Ref (eine Funktion ist die Animation), gelesen beim Drop."
   },
   "DraggableOptions.modifiers": {
     "source": "71eb5c6851",
@@ -40,12 +44,12 @@
     "text": "Setzt role-/tabindex-/aria-*-Attribute (Standard `true`) und überschreibt nie deine eigenen. Die ID der Anweisungen des Providers wird einem vorhandenen `aria-describedby` als weiteres Token hinzugefügt (ein Tooltip eines UI-Kits auf demselben Element behält sein eigenes), und nur dieses Token wird je entfernt. Live: Ausschalten entfernt, was die Bibliothek gesetzt hat."
   },
   "DraggableReturn.transform": {
-    "source": "3c2e7e5527",
-    "text": "Versatz, der bei `overlay: false` anzuwenden ist."
+    "source": "3d7102b110",
+    "text": "Versatz, der bei `overlay: false` anzuwenden ist: der des Drags, abzüglich dessen, wie weit sich der Inhalt, in dem das Element liegt, seit dem Start bewegt hat (die Seite oder ein Container wurde gescrollt), sodass das Element unter dem Zeiger bleibt."
   },
   "DroppableOptions": {
-    "source": "6146f0758b",
-    "text": "Optionen von `makeDroppable`.\n\n**Drop in ein Element.** Ein Drop-Ziel auf dem DOM-Element eines sortierbaren Elements (oder darin) funktioniert wie überall sonst, mit einer Regel, solange die Liste dieses Elements den Drag sortieren würde: Es zählt nur, solange der Zeiger in der Mitte des Elements ist (25–75 % entlang der Achse der Liste; x in Rastern), wo der Drop in das Ziel geht und die Liste sich dafür nicht bewegt. Nahe den Rändern des Elements sortiert die Liste wie gewohnt. Ein Ziel, dessen `accept` den Drag ablehnt, wird ausgelassen, sodass die Liste über dem Element sortiert wie über jedem anderen (es muss nicht deaktiviert werden). Die Tastatur hält an einem solchen Ziel, bevor sie an seinem Element vorbeizieht. Ein Ziel kommt für seinen eigenen Drag nie infrage: weder in (oder auf) einem gezogenen Element noch im Slot, in dem eines landet. Um die Elemente in `onDrop` aus ihrer Liste zu entfernen, rufe `e.source.remove()` auf.\n\nJede Option außer den Callbacks nimmt einen Wert, ein Ref oder einen Getter entgegen (`accept`: einen Wert oder ein Ref) und wird live gelesen, während ein Drag sein Ziel sucht."
+    "source": "c1de31b385",
+    "text": "Optionen von `makeDroppable`.\n\n**Drop in ein Element.** Ein Drop-Ziel auf dem DOM-Element eines sortierbaren Elements (oder darin) funktioniert wie überall sonst, mit einer Regel, solange die Liste dieses Elements den Drag sortieren würde: Es zählt nur, solange der Zeiger in der Mitte des Elements ist (25–75 % entlang der Achse der Liste; x in Rastern), wo der Drop in das Ziel geht und die Liste sich dafür nicht bewegt. Nahe den Rändern des Elements sortiert die Liste wie gewohnt. Ein Ziel, dessen `accept` den Drag ablehnt, wird ausgelassen, sodass die Liste über dem Element sortiert wie über jedem anderen (es muss nicht deaktiviert werden). Die Tastatur hält an einem solchen Ziel, bevor sie an seinem Element vorbeizieht. Ein Ziel kommt für seinen eigenen Drag nie infrage: weder in (oder auf) einem gezogenen Element noch im Slot, in dem eines landet. Um die Elemente in `onDrop` aus ihrer Liste zu entfernen, rufe `e.source.remove()` auf.\n\nJede Option außer den Callbacks nimmt einen Wert, ein Ref oder einen Getter entgegen (`accept`, `overlay`, `dropAnimation`: einen Wert oder ein Ref) und wird live gelesen, während ein Drag sein Ziel sucht."
   },
   "DroppableOptions.id": {
     "source": "ea58d47829",
@@ -62,6 +66,14 @@
   "DroppableOptions.priority": {
     "source": "083ebc2847",
     "text": "Bei Zielen, die sich ohne Verschachtelung überlappen, gewinnt der höhere Wert (Standard 0). Sortierbare Elemente schlagen Container."
+  },
+  "DroppableOptions.overlay": {
+    "source": "9ef772f9a5",
+    "text": "Was das Overlay zeigt, während ein Drag, den dieses Ziel annimmt, darüber ist: eine Komponente, die `OverlayProps` bekommt und statt des eigenen Overlays des Drags gerendert wird (der Komponente des gezogenen Elements, des Slots des Providers oder des Klons); dieses bekommt sie als Standard-Slot, um es einzuhüllen oder wegzulassen (`<slot />`). Sie bleibt, während der Drop hier landet. Drags ohne Overlay (`overlay: false`) bleiben ohne. Ein Wert oder ein Ref, live gelesen; der Wechsel der Komponente wird mit der `overlayTransition` des Providers animiert."
+  },
+  "DroppableOptions.dropAnimation": {
+    "source": "0f0a6dd259",
+    "text": "Wie das Overlay landet, wenn es hier abgelegt wird, statt der `dropAnimation` des gezogenen Elements und des Providers: `false` lässt es dort, wo es abgelegt wurde (die eigene Animation einer Overlay-Komponente, ein Spritzer, läuft dort ab), eine Funktion animiert es. Ein Wert oder ein Ref, gelesen beim Drop."
   },
   "DroppableReturn.isAccepting": {
     "source": "520ef3c1da",

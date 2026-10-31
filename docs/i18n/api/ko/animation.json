@@ -35,6 +35,10 @@
     "source": "cecafada99",
     "text": "정렬 가능한 리스트가 아닌 영역에 드롭한 뒤 항목이 표시되지 않는 경우(예: 다른 항목(폴더)이나 휴지통 영역 안으로 드롭한 경우)의 그 영역의 보이는 사각형. 기본 애니메이션은 제자리에서 사라지는 대신, 오버레이가 이 사각형 안으로 줄어들며 사라지게 합니다."
   },
+  "DropAnimationContext.over": {
+    "source": "54c7b98b67",
+    "text": "드롭이 안착하는 대상(리스트, 영역). 취소할 때는 `null`."
+  },
   "DropAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "`prefers-reduced-motion: reduce`가 설정되어 있습니다. 이때 라이브러리 자체 애니메이션은 실행되지 않지만, 직접 만든 함수는 항상 실행되며 이 값으로 결정합니다(건너뛰거나, 페이드만 남기거나)."

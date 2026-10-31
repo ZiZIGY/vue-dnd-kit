@@ -8,8 +8,8 @@
     "text": "ツリーのドロップイベント。`index` は `parentKey` の下の兄弟の中での位置です（`from`：移動前。`to`：移動後で、ノードはすでに元の場所から取り除かれています）。ルートノードと、ほかのリストからのアイテムでは、`from.parentKey` は `null` です。マルチドラッグでは `keys`（それぞれサブツリーを伴う）を並べて移動します：`from` はドラッグを先導するノード（掴んだノード、またはそれが乗っている選択中のノード）があった場所、`to` はそのうち最初のものが着地する場所です。コピー（`mode: 'copy'`）はノードをその場に残し、そのコピーである `items` を挿入します。通常のドラッグ可能な要素（`mode: 'insert'`）では、`createItem` が作ったノードを挿入します。"
   },
   "SortableTreeOptions": {
-    "source": "3b9c211f35",
-    "text": "`makeSortableTree` のオプション。マルチドラッグでは、選択中のノードを、それぞれサブツリーを伴った 1 つのブロックとして、同じ位置と深さへ（ドキュメント順で）移動します。選択中のノードの中にある選択中のノードは、そのサブツリーに乗って一緒に移動します。掴んだノードも同様です（VS Code と同じ）：掴んだノードは、それが入っている選択中のノードの中に留まり、そのノードがサブツリーとともに移動します。オーバーレイは掴んだ行のままです。`canNest` と `maxDepth` はブロック全体に適用されます。\n\nほかのオプションは `makeSortableList` でのものと同じ意味を持ちます。値、ref、ゲッター（`overlay`、`animation`：値または ref）を受け付け、ツリーが必要とするときに読み取られるため、変更は遅くとも次のドラッグから反映されます。例外：`id` と `group` はツリーの作成時に一度だけ読み取られます。`items` はモデルそのものです。関数（`getKey`、`getChildren`、`setChildren`、`canNest`、`clone`、`createItem`、コールバック）はそのまま渡されます。"
+    "source": "a99d0dc21f",
+    "text": "`makeSortableTree` のオプション。マルチドラッグでは、選択中のノードを、それぞれサブツリーを伴った 1 つのブロックとして、同じ位置と深さへ（ドキュメント順で）移動します。選択中のノードの中にある選択中のノードは、そのサブツリーに乗って一緒に移動します。掴んだノードも同様です（VS Code と同じ）：掴んだノードは、それが入っている選択中のノードの中に留まり、そのノードがサブツリーとともに移動します。オーバーレイは掴んだ行のままです。`canNest` と `maxDepth` はブロック全体に適用されます。\n\nほかのオプションは `makeSortableList` でのものと同じ意味を持ちます。値、ref、ゲッター（`overlay`、`overOverlay`、`animation`、`dropAnimation`、`overDropAnimation`：値または ref）を受け付け、ツリーが必要とするときに読み取られるため、変更は遅くとも次のドラッグから反映されます。例外：`id` と `group` はツリーの作成時に一度だけ読み取られます。`items` はモデルそのものです。関数（`getKey`、`getChildren`、`setChildren`、`canNest`、`clone`、`createItem`、コールバック）はそのまま渡されます。"
   },
   "SortableTreeOptions.items": {
     "source": "210f1fb478",
@@ -32,8 +32,20 @@
     "text": "デフォルト：`useId()`。サーバーとクライアントの描画間で安定しています。一度だけ読み取られます。"
   },
   "SortableTreeOptions.overlay": {
-    "source": "99297d8dc8",
-    "text": "このツリーの行用のオーバーレイコンポーネント（行自身の `overlay` が優先）。ドラッグの開始時に読み取られます。"
+    "source": "cf37f2819a",
+    "text": "このツリーの行用のオーバーレイコンポーネント（行自身の `overlay` が優先）。ドラッグ中に切り替えた ref は、すぐにそれを入れ替えます。"
+  },
+  "SortableTreeOptions.overOverlay": {
+    "source": "3f98a99024",
+    "text": "このツリーが受け入れるドラッグが上にある間、オーバーレイに表示するもの（`SortableListOptions.overOverlay` を参照）。その `to` prop は、ドロップがどこにネストされるかを示します。"
+  },
+  "SortableTreeOptions.dropAnimation": {
+    "source": "f712ceff74",
+    "text": "このツリーの行のドラッグが終わったときのオーバーレイの着地の仕方（`SortableListOptions.dropAnimation` を参照）。"
+  },
+  "SortableTreeOptions.overDropAnimation": {
+    "source": "7a6b9b8187",
+    "text": "このツリーにドロップされたときのオーバーレイの着地の仕方（`SortableListOptions.overDropAnimation` を参照）。"
   },
   "SortableTreeOptions.modifiers": {
     "source": "f6220f5795",

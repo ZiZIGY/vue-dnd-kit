@@ -8,8 +8,8 @@
     "text": "Evento de drop de un árbol. `index` es la posición entre los hermanos bajo `parentKey` (`from`: antes del movimiento; `to`: después, con el nodo ya quitado de su sitio anterior). `from.parentKey` es `null` para los nodos raíz y para los ítems que vienen de otra lista. Un multi-drag mueve las `keys` (cada una con su subárbol) una junto a otra: `from` es donde estaba el nodo que guía el arrastre (el agarrado, o el nodo seleccionado dentro del que viaja), `to` donde aterriza el primero de ellos. Una copia (`mode: 'copy'`) deja los nodos donde están e inserta `items`, sus copias; un elemento arrastrable simple (`mode: 'insert'`), el nodo que creó `createItem`."
   },
   "SortableTreeOptions": {
-    "source": "3b9c211f35",
-    "text": "Opciones de `makeSortableTree`. Un multi-drag mueve los nodos seleccionados como un solo bloque, cada uno con su subárbol, a un mismo sitio y profundidad (en el orden del documento); un nodo seleccionado dentro de otro seleccionado viaja dentro de su subárbol. Eso vale también para el nodo agarrado (como en VS Code): se queda dentro del nodo seleccionado en el que está, que se mueve con su subárbol, mientras el overlay se queda en la fila agarrada. `canNest` y `maxDepth` se aplican a todo el bloque.\n\nLas demás opciones significan lo mismo que en `makeSortableList`. Aceptan un valor, una ref o un getter (`overlay`, `animation`: un valor o una ref) y se leen cuando el árbol las necesita, así que un cambio se aplica, como muy tarde, en el siguiente arrastre. Excepciones: `id` y `group` se leen una sola vez, al crear el árbol; `items` es el propio modelo; las funciones (`getKey`, `getChildren`, `setChildren`, `canNest`, `clone`, `createItem`, los callbacks) se pasan tal cual."
+    "source": "a99d0dc21f",
+    "text": "Opciones de `makeSortableTree`. Un multi-drag mueve los nodos seleccionados como un solo bloque, cada uno con su subárbol, a un mismo sitio y profundidad (en el orden del documento); un nodo seleccionado dentro de otro seleccionado viaja dentro de su subárbol. Eso vale también para el nodo agarrado (como en VS Code): se queda dentro del nodo seleccionado en el que está, que se mueve con su subárbol, mientras el overlay se queda en la fila agarrada. `canNest` y `maxDepth` se aplican a todo el bloque.\n\nLas demás opciones significan lo mismo que en `makeSortableList`. Aceptan un valor, una ref o un getter (`overlay`, `overOverlay`, `animation`, `dropAnimation`, `overDropAnimation`: un valor o una ref) y se leen cuando el árbol las necesita, así que un cambio se aplica, como muy tarde, en el siguiente arrastre. Excepciones: `id` y `group` se leen una sola vez, al crear el árbol; `items` es el propio modelo; las funciones (`getKey`, `getChildren`, `setChildren`, `canNest`, `clone`, `createItem`, los callbacks) se pasan tal cual."
   },
   "SortableTreeOptions.items": {
     "source": "210f1fb478",
@@ -32,8 +32,20 @@
     "text": "Por defecto: `useId()`, estable entre el renderizado en el servidor y en el cliente. Se lee una vez."
   },
   "SortableTreeOptions.overlay": {
-    "source": "99297d8dc8",
-    "text": "Componente de overlay para las filas de este árbol (el `overlay` propio de una fila tiene prioridad). Se lee cuando empieza el arrastre."
+    "source": "cf37f2819a",
+    "text": "Componente de overlay para las filas de este árbol (el `overlay` propio de una fila tiene prioridad). Una ref cambiada a mitad del arrastre lo cambia al instante."
+  },
+  "SortableTreeOptions.overOverlay": {
+    "source": "3f98a99024",
+    "text": "Lo que muestra el overlay mientras un arrastre que este árbol acepta está sobre él (consulta `SortableListOptions.overOverlay`). Su prop `to` dice dónde se anidaría el drop."
+  },
+  "SortableTreeOptions.dropAnimation": {
+    "source": "f712ceff74",
+    "text": "Cómo aterriza el overlay cuando termina un arrastre de las filas de este árbol (consulta `SortableListOptions.dropAnimation`)."
+  },
+  "SortableTreeOptions.overDropAnimation": {
+    "source": "7a6b9b8187",
+    "text": "Cómo aterriza el overlay cuando se suelta en este árbol (consulta `SortableListOptions.overDropAnimation`)."
   },
   "SortableTreeOptions.modifiers": {
     "source": "f6220f5795",

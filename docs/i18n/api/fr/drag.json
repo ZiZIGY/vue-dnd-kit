@@ -27,6 +27,26 @@
     "source": "48997f2ee2",
     "text": "Si la règle `accept` de la cible accepte les items glissés."
   },
+  "DropDestination": {
+    "source": "55daec7851",
+    "text": "L'endroit où un dépôt mettrait les items glissés : une place dans une liste ou un arbre triable, comme le dira le `to` de l'événement de dépôt (la prop `to` de l'overlay, en direct)."
+  },
+  "DropDestination.list": {
+    "source": "31b274663e",
+    "text": "Id de la liste ou de l'arbre."
+  },
+  "DropDestination.index": {
+    "source": "5fdcf67fec",
+    "text": "Index que prennent les items glissés : dans la liste, ou parmi les frères sous `parentKey` dans un arbre."
+  },
+  "DropDestination.parentKey": {
+    "source": "b707f9c973",
+    "text": "Arbres : le nœud sous lequel ils vont ; `null` à la racine."
+  },
+  "DropDestination.depth": {
+    "source": "0a3289fa23",
+    "text": "Arbres : la profondeur à laquelle ils vont (les racines sont à 0)."
+  },
   "DragSource.list": {
     "source": "57db105431",
     "text": "Liste triable d'où viennent les items glissés."

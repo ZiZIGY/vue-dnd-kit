@@ -34,5 +34,9 @@
   "ModifierArgs.containerRect": {
     "source": "ce6a1ebd7e",
     "text": "Contêiner da lista ordenável (ou elemento pai) do item arrastado, onde ele está agora (acompanha a rolagem)."
+  },
+  "ModifierArgs.containerShift": {
+    "source": "f4f9413e80",
+    "text": "Quanto o conteúdo onde o arraste começou se moveu na tela desde o início: o contêiner se moveu (a página ou um contêiner em volta dele rolou, o layout mudou) e o conteúdo dele rolou dentro dele. As travas de eixo prendem o outro eixo ali, para que o arraste fique na sua linha ou coluna desse conteúdo."
   }
 }

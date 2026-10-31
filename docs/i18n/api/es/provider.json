@@ -75,6 +75,10 @@
     "source": "699c35a63c",
     "text": "Animación FLIP por defecto para las listas ordenables."
   },
+  "DnDProviderProps.dropAnimation": {
+    "source": "f99201968c",
+    "text": "Cómo aterriza el overlay al soltar y vuelve a su sitio al cancelar, cuando nada más cercano define una: primero va la `dropAnimation` del destino de drop, luego la propia del ítem arrastrado (o la de su lista) y luego esta."
+  },
   "DnDProviderProps.animate": {
     "source": "e7b8ee12ca",
     "text": "`animate` por defecto de las listas y los árboles ordenables: los cambios de sus ítems que no vienen de un arrastre. Desactivado por defecto."
@@ -94,6 +98,10 @@
   "DnDProviderProps.overlayFit": {
     "source": "2cebf1b9ab",
     "text": "Tamaño del overlay mientras arrastras. `'slot'` (por defecto): sigue al hueco en el que aterrizará el ítem, así que sobre otra lista toma el tamaño de los ítems de esa lista, y el drop no necesita cambiar de tamaño. Cambia de tamaño alrededor del puntero, que se queda en la misma proporción de la caja. `'source'`: mantiene el tamaño del elemento arrastrado. El contenido del overlay por defecto se vuelve a maquetar con el nuevo tamaño; nunca se escala."
+  },
+  "DnDProviderProps.overlayTransition": {
+    "source": "6852def127",
+    "text": "Cómo cambia el overlay de un componente a otro durante un arrastre (el `overlay` de un destino de drop toma el relevo, se cambia una ref de `overlay`): `true` (por defecto) hace un fundido cruzado entre ellos en 150 ms, `false` los cambia al instante, y un objeto son las props de un `<Transition>` de Vue alrededor de la raíz del contenido (`name`, `mode`, hooks de JS para GSAP o motion). Sin `mode: 'out-in'` los dos se ven a la vez: dale al que sale `position: absolute` (`.<name>-leave-active`) para que se apilen en la caja."
   },
   "DnDProviderProps.announcements": {
     "source": "0729e8985f",
@@ -122,6 +130,10 @@
   "OverlaySlotProps.accepted": {
     "source": "f7641f18e1",
     "text": "Si `over` acepta los ítems arrastrados; `false` cuando no hay nada debajo."
+  },
+  "OverlaySlotProps.to": {
+    "source": "a7cc5a79db",
+    "text": "Dónde pondría ahora un drop los ítems arrastrados, en una lista o un árbol ordenables: por ejemplo, para teñir el overlay según la carpeta en la que entraría un arrastre de árbol. Fuera de todos los destinos es el sitio del hueco, donde los deja `dropOutside: 'placeholder'` (el valor por defecto). `null` cuando el drop no los pondría en ninguna lista: sobre un destino de drop simple, sobre una lista que los rechaza, fuera con `dropOutside: 'cancel'` o `'remove'`. Mientras se anima un drop ya decidido, el sitio en el que aterriza."
   },
   "OverlayProps": {
     "source": "8058170119",

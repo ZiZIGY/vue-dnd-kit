@@ -80,8 +80,20 @@
     "text": "默认：`useId()`，在服务端和客户端渲染之间保持稳定。只读取一次。"
   },
   "SortableListOptions.overlay": {
-    "source": "4d236710b1",
-    "text": "这个列表中项的浮层组件（项自己的 `overlay` 优先）。它接收 `OverlayProps`，并在整个拖拽过程中保持不变，经过其他列表时也是如此。在拖拽开始时读取。"
+    "source": "47e3eb4c8a",
+    "text": "这个列表中项的浮层组件（项自己的 `overlay` 优先）。它接收 `OverlayProps`，并在整个拖拽过程中保持不变，经过其他列表时也是如此，除非拖拽下方的目标有自己的浮层（`overOverlay`）。在拖拽过程中切换的 ref 会立即替换它。"
+  },
+  "SortableListOptions.overOverlay": {
+    "source": "ac8fff8632",
+    "text": "当这个列表接受的拖拽位于它上方时浮层显示什么，无论拖拽来自哪个列表：一个获得 `OverlayProps`、并把拖拽自己的浮层作为默认插槽的组件（见 `DroppableOptions.overlay`）。实时读取。"
+  },
+  "SortableListOptions.dropAnimation": {
+    "source": "9b8f883d95",
+    "text": "这个列表中项的拖拽结束时浮层如何落位，替代 provider 的 `dropAnimation`（项自己的优先；放置目标的优先于两者）。在放置时读取。"
+  },
+  "SortableListOptions.overDropAnimation": {
+    "source": "afd18ed23d",
+    "text": "浮层被放进这个列表时如何落位，无论它来自哪个列表：优先于被拖拽项和 provider 的 `dropAnimation`。在放置时读取。"
   },
   "SortableListOptions.modifiers": {
     "source": "16c37d217b",
@@ -180,8 +192,12 @@
     "text": "这个元素渲染的项，例如 `() => props.task`。它的 key 来自所属列表（或树）的 `getKey`，默认为 `item.id`。"
   },
   "SortableItemOptions.overlay": {
-    "source": "2ded9454bb",
-    "text": "这个项的浮层组件；优先于列表的 `overlay`。在拖拽开始时读取。"
+    "source": "e39a5caf13",
+    "text": "这个项的浮层组件；优先于列表的 `overlay`。在拖拽过程中切换的 ref 会立即替换它。"
+  },
+  "SortableItemOptions.dropAnimation": {
+    "source": "dd326b61e0",
+    "text": "这个项的拖拽结束时浮层如何落位；优先于列表的 `dropAnimation`。在放置时读取。"
   },
   "SortableItemOptions.modifiers": {
     "source": "55d5129188",

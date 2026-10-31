@@ -75,6 +75,10 @@
     "source": "699c35a63c",
     "text": "Animation FLIP par défaut des listes triables."
   },
+  "DnDProviderProps.dropAnimation": {
+    "source": "f99201968c",
+    "text": "Comment l'overlay atterrit au dépôt et revient à sa place en cas d'annulation, quand rien de plus proche n'en définit une : la `dropAnimation` de la cible de dépôt passe en premier, puis celle propre à l'item glissé (ou celle de sa liste), puis celle-ci."
+  },
   "DnDProviderProps.animate": {
     "source": "e7b8ee12ca",
     "text": "`animate` par défaut des listes et des arbres triables : les changements de leurs items qui ne viennent pas d'un glissement. Désactivé par défaut."
@@ -94,6 +98,10 @@
   "DnDProviderProps.overlayFit": {
     "source": "2cebf1b9ab",
     "text": "Taille de l'overlay pendant le glissement. `'slot'` (par défaut) : il suit l'emplacement où l'item va atterrir ; au-dessus d'une autre liste, il prend donc la taille des items de cette liste, et le dépôt n'a pas besoin de redimensionnement. Il se redimensionne autour du pointeur, qui reste à la même proportion de la boîte. `'source'` : il garde la taille de l'élément glissé. La mise en page du contenu de l'overlay par défaut est recalculée à la nouvelle taille ; il n'est jamais mis à l'échelle."
+  },
+  "DnDProviderProps.overlayTransition": {
+    "source": "6852def127",
+    "text": "Comment l'overlay passe d'un composant à un autre pendant un glissement (l'`overlay` d'une cible de dépôt prend le relais, une ref d'`overlay` est changée) : `true` (par défaut) les enchaîne en fondu en 150 ms, `false` les échange aussitôt, et un objet donne les props d'une `<Transition>` Vue autour de la racine du contenu (`name`, `mode`, hooks JS pour GSAP ou motion). Sans `mode: 'out-in'`, les deux s'affichent en même temps : donnez à celui qui part `position: absolute` (`.<name>-leave-active`) pour qu'ils s'empilent dans la boîte."
   },
   "DnDProviderProps.announcements": {
     "source": "0729e8985f",
@@ -122,6 +130,10 @@
   "OverlaySlotProps.accepted": {
     "source": "f7641f18e1",
     "text": "Si `over` accepte les items glissés ; `false` au-dessus de rien."
+  },
+  "OverlaySlotProps.to": {
+    "source": "a7cc5a79db",
+    "text": "L'endroit où un dépôt mettrait maintenant les items glissés, dans une liste ou un arbre triable : par exemple pour teinter l'overlay selon le dossier dans lequel irait un glissement dans un arbre. En dehors de toute cible, c'est la place de l'emplacement, où `dropOutside: 'placeholder'` (la valeur par défaut) les garde. `null` quand le dépôt ne les mettrait dans aucune liste : au-dessus d'une cible de dépôt simple, au-dessus d'une liste qui les refuse, à l'extérieur avec `dropOutside: 'cancel'` ou `'remove'`. Pendant l'animation d'un dépôt décidé, la place où il atterrit."
   },
   "OverlayProps": {
     "source": "8058170119",

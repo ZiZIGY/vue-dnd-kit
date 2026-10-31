@@ -75,6 +75,10 @@
     "source": "699c35a63c",
     "text": "可排序列表的默认 FLIP 动画。"
   },
+  "DnDProviderProps.dropAnimation": {
+    "source": "f99201968c",
+    "text": "浮层在放置时如何落位、在取消时如何飞回原处，在没有更近的设置时使用：放置目标的 `dropAnimation` 最先，然后是被拖拽项自己的（或它所在列表的），最后才是这个。"
+  },
   "DnDProviderProps.animate": {
     "source": "e7b8ee12ca",
     "text": "可排序列表和树的默认 `animate`：为非拖拽引起的项的变化添加动画。默认关闭。"
@@ -94,6 +98,10 @@
   "DnDProviderProps.overlayFit": {
     "source": "2cebf1b9ab",
     "text": "拖拽时浮层的尺寸。`'slot'`（默认）：它跟随项将落入的位置，所以经过另一个列表时它会采用那个列表中项的尺寸，放置时也不需要调整尺寸。它围绕指针调整尺寸，指针始终位于盒子中相同的比例位置。`'source'`：保持被拖拽元素的尺寸。默认浮层的内容会按新尺寸重新布局；它永远不会被缩放。"
+  },
+  "DnDProviderProps.overlayTransition": {
+    "source": "6852def127",
+    "text": "拖拽过程中浮层从一个组件换成另一个组件的方式（放置目标的 `overlay` 接管，或 `overlay` ref 被切换）：`true`（默认）在 150 ms 内交叉淡入淡出，`false` 立即替换，对象则是包裹内容根元素的 Vue `<Transition>` 的 props（`name`、`mode`，以及用于 GSAP 或 motion 的 JS 钩子）。没有 `mode: 'out-in'` 时两者会同时显示：给离开的那个设置 `position: absolute`（`.<name>-leave-active`），让它们在盒子里叠在一起。"
   },
   "DnDProviderProps.announcements": {
     "source": "0729e8985f",
@@ -122,6 +130,10 @@
   "OverlaySlotProps.accepted": {
     "source": "f7641f18e1",
     "text": "`over` 是否接收被拖拽的项；下方没有目标时为 `false`。"
+  },
+  "OverlaySlotProps.to": {
+    "source": "a7cc5a79db",
+    "text": "现在放置会把被拖拽的项放到可排序列表或树中的哪里：例如按树拖拽将进入的文件夹给浮层着色。在所有目标之外，是空位所在的地方，`dropOutside: 'placeholder'`（默认值）会把它们留在那里。当放置不会把它们放进任何列表时为 `null`：在普通放置目标上方、在拒绝它们的列表上方、在 `dropOutside: 'cancel'` 或 `'remove'` 时位于目标之外。已确定的放置执行动画期间，是它落到的位置。"
   },
   "OverlayProps": {
     "source": "8058170119",

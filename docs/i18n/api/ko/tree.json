@@ -8,8 +8,8 @@
     "text": "트리의 드롭 이벤트. `index`는 `parentKey` 아래 형제 사이에서의 위치입니다(`from`: 이동 전, `to`: 이동 후, 노드가 이미 이전 자리에서 빠진 상태). `from.parentKey`는 루트 노드와 다른 리스트에서 온 항목이면 `null`입니다. 멀티 드래그는 `keys`(각각 하위 트리 포함)를 나란히 옮깁니다. `from`은 드래그를 이끄는 노드(집은 노드, 또는 그 노드를 싣고 가는 선택된 노드)가 있던 곳이고, `to`는 그중 첫 번째가 안착하는 곳입니다. 복사(`mode: 'copy'`)는 노드를 제자리에 두고 그 복사본인 `items`를 삽입하며, 일반 draggable(`mode: 'insert'`)은 `createItem`이 만든 노드를 삽입합니다."
   },
   "SortableTreeOptions": {
-    "source": "3b9c211f35",
-    "text": "`makeSortableTree`의 옵션. 멀티 드래그는 선택된 노드를 각자의 하위 트리와 함께 하나의 블록으로, 한 위치와 깊이로 (문서 순서대로) 옮깁니다. 선택된 노드 안의 다른 선택된 노드는 그 하위 트리에 실려 함께 갑니다. 집은 노드도 마찬가지입니다(VS Code처럼). 집은 노드는 자신이 속한 선택된 노드 안에 그대로 있고, 그 노드가 하위 트리와 함께 움직이며, 오버레이는 집은 행에 남습니다. `canNest`와 `maxDepth`는 블록 전체에 적용됩니다.\n\n나머지 옵션은 `makeSortableList`에서와 같은 의미입니다. 값, ref, getter를 받으며(`overlay`, `animation`: 값 또는 ref) 트리가 필요할 때 읽으므로, 변경은 늦어도 다음 드래그부터 적용됩니다. 예외: `id`와 `group`은 트리가 만들어질 때 한 번만 읽습니다. `items`는 모델 자체입니다. 함수(`getKey`, `getChildren`, `setChildren`, `canNest`, `clone`, `createItem`, 콜백)는 그대로 넘깁니다."
+    "source": "a99d0dc21f",
+    "text": "`makeSortableTree`의 옵션. 멀티 드래그는 선택된 노드를 각자의 하위 트리와 함께 하나의 블록으로, 한 위치와 깊이로 (문서 순서대로) 옮깁니다. 선택된 노드 안의 다른 선택된 노드는 그 하위 트리에 실려 함께 갑니다. 집은 노드도 마찬가지입니다(VS Code처럼). 집은 노드는 자신이 속한 선택된 노드 안에 그대로 있고, 그 노드가 하위 트리와 함께 움직이며, 오버레이는 집은 행에 남습니다. `canNest`와 `maxDepth`는 블록 전체에 적용됩니다.\n\n나머지 옵션은 `makeSortableList`에서와 같은 의미입니다. 값, ref, getter를 받으며(`overlay`, `overOverlay`, `animation`, `dropAnimation`, `overDropAnimation`: 값 또는 ref) 트리가 필요할 때 읽으므로, 변경은 늦어도 다음 드래그부터 적용됩니다. 예외: `id`와 `group`은 트리가 만들어질 때 한 번만 읽습니다. `items`는 모델 자체입니다. 함수(`getKey`, `getChildren`, `setChildren`, `canNest`, `clone`, `createItem`, 콜백)는 그대로 넘깁니다."
   },
   "SortableTreeOptions.items": {
     "source": "210f1fb478",
@@ -32,8 +32,20 @@
     "text": "기본값: `useId()`. 서버 렌더링과 클라이언트 렌더링 사이에서 안정적입니다. 한 번만 읽습니다."
   },
   "SortableTreeOptions.overlay": {
-    "source": "99297d8dc8",
-    "text": "이 트리 행의 오버레이 컴포넌트(행 자체의 `overlay`가 우선합니다). 드래그가 시작될 때 읽습니다."
+    "source": "cf37f2819a",
+    "text": "이 트리 행의 오버레이 컴포넌트(행 자체의 `overlay`가 우선합니다). 드래그 중에 바꾼 ref는 바로 교체됩니다."
+  },
+  "SortableTreeOptions.overOverlay": {
+    "source": "3f98a99024",
+    "text": "이 트리가 받는 드래그가 위에 있는 동안 오버레이가 보여 줄 것(`SortableListOptions.overOverlay` 참고). 오버레이의 `to` prop은 드롭이 어디에 중첩될지 알려 줍니다."
+  },
+  "SortableTreeOptions.dropAnimation": {
+    "source": "f712ceff74",
+    "text": "이 트리 행의 드래그가 끝날 때 오버레이가 안착하는 방식(`SortableListOptions.dropAnimation` 참고)."
+  },
+  "SortableTreeOptions.overDropAnimation": {
+    "source": "7a6b9b8187",
+    "text": "이 트리에 드롭될 때 오버레이가 안착하는 방식(`SortableListOptions.overDropAnimation` 참고)."
   },
   "SortableTreeOptions.modifiers": {
     "source": "f6220f5795",

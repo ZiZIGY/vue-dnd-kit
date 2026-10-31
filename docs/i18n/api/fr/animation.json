@@ -35,6 +35,10 @@
     "source": "cecafada99",
     "text": "L'item n'est pas affiché après un dépôt sur une zone (pas une liste triable), par exemple s'il a été déposé dans un autre item (un dossier) ou dans une zone de corbeille : le rectangle visible de la zone. L'animation par défaut y réduit l'overlay pendant qu'il disparaît en fondu, au lieu d'un fondu sur place."
   },
+  "DropAnimationContext.over": {
+    "source": "54c7b98b67",
+    "text": "La cible sur laquelle le dépôt atterrit (une liste, une zone) ; `null` en cas d'annulation."
+  },
   "DropAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "`prefers-reduced-motion: reduce` est actif. Les animations propres à la bibliothèque ne s'exécutent alors pas ; les fonctions que vous fournissez s'exécutent toujours, et décident d'après cette valeur (sauter le mouvement, ou garder un fondu)."

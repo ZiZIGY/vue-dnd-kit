@@ -27,6 +27,26 @@
     "source": "48997f2ee2",
     "text": "대상의 `accept` 규칙이 드래그 중인 항목을 받아들이는지 여부."
   },
+  "DropDestination": {
+    "source": "55daec7851",
+    "text": "드롭하면 드래그 중인 항목이 놓일 곳. 정렬 가능한 리스트나 트리 안의 자리로, 드롭 이벤트의 `to`가 알려 줄 것과 같습니다(오버레이의 `to` prop, 실시간)."
+  },
+  "DropDestination.list": {
+    "source": "31b274663e",
+    "text": "리스트나 트리의 id."
+  },
+  "DropDestination.index": {
+    "source": "5fdcf67fec",
+    "text": "드래그 중인 항목이 차지할 인덱스. 리스트 안에서, 또는 트리에서는 `parentKey` 아래의 형제 노드 사이에서의 인덱스입니다."
+  },
+  "DropDestination.parentKey": {
+    "source": "b707f9c973",
+    "text": "트리: 항목이 들어갈 부모 노드. 루트에서는 `null`."
+  },
+  "DropDestination.depth": {
+    "source": "0a3289fa23",
+    "text": "트리: 항목이 놓일 깊이(루트는 0)."
+  },
   "DragSource.list": {
     "source": "57db105431",
     "text": "드래그 중인 항목이 온 정렬 가능한 리스트."

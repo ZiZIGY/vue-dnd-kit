@@ -80,8 +80,20 @@
     "text": "기본값: `useId()`. 서버 렌더링과 클라이언트 렌더링 사이에서 안정적입니다. 한 번만 읽습니다."
   },
   "SortableListOptions.overlay": {
-    "source": "4d236710b1",
-    "text": "이 리스트 항목의 오버레이 컴포넌트(항목 자체의 `overlay`가 우선합니다). `OverlayProps`를 받으며, 다른 리스트 위에서도 드래그가 끝날 때까지 유지됩니다. 드래그가 시작될 때 읽습니다."
+    "source": "47e3eb4c8a",
+    "text": "이 리스트 항목의 오버레이 컴포넌트(항목 자체의 `overlay`가 우선합니다). `OverlayProps`를 받으며, 다른 리스트 위에서도 드래그가 끝날 때까지 유지됩니다. 단, 드래그 아래의 대상에 자체 오버레이(`overOverlay`)가 있으면 예외입니다. 드래그 중에 바꾼 ref는 바로 교체됩니다."
+  },
+  "SortableListOptions.overOverlay": {
+    "source": "ac8fff8632",
+    "text": "이 리스트가 받는 드래그가 위에 있는 동안, 어느 리스트에서 왔든 오버레이가 보여 줄 것. `OverlayProps`와 드래그 자체의 오버레이를 기본 슬롯으로 받는 컴포넌트입니다(`DroppableOptions.overlay` 참고). 실시간으로 읽습니다."
+  },
+  "SortableListOptions.dropAnimation": {
+    "source": "9b8f883d95",
+    "text": "이 리스트 항목의 드래그가 끝날 때 오버레이가 안착하는 방식으로, 프로바이더의 `dropAnimation` 대신 쓰입니다(항목 자체의 것이 우선하고, 드롭 대상의 것은 둘 모두보다 우선합니다). 드롭할 때 읽습니다."
+  },
+  "SortableListOptions.overDropAnimation": {
+    "source": "afd18ed23d",
+    "text": "어느 리스트에서 왔든 이 리스트에 드롭될 때 오버레이가 안착하는 방식. 드래그 중인 항목과 프로바이더의 `dropAnimation`보다 우선합니다. 드롭할 때 읽습니다."
   },
   "SortableListOptions.modifiers": {
     "source": "16c37d217b",
@@ -180,8 +192,12 @@
     "text": "이 요소가 렌더링하는 항목. 예: `() => props.task`. key는 소속 리스트(또는 트리)의 `getKey`에서 오며, 기본값은 `item.id`입니다."
   },
   "SortableItemOptions.overlay": {
-    "source": "2ded9454bb",
-    "text": "이 항목의 오버레이 컴포넌트. 리스트의 `overlay`보다 우선합니다. 드래그가 시작될 때 읽습니다."
+    "source": "e39a5caf13",
+    "text": "이 항목의 오버레이 컴포넌트. 리스트의 `overlay`보다 우선합니다. 드래그 중에 바꾼 ref는 바로 교체됩니다."
+  },
+  "SortableItemOptions.dropAnimation": {
+    "source": "dd326b61e0",
+    "text": "이 항목의 드래그가 끝날 때 오버레이가 안착하는 방식. 리스트의 `dropAnimation`보다 우선합니다. 드롭할 때 읽습니다."
   },
   "SortableItemOptions.modifiers": {
     "source": "55d5129188",

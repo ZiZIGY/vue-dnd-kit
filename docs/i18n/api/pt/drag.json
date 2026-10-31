@@ -27,6 +27,26 @@
     "source": "48997f2ee2",
     "text": "Se a regra `accept` do alvo aceita os itens arrastados."
   },
+  "DropDestination": {
+    "source": "55daec7851",
+    "text": "Onde um drop colocaria os itens arrastados: um lugar em uma lista ou árvore ordenável, como o `to` do evento de drop vai dizer (a prop `to` do overlay, ao vivo)."
+  },
+  "DropDestination.list": {
+    "source": "31b274663e",
+    "text": "Id da lista ou da árvore."
+  },
+  "DropDestination.index": {
+    "source": "5fdcf67fec",
+    "text": "Índice que os itens arrastados assumem: na lista, ou entre os irmãos sob `parentKey` em uma árvore."
+  },
+  "DropDestination.parentKey": {
+    "source": "b707f9c973",
+    "text": "Árvores: o nó sob o qual eles vão; `null` na raiz."
+  },
+  "DropDestination.depth": {
+    "source": "0a3289fa23",
+    "text": "Árvores: a profundidade em que eles vão (as raízes são 0)."
+  },
   "DragSource.list": {
     "source": "57db105431",
     "text": "Lista ordenável de onde vêm os itens arrastados."

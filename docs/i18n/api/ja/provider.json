@@ -75,6 +75,10 @@
     "source": "699c35a63c",
     "text": "並べ替え可能なリストのデフォルトの FLIP アニメーション。"
   },
+  "DnDProviderProps.dropAnimation": {
+    "source": "f99201968c",
+    "text": "ドロップ時にオーバーレイが着地し、キャンセル時に元の位置に戻る仕方。より近くで設定されていないときに使われます。ドロップターゲットの `dropAnimation` が最初、次にドラッグされたアイテム自身のもの（またはそのリストのもの）、最後にこれです。"
+  },
   "DnDProviderProps.animate": {
     "source": "e7b8ee12ca",
     "text": "並べ替え可能なリストとツリーのデフォルトの `animate`：ドラッグ以外によるアイテムの変更。デフォルトはオフ。"
@@ -94,6 +98,10 @@
   "DnDProviderProps.overlayFit": {
     "source": "2cebf1b9ab",
     "text": "ドラッグ中のオーバーレイのサイズ。`'slot'`（デフォルト）：アイテムが着地する位置に追従するため、別のリストの上ではそのリストのアイテムのサイズになり、ドロップ時にサイズ変更が不要になります。ポインターを中心にサイズを変え、ポインターはボックス内の同じ比率の位置に留まります。`'source'`：ドラッグ中の要素のサイズを保ちます。デフォルトのオーバーレイのコンテンツは新しいサイズでレイアウトし直され、拡大縮小されることはありません。"
+  },
+  "DnDProviderProps.overlayTransition": {
+    "source": "6852def127",
+    "text": "ドラッグ中にオーバーレイがあるコンポーネントから別のコンポーネントへ変わる仕方（ドロップターゲットの `overlay` に切り替わる、`overlay` の ref が切り替えられる）：`true`（デフォルト）は 150 ms でクロスフェードし、`false` はすぐに入れ替え、オブジェクトはコンテンツのルートを囲む Vue の `<Transition>` の props です（`name`、`mode`、GSAP や motion 用の JS フック）。`mode: 'out-in'` がないと両方が同時に表示されます：去る側に `position: absolute` を付けて（`.<name>-leave-active`）、ボックスの中で重なるようにしてください。"
   },
   "DnDProviderProps.announcements": {
     "source": "0729e8985f",
@@ -122,6 +130,10 @@
   "OverlaySlotProps.accepted": {
     "source": "f7641f18e1",
     "text": "`over` がドラッグ中のアイテムを受け入れるかどうか。何もない上では `false`。"
+  },
+  "OverlaySlotProps.to": {
+    "source": "a7cc5a79db",
+    "text": "今ドロップしたらドラッグ中のアイテムが置かれる、並べ替え可能なリストまたはツリーの中の場所：たとえば、ツリーのドラッグが入るフォルダーに応じてオーバーレイに色を付けます。どのターゲットの外でも枠の場所で、`dropOutside: 'placeholder'`（デフォルト）はアイテムをそこに残します。ドロップがアイテムをどのリストにも置かない場合は `null`：通常のドロップターゲットの上、アイテムを拒否するリストの上、`dropOutside: 'cancel'` または `'remove'` でのターゲットの外。決まったドロップがアニメーションしている間は、着地する場所。"
   },
   "OverlayProps": {
     "source": "8058170119",

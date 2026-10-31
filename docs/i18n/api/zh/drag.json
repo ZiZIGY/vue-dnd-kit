@@ -27,6 +27,26 @@
     "source": "48997f2ee2",
     "text": "目标的 `accept` 规则是否接收被拖拽的项。"
   },
+  "DropDestination": {
+    "source": "55daec7851",
+    "text": "放置会把被拖拽的项放到哪里：可排序列表或树中的一个位置，与放置事件的 `to` 将给出的一致（即浮层的 `to` prop，实时更新）。"
+  },
+  "DropDestination.list": {
+    "source": "31b274663e",
+    "text": "列表或树的 id。"
+  },
+  "DropDestination.index": {
+    "source": "5fdcf67fec",
+    "text": "被拖拽的项所占的索引：在列表中，或在树中 `parentKey` 下的兄弟节点之间。"
+  },
+  "DropDestination.parentKey": {
+    "source": "b707f9c973",
+    "text": "树：它们将放到其下的节点；在根层级时为 `null`。"
+  },
+  "DropDestination.depth": {
+    "source": "0a3289fa23",
+    "text": "树：它们将处于的深度（根节点为 0）。"
+  },
   "DragSource.list": {
     "source": "57db105431",
     "text": "被拖拽的项所来自的可排序列表。"

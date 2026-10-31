@@ -75,6 +75,10 @@
     "source": "699c35a63c",
     "text": "Standard-FLIP-Animation für sortierbare Listen."
   },
+  "DnDProviderProps.dropAnimation": {
+    "source": "f99201968c",
+    "text": "Wie das Overlay beim Drop landet und beim Abbrechen zurückfliegt, wenn nichts Näheres eine setzt: Zuerst kommt die `dropAnimation` des Drop-Ziels, dann die eigene des gezogenen Elements (oder die seiner Liste), dann diese."
+  },
   "DnDProviderProps.animate": {
     "source": "e7b8ee12ca",
     "text": "Standardwert von `animate` für sortierbare Listen und Bäume: Änderungen ihrer Elemente, die kein Drag ausgelöst hat. Standardmäßig aus."
@@ -94,6 +98,10 @@
   "DnDProviderProps.overlayFit": {
     "source": "2cebf1b9ab",
     "text": "Größe des Overlays während des Ziehens. `'slot'` (Standard): Das Overlay folgt dem Slot, in dem das Element landen wird; über einer anderen Liste nimmt es also die Größe der Elemente dieser Liste an, und der Drop braucht keine Größenänderung. Es ändert seine Größe um den Zeiger herum, der immer beim selben Anteil der Box bleibt. `'source'`: Es behält die Größe des gezogenen Elements. Der Inhalt des Standard-Overlays wird in der neuen Größe neu angeordnet; er wird nie skaliert."
+  },
+  "DnDProviderProps.overlayTransition": {
+    "source": "6852def127",
+    "text": "Wie das Overlay während eines Drags von einer Komponente zur anderen wechselt (das `overlay` eines Drop-Ziels übernimmt, ein `overlay`-Ref wird umgeschaltet): `true` (Standard) blendet sie in 150 ms über, `false` tauscht sie sofort, und ein Objekt sind die Props einer Vue-`<Transition>` um die Wurzel des Inhalts (`name`, `mode`, JS-Hooks für GSAP oder motion). Ohne `mode: 'out-in'` sind beide gleichzeitig zu sehen: Gib der ausgehenden `position: absolute` (`.<name>-leave-active`), damit sie sich in der Box stapeln."
   },
   "DnDProviderProps.announcements": {
     "source": "0729e8985f",
@@ -122,6 +130,10 @@
   "OverlaySlotProps.accepted": {
     "source": "f7641f18e1",
     "text": "Ob `over` die gezogenen Elemente annimmt; `false`, wenn der Drag über nichts ist."
+  },
+  "OverlaySlotProps.to": {
+    "source": "a7cc5a79db",
+    "text": "Wohin ein Drop die gezogenen Elemente jetzt legen würde, in einer sortierbaren Liste oder einem Baum: z. B. um das Overlay nach dem Ordner zu färben, in den ein Drag im Baum käme. Außerhalb aller Ziele ist es der Platz des Slots, an dem `dropOutside: 'placeholder'` (der Standard) sie lässt. `null`, wenn der Drop sie in keine Liste legen würde: über einem einfachen Drop-Ziel, über einer Liste, die sie ablehnt, außerhalb mit `dropOutside: 'cancel'` oder `'remove'`. Während ein entschiedener Drop animiert wird, der Platz, auf dem er landet."
   },
   "OverlayProps": {
     "source": "8058170119",

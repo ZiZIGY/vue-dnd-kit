@@ -80,8 +80,20 @@
     "text": "Standard: `useId()`, stabil zwischen Server- und Client-Rendering. Wird einmal gelesen."
   },
   "SortableListOptions.overlay": {
-    "source": "4d236710b1",
-    "text": "Overlay-Komponente für die Elemente dieser Liste (das eigene `overlay` eines Elements gewinnt). Sie bekommt `OverlayProps` und bleibt für den ganzen Drag erhalten, auch über anderen Listen. Wird beim Start des Drags gelesen."
+    "source": "47e3eb4c8a",
+    "text": "Overlay-Komponente für die Elemente dieser Liste (das eigene `overlay` eines Elements gewinnt). Sie bekommt `OverlayProps` und bleibt für den ganzen Drag erhalten, auch über anderen Listen, sofern das Ziel unter dem Drag kein eigenes Overlay hat (`overOverlay`). Ein mitten im Drag umgeschaltetes Ref tauscht sie sofort."
+  },
+  "SortableListOptions.overOverlay": {
+    "source": "ac8fff8632",
+    "text": "Was das Overlay zeigt, während ein Drag, den diese Liste annimmt, über ihr ist, egal aus welcher Liste er kommt: eine Komponente, die `OverlayProps` und das eigene Overlay des Drags als Standard-Slot bekommt (siehe `DroppableOptions.overlay`). Wird live gelesen."
+  },
+  "SortableListOptions.dropAnimation": {
+    "source": "9b8f883d95",
+    "text": "Wie das Overlay landet, wenn ein Drag der Elemente dieser Liste endet, statt der `dropAnimation` des Providers (die eigene eines Elements gewinnt; die eines Drop-Ziels gewinnt gegen beide). Wird beim Drop gelesen."
+  },
+  "SortableListOptions.overDropAnimation": {
+    "source": "afd18ed23d",
+    "text": "Wie das Overlay landet, wenn es in diese Liste abgelegt wird, egal aus welcher Liste es kommt: gewinnt gegen die `dropAnimation` des gezogenen Elements und des Providers. Wird beim Drop gelesen."
   },
   "SortableListOptions.modifiers": {
     "source": "16c37d217b",
@@ -180,8 +192,12 @@
     "text": "Das Datenelement, das dieses Element rendert, z. B. `() => props.task`. Sein Schlüssel kommt aus `getKey` der zugehörigen Liste (oder des Baums), standardmäßig `item.id`."
   },
   "SortableItemOptions.overlay": {
-    "source": "2ded9454bb",
-    "text": "Overlay-Komponente für dieses Element; gewinnt gegen `overlay` der Liste. Wird beim Start des Drags gelesen."
+    "source": "e39a5caf13",
+    "text": "Overlay-Komponente für dieses Element; gewinnt gegen `overlay` der Liste. Ein mitten im Drag umgeschaltetes Ref tauscht sie sofort."
+  },
+  "SortableItemOptions.dropAnimation": {
+    "source": "dd326b61e0",
+    "text": "Wie das Overlay landet, wenn ein Drag dieses Elements endet; gewinnt gegen die `dropAnimation` der Liste. Wird beim Drop gelesen."
   },
   "SortableItemOptions.modifiers": {
     "source": "55d5129188",

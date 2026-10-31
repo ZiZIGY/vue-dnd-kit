@@ -27,6 +27,26 @@
     "source": "48997f2ee2",
     "text": "Ob die `accept`-Regel des Ziels die gezogenen Elemente annimmt."
   },
+  "DropDestination": {
+    "source": "55daec7851",
+    "text": "Wohin ein Drop die gezogenen Elemente legen würde: ein Platz in einer sortierbaren Liste oder einem Baum, so wie es das `to` des Drop-Events sagen wird (die Prop `to` des Overlays, live)."
+  },
+  "DropDestination.list": {
+    "source": "31b274663e",
+    "text": "ID der Liste oder des Baums."
+  },
+  "DropDestination.index": {
+    "source": "5fdcf67fec",
+    "text": "Index, den die gezogenen Elemente einnehmen: in der Liste oder, in einem Baum, unter den Geschwistern unter `parentKey`."
+  },
+  "DropDestination.parentKey": {
+    "source": "b707f9c973",
+    "text": "Bäume: der Knoten, unter den sie kommen; `null` auf der Wurzelebene."
+  },
+  "DropDestination.depth": {
+    "source": "0a3289fa23",
+    "text": "Bäume: die Tiefe, in die sie kommen (Wurzeln sind 0)."
+  },
   "DragSource.list": {
     "source": "57db105431",
     "text": "Sortierbare Liste, aus der die gezogenen Elemente kommen."

@@ -80,8 +80,20 @@
     "text": "Padrão: `useId()`, estável entre a renderização no servidor e no cliente. Lido uma única vez."
   },
   "SortableListOptions.overlay": {
-    "source": "4d236710b1",
-    "text": "Componente de overlay para os itens desta lista (o `overlay` do próprio item prevalece). Ele recebe `OverlayProps` e é mantido durante todo o arraste, inclusive sobre outras listas. Lido quando o arraste começa."
+    "source": "47e3eb4c8a",
+    "text": "Componente de overlay para os itens desta lista (o `overlay` do próprio item prevalece). Ele recebe `OverlayProps` e é mantido durante todo o arraste, inclusive sobre outras listas, a menos que o alvo sob o arraste tenha um overlay próprio (`overOverlay`). Um ref trocado durante o arraste o troca na hora."
+  },
+  "SortableListOptions.overOverlay": {
+    "source": "ac8fff8632",
+    "text": "O que o overlay mostra enquanto um arraste que esta lista aceita está sobre ela, venha de qual lista vier: um componente que recebe `OverlayProps` e o overlay do próprio arraste como slot padrão (veja `DroppableOptions.overlay`). Lido ao vivo."
+  },
+  "SortableListOptions.dropAnimation": {
+    "source": "9b8f883d95",
+    "text": "Como o overlay pousa quando um arraste dos itens desta lista termina, em vez do `dropAnimation` do provider (o do próprio item prevalece; o de um alvo de drop prevalece sobre os dois). Lido no drop."
+  },
+  "SortableListOptions.overDropAnimation": {
+    "source": "afd18ed23d",
+    "text": "Como o overlay pousa quando é solto nesta lista, venha de qual lista vier: prevalece sobre o `dropAnimation` do item arrastado e do provider. Lido no drop."
   },
   "SortableListOptions.modifiers": {
     "source": "16c37d217b",
@@ -180,8 +192,12 @@
     "text": "O item que este elemento renderiza, por exemplo, `() => props.task`. A key dele vem do `getKey` da lista (ou árvore) dona, por padrão `item.id`."
   },
   "SortableItemOptions.overlay": {
-    "source": "2ded9454bb",
-    "text": "Componente de overlay para este item; prevalece sobre o `overlay` da lista. Lido quando o arraste começa."
+    "source": "e39a5caf13",
+    "text": "Componente de overlay para este item; prevalece sobre o `overlay` da lista. Um ref trocado durante o arraste o troca na hora."
+  },
+  "SortableItemOptions.dropAnimation": {
+    "source": "dd326b61e0",
+    "text": "Como o overlay pousa quando um arraste deste item termina; prevalece sobre o `dropAnimation` da lista. Lido no drop."
   },
   "SortableItemOptions.modifiers": {
     "source": "55d5129188",

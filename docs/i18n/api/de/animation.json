@@ -35,6 +35,10 @@
     "source": "cecafada99",
     "text": "Das Element ist nach einem Drop auf eine Drop-Zone (keine sortierbare Liste) nicht zu sehen, z. B. wurde es in ein anderes Element (einen Ordner) oder eine Papierkorb-Zone abgelegt: das sichtbare Rechteck der Zone. Die Standardanimation lässt das Overlay beim Ausblenden in dieses Rechteck schrumpfen, statt es an Ort und Stelle auszublenden."
   },
+  "DropAnimationContext.over": {
+    "source": "54c7b98b67",
+    "text": "Das Ziel, auf dem der Drop landet (eine Liste, eine Zone); `null` beim Abbrechen."
+  },
   "DropAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "`prefers-reduced-motion: reduce` ist gesetzt. Die eigenen Animationen der Bibliothek laufen dann nicht; deine Funktionen laufen immer und entscheiden anhand dieses Werts (überspringen oder eine Überblendung beibehalten)."

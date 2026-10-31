@@ -35,6 +35,10 @@
     "source": "cecafada99",
     "text": "放到一个区域（而不是可排序列表）上之后，该项不再显示，例如它被放进了另一个项（文件夹）或回收区：此时为该区域的可见矩形。默认动画会让浮层在淡出时缩进这个区域，而不是在原地淡出。"
   },
+  "DropAnimationContext.over": {
+    "source": "54c7b98b67",
+    "text": "放置落到的目标（列表、放置区）；取消时为 `null`。"
+  },
   "DropAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "设置了 `prefers-reduced-motion: reduce`。此时库自己的动画不会运行；你的函数总会运行，并据此做出决定（跳过，或保留一个淡入淡出）。"

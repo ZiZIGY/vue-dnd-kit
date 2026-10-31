@@ -75,6 +75,10 @@
     "source": "699c35a63c",
     "text": "Animação FLIP padrão para as listas ordenáveis."
   },
+  "DnDProviderProps.dropAnimation": {
+    "source": "f99201968c",
+    "text": "Como o overlay pousa no drop e volta ao lugar no cancelamento, quando nada mais próximo define um: primeiro vem o `dropAnimation` do alvo de drop, depois o do próprio item arrastado (ou o da lista dele) e, por fim, este."
+  },
   "DnDProviderProps.animate": {
     "source": "e7b8ee12ca",
     "text": "`animate` padrão das listas e árvores ordenáveis: mudanças nos itens delas que nenhum arraste fez. Desligado por padrão."
@@ -94,6 +98,10 @@
   "DnDProviderProps.overlayFit": {
     "source": "2cebf1b9ab",
     "text": "Tamanho do overlay durante o arraste. `'slot'` (padrão): ele acompanha a posição onde o item vai pousar, então, sobre outra lista, assume o tamanho dos itens dessa lista, e o drop não precisa de redimensionamento. Ele se redimensiona ao redor do ponteiro, que fica na mesma fração da caixa. `'source'`: ele mantém o tamanho do elemento arrastado. O conteúdo padrão do overlay é diagramado de novo no novo tamanho; ele nunca é escalado."
+  },
+  "DnDProviderProps.overlayTransition": {
+    "source": "6852def127",
+    "text": "Como o overlay muda de um componente para outro durante um arraste (o `overlay` de um alvo de drop assume, um ref de `overlay` é trocado): `true` (padrão) faz um crossfade entre eles em 150 ms, `false` os troca na hora, e um objeto são as props de um `<Transition>` do Vue em volta da raiz do conteúdo (`name`, `mode`, hooks JS para GSAP ou motion). Sem `mode: 'out-in'`, os dois aparecem ao mesmo tempo: dê ao que sai `position: absolute` (`.<name>-leave-active`) para que fiquem empilhados na caixa."
   },
   "DnDProviderProps.announcements": {
     "source": "0729e8985f",
@@ -122,6 +130,10 @@
   "OverlaySlotProps.accepted": {
     "source": "f7641f18e1",
     "text": "Se `over` aceita os itens arrastados; `false` quando não há nada embaixo."
+  },
+  "OverlaySlotProps.to": {
+    "source": "a7cc5a79db",
+    "text": "Onde um drop colocaria os itens arrastados agora, em uma lista ou árvore ordenável: por exemplo, pinte o overlay conforme a pasta em que um arraste na árvore entraria. Fora de qualquer alvo, é o lugar da posição, onde `dropOutside: 'placeholder'` (o padrão) os mantém. `null` quando o drop não os colocaria em nenhuma lista: sobre um alvo de drop simples, sobre uma lista que os recusa, fora com `dropOutside: 'cancel'` ou `'remove'`. Enquanto um drop já decidido é animado, o lugar em que ele pousa."
   },
   "OverlayProps": {
     "source": "8058170119",

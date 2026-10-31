@@ -8,8 +8,8 @@
     "text": "Drop-Event eines Baums. `index` ist die Position unter den Geschwistern unter `parentKey` (`from`: vor der Verschiebung; `to`: danach, wobei der Knoten bereits von seinem alten Platz entfernt ist). `from.parentKey` ist `null` für Wurzelknoten und für Elemente aus einer anderen Liste. Ein Multi-Drag verschiebt `keys` (jeden mit seinem Teilbaum) nebeneinander: `from` ist, wo der Knoten war, der den Drag anführt (der gegriffene oder der ausgewählte Knoten, in dem er mitfährt), `to`, wo der erste von ihnen landet. Eine Kopie (`mode: 'copy'`) lässt die Knoten, wo sie sind, und fügt `items` ein, ihre Kopien; ein einfaches ziehbares Element (`mode: 'insert'`) den Knoten, den `createItem` erstellt hat."
   },
   "SortableTreeOptions": {
-    "source": "3b9c211f35",
-    "text": "Optionen von `makeSortableTree`. Ein Multi-Drag verschiebt die ausgewählten Knoten als einen Block, jeden mit seinem Teilbaum, an einen Platz und eine Tiefe (in Dokumentreihenfolge); ein ausgewählter Knoten innerhalb eines anderen ausgewählten fährt in dessen Teilbaum mit. Das gilt auch für den gegriffenen Knoten (wie in VS Code): Er bleibt innerhalb des ausgewählten Knotens, in dem er liegt, und dieser bewegt sich mit seinem Teilbaum, während das Overlay auf der gegriffenen Zeile bleibt. `canNest` und `maxDepth` gelten für den ganzen Block.\n\nDie anderen Optionen bedeuten dasselbe wie bei `makeSortableList`. Sie nehmen einen Wert, ein Ref oder einen Getter entgegen (`overlay`, `animation`: einen Wert oder ein Ref) und werden gelesen, wenn der Baum sie braucht, sodass eine Änderung spätestens ab dem nächsten Drag gilt. Ausnahmen: `id` und `group` werden einmal gelesen, wenn der Baum erstellt wird; `items` ist das Modell selbst; Funktionen (`getKey`, `getChildren`, `setChildren`, `canNest`, `clone`, `createItem`, die Callbacks) werden so übergeben, wie sie sind."
+    "source": "a99d0dc21f",
+    "text": "Optionen von `makeSortableTree`. Ein Multi-Drag verschiebt die ausgewählten Knoten als einen Block, jeden mit seinem Teilbaum, an einen Platz und eine Tiefe (in Dokumentreihenfolge); ein ausgewählter Knoten innerhalb eines anderen ausgewählten fährt in dessen Teilbaum mit. Das gilt auch für den gegriffenen Knoten (wie in VS Code): Er bleibt innerhalb des ausgewählten Knotens, in dem er liegt, und dieser bewegt sich mit seinem Teilbaum, während das Overlay auf der gegriffenen Zeile bleibt. `canNest` und `maxDepth` gelten für den ganzen Block.\n\nDie anderen Optionen bedeuten dasselbe wie bei `makeSortableList`. Sie nehmen einen Wert, ein Ref oder einen Getter entgegen (`overlay`, `overOverlay`, `animation`, `dropAnimation`, `overDropAnimation`: einen Wert oder ein Ref) und werden gelesen, wenn der Baum sie braucht, sodass eine Änderung spätestens ab dem nächsten Drag gilt. Ausnahmen: `id` und `group` werden einmal gelesen, wenn der Baum erstellt wird; `items` ist das Modell selbst; Funktionen (`getKey`, `getChildren`, `setChildren`, `canNest`, `clone`, `createItem`, die Callbacks) werden so übergeben, wie sie sind."
   },
   "SortableTreeOptions.items": {
     "source": "210f1fb478",
@@ -32,8 +32,20 @@
     "text": "Standard: `useId()`, stabil zwischen Server- und Client-Rendering. Wird einmal gelesen."
   },
   "SortableTreeOptions.overlay": {
-    "source": "99297d8dc8",
-    "text": "Overlay-Komponente für die Zeilen dieses Baums (das eigene `overlay` einer Zeile gewinnt). Wird beim Start des Drags gelesen."
+    "source": "cf37f2819a",
+    "text": "Overlay-Komponente für die Zeilen dieses Baums (das eigene `overlay` einer Zeile gewinnt). Ein mitten im Drag umgeschaltetes Ref tauscht sie sofort."
+  },
+  "SortableTreeOptions.overOverlay": {
+    "source": "3f98a99024",
+    "text": "Was das Overlay zeigt, während ein Drag, den dieser Baum annimmt, über ihm ist (siehe `SortableListOptions.overOverlay`). Die Prop `to` der Komponente sagt, wohin der Drop verschachtelt würde."
+  },
+  "SortableTreeOptions.dropAnimation": {
+    "source": "f712ceff74",
+    "text": "Wie das Overlay landet, wenn ein Drag der Zeilen dieses Baums endet (siehe `SortableListOptions.dropAnimation`)."
+  },
+  "SortableTreeOptions.overDropAnimation": {
+    "source": "7a6b9b8187",
+    "text": "Wie das Overlay landet, wenn es in diesen Baum abgelegt wird (siehe `SortableListOptions.overDropAnimation`)."
   },
   "SortableTreeOptions.modifiers": {
     "source": "f6220f5795",

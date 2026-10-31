@@ -80,8 +80,20 @@
     "text": "デフォルト：`useId()`。サーバーとクライアントの描画間で安定しています。一度だけ読み取られます。"
   },
   "SortableListOptions.overlay": {
-    "source": "4d236710b1",
-    "text": "このリストのアイテム用のオーバーレイコンポーネント（アイテム自身の `overlay` が優先）。`OverlayProps` を受け取り、ほかのリストの上も含め、ドラッグの間ずっと同じものが使われます。ドラッグの開始時に読み取られます。"
+    "source": "47e3eb4c8a",
+    "text": "このリストのアイテム用のオーバーレイコンポーネント（アイテム自身の `overlay` が優先）。`OverlayProps` を受け取り、ほかのリストの上も含め、ドラッグの間ずっと同じものが使われます。ただし、ドラッグの下のターゲットが独自のオーバーレイ（`overOverlay`）を持つ場合は除きます。ドラッグ中に切り替えた ref は、すぐにそれを入れ替えます。"
+  },
+  "SortableListOptions.overOverlay": {
+    "source": "ac8fff8632",
+    "text": "このリストが受け入れるドラッグが上にある間、どのリストから来たドラッグでも、オーバーレイに表示するもの：`OverlayProps` と、デフォルトスロットとしてドラッグ自身のオーバーレイを受け取るコンポーネント（`DroppableOptions.overlay` を参照）。ライブで読み取られます。"
+  },
+  "SortableListOptions.dropAnimation": {
+    "source": "9b8f883d95",
+    "text": "このリストのアイテムのドラッグが終わったときのオーバーレイの着地の仕方で、プロバイダーの `dropAnimation` の代わりに使われます（アイテム自身のものが優先。ドロップターゲットのものは両方より優先）。ドロップ時に読み取られます。"
+  },
+  "SortableListOptions.overDropAnimation": {
+    "source": "afd18ed23d",
+    "text": "どのリストから来たかを問わず、このリストにドロップされたときのオーバーレイの着地の仕方：ドラッグされたアイテムとプロバイダーの `dropAnimation` より優先されます。ドロップ時に読み取られます。"
   },
   "SortableListOptions.modifiers": {
     "source": "16c37d217b",
@@ -180,8 +192,12 @@
     "text": "この要素が描画するアイテム。例：`() => props.task`。キーは所属するリスト（またはツリー）の `getKey` から取られ、デフォルトは `item.id` です。"
   },
   "SortableItemOptions.overlay": {
-    "source": "2ded9454bb",
-    "text": "このアイテム用のオーバーレイコンポーネント。リストの `overlay` より優先されます。ドラッグの開始時に読み取られます。"
+    "source": "e39a5caf13",
+    "text": "このアイテム用のオーバーレイコンポーネント。リストの `overlay` より優先されます。ドラッグ中に切り替えた ref は、すぐにそれを入れ替えます。"
+  },
+  "SortableItemOptions.dropAnimation": {
+    "source": "dd326b61e0",
+    "text": "このアイテムのドラッグが終わったときのオーバーレイの着地の仕方。リストの `dropAnimation` より優先されます。ドロップ時に読み取られます。"
   },
   "SortableItemOptions.modifiers": {
     "source": "55d5129188",

@@ -75,6 +75,10 @@
     "source": "699c35a63c",
     "text": "정렬 가능한 리스트의 기본 FLIP 애니메이션."
   },
+  "DnDProviderProps.dropAnimation": {
+    "source": "f99201968c",
+    "text": "드롭할 때 오버레이가 안착하고 취소할 때 원래 자리로 돌아가는 방식으로, 더 가까운 곳에서 정하지 않았을 때 쓰입니다. 드롭 대상의 `dropAnimation`이 먼저이고, 그다음은 드래그 중인 항목 자체의 것(또는 그 리스트의 것), 마지막이 이것입니다."
+  },
   "DnDProviderProps.animate": {
     "source": "e7b8ee12ca",
     "text": "정렬 가능한 리스트와 트리의 기본 `animate`: 드래그가 아닌 항목 변경. 기본으로 꺼져 있습니다."
@@ -94,6 +98,10 @@
   "DnDProviderProps.overlayFit": {
     "source": "2cebf1b9ab",
     "text": "드래그 중 오버레이의 크기. `'slot'`(기본값): 항목이 안착할 자리를 따르므로, 다른 리스트 위에서는 그 리스트 항목의 크기가 되고 드롭할 때 크기를 바꿀 필요가 없습니다. 포인터를 중심으로 크기가 바뀌며, 포인터는 박스 안에서 같은 비율의 위치에 머무릅니다. `'source'`: 드래그 중인 요소의 크기를 유지합니다. 기본 오버레이 콘텐츠는 새 크기에 맞춰 다시 배치되며, 확대·축소되지 않습니다."
+  },
+  "DnDProviderProps.overlayTransition": {
+    "source": "6852def127",
+    "text": "드래그 중에 오버레이가 한 컴포넌트에서 다른 컴포넌트로 바뀌는 방식(드롭 대상의 `overlay`가 넘겨받거나, `overlay` ref가 바뀔 때). `true`(기본값)는 150 ms 동안 크로스페이드하고, `false`는 바로 교체하며, 객체는 내용의 루트를 감싸는 Vue `<Transition>`의 props입니다(`name`, `mode`, GSAP이나 motion용 JS 훅). `mode: 'out-in'`이 없으면 둘이 동시에 보입니다. 떠나는 쪽에 `position: absolute`를 주어(`.<name>-leave-active`) 박스 안에서 겹치게 하세요."
   },
   "DnDProviderProps.announcements": {
     "source": "0729e8985f",
@@ -122,6 +130,10 @@
   "OverlaySlotProps.accepted": {
     "source": "f7641f18e1",
     "text": "`over`가 드래그 중인 항목을 받아들이는지 여부. 아래에 아무것도 없으면 `false`."
+  },
+  "OverlaySlotProps.to": {
+    "source": "a7cc5a79db",
+    "text": "지금 드롭하면 드래그 중인 항목이 정렬 가능한 리스트나 트리 안에서 놓일 곳. 예를 들어 트리 드래그가 들어갈 폴더에 따라 오버레이에 색을 입힐 수 있습니다. 모든 대상 밖에서는 자리의 위치이며, `dropOutside: 'placeholder'`(기본값)가 항목을 그곳에 남깁니다. 드롭이 항목을 어떤 리스트에도 놓지 않을 때는 `null`: 일반 드롭 대상 위, 항목을 거부하는 리스트 위, `dropOutside: 'cancel'`이나 `'remove'`일 때의 대상 밖. 결정된 드롭이 애니메이션되는 동안에는 안착하는 곳."
   },
   "OverlayProps": {
     "source": "8058170119",

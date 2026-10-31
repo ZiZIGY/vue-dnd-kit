@@ -34,5 +34,9 @@
   "ModifierArgs.containerRect": {
     "source": "ce6a1ebd7e",
     "text": "Container der sortierbaren Liste (oder Elternelement) des gezogenen Elements, dort, wo er jetzt ist (er folgt dem Scrollen)."
+  },
+  "ModifierArgs.containerShift": {
+    "source": "f4f9413e80",
+    "text": "Wie weit sich der Inhalt, in dem der Drag gestartet ist, seit dem Start auf dem Bildschirm bewegt hat: Der Container hat sich bewegt (die Seite oder ein Container um ihn herum wurde gescrollt, das Layout hat sich verschoben), und sein Inhalt wurde in ihm gescrollt. Achsensperren halten die andere Achse dort, sodass der Drag in seiner Zeile oder Spalte dieses Inhalts bleibt."
   }
 }

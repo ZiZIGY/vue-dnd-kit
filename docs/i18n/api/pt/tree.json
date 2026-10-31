@@ -8,8 +8,8 @@
     "text": "Evento de drop de uma árvore. `index` é a posição entre os irmãos sob `parentKey` (`from`: antes do movimento; `to`: depois dele, com o nó já removido do lugar antigo). `from.parentKey` é `null` para os nós raiz e para itens vindos de outra lista. Um multi-drag move as `keys` (cada uma com a sua subárvore) lado a lado: `from` é onde estava o nó que conduz o arraste (o pego, ou o nó selecionado dentro do qual ele vai junto), `to` é onde o primeiro deles pousa. Uma cópia (`mode: 'copy'`) deixa os nós onde estão e insere `items`, as cópias deles; um draggable simples (`mode: 'insert'`), o nó que `createItem` criou."
   },
   "SortableTreeOptions": {
-    "source": "3b9c211f35",
-    "text": "Opções de `makeSortableTree`. Um multi-drag move os nós selecionados como um único bloco, cada um com a sua subárvore, para um mesmo lugar e profundidade (na ordem do documento); um nó selecionado dentro de outro selecionado vai junto na subárvore dele. Isso vale também para o nó pego (como no VS Code): ele fica dentro do nó selecionado em que está, que se move com a sua subárvore, enquanto o overlay fica na linha pega. `canNest` e `maxDepth` se aplicam ao bloco inteiro.\n\nAs outras opções significam o mesmo que em `makeSortableList`. Elas aceitam um valor, um ref ou um getter (`overlay`, `animation`: um valor ou um ref) e são lidas quando a árvore precisa delas, então uma mudança vale, no máximo, a partir do próximo arraste. Exceções: `id` e `group` são lidos uma única vez, quando a árvore é criada; `items` é o próprio model; funções (`getKey`, `getChildren`, `setChildren`, `canNest`, `clone`, `createItem`, os callbacks) são passadas como estão."
+    "source": "a99d0dc21f",
+    "text": "Opções de `makeSortableTree`. Um multi-drag move os nós selecionados como um único bloco, cada um com a sua subárvore, para um mesmo lugar e profundidade (na ordem do documento); um nó selecionado dentro de outro selecionado vai junto na subárvore dele. Isso vale também para o nó pego (como no VS Code): ele fica dentro do nó selecionado em que está, que se move com a sua subárvore, enquanto o overlay fica na linha pega. `canNest` e `maxDepth` se aplicam ao bloco inteiro.\n\nAs outras opções significam o mesmo que em `makeSortableList`. Elas aceitam um valor, um ref ou um getter (`overlay`, `overOverlay`, `animation`, `dropAnimation`, `overDropAnimation`: um valor ou um ref) e são lidas quando a árvore precisa delas, então uma mudança vale, no máximo, a partir do próximo arraste. Exceções: `id` e `group` são lidos uma única vez, quando a árvore é criada; `items` é o próprio model; funções (`getKey`, `getChildren`, `setChildren`, `canNest`, `clone`, `createItem`, os callbacks) são passadas como estão."
   },
   "SortableTreeOptions.items": {
     "source": "210f1fb478",
@@ -32,8 +32,20 @@
     "text": "Padrão: `useId()`, estável entre a renderização no servidor e no cliente. Lido uma única vez."
   },
   "SortableTreeOptions.overlay": {
-    "source": "99297d8dc8",
-    "text": "Componente de overlay para as linhas desta árvore (o `overlay` da própria linha prevalece). Lido quando o arraste começa."
+    "source": "cf37f2819a",
+    "text": "Componente de overlay para as linhas desta árvore (o `overlay` da própria linha prevalece). Um ref trocado durante o arraste o troca na hora."
+  },
+  "SortableTreeOptions.overOverlay": {
+    "source": "3f98a99024",
+    "text": "O que o overlay mostra enquanto um arraste que esta árvore aceita está sobre ela (veja `SortableListOptions.overOverlay`). A prop `to` dele diz onde o drop seria aninhado."
+  },
+  "SortableTreeOptions.dropAnimation": {
+    "source": "f712ceff74",
+    "text": "Como o overlay pousa quando um arraste das linhas desta árvore termina (veja `SortableListOptions.dropAnimation`)."
+  },
+  "SortableTreeOptions.overDropAnimation": {
+    "source": "7a6b9b8187",
+    "text": "Como o overlay pousa quando é solto nesta árvore (veja `SortableListOptions.overDropAnimation`)."
   },
   "SortableTreeOptions.modifiers": {
     "source": "f6220f5795",

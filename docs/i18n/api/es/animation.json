@@ -35,6 +35,10 @@
     "source": "cecafada99",
     "text": "El ítem no se muestra después de un drop sobre una zona (no una lista ordenable), por ejemplo porque se soltó dentro de otro ítem (una carpeta) o en una zona de papelera: el rectángulo visible de la zona. La animación por defecto encoge el overlay dentro de ella mientras se desvanece, en lugar de desvanecerse en el sitio."
   },
+  "DropAnimationContext.over": {
+    "source": "54c7b98b67",
+    "text": "El destino en el que aterriza el drop (una lista, una zona); `null` al cancelar."
+  },
   "DropAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "`prefers-reduced-motion: reduce` está activo. Las animaciones propias de la biblioteca no se ejecutan entonces; las funciones tuyas se ejecutan siempre, y deciden con este valor (omitir el movimiento o mantener un fundido)."

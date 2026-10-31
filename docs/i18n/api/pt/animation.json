@@ -35,6 +35,10 @@
     "source": "cecafada99",
     "text": "O item não é mostrado depois de um drop em uma zona (não uma lista ordenável), por exemplo, ele foi solto dentro de outro item (uma pasta) ou de uma zona de lixeira: o retângulo visível da zona. A animação padrão encolhe o overlay para dentro dela enquanto ele desaparece, em vez de desaparecer no lugar."
   },
+  "DropAnimationContext.over": {
+    "source": "54c7b98b67",
+    "text": "O alvo em que o drop pousa (uma lista, uma zona); `null` no cancelamento."
+  },
   "DropAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "`prefers-reduced-motion: reduce` está ativo. Nesse caso, as animações da própria biblioteca não rodam; as suas funções sempre rodam, e decidem com isto (pular, ou manter um fade)."

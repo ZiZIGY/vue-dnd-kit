@@ -8,8 +8,8 @@
     "text": "树的放置事件。`index` 是在 `parentKey` 之下兄弟节点中的位置（`from`：移动之前；`to`：移动之后，此时节点已从原位置移除）。对于根节点以及来自其他列表的项，`from.parentKey` 为 `null`。多项拖拽会把 `keys`（各自带着子树）并排移动：`from` 是带领这次拖拽的节点（抓起的节点，或它所在的那个选中节点）原来的位置，`to` 是其中第一个节点落下的位置。复制（`mode: 'copy'`）会把节点留在原处，并插入 `items`，即它们的副本；普通可拖拽元素（`mode: 'insert'`）则插入 `createItem` 创建的节点。"
   },
   "SortableTreeOptions": {
-    "source": "3b9c211f35",
-    "text": "`makeSortableTree` 的选项。多项拖拽会把选中的节点作为一个整体移动，各自带着子树，移到同一个位置和深度（按文档顺序）；位于另一个选中节点内部的选中节点会随其子树一起移动。抓起的节点也是如此（与 VS Code 一样）：它留在它所在的那个选中节点内部，跟随该节点及其子树一起移动，而浮层显示的仍是抓起的那一行。`canNest` 和 `maxDepth` 作用于整个整体。\n\n其他选项的含义与 `makeSortableList` 上的相同。它们接受值、ref 或 getter（`overlay`、`animation`：值或 ref），并在树需要时读取，所以变化最迟在下一次拖拽时生效。例外：`id` 和 `group` 只在创建树时读取一次；`items` 就是模型本身；函数（`getKey`、`getChildren`、`setChildren`、`canNest`、`clone`、`createItem`、各个回调）按原样传入。"
+    "source": "a99d0dc21f",
+    "text": "`makeSortableTree` 的选项。多项拖拽会把选中的节点作为一个整体移动，各自带着子树，移到同一个位置和深度（按文档顺序）；位于另一个选中节点内部的选中节点会随其子树一起移动。抓起的节点也是如此（与 VS Code 一样）：它留在它所在的那个选中节点内部，跟随该节点及其子树一起移动，而浮层显示的仍是抓起的那一行。`canNest` 和 `maxDepth` 作用于整个整体。\n\n其他选项的含义与 `makeSortableList` 上的相同。它们接受值、ref 或 getter（`overlay`、`overOverlay`、`animation`、`dropAnimation`、`overDropAnimation`：值或 ref），并在树需要时读取，所以变化最迟在下一次拖拽时生效。例外：`id` 和 `group` 只在创建树时读取一次；`items` 就是模型本身；函数（`getKey`、`getChildren`、`setChildren`、`canNest`、`clone`、`createItem`、各个回调）按原样传入。"
   },
   "SortableTreeOptions.items": {
     "source": "210f1fb478",
@@ -32,8 +32,20 @@
     "text": "默认：`useId()`，在服务端和客户端渲染之间保持稳定。只读取一次。"
   },
   "SortableTreeOptions.overlay": {
-    "source": "99297d8dc8",
-    "text": "这棵树中行的浮层组件（行自己的 `overlay` 优先）。在拖拽开始时读取。"
+    "source": "cf37f2819a",
+    "text": "这棵树中行的浮层组件（行自己的 `overlay` 优先）。在拖拽过程中切换的 ref 会立即替换它。"
+  },
+  "SortableTreeOptions.overOverlay": {
+    "source": "3f98a99024",
+    "text": "当这棵树接受的拖拽位于它上方时浮层显示什么（见 `SortableListOptions.overOverlay`）。它的 `to` prop 说明放置会嵌套到哪里。"
+  },
+  "SortableTreeOptions.dropAnimation": {
+    "source": "f712ceff74",
+    "text": "这棵树中行的拖拽结束时浮层如何落位（见 `SortableListOptions.dropAnimation`）。"
+  },
+  "SortableTreeOptions.overDropAnimation": {
+    "source": "7a6b9b8187",
+    "text": "浮层被放进这棵树时如何落位（见 `SortableListOptions.overDropAnimation`）。"
   },
   "SortableTreeOptions.modifiers": {
     "source": "f6220f5795",

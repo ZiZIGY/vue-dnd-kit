@@ -27,6 +27,26 @@
     "source": "48997f2ee2",
     "text": "ターゲットの `accept` ルールがドラッグ中のアイテムを受け入れるかどうか。"
   },
+  "DropDestination": {
+    "source": "55daec7851",
+    "text": "ドロップしたらドラッグ中のアイテムが置かれる場所：並べ替え可能なリストまたはツリーの中の位置で、ドロップイベントの `to` が示すものと同じです（オーバーレイの `to` prop、ライブ）。"
+  },
+  "DropDestination.list": {
+    "source": "31b274663e",
+    "text": "リストまたはツリーの id。"
+  },
+  "DropDestination.index": {
+    "source": "5fdcf67fec",
+    "text": "ドラッグ中のアイテムが占めるインデックス：リストの中、またはツリーでは `parentKey` の下の兄弟の中でのもの。"
+  },
+  "DropDestination.parentKey": {
+    "source": "b707f9c973",
+    "text": "ツリー：アイテムがその下に入るノード。ルートでは `null`。"
+  },
+  "DropDestination.depth": {
+    "source": "0a3289fa23",
+    "text": "ツリー：アイテムが置かれる深さ（ルートは 0）。"
+  },
   "DragSource.list": {
     "source": "57db105431",
     "text": "ドラッグ中のアイテムの出どころである並べ替え可能なリスト。"

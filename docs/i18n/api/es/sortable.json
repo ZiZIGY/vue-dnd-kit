@@ -80,8 +80,20 @@
     "text": "Por defecto: `useId()`, estable entre el renderizado en el servidor y en el cliente. Se lee una vez."
   },
   "SortableListOptions.overlay": {
-    "source": "4d236710b1",
-    "text": "Componente de overlay para los ítems de esta lista (el `overlay` propio de un ítem tiene prioridad). Recibe `OverlayProps` y se mantiene durante todo el arrastre, también sobre otras listas. Se lee cuando empieza el arrastre."
+    "source": "47e3eb4c8a",
+    "text": "Componente de overlay para los ítems de esta lista (el `overlay` propio de un ítem tiene prioridad). Recibe `OverlayProps` y se mantiene durante todo el arrastre, también sobre otras listas, salvo que el destino bajo el arrastre tenga un overlay propio (`overOverlay`). Una ref cambiada a mitad del arrastre lo cambia al instante."
+  },
+  "SortableListOptions.overOverlay": {
+    "source": "ac8fff8632",
+    "text": "Lo que muestra el overlay mientras un arrastre que esta lista acepta está sobre ella, venga de la lista que venga: un componente que recibe `OverlayProps` y el overlay propio del arrastre como su slot por defecto (consulta `DroppableOptions.overlay`). Se lee en vivo."
+  },
+  "SortableListOptions.dropAnimation": {
+    "source": "9b8f883d95",
+    "text": "Cómo aterriza el overlay cuando termina un arrastre de los ítems de esta lista, en lugar de la `dropAnimation` del provider (la propia de un ítem tiene prioridad; la de un destino de drop tiene prioridad sobre ambas). Se lee al soltar."
+  },
+  "SortableListOptions.overDropAnimation": {
+    "source": "afd18ed23d",
+    "text": "Cómo aterriza el overlay cuando se suelta en esta lista, venga de la lista que venga: tiene prioridad sobre la `dropAnimation` del ítem arrastrado y la del provider. Se lee al soltar."
   },
   "SortableListOptions.modifiers": {
     "source": "16c37d217b",
@@ -180,8 +192,12 @@
     "text": "El ítem que renderiza este elemento, por ejemplo `() => props.task`. Su clave sale del `getKey` de la lista (o del árbol) a la que pertenece, por defecto `item.id`."
   },
   "SortableItemOptions.overlay": {
-    "source": "2ded9454bb",
-    "text": "Componente de overlay para este ítem; tiene prioridad sobre el `overlay` de la lista. Se lee cuando empieza el arrastre."
+    "source": "e39a5caf13",
+    "text": "Componente de overlay para este ítem; tiene prioridad sobre el `overlay` de la lista. Una ref cambiada a mitad del arrastre lo cambia al instante."
+  },
+  "SortableItemOptions.dropAnimation": {
+    "source": "dd326b61e0",
+    "text": "Cómo aterriza el overlay cuando termina un arrastre de este ítem; tiene prioridad sobre la `dropAnimation` de la lista. Se lee al soltar."
   },
   "SortableItemOptions.modifiers": {
     "source": "55d5129188",
