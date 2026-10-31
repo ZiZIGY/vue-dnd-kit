@@ -14,7 +14,7 @@ import { putBack, scatter } from './block';
 import { setIndicator } from './indicator';
 import { landDrop } from './landing';
 import { bump } from './flip';
-import { HYSTERESIS, distance } from './stability';
+import { nearLastTarget } from './stability';
 import { cancelAnnouncement, endAnnouncement } from './announcements';
 import { settleBlock } from './session';
 import { modeOf } from './modes/swap';
@@ -220,8 +220,7 @@ const reset = (g: GroupContext) => {
   bump(g);
 };
 
-const isOutside = (current: Session, event: DnDEvent) =>
-  !event.over && !(current.target && distance(event.pointer, current.target.at) < HYSTERESIS);
+const isOutside = (current: Session, event: DnDEvent) => !event.over && !nearLastTarget(current.target, event.pointer);
 
 /** The verdict of `onBeforeDrop`, the keys a partial accept took unless it named its own. */
 const withPartial = (value: BeforeDropResult, partial: Key[] | undefined): BeforeDropResult => {

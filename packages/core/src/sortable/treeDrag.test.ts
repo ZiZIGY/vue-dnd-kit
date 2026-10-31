@@ -703,6 +703,23 @@ describe('createItem: plain draggables into a tree', () => {
 });
 
 describe('tree options as lists have them', () => {
+  it("the overlay's `to` says where the drop nests: the parent, the depth, the index among siblings", async () => {
+    const seen: unknown[] = [];
+    const Overlay = defineComponent({
+      props: ['to'],
+      setup: (props) => () => (seen.push(props.to), h('i')),
+    });
+    const { container, drops } = renderTree({ overlay: Overlay });
+    await settle();
+    await start(container, 'c', 'keyboard');
+    expect(seen.at(-1)).toEqual({ list: 'tree', index: 2, parentKey: null, depth: 0 });
+    // Right of b1 means into b, after b1.
+    await press('ArrowRight');
+    expect(seen.at(-1)).toEqual({ list: 'tree', index: 1, parentKey: 'b', depth: 1 });
+    await drop();
+    expect(drops[0]!.to).toMatchObject({ list: 'tree', index: 1, parentKey: 'b' });
+  });
+
   it("modifiers apply to drags of the tree's rows, read when the drag starts", async () => {
     const locked = ref(true);
     const { container } = renderTree({ modifiers: () => (locked.value ? [restrictToVerticalAxis] : undefined) });

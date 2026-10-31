@@ -38,6 +38,21 @@ export interface Over {
   accepted: boolean;
 }
 
+/**
+ * Where a drop would put the dragged items: a place in a sortable list or tree, as the
+ * drop event's `to` will say (the overlay's `to` prop, live).
+ */
+export interface DropDestination {
+  /** Id of the list or tree. */
+  list: Key;
+  /** Index the dragged items take: in the list, or among the siblings under `parentKey` in a tree. */
+  index: number;
+  /** Trees: the node they go under; `null` at the root. */
+  parentKey?: Key | null;
+  /** Trees: the depth they go at (roots are 0). */
+  depth?: number;
+}
+
 export interface DragSource {
   /** Sortable list the dragged items come from. */
   list: Key;

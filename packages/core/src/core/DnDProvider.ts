@@ -9,6 +9,7 @@ import {
   useId,
   type PropType,
   type SlotsType,
+  type TransitionProps,
   type VNode,
 } from 'vue';
 import { defaultDocument, defaultWindow, useEventListener } from '@vueuse/core';
@@ -72,6 +73,7 @@ export const DnDProvider = /* @__PURE__ */ defineComponent({
     copyModifier: { type: String as PropType<string | null>, default: 'Alt' },
     overlayTo: { type: [String, Object] as PropType<string | HTMLElement>, default: 'body' },
     overlayFit: { type: String as PropType<'slot' | 'source'>, default: 'slot' },
+    overlayTransition: { type: [Boolean, Object] as PropType<boolean | TransitionProps>, default: true },
     announcements: { type: [Boolean, Object] as PropType<Partial<Announcements> | false>, default: undefined },
     screenReaderInstructions: String,
     defaultStyles: { type: Boolean, default: true },

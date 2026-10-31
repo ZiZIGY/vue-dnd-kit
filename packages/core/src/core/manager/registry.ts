@@ -15,6 +15,8 @@ import type {
   DnDEvent,
   DnDMonitor,
   DragSource,
+  DropAnimation,
+  DropDestination,
   DroppableOptions,
   Key,
   Modifier,
@@ -36,6 +38,8 @@ export interface DraggableEntry {
   canDrag?: (event: PointerEvent | KeyboardEvent) => boolean;
   /** `false`: no overlay; `true`: the provider's slot or the clone; a component (`markRaw`): rendered instead. */
   getOverlay(): boolean | Component;
+  /** Its own (or its list's) drop animation; `undefined` leaves the provider's. */
+  getDropAnimation?(): DropAnimation | undefined;
   /** Modifiers of this draggable (or its list), applied after the provider's. */
   getModifiers?(): Modifier[] | undefined;
   /** Arrow keys in free keyboard drags: move by pixels (default) or jump between accepting drop targets. */
@@ -57,6 +61,10 @@ export interface DroppableEntry {
   sortable?: boolean;
   /** The options it was made with, for the devtools (its `accept` rule). */
   options?: DroppableOptions;
+  /** What the overlay shows while a drag it accepts is over it (`markRaw`); `undefined`: the drag's own. */
+  getOverlay?(): Component | undefined;
+  /** How the overlay lands when dropped here; `undefined` leaves the dragged item's and the provider's. */
+  getDropAnimation?(): DropAnimation | undefined;
   onDragEnter?(event: DnDEvent): void;
   onDragLeave?(event: DnDEvent): void;
   onBeforeDrop?(event: DnDEvent): BeforeDropResult | Promise<BeforeDropResult>;
@@ -114,6 +122,8 @@ export function createRegistry() {
   const targetRules = new Set<TargetRule>();
   /** Integration announcers (sortable positions): after the user's `announcements`, before the defaults. */
   const announcers = new Set<Announcer>();
+  /** Where a drop would put the dragged items, by integrations (sortable groups); reactive. */
+  const destinationResolvers = new Set<() => DropDestination | null>();
   const activationAborts = new Set<() => void>();
   const autoScrollEntries = new Set<AutoScrollEntry>();
   /** Cancels the running rubber-band selection (`status === 'selecting'`). */
@@ -237,6 +247,24 @@ export function createRegistry() {
     return () => announcers.delete(announcer);
   };
 
+  /**
+   * Where a drop would put the dragged items (the overlay's `to`), from an integration: a
+   * reactive getter (a computed's value), `null` when the drag isn't its own.
+   */
+  const addDestinationResolver = (resolver: () => DropDestination | null): (() => void) => {
+    destinationResolvers.add(resolver);
+    return () => destinationResolvers.delete(resolver);
+  };
+
+  /** The first integration's answer: a sortable group knows where its slot is. */
+  const getDestination = (): DropDestination | null => {
+    for (const resolver of destinationResolvers) {
+      const destination = resolver();
+      if (destination) return destination;
+    }
+    return null;
+  };
+
   return {
     /** What the manager's modules look up. */
     lookups: { draggables, droppables, draggableIds, integrations, sourceResolvers, targetRules, announcers },
@@ -265,6 +293,8 @@ export function createRegistry() {
       addSourceResolver,
       addTargetRule,
       addAnnouncer,
+      addDestinationResolver,
+      getDestination,
     },
   };
 }

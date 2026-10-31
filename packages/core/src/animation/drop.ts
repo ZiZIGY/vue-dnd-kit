@@ -9,6 +9,31 @@ export const DEFAULT_DROP_ANIMATION: Required<AnimationOptions> = {
 /** Scale at which an overlay going `into` a zone vanishes, centered on it. */
 const INTO_SCALE = 0.25;
 
+/** The longest a drop waits for the overlay's content to finish animating. */
+const CONTENT_WAIT = 2000;
+
+/**
+ * Finite animations running inside the overlay box as it lands: CSS animations and
+ * transitions an overlay component starts on `dropping` (a splash, a settle), the
+ * crossfade of `overlayTransition`. The drop ends when they do, at most `CONTENT_WAIT`
+ * later. The box's own landing, finished animations and endless loops don't count.
+ */
+export const contentAnimations = (overlay: HTMLElement): Promise<void> => {
+  const running = (overlay.getAnimations?.({ subtree: true }) ?? []).filter((animation) => {
+    if (animation.playState === 'finished' || animation.playState === 'idle') return false;
+    const effect = animation.effect as KeyframeEffect | null;
+    if (!effect || effect.target === overlay) return false;
+    return Number.isFinite(effect.getComputedTiming().endTime);
+  });
+  if (!running.length) return Promise.resolve();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  return Promise.race([
+    // A cancelled animation rejects `finished`: it ended all the same.
+    Promise.allSettled(running.map((animation) => animation.finished)),
+    new Promise<void>((resolve) => (timer = setTimeout(resolve, CONTENT_WAIT))),
+  ]).then(() => clearTimeout(timer));
+};
+
 /**
  * Flies the overlay to the final rect of the dropped item, or fades it out when the
  * item isn't rendered: shrinking into the zone it was dropped `into`, else in place.

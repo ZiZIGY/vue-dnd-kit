@@ -6,7 +6,7 @@
  * list's own (`ListEntry.build`, `commit`): an array, or a tree.
  */
 
-import type { DnDEvent, Key, Rect, SortableStrategy } from '../types';
+import type { DnDEvent, Key, Rect, SortableStrategy, TreeProjection } from '../types';
 import { projectIndex, projectIndicator, type IndicatorProjection, type Projection, type ProjectionItem } from './projection';
 import { sameKeys } from './context';
 
@@ -66,6 +66,8 @@ export interface ListLayout {
   hasChanges(keys: Key[], inserted: readonly Key[], source: Key[]): boolean;
   /** Runs when the session ends (drop, cancel, reject). */
   reset(): void;
+  /** Trees: where the dragged nodes would land, with depth and parent (`index` among the siblings). Reactive. */
+  placement?(): (TreeProjection & { index: number }) | null;
 }
 
 const NO_CARRIERS: ReadonlyMap<Key, Key> = new Map();

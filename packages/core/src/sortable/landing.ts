@@ -3,12 +3,14 @@
  * placeholders of a block), the `mode` it shows, and the column of a multi-drag.
  */
 
-import type { Coordinates, DnDEvent, Key } from '../types';
+import type { Coordinates, DnDEvent, DropDestination, Key } from '../types';
 import { landOverlayItems } from '../animation/drop';
 import { listOf, type GroupContext, type Session } from './context';
 import type { ListEntry } from './entry';
 import type { DropResult } from './drop';
 import { ColumnPreview, layoutCells } from './column';
+import { spotOf } from './announcements';
+import { nearLastTarget } from './stability';
 
 const NO_OFFSET: Coordinates = { x: 0, y: 0 };
 
@@ -57,6 +59,40 @@ const syncColumn = (g: GroupContext, current: Session) => {
     preview: ColumnPreview,
     land: landOverlayItems,
   };
+};
+
+/**
+ * Where a drop would put the dragged items (the overlay's `to`): the slot's place while
+ * the drag is over the list that holds it (or shows its line), a tree adding the depth
+ * and the parent. Outside every target too, where `dropOutside: 'placeholder'` keeps
+ * the slot. Reactive: the drafts (`version`), the line, the target, a tree's placement.
+ */
+export const destinationOf = (g: GroupContext): DropDestination | null => {
+  void g.version.value;
+  const current = g.session.value;
+  if (!current) return null;
+  const over = g.manager.over.value;
+  // A refusing target, or outside every target where the drop cancels or removes: it
+  // lands nowhere. (Just past the edge of the last target still counts as on it.)
+  const nowhere = over
+    ? !over.accepted
+    : !nearLastTarget(current.target, g.manager.pointer.value) &&
+      listOf(g, current.list ?? current.origin.list)?.dropOutside() !== 'placeholder';
+  if (nowhere) return null;
+  const spot = spotOf(g, current);
+  // Over a plain target the drop goes there, not to the slot.
+  if (!spot || (over && spot.list !== over.id)) return null;
+  const placement = listOf(g, spot.list)?.layout.placement?.();
+  return placement ? { list: spot.list, ...placement } : { list: spot.list, index: spot.index };
+};
+
+const sameDestination = (a: DropDestination, b: DropDestination) =>
+  a.list === b.list && a.index === b.index && a.parentKey === b.parentKey && a.depth === b.depth;
+
+/** `destinationOf`, the same object while nothing changed: the overlay's props stay as they are. */
+export const stableDestination = (g: GroupContext) => (previous: DropDestination | null | undefined) => {
+  const next = destinationOf(g);
+  return previous && next && sameDestination(previous, next) ? previous : next;
 };
 
 /** Mirrors the session into the manager: overlay `mode`, where the overlay lands, the placeholders of a block. */

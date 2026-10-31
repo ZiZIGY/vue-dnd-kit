@@ -27,6 +27,7 @@ const args = (transform: Coordinates, overrides: Partial<ModifierArgs> = {}): Mo
   ),
   origin: { x: 120, y: 215 },
   containerRect: container,
+  containerShift: { x: 0, y: 0 },
   windowRect: createRect(0, 0, 1000, 800),
   over: null,
   ...overrides,
@@ -80,6 +81,12 @@ describe('restrictions', () => {
   it('lock an axis', () => {
     expect(restrictToVerticalAxis(args({ x: 30, y: 40 }))).toEqual({ x: 0, y: 40 });
     expect(restrictToHorizontalAxis(args({ x: 30, y: 40 }))).toEqual({ x: 30, y: 0 });
+  });
+
+  it('hold the locked axis where the content went: the page scrolled 100px down', () => {
+    const scrolled = { containerShift: { x: -20, y: -100 } };
+    expect(restrictToHorizontalAxis(args({ x: 30, y: 40 }, scrolled))).toEqual({ x: 30, y: -100 });
+    expect(restrictToVerticalAxis(args({ x: 30, y: 40 }, scrolled))).toEqual({ x: -20, y: 40 });
   });
 
   it('keep the overlay inside the container rect', () => {

@@ -132,7 +132,13 @@ export function makeSortableTree<T>(
     () => toElement(options.dropzone) ?? toElement(target),
     // Trees the current drag can never enter (a plain draggable without `createItem`)
     // are no drop targets, as lists.
-    { id, disabled: () => !!read(options.disabled) || group.isInert(entry) },
+    {
+      id,
+      disabled: () => !!read(options.disabled) || group.isInert(entry),
+      // As a target: what the overlay shows over it, and how it lands in it.
+      overlay: options.overOverlay,
+      dropAnimation: options.overDropAnimation,
+    },
     { accepts: (active) => group.accepts(entry, active) },
   );
 
@@ -144,6 +150,7 @@ export function makeSortableTree<T>(
     entry,
     accessors.getKey,
     options.overlay,
+    options.dropAnimation,
     () => read(options.modifiers),
     () => read(options.axis),
   );

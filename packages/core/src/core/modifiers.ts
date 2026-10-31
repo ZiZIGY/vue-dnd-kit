@@ -22,9 +22,11 @@ const baseRect = (overlayRect: Rect, transform: Coordinates): Rect => ({
   bottom: overlayRect.bottom - transform.y,
 });
 
-export const restrictToVerticalAxis: Modifier = ({ transform }) => ({ x: 0, y: transform.y });
+/** Moves only vertically: horizontally it stays with the content it started in (`containerShift`). */
+export const restrictToVerticalAxis: Modifier = ({ transform, containerShift }) => ({ x: containerShift.x, y: transform.y });
 
-export const restrictToHorizontalAxis: Modifier = ({ transform }) => ({ x: transform.x, y: 0 });
+/** Moves only horizontally: vertically it stays with the content it started in (`containerShift`). */
+export const restrictToHorizontalAxis: Modifier = ({ transform, containerShift }) => ({ x: transform.x, y: containerShift.y });
 
 /** `modifiers` with the lock of the `axis` option last, so it holds whatever they do. */
 export const withAxis = (modifiers: Modifier[] | undefined, axis: 'x' | 'y' | null | undefined): Modifier[] | undefined =>

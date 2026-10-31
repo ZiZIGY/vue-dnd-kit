@@ -3,7 +3,7 @@
 import type { Component, ComputedRef } from 'vue';
 import type { Key, MaybeElementRef, MaybePromise, MaybeReadonlyRef, MaybeReadonlyRefOrGetter, Size } from './primitives';
 import type { AcceptMode, Active, BeforeDropResult } from './drag';
-import type { AutoAnimation, LayoutAnimation } from './animation';
+import type { AutoAnimation, DropAnimation, LayoutAnimation } from './animation';
 import type { Modifier } from './collision';
 import type { AutoScrollOptions } from './provider';
 import type {
@@ -59,7 +59,8 @@ export interface SortableTreeDropEvent<T = unknown> extends SortableDropEvent<T>
  * the whole block.
  *
  * The other options mean what they mean on `makeSortableList`. They take a value, a ref
- * or a getter (`overlay`, `animation`: a value or a ref) and are read when the tree needs
+ * or a getter (`overlay`, `overOverlay`, `animation`, `dropAnimation`,
+ * `overDropAnimation`: a value or a ref) and are read when the tree needs
  * them, so a change applies to the next drag at the latest. Exceptions: `id` and `group`
  * are read once, when the tree is created; `items` is the model itself; functions
  * (`getKey`, `getChildren`, `setChildren`, `canNest`, `clone`, `createItem`, the
@@ -88,8 +89,17 @@ export interface SortableTreeOptions<T> {
   withChildren?: (node: T, children: T[]) => T;
   /** Default: `useId()`, stable between server and client render. Read once. */
   id?: Key;
-  /** Overlay component for this tree's rows (a row's own `overlay` wins). Read when the drag starts. */
+  /** Overlay component for this tree's rows (a row's own `overlay` wins). A ref switched mid-drag swaps it at once. */
   overlay?: MaybeReadonlyRef<Component | undefined>;
+  /**
+   * What the overlay shows while a drag this tree accepts is over it (see
+   * `SortableListOptions.overOverlay`). Its `to` prop says where the drop would nest.
+   */
+  overOverlay?: MaybeReadonlyRef<Component | undefined>;
+  /** How the overlay lands when a drag of this tree's rows ends (see `SortableListOptions.dropAnimation`). */
+  dropAnimation?: MaybeReadonlyRef<DropAnimation | undefined>;
+  /** How the overlay lands when it is dropped into this tree (see `SortableListOptions.overDropAnimation`). */
+  overDropAnimation?: MaybeReadonlyRef<DropAnimation | undefined>;
   /**
    * Modifiers for drags of this tree's rows, applied after the provider's `modifiers` (a
    * row's own `modifiers` win): e.g. `[restrictToVerticalAxis]`. Read when the drag starts.

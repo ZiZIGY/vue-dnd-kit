@@ -6,7 +6,7 @@
  */
 
 import type { Component } from 'vue';
-import type { Active, Coordinates, Key, Modifier, Rect, Size } from '../../types';
+import type { Active, Coordinates, DropAnimation, Key, Modifier, Rect, Size } from '../../types';
 import {
   getFraction,
   getLayoutRect,
@@ -18,6 +18,7 @@ import {
 } from '../../animation/layout';
 import { clonePreview } from '../clone';
 import type { ManagerContext } from './state';
+import type { DraggableEntry } from './registry';
 
 /** A clone taken at pickup and the rect of its source then (`DragPreview`). */
 export interface PreviewSource {
@@ -44,12 +45,17 @@ export function createOverlay(ctx: ManagerContext) {
   let previews = new Map<Key, PreviewSource>();
   let previewIds: Key[] = [];
   let previewEnabled = false;
-  /** Overlay component of the drag, taken at start: the source may unmount mid-drag. */
-  let overlayComponent: Component | null = null;
+  /**
+   * The draggable the drag started from. Its `overlay` and `dropAnimation` are read live
+   * (a ref switched mid-drag applies at once); its options outlive an unmounted element.
+   */
+  let source: DraggableEntry | null = null;
   /** Where the pointer holds the overlay box, as fractions of its size: it resizes around this point. */
   let grab: Coordinates = { x: 0, y: 0 };
   /** The container the drag started in (`restrictToParent`, `snapToGrid`), measured on every move. */
   let container: Element | null = null;
+  /** Where the container was at the start, and how far its content was scrolled (`containerShift`). */
+  let containerStart: { rect: Rect; scroll: Coordinates } | null = null;
   /** Modifiers of the draggable the drag started from, taken at start like the overlay. */
   let sourceModifiers: readonly Modifier[] = [];
   /**
@@ -106,10 +112,24 @@ export function createOverlay(ctx: ManagerContext) {
     return sourceModifiers.length ? [...(modifiers ?? []), ...sourceModifiers] : (modifiers ?? []);
   };
 
+  /**
+   * How far the content the drag started in has moved on screen: the container itself,
+   * less what its content scrolled inside it. Kept as it was once the container is gone.
+   */
+  const shiftOf = (containerRect: Rect | null): Coordinates => {
+    const previous = ctx.containerShift.value;
+    if (!containerRect || !containerStart) return previous;
+    const { rect, scroll } = containerStart;
+    const x = containerRect.left - rect.left - (container!.scrollLeft - scroll.x);
+    const y = containerRect.top - rect.top - (container!.scrollTop - scroll.y);
+    return x === previous.x && y === previous.y ? previous : (ctx.containerShift.value = { x, y });
+  };
+
   const applyModifiers = (current: Active, offset: Coordinates): Coordinates => {
     let result = offset;
     // Where it is now: the page may have scrolled since the drag started.
     const containerRect = container?.isConnected ? getRect(container) : null;
+    const containerShift = shiftOf(containerRect);
     for (const modifier of getModifiers()) {
       result = modifier({
         transform: result,
@@ -118,6 +138,7 @@ export function createOverlay(ctx: ManagerContext) {
         overlayRect: getOverlayRect(current, result),
         origin: ctx.origin,
         containerRect,
+        containerShift,
         windowRect: getWindowRect(),
         over: ctx.over.value,
       });
@@ -182,8 +203,15 @@ export function createOverlay(ctx: ManagerContext) {
     get enabled() {
       return previewEnabled;
     },
-    get component() {
-      return overlayComponent;
+    /** The drag's own component (the item's, else its list's); `null`: the provider's slot or the clone. Reactive. */
+    get component(): Component | null {
+      if (!previewEnabled || !source) return null;
+      const overlay = source.getOverlay();
+      return typeof overlay === 'boolean' ? null : overlay;
+    },
+    /** The drag's own drop animation (the item's, else its list's); `undefined`: the provider's. */
+    get dropAnimation(): DropAnimation | undefined {
+      return source?.getDropAnimation?.();
     },
     get previewIds(): readonly Key[] {
       return previewIds;
@@ -197,13 +225,14 @@ export function createOverlay(ctx: ManagerContext) {
     stepResize,
 
     /**
-     * Takes a drag's overlay from the draggable's `overlay` option. The grabbed item's
-     * clone is taken synchronously, before the placeholder re-renders. Overlay components
-     * get it too: they may show it (`DragPreview`).
+     * Takes a drag's overlay from the draggable's `overlay` option: whether there is one
+     * is decided here, its component is read live. The grabbed item's clone is taken
+     * synchronously, before the placeholder re-renders. Overlay components get it too:
+     * they may show it (`DragPreview`).
      */
-    pickUp(id: Key, overlay: boolean | Component) {
-      previewEnabled = overlay !== false;
-      overlayComponent = typeof overlay === 'boolean' ? null : overlay;
+    pickUp(id: Key, entry: DraggableEntry) {
+      source = entry;
+      previewEnabled = entry.getOverlay() !== false;
       const preview = previewEnabled ? takePreview(id) : null;
       previews = new Map(preview ? [[id, preview]] : []);
       previewIds = [];
@@ -216,6 +245,10 @@ export function createOverlay(ctx: ManagerContext) {
     place(current: Active, coordinates: Coordinates, modifiers: readonly Modifier[], parent: Element | null) {
       sourceModifiers = modifiers;
       container = parent;
+      containerStart = parent?.isConnected
+        ? { rect: getRect(parent), scroll: { x: parent.scrollLeft, y: parent.scrollTop } }
+        : null;
+      ctx.containerShift.value = { x: 0, y: 0 };
       ctx.fitSize.value = { width: current.rect.width, height: current.rect.height };
       resize = null;
       // Where the pointer holds the box on the first frame, after modifiers (the center
@@ -230,9 +263,11 @@ export function createOverlay(ctx: ManagerContext) {
       previews = new Map();
       previewIds = [];
       previewEnabled = false;
-      overlayComponent = null;
+      source = null;
       sourceModifiers = [];
       container = null;
+      containerStart = null;
+      ctx.containerShift.value = { x: 0, y: 0 };
     },
   };
 }

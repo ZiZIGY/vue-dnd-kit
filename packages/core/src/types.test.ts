@@ -103,6 +103,7 @@ describe('public exports', () => {
       Public.DragItem,
       Public.Active,
       Public.Over,
+      Public.DropDestination,
       Public.DragSource,
       Public.DragMode,
       Public.DnDEvent,

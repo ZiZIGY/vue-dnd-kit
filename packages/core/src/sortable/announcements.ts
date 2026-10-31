@@ -62,7 +62,7 @@ const subjectOf = (current: Session): SortableSubject => ({
   copy: current.mode.name === 'copy',
 });
 
-const spotOf = (g: GroupContext, current: Session): SortableSpot | null => {
+export const spotOf = (g: GroupContext, current: Session): SortableSpot | null => {
   const shown = g.indicator.value;
   if (shown) {
     const list = g.lists.get(shown.list);

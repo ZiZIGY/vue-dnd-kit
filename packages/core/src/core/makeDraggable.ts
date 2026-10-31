@@ -1,5 +1,5 @@
 import { computed, markRaw, onScopeDispose, unref, watch, watchEffect, type Component } from 'vue';
-import type { DraggableOptions, DraggableReturn, Key, MaybeElementRef } from '../types';
+import type { DraggableOptions, DraggableReturn, DropAnimation, Key, MaybeElementRef } from '../types';
 import type { DraggableEntry } from './manager';
 import { useManager } from './context';
 import { normalizeTypes } from './accept';
@@ -13,6 +13,8 @@ export interface DraggableInternals {
   getContainer?: () => HTMLElement | null;
   /** Overlay when the option has none (a sortable item: its list's). */
   getOverlay?: () => Component | undefined;
+  /** Drop animation when the option has none (a sortable item: its list's). */
+  getDropAnimation?: () => DropAnimation | undefined;
 }
 
 /**
@@ -146,6 +148,7 @@ export function createDraggable<TData>(
   const entry: DraggableEntry = {
     id: id.value,
     getOverlay: () => toOverlay(unref(options.overlay) ?? internals.getOverlay?.()),
+    getDropAnimation: () => unref(options.dropAnimation) ?? internals.getDropAnimation?.(),
     getModifiers: () => dragModifiers(read(options.modifiers), read(options.axis), area()),
     // Per pointer kind: the draggable's own constraint, else its area's.
     getActivation: () => {
@@ -228,10 +231,14 @@ export function createDraggable<TData>(
   });
 
   const isDragging = computed(() => manager.active.value?.ids.includes(id.value) ?? false);
-  // The overlay as the drag took it at its start.
-  const transform = computed(() =>
-    manager.active.value?.id === id.value && !manager.hasOverlay ? manager.transform.value : null,
-  );
+  // The overlay as the drag took it at its start. The element moves with the content it
+  // is in (scrolling): what that content moved is taken off, so it stays under the pointer.
+  const transform = computed(() => {
+    if (manager.active.value?.id !== id.value || manager.hasOverlay) return null;
+    const { x, y } = manager.transform.value;
+    const shift = manager.containerShift.value;
+    return shift.x || shift.y ? { x: x - shift.x, y: y - shift.y } : manager.transform.value;
+  });
   const selected = computed({
     get: () => manager.selection.has(id.value),
     set: (value) => {

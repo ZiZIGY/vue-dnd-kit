@@ -63,6 +63,12 @@ export const createDragState = () => ({
    */
   dropTarget: shallowRef<Over | null>(null),
   transform: shallowRef<Coordinates>({ x: 0, y: 0 }),
+  /**
+   * How far the content the drag started in has moved on screen since the start (see
+   * `ModifierArgs.containerShift`): axis locks hold the other axis there, and an element
+   * dragged without an overlay subtracts it, as it moves with that content.
+   */
+  containerShift: shallowRef<Coordinates>({ x: 0, y: 0 }),
   activationProgress: shallowRef(0),
   isAutoScrolling: shallowRef(false),
   /** The containers auto-scroll moved in its last frame (the window aside): a new array when they change. */

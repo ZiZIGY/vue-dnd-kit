@@ -15,7 +15,7 @@
  * block once (`viewOf`), and every move takes the whole block along.
  */
 
-import { effectScope, type ShallowRef } from 'vue';
+import { computed, effectScope, type ShallowRef } from 'vue';
 import type { Active, Coordinates, Key, SortableIndicator } from '../types';
 import type { DnDManager } from '../core/manager';
 import { devtoolsHook } from '../core/devtoolsHook';
@@ -24,7 +24,7 @@ import type { ListEntry } from './entry';
 import { accepts, isInert } from './accept';
 import { viewOf } from './block';
 import { showIndicator } from './indicator';
-import { leadOffset } from './landing';
+import { leadOffset, stableDestination } from './landing';
 import { targetRule } from './combine';
 import { captureLayout, watchLayout } from './flip';
 import { watchChanges } from './autoAnimate';
@@ -88,6 +88,9 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   );
   const removeAnnouncer = manager.addAnnouncer(createAnnouncer(g));
   const removeRule = manager.addTargetRule(targetRule(g));
+  // The overlay's `to`: where this group would put the drag.
+  const destination = scope.run(() => computed(stableDestination(g)))!;
+  const removeDestination = manager.addDestinationResolver(() => destination.value);
   // `e.source.remove()` in a trash zone's onDrop marks the dragged items for removal.
   const removeSource = manager.addSourceResolver((active) => {
     const current = session.value;
@@ -114,6 +117,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
         removeMonitor();
         removeAnnouncer();
         removeRule();
+        removeDestination();
         removeSource();
         scope.stop();
         release();

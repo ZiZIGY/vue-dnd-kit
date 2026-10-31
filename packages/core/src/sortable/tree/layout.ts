@@ -259,6 +259,7 @@ export const treeLayout = <T>(t: TreeContext<T>): ListLayout => ({
     return lineAt(t, current, position, row?.depth ?? 0, lineBefore(t, position));
   },
   afterMove: (event) => afterMove(t, event),
+  placement: () => t.placement.value,
   hasChanges: (next, inserted) => hasChanges(t, next, inserted),
   reset: () => {
     t.state = null;

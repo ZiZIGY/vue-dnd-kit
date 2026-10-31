@@ -1,4 +1,4 @@
-import { computed, onScopeDispose, unref, watch } from 'vue';
+import { computed, markRaw, onScopeDispose, unref, watch } from 'vue';
 import type {
   Active,
   DroppableOptions,
@@ -47,6 +47,11 @@ export function createDroppable<TData>(
     getData: () => read(options.data),
     isDisabled: () => !!read(options.disabled),
     accepts,
+    getOverlay: () => {
+      const overlay = unref(options.overlay);
+      return overlay ? markRaw(overlay) : undefined;
+    },
+    getDropAnimation: () => unref(options.dropAnimation),
     onDragEnter: options.onDragEnter,
     onDragLeave: options.onDragLeave,
     onBeforeDrop: options.onBeforeDrop,

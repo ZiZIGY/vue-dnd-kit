@@ -12,13 +12,14 @@ import type {
 } from './primitives';
 import type { AcceptMode, AcceptRule, BeforeDropResult, DnDEvent } from './drag';
 import type { Modifier } from './collision';
+import type { DropAnimation } from './animation';
 
 // ─── Draggable / droppable ─────────────────────────────────────────────────────
 
 /**
  * Options of `makeDraggable`. Every option but `canDrag` takes a value, a ref or a
- * getter (`overlay`: a value or a ref) and is read when it is needed, so a change
- * applies to the next drag at the latest.
+ * getter (`overlay`, `dropAnimation`: a value or a ref) and is read when it is needed,
+ * so a change applies to the next drag at the latest.
  */
 export interface DraggableOptions<TData = unknown> {
   /**
@@ -41,10 +42,19 @@ export interface DraggableOptions<TData = unknown> {
    * `#overlay` slot or as a clone of the element. A component: the overlay renders it
    * with `OverlayProps`, before the slot. `false`: no overlay, the element itself moves
    * via the returned `transform`. A value or a ref (a function is a functional
-   * component), read when the drag starts. The clone leaves out the press effects of UI
-   * kits (ripples) and any element inside marked `data-dnd-no-clone`.
+   * component, so `(props) => <Card {...props} />` works). Whether there is an overlay
+   * is decided when the drag starts; a ref switched mid-drag swaps the component at once
+   * (see the provider's `overlayTransition`). A drop target's own `overlay` wins while
+   * the drag is over it. The clone leaves out the press effects of UI kits (ripples) and
+   * any element inside marked `data-dnd-no-clone`.
    */
   overlay?: MaybeReadonlyRef<boolean | Component | undefined>;
+  /**
+   * How the overlay lands when a drag of this element ends, instead of the provider's
+   * `dropAnimation`; a drop target's own `dropAnimation` wins. A value or a ref (a function
+   * is the animation), read at the drop.
+   */
+  dropAnimation?: MaybeReadonlyRef<DropAnimation | undefined>;
   /**
    * Modifiers for drags that start here, applied after the provider's `modifiers`: e.g.
    * `[restrictToVerticalAxis]` for one element on a page where other drags move freely.
@@ -74,7 +84,11 @@ export interface DraggableOptions<TData = unknown> {
 export interface DraggableReturn {
   id: ComputedRef<Key>;
   isDragging: ComputedRef<boolean>;
-  /** Offset to apply when `overlay: false`. */
+  /**
+   * Offset to apply when `overlay: false`: the drag's, less how far the content the
+   * element is in has moved since the start (the page or a container scrolled), so the
+   * element stays under the pointer.
+   */
   transform: ComputedRef<Coordinates | null>;
   selected: WritableComputedRef<boolean>;
 }
@@ -99,8 +113,8 @@ export interface Placement {
  * its own drag: not in (or on) any dragged item, nor in the slot one lands in. To move the
  * items out of their list in `onDrop`, call `e.source.remove()`.
  *
- * Every option but the callbacks takes a value, a ref or a getter (`accept`: a value or a
- * ref) and is read live, while a drag looks for its target.
+ * Every option but the callbacks takes a value, a ref or a getter (`accept`, `overlay`,
+ * `dropAnimation`: a value or a ref) and is read live, while a drag looks for its target.
  */
 export interface DroppableOptions<TData = unknown> {
   /** Default: `useId()`, stable between server and client render. */
@@ -116,6 +130,22 @@ export interface DroppableOptions<TData = unknown> {
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
   /** Higher wins when targets overlap without nesting (default 0). Sortable items beat containers. */
   priority?: MaybeReadonlyRefOrGetter<number | undefined>;
+  /**
+   * What the overlay shows while a drag this target accepts is over it: a component that
+   * gets `OverlayProps`, rendered instead of the drag's own overlay (the dragged item's
+   * component, the provider's slot or the clone), which it gets as its default slot to
+   * wrap or leave out (`<slot />`). It stays while the drop lands here. Drags without an
+   * overlay (`overlay: false`) keep none. A value or a ref, read live; the change of
+   * component animates with the provider's `overlayTransition`.
+   */
+  overlay?: MaybeReadonlyRef<Component | undefined>;
+  /**
+   * How the overlay lands when it is dropped here, instead of the dragged item's and the
+   * provider's `dropAnimation`: `false` leaves it where it was dropped (an overlay
+   * component's own animation, a splash, plays there), a function animates it. A value or
+   * a ref, read at the drop.
+   */
+  dropAnimation?: MaybeReadonlyRef<DropAnimation | undefined>;
   onDragEnter?(event: DnDEvent): void;
   onDragLeave?(event: DnDEvent): void;
   onBeforeDrop?(event: DnDEvent): MaybePromise<BeforeDropResult>;

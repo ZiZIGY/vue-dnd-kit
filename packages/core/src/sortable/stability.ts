@@ -12,6 +12,13 @@ export { distance };
 /** Pixels the pointer must travel before a key the slot just passed can trigger again. */
 export const HYSTERESIS = 10;
 
+/**
+ * The pointer is still within `HYSTERESIS` of where it last was over a target: with no
+ * target under it, it counts as on that one (one-frame gaps at list boundaries).
+ */
+export const nearLastTarget = (target: { at: Coordinates } | null, pointer: Coordinates | null): boolean =>
+  !!target && !!pointer && distance(pointer, target.at) < HYSTERESIS;
+
 /** Most keys remembered per move; a fast drag past more of them can't come back in 10px anyway. */
 const MAX_KEYS = 64;
 

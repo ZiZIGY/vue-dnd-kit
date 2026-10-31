@@ -12,7 +12,7 @@ import type {
   Size,
 } from './primitives';
 import type { AcceptMode, Active, BeforeDropResult, DragMode } from './drag';
-import type { AutoAnimation, LayoutAnimation } from './animation';
+import type { AutoAnimation, DropAnimation, LayoutAnimation } from './animation';
 import type { Modifier } from './collision';
 import type { AutoScrollOptions } from './provider';
 
@@ -148,10 +148,28 @@ export interface SortableListOptions<T> {
   id?: Key;
   /**
    * Overlay component for this list's items (an item's own `overlay` wins). It receives
-   * `OverlayProps` and is kept for the whole drag, also over other lists. Read when the
-   * drag starts.
+   * `OverlayProps` and stays for the whole drag, also over other lists, unless the target
+   * under the drag has an overlay of its own (`overOverlay`). A ref switched mid-drag
+   * swaps it at once.
    */
   overlay?: MaybeReadonlyRef<Component | undefined>;
+  /**
+   * What the overlay shows while a drag this list accepts is over it, whatever list it
+   * comes from: a component that gets `OverlayProps` and the drag's own overlay as its
+   * default slot (see `DroppableOptions.overlay`). Read live.
+   */
+  overOverlay?: MaybeReadonlyRef<Component | undefined>;
+  /**
+   * How the overlay lands when a drag of this list's items ends, instead of the
+   * provider's `dropAnimation` (an item's own wins; a drop target's wins over both).
+   * Read at the drop.
+   */
+  dropAnimation?: MaybeReadonlyRef<DropAnimation | undefined>;
+  /**
+   * How the overlay lands when it is dropped into this list, whatever list it comes from:
+   * wins over the dragged item's and the provider's `dropAnimation`. Read at the drop.
+   */
+  overDropAnimation?: MaybeReadonlyRef<DropAnimation | undefined>;
   /**
    * Modifiers for drags of this list's items, applied after the provider's `modifiers`
    * (an item's own `modifiers` win): e.g. `[restrictToVerticalAxis]` to keep a vertical
@@ -265,8 +283,10 @@ export interface SortableItemOptions<TData = unknown> {
    * owning list's (or tree's) `getKey`, by default `item.id`.
    */
   item?: MaybeReadonlyRefOrGetter<unknown>;
-  /** Overlay component for this item; wins over the list's `overlay`. Read when the drag starts. */
+  /** Overlay component for this item; wins over the list's `overlay`. A ref switched mid-drag swaps it at once. */
   overlay?: MaybeReadonlyRef<Component | undefined>;
+  /** How the overlay lands when a drag of this item ends; wins over the list's `dropAnimation`. Read at the drop. */
+  dropAnimation?: MaybeReadonlyRef<DropAnimation | undefined>;
   /** Modifiers for drags of this item, after the provider's; win over the list's `modifiers`. */
   modifiers?: MaybeReadonlyRefOrGetter<Modifier[] | undefined>;
   /** Locks drags of this item to one axis (`'x'`, `'y'`); wins over the list's `axis`. */

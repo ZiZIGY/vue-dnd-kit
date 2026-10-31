@@ -43,6 +43,13 @@ export interface ModifierArgs {
   origin: Coordinates;
   /** Sortable list container (or parent element) of the dragged item, where it is now (it follows scrolling). */
   containerRect: Rect | null;
+  /**
+   * How far the content the drag started in has moved on screen since the start: the
+   * container moved (the page or a container around it scrolled, the layout shifted), and
+   * its content scrolled inside it. Axis locks hold the other axis there, so the drag
+   * stays on its row or column of that content.
+   */
+  containerShift: Coordinates;
   windowRect: Rect;
   over: Over | null;
 }

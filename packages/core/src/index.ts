@@ -74,6 +74,7 @@ export type {
   DragItem,
   Active,
   Over,
+  DropDestination,
   DragSource,
   DragMode,
   DnDEvent,

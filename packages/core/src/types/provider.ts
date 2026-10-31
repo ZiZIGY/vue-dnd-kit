@@ -1,7 +1,8 @@
 /** `DnDProvider`: its props, the context it shares, and what its overlay shows. */
 
+import type { TransitionProps } from 'vue';
 import type { ActivationOptions, DnDStatus, Key } from './primitives';
-import type { Active, DnDEndEvent, DnDEvent, DragItem, DragMode, Over } from './drag';
+import type { Active, DnDEndEvent, DnDEvent, DragItem, DragMode, DropDestination, Over } from './drag';
 import type { AutoAnimation, DropAnimation, LayoutAnimation } from './animation';
 import type { CollisionDetection, Modifier } from './collision';
 import type { Sensor } from './sensor';
@@ -98,6 +99,11 @@ export interface DnDProviderProps {
   modifiers?: Modifier[];
   /** Default FLIP animation for sortable lists. */
   animation?: LayoutAnimation;
+  /**
+   * How the overlay lands on drop and flies back on cancel, when nothing closer sets one:
+   * the drop target's `dropAnimation` comes first, then the dragged item's own (or its
+   * list's), then this one.
+   */
   dropAnimation?: DropAnimation;
   /** Default `animate` of sortable lists and trees: changes of their items that no drag made. Off by default. */
   animate?: AutoAnimation;
@@ -127,6 +133,15 @@ export interface DnDProviderProps {
    * content re-lays out at the new size; it is never scaled.
    */
   overlayFit?: 'slot' | 'source';
+  /**
+   * How the overlay changes from one component to another during a drag (a drop target's
+   * `overlay` takes over, an `overlay` ref is switched): `true` (default) crossfades them
+   * in 150 ms, `false` swaps them at once, and an object is the props of a Vue
+   * `<Transition>` around the content's root (`name`, `mode`, JS hooks for GSAP or
+   * motion). Without `mode: 'out-in'` both show at once: give the leaving one
+   * `position: absolute` (`.<name>-leave-active`) so they stack in the box.
+   */
+  overlayTransition?: boolean | TransitionProps;
   /** Own texts for some events (see `Announcements`); `false` keeps the live region silent. */
   announcements?: Partial<Announcements> | false;
   screenReaderInstructions?: string;
@@ -162,6 +177,15 @@ export interface OverlaySlotProps {
   accepted: boolean;
   status: DnDStatus;
   mode: DragMode;
+  /**
+   * Where a drop would put the dragged items now, in a sortable list or tree: e.g. tint
+   * the overlay by the folder a tree drag would go into. Outside every target it is the
+   * slot's place, where `dropOutside: 'placeholder'` (the default) keeps them. `null` when
+   * the drop would put them in no list: over a plain drop target, over a list that refuses
+   * them, outside with `dropOutside: 'cancel'` or `'remove'`. While a decided drop
+   * animates, the place it lands on.
+   */
+  to: DropDestination | null;
 }
 
 /**

@@ -1,7 +1,7 @@
 /** Layout (FLIP), drop and data-change (`animate`) animations. */
 
 import type { Key, Rect } from './primitives';
-import type { Active } from './drag';
+import type { Active, Over } from './drag';
 
 // ─── Animation ─────────────────────────────────────────────────────────────────
 
@@ -66,6 +66,8 @@ export interface DropAnimationContext {
   into: Rect | null;
   reason: 'drop' | 'cancel';
   active: Active;
+  /** The target the drop lands on (a list, a zone); `null` on a cancel. */
+  over: Over | null;
   options: Required<AnimationOptions>;
   /**
    * `prefers-reduced-motion: reduce` is set. The library's own animations don't run then;

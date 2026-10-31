@@ -44,6 +44,7 @@ export function makeSortableItem<TData = unknown>(
       canDrag: options.canDrag,
       attributes: options.attributes,
       overlay: options.overlay,
+      dropAnimation: options.dropAnimation,
       modifiers: () => read(options.modifiers) ?? context.getModifiers?.(),
       axis: () => read(options.axis) ?? context.getAxis?.(),
     },
@@ -51,6 +52,7 @@ export function makeSortableItem<TData = unknown>(
       getItem: () => group.lookup(key.value),
       getContainer: () => list.getElement(),
       getOverlay: context.getOverlay,
+      getDropAnimation: context.getDropAnimation,
       roleDescription: 'sortable',
     },
   );

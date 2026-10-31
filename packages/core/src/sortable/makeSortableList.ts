@@ -12,6 +12,7 @@ import {
   type Ref,
 } from 'vue';
 import type {
+  DropAnimation,
   Key,
   MaybeElementRef,
   MaybeReadonlyRef,
@@ -38,6 +39,8 @@ export interface SortableContext {
   getKey: (item: unknown) => Key;
   /** The list's `overlay` component, used when the item has none. */
   getOverlay: () => Component | undefined;
+  /** The list's `dropAnimation`, used when the item has none. */
+  getDropAnimation: () => DropAnimation | undefined;
   /** The list's `modifiers`, used when the item has none. */
   getModifiers?: () => Modifier[] | undefined;
   /** The list's `axis`, used when the item has none. */
@@ -63,6 +66,7 @@ export const provideSortableContext = (
   list: ListEntry,
   getKey: (item: never) => Key,
   overlay: MaybeReadonlyRef<Component | undefined>,
+  dropAnimation: MaybeReadonlyRef<DropAnimation | undefined>,
   getModifiers?: () => Modifier[] | undefined,
   getAxis?: () => 'x' | 'y' | undefined,
 ): void => {
@@ -82,6 +86,7 @@ export const provideSortableContext = (
     list,
     getKey: getKey as (item: unknown) => Key,
     getOverlay: () => unref(overlay),
+    getDropAnimation: () => unref(dropAnimation),
     getModifiers,
     getAxis,
   });
@@ -179,7 +184,13 @@ export function makeSortableList<T>(
     // Lists the current drag can never enter are not drop targets at all: in nested
     // sortables a column dragged over another column must reach the columns list,
     // not stop at the inner card list it happens to be over.
-    { id, disabled: () => !!read(options.disabled) || group.isInert(entry) },
+    {
+      id,
+      disabled: () => !!read(options.disabled) || group.isInert(entry),
+      // As a target: what the overlay shows over it, and how it lands in it.
+      overlay: options.overOverlay,
+      dropAnimation: options.overDropAnimation,
+    },
     { accepts: (active) => group.accepts(entry, active) },
   );
 
@@ -188,6 +199,7 @@ export function makeSortableList<T>(
     entry,
     getKey,
     options.overlay,
+    options.dropAnimation,
     () => read(options.modifiers),
     () => read(options.axis),
   );
