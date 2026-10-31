@@ -41,9 +41,10 @@ describe('drop into an item', () => {
   /**
    * A vertical list (or a grid of 100px cells in one row) of `ids`. Ids starting with `g`
    * are groups: their element is also a drop target (`group:<id>`) that takes anything,
-   * except `g-x`, which takes nothing. Its `onDrop` removes the items from the list.
+   * except `g-x`, which takes nothing. Its `onDrop` removes the items from the list, after
+   * putting them in `other` when given: a second list of the group (a group's own list).
    */
-  const mount = (ids: string[], strategy: SortableStrategy = 'vertical') => {
+  const mount = (ids: string[], strategy: SortableStrategy = 'vertical', other?: Ref<Array<{ id: string }>>) => {
     drops = [];
     animations = [];
     const container = document.createElement('div');
@@ -59,11 +60,18 @@ describe('drop into an item', () => {
             accept: () => props.rowId !== 'g-x',
             onDrop: (event: DnDEvent) => {
               drops.push(`${event.active.ids.join('+')}>${props.rowId}`);
+              other?.value.push(...event.active.ids.map((id) => ({ id: String(id) })));
               event.source?.remove();
             },
           });
         }
         return () => h('li', { ref: 'el', 'data-id': props.rowId }, props.rowId);
+      },
+    });
+    const Other = defineComponent({
+      setup() {
+        const { items } = makeSortableList(useTemplateRef<HTMLElement>('other'), { id: 'other', items: other!, group: 'tasks', strategy });
+        return () => h('ul', { ref: 'other' }, items.value.map((task) => h('li', { key: task.id }, task.id)));
       },
     });
     order = ref(ids.map((id) => ({ id })));
@@ -73,15 +81,22 @@ describe('drop into an item', () => {
           DnDProvider,
           { animation: false, dropAnimation: (context: DropAnimationContext) => void animations.push(context) },
           {
-            default: () =>
+            default: () => [
               h({
                 setup() {
                   manager = useManager();
-                  const { items } = makeSortableList(useTemplateRef<HTMLElement>('list'), { id: 'list', items: order, strategy });
+                  const { items } = makeSortableList(useTemplateRef<HTMLElement>('list'), {
+                    id: 'list',
+                    items: order,
+                    group: 'tasks',
+                    strategy,
+                  });
                   return () =>
                     h('ul', { ref: 'list', 'data-list': '' }, items.value.map((task) => h(Row, { key: task.id, rowId: task.id })));
                 },
               }),
+              other ? h(Other) : null,
+            ],
           },
         ),
     });
@@ -167,6 +182,20 @@ describe('drop into an item', () => {
     expect(data()).toBe('a2,g1,a3');
     // The item isn't shown anywhere: the overlay goes into the target (one row up now).
     expect(animations.at(-1)).toMatchObject({ reason: 'drop', to: null, into: createRect(0, ROW, 200, ROW) });
+  });
+
+  it("`e.source.remove()` takes the items out of the lists they came from only, not the target's list", async () => {
+    // Nested lists drawn as a tree: the target puts the dragged node in its own list first.
+    const children = ref([{ id: 'c1' }]);
+    mount(['a1', 'g1', 'a2'], 'vertical', children);
+    await nextTick();
+    await pickUp('a1');
+    await moveTo(60);
+    expect(manager.over.value?.id).toBe('group:g1');
+    await drop();
+    expect(drops).toEqual(['a1>g1']);
+    expect(data()).toBe('g1,a2');
+    expect(children.value.map((item) => item.id)).toEqual(['c1', 'a1']);
   });
 
   it('the edge bands of an item sort past it as usual', async () => {

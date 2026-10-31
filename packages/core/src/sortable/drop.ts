@@ -160,14 +160,18 @@ const computeResult = (
 
 /**
  * Trash zones, `e.source.remove()` and `dropOutside: 'remove'`: the dragged items (those
- * accepted) leave their lists. The event goes to the list the drag started in.
+ * accepted) leave the lists they started in, and only those: a target's `onDrop` may
+ * have put them in another list of the group already (a node dropped into a node of
+ * nested lists). The event goes to the list the drag started in.
  */
 const computeRemoval = (g: GroupContext, accepted: readonly Key[]): DropResult | null => {
   const current = g.session.value!;
   if (!current.mode.moves || current.origin.list == null) return null;
   const gone = new Set(accepted);
+  const from = new Set(accepted.map((key) => current.sources.get(key)?.list));
   const next = new Map<ListEntry, Key[]>();
   for (const list of g.lists.values()) {
+    if (!from.has(list.id)) continue;
     const source = list.getKeys();
     const keys = source.filter((key) => !gone.has(key));
     if (list.layout.hasChanges(keys, [], source)) next.set(list, keys);
