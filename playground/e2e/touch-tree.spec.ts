@@ -13,7 +13,7 @@ const row = (page: Page, id: string) => item(page, id);
 
 test.describe('touch: tree @touch', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#touch-tree');
+    await page.goto('/demo/#touch-tree');
     await expect(structure(page)).toHaveText(INITIAL);
   });
 

@@ -40,7 +40,7 @@ test.describe('free drop targets', () => {
   const over = (page: Page) => page.getByTestId('over');
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#nested-zones');
+    await page.goto('/demo/#nested-zones');
     await expect(inTray(page, 'r1')).toBeVisible();
   });
 
@@ -184,7 +184,7 @@ test.describe('shadow DOM', () => {
   const order = (page: Page) => page.getByTestId('shadow-order');
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#shadow');
+    await page.goto('/demo/#shadow');
     await expect(order(page)).toHaveText(INITIAL);
     await expect(row(page, 's1')).toBeVisible();
   });

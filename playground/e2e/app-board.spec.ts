@@ -25,7 +25,7 @@ test.describe('app: trello board', () => {
 
   test.beforeEach(async ({ page }) => {
     errors = trackErrors(page);
-    await page.goto('/#app-board');
+    await page.goto('/demo/#app-board');
     await expect(state(page)).toHaveText(INITIAL);
   });
 

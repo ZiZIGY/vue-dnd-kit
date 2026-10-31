@@ -139,7 +139,7 @@ const flyIn = (page: Page, id: string) =>
 
 test.describe("multi-drag 'group'", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#multi-group');
+    await page.goto('/demo/#multi-group');
     await expect(state(page)).toHaveText(INITIAL);
   });
 
@@ -230,6 +230,8 @@ test.describe("multi-drag 'group'", () => {
 
   test('a grid moves the block cell by cell; every clone lands on its cell', async ({ page }) => {
     const check = guard(page);
+    // Away from the window's edges: hovering near them would scroll the page under the pointer.
+    await list(page, 'cells').evaluate((grid) => grid.scrollIntoView({ block: 'center' }));
     await select(page, 'c2', 'c3', 'c6');
     await pickUp(page, item(page, 'c3'));
     await expect.poll(() => order(list(page, 'cells'))).toEqual(['c1', 'c2', 'c3', 'c6', 'c4', 'c5', 'c7', 'c8', 'c9']);
@@ -435,7 +437,7 @@ test.describe("multi-drag 'group' in virtual lists", () => {
 
   test('TanStack: a block with a row that is scrolled away moves and lands together', async ({ page }) => {
     const check = guard(page);
-    await page.goto('/#virtual-tanstack');
+    await page.goto('/demo/#virtual-tanstack');
     const scroller = page.getByTestId('tanstack-scroller');
     await ctrlClick(row(page, 'tanstack-scroller', 'r1'));
     await scroller.evaluate((element) => (element.scrollTop = 40 * 60));
@@ -457,7 +459,7 @@ test.describe("multi-drag 'group' in virtual lists", () => {
 
   test('TanStack kanban: a block crosses columns', async ({ page }) => {
     const check = guard(page);
-    await page.goto('/#virtual-kanban');
+    await page.goto('/demo/#virtual-kanban');
     await ctrlClick(row(page, 'column-todo', 'a1'));
     await ctrlClick(row(page, 'column-todo', 'a3'));
     await pickUp(page, row(page, 'column-todo', 'a1'));

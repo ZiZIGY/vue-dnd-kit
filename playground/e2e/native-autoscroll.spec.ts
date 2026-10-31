@@ -24,7 +24,7 @@ const pickUp = async (page: Page, id: string): Promise<Point> => {
 
 test.describe('native auto-scroll during a mouse drag', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#autoscroll');
+    await page.goto('/demo/#autoscroll');
     await expect(scroller(page).locator('.row')).toHaveCount(20);
   });
 

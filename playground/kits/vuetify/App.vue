@@ -21,6 +21,8 @@
   const dark = shallowRef(false);
   // On a phone the one-line toolbar would clip its last buttons: no title, an icon-only toggle.
   const { xs } = useDisplay();
+  // In the Lab's frame the Lab is around it already: no way back to it from here.
+  const framed = window.top !== window;
 </script>
 
 <template>
@@ -30,6 +32,7 @@
       color="surface-variant"
     >
       <VBtn
+        v-if="!framed"
         href="/"
         variant="text"
         size="small"

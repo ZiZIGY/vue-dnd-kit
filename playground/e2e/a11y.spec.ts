@@ -34,7 +34,7 @@ const fixture = (page: Page, testId: string) => page.getByTestId('attributes').g
 
 test.describe('accessibility attributes', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#a11y');
+    await page.goto('/demo/#a11y');
   });
 
   test('draggables get role, tabindex, role description and instructions', async ({ page }) => {
@@ -113,7 +113,7 @@ test.describe('accessibility attributes', () => {
   });
 
   test('sortable items are described as sortable', async ({ page }) => {
-    await page.goto('/#sortable');
+    await page.goto('/demo/#sortable');
     const row = page.locator('[data-testid="list"] [data-id="t1"]');
     await expect(row).toHaveAttribute('aria-roledescription', 'sortable');
     await expect(row).toHaveRole('button');
@@ -123,10 +123,10 @@ test.describe('accessibility attributes', () => {
 
 test.describe('instructions and live regions', () => {
   test('exist exactly once per provider', async ({ page }) => {
-    await page.goto('/#sortable');
+    await page.goto('/demo/#sortable');
     await expect(page.locator('[role="status"][aria-live]')).toHaveCount(1);
 
-    await page.goto('/#a11y');
+    await page.goto('/demo/#a11y');
     // The app's provider plus the two nested ones.
     await expect(page.locator('[role="status"][aria-live]')).toHaveCount(3);
     const ids = await Promise.all(
@@ -144,14 +144,14 @@ test.describe('instructions and live regions', () => {
     );
 
     // Leaving the demo unmounts the nested providers and their elements.
-    await page.goto('/#kanban');
+    await page.goto('/demo/#kanban');
     await expect(page.locator('[role="status"][aria-live]')).toHaveCount(1);
   });
 });
 
 test.describe('announcements', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#a11y');
+    await page.goto('/demo/#a11y');
   });
 
   test('default announcements for pick up and cancel', async ({ page }) => {
@@ -249,7 +249,7 @@ test.describe('focus restore after keyboard drags (kanban)', () => {
     page.locator(`[data-testid="${column}"] [data-id="${id}"]`);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#kanban');
+    await page.goto('/demo/#kanban');
     await expect(page.getByTestId('board')).toHaveText('todo:a1,a2,a3,a4 | doing:b1,b2 | done:');
   });
 
@@ -290,7 +290,7 @@ test.describe('focus restore after keyboard drags (kanban)', () => {
 test('focus restore by id when the app re-renders a draggable without overlay on drop', async ({ page }) => {
   // No overlay means no drop animation to wait for: the session ends before Vue
   // renders the item in its new zone, so the focus must be restored after the render.
-  await page.goto('/#a11y');
+  await page.goto('/demo/#a11y');
   await pickUp(page.getByTestId('zone-c').getByTestId('movable'));
   await moveRight(page, 2);
   await expect(page.getByTestId('zone-d')).toHaveClass(/over/);

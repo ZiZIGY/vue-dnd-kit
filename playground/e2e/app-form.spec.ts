@@ -43,7 +43,7 @@ test.describe('app: form builder', () => {
 
   test.beforeEach(async ({ page }) => {
     errors = trackErrors(page);
-    await page.goto('/#app-form');
+    await page.goto('/demo/#app-form');
     await expect(outline(page)).toHaveText(INITIAL);
   });
 

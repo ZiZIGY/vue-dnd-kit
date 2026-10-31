@@ -15,7 +15,7 @@ const expectLook = async (page: Page, zone: string, verdict: 'accepted' | 'rejec
 
 test.describe('overlay over zones (overlay-zones)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#overlay-zones');
+    await page.goto('/demo/#overlay-zones');
     await expect(state(page)).toHaveText(INITIAL);
   });
 

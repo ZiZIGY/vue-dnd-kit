@@ -7,7 +7,7 @@ const moves = async (page: Page) => Number(await page.getByTestId('moves').textC
 
 test.describe('stability guards (rfcs/0001-v3.md §6)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#stability');
+    await page.goto('/demo/#stability');
     await expect(page.getByTestId('state')).toHaveText(INITIAL);
   });
 

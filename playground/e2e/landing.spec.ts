@@ -29,7 +29,7 @@ const isSlowed = (page: Page) =>
 
 test.describe('the next drag during a landing', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#sortable');
+    await page.goto('/demo/#sortable');
     await expect(page.getByTestId('order')).toHaveText(INITIAL);
   });
 

@@ -79,7 +79,7 @@ const dragCard = async (page: Page, lib: Lib, n: number, onto: number) => {
 
 test.describe('animation libraries through the hooks (animation-libs)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#animation-libs');
+    await page.goto('/demo/#animation-libs');
     for (const lib of LIBS) await showsOrder(page, lib, '1,2,3,4,5');
   });
 

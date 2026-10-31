@@ -198,13 +198,13 @@ const pickUp = async (page: Page, { source: find, grip = (source) => source, row
 const CASES: Record<string, Case> = {
   // `.grid .row { display: flex; align-items: center; justify-content: center }`: the
   // title is centered in the card, not in its top left corner.
-  'a grid card': { page: '/#grid', source: (page) => item(page, 'g2') },
+  'a grid card': { page: '/demo/#grid', source: (page) => item(page, 'g2') },
   // `table.sortable-table td { padding; border; text-align }`.
-  'a table row': { page: '/#table', source: (page) => item(page, 'p2'), row: true },
+  'a table row': { page: '/demo/#table', source: (page) => item(page, 'p2'), row: true },
   // `.list.horizontal .row { width; text-align: center }`.
-  'a list item': { page: '/#lists', source: (page) => item(page, 'h2') },
+  'a list item': { page: '/demo/#lists', source: (page) => item(page, 'h2') },
   // Scoped styles: they match the clone too, and stay as they are.
-  'a tree row': { page: '/#tree', source: (page) => item(page, 'src') },
+  'a tree row': { page: '/demo/#tree', source: (page) => item(page, 'src') },
   // Vuetify's styles keyed on the list and the item; the chip's unitless line height.
   'a Vuetify list item': {
     page: '/kits/vuetify.html#list',
@@ -259,7 +259,7 @@ test.describe('multi-drag clones look like their sources', () => {
   };
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#multi');
+    await page.goto('/demo/#multi');
     await page.addStyleTag({ content: LIST_RULE });
   });
 

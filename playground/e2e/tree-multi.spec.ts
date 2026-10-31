@@ -132,7 +132,7 @@ const expectLanded = async (page: Page, log: AnimationLog, ids: string[]) => {
 
 test.describe('tree multi-drag', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#tree-multi');
+    await page.goto('/demo/#tree-multi');
     await expect(structure(page)).toHaveText(INITIAL);
   });
 

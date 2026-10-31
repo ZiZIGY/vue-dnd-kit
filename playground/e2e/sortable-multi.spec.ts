@@ -46,7 +46,7 @@ const flyIn = (page: Page, id: string) =>
 
 test.describe('multi-drag', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#multi');
+    await page.goto('/demo/#multi');
     await expect(state(page)).toHaveText(INITIAL);
   });
 
@@ -159,7 +159,7 @@ test.describe('multi-drag', () => {
 
 test.describe('multi-drag with swap', () => {
   test("falls back to sorting (swap is single-item)", async ({ page }) => {
-    await page.goto('/#swap');
+    await page.goto('/demo/#swap');
     await select(page, 's1', 's3');
     await pickUp(page, item(page, 's1'));
     await page.waitForTimeout(300);

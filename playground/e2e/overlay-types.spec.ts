@@ -22,7 +22,7 @@ const overlayOf = async (page: Page, id: string): Promise<string | null> => {
 
 test.describe('overlay per source (overlay-types)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#overlay-types');
+    await page.goto('/demo/#overlay-types');
     await expect(state(page)).toHaveText(INITIAL);
   });
 

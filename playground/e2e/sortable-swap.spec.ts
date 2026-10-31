@@ -74,7 +74,7 @@ const announced = (page: Page, text: string) =>
 
 test.describe('swap between two lists', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#swap');
+    await page.goto('/demo/#swap');
     await expect(state(page)).toContainText(INITIAL);
   });
 
@@ -256,7 +256,7 @@ test.describe('swap between two lists', () => {
 
 test.describe('swap inside one list', () => {
   test('the drop event names the partner and where it went', async ({ page }) => {
-    await page.goto('/#swap');
+    await page.goto('/demo/#swap');
     await pickUp(page, item(page, 's2'));
     await glide(page, await center(item(page, 's5')));
     await page.mouse.up();
@@ -266,7 +266,7 @@ test.describe('swap inside one list', () => {
   });
 
   test('announcements name the partner', async ({ page }) => {
-    await page.goto('/#swap');
+    await page.goto('/demo/#swap');
     await pickUp(page, item(page, 's1'));
     await glide(page, await center(item(page, 's3')));
     await announced(

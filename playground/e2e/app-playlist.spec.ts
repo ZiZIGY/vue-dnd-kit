@@ -19,7 +19,7 @@ test.describe('app: playlist', () => {
 
   test.beforeEach(async ({ page }) => {
     errors = trackErrors(page);
-    await page.goto('/#app-playlist');
+    await page.goto('/demo/#app-playlist');
     await expect(state(page)).toHaveText(INITIAL);
   });
 

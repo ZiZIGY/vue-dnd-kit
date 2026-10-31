@@ -22,7 +22,7 @@ const select = async (page: Page, ...ids: string[]) => {
 
 test.describe('copy', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#copy');
+    await page.goto('/demo/#copy');
     await expect(state(page)).toHaveText('palette:p1,p2,p3 | target:t1,t2,t3 | other:o1,o2');
   });
 
@@ -95,7 +95,7 @@ test.describe('copy', () => {
 
 test.describe('trash', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#trash');
+    await page.goto('/demo/#trash');
     await expect(state(page)).toHaveText('bin-list:x1,x2,x3,x4,x5 | remove-list:y1,y2,y3');
   });
 
@@ -142,7 +142,7 @@ test.describe('trash', () => {
 
 test.describe('external draggables (createItem)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#external');
+    await page.goto('/demo/#external');
     await expect(state(page)).toHaveText('inbox:n1,n2,n3 | plain:q1,q2');
   });
 
@@ -181,7 +181,7 @@ test.describe('external draggables (createItem)', () => {
 
 test.describe('reject and partial accept', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#reject');
+    await page.goto('/demo/#reject');
     await expect(state(page)).toHaveText('source:r1,r2,r3,r4 | confirm: | bugs: | first:');
   });
 

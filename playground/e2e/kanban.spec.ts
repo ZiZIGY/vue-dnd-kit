@@ -5,7 +5,7 @@ const card = (page: Page, id: string) => page.locator(`[data-id="${id}"]`);
 
 test.describe('kanban (lists sharing a group)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#kanban');
+    await page.goto('/demo/#kanban');
     await expect(page.getByTestId('board')).toHaveText('todo:a1,a2,a3,a4 | doing:b1,b2 | done:');
   });
 

@@ -21,7 +21,7 @@ test.describe('app: chess', () => {
   test.beforeEach(async ({ page }) => {
     errors = trackErrors(page);
     warnings = trackVueWarnings(page);
-    await page.goto('/#app-chess');
+    await page.goto('/demo/#app-chess');
     await expect(fen(page)).toHaveText(`${START} w`);
   });
 

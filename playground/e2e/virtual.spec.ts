@@ -57,7 +57,7 @@ test.describe('TanStack Virtual list (10k rows)', () => {
     page.locator(`[data-testid="tanstack-scroller"] [data-id="${id}"]`);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#virtual-tanstack');
+    await page.goto('/demo/#virtual-tanstack');
     await expect(page.getByTestId('tanstack-order')).toHaveText(HEAD_10('r'));
     await expect(row(page, 'r0')).toBeVisible();
   });
@@ -134,7 +134,7 @@ test.describe('TanStack Virtual list (10k rows)', () => {
   test('overscan rows outside the visible area are not sorting targets', async ({ page }) => {
     // The pointer ends just above the list: that is the auto-scroll edge zone, and
     // scrolling would bring the overscan rows into view. This test is about clipping.
-    await page.goto('/?noautoscroll#virtual-tanstack');
+    await page.goto('/demo/?noautoscroll#virtual-tanstack');
     const check = guard(page);
     const scroller = page.getByTestId('tanstack-scroller');
     const point = await grab(page, row(page, 'r2'));
@@ -198,7 +198,7 @@ test.describe('VueUse useVirtualList (10k rows)', () => {
     page.locator(`[data-testid="vueuse-scroller"] [data-id="${id}"]`);
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#virtual-vueuse');
+    await page.goto('/demo/#virtual-vueuse');
     await expect(page.getByTestId('vueuse-order')).toHaveText(HEAD_10('v'));
     await expect(row(page, 'v0')).toBeVisible();
   });
@@ -281,7 +281,7 @@ test.describe('virtual kanban (3 TanStack columns × 2k cards)', () => {
   };
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#virtual-kanban');
+    await page.goto('/demo/#virtual-kanban');
     await expect(page.getByTestId('virtual-board')).toHaveText(INITIAL);
     await expect(card(page, 'c0')).toBeVisible();
   });

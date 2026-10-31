@@ -43,7 +43,7 @@ const settle = (page: Page) =>
 
 test.describe('sortable tree', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#tree');
+    await page.goto('/demo/#tree');
     await expect(structure(page)).toHaveText(INITIAL);
   });
 
@@ -311,7 +311,7 @@ test.describe('sortable tree and a list in one group', () => {
   };
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#tree');
+    await page.goto('/demo/#tree');
     await expect(structure(page)).toHaveText(INITIAL);
     await expect(clipboard(page)).toHaveText('notes');
   });
@@ -379,7 +379,7 @@ test.describe('sortable tree: copies, a plain draggable, a locked axis', () => {
   };
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#tree');
+    await page.goto('/demo/#tree');
     await expect(structure(page)).toHaveText(INITIAL);
   });
 

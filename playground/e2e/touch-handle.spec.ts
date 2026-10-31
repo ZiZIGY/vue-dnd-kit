@@ -11,7 +11,7 @@ const body = (page: Page, id: string) => item(page, id).locator('.title');
 
 test.describe('touch: drag handle @touch', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#touch-handle');
+    await page.goto('/demo/#touch-handle');
     await expect(order(page)).toHaveText(INITIAL);
   });
 

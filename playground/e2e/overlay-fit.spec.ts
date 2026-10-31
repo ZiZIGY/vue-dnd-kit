@@ -101,7 +101,7 @@ const expectDropFrom = async (page: Page, release: Box) => {
 
 test.describe('overlay fits the slot (overlayFit: slot)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#tree');
+    await page.goto('/demo/#tree');
   });
 
   test('takes the width of the tree rows while hovering the tree, and drops without scaling', async ({
@@ -148,7 +148,7 @@ test.describe('the overlay resizes around the pointer (overlayFit: slot)', () =>
   test('grabbed near the right edge of a wide card, the pointer keeps its place in a narrow box', async ({
     page,
   }) => {
-    await page.goto('/#overlay-fit');
+    await page.goto('/demo/#overlay-fit');
     await expect(page.getByTestId('state-slot')).toHaveText('slot-narrow:sn1,sn2,sn3,sn4 | slot-wide:sw1,sw2,sw3');
     const source = (await item(page, 'sw1').boundingBox())!;
     const narrow = (await item(page, 'sn2').boundingBox())!;
@@ -177,7 +177,7 @@ test.describe('the overlay resizes around the pointer (overlayFit: slot)', () =>
   test('a multi-drag column grows around the grabbed card: the pointer stays over it, not the column', async ({
     page,
   }) => {
-    await page.goto('/#overlay-fit');
+    await page.goto('/demo/#overlay-fit');
     await expect(page.getByTestId('state-slot')).toHaveText('slot-narrow:sn1,sn2,sn3,sn4 | slot-wide:sw1,sw2,sw3');
     for (const id of ['sn1', 'sn3']) await item(page, id).click({ modifiers: ['ControlOrMeta'] });
     const source = (await item(page, 'sn3').boundingBox())!;
@@ -211,7 +211,7 @@ test.describe('the overlay resizes around the pointer (overlayFit: slot)', () =>
   });
 
   test('a keyboard drag into a list of narrower items puts the box exactly over the slot', async ({ page }) => {
-    await page.goto('/#overlay-fit');
+    await page.goto('/demo/#overlay-fit');
     await expect(page.getByTestId('state-slot')).toHaveText('slot-narrow:sn1,sn2,sn3,sn4 | slot-wide:sw1,sw2,sw3');
     await item(page, 'sw1').focus();
     await page.keyboard.press('Space');
@@ -232,7 +232,7 @@ test.describe('the overlay resizes around the pointer (overlayFit: slot)', () =>
   test('entering the tree, the box takes the row width around the pointer; the depth projection is unchanged', async ({
     page,
   }) => {
-    await page.goto('/#tree');
+    await page.goto('/demo/#tree');
     const source = page.locator('[data-testid="clipboard-list"] [data-id="notes"]');
     const sourceWidth = (await source.boundingBox())!.width;
     const treeWidth = await rowWidth(page, 'package');
@@ -264,7 +264,7 @@ test.describe('the overlay resizes around the pointer (overlayFit: slot)', () =>
 
 test('a thin custom placeholder passes its width, not its height', async ({ page }) => {
   // The kanban cards are the same size everywhere, so the overlay keeps the source size.
-  await page.goto('/#kanban');
+  await page.goto('/demo/#kanban');
   const card = page.locator('[data-id="a1"]');
   const size = await card.evaluate((element) => ({
     width: (element as HTMLElement).offsetWidth,

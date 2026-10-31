@@ -45,7 +45,7 @@ const verticalSweep = (x: number, top: number, bottom: number, sweeps: number, s
  * of a 500-item v-for plus a FLIP pass.
  */
 test('500 rows: reorder cost and frame times while dragging', async ({ page, cpuThrottle }) => {
-  await page.goto('/#bench');
+  await page.goto('/demo/#bench');
   const rows = page.locator('[data-testid="bench"] .row');
   await expect(rows).toHaveCount(500);
 
@@ -66,7 +66,7 @@ test('500 rows: reorder cost and frame times while dragging', async ({ page, cpu
  * 1,000-key drafts (plus FLIP over 5k registered items).
  */
 test('kanban 5 × 1,000 cards: cross-column drag sweep', async ({ page, cpuThrottle }) => {
-  await page.goto('/#bench-kanban');
+  await page.goto('/demo/#bench-kanban');
   const columns = ['k1', 'k2', 'k3', 'k4', 'k5'].map((id) => page.getByTestId(`bench-${id}`));
   for (const column of columns) await expect(column.locator('.row')).toHaveCount(1_000);
 
@@ -100,7 +100,7 @@ test('kanban 5 × 1,000 cards: cross-column drag sweep', async ({ page, cpuThrot
  * the active row follows into freshly mounted rows on every frame.
  */
 test('TanStack 50,000 rows: drag sweep and scroll', async ({ page, cpuThrottle }) => {
-  await page.goto('/#bench-virtual');
+  await page.goto('/demo/#bench-virtual');
   const scroller = page.getByTestId('tanstack-scroller');
   const row = (id: string) => scroller.locator(`[data-id="${id}"]`);
   await expect(row('r0')).toBeVisible();

@@ -9,7 +9,7 @@ const cards = (page: Page, id: string) => page.locator(`[data-testid="${id}-card
 
 test.describe('nested sortables: kanban with draggable columns', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#nested');
+    await page.goto('/demo/#nested');
     await expect(state(page)).toHaveText(INITIAL);
   });
 

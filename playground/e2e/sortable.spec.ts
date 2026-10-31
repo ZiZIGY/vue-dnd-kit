@@ -5,7 +5,7 @@ const INITIAL = 't1,t2,t3,t4,t5,t6,t7,t8';
 
 test.describe('vertical sortable list', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#sortable');
+    await page.goto('/demo/#sortable');
     await expect(page.getByTestId('order')).toHaveText(INITIAL);
   });
 

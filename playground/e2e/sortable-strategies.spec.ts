@@ -5,7 +5,7 @@ const state = (page: Page) => page.getByTestId('state');
 
 test.describe('horizontal lists', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#lists');
+    await page.goto('/demo/#lists');
   });
 
   test('reorders along x', async ({ page }) => {
@@ -30,7 +30,7 @@ test.describe('horizontal lists', () => {
 
 test.describe('custom placeholder', () => {
   test('user CSS overrides the zero-specificity default', async ({ page }) => {
-    await page.goto('/#lists');
+    await page.goto('/demo/#lists');
     // Mid-screen, away from the page's bottom auto-scroll zone however tall the nav grows.
     await page.getByTestId('custom').evaluate((element) => element.scrollIntoView({ block: 'center' }));
     await dragTo(page, item(page, 'c1'), await center(item(page, 'c3'), 0.8), { release: false });
@@ -46,7 +46,7 @@ test.describe('custom placeholder', () => {
 
 test.describe('grids', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#grid');
+    await page.goto('/demo/#grid');
   });
 
   test('moves a cell into the hovered cell of a uniform grid', async ({ page }) => {
@@ -92,7 +92,7 @@ test.describe('grids', () => {
 
 test.describe('swap', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#swap');
+    await page.goto('/demo/#swap');
   });
 
   test('exchanges the active item with the hovered one; the rest stay put', async ({ page }) => {
@@ -134,7 +134,7 @@ test.describe('swap', () => {
 test.describe('table rows', () => {
   test('reorders <tr> items in a <tbody> list, with a table-wrapped overlay', async ({ page }) => {
     const errors = trackErrors(page);
-    await page.goto('/#table');
+    await page.goto('/demo/#table');
     await dragTo(page, item(page, 'p1'), await center(item(page, 'p3'), 0.8), { release: false });
     await expect(page.locator('[data-dnd-overlay] table tr')).toHaveCount(1);
     await expect(page.locator('[data-dnd-placeholder]')).toHaveAttribute('data-id', 'p1');
@@ -169,7 +169,7 @@ test.describe('a list that keeps its items inside it (restrictToParent)', () => 
 
   test('an item held near its top edge reaches the last place, one held low the first', async ({ page }) => {
     const errors = trackErrors(page);
-    await page.goto('/#lists');
+    await page.goto('/demo/#lists');
     await page.getByTestId('bound-list').check();
     const { list, overlay } = await pushPast(page, 'c1', 0.1, 40);
     // The overlay stayed inside the list.
@@ -196,7 +196,7 @@ test.describe('axis lock (list modifiers)', () => {
 
   test('table rows stay on the y axis; unticked, they follow the pointer', async ({ page }) => {
     const errors = trackErrors(page);
-    await page.goto('/#table');
+    await page.goto('/demo/#table');
     expect(Math.abs(await overlayLeftAfterDiagonal(page, 'p1', 'p3'))).toBeLessThan(1);
     // Sorting follows the pointer as before: only the overlay is kept on the axis.
     await expect(state(page)).toHaveText('p2,p3,p1,p4,p5');
@@ -206,7 +206,7 @@ test.describe('axis lock (list modifiers)', () => {
   });
 
   test('the horizontal list stays on the x axis, the indicator lists move freely', async ({ page }) => {
-    await page.goto('/#lists');
+    await page.goto('/demo/#lists');
     await pickUp(page, item(page, 'h1'));
     const top = (await page.locator('[data-dnd-overlay]').boundingBox())!.y;
     const to = await center(item(page, 'h3'));

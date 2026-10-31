@@ -12,7 +12,7 @@ const select = async (page: Page, ...ids: string[]) => {
 
 test.describe('stacked multi-drag overlay (overlay-multi)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#overlay-multi');
+    await page.goto('/demo/#overlay-multi');
     await expect(state(page)).toHaveText(INITIAL);
   });
 

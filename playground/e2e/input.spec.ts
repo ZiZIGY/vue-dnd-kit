@@ -34,7 +34,7 @@ const windowScrollY = (page: Page) => page.evaluate(() => window.scrollY);
 
 test.describe('auto-scroll', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#autoscroll');
+    await page.goto('/demo/#autoscroll');
     await expect(page.getByTestId('scroll').locator('.row')).toHaveCount(60);
   });
 
@@ -129,7 +129,7 @@ test.describe('touch', () => {
   test.skip(({ browserName }) => browserName !== 'chromium', 'CDP touch events are Chromium-only');
 
   test('a long press drags, and touchmove is prevented while dragging', async ({ page }) => {
-    await page.goto('/#autoscroll');
+    await page.goto('/demo/#autoscroll');
     const errors = trackErrors(page);
     await page.evaluate(() => {
       const log: boolean[] = ((window as unknown as { __touchmoves: boolean[] }).__touchmoves = []);
@@ -155,7 +155,7 @@ test.describe('touch', () => {
   });
 
   test('a quick swipe scrolls the page and does not drag', async ({ page }) => {
-    await page.goto('/#autoscroll');
+    await page.goto('/demo/#autoscroll');
     const touch = await touchscreen(page);
     const start = await center(page.locator('[data-id="p8"]'));
     await touch.start(start);
@@ -168,7 +168,7 @@ test.describe('touch', () => {
   });
 
   test('touchcancel (pointercancel) cancels the drag', async ({ page }) => {
-    await page.goto('/#autoscroll');
+    await page.goto('/demo/#autoscroll');
     const touch = await touchscreen(page);
     await touch.start(await center(page.locator('[data-id="p1"]')));
     await page.waitForTimeout(350);
@@ -180,7 +180,7 @@ test.describe('touch', () => {
   });
 
   test('the long press reports activation progress', async ({ page }) => {
-    await page.goto('/#free');
+    await page.goto('/demo/#free');
     // Record every rendered value: a fixed wait could land past the 200ms delay on a busy machine.
     await page.getByTestId('progress').evaluate((output) => {
       const values: number[] = ((window as unknown as { __progress: number[] }).__progress = []);
@@ -204,7 +204,7 @@ test.describe('touch', () => {
 
 test.describe('pointer sensor', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#free');
+    await page.goto('/demo/#free');
     await expect(page.getByTestId('free-state')).toHaveText('red:40,40 blue:160,40 free:30,150 shift:240,200');
   });
 
@@ -302,7 +302,7 @@ test.describe('pointer sensor', () => {
 
 test.describe('keyboard free drag', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#free');
+    await page.goto('/demo/#free');
     await expect(page.getByTestId('free-state')).toHaveText('red:40,40 blue:160,40 free:30,150 shift:240,200');
   });
 
@@ -369,7 +369,7 @@ test.describe('keyboard free drag', () => {
 
 test.describe('snap to grid', () => {
   test('the overlay glides along the board grid and lands on it', async ({ page }) => {
-    await page.goto('/#free');
+    await page.goto('/demo/#free');
     const board = (await page.getByTestId('board').boundingBox())!;
     const start = await center(page.locator('[data-id="free"]'));
     await dragTo(page, page.locator('[data-id="free"]'), { x: start.x + 33, y: start.y + 47 }, { release: false });

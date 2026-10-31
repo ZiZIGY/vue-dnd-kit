@@ -90,7 +90,7 @@
       <ol>
         <li>On the computer, in <code>playground</code>: <code>yarn dev:host</code>.</li>
         <li>Vite prints a <em>Network</em> address, such as <code>http://192.168.1.20:4100/</code>.</li>
-        <li>On the phone, on the same Wi-Fi, open that address followed by <code>#device-check</code>.</li>
+        <li>On the phone, on the same Wi-Fi, open that address followed by <code>demo/#device-check</code>.</li>
       </ol>
       <p>
         Nothing loads? Let Node.js through the computer's firewall, and make sure the Wi-Fi doesn't isolate

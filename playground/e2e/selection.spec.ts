@@ -45,7 +45,7 @@ const expectNear = (actual: number, expected: number) => expect(Math.abs(actual 
 
 test.describe('selection area', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#selection');
+    await page.goto('/demo/#selection');
     await expect(page.getByTestId('order')).toHaveText(ORDER);
   });
 

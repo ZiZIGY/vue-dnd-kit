@@ -8,7 +8,7 @@ const order = (page: Page, id: string) =>
 
 test.describe("placeholder: 'indicator'", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#lists');
+    await page.goto('/demo/#lists');
     await expect(state(page)).toContainText('indicator:i1,i2,i3,i4,i5,i6 | indicator-b:j1,j2,j3');
   });
 

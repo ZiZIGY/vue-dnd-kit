@@ -16,12 +16,15 @@
 
   // Nuxt UI's color mode: the `dark` class on <html>.
   const isDark = useDark();
+  // In the Lab's frame the Lab is around it already: no way back to it from here.
+  const framed = window.top !== window;
 </script>
 
 <template>
   <UApp>
     <header class="flex flex-wrap items-center gap-2 border-b border-default bg-elevated px-4 py-2">
       <a
+        v-if="!framed"
         href="/"
         class="mr-2 text-sm text-muted hover:text-default"
         >← playground</a

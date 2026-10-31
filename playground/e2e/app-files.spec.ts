@@ -21,7 +21,7 @@ test.describe('app: file manager', () => {
   test.beforeEach(async ({ page }) => {
     errors = trackErrors(page);
     warnings = trackVueWarnings(page);
-    await page.goto('/#app-files');
+    await page.goto('/demo/#app-files');
     await expect(tree(page)).toHaveText(TREE);
     await expect(files(page)).toContainText(folder('documents', ...DOCUMENTS));
   });

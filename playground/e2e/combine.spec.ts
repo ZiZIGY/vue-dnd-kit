@@ -66,7 +66,7 @@ test.describe('drop into an item', () => {
   test.beforeEach(async ({ page }) => {
     errors = trackErrors(page);
     warnings = trackVueWarnings(page);
-    await page.goto('/#combine');
+    await page.goto('/demo/#combine');
     await expect(state(page)).toHaveText(`${LIST} | ${GRID}`);
   });
 

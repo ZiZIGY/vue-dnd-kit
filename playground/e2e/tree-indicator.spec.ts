@@ -79,7 +79,7 @@ const drawnLine = (page: Page, id: string) =>
 
 test.describe("tree placeholder: 'indicator'", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#tree-indicator');
+    await page.goto('/demo/#tree-indicator');
     await expect(structure(page)).toHaveText(INITIAL);
   });
 

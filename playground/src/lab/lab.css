@@ -1,0 +1,140 @@
+/*
+ * The Lab's page only: Tailwind and Nuxt UI, in the docs' look. `source(none)` limits class
+ * scanning to the Lab's files; the demo page it frames keeps its own plain CSS.
+ */
+@import 'tailwindcss' source(none);
+@import '@nuxt/ui';
+
+@source './';
+
+/* The docs' tokens (docs/app/assets/css/main.css): near-black stages, mono labels, one green accent. */
+@theme static {
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --color-accent: #42b883;
+  --color-accent-strong: #3aa776;
+  --color-on-accent: #04130c;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-blink: blink 1.6s steps(2, start) infinite;
+}
+
+:root {
+  color-scheme: light;
+  --ui-radius: 0.125rem;
+
+  --ui-primary: #2f9e6e;
+  --ui-bg: #fafafa;
+  --ui-bg-muted: #f3f3f4;
+  --ui-bg-elevated: #ececee;
+  --ui-bg-accented: #e2e2e5;
+  --ui-border: #e4e4e7;
+  --ui-border-muted: #ececee;
+  --ui-border-accented: #d4d4d8;
+  --ui-text-highlighted: #09090b;
+  --ui-text: #27272a;
+  --ui-text-muted: #5b5b63;
+  --ui-text-dimmed: #85858d;
+  --ui-text-inverted: #fafafa;
+
+  --stage: #f1f1f2;
+  --code-bg: #f3f3f4;
+}
+
+.dark {
+  color-scheme: dark;
+  --ui-primary: #42b883;
+  --ui-bg: #0b0b0c;
+  --ui-bg-muted: #111113;
+  --ui-bg-elevated: #18181b;
+  --ui-bg-accented: #232326;
+  --ui-border: #1f1f22;
+  --ui-border-muted: #18181b;
+  --ui-border-accented: #2e2e33;
+  --ui-text-highlighted: #f4f4f5;
+  --ui-text: #d4d4d8;
+  --ui-text-muted: #9f9fa9;
+  --ui-text-dimmed: #6e6e78;
+  --ui-text-inverted: #0b0b0c;
+
+  --stage: #101012;
+  --code-bg: #121214;
+}
+
+@layer base {
+  body {
+    font-feature-settings: 'calt', 'kern', 'ss01';
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--ui-border-accented) transparent;
+    }
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background: var(--ui-border-accented) padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--ui-text-dimmed);
+  }
+}
+
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@utility stage {
+  background-color: var(--stage);
+}
+
+@utility dot-paper {
+  background-image: radial-gradient(color-mix(in oklab, var(--ui-text-dimmed) 55%, transparent) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+}
+
+@utility fade-radial {
+  mask-image: radial-gradient(ellipse at center, black 20%, transparent 72%);
+}
+
+@keyframes blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+/* Dual-theme Shiki output: colours from its variables. */
+.shiki.shiki-themes,
+.shiki.shiki-themes span {
+  color: var(--shiki-light);
+  background-color: transparent !important;
+}
+
+.dark .shiki.shiki-themes,
+.dark .shiki.shiki-themes span {
+  color: var(--shiki-dark);
+}

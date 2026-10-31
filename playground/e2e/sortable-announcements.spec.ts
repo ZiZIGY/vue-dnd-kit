@@ -22,7 +22,7 @@ const press = async (page: Page, key: string, times = 1) => {
 
 test.describe('position-aware announcements (rfcs/0001-v3.md §10)', () => {
   test('pick up, move and drop in a list', async ({ page }) => {
-    await page.goto('/#sortable');
+    await page.goto('/demo/#sortable');
     await page.locator('[data-testid="list"] [data-id="t1"]').focus();
     await press(page, 'Space');
     await announced(page, 'Picked up item t1 at position 1 of 8 in list list.');
@@ -36,7 +36,7 @@ test.describe('position-aware announcements (rfcs/0001-v3.md §10)', () => {
   test('the pickup text is not replaced by a redundant "moved to" for the same position', async ({ page }) => {
     // The first frame of a drag finds the origin list as target; announcing that as a
     // move would overwrite the pickup text 500 ms later with no new information.
-    await page.goto('/#sortable');
+    await page.goto('/demo/#sortable');
     await page.locator('[data-testid="list"] [data-id="t3"]').focus();
     await press(page, 'Space');
     await announced(page, 'Picked up item t3 at position 3 of 8 in list list.');
@@ -50,7 +50,7 @@ test.describe('position-aware announcements (rfcs/0001-v3.md §10)', () => {
   });
 
   test('cancel names the position the item returned to', async ({ page }) => {
-    await page.goto('/#sortable');
+    await page.goto('/demo/#sortable');
     await page.locator('[data-testid="list"] [data-id="t2"]').focus();
     await press(page, 'Space');
     await press(page, 'ArrowDown', 3);
@@ -60,7 +60,7 @@ test.describe('position-aware announcements (rfcs/0001-v3.md §10)', () => {
   });
 
   test('moves across lists name the new list', async ({ page }) => {
-    await page.goto('/#kanban');
+    await page.goto('/demo/#kanban');
     await item(page, 'a1').focus();
     await press(page, 'Space');
     await press(page, 'ArrowRight');
@@ -70,7 +70,7 @@ test.describe('position-aware announcements (rfcs/0001-v3.md §10)', () => {
   });
 
   test('pointer drags announce positions too, and multi-drag counts the items', async ({ page }) => {
-    await page.goto('/#multi');
+    await page.goto('/demo/#multi');
     await item(page, 'a2').click({ modifiers: ['ControlOrMeta'] });
     await item(page, 'a3').click({ modifiers: ['ControlOrMeta'] });
     await dragTo(page, item(page, 'a2'), await center(item(page, 'a1'), 0.2), { release: false });
@@ -80,7 +80,7 @@ test.describe('position-aware announcements (rfcs/0001-v3.md §10)', () => {
   });
 
   test("the provider's announcements override the defaults per event", async ({ page }) => {
-    await page.goto('/#announce');
+    await page.goto('/demo/#announce');
     await item(page, 'a1').focus();
     await press(page, 'Space');
     await announced(page, 'Picked up item a1 at position 1 of 5 in list tasks.');
@@ -91,7 +91,7 @@ test.describe('position-aware announcements (rfcs/0001-v3.md §10)', () => {
   });
 
   test('drags outside sortable lists keep the generic texts', async ({ page }) => {
-    await page.goto('/#announce');
+    await page.goto('/demo/#announce');
     await dragTo(page, item(page, 'free'), await center(page.getByTestId('zone')), { release: false });
     await announced(page, 'Draggable item free was moved over droppable area zone.');
     await page.mouse.up();

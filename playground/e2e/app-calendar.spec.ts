@@ -25,7 +25,7 @@ test.describe('app: calendar', () => {
   test.beforeEach(async ({ page }) => {
     errors = trackErrors(page);
     warnings = trackVueWarnings(page);
-    await page.goto('/#app-calendar');
+    await page.goto('/demo/#app-calendar');
     await expect(state(page)).toHaveText(INITIAL);
   });
 

@@ -88,7 +88,7 @@ const rectsOf = async (page: Page, ids: string[]) =>
 
 test.describe('custom overlay layout with DragPreview (overlay-deck)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#overlay-deck');
+    await page.goto('/demo/#overlay-deck');
     await expect(state(page)).toHaveText(INITIAL);
   });
 

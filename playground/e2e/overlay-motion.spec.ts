@@ -7,7 +7,7 @@ const drops = (page: Page) => page.getByTestId('motion-drops');
 
 test.describe('motion-v recipe (overlay-motion)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#overlay-motion');
+    await page.goto('/demo/#overlay-motion');
     await expect(state(page)).toHaveText(INITIAL);
   });
 

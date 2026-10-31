@@ -9,23 +9,6 @@ body {
   background: #f3f4f6;
 }
 
-nav {
-  display: flex;
-  gap: 12px;
-  padding: 12px 16px;
-  background: #111827;
-}
-
-nav a {
-  color: #d1d5db;
-  text-decoration: none;
-}
-
-nav a.active {
-  color: #fff;
-  font-weight: 600;
-}
-
 main {
   padding: 16px;
 }
@@ -284,17 +267,6 @@ pre.order {
 
 .a11y-zone.over {
   border-color: #2563eb;
-}
-
-/* One row however many demos there are: a nav that wraps pushes every demo further down
-   as demos are added, and specs that drag near the bottom then hit the page's auto-scroll. */
-nav {
-  overflow-x: auto;
-  scrollbar-width: thin;
-}
-
-nav a {
-  flex: none;
 }
 
 section + section {

@@ -16,7 +16,7 @@ const placeholderIn = (page: Page, list: string) =>
 test.describe('keyboard sorting by items (rfcs/0001-v3.md §10)', () => {
   test('arrows move the item one position at a time in a vertical list', async ({ page }) => {
     const errors = trackErrors(page);
-    await page.goto('/#sortable');
+    await page.goto('/demo/#sortable');
     await page.locator('[data-testid="list"] [data-id="t1"]').focus();
     await press(page, 'Space');
     await expect(page.locator('[data-dnd-placeholder]')).toHaveAttribute('data-id', 't1');
@@ -29,7 +29,7 @@ test.describe('keyboard sorting by items (rfcs/0001-v3.md §10)', () => {
   });
 
   test('an arrow at the end of the list does nothing (no pixel drift)', async ({ page }) => {
-    await page.goto('/#sortable');
+    await page.goto('/demo/#sortable');
     await page.locator('[data-testid="list"] [data-id="t1"]').focus();
     await press(page, 'Space');
     await press(page, 'ArrowUp', 3);
@@ -40,7 +40,7 @@ test.describe('keyboard sorting by items (rfcs/0001-v3.md §10)', () => {
   });
 
   test('Escape cancels a keyboard drag and keeps the focus', async ({ page }) => {
-    await page.goto('/#sortable');
+    await page.goto('/demo/#sortable');
     await page.locator('[data-testid="list"] [data-id="t2"]').focus();
     await press(page, 'Space');
     await press(page, 'ArrowDown', 3);
@@ -51,7 +51,7 @@ test.describe('keyboard sorting by items (rfcs/0001-v3.md §10)', () => {
   });
 
   test('left/right move a card to the adjacent column of a kanban', async ({ page }) => {
-    await page.goto('/#kanban');
+    await page.goto('/demo/#kanban');
     await item(page, 'a1').focus();
     await press(page, 'Space');
     await press(page, 'ArrowRight');
@@ -68,7 +68,7 @@ test.describe('keyboard sorting by items (rfcs/0001-v3.md §10)', () => {
   });
 
   test('a card entering a column lands next to the row it was on', async ({ page }) => {
-    await page.goto('/#kanban');
+    await page.goto('/demo/#kanban');
     await item(page, 'a2').focus();
     await press(page, 'Space');
     await press(page, 'ArrowRight');
@@ -78,7 +78,7 @@ test.describe('keyboard sorting by items (rfcs/0001-v3.md §10)', () => {
   });
 
   test('up/down in a grid go to the nearest cell of the next row', async ({ page }) => {
-    await page.goto('/#grid');
+    await page.goto('/demo/#grid');
     await item(page, 'g2').focus();
     await press(page, 'Space');
     await press(page, 'ArrowDown');
@@ -93,7 +93,7 @@ test.describe('keyboard sorting by items (rfcs/0001-v3.md §10)', () => {
   });
 
   test('left/right move along a horizontal list', async ({ page }) => {
-    await page.goto('/#lists');
+    await page.goto('/demo/#lists');
     await item(page, 'h1').focus();
     await press(page, 'Space');
     await press(page, 'ArrowRight', 2);
@@ -104,7 +104,7 @@ test.describe('keyboard sorting by items (rfcs/0001-v3.md §10)', () => {
   });
 
   test('in an indicator list the arrows move the line, skipping no-op positions', async ({ page }) => {
-    await page.goto('/#lists');
+    await page.goto('/demo/#lists');
     await item(page, 'i1').focus();
     await press(page, 'Space');
     await press(page, 'ArrowDown');
@@ -121,7 +121,7 @@ test.describe('keyboard sorting by items (rfcs/0001-v3.md §10)', () => {
     const warnings = trackVueWarnings(page);
     const order = (list: string) =>
       page.locator(`[data-testid="${list}"]:not([data-dnd-overlay] *) > [data-id]`).evaluateAll((rows) => rows.map((row) => row.getAttribute('data-id')));
-    await page.goto('/#lists');
+    await page.goto('/demo/#lists');
     await item(page, 'm2').focus();
     await press(page, 'Space');
     await press(page, 'ArrowRight');
@@ -147,7 +147,7 @@ test.describe('keyboard sorting by items (rfcs/0001-v3.md §10)', () => {
   });
 
   test('a kanban column moves by keyboard from its handle', async ({ page }) => {
-    await page.goto('/#nested');
+    await page.goto('/demo/#nested');
     await page.locator('[data-testid="todo-header"]').focus();
     await press(page, 'Space');
     await press(page, 'ArrowRight', 2);
@@ -157,7 +157,7 @@ test.describe('keyboard sorting by items (rfcs/0001-v3.md §10)', () => {
   });
 
   test('moving past the viewport scrolls the slot into view', async ({ page }) => {
-    await page.goto('/#bench');
+    await page.goto('/demo/#bench');
     await page.locator('[data-testid="bench"] [data-id="r0"]').focus();
     await press(page, 'Space');
     await press(page, 'ArrowDown', 30);

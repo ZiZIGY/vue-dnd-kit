@@ -66,7 +66,7 @@ const carryRight = async (page: Page, finger: Finger, columns: number): Promise<
 
 test.describe('touch: kanban @touch', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#touch-kanban');
+    await page.goto('/demo/#touch-kanban');
     await expect(boardState(page)).toHaveText(INITIAL);
   });
 

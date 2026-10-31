@@ -31,7 +31,7 @@ const dropKeyframes = async (page: Page): Promise<Array<Record<string, string>>>
 
 test.describe('overlay box size: slot vs source (overlay-fit)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#overlay-fit');
+    await page.goto('/demo/#overlay-fit');
     await expect(page.getByTestId('state-slot')).toHaveText('slot-narrow:sn1,sn2,sn3,sn4 | slot-wide:sw1,sw2,sw3');
   });
 

@@ -3,10 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <title>vue-dnd-kit playground</title>
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <!-- `isolate`: Nuxt UI overlays need their own stacking context (Nuxt UI docs, Vue setup). -->
+    <div
+      id="app"
+      class="isolate"
+    ></div>
+    <script
+      type="module"
+      src="/src/lab/main.ts"
+    ></script>
   </body>
 </html>

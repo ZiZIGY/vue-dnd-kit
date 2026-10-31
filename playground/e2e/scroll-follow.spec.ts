@@ -55,7 +55,7 @@ const scrollWhileLanding = async (page: Page, id: string, by: number): Promise<(
 
 test.describe('scrolling under a drag', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#lists');
+    await page.goto('/demo/#lists');
     await makeRoom(page);
   });
 

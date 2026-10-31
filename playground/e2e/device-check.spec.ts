@@ -14,7 +14,7 @@ const summary = (page: Page) => page.getByTestId('summary');
 
 test.describe('device check page', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#device-check');
+    await page.goto('/demo/#device-check');
     await expect(page.getByRole('heading', { name: 'Device check' })).toBeVisible();
   });
 
@@ -96,7 +96,7 @@ test.describe('device check page', () => {
 
 test.describe('device check page on a phone @touch', () => {
   test('fits the screen; a tap gives a verdict, a long press drags in an area', async ({ page }) => {
-    await page.goto('/#device-check');
+    await page.goto('/demo/#device-check');
     await expect(page.getByRole('heading', { name: 'Device check' })).toBeVisible();
     expect(await fitsScreen(page)).toBe(true);
 

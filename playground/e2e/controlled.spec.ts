@@ -56,7 +56,7 @@ const expectLandedOn = async (landing: Point, locator: Locator) => {
 
 test.describe('controlled lists', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#controlled');
+    await page.goto('/demo/#controlled');
     await expect(state(page)).toHaveText(INITIAL);
   });
 
@@ -120,7 +120,7 @@ test.describe('controlled tree', () => {
   test('withChildren keeps the class; the store takes the new tree in onDrop', async ({ page }) => {
     const errors = trackErrors(page);
     const warnings = trackLibraryWarnings(page);
-    await page.goto('/#controlled');
+    await page.goto('/demo/#controlled');
     await expect(page.getByTestId('tree')).toHaveText('src(components,main),docs(intro),assets,readme');
     // The tree sits below the lists: centered in the viewport, away from the auto-scroll edges.
     await page.getByTestId('folders').evaluate((element) => element.scrollIntoView({ block: 'center' }));

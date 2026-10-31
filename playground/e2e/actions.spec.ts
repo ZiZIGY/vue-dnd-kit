@@ -14,7 +14,7 @@ const button = (page: Page, id: string, name: string) => row(page, id).getByRole
 
 test.describe('@vue-dnd-kit/actions', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#actions');
+    await page.goto('/demo/#actions');
     await expect(order(page)).toHaveText('todo:t1,t2,t3,t4 | done:d1,d2');
   });
 

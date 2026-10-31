@@ -9,7 +9,7 @@ const shown = (page: Page, kind: string) => page.locator(`[data-dnd-overlay] [da
 
 test.describe('targets shape the overlay (overlay-droplet)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#overlay-droplet');
+    await page.goto('/demo/#overlay-droplet');
     await expect(state(page)).toHaveText(INITIAL);
   });
 

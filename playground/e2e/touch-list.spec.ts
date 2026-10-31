@@ -29,7 +29,7 @@ const listNearTop = async (page: Page): Promise<number> => {
 
 test.describe('touch: long list @touch', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#touch-list');
+    await page.goto('/demo/#touch-list');
     await expect(order(page)).toHaveText(INITIAL);
   });
 

@@ -19,10 +19,10 @@ export default defineConfig(({ mode }) => ({
     // makes every page report to it (no `app.use` in src/main.ts).
     vueDnDKitDevtools(),
     vue(),
-    // Nuxt UI for the kits/nuxt-ui.html page only. Auto-imports are off (the kit page
-    // imports components explicitly), so the plugin never rewrites the main
-    // playground's files: it resolves Nuxt UI's virtual modules and runs Tailwind,
-    // which only touches CSS that imports `tailwindcss` (kits/nuxt-ui/main.css).
+    // Nuxt UI for the Lab (src/lab) and the kits/nuxt-ui.html page. Auto-imports are off
+    // (both import components explicitly), so the plugin never rewrites the demo page's
+    // files: it resolves Nuxt UI's virtual modules and runs Tailwind, which only touches
+    // CSS that imports `tailwindcss` (src/lab/lab.css, kits/nuxt-ui/main.css).
     ui({
       router: false,
       autoImport: false,
@@ -32,6 +32,7 @@ export default defineConfig(({ mode }) => ({
         clientBundle: {
           // Bundled from @iconify-json/lucide: no runtime requests to the Iconify API.
           icons: [
+            // The kit page.
             'i-lucide-grip-vertical',
             'i-lucide-ellipsis-vertical',
             'i-lucide-chevron-right',
@@ -43,6 +44,26 @@ export default defineConfig(({ mode }) => ({
             'i-lucide-moon',
             'i-lucide-trash-2',
             'i-lucide-arrow-right',
+            // The Lab, and Nuxt UI's own icons in it (search, close, check, loading).
+            'i-lucide-search',
+            'i-lucide-monitor',
+            'i-lucide-tablet',
+            'i-lucide-smartphone',
+            'i-lucide-layers',
+            'i-lucide-rotate-ccw',
+            'i-lucide-external-link',
+            'i-lucide-arrow-up-right',
+            'i-lucide-bug',
+            'i-lucide-panel-right-close',
+            'i-lucide-panel-right-open',
+            'i-lucide-code',
+            'i-lucide-flask-conical',
+            'i-lucide-book-open',
+            'i-lucide-github',
+            'i-lucide-copy',
+            'i-lucide-check',
+            'i-lucide-x',
+            'i-lucide-loader-circle',
           ],
         },
       },
@@ -62,11 +83,12 @@ export default defineConfig(({ mode }) => ({
     dedupe: ['vue', '@vueuse/core', '@vue/devtools-api'],
   },
   build: {
-    // One page per UI kit: their global CSS (Tailwind preflight, Vuetify's reset)
-    // never reaches the main playground.
+    // The Lab, the demo page it frames, and one page per UI kit: their global CSS (Tailwind
+    // preflight, Vuetify's reset) never reaches the demo page.
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
+        demo: resolve(__dirname, 'demo/index.html'),
         vuetify: resolve(__dirname, 'kits/vuetify.html'),
         'nuxt-ui': resolve(__dirname, 'kits/nuxt-ui.html'),
       },

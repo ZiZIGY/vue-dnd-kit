@@ -26,7 +26,7 @@ const pad = async (page: Page, arrow: 'up' | 'down' | 'left' | 'right', times = 
 
 test.describe('custom sensor: on-screen joystick', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/#sensors');
+    await page.goto('/demo/#sensors');
     await expect(order(page)).toHaveText('joy:j1,j2,j3,j4,j5');
   });
 
