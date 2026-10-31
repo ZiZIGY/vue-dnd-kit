@@ -88,7 +88,7 @@
     >
       <strong>Open this page on a phone</strong>
       <ol>
-        <li>On the computer, in <code>playground-v3</code>: <code>yarn dev:host</code>.</li>
+        <li>On the computer, in <code>playground</code>: <code>yarn dev:host</code>.</li>
         <li>Vite prints a <em>Network</em> address, such as <code>http://192.168.1.20:4100/</code>.</li>
         <li>On the phone, on the same Wi-Fi, open that address followed by <code>#device-check</code>.</li>
       </ol>

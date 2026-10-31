@@ -146,7 +146,7 @@ jobs:
             projects: --project=webkit
     defaults:
       run:
-        working-directory: playground-v3
+        working-directory: playground
     steps:
       - uses: actions/checkout@v4
 
@@ -158,7 +158,7 @@ jobs:
             packages/core/yarn.lock
             packages/actions/yarn.lock
             packages/devtools/yarn.lock
-            playground-v3/yarn.lock
+            playground/yarn.lock
 
       # The playground imports the packages from source (Vite aliases); esbuild reads each
       # package's tsconfig.json, which extends @vue/tsconfig from its node_modules.
@@ -187,6 +187,6 @@ jobs:
         with:
           name: playwright-${{ matrix.browser }}
           path: |
-            playground-v3/playwright-report
-            playground-v3/test-results
+            playground/playwright-report
+            playground/test-results
           retention-days: 7

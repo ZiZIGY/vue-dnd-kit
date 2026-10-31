@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import VueDnDKit from '../../../src/module';
 
-// The core is used from source, like playground-v3 does; its own node_modules
+// The core is used from source, like the playground does; its own node_modules
 // provide @vueuse/core, while Vue must stay the app's single copy.
 const core = (path: string) => fileURLToPath(new URL(`../../../../core/${path}`, import.meta.url));
 
