@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { computed, shallowRef } from 'vue';
-  import { useEventListener } from '@vueuse/core';
+  import { useDark, useEventListener } from '@vueuse/core';
   import { useDisplay } from 'vuetify';
   import { VApp, VBtn, VMain, VSpacer, VToolbar, VToolbarTitle } from 'vuetify/components';
   import ListDemo from './demos/ListDemo.vue';
@@ -17,8 +17,9 @@
 
   // The theme is set on <v-app> only, not globally: the page root keeps the light
   // theme's variables, so whatever is teleported out of <v-app> (the drag overlay) must
-  // carry the dark theme itself.
-  const dark = shallowRef(false);
+  // carry the dark theme itself. Stored like the Lab's color mode: in its frame, the page
+  // follows the Lab's theme.
+  const dark = useDark();
   // On a phone the one-line toolbar would clip its last buttons: no title, an icon-only toggle.
   const { xs } = useDisplay();
   // In the Lab's frame the Lab is around it already: no way back to it from here.
