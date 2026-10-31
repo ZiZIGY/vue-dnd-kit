@@ -12,7 +12,7 @@ import type { ListEntry } from './entry';
 import { partition } from './accept';
 import { putBack, scatter } from './block';
 import { setIndicator } from './indicator';
-import { landDrop } from './landing';
+import { landCancel, landDrop } from './landing';
 import { bump } from './flip';
 import { nearLastTarget } from './stability';
 import { cancelAnnouncement, endAnnouncement } from './announcements';
@@ -304,8 +304,7 @@ export const end = (g: GroupContext, event: DnDEndEvent) => {
 export const cancel = (g: GroupContext, event: DnDEvent) => {
   const current = g.session.value;
   if (current && current.activeKey === event.active.id) {
-    // Copies vanish (`copy.cancel`). Moved block members stay placeholders until the overlay is home.
-    current.mode.cancel?.(g, current);
+    landCancel(g, current);
     if (current.origin.list != null) g.announced = { key: current.activeKey, ...cancelAnnouncement(g, current) };
   }
   reset(g);

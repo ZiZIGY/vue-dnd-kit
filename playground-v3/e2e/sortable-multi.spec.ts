@@ -115,6 +115,33 @@ test.describe('multi-drag', () => {
     await expect(item(page, 'g3')).not.toHaveAttribute('data-dnd-dragging');
   });
 
+  test("'gaps': on cancel the others wait as placeholders until their clones are home", async ({ page }) => {
+    await select(page, 'g1', 'g3');
+    await dragTo(page, item(page, 'g1'), await center(item(page, 'g5'), 0.8), { release: false });
+    await expect(item(page, 'g3')).toHaveAttribute('data-dnd-dragging', '');
+    await page.keyboard.press('Escape');
+    // Every frame of the landing: g3 is a placeholder, not shown dimmed under its flying clone.
+    const shown = await page.evaluate(
+      () =>
+        new Promise<string[]>((resolve) => {
+          const seen: string[] = [];
+          const check = () => {
+            if (!document.querySelector('[data-dnd-overlay]')) return resolve(seen);
+            const row = document.querySelector('[data-id="g3"]:not([data-dnd-overlay] *)');
+            const mark = row?.hasAttribute('data-dnd-placeholder') ? 'placeholder' : 'shown';
+            if (seen.at(-1) !== mark) seen.push(mark);
+            requestAnimationFrame(check);
+          };
+          check();
+        }),
+    );
+    expect(shown).toEqual(['placeholder']);
+    await waitForIdle(page);
+    await page.mouse.up();
+    await expect(state(page)).toHaveText(INITIAL);
+    await expect(item(page, 'g3')).not.toHaveAttribute('data-dnd-placeholder');
+  });
+
   test("'gaps': a selection across lists gathers in document order", async ({ page }) => {
     await select(page, 'k2', 'g4');
     await dragTo(page, item(page, 'k2'), await center(item(page, 'g1'), 0.2));

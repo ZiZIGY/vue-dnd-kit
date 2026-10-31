@@ -120,6 +120,19 @@ export const syncManager = (g: GroupContext) => {
 };
 
 /**
+ * The other dragged items that go back where they started (a cancel, the keys a drop left
+ * out): their clones fly home, and they stay placeholders until then. Originals of copies
+ * never left.
+ */
+const goingBack = (current: Session, kept: Key[]): Array<[Key, Key]> =>
+  current.mode.moves
+    ? current.keys.filter((key) => key !== current.activeKey && !kept.includes(key)).map((key) => [key, key])
+    : [];
+
+/** The drag was cancelled: every other dragged item lands back on its own element; copies vanish. */
+export const landCancel = (g: GroupContext, current: Session) => setLandings(g, goingBack(current, []));
+
+/**
  * The drop is decided: where the overlay's clones land. The accepted items on their
  * slots (copies when copying); the rest on their own elements, back where they started.
  * The active item goes with its lead.
@@ -133,12 +146,10 @@ export const landDrop = (g: GroupContext, current: Session, result: DropResult |
     if (placed == null) g.manager.landingKey.value = null;
     else if (placed !== current.lead) g.manager.landingKey.value = placed;
   }
-  setLandings(
-    g,
-    accepted
-      .filter((key) => key !== current.activeKey)
-      .map((key) => [current.mode.placed(current, key), key]),
-  );
+  setLandings(g, [
+    ...accepted.filter((key) => key !== current.activeKey).map((key): [Key, Key] => [current.mode.placed(current, key), key]),
+    ...goingBack(current, accepted),
+  ]);
 };
 
 /**

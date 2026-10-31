@@ -10,7 +10,7 @@ import type { ListEntry } from '../entry';
 import type { DraftContext } from '../layout';
 import { partitionMoved } from '../accept';
 import { blockFor, withoutBlock } from '../block';
-import { setLandings, syncManager } from '../landing';
+import { syncManager } from '../landing';
 import { bump } from '../flip';
 import { enterNearest } from '../keyboard';
 import type { SortableMode } from './mode';
@@ -129,8 +129,6 @@ export const copy: SortableMode = {
     for (const [original, made] of current.copies) if (made === key) return original;
     return key;
   },
-  // Copies vanish: their clones fly back to the originals.
-  cancel: (g) => setLandings(g, []),
   // Over its palette the copy has no slot: the arrow takes it into a list, or it stays.
   enterByKey: async (g, current, context) => (await enterNearest(g, current, context)) ?? context.pointer,
 };

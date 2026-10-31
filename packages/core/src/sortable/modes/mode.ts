@@ -47,8 +47,6 @@ export interface SortableMode {
   original?(current: Session, key: Key): Key;
   /** What the drop event tells in this mode on top of the rest (a swap's partner). */
   facts?(g: GroupContext, current: Session): Partial<DropFacts>;
-  /** The drag was cancelled. */
-  cancel?(g: GroupContext, current: Session): void;
   /** Keyboard, while no list holds the slot: the arrow may take the drag into one. */
   enterByKey?(g: GroupContext, current: Session, context: KeyboardMoveContext): Promise<Coordinates | undefined>;
 }
