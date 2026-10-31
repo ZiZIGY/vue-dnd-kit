@@ -159,6 +159,26 @@ export const getLayoutRect = (element: Element): Rect => {
   return offsetRect(rect, -x, -y);
 };
 
+/** A layout animation moving an element now (`layoutShifts`), and how far it has it moved. */
+export interface LayoutShift {
+  /** Which animation: a new one is a new object. */
+  animation: object;
+  offset: Coordinates;
+}
+
+/**
+ * The layout animations in flight that move the element: its own and its ancestors' (flat
+ * tree), each with its current `translate`. Walks every ancestor.
+ */
+export const layoutShifts = (element: Element): LayoutShift[] => {
+  const shifts: LayoutShift[] = [];
+  for (let node: Element | null = element; node; node = parentOf(node)) {
+    const animation = layoutAnimations.get(node);
+    if (animation?.running()) shifts.push({ animation, offset: parseTranslate(getComputedStyle(node).translate) });
+  }
+  return shifts;
+};
+
 /**
  * Where the element will be once the layout animations in flight have ended: its own and
  * its ancestors' (flat tree). An item of a list nested in another list's item (a field in
@@ -168,9 +188,7 @@ export const getLayoutRect = (element: Element): Rect => {
 export const getSettledRect = (element: Element): Rect => {
   let x = 0;
   let y = 0;
-  for (let node: Element | null = element; node; node = parentOf(node)) {
-    if (!layoutAnimations.get(node)?.running()) continue;
-    const offset = parseTranslate(getComputedStyle(node).translate);
+  for (const { offset } of layoutShifts(element)) {
     x += offset.x;
     y += offset.y;
   }

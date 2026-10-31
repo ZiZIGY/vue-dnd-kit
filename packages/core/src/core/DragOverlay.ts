@@ -188,6 +188,11 @@ const boxStyle = (rect: Rect) =>
  */
 const OverlayBox = /* @__PURE__ */ defineComponent({
   name: 'DnDOverlayBox',
+  // The attributes (`inert`, `aria-hidden`) go on the box below. Fallthrough would merge
+  // them into a new style object every render, and a re-render (another box landing, a new
+  // drag) would write the box's `transform` and size back over a landing an animation
+  // library (GSAP, motion) moves inline.
+  inheritAttrs: false,
   props: {
     scope: { type: Object as PropType<OverlayScope>, required: true },
     boxStyle: { type: Object as PropType<Record<string, string | undefined>>, required: true },
@@ -195,13 +200,15 @@ const OverlayBox = /* @__PURE__ */ defineComponent({
     /** Told the box element (or `null` once it is gone). */
     onElement: { type: Function as PropType<(element: HTMLElement | null) => void>, required: true },
   },
-  setup(props, { slots }) {
+  setup(props, { slots, attrs }) {
     provide(OVERLAY_SCOPE, () => props.scope);
     const element = shallowRef<HTMLElement | null>(null);
     watch(element, (value) => props.onElement(value));
     // `data-dnd-overlay` says what the box is doing, for CSS: `dragging`, then `dropping`
-    // while it lands (or waits for an async `onBeforeDrop`).
-    return () => h('div', { ref: element, style: props.boxStyle, 'data-dnd-overlay': props.status }, slots.default?.());
+    // while it lands (or waits for an async `onBeforeDrop`). A landing box's style is one
+    // object for its whole flight: it is written once.
+    return () =>
+      h('div', { ...attrs, ref: element, style: props.boxStyle, 'data-dnd-overlay': props.status }, slots.default?.());
   },
 });
 

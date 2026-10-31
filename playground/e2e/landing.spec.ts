@@ -96,3 +96,73 @@ test.describe('the next drag during a landing', () => {
     expect(errors).toEqual([]);
   });
 });
+
+type Step = { box: number; at: number; x: number; y: number; landing: boolean };
+
+/** Records every overlay box's position every frame; returns the largest step a landing box made in one frame. */
+const watchSteps = (page: Page) =>
+  page.evaluate(() => {
+    const win = window as Window & { __steps?: Step[] };
+    const ids = new WeakMap<Element, number>();
+    let next = 0;
+    win.__steps = [];
+    const tick = () => {
+      for (const box of document.querySelectorAll('[data-dnd-overlay]')) {
+        if (!ids.has(box)) ids.set(box, next++);
+        const { left, top } = box.getBoundingClientRect();
+        win.__steps!.push({ box: ids.get(box)!, at: performance.now(), x: left, y: top, landing: box.getAttribute('data-dnd-overlay') === 'dropping' });
+      }
+      requestAnimationFrame(tick);
+    };
+    tick();
+  });
+const largestLandingStep = async (page: Page) => {
+  const steps = await page.evaluate(() => (window as Window & { __steps?: Step[] }).__steps!);
+  const last = new Map<number, Step>();
+  let largest = 0;
+  for (const step of steps) {
+    const before = last.get(step.box);
+    if (before?.landing) largest = Math.max(largest, Math.hypot(step.x - before.x, step.y - before.y));
+    last.set(step.box, step);
+  }
+  return largest;
+};
+
+/**
+ * Quick drags one after another, each past a neighbour or two: every landing box glides to its
+ * slot while the next drags reorder the list. None jumps: not when the list reorders under it
+ * (it slides along with its slot), not when another box comes or goes (a re-render doesn't
+ * write its style back over an animation library's).
+ */
+for (const { name, page: url, list } of [
+  { name: 'the default drop animation', page: '/demo/#sortable', list: '[data-testid="list"] [data-id]' },
+  { name: 'GSAP', page: '/demo/#animation-libs', list: '[data-testid="gsap-list"] > *' },
+  { name: 'motion', page: '/demo/#animation-libs', list: '[data-testid="motion-list"] > *' },
+]) {
+  test(`landing boxes glide while quick drags reorder the list (${name})`, async ({ page, browserName }) => {
+    // Headless WebKit paints irregularly (a frame may take 40ms, and a box glides farther in
+    // it), and motion's `translate` doesn't slide there: the rows themselves jump.
+    test.skip(browserName === 'webkit', 'frame-by-frame steps need regular frames');
+    const errors = trackErrors(page);
+    await page.goto(url);
+    const items = page.locator(list);
+    await items.first().waitFor();
+    await watchSteps(page);
+    const count = await items.count();
+    for (let i = 0; i < 10; i++) {
+      const at = await center(items.nth((i * 2) % count));
+      const way = i % 2 ? -1 : 1;
+      await page.mouse.move(at.x, at.y);
+      await page.mouse.down();
+      await page.mouse.move(at.x + 3, at.y + 6 * way, { steps: 2 });
+      await page.mouse.move(at.x + 8, at.y + 110 * way, { steps: 4 });
+      await page.mouse.up();
+      await page.waitForTimeout(30 + (i % 3) * 40);
+    }
+    await waitForIdle(page);
+    // A row is ~40–70px: a jump to another slot (or back to where a box was dropped) is far
+    // more than a landing box glides in one frame.
+    expect(await largestLandingStep(page)).toBeLessThan(35);
+    expect(errors).toEqual([]);
+  });
+}
