@@ -1,4 +1,4 @@
-import { createApp, defineComponent, h, nextTick, ref, useTemplateRef, type Ref } from 'vue';
+import { createApp, defineComponent, h, nextTick, ref, useTemplateRef, type PropType, type Ref } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DnDEvent, DropAnimationContext, SortableStrategy } from '../types';
 import { createRect } from '../animation/layout';
@@ -300,5 +300,69 @@ describe('drop into an item', () => {
     await spoken('Over group:g1: dropping puts 2 items inside.');
     await drop();
     expect(manager.announcement.value).toBe('2 items dropped into group:g1.');
+  });
+});
+
+describe('drop targets inside the items of another list', () => {
+  let unmount: (() => void) | null = null;
+
+  afterEach(() => {
+    unmount?.();
+    unmount = null;
+  });
+
+  it("ask the list's `put` once per frame, however many targets its items hold", async () => {
+    let manager!: DnDManager;
+    const put = vi.fn(() => true);
+    const Row = defineComponent({
+      props: { rowId: { type: String, required: true } },
+      setup(props) {
+        const el = useTemplateRef<HTMLElement>('el');
+        makeSortableItem(el, { id: () => props.rowId });
+        if (props.rowId.startsWith('g')) makeDroppable(el, { id: `group:${props.rowId}` });
+        return () => h('li', { ref: 'el' }, props.rowId);
+      },
+    });
+    const List = defineComponent({
+      props: {
+        listId: { type: String, required: true },
+        ids: { type: Array as PropType<string[]>, required: true },
+      },
+      setup(props) {
+        manager = useManager();
+        const { items } = makeSortableList(useTemplateRef<HTMLElement>('list'), {
+          id: props.listId,
+          items: ref(props.ids.map((id) => ({ id }))),
+          group: { name: 'g', put },
+        });
+        return () => h('ul', { ref: 'list' }, items.value.map((row) => h(Row, { key: row.id, rowId: row.id })));
+      },
+    });
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const app = createApp({
+      setup: () => () =>
+        h(DnDProvider, { animation: false, dropAnimation: false }, {
+          default: () => [
+            h(List, { listId: 'from', ids: ['a'] }),
+            h(List, { listId: 'to', ids: ['g1', 'g2', 'g3', 'g4', 'g5', 'g6'] }),
+          ],
+        }),
+    });
+    app.mount(container);
+    unmount = () => {
+      app.unmount();
+      container.remove();
+    };
+    await nextTick();
+
+    expect(manager.start('a', { x: 1, y: 1 }, 'pointer')).toBe(true);
+    await nextTick();
+    put.mockClear();
+    // Over no list: only the six targets in the items of `to` ask whether it takes the drag.
+    manager.move({ x: 5000, y: 5000 });
+    manager.flushFrame();
+    expect(put).toHaveBeenCalledOnce();
+    manager.cancel();
   });
 });

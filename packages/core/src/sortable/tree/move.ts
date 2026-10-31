@@ -32,6 +32,34 @@ export function findTreeNode<T>(
   return null;
 }
 
+/**
+ * `findTreeNode` for several keys in one walk, in the same order: each key gets the node
+ * `findTreeNode` would find for it. Stops once every key is found; O(N).
+ */
+function locateTreeNodes<T>(
+  roots: readonly T[],
+  keys: readonly Key[],
+  { getKey, getChildren }: Pick<TreeAccessors<T>, 'getKey' | 'getChildren'>,
+): Map<Key, Located<T>> {
+  const wanted = new Set(keys);
+  const found = new Map<Key, Located<T>>();
+  const stack: Array<{ siblings: readonly T[]; parent: T | null }> = [{ siblings: roots, parent: null }];
+  while (stack.length && found.size < wanted.size) {
+    const { siblings, parent } = stack.pop()!;
+    for (let index = 0; index < siblings.length; index++) {
+      const node = siblings[index]!;
+      const key = getKey(node);
+      if (wanted.has(key) && !found.has(key)) {
+        found.set(key, { node, parent, index });
+        if (found.size === wanted.size) return found;
+      }
+      const children = getChildren(node);
+      if (children?.length) stack.push({ siblings: children, parent: node });
+    }
+  }
+  return found;
+}
+
 export interface TreeMove<T> {
   /** Moved nodes in drop order, each with its subtree. */
   keys: readonly Key[];
@@ -56,8 +84,11 @@ function treeChanges<T>(
   move: TreeMove<T>,
   accessors: Pick<TreeAccessors<T>, 'getKey' | 'getChildren'>,
 ): Map<T | null, T[]> | null {
-  // Found before anything moves: a moved node may sit inside another one.
-  const located = move.keys.map((key) => findTreeNode(roots, key, accessors));
+  // Found before anything moves: a moved node may sit inside another one. The new parent
+  // is looked for in the same walk.
+  const parentKey = move.to?.parentKey ?? null;
+  const places = locateTreeNodes(roots, parentKey == null ? move.keys : [...move.keys, parentKey], accessors);
+  const located = move.keys.map((key) => places.get(key) ?? null);
   const nodes = move.keys
     .map((key, i) => located[i]?.node ?? move.node?.(key))
     .filter((node): node is T => node !== undefined);
@@ -65,7 +96,7 @@ function treeChanges<T>(
 
   let parent: T | null = null;
   if (move.to && move.to.parentKey != null) {
-    parent = findTreeNode(roots, move.to.parentKey, accessors)?.node ?? null;
+    parent = places.get(move.to.parentKey)?.node ?? null;
     if (parent === null || findTreeNode(nodes, move.to.parentKey, accessors)) return null;
   }
 

@@ -122,6 +122,32 @@ describe('announcements', () => {
   });
 });
 
+describe('draggable attributes during a drag', () => {
+  afterEach(() => {
+    mounted.splice(0).forEach((unmount) => unmount());
+    vi.restoreAllMocks();
+  });
+
+  it('change on the dragged item only: the others are left alone at pickup and drop', async () => {
+    const container = mountBoard();
+    await nextTick();
+    const rows = container.querySelectorAll('li');
+    const free = container.querySelector<HTMLElement>('[data-zone="home"] span')!;
+    // The attributes the library keeps (measuring reads `style`, as happy-dom computes styles).
+    const kept = new Set(['tabindex', 'role', 'aria-roledescription', 'aria-describedby', 'aria-disabled', 'aria-pressed']);
+    const reads = [vi.spyOn(rows[1]!, 'getAttribute'), vi.spyOn(free, 'getAttribute')];
+    const keptReads = () => reads.flatMap((read) => read.mock.calls.filter(([name]) => kept.has(name)));
+
+    expect(manager.start('a', { x: 1, y: 1 }, 'pointer')).toBe(true);
+    await nextTick();
+    expect(rows[0]!.getAttribute('aria-pressed')).toBe('true');
+    await cancel();
+    await nextTick();
+    expect(rows[0]!.hasAttribute('aria-pressed')).toBe(false);
+    expect(keptReads()).toEqual([]);
+  });
+});
+
 describe('aria-describedby', () => {
   afterEach(() => {
     mounted.splice(0).forEach((unmount) => unmount());

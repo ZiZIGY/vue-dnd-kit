@@ -43,15 +43,27 @@ export const bandsAt = (g: GroupContext, event: DnDEvent) =>
  * there, and at its edges the list sorts as usual. A target that doesn't take the drag
  * is left out, so the list sorts over it like over any item. Nested lists are lists.
  */
-export const targetRule =
-  (g: GroupContext): TargetRule =>
-  (entry, element, point, active) => {
+export const targetRule = (g: GroupContext): TargetRule => {
+  // Whether each list takes the drag, as of the target detection at `acceptsAt`: the same
+  // for every target in its items, so its `group.put` is asked once per detection.
+  let acceptsAt: Coordinates | null = null;
+  const accepting = new Map<ListEntry, boolean>();
+  const listAccepts = (list: ListEntry, point: Coordinates, active: Active) => {
+    if (acceptsAt !== point) {
+      acceptsAt = point;
+      accepting.clear();
+    }
+    let result = accepting.get(list);
+    if (result === undefined) accepting.set(list, (result = accepts(g, list, active)));
+    return result;
+  };
+  return (entry, element, point, active) => {
     const current = g.session.value;
     if (!current || current.activeKey !== active.id || entry.sortable) return true;
     const found = g.manager.findDraggable(element);
     const key = found?.entry.id;
     const list = key != null && g.items.get(key)?.() === found!.element ? listOfKey(g, key, true) : undefined;
-    if (!list || !accepts(g, list, active)) return true;
+    if (!list || !listAccepts(list, point, active)) return true;
     if (!entry.accepts(active)) return false;
     if (g.targets.at !== point) g.targets = { at: point, bands: new Map(), ids: new Set() };
     // Layout rects, as projection uses: an item still sliding into place counts where it lands.
@@ -61,6 +73,7 @@ export const targetRule =
     g.targets.ids.add(entry.id);
     return true;
   };
+};
 
 /** The drag is over a drop target inside an item: dropping goes into that item. */
 export const isInto = (g: GroupContext, event: DnDEvent) =>

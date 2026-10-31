@@ -202,6 +202,9 @@ export function createDraggable<TData>(
   // moving them to a new target, updating the dynamic ones and turning them off can't race.
   let attributeTarget: HTMLElement | null = null;
   const roleDescription = internals.roleDescription ?? 'draggable';
+  // A computed of its own: a drag starting or ending runs the effect below for this item
+  // when its own state changes, not for every draggable of the provider.
+  const pressed = computed(() => manager.active.value?.id === id.value);
   watchEffect(
     () => {
       const element = read(options.attributes) === false ? null : (getHandleElement() ?? getElement());
@@ -213,7 +216,7 @@ export function createDraggable<TData>(
       applyStaticAttributes(element, manager.instructionsId, roleDescription);
       setOwnAttribute(element, 'aria-disabled', String(entry.isDisabled()));
       // `aria-pressed` only means something on a button, and only while dragging.
-      if (manager.active.value?.id === id.value && hasButtonRole(element)) {
+      if (pressed.value && hasButtonRole(element)) {
         setOwnAttribute(element, 'aria-pressed', 'true');
       } else {
         removeOwnAttribute(element, 'aria-pressed');

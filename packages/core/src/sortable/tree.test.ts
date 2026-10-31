@@ -567,6 +567,21 @@ describe('applyTreeMove with a block', () => {
     const next = applyTreeMove(sample(), { keys: ['c', 'a'], to: { parentKey: 'a2x', index: 0 } }, accessors);
     expect(shape(next)).toBe(shape(sample()));
   });
+
+  it('finds the moved nodes and the new parent in one walk of the tree', () => {
+    // Three nodes from the end of 1000 roots into one in the middle: each key is read
+    // once, not once per node looked for (plus the moved subtrees, for the parent check).
+    const roots = Array.from({ length: 1000 }, (_, index) => node(`n${index}`));
+    const counted = vi.fn(getKey);
+    const next = applyTreeMove(
+      roots,
+      { keys: ['n990', 'n995', 'n999'], to: { parentKey: 'n500', index: 0 } },
+      { ...accessors, getKey: counted },
+    );
+    expect(next).toHaveLength(997);
+    expect(roots[500]!.children!.map(getKey)).toEqual(['n990', 'n995', 'n999']);
+    expect(counted.mock.calls.length).toBeLessThanOrEqual(roots.length + 3);
+  });
 });
 
 describe('buildTreeMove', () => {

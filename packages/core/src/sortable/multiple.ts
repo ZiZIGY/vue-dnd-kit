@@ -6,7 +6,7 @@
  */
 
 import type { LayoutAnimation, Rect } from '../types';
-import { clonePreview } from '../core/clone';
+import { clonePreviews } from '../core/clone';
 import {
   DEFAULT_LAYOUT_ANIMATION,
   canAnimate,
@@ -31,13 +31,16 @@ export const collapseIntoOverlay = (
   const resolved = resolveAnimation(option, DEFAULT_LAYOUT_ANIMATION);
   if (!resolved || resolved.custom || typeof document === 'undefined') return;
   const viewport = getWindowRect();
-  // All reads (rects, computed styles in clonePreview) happen before the first append. Each
+  // All reads (rects, computed styles in clonePreviews) happen before the first append. Each
   // clone gets the styles its source has in the list (`snapshot.ts`): ghosts fly in <body>.
-  const ghosts = elements
+  const shown = elements
     .map((element) => ({ element, rect: getRect(element) }))
     .filter(({ rect }) => rect.width > 0 && intersects(rect, viewport))
-    .slice(0, MAX_GHOSTS)
-    .map(({ element, rect }) => ({ ghost: clonePreview(element), rect }));
+    .slice(0, MAX_GHOSTS);
+  if (!shown.length) return;
+  // Cloned together: the page lays out once per snapshot pass for all of them.
+  const clones = clonePreviews(shown.map(({ element }) => element));
+  const ghosts = shown.map(({ rect }, index) => ({ ghost: clones[index]!, rect }));
 
   for (const { ghost, rect } of ghosts) {
     if (!canAnimate(ghost)) continue;
