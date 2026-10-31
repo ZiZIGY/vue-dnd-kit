@@ -4,6 +4,7 @@ import OverlayMultiDemo from './OverlayMultiDemo.vue';
 import OverlayFitDemo from './OverlayFitDemo.vue';
 import OverlayMotionDemo from './OverlayMotionDemo.vue';
 import OverlayDeckDemo from './OverlayDeckDemo.vue';
+import OverlayDropletDemo from './OverlayDropletDemo.vue';
 
 /** Overlay gallery routes (`#overlay-*`), spread into the demo list of App.vue. */
 export const overlayDemos = {
@@ -13,4 +14,5 @@ export const overlayDemos = {
   'overlay-deck': OverlayDeckDemo,
   'overlay-fit': OverlayFitDemo,
   'overlay-motion': OverlayMotionDemo,
+  'overlay-droplet': OverlayDropletDemo,
 };
