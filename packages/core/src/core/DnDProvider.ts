@@ -73,6 +73,7 @@ export const DnDProvider = /* @__PURE__ */ defineComponent({
     copyModifier: { type: String as PropType<string | null>, default: 'Alt' },
     overlayTo: { type: [String, Object] as PropType<string | HTMLElement>, default: 'body' },
     overlayFit: { type: String as PropType<'slot' | 'source'>, default: 'slot' },
+    overlayPreviews: { type: [Number, String] as PropType<number | 'all'>, default: 5 },
     overlayTransition: { type: [Boolean, Object] as PropType<boolean | TransitionProps>, default: true },
     announcements: { type: [Boolean, Object] as PropType<Partial<Announcements> | false>, default: undefined },
     screenReaderInstructions: String,
@@ -84,6 +85,7 @@ export const DnDProvider = /* @__PURE__ */ defineComponent({
     dragOver: (_event: DnDEvent) => true,
     dragEnd: (_event: DnDEndEvent) => true,
     dragCancel: (_event: DnDEvent) => true,
+    dragSettle: (_event: DnDEvent | DnDEndEvent) => true,
   },
   slots: Object as SlotsType<{
     default?: () => VNode[];
@@ -106,6 +108,7 @@ export const DnDProvider = /* @__PURE__ */ defineComponent({
       onDragOver: (event) => emit('dragOver', event),
       onDragEnd: (event) => emit('dragEnd', event),
       onDragCancel: (event) => emit('dragCancel', event),
+      onDragSettle: (event) => emit('dragSettle', event),
     });
 
     useSensors(manager, DEFAULT_SENSORS);

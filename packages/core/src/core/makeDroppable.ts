@@ -68,12 +68,10 @@ export function createDroppable<TData>(
 
   const isOver = computed(() => manager.over.value?.id === id.value);
   // While an async `onBeforeDrop` decides, nothing has changed yet and the rules still
-  // hold. Once the drop is decided they would run against the changed data: they stop.
+  // hold. Once the drop is decided the drag state is gone (`active` is `null`): they stop.
   const isAccepting = computed(() => {
     const active = manager.active.value;
-    const status = manager.status.value;
-    const live = status === 'dragging' || (status === 'dropping' && !manager.settling.value);
-    return !!active && live && !entry.isDisabled() && accepts(active);
+    return !!active && !entry.isDisabled() && accepts(active);
   });
   const placement = computed<Placement | null>(() => {
     const over = manager.over.value;

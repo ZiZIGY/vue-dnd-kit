@@ -53,8 +53,9 @@ const snapshotSession = (manager: DnDManager): SessionSnapshot => {
     overlay: !!active && manager.hasOverlay,
     overlayElement: manager.overlayElement.value,
     previews: [...manager.previewIds],
-    settling: manager.settling.value,
-    dropTarget: snapshotOver(manager.dropTarget.value),
+    // A decided drop lands as a flight, the drag state already gone: the latest one.
+    settling: manager.flights.value.length > 0,
+    dropTarget: snapshotOver(manager.flights.value.at(-1)?.over ?? null),
     autoScrolling: manager.isAutoScrolling.value,
     activation: manager.activationProgress.value,
     // The live region adds a space to repeat a text (screen readers speak changes only).
@@ -104,7 +105,7 @@ export const snapshotSortableDrop = (g: GroupContext, current: Session): Sortabl
  */
 const acceptingOf = (manager: DnDManager, entry: DroppableEntry, g: GroupContext | undefined): boolean | null => {
   const active = manager.active.value;
-  if (!active || manager.settling.value) return null;
+  if (!active) return null;
   if (entry.isDisabled()) return false;
   const over = manager.over.value;
   if (over?.id === entry.id) return over.accepted;

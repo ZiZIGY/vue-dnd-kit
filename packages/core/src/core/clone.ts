@@ -3,7 +3,7 @@
  * before the placeholder re-renders, and detached from page-level side effects.
  */
 
-import { snapshotStyles } from './snapshot';
+import { snapshotMany } from './snapshot';
 
 let radioGroup = 0;
 
@@ -111,7 +111,11 @@ export const copyElement = (source: HTMLElement): HTMLElement => {
  * styles it would lose outside its list inlined (`snapshot.ts`). A table row comes in a
  * table of its own.
  */
-export const clonePreview = (source: HTMLElement, { container }: CloneOptions = {}): HTMLElement => {
+export const clonePreview = (source: HTMLElement, options: CloneOptions = {}): HTMLElement =>
+  clonePreviews([source], options)[0]!;
+
+/** The copy of `source` before its style snapshot: what it carries, filling the overlay box. */
+const prepare = (source: HTMLElement) => {
   const clone = copyElement(source);
   const computed = getComputedStyle(source);
   for (let index = 0; index < computed.length; index++) {
@@ -132,16 +136,26 @@ export const clonePreview = (source: HTMLElement, { container }: CloneOptions = 
     transition: 'none',
     pointerEvents: 'none',
   });
+  const mount = source.tagName === 'TR' ? wrapTableRow(clone, source) : clone;
+  return { source, clone, mount, positioned: computed.position !== 'static' };
+};
 
-  const preview = source.tagName === 'TR' ? wrapTableRow(clone, source) : clone;
-  // Laid out as the overlay will show it: the root's styles above are in place.
-  snapshotStyles(source, clone, preview, container ?? document.body);
-  removeTransient(clone);
-  // No transitions while the snapshot inlined its styles; the page's own run on the
-  // overlay again (its `dragging` / `dropping` looks).
-  clone.style.removeProperty('transition');
-  // A positioned source (a piece on a board) would keep its offsets inside the overlay.
-  // `relative` keeps it a containing block for its own positioned children.
-  if (computed.position !== 'static') Object.assign(clone.style, { position: 'relative', inset: 'auto' });
-  return preview;
+/**
+ * `clonePreview` for several sources: their style snapshots run together, one layout per
+ * pass for all of them (`snapshotMany`), not one per clone.
+ */
+export const clonePreviews = (sources: readonly HTMLElement[], { container }: CloneOptions = {}): HTMLElement[] => {
+  const jobs = sources.map(prepare);
+  // Laid out as the overlay will show them: the roots' styles above are in place.
+  snapshotMany(jobs, container ?? document.body);
+  return jobs.map(({ clone, mount, positioned }) => {
+    removeTransient(clone);
+    // No transitions while the snapshot inlined its styles; the page's own run on the
+    // overlay again (its `dragging` / `dropping` looks).
+    clone.style.removeProperty('transition');
+    // A positioned source (a piece on a board) would keep its offsets inside the overlay.
+    // `relative` keeps it a containing block for its own positioned children.
+    if (positioned) Object.assign(clone.style, { position: 'relative', inset: 'auto' });
+    return mount;
+  });
 };

@@ -9,7 +9,8 @@ import type { Key, Size } from '../types';
 import type { OverlayColumn } from '../core/manager/state';
 import { useManager } from '../core/context';
 import { DragPreview } from '../core/DragPreview';
-import { BADGE_STYLE, FILL } from '../core/DragOverlay';
+import { useOverlayScope } from '../core/overlayScope';
+import { BADGE_STYLE, FILL, PILE } from '../core/DragOverlay';
 import { DEFAULT_LAYOUT_ANIMATION, canAnimate, getRect, resolveAnimation } from '../animation/layout';
 
 export interface ColumnCell {
@@ -21,13 +22,6 @@ export interface ColumnCell {
   /** Degrees: the items of a pile are turned a little. */
   rotate?: number;
 }
-
-/** Where the items behind the active one lie in a pile, fanned out a little. */
-const PILE = [
-  { x: 8, y: 7, rotate: 4 },
-  { x: -7, y: 10, rotate: -5 },
-  { x: 14, y: 14, rotate: 8 },
-];
 
 /**
  * Cells of a pile (multi-drag in grids, where a row of whole cells would cover the page):
@@ -132,25 +126,29 @@ export const ColumnPreview = /* @__PURE__ */ defineComponent({
   name: 'DnDColumnPreview',
   setup() {
     const manager = useManager();
+    // The box it renders in: the drag's, or a landing one's.
+    const scope = useOverlayScope();
     const root = shallowRef<HTMLElement | null>(null);
     const cells = new Map<Key, HTMLElement>();
 
     const register = (id: Key, element: Element | null) => {
+      const { items } = scope();
       const previous = cells.get(id);
-      if (previous && manager.overlayItems.get(id) === previous) manager.overlayItems.delete(id);
+      if (previous && items.get(id) === previous) items.delete(id);
       cells.delete(id);
       if (!(element instanceof HTMLElement)) return;
       cells.set(id, element);
-      manager.overlayItems.set(id, element);
+      items.set(id, element);
     };
 
     // The clones gather from where their items were picked up into the column.
     onMounted(() => {
-      const resolved = resolveAnimation(manager.overlayColumn.value?.animation ?? manager.props.animation, DEFAULT_LAYOUT_ANIMATION);
+      const { column, getPreview } = scope();
+      const resolved = resolveAnimation(column?.animation ?? manager.props.animation, DEFAULT_LAYOUT_ANIMATION);
       if (!resolved || resolved.custom || !root.value) return;
       const origin = getRect(root.value);
       for (const [id, element] of cells) {
-        const preview = manager.getPreview(id);
+        const preview = getPreview(id);
         if (!preview || !canAnimate(element)) continue;
         const { left, top, width, height } = preview.rect;
         const { transform, width: toWidth, height: toHeight } = element.style;
@@ -165,13 +163,12 @@ export const ColumnPreview = /* @__PURE__ */ defineComponent({
     });
 
     return () => {
-      const current = manager.active.value;
-      const column = manager.overlayColumn.value;
+      const { active: current, column, fitSize, getPreview, previewIds } = scope();
       if (!current || !column) return null;
       // The size on screen: a resize glides frame by frame, and the column with it.
-      const box = manager.fitSize.value ?? current.rect;
-      const source = manager.getPreview(current.id)?.rect ?? current.rect;
-      const items = manager.previewIds.map((id) => ({ id, size: manager.getPreview(id)!.rect }));
+      const box = fitSize ?? current.rect;
+      const source = getPreview(current.id)?.rect ?? current.rect;
+      const items = previewIds.map((id) => ({ id, size: getPreview(id)!.rect }));
       const cells = layoutCells(column, items, current.id, box, source);
       return h('div', { ref: root, 'aria-hidden': 'true', style: { ...FILL, position: 'relative' } }, [
         ...cells.map((cell) =>

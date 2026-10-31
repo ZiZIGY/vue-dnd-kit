@@ -58,15 +58,15 @@ export const useDnD = (): DnDState => {
   const manager = useManager();
   return {
     status: readonly(manager.status),
-    // The overlay keeps its item for the drop animation; the drag itself is over.
-    active: computed(() => (manager.settling.value ? null : manager.active.value)),
+    // A decided drop hands its overlay to a flight: the drag state is gone at once.
+    active: readonly(manager.active) as DnDState['active'],
     over: readonly(manager.over) as DnDState['over'],
     pointer: readonly(manager.pointer),
     // Measured only for those who read it: an overlay component showing where it would land.
     position: computed(() => {
       const current = manager.active.value;
       const over = manager.over.value;
-      if (!current || !over || manager.settling.value) return null;
+      if (!current || !over) return null;
       return positionInTarget(manager.getOverlayRect(current, manager.transform.value), over);
     }),
     activation: { progress: readonly(manager.activationProgress) },

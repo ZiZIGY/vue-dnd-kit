@@ -1,6 +1,6 @@
 import { defineComponent, h, onBeforeUnmount, onMounted, shallowRef, watch, type PropType } from 'vue';
 import type { DragPreviewProps, Key } from '../types';
-import { useManager } from './context';
+import { useOverlayScope } from './overlayScope';
 
 /**
  * The default clone of one dragged item (see `DragPreviewProps`). Custom overlays use
@@ -12,15 +12,15 @@ export const DragPreview = /* @__PURE__ */ defineComponent({
     id: { type: [String, Number] as PropType<DragPreviewProps['id']>, required: true },
   },
   setup(props, { slots }) {
-    const manager = useManager();
+    // The box it renders in: the drag's, or a landing one's.
+    const scope = useOverlayScope();
     const host = shallowRef<HTMLElement | null>(null);
     let shown: HTMLElement | null = null;
     /** This preview as the overlay clone of its item, which lands on the item's slot. */
-    let landing: { id: Key; element: HTMLElement } | null = null;
+    let landing: { id: Key; element: HTMLElement; items: Map<Key, HTMLElement> } | null = null;
 
     const release = () => {
-      const { overlayItems } = manager;
-      if (landing && overlayItems.get(landing.id) === landing.element) overlayItems.delete(landing.id);
+      if (landing && landing.items.get(landing.id) === landing.element) landing.items.delete(landing.id);
       landing = null;
     };
 
@@ -28,7 +28,8 @@ export const DragPreview = /* @__PURE__ */ defineComponent({
       shown?.remove();
       shown = null;
       release();
-      const preview = manager.getPreview(props.id);
+      const { active, column, getPreview, items } = scope();
+      const preview = getPreview(props.id);
       const element = host.value;
       if (!preview || !element) return;
       // One clone, one place: a second preview of the same item shows a copy of it.
@@ -39,21 +40,21 @@ export const DragPreview = /* @__PURE__ */ defineComponent({
       // default column's cells do (those register themselves).
       const parent = element.parentElement;
       const lands =
-        !!manager.overlayColumn.value &&
-        props.id !== manager.active.value?.id &&
+        !!column &&
+        props.id !== active?.id &&
         !!parent?.closest('[data-dnd-overlay]') &&
         !parent.closest('[data-dnd-overlay-item]');
       element.toggleAttribute('data-dnd-overlay-item', lands);
       if (!lands) return;
-      manager.overlayItems.set(props.id, element);
-      landing = { id: props.id, element };
+      items.set(props.id, element);
+      landing = { id: props.id, element, items };
     };
     onMounted(attach);
     watch(() => props.id, attach, { flush: 'post' });
     onBeforeUnmount(release);
 
     return () => {
-      const preview = manager.getPreview(props.id as Key);
+      const preview = scope().getPreview(props.id as Key);
       if (!preview) {
         // In an element of its own, so `class` and `style` apply to the fallback as to a clone.
         const fallback = slots.default?.();

@@ -134,6 +134,16 @@ export interface DnDProviderProps {
    */
   overlayFit?: 'slot' | 'source';
   /**
+   * Multi-drag: how many dragged items get a clone at pickup, the grabbed one and the
+   * others next to it in drop order. Default 5; `'all'` clones every one that is rendered.
+   * The default overlay shows the clones and counts the rest (`+N`); in a layout of your
+   * own, `DragPreview` renders its slot for an item without one. Every clone flies: back to
+   * its item on a cancel, to its slot on a drop, into the zone a drop goes into, one after
+   * another. The clones are taken together, one layout per snapshot pass for all, but each
+   * costs reading its styles: mind long items on slow phones.
+   */
+  overlayPreviews?: number | 'all';
+  /**
    * How the overlay changes from one component to another during a drag (a drop target's
    * `overlay` takes over, an `overlay` ref is switched): `true` (default) crossfades them
    * in 150 ms, `false` swaps them at once, and an object is the props of a Vue
@@ -202,8 +212,9 @@ export type OverlayProps = OverlaySlotProps;
  * `overlay` component or the provider's `#overlay` slot) that lay out several items
  * themselves, e.g. `<DragPreview v-for="item in items" :key="item.id" :id="item.id" />`.
  *
- * Clones are taken at pickup, of the grabbed item and of up to four others next to it in
- * drop order (those that are rendered then). For any other item `DragPreview` renders its
+ * Clones are taken at pickup, of the grabbed item and of the others next to it in drop
+ * order, as many as the provider's `overlayPreviews` (5 by default; those that are rendered
+ * then). For any other item `DragPreview` renders its
  * default slot in an element that takes `class` and `style` as a clone's does, or nothing
  * without one. The clone fills the element, which has the item's size at
  * pickup, set inline: change it with `style` (`:style="{ width: '100%', height: '100%' }"`),
@@ -214,6 +225,8 @@ export type OverlayProps = OverlaySlotProps;
  * cancelled), from wherever the layout put it: wrappers turned or scaled with `transform`
  * are undone on the way, its size animates as width and height. Style the preview itself
  * (corners, shadow): its wrappers stay in the box. Items without a clone fade in instead.
+ * Dropped into a zone (not a list), the previews go into it one after another, the box
+ * last.
  */
 export interface DragPreviewProps {
   /** Id of a dragged item: one of `items` in `OverlayProps`. */

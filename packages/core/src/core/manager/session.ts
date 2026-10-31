@@ -2,7 +2,8 @@
  * A drag session from start to end. `start` takes the active item and its overlay, puts
  * the page into drag mode and runs the first frame; `move` feeds the pointer to the frame
  * loop. At the end the drop is decided (`onBeforeDrop`) and committed, or the drag is
- * cancelled; the overlay lands (`finish`) and the session settles back to idle.
+ * cancelled. The drag then hands its overlay to a flight (`Flight`), which lands it while
+ * the next drag may already start, and settles once it has landed (`onDragSettle`).
  */
 
 import { nextTick } from 'vue';
@@ -11,36 +12,54 @@ import type {
   Coordinates,
   DnDEndEvent,
   DnDEvent,
+  DnDStatus,
   DragItem,
   DropAnimation,
+  DropDestination,
   Key,
-  Over,
   Rect,
   SensorType,
 } from '../../types';
-import { getLayoutRect, getRect, getSettledRect } from '../../animation/layout';
-import { contentAnimations, fadeInPlace, runDropAnimation, type OverlayItemLanding } from '../../animation/drop';
+import { getLayoutRect, getRect, getSettledRect, offsetRect } from '../../animation/layout';
+import {
+  contentAnimations,
+  fadeInPlace,
+  intoOverlayItems,
+  intoStagger,
+  landOverlayItems,
+  runDropAnimation,
+  type OverlayItemLanding,
+} from '../../animation/drop';
 import { isFocusLost, nextFrame } from '../../utils/dom';
 import { markDocumentDragging } from '../styles';
 import { vibrate } from '../haptics';
 import { isFinal, toVerdict, type Verdict } from '../verdict';
-import { NO_LANDINGS, type ManagerContext } from './state';
+import { NO_LANDINGS, type Flight, type ManagerContext } from './state';
 import { createFollow } from './follow';
 
 /** Frames a keyboard drag's item has to take the focus back after the drop. */
 const FOCUS_FRAMES = 10;
 
 export function createSession(ctx: ManagerContext) {
-  /** Counts sessions: an awaited step of one that has settled since does nothing. */
+  /** Counts drags: the overlay keys a drag's box by it, and an awaited step of an older one does nothing. */
   let session = 0;
-  /** Fades of items without a clone, kept until their placeholder marks are gone. */
-  let fades: Animation[] = [];
-  /** Keeps the dropped overlay on what it lands on while the page scrolls. */
-  const follow = createFollow(ctx);
+  /** Keeps the overlay on the target it was dropped on while `onBeforeDrop` decides. */
+  const waiting = createFollow(() => ctx.overlayElement.value);
+  /** Where the drop would go as the drag was released (the overlay's `to`). */
+  let releasedTo: DropDestination | null = null;
 
   const restoreDocument = () => {
     ctx.restoreDocument?.();
     ctx.restoreDocument = null;
+  };
+
+  /** What the status rests at without a drag: `'dropping'` while an overlay still lands. */
+  const restStatus = (): DnDStatus => (ctx.flights.value.length ? 'dropping' : 'idle');
+
+  /** No drag runs, none is deciding its drop: a new one may start (landings don't count). */
+  const isAtRest = (): boolean => {
+    const status = ctx.status.value;
+    return status === 'idle' || (status === 'dropping' && !ctx.active.value);
   };
 
   // ─── Start ───────────────────────────────────────────────────────────────────
@@ -63,19 +82,26 @@ export function createSession(ctx: ManagerContext) {
 
   /** Starts a drag of `id` from `coordinates` (sensors: `SensorContext.activate`); `touch`: started by touch. */
   const start = (id: Key, coordinates: Coordinates, sensor: SensorType, touch = false): boolean => {
-    const status = ctx.status.value;
-    if (status === 'dragging' || status === 'dropping' || status === 'selecting') return false;
+    // One drag at a time, and none while a drop is still being decided. Landings don't
+    // hold the next drag back.
+    if (ctx.active.value || ctx.status.value === 'selecting') return false;
     const entry = ctx.draggables.get(id);
     const element = entry?.getElement();
     if (!entry || !element || entry.isDisabled()) return false;
 
+    session++;
+    // Caught in flight: an item whose overlay still lands. Its landing ends where the box
+    // is, and the drag goes on from there with its clones (its slots are still hidden).
+    const caught = ctx.flights.value.find((flight) => flight.active.ids.includes(id));
+    const caughtAt = caught?.element?.isConnected ? getRect(caught.element) : null;
+    if (caught) land(caught);
     const ids =
       ctx.selection.has(id) && ctx.selection.size > 1
         ? [id, ...[...ctx.selection].filter((key) => key !== id)]
         : [id];
     const items = buildItems(ids);
     const modifiers = entry.getModifiers?.() ?? [];
-    ctx.overlay.pickUp(id, entry);
+    ctx.overlay.pickUp(id, entry, caught?.previews);
     ctx.overlayColumn.value = null;
     ctx.landings.value = NO_LANDINGS;
     ctx.overlayItems.clear();
@@ -96,7 +122,7 @@ export function createSession(ctx: ManagerContext) {
     ctx.pointer.value = coordinates;
     ctx.transform.value = { x: 0, y: 0 };
     ctx.over.value = null;
-    ctx.overlay.place(ctx.active.value, coordinates, modifiers, container);
+    ctx.overlay.place(ctx.active.value, coordinates, modifiers, container, caughtAt);
     ctx.mode.value = 'move';
     ctx.landingKey.value = null;
     ctx.activationProgress.value = 1;
@@ -146,33 +172,84 @@ export function createSession(ctx: ManagerContext) {
     });
   };
 
-  const settle = (current: Active) => {
-    session++;
+  /** The drag is over: its state goes, the page leaves drag mode. Its flight, if any, lands on. */
+  const clear = () => {
     restoreDocument();
-    follow.stop();
+    waiting.stop();
     ctx.loop.cancel();
     ctx.measurer.end();
     ctx.loop.reset();
     ctx.pointerElement = null;
-    if (current.sensor === 'keyboard') restoreFocus(current.id);
     ctx.active.value = null;
     ctx.over.value = null;
     ctx.pointer.value = null;
-    ctx.settling.value = false;
-    ctx.dropTarget.value = null;
     ctx.transform.value = { x: 0, y: 0 };
     ctx.overlay.end();
+    // The box, if it lands, is its flight's now.
+    ctx.overlayElement.value = null;
     ctx.mode.value = 'move';
     ctx.landingKey.value = null;
     ctx.landings.value = NO_LANDINGS;
     ctx.overlayColumn.value = null;
     ctx.overlayItems.clear();
     ctx.activationProgress.value = 0;
-    ctx.status.value = 'idle';
+    ctx.status.value = restStatus();
+  };
+
+  /**
+   * The drop is decided (or the drag cancelled): the drag hands its overlay to a flight,
+   * which lands it, and clears its state, so the next drag can start at once. The box
+   * stays where it was left, moved by what it followed while the drop was decided.
+   */
+  const handOff = (reason: 'drop' | 'cancel', event: DnDEvent): Flight => {
+    const current = event.active;
+    const shift = waiting.take();
+    const box = ctx.overlay.getOverlayRect(current, ctx.transform.value);
+    const over = reason === 'drop' ? event.over : null;
+    const mode = ctx.mode.value;
+    const landingKey = ctx.landingKey.value;
+    const flight: Flight = {
+      id: session,
+      reason,
+      event,
+      active: current,
+      mode,
+      over,
+      to: releasedTo,
+      landingKey,
+      // A copy that found no slot leaves the original as it is.
+      slot: landingKey ?? (mode === 'copy' ? null : current.id),
+      landings: ctx.landings.value,
+      column: ctx.overlayColumn.value,
+      ...ctx.overlay.release(),
+      target: over?.accepted ? ctx.droppables.get(over.id)?.getOverlay?.() : undefined,
+      rect: shift ? offsetRect(box, shift.x, shift.y) : box,
+      items: new Map(ctx.overlayItems),
+      element: ctx.overlay.enabled ? ctx.overlayElement.value : null,
+      follow: createFollow(() => flight.element),
+      fades: [],
+      done: false,
+    };
+    releasedTo = null;
+    ctx.flights.value = [...ctx.flights.value, flight];
+    clear();
+    return flight;
+  };
+
+  /** A flight has landed: its slots show, the focus comes back after a keyboard drag. */
+  const land = (flight: Flight) => {
+    if (flight.done) return;
+    flight.done = true;
+    flight.follow.stop();
+    if (flight.active.sensor === 'keyboard') restoreFocus(flight.active.id);
+    ctx.flights.value = ctx.flights.value.filter((entry) => entry !== flight);
+    // A drag that started meanwhile has its own status.
+    if (ctx.status.value === 'dropping' && !ctx.active.value) ctx.status.value = restStatus();
     // Faded-in items keep full opacity until their placeholder marks are gone (post-flush).
-    const faded = fades;
-    fades = [];
+    const faded = flight.fades;
+    flight.fades = [];
     if (faded.length) void nextTick(() => faded.forEach((animation) => animation.cancel()));
+    ctx.events.emit('onDragSettle', flight.event);
   };
 
   /**
@@ -186,21 +263,32 @@ export function createSession(ctx: ManagerContext) {
     return to && to.width > 0 && ctx.measurer.measureVisible(target!) ? to : null;
   };
 
+  /** The clones of the other dragged items riding in a flight's box, in drop order. */
+  const clonesOf = (flight: Flight): HTMLElement[] => {
+    const current = flight.active;
+    return current.ids.flatMap((id) => {
+      const clone = id === current.id ? null : flight.items.get(id);
+      return clone?.isConnected ? [clone] : [];
+    });
+  };
+
   /**
-   * Multi-drag: the default overlay's clones of the other items land on their own slots
-   * with the box; items without a clone (past the cap, custom overlays) fade in where
-   * they are, instead of popping to full opacity when the drop ends. A box going `into`
-   * a zone takes every clone with it, and the items still shown fade in where they are.
+   * Multi-drag: the overlay's clones of the other items (the column's cells, a pile's, a
+   * custom layout's `DragPreview`s) land on their own slots with the box; items without a
+   * clone (past `overlayPreviews`, custom overlays) fade in where they are, instead of
+   * popping to full opacity when the drop ends. Into a zone, the clones go in one after
+   * another, the box after them; the items still shown fade in where they are.
    */
   const landItems = (
-    current: Active,
+    flight: Flight,
     animation: DropAnimation | undefined,
     box: { from: Rect; to: Rect | null },
-    into: boolean,
+    into: Rect | null,
   ): Promise<void> => {
+    const current = flight.active;
     if (current.ids.length < 2) return Promise.resolve();
     const slotOf = new Map<Key, Key>();
-    for (const [slot, id] of ctx.landings.value) slotOf.set(id, slot);
+    for (const [slot, id] of flight.landings) slotOf.set(id, slot);
     const elementOf = (id: Key) => {
       const element = ctx.draggables.get(slotOf.get(id) ?? id)?.getElement();
       return element?.isConnected ? element : null;
@@ -209,7 +297,7 @@ export function createSession(ctx: ManagerContext) {
     const resting: HTMLElement[] = [];
     for (const id of current.ids) {
       if (id === current.id) continue;
-      const clone = ctx.overlayItems.get(id);
+      const clone = flight.items.get(id);
       const target = elementOf(id);
       if (into || !clone?.isConnected) {
         if (target) resting.push(target);
@@ -218,44 +306,35 @@ export function createSession(ctx: ManagerContext) {
       const to = landingRect(target);
       items.push({ element: clone, from: getRect(clone), to });
     }
-    fades = fadeInPlace(animation, resting);
-    // Clones exist only with the sortable layer's column: its cells, a custom layout's `DragPreview`s.
-    return ctx.overlayColumn.value?.land(animation, items, box) ?? Promise.resolve();
+    flight.fades = fadeInPlace(animation, resting);
+    if (into) return intoOverlayItems(animation, clonesOf(flight), into);
+    return (flight.column?.land ?? landOverlayItems)(animation, items, box);
   };
 
   /**
-   * How a drag lands: the drop target's own `dropAnimation` (a zone's, a list's
+   * How a flight lands: the drop target's own `dropAnimation` (a zone's, a list's
    * `overDropAnimation`), else the dragged item's (its list's), else the provider's.
    * `false` counts: it is someone's choice of no animation.
    */
-  const dropAnimationOf = (over: Over | null): DropAnimation | undefined => {
+  const dropAnimationOf = (flight: Flight): DropAnimation | undefined => {
+    const { over } = flight;
     const target = over ? ctx.droppables.get(over.id)?.getDropAnimation?.() : undefined;
-    return target ?? ctx.overlay.dropAnimation ?? ctx.props.dropAnimation;
+    return target ?? flight.dropAnimation ?? ctx.props.dropAnimation;
   };
 
-  /** Plays the drop or return animation, then ends the session. */
+  /** Hands the overlay to a flight, plays its drop or return animation, then settles it. */
   const finish = async (reason: 'drop' | 'cancel', event: DnDEvent) => {
-    const current = event.active;
-    const id = session;
-    ctx.status.value = 'dropping';
-    // The commit (or the cancel) happened in this same tick: nothing has rendered against
-    // the changed data with the drag state still live.
-    ctx.settling.value = true;
-    ctx.dropTarget.value = reason === 'drop' ? event.over : null;
-    ctx.over.value = null;
-    ctx.pointer.value = null;
-    ctx.loop.cancel();
-    restoreDocument();
-
-    const overlay = ctx.overlayElement.value;
+    const flight = handOff(reason, event);
+    const overlay = flight.element;
     if (overlay) {
       // Measure the target after the commit has rendered, then once more a frame
       // later: virtualizers may re-measure rows with a ResizeObserver in between.
       await nextTick();
       await nextFrame();
-      if (id !== session) return;
+      if (flight.done) return;
+      const current = flight.active;
       // Copies and created items land on their own row, not on the dragged one.
-      const target = ctx.draggables.get(ctx.landingKey.value ?? current.id)?.getElement();
+      const target = ctx.draggables.get(flight.landingKey ?? current.id)?.getElement();
       // The commit changed the layout since the last frame: read afresh.
       ctx.measurer.invalidate();
       ctx.measurer.nextFrame();
@@ -268,22 +347,24 @@ export function createSession(ctx: ManagerContext) {
       const into =
         (zone?.element.isConnected && !ctx.droppables.get(zone.id)?.sortable && ctx.measurer.measureVisible(zone.element)) ||
         null;
-      const over = reason === 'drop' ? event.over : null;
+      const { over } = flight;
       // While it lands, the box stays on where it goes (the slot, the zone), else on what
       // it was dropped on: scrolling the page mid-flight doesn't send it astray.
       const anchor = landing ? target! : into ? zone!.element : over?.element;
-      follow.follow(anchor ?? null);
-      const animation = dropAnimationOf(over);
+      flight.follow.follow(anchor ?? null);
+      const animation = dropAnimationOf(flight);
+      // Into a zone, the box goes in after the clones it carries, one after another.
+      const going = into ? clonesOf(flight).length : 0;
       // The overlay's content may animate its own landing (a splash on `dropping`): the
       // drop ends when that does too.
       await Promise.all([
-        runDropAnimation(animation, { overlay, from, to: landing, into, reason, active: current, over }),
-        landItems(current, animation, { from, to: landing }, !!into),
+        runDropAnimation(animation, { overlay, from, to: landing, into, reason, active: current, over }, going * intoStagger(going)),
+        landItems(flight, animation, { from, to: landing }, into),
         contentAnimations(overlay),
       ]);
-      if (id !== session) return;
+      if (flight.done) return;
     }
-    settle(current);
+    land(flight);
   };
 
   /** Tells the monitors and the live region how the drag ended, then lands the overlay. */
@@ -303,6 +384,7 @@ export function createSession(ctx: ManagerContext) {
 
   const cancel = () => {
     if (abortPending() || ctx.status.value !== 'dragging' || !ctx.active.value) return;
+    releasedTo = ctx.getDestination();
     void conclude('onDragCancel', ctx.events.createEvent());
   };
 
@@ -313,7 +395,7 @@ export function createSession(ctx: ManagerContext) {
    */
   const resume = (event: DnDEvent) => {
     // The overlay follows the pointer again.
-    follow.stop();
+    waiting.stop();
     ctx.status.value = 'dragging';
     ctx.restoreDocument = markDocumentDragging(event.active.sensor);
     ctx.events.emit('onDragResume', event);
@@ -325,6 +407,7 @@ export function createSession(ctx: ManagerContext) {
   const drop = async () => {
     if (ctx.status.value !== 'dragging' || !ctx.active.value) return;
     ctx.loop.flushFrame();
+    releasedTo = ctx.getDestination();
     const id = session;
     ctx.status.value = 'dropping';
     // `onBeforeDrop` may wait for the user (a confirmation dialog): the page stops being
@@ -337,7 +420,7 @@ export function createSession(ctx: ManagerContext) {
     const target = event.over;
     // While `onBeforeDrop` decides (a confirmation may take a while), the overlay stays on
     // the target it was dropped on, wherever the page scrolls.
-    if (ctx.overlay.enabled) follow.follow(target?.element ?? null);
+    if (ctx.overlay.enabled) waiting.follow(target?.element ?? null);
 
     let verdict: Verdict = true;
     try {
@@ -387,9 +470,27 @@ export function createSession(ctx: ManagerContext) {
     abortPending();
     const current = ctx.active.value;
     if (current && ctx.status.value === 'dragging') ctx.events.emit('onDragCancel', ctx.events.createEvent());
-    if (current) settle(current);
+    // An awaited drop of it, and the landings, do nothing more.
+    session++;
+    for (const flight of ctx.flights.value) {
+      flight.done = true;
+      flight.follow.stop();
+    }
+    ctx.flights.value = [];
+    if (current) clear();
     ctx.events.stopAnnouncing();
   };
 
-  return { updateActive, start, move, drop, cancel, destroy };
+  return {
+    updateActive,
+    start,
+    move,
+    drop,
+    cancel,
+    destroy,
+    restStatus,
+    isAtRest,
+    /** The current (or last) drag's number: the overlay keys its box by it. */
+    sessionId: () => session,
+  };
 }

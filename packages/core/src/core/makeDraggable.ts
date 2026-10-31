@@ -230,7 +230,8 @@ export function createDraggable<TData>(
     attributeTarget = null;
   });
 
-  const isDragging = computed(() => manager.active.value?.ids.includes(id.value) ?? false);
+  // Dragged, or landing: until its overlay is there, its element is still the one being moved.
+  const isDragging = computed(() => !!manager.active.value?.ids.includes(id.value) || !!manager.flightOf(id.value));
   // The overlay as the drag took it at its start. The element moves with the content it
   // is in (scrolling): what that content moved is taken off, so it stays under the pointer.
   const transform = computed(() => {

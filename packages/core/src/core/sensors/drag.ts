@@ -107,7 +107,7 @@ export function createSensorDrag(setup: DragSetup): DragControl {
   const abort = () => {
     if (state !== 'pending') return;
     if (manager.status.value === 'activating') {
-      manager.status.value = 'idle';
+      manager.status.value = manager.restStatus();
       manager.activationProgress.value = 0;
     }
     end();
@@ -115,8 +115,8 @@ export function createSensorDrag(setup: DragSetup): DragControl {
 
   const startNow = (): boolean => {
     stopTracking();
-    // The manager starts from `idle`.
-    if (manager.status.value === 'activating') manager.status.value = 'idle';
+    // The manager starts from rest (`idle`, or `dropping` while overlays land).
+    if (manager.status.value === 'activating') manager.status.value = manager.restStatus();
     // Before the start: a monitor of `onDragStart` may already end it.
     state = 'dragging';
     devtoolsHook()?.sensor(manager, id, setup.sensor, setup.touch);

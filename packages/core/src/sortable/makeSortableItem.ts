@@ -66,10 +66,11 @@ export function makeSortableItem<TData = unknown>(
 
   // The slot: the active item, or its copy / the item made for an external draggable;
   // in a `'group'` multi-drag also the slots of the items travelling with it. Stays
-  // true through the drop animation, until the overlay has landed. A copied item stays
-  // as it is: while its copy has no slot (over its palette, over an indicator list),
-  // nothing is.
+  // true through the drop animation, until the overlay has landed (`isLanding`), while
+  // the next drag may already run. A copied item stays as it is: while its copy has no
+  // slot (over its palette, over an indicator list), nothing is.
   const isPlaceholder = computed(() => {
+    if (manager.isLanding(key.value)) return true;
     const active = manager.active.value;
     if (!active) return false;
     const slot = manager.landingKey.value ?? (manager.mode.value === 'copy' ? null : active.id);
@@ -77,9 +78,13 @@ export function makeSortableItem<TData = unknown>(
   });
   // Multi-drag `'gaps'`: the other dragged items stay in place until the drop. Copied
   // items don't leave at all, so they aren't marked (the default style dims the mark).
-  const isLeftBehind = computed(
-    () => draggable.isDragging.value && !isPlaceholder.value && manager.mode.value !== 'copy',
-  );
+  const isLeftBehind = computed(() => {
+    if (!draggable.isDragging.value || isPlaceholder.value) return false;
+    const copying = manager.active.value?.ids.includes(key.value)
+      ? manager.mode.value === 'copy'
+      : manager.flightOf(key.value)?.mode === 'copy';
+    return !copying;
+  });
 
   watchEffect(
     () => {

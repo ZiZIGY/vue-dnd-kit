@@ -68,7 +68,13 @@ export function createDetection(ctx: ManagerContext) {
       own = false;
       for (let node: Element | null = element; node && !own; node = parentOf(node)) {
         const id = ctx.draggableIds.get(node);
-        own = id != null && (current.ids.includes(id) || id === ctx.landingKey.value || ctx.landings.value.has(id));
+        own =
+          id != null &&
+          (current.ids.includes(id) ||
+            id === ctx.landingKey.value ||
+            ctx.landings.value.has(id) ||
+            // A slot an earlier drop is still landing on: hidden until it has.
+            ctx.flights.value.some((flight) => flight.slot === id || flight.landings.has(id)));
       }
       owned.set(element, own);
     }

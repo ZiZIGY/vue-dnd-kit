@@ -24,6 +24,8 @@ interface Entry {
    * as compared: a child that inherits compares with its parent's.
    */
   passes: Array<Map<string, string>>;
+  /** The source's Typed OM computed values, made when first read (`computedValue`). */
+  styleMap?: StylePropertyMapReadOnly | null;
 }
 
 /**
@@ -101,9 +103,11 @@ const readSource = (entry: Entry) => {
  * The source's computed value (Typed OM, Chromium and WebKit): unlike the used value the
  * layout resolves, `auto` margins, `50%` and `calc()` keep following the overlay box.
  */
-const computedValue = (element: Element, name: string): string | undefined => {
+const computedValue = (entry: Entry, name: string): string | undefined => {
   try {
-    return element.computedStyleMap?.().get(name)?.toString();
+    // One map per element and snapshot: a map is live, and making one costs as much as reading it.
+    entry.styleMap ??= entry.source.computedStyleMap?.() ?? null;
+    return entry.styleMap?.get(name)?.toString();
   } catch {
     // A property this browser's Typed OM doesn't know.
   }
@@ -116,7 +120,7 @@ const computedValue = (element: Element, name: string): string | undefined => {
  * (`auto`) may only have followed content fixed by the first.
  */
 const compare = (entry: Entry, pass: number): Array<() => void> => {
-  const { clone, parent, source, passes } = entry;
+  const { clone, parent, passes } = entry;
   const style = getComputedStyle(clone);
   const writes: Array<() => void> = [];
   for (const [name, from] of passes[pass]!) {
@@ -131,7 +135,7 @@ const compare = (entry: Entry, pass: number): Array<() => void> => {
     // Passes 1 and 2 take the computed value, and so do inherited values: a unitless
     // `line-height` is inherited as a ratio, not as the root's pixels. Otherwise the
     // source's (used) value.
-    const computed = pass % 3 || inherited ? computedValue(source, name) : undefined;
+    const computed = pass % 3 || inherited ? computedValue(entry, name) : undefined;
     // No computed value, or a keyword (`auto`): left to the next pass.
     if (pass === 2 && /^[a-z-]*$/.test(computed + '')) continue;
     writes.push(() => clone.style.setProperty(name, computed ?? from));
@@ -144,24 +148,41 @@ const compare = (entry: Entry, pass: number): Array<() => void> => {
  * wrapper) the computed styles it would lose in `container`, the overlay's parent.
  * `source` is in the document.
  */
-export const snapshotStyles = (source: HTMLElement, clone: HTMLElement, mount: HTMLElement, container: Element) => {
-  const entries = collect(source, clone);
-  entries.forEach(readSource);
-  const { width, height } = source.getBoundingClientRect();
-  // The overlay box, out of the page's layout: `contain` keeps the page from re-laying out.
-  const host = document.createElement('div');
-  host.style.cssText = `position:fixed;contain:strict;width:${width}px;height:${height}px`;
-  host.appendChild(mount);
-  container.appendChild(host);
+export const snapshotStyles = (source: HTMLElement, clone: HTMLElement, mount: HTMLElement, container: Element) =>
+  snapshotMany([{ source, clone, mount }], container);
+
+export interface SnapshotJob {
+  source: HTMLElement;
+  clone: HTMLElement;
+  mount: HTMLElement;
+}
+
+/**
+ * `snapshotStyles` for several clones at once: every source is read, then the clones are
+ * laid out side by side, each in a host of its source's size, and every pass runs over all
+ * of them. The page lays out once per pass, not once per pass and clone.
+ */
+export const snapshotMany = (jobs: readonly SnapshotJob[], container: Element) => {
+  const all = jobs.map((job) => ({ ...job, entries: collect(job.source, job.clone) }));
+  for (const job of all) job.entries.forEach(readSource);
+  const sizes = all.map((job) => job.source.getBoundingClientRect());
+  // Overlay boxes, out of the page's layout: `contain` keeps the page from re-laying out.
+  const hosts = all.map((job, index) => {
+    const host = document.createElement('div');
+    host.style.cssText = `position:fixed;contain:strict;width:${sizes[index]!.width}px;height:${sizes[index]!.height}px`;
+    host.appendChild(job.mount);
+    return host;
+  });
+  container.append(...hosts);
   try {
     for (let pass = 0; pass < 4; pass++) {
       // Values written start transitions: the reads want where they end. Animations of the
       // clone's own start again in the overlay.
-      mount.getAnimations?.({ subtree: true }).forEach((animation) => animation.cancel());
-      entries.flatMap((entry) => compare(entry, pass)).forEach((write) => write());
+      for (const job of all) job.mount.getAnimations?.({ subtree: true }).forEach((animation) => animation.cancel());
+      all.flatMap((job) => job.entries.flatMap((entry) => compare(entry, pass))).forEach((write) => write());
     }
   } finally {
-    mount.remove();
-    host.remove();
+    for (const job of all) job.mount.remove();
+    for (const host of hosts) host.remove();
   }
 };

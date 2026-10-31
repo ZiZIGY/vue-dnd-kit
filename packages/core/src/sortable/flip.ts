@@ -137,8 +137,10 @@ const animate = (g: GroupContext, snapshot: Map<Key, Snapshot>, fresh: ReadonlyS
   g.returning = null;
   const pickup = g.gathering;
   g.gathering = false;
-  // The overlay carries a clone of the item landing on `key` (multi-drag column).
-  const carried = (key: Key) => key === landing || manager.overlayItems.has(manager.landings.value.get(key) ?? key);
+  // The overlay carries a clone of the item landing on `key` (multi-drag column): the
+  // drag's, or a landing one's (the commit renders after its drag handed the box over).
+  const carried = (key: Key) =>
+    key === landing || manager.overlayItems.has(manager.landings.value.get(key) ?? key) || manager.isCarried(key);
   for (const [key, before] of snapshot) {
     const element = items.get(key)?.();
     if (!element?.isConnected) continue;

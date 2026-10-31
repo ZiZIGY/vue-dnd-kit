@@ -303,7 +303,7 @@ export function makeSelectionArea(
     }
     selecting.value = false;
     rect.value = null;
-    if (manager.status.value === 'selecting') manager.status.value = 'idle';
+    if (manager.status.value === 'selecting') manager.status.value = manager.restStatus();
     if (!commit) return;
 
     if (current.moved) suppressNextClick();
@@ -387,7 +387,8 @@ export function makeSelectionArea(
 
   const onPointerDown = (event: PointerEvent) => {
     const area = getElement();
-    if (!area || band || manager.status.value !== 'idle') return;
+    // Overlays still landing don't hold a band back.
+    if (!area || band || !manager.isAtRest()) return;
     if (!event.isPrimary || event.button !== 0 || read(options.disabled)) return;
     const origin = event.composedPath()[0];
     if (!(origin instanceof Element)) return;

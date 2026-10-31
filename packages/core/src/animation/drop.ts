@@ -9,6 +9,14 @@ export const DEFAULT_DROP_ANIMATION: Required<AnimationOptions> = {
 /** Scale at which an overlay going `into` a zone vanishes, centered on it. */
 const INTO_SCALE = 0.25;
 
+/** Time between the clones of a multi-drag going into a zone, one after another; the box goes last. */
+const INTO_STAGGER = 60;
+/** However many go in, the last one starts within this. */
+const INTO_SPREAD = 360;
+
+/** The delay between `count` clones going into a zone (and the box after them). */
+export const intoStagger = (count: number): number => Math.min(INTO_STAGGER, INTO_SPREAD / (count + 1));
+
 /** The longest a drop waits for the overlay's content to finish animating. */
 const CONTENT_WAIT = 2000;
 
@@ -43,6 +51,8 @@ export const contentAnimations = (overlay: HTMLElement): Promise<void> => {
 export const runDropAnimation = async (
   option: DropAnimation | undefined,
   context: Omit<DropAnimationContext, 'options' | 'reducedMotion'>,
+  /** The default animation starts this late: after the clones going in before it. */
+  delay = 0,
 ): Promise<void> => {
   const resolved = resolveAnimation(option, DEFAULT_DROP_ANIMATION);
   if (!resolved) return;
@@ -76,8 +86,8 @@ export const runDropAnimation = async (
         },
       ];
   await settle(
-    overlay.animate(keyframes, { ...resolved.options, fill: 'forwards' }),
-    resolved.options.duration + STALL_MARGIN,
+    overlay.animate(keyframes, { ...resolved.options, delay, fill: 'both' }),
+    delay + resolved.options.duration + STALL_MARGIN,
   );
 };
 
@@ -197,7 +207,45 @@ export const landOverlayItems = async (
 };
 
 /**
- * Dragged items without a clone in the overlay (past the cap, custom overlays) fade in
+ * A multi-drag dropped into a zone (a folder, a trash can): the clones of the other items
+ * in the overlay fly into the zone's middle one after another, shrinking as they fade, as
+ * if each went in on its own. The box goes after them (`intoStagger`, see `runDropAnimation`).
+ */
+export const intoOverlayItems = async (option: DropAnimation | undefined, clones: HTMLElement[], into: Rect): Promise<void> => {
+  const timing = clones.length ? companionTiming(option) : null;
+  if (!timing) return;
+  const overlay = clones[0]!.closest('[data-dnd-overlay]');
+  const center = getCenter(into);
+  const step = intoStagger(clones.length);
+  await Promise.all(
+    clones.map((element, index) => {
+      if (!canAnimate(element)) return undefined;
+      const rect = element.getBoundingClientRect();
+      // The way to the zone's middle, in the clone's own terms: its wrappers may turn it.
+      const { linear } = placeOf(element, overlay, rect);
+      const way = linear.inverse().transformPoint({
+        x: center.x - (rect.left + rect.width / 2),
+        y: center.y - (rect.top + rect.height / 2),
+      });
+      const own = getComputedStyle(element).transform;
+      const base = own === 'none' ? '' : own;
+      const delay = index * step;
+      return settle(
+        element.animate(
+          [
+            { transform: base || 'none', opacity: 1 },
+            { transform: `translate(${way.x}px, ${way.y}px) ${base} scale(${INTO_SCALE})`, opacity: 0 },
+          ],
+          { ...timing, delay, fill: 'both' },
+        ),
+        delay + timing.duration + STALL_MARGIN,
+      );
+    }),
+  );
+};
+
+/**
+ * Dragged items without a clone in the overlay (past `overlayPreviews`, custom overlays) fade in
  * where they are during the drop, from their placeholder opacity. The animations hold
  * full opacity until the caller cancels them, once the placeholder marks are gone.
  */

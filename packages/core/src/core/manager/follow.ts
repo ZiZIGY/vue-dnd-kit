@@ -1,17 +1,17 @@
 /**
- * Keeps a dropped overlay on what it lands on. The box is `position: fixed`: when that
- * moves while the drop is decided or lands (the page or a container scrolls, the layout
- * shifts), the box moves with it, by its `translate`, on top of the `transform` the drop
- * animation moves. The flight then ends on the slot where it is now.
+ * Keeps a dropped overlay box on what it lands on. The box is `position: fixed`: when
+ * that moves while the drop is decided or lands (the page or a container scrolls, the
+ * layout shifts), the box moves with it, by its `translate`, on top of the `transform` the
+ * drop animation moves. The flight then ends on the slot where it is now.
  */
 
 import type { Coordinates, Rect } from '../../types';
 import { getSettledRect } from '../../animation/layout';
-import type { ManagerContext } from './state';
 
 export type Follow = ReturnType<typeof createFollow>;
 
-export function createFollow(ctx: ManagerContext) {
+/** `getBox`: the box to move, read when it moves. */
+export function createFollow(getBox: () => HTMLElement | null) {
   let anchor: Element | null = null;
   /** Where the anchor was when the box began to follow it: where it settles (FLIP aside). */
   let start: Rect | null = null;
@@ -23,7 +23,7 @@ export function createFollow(ctx: ManagerContext) {
     shift = next;
     // On the element, not through its rendered style: re-rendering that would write back
     // the `transform` and size an animation library (GSAP, motion) moves inline.
-    const box = ctx.overlayElement.value;
+    const box = getBox();
     if (box) box.style.translate = next ? `${next.x}px ${next.y}px` : '';
   };
 
@@ -41,27 +41,31 @@ export function createFollow(ctx: ManagerContext) {
     frame = requestAnimationFrame(step);
   };
 
-  /** What the box moved so far goes into its offset: it stays where it is on screen. */
-  const fold = () => {
-    if (!shift) return;
-    const { x, y } = ctx.transform.value;
-    ctx.transform.value = { x: x + shift.x, y: y + shift.y };
-    place(null);
+  const halt = () => {
+    if (frame) cancelAnimationFrame(frame);
+    frame = 0;
+    anchor = start = null;
   };
 
   return {
     /** The box follows `element` from now on, from where it is; `null`: it stays there. */
     follow(element: Element | null) {
-      fold();
+      halt();
+      place(null);
       anchor = element?.isConnected ? element : null;
       start = anchor && getSettledRect(anchor);
-      if (anchor && !frame) frame = requestAnimationFrame(step);
+      if (anchor) frame = requestAnimationFrame(step);
     },
-    /** Stops following, the shift with it: the box is gone, or follows the pointer again. */
+    /** Stops following and takes the shift off the box: what it was, for its new place. */
+    take(): Coordinates | null {
+      const taken = shift;
+      halt();
+      place(null);
+      return taken;
+    },
+    /** Stops following, the shift with it. */
     stop() {
-      if (frame) cancelAnimationFrame(frame);
-      frame = 0;
-      anchor = start = null;
+      halt();
       place(null);
     },
   };

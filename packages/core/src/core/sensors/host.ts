@@ -3,7 +3,8 @@
  * here" (`SensorContext.activate`), then where it moved and that it dropped or
  * cancelled. The rules every drag follows are kept here and in `drag.ts`, the same for
  * the built-in sensors and custom ones:
- * - one drag per provider, none while a drop lands (input during `dropping` is ignored);
+ * - one drag per provider, none while a drop is decided (an async `onBeforeDrop`); the
+ *   overlays of decided drops land on while the next drag runs;
  * - only draggables of this provider that aren't disabled, from where a drag of that type
  *   may start (the handle, no interactive child; the focus target for keyboard drags),
  *   and only if `canDrag` lets the input event through;
@@ -99,9 +100,13 @@ function createHost(manager: DnDManager): Host {
   manager.activationAborts.add(() => current?.abort());
 
   const activate = (owner: Owner, options: SensorActivation): SensorDrag | null => {
-    if (!owner.active || current || manager.status.value !== 'idle') return null;
+    // Overlays still landing don't hold a new press back.
+    if (!owner.active || current || !manager.isAtRest()) return null;
     const type = options.type ?? 'pointer';
-    const found = findTarget(manager, options.target, type);
+    // A press on an overlay still landing catches its item in flight, whatever is under it
+    // (the box lets the pointer through).
+    const caught = type === 'pointer' && options.point ? manager.catchAt(options.point) : null;
+    const found = findTarget(manager, caught ?? options.target, type);
     if (!found || found.entry.isDisabled()) return null;
     const { entry, element } = found;
     const { event } = options;
@@ -116,7 +121,7 @@ function createHost(manager: DnDManager): Host {
         constraint: resolveConstraint(options.activation, entry, manager.props.activation),
         touch: (event as Partial<PointerEvent> | undefined)?.pointerType === 'touch',
         sensor: owner.sensor,
-        pressed: typeof options.target === 'object' ? { target: options.target, item: element } : undefined,
+        pressed: caught == null && typeof options.target === 'object' ? { target: options.target, item: element } : undefined,
         callbacks: options,
         onEnded: () => {
           forget(control);

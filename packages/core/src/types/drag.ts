@@ -142,6 +142,12 @@ export interface DnDMonitor {
   onDragCancel?(event: DnDEvent): void;
   /** `onBeforeDrop` answered `'continue'`: there was no drop, and the drag goes on. */
   onDragResume?(event: DnDEvent): void;
+  /**
+   * The overlay of an ended drag has landed: after its drop animation (or the flight back
+   * of a cancel), with the event `onDragEnd` (a `DnDEndEvent`) or `onDragCancel` got.
+   * The next drag may have started meanwhile: drags don't wait for landings.
+   */
+  onDragSettle?(event: DnDEvent | DnDEndEvent): void;
   /** Keyboard drags: next pointer position for an arrow key (e.g. the next sortable slot). */
   getKeyboardCoordinates?(
     event: KeyboardEvent,
@@ -163,11 +169,15 @@ export interface DnDSelection {
 
 /**
  * The drag state ends when the drop is decided: `active`, `over` and `pointer` read
- * `null` (and droppables stop accepting) while the overlay still animates into place
- * (`status` stays `'dropping'`). Derived UI never mixes the old drag with the new data.
- * While an async `onBeforeDrop` decides, the state is kept as it was at release, but the
- * page is out of drag mode: its own cursor and text selection are back (a confirmation
- * dialog works normally), and the overlay waits where it was dropped.
+ * `null` (and droppables stop accepting) while the overlay still animates into place.
+ * Derived UI never mixes the old drag with the new data. While an async `onBeforeDrop`
+ * decides, the state is kept as it was at release, but the page is out of drag mode: its
+ * own cursor and text selection are back (a confirmation dialog works normally), and the
+ * overlay waits where it was dropped.
+ *
+ * `status` is `'dragging'` while a drag runs, else `'dropping'` while a drop is decided or
+ * an overlay still lands, else `'idle'` (`'activating'` and `'selecting'` aside). A new drag
+ * doesn't wait for the landings: it starts at once, and they finish around it.
  */
 export interface DnDState {
   status: Readonly<Ref<DnDStatus>>;

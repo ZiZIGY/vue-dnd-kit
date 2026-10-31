@@ -16,7 +16,7 @@ import {
   prefersReducedMotion,
   resizeAround,
 } from '../../animation/layout';
-import { clonePreview } from '../clone';
+import { clonePreview, clonePreviews } from '../clone';
 import type { ManagerContext } from './state';
 import type { DraggableEntry } from './registry';
 
@@ -27,12 +27,12 @@ export interface PreviewSource {
 }
 
 /**
- * Most items cloned at pickup: the grabbed one and the others next to it in drop order.
- * Cloning lays out each clone and reads its computed styles (`snapshot.ts`), the most
- * expensive part of a pickup, and a column of more clones covers most of the screen;
- * the overlay counts the rest instead.
+ * Items cloned at pickup by default (`overlayPreviews`): the grabbed one and the others
+ * next to it in drop order. Cloning lays out the clones and reads their computed styles
+ * (`snapshot.ts`), the most expensive part of a pickup, and a column of more clones covers
+ * most of the screen; the overlay counts the rest instead.
  */
-const MAX_PREVIEWS = 5;
+const DEFAULT_PREVIEWS = 5;
 /** A placeholder styled smaller than this share of the source (a drop line) keeps the source size on that axis. */
 const FIT_MIN_RATIO = 0.25;
 /** Overlay box resizes (a target list with other item sizes) glide instead of jumping. */
@@ -67,32 +67,46 @@ export function createOverlay(ctx: ManagerContext) {
 
   // ─── Content ─────────────────────────────────────────────────────────────────
 
-  const takePreview = (id: Key): PreviewSource | null => {
-    const entry = ctx.draggables.get(id);
-    const element = entry?.getElement();
-    if (!entry || !element?.isConnected) return null;
+  /** Where the overlay renders: the clones are laid out there, with its styles. */
+  const overlayContainer = () => {
     const to = ctx.props.overlayTo;
-    return {
-      element: clonePreview(element, { container: typeof to === 'string' ? document.querySelector(to) : to }),
-      rect: getRect(element),
-    };
+    return typeof to === 'string' ? document.querySelector(to) : to;
+  };
+
+  /** The rendered element of a dragged item, if it can be cloned. */
+  const sourceOf = (id: Key) => {
+    const element = ctx.draggables.get(id)?.getElement();
+    return element?.isConnected ? element : null;
+  };
+
+  const takePreview = (id: Key): PreviewSource | null => {
+    const element = sourceOf(id);
+    if (!element) return null;
+    return { element: clonePreview(element, { container: overlayContainer() }), rect: getRect(element) };
   };
 
   /**
    * Clones of the other dragged items, next to the active one in drop order (the overlay
-   * column's order, else `ids`). Runs right after `onDragStart`: the sortable layer has
-   * set the order, and the DOM hasn't re-rendered yet.
+   * column's order, else `ids`), as many as `overlayPreviews` asks for. Runs right after
+   * `onDragStart`: the sortable layer has set the order, and the DOM hasn't re-rendered
+   * yet. They are cloned together: the page lays out once per snapshot pass for all.
    */
   const takePreviews = (current: Active) => {
     const order = ctx.overlayColumn.value?.ids ?? current.ids;
+    const wanted = ctx.props.overlayPreviews ?? DEFAULT_PREVIEWS;
+    const limit = wanted === 'all' ? order.length : Math.max(1, Math.floor(wanted));
     const at = Math.max(order.indexOf(current.id), 0);
-    const from = Math.max(0, Math.min(at - ((MAX_PREVIEWS - 1) >> 1), order.length - MAX_PREVIEWS));
-    const ids = order.slice(from, from + MAX_PREVIEWS);
-    for (const id of ids) {
-      if (previews.has(id)) continue;
-      const preview = takePreview(id);
-      if (preview) previews.set(id, preview);
-    }
+    const from = Math.max(0, Math.min(at - ((limit - 1) >> 1), order.length - limit));
+    const ids = order.slice(from, from + limit);
+    const missing = ids.flatMap((id) => {
+      const element = previews.has(id) ? null : sourceOf(id);
+      return element ? [{ id, element, rect: getRect(element) }] : [];
+    });
+    const clones = clonePreviews(
+      missing.map(({ element }) => element),
+      { container: overlayContainer() },
+    );
+    missing.forEach(({ id, rect }, index) => previews.set(id, { element: clones[index]!, rect }));
     previewIds = ids.filter((id) => previews.has(id));
   };
 
@@ -230,31 +244,63 @@ export function createOverlay(ctx: ManagerContext) {
      * synchronously, before the placeholder re-renders. Overlay components get it too:
      * they may show it (`DragPreview`).
      */
-    pickUp(id: Key, entry: DraggableEntry) {
+    pickUp(id: Key, entry: DraggableEntry, caught?: ReadonlyMap<Key, PreviewSource>) {
       source = entry;
       previewEnabled = entry.getOverlay() !== false;
-      const preview = previewEnabled ? takePreview(id) : null;
-      previews = new Map(preview ? [[id, preview]] : []);
+      // A drag that catches a landing overlay takes its clones: the slots are still hidden.
+      previews = new Map(previewEnabled ? caught : undefined);
+      const preview = previewEnabled && !previews.has(id) ? takePreview(id) : null;
+      if (preview) previews.set(id, preview);
       previewIds = [];
     },
 
     /**
      * The box of a new drag, at the source size; `parent` is the container of
-     * `restrictToParent`. The modifiers run: `origin` and `over` must be set.
+     * `restrictToParent`. The modifiers run: `origin` and `over` must be set. `caught`:
+     * the box of a landing overlay the drag catches in flight, where the box starts.
      */
-    place(current: Active, coordinates: Coordinates, modifiers: readonly Modifier[], parent: Element | null) {
+    place(current: Active, coordinates: Coordinates, modifiers: readonly Modifier[], parent: Element | null, caught?: Rect | null) {
       sourceModifiers = modifiers;
       container = parent;
       containerStart = parent?.isConnected
         ? { rect: getRect(parent), scroll: { x: parent.scrollLeft, y: parent.scrollTop } }
         : null;
       ctx.containerShift.value = { x: 0, y: 0 };
-      ctx.fitSize.value = { width: current.rect.width, height: current.rect.height };
       resize = null;
+      if (caught) {
+        // The box goes on from where it was caught, at its size there, held where it was
+        // pressed: the item's rect moved so that point is under the pointer. It glides to
+        // the slot's size as any box does. Pointer, box and drop offset stay consistent:
+        // the origin moves back by the offset the drag starts with.
+        ctx.fitSize.value = { width: caught.width, height: caught.height };
+        grab = getFraction(caught, coordinates);
+        const offset = {
+          x: coordinates.x - grab.x * current.rect.width - current.rect.left,
+          y: coordinates.y - grab.y * current.rect.height - current.rect.top,
+        };
+        ctx.origin = { x: coordinates.x - offset.x, y: coordinates.y - offset.y };
+        ctx.transform.value = offset;
+        return;
+      }
+      ctx.fitSize.value = { width: current.rect.width, height: current.rect.height };
       // Where the pointer holds the box on the first frame, after modifiers (the center
       // with snapCenterToCursor). The box has the source size here: no grab applies yet.
       const first = applyModifiers(current, { x: 0, y: 0 });
       grab = getFraction(offsetRect(current.rect, first.x, first.y), coordinates);
+    },
+
+    /**
+     * The drop is decided: what the overlay shows goes to the flight that lands it (its
+     * clones, its component and own drop animation, its size), read as they are now.
+     */
+    release() {
+      return {
+        previews: previews as ReadonlyMap<Key, PreviewSource>,
+        previewIds: previewIds as readonly Key[],
+        component: this.component,
+        dropAnimation: this.dropAnimation,
+        fitSize: ctx.fitSize.value,
+      };
     },
 
     end() {

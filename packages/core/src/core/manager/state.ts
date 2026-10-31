@@ -9,20 +9,25 @@ import { shallowReactive, shallowRef, type Component } from 'vue';
 import type {
   Active,
   Coordinates,
+  DnDEvent,
   DnDProviderProps,
   DnDStatus,
   DragMode,
+  DropAnimation,
+  DropDestination,
   Key,
   LayoutAnimation,
   Over,
+  Rect,
   Size,
 } from '../../types';
 import type { landOverlayItems } from '../../animation/drop';
 import type { Measurer } from '../measure';
 import type { Detection } from './detection';
 import type { Events } from './events';
+import type { Follow } from './follow';
 import type { FrameLoop } from './frame';
-import type { Overlay } from './overlay';
+import type { Overlay, PreviewSource } from './overlay';
 import type { RegistryLookups, RegistryMembers } from './registry';
 
 /**
@@ -45,6 +50,54 @@ export interface OverlayColumn {
 
 export const NO_LANDINGS: ReadonlyMap<Key, Key> = new Map();
 
+/**
+ * An ended drag whose overlay is landing (`session.ts`): what the box shows and where it
+ * goes, as the drag left them. The provider is free for the next drag meanwhile; the
+ * overlay renders a box per flight.
+ */
+export interface Flight {
+  /** The drag's session: the overlay keys a drag's box by it, so the box carries on as the flight's. */
+  id: number;
+  reason: 'drop' | 'cancel';
+  /** What `onDragEnd` (a `DnDEndEvent`) or `onDragCancel` got; `onDragSettle` gets it too. */
+  event: DnDEvent;
+  active: Active;
+  mode: DragMode;
+  /** The target it was dropped on: what it lands on; `null` on a cancel. */
+  over: Over | null;
+  /** Where the drop went, as the overlay's `to` said at the release. */
+  to: DropDestination | null;
+  /** The row the overlay lands on when it isn't the active item's (a copy, a created item). */
+  landingKey: Key | null;
+  /** The slot hidden until the overlay is there: the active item's, its copy's; `null` for none. */
+  slot: Key | null;
+  /** Multi-drag: slot → dragged id of the other items landing (see `landings`). */
+  landings: ReadonlyMap<Key, Key>;
+  column: OverlayColumn | null;
+  /** The clones taken at pickup (`DragPreview`), and the ids that have one, in drop order. */
+  previews: ReadonlyMap<Key, PreviewSource>;
+  previewIds: readonly Key[];
+  /** The drag's own overlay component (`null`: the provider's slot or the clone). */
+  component: Component | null;
+  /** The drop target's overlay around it, if it has one. */
+  target: Component | undefined;
+  /** The drag's own `dropAnimation` (the item's, its list's). */
+  dropAnimation: DropAnimation | undefined;
+  fitSize: Size | null;
+  /** Where the box was left (viewport). */
+  rect: Rect;
+  /** Clones of the other items in the box, which land on their own slots. */
+  items: Map<Key, HTMLElement>;
+  /** The box. */
+  element: HTMLElement | null;
+  /** Keeps the box on what it lands on while the page scrolls. */
+  follow: Follow;
+  /** Fades of items without a clone, kept until their placeholder marks are gone. */
+  fades: Animation[];
+  /** Landed, or the provider went away: its awaited steps do nothing. */
+  done: boolean;
+}
+
 /** The reactive drag state: what the overlay, the composables and `useDnD()` render. */
 export const createDragState = () => ({
   status: shallowRef<DnDStatus>('idle'),
@@ -52,16 +105,11 @@ export const createDragState = () => ({
   over: shallowRef<Over | null>(null),
   pointer: shallowRef<Coordinates | null>(null),
   /**
-   * The drop is decided (committed or cancelled) and only the overlay animation is left.
-   * The drag state is over: `over` and `pointer` are cleared, accept rules stop running
-   * (the data has already changed under them), and `useDnD().active` reads `null`.
+   * Ended drags whose overlay is landing, oldest first. A decided drop hands its overlay
+   * to a flight and clears the drag state (`active`, `over` read `null`), so the next drag
+   * can start while it lands.
    */
-  settling: shallowRef(false),
-  /**
-   * What a decided drop lands on (`over` at the drop; `null` when it was cancelled): the
-   * overlay keeps showing it while it flies there, after `over` itself is cleared.
-   */
-  dropTarget: shallowRef<Over | null>(null),
+  flights: shallowRef<readonly Flight[]>([]),
   transform: shallowRef<Coordinates>({ x: 0, y: 0 }),
   /**
    * How far the content the drag started in has moved on screen since the start (see
@@ -88,7 +136,7 @@ export const createDragState = () => ({
    * block; after the commit: where each accepted item went (copies included).
    */
   landings: shallowRef<ReadonlyMap<Key, Key>>(NO_LANDINGS),
-  /** Multi-drag layout of the default overlay; `null`: the active item with a count. */
+  /** Multi-drag layout of the default overlay; `null`: the active item with a count (a pile of plain draggables). */
   overlayColumn: shallowRef<OverlayColumn | null>(null),
   /** Clones of the other items in the default overlay's column, by id: each lands on its own slot. */
   overlayItems: new Map<Key, HTMLElement>(),

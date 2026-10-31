@@ -14,6 +14,7 @@
  */
 
 import type { Coordinates, DnDProviderProps, Key } from '../../types';
+import { getRect } from '../../animation/layout';
 import { createMeasurer } from '../measure';
 // In the order the modules build on each other.
 import { createDragState, type ManagerContext } from './state';
@@ -25,7 +26,7 @@ import { createFrameLoop } from './frame';
 import { createSession } from './session';
 
 export type { AreaEntry, AutoScrollEntry, DraggableEntry, DroppableEntry, IntegrationMonitor, TargetRule } from './registry';
-export type { OverlayColumn } from './state';
+export type { Flight, OverlayColumn } from './state';
 export type { PreviewSource } from './overlay';
 
 export type DnDManager = ReturnType<typeof createDnDManager>;
@@ -59,7 +60,7 @@ export function createDnDManager(props: DnDProviderProps) {
     instructionsId: '',
     // monitors, activationAborts, selectionAborts, getDraggable(s), getDroppable(s), registration
     ...members,
-    /** Clone of a dragged item taken at pickup (`DragPreview`); none past the cap or for unrendered items. */
+    /** Clone of a dragged item taken at pickup (`DragPreview`); none past `overlayPreviews` or for unrendered items. */
     getPreview: overlay.getPreview,
     /** Ids that have a clone, in drop order: what the default overlay's column shows. */
     get previewIds(): readonly Key[] {
@@ -84,6 +85,27 @@ export function createDnDManager(props: DnDProviderProps) {
     getOverlayRect: overlay.getOverlayRect,
     /** The element is (in) a dragged item or a slot one lands in: never a drop target. */
     isOwned: detection.isOwned,
+    /** A slot a landing overlay flies to: hidden (`data-dnd-placeholder`) until it is there. */
+    isLanding: (key: Key): boolean => ctx.flights.value.some((flight) => flight.slot === key || flight.landings.has(key)),
+    /** The flight landing this dragged item, if one is. */
+    flightOf: (id: Key) => ctx.flights.value.find((flight) => flight.active.ids.includes(id)),
+    /** The item of a landing box under `point`, the newest on top: a press there catches it in flight. */
+    catchAt: (point: Coordinates): Key | null => {
+      for (const flight of [...ctx.flights.value].reverse()) {
+        const { element } = flight;
+        if (!element?.isConnected || !ctx.draggables.has(flight.active.id)) continue;
+        const rect = getRect(element);
+        if (point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom) {
+          return flight.active.id;
+        }
+      }
+      return null;
+    },
+    /** A landing overlay carries this slot's item: its box, or a clone in it, flies there (FLIP leaves it alone). */
+    isCarried: (key: Key): boolean =>
+      ctx.flights.value.some(
+        (flight) => key === (flight.landingKey ?? flight.active.id) || flight.items.has(flight.landings.get(key) ?? key),
+      ),
     announce: events.announce,
     // updateActive, start, move, drop, cancel, destroy
     ...createSession(ctx),
