@@ -131,6 +131,34 @@ describe('onBeforeDrop answers', () => {
   });
 });
 
+describe('the provider going away while onBeforeDrop decides', () => {
+  afterEach(() => {
+    unmount?.();
+    unmount = null;
+  });
+
+  it('ends the drag with onDragCancel, and only that, whatever the answer says later', async () => {
+    mountCard();
+    let answer!: (result: BeforeDropResult) => void;
+    const heard: string[] = [];
+    manager.addMonitor({
+      onBeforeDrop: () => new Promise((resolve) => (answer = resolve)),
+      onDragEnd: () => heard.push('end'),
+      onDragCancel: () => heard.push('cancel'),
+    });
+    manager.start('card', { x: 1, y: 1 }, 'pointer');
+    const dropped = manager.drop();
+    await nextTick();
+    expect(manager.status.value).toBe('dropping');
+    unmount!();
+    unmount = null;
+    expect(heard).toEqual(['cancel']);
+    answer('accept');
+    await dropped;
+    expect(heard).toEqual(['cancel']);
+  });
+});
+
 describe('an id two live draggables or drop targets share', () => {
   afterEach(() => {
     document.body.innerHTML = '';

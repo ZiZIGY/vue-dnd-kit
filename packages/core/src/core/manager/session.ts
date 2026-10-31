@@ -20,7 +20,7 @@ import type {
   Rect,
   SensorType,
 } from '../../types';
-import { getLayoutRect, getRect, getSettledRect, offsetRect } from '../../animation/layout';
+import { containsPoint, getLayoutRect, getRect, getSettledRect, offsetRect } from '../../animation/layout';
 import {
   contentAnimations,
   fadeInPlace,
@@ -93,7 +93,10 @@ export function createSession(ctx: ManagerContext) {
     // Caught in flight: an item whose overlay still lands. Its landing ends where the box
     // is, and the drag goes on from there with its clones (its slots are still hidden).
     const caught = ctx.flights.value.find((flight) => flight.active.ids.includes(id));
-    const caughtAt = caught?.element?.isConnected ? getRect(caught.element) : null;
+    let caughtAt = caught?.element?.isConnected ? getRect(caught.element) : null;
+    // A keyboard drag is held at its item, not under a pointer: it goes on from the box
+    // only where the box is over the item, else from the item as any pickup.
+    if (caughtAt && sensor !== 'pointer' && !containsPoint(caughtAt, coordinates)) caughtAt = null;
     if (caught) land(caught);
     const ids =
       ctx.selection.has(id) && ctx.selection.size > 1
@@ -469,7 +472,9 @@ export function createSession(ctx: ManagerContext) {
   const destroy = () => {
     abortPending();
     const current = ctx.active.value;
-    if (current && ctx.status.value === 'dragging') ctx.events.emit('onDragCancel', ctx.events.createEvent());
+    // A running drag ends, also one whose drop `onBeforeDrop` was still deciding: its answer
+    // comes to nothing (`session` moves on below), so this is its one terminal event.
+    if (current) ctx.events.emit('onDragCancel', ctx.events.createEvent());
     // An awaited drop of it, and the landings, do nothing more.
     session++;
     for (const flight of ctx.flights.value) {

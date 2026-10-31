@@ -77,7 +77,10 @@ export const keyboardSensor = /* @__PURE__ */ defineSensor({
         return;
       }
 
-      if (status !== 'idle' || !options() || event.repeat) return;
+      // Overlays still landing don't hold a pickup back, as they don't hold a press back; a
+      // drop still being decided does (it is a drag: `drag` is set).
+      const atRest = status === 'idle' || (status === 'dropping' && !context.drag);
+      if (!atRest || !options() || event.repeat) return;
       if (!matches(bindings.start, event)) return;
       const target = getEventTarget(event);
       if (!(target instanceof Element)) return;

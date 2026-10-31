@@ -123,8 +123,12 @@ export function createEvents(ctx: ManagerContext) {
       return;
     }
     // Nothing new (e.g. the first target of a drag is where it started): neither speak
-    // nor cancel what is pending.
-    if (text === '') return;
+    // nor cancel what is pending. Once the drag has ended, though, a pending move text is
+    // stale: a silent end drops it too.
+    if (text === '') {
+      if (name === 'onDragEnd' || name === 'onDragCancel') clearTimeout(announceTimer);
+      return;
+    }
     clearTimeout(announceTimer);
     if (!text) return;
     if (name === 'onDragOver') {

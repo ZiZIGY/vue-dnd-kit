@@ -120,6 +120,30 @@ describe('announcements', () => {
     await vi.waitFor(() => expect(manager.announcement.value).toBe('Over away.'), { timeout: 2000 });
     await cancel();
   });
+
+  it("a silent end ('') drops the move text still pending: spoken after the end, it would be stale", async () => {
+    const container = mountBoard({ onDragOver: ({ over }) => `Over ${String(over?.id)}.`, onDragEnd: () => '', onDragCancel: () => '' });
+    await nextTick();
+    const home = container.querySelector('[data-zone="home"] span')!;
+    const away = container.querySelector('[data-zone="away"]')!;
+    let under: Element = home;
+    vi.spyOn(document, 'elementFromPoint').mockImplementation(() => under);
+
+    for (const end of [() => manager.drop(), () => manager.cancel()]) {
+      under = home;
+      manager.start('free', { x: 1, y: 1 }, 'keyboard');
+      under = away;
+      manager.move({ x: 2, y: 2 });
+      manager.flushFrame();
+      expect(manager.over.value?.id).toBe('away');
+      // Ended within the move text's delay (500ms), and waited past it.
+      void end();
+      await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+      await new Promise((resolve) => setTimeout(resolve, 700));
+      // (A repeated text gets a trailing space, for screen readers to speak it again.)
+      expect(manager.announcement.value.trim()).toBe('Picked up draggable item free.');
+    }
+  });
 });
 
 describe('draggable attributes during a drag', () => {

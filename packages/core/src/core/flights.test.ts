@@ -310,3 +310,50 @@ describe('the next drag starts while the last one lands', () => {
     expect(settled).toHaveLength(0);
   });
 });
+
+describe('the keyboard while an overlay lands', () => {
+  // happy-dom's key events lack `getModifierState` (the copy key listens while anything moves).
+  const space = () =>
+    Object.assign(new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true, cancelable: true, composed: true }), {
+      getModifierState: () => false,
+    });
+
+  it('picks an item up, as a press does, and keeps the key from the page', async () => {
+    mount(holding('a1'));
+    await settle();
+    await start('a1', at(0, 0));
+    const drop = manager.drop();
+    await vi.waitFor(() => expect(held.has('a1')).toBe(true));
+    expect(manager.status.value).toBe('dropping');
+    const key = space();
+    row('a2').dispatchEvent(key);
+    expect(manager.status.value).toBe('dragging');
+    expect(manager.active.value?.id).toBe('a2');
+    expect(key.defaultPrevented).toBe(true);
+    manager.cancel();
+    await land('a1');
+    await drop;
+  });
+
+  it('picks up an item still landing at the item, not where its box is', async () => {
+    mount(holding('a1'));
+    await settle();
+    await start('a1', at(0, 0));
+    await pointTo(at(1, 1));
+    const drop = manager.drop();
+    await vi.waitFor(() => expect(held.has('a1')).toBe(true));
+    const flying = rectOf(boxes()[0]!);
+    // a1 went to the end of list B; its box is still where it was let go.
+    const slot = rectOf(row('a1'));
+    const center = { x: slot.left + slot.width / 2, y: slot.top + slot.height / 2 };
+    expect(center.y < flying.top || center.y > flying.bottom).toBe(true);
+    row('a1').dispatchEvent(space());
+    await settle();
+    expect(manager.active.value?.id).toBe('a1');
+    const box = rectOf(boxes().at(-1)!);
+    expect([box.left, box.top]).toEqual([slot.left, slot.top]);
+    manager.cancel();
+    await settle();
+    await drop;
+  });
+});
