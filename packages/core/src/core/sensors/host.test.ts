@@ -1,8 +1,17 @@
 import { createApp, defineComponent, h, nextTick, shallowRef, useTemplateRef, type PropType, type VNodeChild } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { DnDProviderProps, DraggableOptions, Sensor, SensorActivation, SensorContext, SensorDrag } from '../../types';
+import type {
+  BeforeDropResult,
+  DnDProviderProps,
+  DnDState,
+  DraggableOptions,
+  Sensor,
+  SensorActivation,
+  SensorContext,
+  SensorDrag,
+} from '../../types';
 import { DnDProvider } from '../DnDProvider';
-import { useManager } from '../context';
+import { useDnD, useDnDMonitor, useManager } from '../context';
 import type { DnDManager } from '../manager';
 import { makeDraggable } from '../makeDraggable';
 import { defineSensor, useSensor } from './host';
@@ -426,5 +435,48 @@ describe('sensors come and go', () => {
     vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
     document.dispatchEvent(new Event('visibilitychange'));
     expect(drag.state).toBe('ended');
+  });
+});
+
+describe('a drop onBeforeDrop is still deciding', () => {
+  afterEach(() => {
+    mounted.splice(0).forEach((unmount) => unmount());
+    vi.restoreAllMocks();
+  });
+
+  it('holds the provider; in development the first drag or cancel asked meanwhile says why', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    let dnd!: DnDState;
+    let answer!: (result: BeforeDropResult) => void;
+    const Decider = defineComponent({
+      setup() {
+        dnd = useDnD();
+        useDnDMonitor({ onBeforeDrop: () => new Promise<BeforeDropResult>((resolve) => (answer = resolve)) });
+        return () => null;
+      },
+    });
+    const container = mount(() => [h(Decider), h(Card, { cardId: 'a' }), h(Card, { cardId: 'b' })]);
+    await nextTick();
+
+    void context.activate({ target: card(container, 'a') })!.drop();
+    await nextTick();
+    expect(manager.status.value).toBe('dropping');
+    // Nothing gets it going, neither a new drag nor a cancel. The first says why.
+    expect(context.activate({ target: card(container, 'b') })).toBeNull();
+    context.cancel();
+    dnd.cancel();
+    expect(manager.active.value?.id).toBe('a');
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0]![0]).toContain('onBeforeDrop');
+
+    // Once it answers, the provider is free again; the next drop it decides says so again.
+    answer('reject');
+    await settle();
+    void context.activate({ target: card(container, 'b') })!.drop();
+    await nextTick();
+    dnd.cancel();
+    expect(warn).toHaveBeenCalledTimes(2);
+    answer('reject');
+    await settle();
   });
 });

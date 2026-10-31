@@ -9,6 +9,10 @@ import {
 import type { DnDContext, DnDMonitor, DnDSelection, DnDState, Key } from '../types';
 import type { DnDManager } from './manager';
 import { positionInTarget } from './manager/events';
+import { warnIfDeciding } from './deciding';
+
+/** Bundlers replace it: development builds keep the warnings, production drops them. */
+declare const process: { env: { NODE_ENV?: string } };
 
 export const DND_CONTEXT: InjectionKey<DnDManager> = Symbol('vue-dnd-kit');
 
@@ -72,7 +76,13 @@ export const useDnD = (): DnDState => {
     activation: { progress: readonly(manager.activationProgress) },
     isAutoScrolling: readonly(manager.isAutoScrolling),
     selection: createSelection(manager.selection),
-    cancel: manager.cancel,
+    cancel:
+      process.env.NODE_ENV !== 'production'
+        ? () => {
+            warnIfDeciding(manager, 'cancel()');
+            manager.cancel();
+          }
+        : manager.cancel,
   };
 };
 

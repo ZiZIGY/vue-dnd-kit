@@ -4,7 +4,7 @@
  * target rules, announcers, auto-scroll overrides).
  */
 
-import { shallowRef, type Component } from 'vue';
+import { nextTick, shallowRef, type Component } from 'vue';
 import type {
   ActivationOptions,
   Active,
@@ -107,6 +107,34 @@ export interface AreaEntry {
 /** Elements owned by any provider, so nested providers ignore each other's items. */
 const owners = new WeakMap<Element, object>();
 
+/** Bundlers replace it: development builds keep the warnings, production drops them. */
+declare const process: { env: { NODE_ENV?: string } };
+
+interface Registered {
+  id: Key;
+  getElement(): Element | null;
+}
+
+/** Development: entries registered and not unregistered since. */
+const live = new WeakSet<Registered>();
+
+/**
+ * Development: `entry` took the id of `previous`. That is fine when `previous` goes in the
+ * same render (an item re-created in another list registers before the old one is gone, a
+ * virtual list gives a recycled row another id); if both are still there once it has
+ * settled, only `entry` counts, and the user is told.
+ */
+const checkShared = (kind: 'draggable' | 'drop target', map: Map<Key, Registered>, previous: Registered, entry: Registered) => {
+  void nextTick(() => {
+    if (!live.has(previous) || previous.id !== entry.id || map.get(entry.id) !== entry) return;
+    const before = previous.getElement();
+    const after = entry.getElement();
+    if (!before?.isConnected || !after?.isConnected || before === after) return;
+    const effect = kind === 'draggable' ? 'only the last one registered is dragged, also from the other one' : 'only the last one registered takes drops';
+    console.warn(`[vue-dnd-kit] Two ${kind}s share the id "${String(entry.id)}": ${effect}. Give each its own id.`);
+  });
+};
+
 export type Registry = ReturnType<typeof createRegistry>;
 export type RegistryLookups = Registry['lookups'];
 export type RegistryMembers = Registry['members'];
@@ -136,16 +164,28 @@ export function createRegistry() {
   const areasVersion = shallowRef(0);
 
   const registerDraggable = (entry: DraggableEntry): (() => void) => {
+    const previous = draggables.get(entry.id);
     draggables.set(entry.id, entry);
+    if (process.env.NODE_ENV !== 'production') {
+      live.add(entry);
+      if (previous && previous !== entry) checkShared('draggable', draggables, previous, entry);
+    }
     return () => {
+      if (process.env.NODE_ENV !== 'production') live.delete(entry);
       // A recreated element may already have registered the same id.
       if (draggables.get(entry.id) === entry) draggables.delete(entry.id);
     };
   };
 
   const registerDroppable = (entry: DroppableEntry): (() => void) => {
+    const previous = droppables.get(entry.id);
     droppables.set(entry.id, entry);
+    if (process.env.NODE_ENV !== 'production') {
+      live.add(entry);
+      if (previous && previous !== entry) checkShared('drop target', droppables, previous, entry);
+    }
     return () => {
+      if (process.env.NODE_ENV !== 'production') live.delete(entry);
       if (droppables.get(entry.id) === entry) droppables.delete(entry.id);
     };
   };

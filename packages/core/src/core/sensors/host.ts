@@ -21,8 +21,12 @@ import type { DnDManager } from '../manager';
 import { useManager } from '../context';
 import { getCenter, getRect } from '../../animation/layout';
 import { isClient } from '../../utils/dom';
+import { warnIfDeciding } from '../deciding';
 import { canStartFrom, resolveConstraint } from './activation';
 import { createSensorDrag, type DragControl } from './drag';
+
+/** Bundlers replace it: development builds keep the warnings, production drops them. */
+declare const process: { env: { NODE_ENV?: string } };
 
 /** A running sensor. */
 interface Owner {
@@ -100,9 +104,16 @@ function createHost(manager: DnDManager): Host {
   manager.activationAborts.add(() => current?.abort());
 
   const activate = (owner: Owner, options: SensorActivation): SensorDrag | null => {
-    // Overlays still landing don't hold a new press back.
-    if (!owner.active || current || !manager.isAtRest()) return null;
     const type = options.type ?? 'pointer';
+    if (!owner.active) return null;
+    // Overlays still landing don't hold a new press back.
+    if (current || !manager.isAtRest()) {
+      // A press on a draggable while a drop is decided: development builds say why nothing happens.
+      if (process.env.NODE_ENV !== 'production' && manager.status.value === 'dropping' && findTarget(manager, options.target, type)) {
+        warnIfDeciding(manager, 'A new drag');
+      }
+      return null;
+    }
     // A press on an overlay still landing catches its item in flight, whatever is under it
     // (the box lets the pointer through).
     const caught = type === 'pointer' && options.point ? manager.catchAt(options.point) : null;
@@ -146,7 +157,10 @@ function createHost(manager: DnDManager): Host {
         return current?.drag ?? null;
       },
       activate: (options) => activate(owner, options),
-      cancel: () => manager.cancel(),
+      cancel: () => {
+        if (process.env.NODE_ENV !== 'production') warnIfDeciding(manager, 'cancel()');
+        manager.cancel();
+      },
     };
     const scope = effectScope(true);
     scope.run(() => {

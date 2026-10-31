@@ -1,9 +1,10 @@
 import { createApp, defineComponent, h, nextTick, useTemplateRef } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { BeforeDropResult } from '../types';
+import type { BeforeDropResult, Key } from '../types';
 import { DnDProvider } from './DnDProvider';
 import { useManager } from './context';
-import type { DnDManager } from './manager';
+import type { DnDManager, DraggableEntry, DroppableEntry } from './manager';
+import { createRegistry } from './manager/registry';
 import { makeDraggable } from './makeDraggable';
 
 let manager: DnDManager;
@@ -127,5 +128,60 @@ describe('onBeforeDrop answers', () => {
     await manager.drop();
     await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
     expect(heard).toEqual(['resume', 'end']);
+  });
+});
+
+describe('an id two live draggables or drop targets share', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+    vi.restoreAllMocks();
+  });
+
+  /** A registry entry of `id` on `element` (the registry only reads its id and element). */
+  const entryOf = <T extends DraggableEntry | DroppableEntry>(id: Key, element: HTMLElement) =>
+    ({ id, getElement: () => element }) as unknown as T;
+
+  const elements = (count: number): HTMLElement[] => {
+    const list = Array.from({ length: count }, () => document.createElement('div'));
+    document.body.append(...list);
+    return list;
+  };
+
+  it('is told in development: only the last one registered counts', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { members } = createRegistry();
+    const [one, two] = elements(2);
+    members.registerDraggable(entryOf('card', one!));
+    members.registerDraggable(entryOf('card', two!));
+    members.registerDroppable(entryOf('zone', one!));
+    members.registerDroppable(entryOf('zone', two!));
+    await nextTick();
+    expect(warn).toHaveBeenCalledTimes(2);
+    expect(warn.mock.calls[0]![0]).toContain('"card"');
+    expect(warn.mock.calls[1]![0]).toContain('"zone"');
+  });
+
+  it('is not an item re-created elsewhere, nor a row a virtual list gave another id', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { members } = createRegistry();
+    const [old, recreated, first, second] = elements(4);
+    // Moved to another list: the new component registers before the old one is gone.
+    const unregister = members.registerDraggable(entryOf('card', old!));
+    members.registerDraggable(entryOf('card', recreated!));
+    unregister();
+    old!.remove();
+    // Recycled rows: `first` takes 9 from `second`, which takes 13.
+    const a = entryOf<DraggableEntry>(5, first!);
+    const b = entryOf<DraggableEntry>(9, second!);
+    const unregisterA = members.registerDraggable(a);
+    const unregisterB = members.registerDraggable(b);
+    unregisterA();
+    a.id = 9;
+    members.registerDraggable(a);
+    unregisterB();
+    b.id = 13;
+    members.registerDraggable(b);
+    await nextTick();
+    expect(warn).not.toHaveBeenCalled();
   });
 });
