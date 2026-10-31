@@ -8,13 +8,17 @@ the item's final slot (`dropAnimation`) and disappears.
 
 The first match wins:
 
-1. The item's own `overlay` component (`makeSortableItem` / `makeDraggable` option).
-2. Its list's or tree's `overlay` component.
-3. The provider's `#overlay` slot. If it renders nothing (`v-if`), the next option applies.
-4. **The default: a clone** of the dragged element. In a multi-drag, it is a column of clones or a stack with a count (see [multi-drag](multi-drag.md)).
+1. The drop target's `overlay` (`makeDroppable`; a list's or tree's `overOverlay`), while the drag is over it and it accepts the drag. What would show otherwise is its default slot (`<slot />`).
+2. The item's own `overlay` component (`makeSortableItem` / `makeDraggable` option).
+3. Its list's or tree's `overlay` component.
+4. The provider's `#overlay` slot. If it renders nothing (`v-if`), the next option applies.
+5. **The default: a clone** of the dragged element. In a multi-drag, it is a column of clones or a stack with a count (see [multi-drag](multi-drag.md)).
 
 `overlay: false` on `makeDraggable` disables the box: move the element yourself with
-the returned `transform`.
+the returned `transform`. Whether there is a box is decided at pickup; which component
+shows is read live (a `shallowRef` switched mid-drag swaps it, entering a target with an
+overlay swaps it). The change crossfades: the provider's `overlayTransition` (`false`, or
+`<Transition>` props: `name`, `mode`, JS hooks).
 
 ## The default clone
 
@@ -40,7 +44,9 @@ colors, table cell widths…) inlined. Ids and `data-dnd-*` marks are stripped, 
 <script setup lang="ts">
 import type { OverlayProps } from '@vue-dnd-kit/core';
 const props = defineProps<OverlayProps>();
-// props: active, items, over, accepted, status, mode ('move' | 'copy' | 'swap' | 'insert')
+// props: active, items, over, accepted, status, mode ('move' | 'copy' | 'swap' | 'insert'),
+// to: where a drop would go ({ list, index, parentKey?, depth? }); outside every target the
+// slot's place (`dropOutside: 'placeholder'`); null when it would land in no list
 </script>
 
 <template>
@@ -75,6 +81,22 @@ Provider slot (for every drag without its own component):
 ```
 
 Show the library's clone inside your own layout with `<DragPreview :id="entry.id" />`.
+
+A drop target that shapes the overlay (the docs' mail, Done column and trash demos):
+
+```ts
+// Over a folder the overlay renders MovePill ("Move 2 messages to Archive"); it gets the
+// drag's own overlay as its default slot, and leaves it out to replace it.
+makeDroppable(folderRef, { id: 'archive', data: folder, overlay: MovePill });
+// Lists and trees as targets: `overOverlay`, `overDropAnimation` (their `overlay` is their items').
+// DoneOverlay renders <slot /> (the task card) and ticks it off.
+makeSortableList(doneRef, { items, group: 'tasks', overlay: TaskOverlay, overOverlay: DoneOverlay });
+// Dropped, the box stays put (`dropAnimation: false`) and the drop waits for Crumple's own
+// CSS animation on `status: 'dropping'` (thrown into the bin, 2 s at most).
+makeDroppable(trashRef, { id: 'trash', overlay: Crumple, dropAnimation: false, onDrop: (e) => e.source?.remove() });
+```
+
+Functions are functional components: `overlay: (props) => h(Card, { ...props, compact: true })`.
 
 ## Size: overlayFit
 

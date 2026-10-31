@@ -37,6 +37,8 @@ Returns `{ id, isDragging, transform, selected }`.
 
 - **`overlay: false`**: no overlay, so the element itself must move. Apply `transform`:
   `:style="transform && { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }"`.
+  It already takes off what the element's container scrolled since the start, so the
+  element stays under the pointer when the page scrolls.
 - **Interactive children** (buttons, inputs, editable fields) don't start a pointer drag,
   so they keep working inside a draggable. With a `handle`, only the handle starts a
   drag, and a mouse drag starts from it at once (no 4px distance).
@@ -170,10 +172,14 @@ makeDraggable(el, { modifiers: [snapToGrid({ x: 32, y: 32, origin: 'container', 
   inside the parent element.
 - `snapToGrid(size)` takes a number or `{ x, y, origin: 'container' | 'delta', smooth }`.
   `smooth` glides the overlay between cells, while collision uses the snapped position at once.
-- Custom: `({ transform, active, activeRect, overlayRect, origin, containerRect, windowRect, over }) => ({ x, y })`.
+- Custom: `({ transform, active, activeRect, overlayRect, origin, containerRect, containerShift, windowRect, over }) => ({ x, y })`.
+  `containerShift`: how far the content the drag started in moved on screen since the start
+  (page or container scrolled, layout shifted). The overlay box is `position: fixed`, so a
+  custom modifier that pins a coordinate should add it, as the axis locks do.
 - **Axis lock:** prefer `axis: 'x' | 'y'` over `restrictToHorizontalAxis` /
   `restrictToVerticalAxis`. It runs after all modifiers, so the lock always holds. An
-  item's own `axis` wins over its list's.
+  item's own `axis` wins over its list's. The locked axis follows the list (parent) the
+  drag started in: scrolling the page mid-drag keeps the item on its row.
 - Options read "when the drag starts" accept getters, so an axis lock can be toggled:
   `axis: () => (locked.value ? 'y' : undefined)`.
 
