@@ -111,13 +111,17 @@
     "source": "8e5af01ef3",
     "text": "`onBeforeDrop` a répondu `'continue'` : il n'y a pas eu de dépôt, et le glissement continue."
   },
+  "DnDMonitor.onDragSettle": {
+    "source": "21262198e4",
+    "text": "L'overlay d'un glissement terminé a atterri : après son animation de dépôt (ou le retour en vol d'une annulation), avec l'événement qu'a reçu `onDragEnd` (un `DnDEndEvent`) ou `onDragCancel`. Le glissement suivant a pu démarrer entre-temps : les glissements n'attendent pas les atterrissages."
+  },
   "DnDMonitor.getKeyboardCoordinates": {
     "source": "72d709477a",
     "text": "Glissements au clavier : prochaine position du pointeur pour une flèche (par exemple le prochain emplacement triable)."
   },
   "DnDState": {
-    "source": "60baeb2f00",
-    "text": "L'état du glissement prend fin quand le dépôt est décidé : `active`, `over` et `pointer` valent `null` (et les droppables cessent d'accepter) pendant que l'overlay s'anime encore jusqu'à sa place (`status` reste `'dropping'`). Une UI dérivée ne mélange jamais l'ancien glissement avec les nouvelles données. Pendant qu'un `onBeforeDrop` asynchrone décide, l'état est conservé tel qu'il était au relâchement, mais la page est sortie du mode glissement : son propre curseur et la sélection de texte sont revenus (une boîte de dialogue de confirmation fonctionne normalement), et l'overlay attend là où il a été déposé."
+    "source": "227f071563",
+    "text": "L'état du glissement prend fin quand le dépôt est décidé : `active`, `over` et `pointer` valent `null` (et les droppables cessent d'accepter) pendant que l'overlay s'anime encore jusqu'à sa place. Une UI dérivée ne mélange jamais l'ancien glissement avec les nouvelles données. Pendant qu'un `onBeforeDrop` asynchrone décide, l'état est conservé tel qu'il était au relâchement, mais la page est sortie du mode glissement : son propre curseur et la sélection de texte sont revenus (une boîte de dialogue de confirmation fonctionne normalement), et l'overlay attend là où il a été déposé.\n\n`status` vaut `'dragging'` pendant qu'un glissement est en cours, sinon `'dropping'` pendant qu'un dépôt se décide ou qu'un overlay atterrit encore, sinon `'idle'` (hors `'activating'` et `'selecting'`). Un nouveau glissement n'attend pas les atterrissages : il démarre aussitôt, et ils se terminent autour de lui."
   },
   "DnDState.position": {
     "source": "4795780b8f",

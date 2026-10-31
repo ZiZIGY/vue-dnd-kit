@@ -111,13 +111,17 @@
     "source": "8e5af01ef3",
     "text": "`onBeforeDrop` 返回了 `'continue'`：没有发生放置，拖拽继续。"
   },
+  "DnDMonitor.onDragSettle": {
+    "source": "21262198e4",
+    "text": "已结束的拖拽的浮层已经落位：在它的放置动画（或取消时的飞回）之后触发，参数是 `onDragEnd`（一个 `DnDEndEvent`）或 `onDragCancel` 收到的那个事件。下一次拖拽可能已在此期间开始：拖拽不会等待落位。"
+  },
   "DnDMonitor.getKeyboardCoordinates": {
     "source": "72d709477a",
     "text": "键盘拖拽：某个方向键对应的下一个指针位置（例如下一个可排序位置）。"
   },
   "DnDState": {
-    "source": "60baeb2f00",
-    "text": "放置结果确定时，拖拽状态即告结束：`active`、`over` 和 `pointer` 变为 `null`（放置目标也不再接收），而浮层仍在以动画方式就位（`status` 保持为 `'dropping'`）。派生的 UI 永远不会把旧的拖拽和新数据混在一起。在异步的 `onBeforeDrop` 做决定期间，状态保持松开时的样子，但页面已退出拖拽模式：它自己的光标和文本选择恢复正常（确认对话框可以照常工作），浮层停在被放下的位置等待。"
+    "source": "227f071563",
+    "text": "放置结果确定时，拖拽状态即告结束：`active`、`over` 和 `pointer` 变为 `null`（放置目标也不再接收），而浮层仍在以动画方式就位。派生的 UI 永远不会把旧的拖拽和新数据混在一起。在异步的 `onBeforeDrop` 做决定期间，状态保持松开时的样子，但页面已退出拖拽模式：它自己的光标和文本选择恢复正常（确认对话框可以照常工作），浮层停在被放下的位置等待。\n\n拖拽进行时 `status` 为 `'dragging'`；否则，在放置结果待定或仍有浮层在落位时为 `'dropping'`；否则为 `'idle'`（`'activating'` 和 `'selecting'` 除外）。新的拖拽不会等待落位：它立即开始，落位在它周围完成。"
   },
   "DnDState.position": {
     "source": "4795780b8f",

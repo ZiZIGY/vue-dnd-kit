@@ -99,6 +99,10 @@
     "source": "2cebf1b9ab",
     "text": "拖拽时浮层的尺寸。`'slot'`（默认）：它跟随项将落入的位置，所以经过另一个列表时它会采用那个列表中项的尺寸，放置时也不需要调整尺寸。它围绕指针调整尺寸，指针始终位于盒子中相同的比例位置。`'source'`：保持被拖拽元素的尺寸。默认浮层的内容会按新尺寸重新布局；它永远不会被缩放。"
   },
+  "DnDProviderProps.overlayPreviews": {
+    "source": "d7fdc45d6a",
+    "text": "多项拖拽：拿起时有多少个被拖拽项获得克隆，即抓起的项以及按放置顺序与它相邻的其他项。默认 5；`'all'` 克隆每一个已渲染的项。默认浮层显示这些克隆，并为其余的项计数（`+N`）；在你自己的布局中，`DragPreview` 为没有克隆的项渲染它的插槽。每个克隆都会飞：取消时飞回它的项，放置时飞到它的位置，放置进某个区域时依次飞入该区域。克隆是一起生成的，每次快照过程只为全部克隆做一次布局，但每个克隆都要读取它的样式：在慢速手机上留意很长的项。"
+  },
   "DnDProviderProps.overlayTransition": {
     "source": "6852def127",
     "text": "拖拽过程中浮层从一个组件换成另一个组件的方式（放置目标的 `overlay` 接管，或 `overlay` ref 被切换）：`true`（默认）在 150 ms 内交叉淡入淡出，`false` 立即替换，对象则是包裹内容根元素的 Vue `<Transition>` 的 props（`name`、`mode`，以及用于 GSAP 或 motion 的 JS 钩子）。没有 `mode: 'out-in'` 时两者会同时显示：给离开的那个设置 `position: absolute`（`.<name>-leave-active`），让它们在盒子里叠在一起。"
@@ -140,8 +144,8 @@
     "text": "浮层组件的 props，用于 `defineProps<OverlayProps>()`。\n\n组件渲染在浮层盒子内部，盒子跟随位置的尺寸（`overlayFit: 'slot'`），并在放置时以动画方式变化。给根元素设置 `width: 100%`（以及 `height: 100%`）以跟随这个尺寸；固定尺寸会保持组件自己的尺寸。"
   },
   "DragPreviewProps": {
-    "source": "5ca62fbc15",
-    "text": "`DragPreview` 的 props：某一个被拖拽项的默认克隆，用于自行布局多个项的自定义浮层（`overlay` 组件或 provider 的 `#overlay` 插槽），例如 `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`。\n\n克隆在拿起时生成：抓起的项，以及按放置顺序与它相邻的最多四个其他项（当时已渲染的那些）。对于其他任何项，`DragPreview` 把它的默认插槽渲染在一个像克隆一样接受 `class` 和 `style` 的元素中；没有默认插槽时什么都不渲染。克隆会填满这个元素，元素的尺寸是该项在拿起时的尺寸，以内联样式设置：用 `style` 修改它（`:style=\"{ width: '100%', height: '100%' }\"`），`style` 会透传；class 无法覆盖它。\n\n在可排序的多项拖拽中（`multiple: 'group'` 或 `'gaps'`），抓起的项以外的项的预览会随放置落到该项的位置上（取消时回到原处），无论布局把它放在哪里：途中会撤销用 `transform` 旋转或缩放的包裹元素，它的尺寸以宽度和高度的方式执行动画。为预览本身设置样式（圆角、阴影）：它的包裹元素留在盒子里。没有克隆的项则改为淡入。"
+    "source": "e542facb3a",
+    "text": "`DragPreview` 的 props：某一个被拖拽项的默认克隆，用于自行布局多个项的自定义浮层（`overlay` 组件或 provider 的 `#overlay` 插槽），例如 `<DragPreview v-for=\"item in items\" :key=\"item.id\" :id=\"item.id\" />`。\n\n克隆在拿起时生成：抓起的项，以及按放置顺序与它相邻的其他项，数量为 provider 的 `overlayPreviews`（默认 5；限于当时已渲染的那些）。对于其他任何项，`DragPreview` 把它的默认插槽渲染在一个像克隆一样接受 `class` 和 `style` 的元素中；没有默认插槽时什么都不渲染。克隆会填满这个元素，元素的尺寸是该项在拿起时的尺寸，以内联样式设置：用 `style` 修改它（`:style=\"{ width: '100%', height: '100%' }\"`），`style` 会透传；class 无法覆盖它。\n\n在可排序的多项拖拽中（`multiple: 'group'` 或 `'gaps'`），抓起的项以外的项的预览会随放置落到该项的位置上（取消时回到原处），无论布局把它放在哪里：途中会撤销用 `transform` 旋转或缩放的包裹元素，它的尺寸以宽度和高度的方式执行动画。为预览本身设置样式（圆角、阴影）：它的包裹元素留在盒子里。没有克隆的项则改为淡入。放置进某个区域（而不是列表）时，各个预览依次进入该区域，盒子最后进入。"
   },
   "DragPreviewProps.id": {
     "source": "220d6dd174",

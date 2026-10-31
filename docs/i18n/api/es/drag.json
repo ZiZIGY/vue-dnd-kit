@@ -111,13 +111,17 @@
     "source": "8e5af01ef3",
     "text": "`onBeforeDrop` respondió `'continue'`: no hubo drop y el arrastre continúa."
   },
+  "DnDMonitor.onDragSettle": {
+    "source": "21262198e4",
+    "text": "El overlay de un arrastre terminado ha aterrizado: tras su animación al soltar (o la vuelta a su sitio de una cancelación), con el evento que recibió `onDragEnd` (un `DnDEndEvent`) u `onDragCancel`. Mientras tanto puede haber empezado el siguiente arrastre: los arrastres no esperan a los aterrizajes."
+  },
   "DnDMonitor.getKeyboardCoordinates": {
     "source": "72d709477a",
     "text": "Arrastres con teclado: la siguiente posición del puntero para una flecha (por ejemplo, el siguiente hueco ordenable)."
   },
   "DnDState": {
-    "source": "60baeb2f00",
-    "text": "El estado del arrastre termina cuando se decide el drop: `active`, `over` y `pointer` pasan a valer `null` (y los droppables dejan de aceptar) mientras el overlay todavía se anima hasta su sitio (`status` sigue en `'dropping'`). La UI derivada nunca mezcla el arrastre anterior con los datos nuevos. Mientras decide un `onBeforeDrop` asíncrono, el estado se conserva como estaba al soltar, pero la página sale del modo de arrastre: vuelven su propio cursor y la selección de texto (un diálogo de confirmación funciona con normalidad), y el overlay espera donde se soltó."
+    "source": "227f071563",
+    "text": "El estado del arrastre termina cuando se decide el drop: `active`, `over` y `pointer` pasan a valer `null` (y los droppables dejan de aceptar) mientras el overlay todavía se anima hasta su sitio. La UI derivada nunca mezcla el arrastre anterior con los datos nuevos. Mientras decide un `onBeforeDrop` asíncrono, el estado se conserva como estaba al soltar, pero la página sale del modo de arrastre: vuelven su propio cursor y la selección de texto (un diálogo de confirmación funciona con normalidad), y el overlay espera donde se soltó.\n\n`status` vale `'dragging'` mientras hay un arrastre en curso; si no, `'dropping'` mientras se decide un drop o un overlay todavía aterriza; si no, `'idle'` (aparte de `'activating'` y `'selecting'`). Un arrastre nuevo no espera a los aterrizajes: empieza enseguida, y ellos terminan a su alrededor."
   },
   "DnDState.position": {
     "source": "4795780b8f",

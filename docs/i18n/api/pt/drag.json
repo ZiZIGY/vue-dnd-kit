@@ -111,13 +111,17 @@
     "source": "8e5af01ef3",
     "text": "`onBeforeDrop` respondeu `'continue'`: não houve drop, e o arraste continua."
   },
+  "DnDMonitor.onDragSettle": {
+    "source": "21262198e4",
+    "text": "O overlay de um arraste encerrado pousou: depois da sua animação de drop (ou do voo de volta de um cancelamento), com o evento que `onDragEnd` (um `DnDEndEvent`) ou `onDragCancel` recebeu. O próximo arraste pode ter começado nesse meio-tempo: os arrastes não esperam os pousos."
+  },
   "DnDMonitor.getKeyboardCoordinates": {
     "source": "72d709477a",
     "text": "Arrastes por teclado: a próxima posição do ponteiro para uma seta (por exemplo, a próxima posição ordenável)."
   },
   "DnDState": {
-    "source": "60baeb2f00",
-    "text": "O estado do arraste termina quando o drop é decidido: `active`, `over` e `pointer` passam a ser `null` (e os droppables deixam de aceitar) enquanto o overlay ainda está sendo animado até o lugar (`status` continua `'dropping'`). Uma UI derivada nunca mistura o arraste antigo com os dados novos. Enquanto um `onBeforeDrop` assíncrono decide, o estado é mantido como estava no momento em que o item foi solto, mas a página sai do modo de arraste: o cursor e a seleção de texto dela voltam (um diálogo de confirmação funciona normalmente), e o overlay espera onde foi solto."
+    "source": "227f071563",
+    "text": "O estado do arraste termina quando o drop é decidido: `active`, `over` e `pointer` passam a ser `null` (e os droppables deixam de aceitar) enquanto o overlay ainda está sendo animado até o lugar. Uma UI derivada nunca mistura o arraste antigo com os dados novos. Enquanto um `onBeforeDrop` assíncrono decide, o estado é mantido como estava no momento em que o item foi solto, mas a página sai do modo de arraste: o cursor e a seleção de texto dela voltam (um diálogo de confirmação funciona normalmente), e o overlay espera onde foi solto.\n\n`status` é `'dragging'` enquanto um arraste está em andamento; senão, `'dropping'` enquanto um drop é decidido ou um overlay ainda pousa; senão, `'idle'` (deixando de lado `'activating'` e `'selecting'`). Um novo arraste não espera os pousos: ele começa na hora, e eles terminam ao redor dele."
   },
   "DnDState.position": {
     "source": "4795780b8f",

@@ -111,13 +111,17 @@
     "source": "8e5af01ef3",
     "text": "`onBeforeDrop` hat `'continue'` geantwortet: Es gab keinen Drop, und der Drag geht weiter."
   },
+  "DnDMonitor.onDragSettle": {
+    "source": "21262198e4",
+    "text": "Das Overlay eines beendeten Drags ist gelandet: nach seiner Drop-Animation (oder dem Rückflug bei einem Abbruch), mit dem Event, das `onDragEnd` (ein `DnDEndEvent`) oder `onDragCancel` bekommen hat. Der nächste Drag kann inzwischen begonnen haben: Drags warten nicht auf Landungen."
+  },
   "DnDMonitor.getKeyboardCoordinates": {
     "source": "72d709477a",
     "text": "Drags per Tastatur: nächste Zeigerposition für eine Pfeiltaste (z. B. der nächste sortierbare Slot)."
   },
   "DnDState": {
-    "source": "60baeb2f00",
-    "text": "Der Zustand des Drags endet, wenn über den Drop entschieden ist: `active`, `over` und `pointer` sind `null` (und Drop-Zonen nehmen nichts mehr an), während das Overlay noch an seinen Platz animiert (`status` bleibt `'dropping'`). Abgeleitete UI mischt nie den alten Drag mit den neuen Daten. Während ein asynchrones `onBeforeDrop` entscheidet, bleibt der Zustand so, wie er beim Loslassen war, aber die Seite ist nicht mehr im Drag-Modus: Ihr eigener Cursor und die Textauswahl sind zurück (ein Bestätigungsdialog funktioniert normal), und das Overlay wartet dort, wo es abgelegt wurde."
+    "source": "227f071563",
+    "text": "Der Zustand des Drags endet, wenn über den Drop entschieden ist: `active`, `over` und `pointer` sind `null` (und Drop-Zonen nehmen nichts mehr an), während das Overlay noch an seinen Platz animiert. Abgeleitete UI mischt nie den alten Drag mit den neuen Daten. Während ein asynchrones `onBeforeDrop` entscheidet, bleibt der Zustand so, wie er beim Loslassen war, aber die Seite ist nicht mehr im Drag-Modus: Ihr eigener Cursor und die Textauswahl sind zurück (ein Bestätigungsdialog funktioniert normal), und das Overlay wartet dort, wo es abgelegt wurde.\n\n`status` ist `'dragging'`, solange ein Drag läuft, sonst `'dropping'`, solange über einen Drop entschieden wird oder ein Overlay noch landet, sonst `'idle'` (abgesehen von `'activating'` und `'selecting'`). Ein neuer Drag wartet nicht auf die Landungen: Er startet sofort, und sie enden um ihn herum."
   },
   "DnDState.position": {
     "source": "4795780b8f",
