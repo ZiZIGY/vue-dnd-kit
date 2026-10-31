@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, useTemplateRef, watch } from 'vue';
-import { makeDroppable, useDnD, type DnDEvent } from '@vue-dnd-kit/core';
+import { ref, useTemplateRef } from 'vue';
+import { makeDroppable, useDnDMonitor, type DnDEvent } from '@vue-dnd-kit/core';
 import Crumple from './Crumple.vue';
 
 const emit = defineEmits<{ drop: [event: DnDEvent] }>();
 
-/** A photo was dropped in and is falling: the lid stays open until the drop is over. */
-const swallowing = ref(false);
+/** Photos dropped in and still falling: the lid stays open until they are in. */
+const falling = ref(0);
 /** Times the lid has shut on a photo: each one replays the wobble. */
 const shut = ref(0);
 
@@ -18,21 +18,23 @@ const { isOver } = makeDroppable(el, {
   // The box stays where it was let go: its content does the landing.
   dropAnimation: false,
   onDrop: (event) => {
-    swallowing.value = true;
+    falling.value++;
     emit('drop', event);
   },
 });
 
-const { status } = useDnD();
-watch(status, (now) => {
-  if (now !== 'idle' || !swallowing.value) return;
-  swallowing.value = false;
-  shut.value++;
+// A drop's landing is over: the photo is in. The next drag may run meanwhile.
+useDnDMonitor({
+  onDragSettle: (event) => {
+    if (!('dropped' in event) || event.over?.id !== 'trash' || !falling.value) return;
+    falling.value--;
+    shut.value++;
+  },
 });
 </script>
 
 <template>
-  <div ref="el" class="trash" :class="{ over: isOver, open: isOver || swallowing }">
+  <div ref="el" class="trash" :class="{ over: isOver, open: isOver || falling > 0 }">
     <svg :key="shut" class="bin" :class="{ shut }" viewBox="0 0 64 72" aria-hidden="true">
       <g class="lid">
         <path d="M24 11V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v4" />

@@ -4,7 +4,8 @@ import Finder from './Finder.vue';
 </script>
 
 <template>
-  <DnDProvider>
+  <!-- Every picked file gets a clone at pickup: they all go into the folder. -->
+  <DnDProvider overlay-previews="all">
     <Finder />
   </DnDProvider>
 </template>

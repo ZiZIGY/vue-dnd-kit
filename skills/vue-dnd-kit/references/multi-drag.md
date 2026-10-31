@@ -57,12 +57,19 @@ Set on the list where the drag starts (`makeSortableList({ multiple })`), defaul
 
 | Mode | While dragging | Default overlay |
 | --- | --- | --- |
-| `'group'` | The other selected items leave their places and travel with the grabbed one as adjacent placeholders, so the list already shows the result. | Up to five dragged items in a column along the list (a row in horizontal lists), `+N` at each end for those past it; in grids, a pile behind the grabbed item with the whole count. |
+| `'group'` | The other selected items leave their places and travel with the grabbed one as adjacent placeholders, so the list already shows the result. | Up to `overlayPreviews` (default 5) dragged items in a column along the list (a row in horizontal lists), `+N` at each end for those past it; in grids, a pile behind the grabbed item with the whole count. |
 | `'gaps'` | The others stay where they are (marked `data-dnd-dragging`) until the drop. | Same column (pile in grids). |
 | `'stack'` | The others fly into the overlay. | The grabbed item with a count. |
 
 On drop the items land together at the target index, in the order they had. In
 `'group'` and `'gaps'` the default overlay's previews each fly to their own slot.
+
+Plain draggables (`makeDraggable`) in a multi-drag: the default overlay is a pile (the
+grabbed one on top of the others, the count). Its clones fly back to their items on a
+cancel. Into a zone (a folder, a trash can: the items no longer shown after the drop), every
+clone of the overlay (pile, column, `DragPreview`s) goes in one after another, the box
+last. `<DnDProvider overlay-previews="all">` clones every rendered dragged item at pickup
+(default 5); the clones are taken in one batch, but each costs reading its styles.
 
 ## Custom overlay for several items
 
@@ -84,7 +91,7 @@ defineProps<OverlayProps>();
       :id="entry.id"
       :style="{ position: 'absolute', inset: 0, transform: `rotate(${i * 4}deg)` }"
     >
-      <!-- Fallback when this item has no clone (only the grabbed item and up to 4 near it are cloned). -->
+      <!-- Fallback when this item has no clone (past overlayPreviews, or not rendered). -->
       <div class="card">{{ entry.id }}</div>
     </DragPreview>
     <span v-if="items.length > 1" class="badge">{{ items.length }}</span>
@@ -92,9 +99,10 @@ defineProps<OverlayProps>();
 </template>
 ```
 
-Clones are taken at pickup: the grabbed item and up to four others next to it in drop
-order (if they are rendered). Others render `DragPreview`'s default slot. In `'group'` and
-`'gaps'` modes, each preview lands on its own slot on drop, undoing transforms on the way.
+Clones are taken at pickup: the grabbed item and the others next to it in drop order, as
+many as `overlayPreviews` (if they are rendered). Others render `DragPreview`'s default
+slot. In `'group'` and `'gaps'` modes, each preview lands on its own slot on drop, undoing
+transforms on the way; into a zone, the previews go in one after another.
 
 ## Trees
 

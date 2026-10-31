@@ -39,8 +39,9 @@ const onPress = (event: PointerEvent) => {
 };
 // Capture: before the sensor hears the release and the status changes.
 useEventListener('pointerup', () => (holding = false), { capture: true });
+// A press that gave up goes back to rest ('idle', or 'dropping' while an overlay lands).
 watch(status, (now, before) => {
-  if (before !== 'activating' || now !== 'idle') return;
+  if (before !== 'activating' || now === 'dragging') return;
   note.value = holding ? 'Moved more than 8 px while holding: no drag.' : 'Let go too early: just a click.';
 });
 </script>

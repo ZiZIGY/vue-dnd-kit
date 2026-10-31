@@ -73,6 +73,8 @@ const { status, active, over, pointer, position, activation, isAutoScrolling, se
 // position: where the dragged box's top-left is in `over`, live (`DnDEvent.position` on every
 //           move); an overlay component shows where it would land with it
 // status: 'idle' | 'activating' | 'dragging' | 'dropping' | 'selecting'
+//         ('dragging' while a drag runs, else 'dropping' while an overlay lands or an
+//          async onBeforeDrop decides, else 'idle')
 // active: { id, ids, items, data, type, element, rect, sensor } | null
 // over:   { id, data, element, rect, accepted } | null
 // activation.progress: 0..1 while a long press charges (draw a progress ring with it)
@@ -80,9 +82,14 @@ const { status, active, over, pointer, position, activation, isAutoScrolling, se
 ```
 
 When the drop is decided, `active`, `over` and `pointer` become `null`, even while the
-overlay still animates (`status` stays `'dropping'`). Derived UI never mixes the old drag
+overlay still animates (`status` reads `'dropping'`). Derived UI never mixes the old drag
 with the new data. While an async `onBeforeDrop` is pending, the state stays as it was at
 release.
+
+Drags don't wait for landings: each decided drop lands in its own overlay box while the
+next drag runs (`status` is `'dragging'` then). A press on a landing box catches it in
+flight (the drag goes on from where it is). To act when a drop's animation is over (shut a
+lid, play a sound), use `onDragSettle`, not `status === 'idle'`: other drags may be running.
 
 ## useDnDMonitor(): events from anywhere under the provider
 
@@ -95,6 +102,7 @@ useDnDMonitor({
   onDragEnd(e) {},                       // after the write: e.dropped, e.accepted, e.position
   onDragCancel(e) {},
   onDragResume(e) {},                    // onBeforeDrop answered 'continue': the drag goes on
+  onDragSettle(e) {},                    // its overlay has landed: the onDragEnd / onDragCancel event
   getKeyboardCoordinates(event, { active, pointer, direction }) {}, // custom arrow-key moves
 });
 ```

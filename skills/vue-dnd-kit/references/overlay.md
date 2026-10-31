@@ -12,7 +12,7 @@ The first match wins:
 2. The item's own `overlay` component (`makeSortableItem` / `makeDraggable` option).
 3. Its list's or tree's `overlay` component.
 4. The provider's `#overlay` slot. If it renders nothing (`v-if`), the next option applies.
-5. **The default: a clone** of the dragged element. In a multi-drag, it is a column of clones or a stack with a count (see [multi-drag](multi-drag.md)).
+5. **The default: a clone** of the dragged element. In a multi-drag, it is a column of clones, a pile (grids, plain draggables) or the grabbed one with a count (`'stack'`); see [multi-drag](multi-drag.md).
 
 `overlay: false` on `makeDraggable` disables the box: move the element yourself with
 the returned `transform`. Whether there is a box is decided at pickup; which component

@@ -2,17 +2,16 @@
 import { useTemplateRef } from 'vue';
 import { makeDraggable } from '@vue-dnd-kit/core';
 import FileIcon from './FileIcon.vue';
-import FilePile from './FilePile.vue';
 
 const props = defineProps<{ file: { id: string; name: string; kind: 'pdf' | 'png' | 'txt' | 'zip' | 'fig' | 'mp4' } }>();
 const emit = defineEmits<{ pick: [event: MouseEvent] }>();
 const el = useTemplateRef<HTMLElement>('el');
-// `type`: folders and Home take files, the band selects them.
+// `type`: folders and Home take files, the band selects them. The overlay is the default
+// one: several files make a pile.
 const { isDragging, selected } = makeDraggable(el, {
   id: () => props.file.id,
   data: () => props.file,
   type: 'file',
-  overlay: FilePile,
 });
 </script>
 

@@ -1,38 +1,40 @@
 <script setup lang="ts">
-import { ref, useTemplateRef, watch } from 'vue';
-import { makeDroppable, useDnD, type Key } from '@vue-dnd-kit/core';
+import { ref, useTemplateRef } from 'vue';
+import { makeDroppable, useDnDMonitor, type Key } from '@vue-dnd-kit/core';
 
 const props = defineProps<{ folder: { id: string; name: string; files: unknown[] } }>();
 const emit = defineEmits<{ open: []; move: [ids: Key[]] }>();
 
-/** Files were dropped in and are flying: the folder stays open until they are inside. */
-const swallowing = ref(false);
+/** Drops of files still flying in: the folder stays open until they are inside. */
+const flying = ref(0);
 /** Times it took files: each one replays the gulp. */
 const gulps = ref(0);
 
 const el = useTemplateRef<HTMLElement>('el');
+// Dropped in, the files go into the folder one after another (the default drop animation
+// of several items into a zone).
 const { isOver } = makeDroppable(el, {
   id: () => props.folder.id,
   accept: 'file',
-  // The box stays where it was let go: the files fly in on their own (FilePile).
-  dropAnimation: false,
   onDrop: (event) => {
-    swallowing.value = true;
+    flying.value++;
     emit('move', event.active.ids);
   },
 });
 
-const { status } = useDnD();
-watch(status, (now) => {
-  if (now !== 'idle' || !swallowing.value) return;
-  swallowing.value = false;
-  gulps.value++;
+// A drop's landing is over: the files are in. The next drag may run meanwhile.
+useDnDMonitor({
+  onDragSettle: (event) => {
+    if (!('dropped' in event) || event.over?.id !== props.folder.id || !flying.value) return;
+    flying.value--;
+    gulps.value++;
+  },
 });
 </script>
 
 <template>
   <!-- A button: the selection area leaves its presses alone, so a click opens it. -->
-  <li ref="el" class="folder" :class="{ open: isOver || swallowing, over: isOver }">
+  <li ref="el" class="folder" :class="{ open: isOver || flying > 0, over: isOver }">
     <button type="button" class="open-button" :aria-label="`Open ${folder.name}`" @click="emit('open')" />
     <svg :key="gulps" class="icon" :class="{ gulp: gulps }" viewBox="0 0 52 42" aria-hidden="true">
       <path class="back" d="M2 6a3 3 0 0 1 3-3h13l4 4h25a3 3 0 0 1 3 3v27a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3z" />

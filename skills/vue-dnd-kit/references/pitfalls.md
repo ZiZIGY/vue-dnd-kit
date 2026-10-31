@@ -25,6 +25,7 @@
 | Virtual list shows stale rows after a reorder (TanStack) | Options passed as a static object, or a stable `getItemKey`. | One `computed` that reads `items.value` and creates `getItemKey` / `rangeExtractor` inside it. |
 | `onDrop` sees the old order | By design: it runs before the write. | Read `e.result`, or use the provider's `@drag-end` / `useDnDMonitor({ onDragEnd })`. |
 | UI shows the dragged item twice right after drop | Your UI derives from `useDnD().active`. | `active` is `null` as soon as the drop is decided. Check `status === 'dropping'` if you need the landing phase. |
+| An "after the animation" effect (a lid shutting) waits for the next drag to end | It watches `status` turning `'idle'`, but the next drag started during the landing. | Use `useDnDMonitor({ onDragSettle })`: it fires per drag, when its overlay is home. |
 | Moves double-animate | `<TransitionGroup>` around sortable items. | Remove it; use `animate` on the list. |
 | An action fires when a drag ends on the item | A handler on `pointerup` / `mouseup`. The built-in pointer sensor swallows the `click` after a drag, but not those events. | Use `@click` for item actions. |
 
