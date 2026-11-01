@@ -446,6 +446,23 @@ describe("tree placeholder: 'indicator'", () => {
     expect(shape(roots.value)).toBe('a(a1,a2(c,a2x)),b(b1)');
   });
 
+  it('sideways over the dragged row itself nests it where it stands', async () => {
+    const { container, roots } = renderTree({ placeholder: 'indicator', indentation: 20 });
+    await settle();
+    await start(container, 'c', 'pointer');
+    const at = centerOf(container, 'c');
+    // A level to the right: the last child of b, at its own place (the line goes on the row
+    // above: never on the rows that travel).
+    await pointTo({ ...at, x: at.x + 22 });
+    expect(lineOn(container, 'b1')).toBe('after:1:b');
+    // Back to its own level: no line, the drop would change nothing.
+    await pointTo({ ...at, x: at.x - 30 });
+    expect(container.querySelectorAll('[data-line]')).toHaveLength(0);
+    await pointTo({ ...at, x: at.x + 22 });
+    await drop();
+    expect(shape(roots.value)).toBe('a(a1,a2(a2x)),b(b1,c)');
+  });
+
   it("'hover' nesting: the line takes the level of the row it is on", async () => {
     const { container } = renderTree({ placeholder: 'indicator', nesting: 'hover' });
     await settle();
@@ -668,6 +685,20 @@ describe('createItem: plain draggables into a tree', () => {
     expect(tree().projected.value).toEqual({ depth: 0, parentKey: null });
     await drop();
     expect(shape(roots.value)).toBe('a(a1,a2(a2x)),new(new1),b(b1),c');
+  });
+
+  it("with an indicator line, the overlay's mode says 'insert' as the drop will", async () => {
+    const { container, drops } = renderTree({ createItem: () => node('new'), placeholder: 'indicator' }, () => [h(Chip)]);
+    await settle();
+    manager.start('chip', { x: 100, y: 20 }, 'pointer');
+    await settle();
+    expect(manager.mode.value).toBe('move');
+    await pointTo({ x: 400, y: centerOf(container, 'b').y - 15 });
+    // The tree doesn't move: the made node is in no draft, the line shows where it goes.
+    expect(rowsOf(container)).not.toContain('new');
+    expect(manager.mode.value).toBe('insert');
+    await drop();
+    expect(drops[0]).toMatchObject({ mode: 'insert' });
   });
 
   it('a tree without createItem is no target for plain draggables', async () => {

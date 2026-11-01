@@ -64,8 +64,8 @@
     "text": "Árboles: el padre que reciben los nodos soltados, `null` en el nivel raíz."
   },
   "SortableListOptions": {
-    "source": "ad5d98cc02",
-    "text": "Opciones de `makeSortableList`. Una lista (o un árbol) por componente: proporciona el contexto que leen sus ítems, así que una segunda lista en el mismo componente se quedaría con los ítems de la primera (las builds de desarrollo avisan de ello).\n\nLas opciones aceptan un valor, una ref o un getter (`overlay`, `animation`: un valor o una ref) y se leen cuando la lista las necesita, así que un cambio se aplica, como muy tarde, en el siguiente arrastre. Excepciones: `id` y `group` se leen una sola vez, al crear la lista; `items` es el propio modelo; las funciones (`getKey`, `clone`, `createItem`, los callbacks) se pasan tal cual."
+    "source": "5578e6dad0",
+    "text": "Opciones de `makeSortableList`. Una lista (o un árbol) por componente: proporciona el contexto que leen sus ítems, así que una segunda lista en el mismo componente se quedaría con los ítems de la primera (las builds de desarrollo avisan de ello).\n\nLas opciones aceptan un valor, una ref o un getter (`overlay`, `animation`: un valor o una ref) y se leen cuando la lista las necesita, así que un cambio se aplica, como muy tarde, en el siguiente arrastre. Excepciones: `id` y `group` se leen una sola vez, al crear la lista; `items` es el propio modelo; las funciones (`getKey`, `filter`, `clone`, `createItem`, los callbacks) se pasan tal cual."
   },
   "SortableListOptions.items": {
     "source": "bcf07acd7a",
@@ -75,9 +75,17 @@
     "source": "f5ae57e9ca",
     "text": "Por defecto: `item.id`, o el propio ítem en el caso de los primitivos. También da la clave de `makeSortableItem({ item })`."
   },
+  "SortableListOptions.filter": {
+    "source": "68bbc0dba4",
+    "text": "Muestra solo los ítems para los que devuelve `true` (una búsqueda, una etiqueta): `items` (el que se devuelve) los contiene, y un arrastre ordena entre ellos. Los demás conservan su sitio en el origen: un drop escribe el array entero, con cada ítem oculto todavía después del visible al que seguía (después del más cercano que se quedó quieto, si ese se movió). Reactiva: lo que lee (una ref de búsqueda) se aplica al momento."
+  },
   "SortableListOptions.id": {
     "source": "c0adaf519f",
     "text": "Por defecto: `useId()`, estable entre el renderizado en el servidor y en el cliente. Se lee una vez."
+  },
+  "SortableListOptions.label": {
+    "source": "afaee09f48",
+    "text": "El nombre que la gente le da a la lista: los textos para lectores de pantalla lo dicen en lugar de su id (`position 2 of 5 in Garden`)."
   },
   "SortableListOptions.overlay": {
     "source": "47e3eb4c8a",
@@ -210,6 +218,10 @@
   "SortableItemOptions.handle": {
     "source": "519bda20d7",
     "text": "Elemento o selector dentro del ítem que inicia el arrastre (y recibe los atributos)."
+  },
+  "SortableItemOptions.label": {
+    "source": "93ed063b77",
+    "text": "El nombre que la gente le da al ítem: los textos para lectores de pantalla lo dicen en lugar de su clave (`Picked up Tomato at position 2 of 5 in Garden`). Los eventos lo llevan en `active.label` y en `items`."
   },
   "SortableItemOptions.activation": {
     "source": "07b1465312",

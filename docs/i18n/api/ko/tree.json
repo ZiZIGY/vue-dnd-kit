@@ -31,6 +31,10 @@
     "source": "c0adaf519f",
     "text": "기본값: `useId()`. 서버 렌더링과 클라이언트 렌더링 사이에서 안정적입니다. 한 번만 읽습니다."
   },
+  "SortableTreeOptions.label": {
+    "source": "86c099a68f",
+    "text": "사람이 트리를 부르는 이름. 스크린 리더용 문구가 id 대신 이 이름을 읽습니다."
+  },
   "SortableTreeOptions.overlay": {
     "source": "cf37f2819a",
     "text": "이 트리 행의 오버레이 컴포넌트(행 자체의 `overlay`가 우선합니다). 드래그 중에 바꾼 ref는 바로 교체됩니다."

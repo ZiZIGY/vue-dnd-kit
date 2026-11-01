@@ -31,6 +31,10 @@
     "source": "c0adaf519f",
     "text": "Padrão: `useId()`, estável entre a renderização no servidor e no cliente. Lido uma única vez."
   },
+  "SortableTreeOptions.label": {
+    "source": "86c099a68f",
+    "text": "Como as pessoas chamam a árvore: os textos para leitores de tela dizem isso em vez do id dela."
+  },
   "SortableTreeOptions.overlay": {
     "source": "cf37f2819a",
     "text": "Componente de overlay para as linhas desta árvore (o `overlay` da própria linha prevalece). Um ref trocado durante o arraste o troca na hora."

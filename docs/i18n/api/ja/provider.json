@@ -3,6 +3,10 @@
     "source": "957ec8f6ce",
     "text": "並べ替え可能なリストまたはツリー（その表示されている行）の中の位置：`index` は 0 から数え、全体は `length` 件です。"
   },
+  "AnnouncedPosition.label": {
+    "source": "702bfecdc2",
+    "text": "リストの `label`（人が呼ぶ名前）。"
+  },
   "AnnouncementContext": {
     "source": "884af39ecf",
     "text": "読み上げがイベント以外に何について伝えるか：組み込みのテキストと同じ内容を伝える独自のテキスト（別の言語、別の言い回し）のためのものです。"

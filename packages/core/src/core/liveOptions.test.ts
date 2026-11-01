@@ -237,4 +237,18 @@ describe('makeSelectionArea options are read when a band starts', () => {
     strategy.value = 'select';
     expect(await band()).toEqual({ selecting: true, selected: [] });
   });
+
+  it('a press that does not move stays a click: the pointer is captured once it is a band', async () => {
+    const container = mount(() => h(Area, { modifier: () => undefined, strategy: (): SelectionStrategy => 'toggle' }));
+    await nextTick();
+    const capture = vi.spyOn(document.body, 'setPointerCapture').mockImplementation(() => {});
+    pointer('pointerdown', container.querySelector('p')!, { clientX: 10, clientY: 10 });
+    expect(manager.status.value).toBe('selecting');
+    // Captured, the click would go to <body>, not to what was pressed.
+    expect(capture).not.toHaveBeenCalled();
+    pointer('pointermove', document, { clientX: 40, clientY: 40 });
+    expect(capture).toHaveBeenCalledWith(1);
+    pointer('pointerup', document, { clientX: 40, clientY: 40 });
+    await nextTick();
+  });
 });

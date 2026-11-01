@@ -13,6 +13,7 @@ import type {
 import type { AcceptMode, AcceptRule, BeforeDropResult, DnDEvent } from './drag';
 import type { Modifier } from './collision';
 import type { DropAnimation } from './animation';
+import type { ExternalAccept, NativeDragOptions } from './native';
 
 // ─── Draggable / droppable ─────────────────────────────────────────────────────
 
@@ -29,6 +30,11 @@ export interface DraggableOptions<TData = unknown> {
    */
   id?: MaybeReadonlyRefOrGetter<Key>;
   data?: MaybeReadonlyRefOrGetter<TData>;
+  /**
+   * What people call it: screen reader texts say it instead of the id (`Picked up Tomato`).
+   * Events carry it as `active.label` and in `items`.
+   */
+  label?: MaybeReadonlyRefOrGetter<string | undefined>;
   type?: MaybeReadonlyRefOrGetter<string | string[] | undefined>;
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
   /** Element or selector inside the draggable that starts the drag (and gets the attributes). */
@@ -79,6 +85,14 @@ export interface DraggableOptions<TData = unknown> {
    * ever removed. Live: turning it off removes what the library set.
    */
   attributes?: MaybeReadonlyRefOrGetter<boolean | undefined>;
+  /**
+   * A mouse drag of it is the browser's own drag, which can leave the page: onto the
+   * desktop, into another app or tab, into another window of the app. On the page it works
+   * as usual (targets, lists that make room), but the browser draws the dragged image
+   * instead of the overlay. Touch and keyboard drags stay the library's. `true` carries
+   * the `label` as text. Read when a press starts.
+   */
+  native?: MaybeReadonlyRefOrGetter<boolean | NativeDragOptions | undefined>;
 }
 
 export interface DraggableReturn {
@@ -120,6 +134,8 @@ export interface DroppableOptions<TData = unknown> {
   /** Default: `useId()`, stable between server and client render. */
   id?: MaybeReadonlyRefOrGetter<Key>;
   data?: MaybeReadonlyRefOrGetter<TData>;
+  /** What people call it: screen reader texts say it instead of the id (`over Trash`); events carry it as `over.label`. */
+  label?: MaybeReadonlyRefOrGetter<string | undefined>;
   /**
    * What this target takes. Inside a sortable item, one that refuses the drag lets the
    * list sort over it. A value or a ref: a function is a rule.
@@ -150,10 +166,18 @@ export interface DroppableOptions<TData = unknown> {
   onDragLeave?(event: DnDEvent): void;
   onBeforeDrop?(event: DnDEvent): MaybePromise<BeforeDropResult>;
   onDrop?(event: DnDEvent): void;
+  /**
+   * Takes drags from outside the page: files from the desktop, a link or text from another
+   * app or tab (the browser's drag and drop). They work as the library's drags do (`isOver`,
+   * `isAccepting`, the events), and `e.external` has their data at the drop. Targets
+   * without `external` ignore them. A value, a ref or a getter, read live.
+   */
+  external?: MaybeReadonlyRefOrGetter<ExternalAccept | undefined>;
 }
 
 export interface DroppableReturn {
   id: ComputedRef<Key>;
+  /** A drag is over it (one from outside the page too, with `external`). */
   isOver: ComputedRef<boolean>;
   /** Something is being dragged and this target accepts it. */
   isAccepting: ComputedRef<boolean>;

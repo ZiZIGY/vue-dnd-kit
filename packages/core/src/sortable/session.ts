@@ -15,7 +15,7 @@ import { listOf, listOfKey, orderedLists, type GroupContext, type Session, type 
 import { gather, pickUp } from './block';
 import { setIndicator, updateIndicator } from './indicator';
 import { syncManager } from './landing';
-import { returnToOrigin } from './slot';
+import { goHome, regather } from './slot';
 import { pickedUpAt } from './announcements';
 import { bump } from './flip';
 import { HYSTERESIS, blocksList, distance, settleHysteresis } from './stability';
@@ -23,13 +23,16 @@ import { enters } from './modes/mode';
 import { sort } from './modes/sort';
 import { modeOf } from './modes/swap';
 import { startCopy, syncCopy } from './modes/copy';
-import { startInsert } from './modes/insert';
+import { mayMake, startInsert } from './modes/insert';
 
 export const start = (g: GroupContext, event: DnDEvent) => {
   const { lists, session } = g;
   const activeKey = event.active.id;
+  // A drag from outside the page (another window's items too) is never one of its own,
+  // whatever its keys.
+  const local = !event.active.external && !!listOfKey(g, activeKey, false);
   // Drags that don't involve this group leave it untouched (no snapshot of its lists).
-  if (!listOfKey(g, activeKey, false) && ![...lists.values()].some((list) => list.create)) return;
+  if (!local && ![...lists.values()].some((list) => mayMake(g, list, event.active))) return;
   const ordered = orderedLists(g);
   const snapshot = new Map<Key, unknown>();
   const sources = new Map<Key, { list: Key; index: number }>();
@@ -48,6 +51,7 @@ export const start = (g: GroupContext, event: DnDEvent) => {
     sources,
     copies: new Map<Key, Key | null>(),
     created: new Map<Key, Key | null>(),
+    extra: new Map<Key, Key[]>(),
     swap: null,
     indicator: null,
     marker: null,
@@ -60,9 +64,10 @@ export const start = (g: GroupContext, event: DnDEvent) => {
     apart: false,
   };
 
-  if (!sources.has(activeKey)) {
-    // A plain draggable: only lists with `createItem` take part.
-    if (!ordered.some((list) => list.create)) return;
+  if (!local) {
+    // A plain draggable: only lists with `createItem` take part. An item of another group
+    // (a sortable item, with its item behind it) is none: the group stays out of its drag.
+    if (!ordered.some((list) => mayMake(g, list, event.active)) || g.manager.getDraggable(activeKey)?.getItem) return;
     g.spokenSpot = null;
     g.columnList = null;
     session.value = startInsert(g, common);
@@ -95,39 +100,13 @@ const leave = (g: GroupContext, current: Session) => {
 };
 
 /**
- * The dragged items go home: the lists show where a drop here leaves them instead of the
- * last list that took them. Over a target that refuses the drag, the drop is cancelled and
- * they fly back; over a zone of its own (a trash can, a playlist), the drop is the zone's,
- * and the lists keep them unless its `onDrop` takes them out. A `'group'` block comes
- * apart, each item back in its own place. Trees keep the slot: their places have a depth.
+ * Over a target that refuses the drag, the drop is cancelled and the items fly back; over a
+ * zone of its own (a trash can, a playlist), the drop is the zone's, and the lists keep them
+ * unless its `onDrop` takes them out: either way they go home (`goHome`).
  */
 const sendHome = (g: GroupContext, current: Session, event: DnDEvent) => {
   leave(g, current);
-  if (current.list == null || listOf(g, current.list)?.layout.nested || listOf(g, current.origin.list)?.layout.nested) return;
-  if (current.grouped && current.mode === sort) return takeApart(g, current);
-  returnToOrigin(g, event.pointer);
-};
-
-/** A `'group'` block comes apart: the lists show their items as they are, the dragged ones dimmed in place. */
-const takeApart = (g: GroupContext, current: Session) => {
-  if (current.apart) return;
-  for (const list of g.lists.values()) list.draft.value = [...list.getKeys()];
-  current.list = current.origin.list;
-  current.block = [current.lead];
-  current.apart = true;
-  syncManager(g);
-  bump(g);
-};
-
-/** Back over a list: the block forms again where the drag picked it up, as it did at the start. */
-const regather = (g: GroupContext, current: Session) => {
-  for (const list of g.lists.values()) list.draft.value = current.base.get(list.id) ?? [...list.getKeys()];
-  current.list = current.origin.list;
-  current.block = current.keys;
-  current.apart = false;
-  g.gathering = true;
-  syncManager(g);
-  bump(g);
+  goHome(g, current, event.pointer);
 };
 
 /**
@@ -135,7 +114,7 @@ const regather = (g: GroupContext, current: Session) => {
  * (a target in an item, "drop into an item"), not around one (a panel holding the lists,
  * between them).
  */
-const standsApart = (g: GroupContext, element: Element) =>
+export const standsApart = (g: GroupContext, element: Element) =>
   ![...g.lists.values()].some((list) => {
     const container = list.getElement();
     return !!container && (container.contains(element) || element.contains(container));

@@ -428,6 +428,42 @@ describe('sensors come and go', () => {
     expect(manager.status.value).toBe('idle');
   });
 
+  it('a mouse press on a handle drags at once; let go where it started, it stays a click', async () => {
+    const Grip = defineComponent({
+      setup() {
+        makeDraggable(useTemplateRef<HTMLElement>('el'), { id: 'card', handle: useTemplateRef<HTMLElement>('grip') });
+        return () => h('div', { ref: 'el' }, [h('span', { ref: 'grip', 'data-grip': '' }, '::')]);
+      },
+    });
+    const container = mount(() => h(Grip), { sensors: [pointerSensor, probe] });
+    await nextTick();
+    const grip = container.querySelector<HTMLElement>('[data-grip]')!;
+    const capture = vi.spyOn(document.body, 'setPointerCapture').mockImplementation(() => {});
+    const clicks: string[] = [];
+    grip.addEventListener('click', () => clicks.push('click'));
+    const pointer = (type: string, x: number) =>
+      (type === 'pointerdown' ? grip : document).dispatchEvent(
+        new PointerEvent(type, { bubbles: true, composed: true, isPrimary: true, button: 0, pointerType: 'mouse', pointerId: 1, clientX: x, clientY: 0 }),
+      );
+    const press = async (moveTo: number | null) => {
+      pointer('pointerdown', 0);
+      expect(manager.status.value).toBe('dragging');
+      if (moveTo != null) pointer('pointermove', moveTo);
+      pointer('pointerup', moveTo ?? 0);
+      // The browser's click after the release.
+      grip.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await settle();
+    };
+    // Still: not captured (the click would go to <body>), and the click goes through.
+    await press(2);
+    expect(capture).not.toHaveBeenCalled();
+    expect(clicks).toEqual(['click']);
+    // Moved: a drag, captured, and its click swallowed.
+    await press(20);
+    expect(capture).toHaveBeenCalledWith(1);
+    expect(clicks).toEqual(['click']);
+  });
+
   it('a hidden tab cancels the drag', async () => {
     mount(() => h(Card, { cardId: 'card' }));
     await nextTick();

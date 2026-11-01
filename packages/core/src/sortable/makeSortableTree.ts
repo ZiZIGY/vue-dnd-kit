@@ -106,9 +106,11 @@ export function makeSortableTree<T>(
     create: options.createItem
       ? (active) => {
           const node = options.createItem!(active);
-          return node === undefined ? undefined : { key: accessors.getKey(node), item: node };
+          return node === undefined ? undefined : [{ key: accessors.getKey(node), item: node }];
         }
       : undefined,
+    external: () => read(options.external),
+    keyOf: (node) => accessors.getKey(node as T),
     isReadonly: () => !isRef(options.items) || isReadonly(options.items),
     build: (next, lookup, inserted) => build(t, next, lookup, inserted),
     commit: (_items, next, lookup, inserted) => commit(t, next, lookup, inserted),
@@ -134,12 +136,15 @@ export function makeSortableTree<T>(
     // are no drop targets, as lists.
     {
       id,
+      label: options.label,
       disabled: () => !!read(options.disabled) || group.isInert(entry),
       // As a target: what the overlay shows over it, and how it lands in it.
       overlay: options.overOverlay,
       dropAnimation: options.overDropAnimation,
+      // Drags from outside the page it takes (with `createItem`).
+      external: options.external,
     },
-    { accepts: (active) => group.accepts(entry, active) },
+    { accepts: (active) => group.accepts(entry, active), getGroup: () => group.name },
   );
 
   // Read when a drag starts; `undefined` leaves the provider's.

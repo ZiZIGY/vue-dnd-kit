@@ -54,7 +54,7 @@ export const isInert = (g: GroupContext, list: ListEntry) => {
   if (!active) return false;
   const current = g.session.value;
   if (!current || current.activeKey !== active.id) return true;
-  return !!current.mode.inert?.(list);
+  return !!current.mode.inert?.(list, g);
 };
 
 export const isSwapping = (g: GroupContext, current: Session, list: ListEntry | undefined) =>

@@ -129,6 +129,40 @@ export const returnToOrigin = (g: GroupContext, pointer: Coordinates | null) => 
   moveActive(g, origin, index === -1 ? keys.length : index, pointer, true);
 };
 
+/** A `'group'` block comes apart: the lists show their items as they are, the dragged ones dimmed in place. */
+export const takeApart = (g: GroupContext, current: Session) => {
+  if (current.apart) return;
+  for (const list of g.lists.values()) list.draft.value = [...list.getKeys()];
+  current.list = current.origin.list;
+  current.block = [current.lead];
+  current.apart = true;
+  syncManager(g);
+  bump(g);
+};
+
+/** Back over a list: the block forms again where the drag picked it up, as it did at the start. */
+export const regather = (g: GroupContext, current: Session) => {
+  for (const list of g.lists.values()) list.draft.value = current.base.get(list.id) ?? [...list.getKeys()];
+  current.list = current.origin.list;
+  current.block = current.keys;
+  current.apart = false;
+  g.gathering = true;
+  syncManager(g);
+  bump(g);
+};
+
+/**
+ * The dragged items go home: over a target that refuses the drag, or a drop target of its
+ * own outside the lists (by pointer or by the arrows), the lists show where a drop there
+ * leaves them, not the last list that took them. A `'group'` block comes apart, each item
+ * back in its own place. Trees keep the slot: their places have a depth.
+ */
+export const goHome = (g: GroupContext, current: Session, pointer: Coordinates | null) => {
+  if (current.list == null || listOf(g, current.list)?.layout.nested || listOf(g, current.origin.list)?.layout.nested) return;
+  if (current.grouped && current.mode.name === 'move') return takeApart(g, current);
+  returnToOrigin(g, pointer);
+};
+
 /** Indicator lists don't move: the slot stays (or goes back) where it started. */
 export const keepSlotHome = (g: GroupContext, current: Session) => {
   if (current.slot !== current.lead) {

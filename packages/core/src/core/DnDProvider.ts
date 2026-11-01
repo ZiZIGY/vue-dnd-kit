@@ -34,6 +34,7 @@ import { createDnDManager } from './manager';
 import { DND_CONTEXT, useManager } from './context';
 import { devtoolsHook } from './devtoolsHook';
 import { useSensors } from './sensors/host';
+import { useNativeDrags } from './native/bridge';
 import { pointerSensor } from './sensors/pointer';
 import { keyboardSensor } from './sensors/keyboard';
 import { useAutoScroll } from './autoscroll';
@@ -112,6 +113,7 @@ export const DnDProvider = /* @__PURE__ */ defineComponent({
     });
 
     useSensors(manager, DEFAULT_SENSORS);
+    useNativeDrags(manager);
     useAutoScroll(manager);
 
     const refresh = () => manager.scheduleFrame();

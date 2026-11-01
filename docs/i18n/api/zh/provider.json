@@ -3,6 +3,10 @@
     "source": "957ec8f6ce",
     "text": "可排序列表或树（其可见行）中的一个位置：`index` 从 0 开始计数，总数为 `length`。"
   },
+  "AnnouncedPosition.label": {
+    "source": "702bfecdc2",
+    "text": "列表的 `label`，即人们对它的称呼。"
+  },
   "AnnouncementContext": {
     "source": "884af39ecf",
     "text": "播报所涉及的、事件之外的信息：供你自己的文本（其他语言、其他措辞）表达内置文本所表达的内容。"

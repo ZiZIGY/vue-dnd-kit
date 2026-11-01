@@ -3,6 +3,10 @@
     "source": "957ec8f6ce",
     "text": "Un sitio en una lista o un árbol ordenable (sus filas visibles): `index` cuenta desde 0, sobre un total de `length`."
   },
+  "AnnouncedPosition.label": {
+    "source": "702bfecdc2",
+    "text": "El `label` de la lista, el nombre que le da la gente."
+  },
   "AnnouncementContext": {
     "source": "884af39ecf",
     "text": "De qué trata un anuncio, más allá del evento: para textos propios (otro idioma, otras palabras) que digan lo que dicen los integrados."

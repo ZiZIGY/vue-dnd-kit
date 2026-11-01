@@ -31,6 +31,10 @@
     "source": "c0adaf519f",
     "text": "默认：`useId()`，在服务端和客户端渲染之间保持稳定。只读取一次。"
   },
+  "SortableTreeOptions.label": {
+    "source": "86c099a68f",
+    "text": "人们对树的称呼：屏幕阅读器文本会说出它，而不是树的 id。"
+  },
   "SortableTreeOptions.overlay": {
     "source": "cf37f2819a",
     "text": "这棵树中行的浮层组件（行自己的 `overlay` 优先）。在拖拽过程中切换的 ref 会立即替换它。"

@@ -4,8 +4,8 @@
   import FileListRow from './FileListRow.vue';
   import type { FileNode } from '../fileTree';
 
-  // A list of its own component: next to a tree in one component, the rows of both would
-  // join the last one created.
+  // A list next to the tree: rows find their list by the DOM, so it could live in the
+  // tree's component too.
   const props = defineProps<{ listId: string; group: string }>();
   const files = defineModel<FileNode[]>({ required: true });
   const el = useTemplateRef<HTMLElement>('el');

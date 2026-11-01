@@ -64,8 +64,8 @@
     "text": "ツリー：ドロップされたノードが得る親。ルートの階層では `null`。"
   },
   "SortableListOptions": {
-    "source": "ad5d98cc02",
-    "text": "`makeSortableList` のオプション。1 つのコンポーネントに 1 つのリスト（またはツリー）：リストはアイテムが読み取るコンテキストを提供するため、同じコンポーネントの 2 つ目のリストは 1 つ目のアイテムを奪ってしまいます（開発ビルドで警告が出ます）。\n\nオプションは値、ref、ゲッター（`overlay`、`animation`：値または ref）を受け付け、リストが必要とするときに読み取られるため、変更は遅くとも次のドラッグから反映されます。例外：`id` と `group` はリストの作成時に一度だけ読み取られます。`items` はモデルそのものです。関数（`getKey`、`clone`、`createItem`、コールバック）はそのまま渡されます。"
+    "source": "5578e6dad0",
+    "text": "`makeSortableList` のオプション。1 つのコンポーネントに 1 つのリスト（またはツリー）：リストはアイテムが読み取るコンテキストを提供するため、同じコンポーネントの 2 つ目のリストは 1 つ目のアイテムを奪ってしまいます（開発ビルドで警告が出ます）。\n\nオプションは値、ref、ゲッター（`overlay`、`animation`：値または ref）を受け付け、リストが必要とするときに読み取られるため、変更は遅くとも次のドラッグから反映されます。例外：`id` と `group` はリストの作成時に一度だけ読み取られます。`items` はモデルそのものです。関数（`getKey`、`filter`、`clone`、`createItem`、コールバック）はそのまま渡されます。"
   },
   "SortableListOptions.items": {
     "source": "bcf07acd7a",
@@ -75,9 +75,17 @@
     "source": "f5ae57e9ca",
     "text": "デフォルト：`item.id`。プリミティブの場合はアイテムそのもの。`makeSortableItem({ item })` のキーにも使われます。"
   },
+  "SortableListOptions.filter": {
+    "source": "68bbc0dba4",
+    "text": "`true` を返したアイテムだけを表示します（検索、タグ）：返される `items` にはそれらだけが入り、ドラッグはその中で並べ替えます。ほかのアイテムはソースの中で自分の位置を保ちます：ドロップは配列全体を書き込み、隠れた各アイテムは、直前にあった表示中のアイテムの後ろに残ります（そのアイテムが移動した場合は、残ったうちで最も近いアイテムの後ろ）。リアクティブ：関数が読み取るもの（検索クエリの ref）はすぐに反映されます。"
+  },
   "SortableListOptions.id": {
     "source": "c0adaf519f",
     "text": "デフォルト：`useId()`。サーバーとクライアントの描画間で安定しています。一度だけ読み取られます。"
+  },
+  "SortableListOptions.label": {
+    "source": "afaee09f48",
+    "text": "人がリストを呼ぶ名前：スクリーンリーダー向けのテキストは id の代わりにこれを読み上げます（`position 2 of 5 in Garden`）。"
   },
   "SortableListOptions.overlay": {
     "source": "47e3eb4c8a",
@@ -210,6 +218,10 @@
   "SortableItemOptions.handle": {
     "source": "519bda20d7",
     "text": "アイテムの中でドラッグを始める要素またはセレクター（属性もこちらに付きます）。"
+  },
+  "SortableItemOptions.label": {
+    "source": "93ed063b77",
+    "text": "人がアイテムを呼ぶ名前：スクリーンリーダー向けのテキストはキーの代わりにこれを読み上げます（`Picked up Tomato at position 2 of 5 in Garden`）。イベントでは `active.label` と `items` に入ります。"
   },
   "SortableItemOptions.activation": {
     "source": "07b1465312",

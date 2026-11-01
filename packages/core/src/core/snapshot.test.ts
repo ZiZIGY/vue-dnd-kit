@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { clonePreview } from './clone';
 
+/** The copy itself: `clonePreview` gives it in the box that carries its custom properties. */
+const cloneOf = (...args: Parameters<typeof clonePreview>) => clonePreview(...args).firstElementChild as HTMLElement;
+
 // happy-dom computes the cascade (descendant selectors, inheritance, shorthands) but no
 // layout: what the layout resolves is mocked where a test needs it.
 
@@ -31,7 +34,7 @@ describe('clone style snapshot', () => {
        .card i { color: rgb(0, 0, 200) }`,
       `<ul class="grid"><li id="card" class="card"><b>Title</b><i>Own</i><span>Plain</span></li></ul>`,
     );
-    const clone = clonePreview(host.querySelector<HTMLElement>('#card')!);
+    const clone = cloneOf(host.querySelector<HTMLElement>('#card')!);
     expect(clone.style.display).toBe('flex');
     expect(clone.style.gap).toBe('6px');
     expect(clone.style.padding).toBe('8px 12px');
@@ -47,7 +50,7 @@ describe('clone style snapshot', () => {
       `.list .item { color: rgb(1, 2, 3); font-size: 20px }`,
       `<ul class="list"><li id="item" class="item"><span>Text</span></li></ul>`,
     );
-    const clone = clonePreview(host.querySelector<HTMLElement>('#item')!);
+    const clone = cloneOf(host.querySelector<HTMLElement>('#item')!);
     expect(clone.style.color).toBe('rgb(1, 2, 3)');
     expect(clone.style.fontSize).toBe('20px');
     expect(styled(clone.children[0])).toBeNull();
@@ -58,7 +61,7 @@ describe('clone style snapshot', () => {
       `table.people td { padding: 8px 12px; text-align: left }`,
       `<table class="people"><tbody><tr id="row"><td>Ada</td><td>Analyst</td></tr></tbody></table>`,
     );
-    const wrapper = clonePreview(host.querySelector<HTMLElement>('#row')!);
+    const wrapper = cloneOf(host.querySelector<HTMLElement>('#row')!);
     for (const cell of wrapper.querySelectorAll('td')) {
       expect(cell.style.padding).toBe('8px 12px');
       expect(cell.style.textAlign).toBe('left');
@@ -70,7 +73,7 @@ describe('clone style snapshot', () => {
       `.list .row b { margin: 0 0 0 auto }`,
       `<ul class="list"><li id="row" class="row"><b>1</b></li></ul>`,
     );
-    const clone = clonePreview(host.querySelector<HTMLElement>('#row')!);
+    const clone = cloneOf(host.querySelector<HTMLElement>('#row')!);
     expect((clone.children[0] as HTMLElement).style.margin).toBe('0px 0px 0px auto');
   });
 
@@ -80,7 +83,7 @@ describe('clone style snapshot', () => {
       `.list .row span { color: rgb(9, 9, 9) }`,
       `<ul class="list"><li id="row" class="row">${spans}</li></ul>`,
     );
-    const clone = clonePreview(host.querySelector<HTMLElement>('#row')!);
+    const clone = cloneOf(host.querySelector<HTMLElement>('#row')!);
     // The root and 199 children.
     expect((clone.children[198] as HTMLElement).style.color).toBe('rgb(9, 9, 9)');
     expect(styled(clone.children[199])).toBeNull();
@@ -91,7 +94,7 @@ describe('clone style snapshot', () => {
     const container = document.createElement('section');
     document.body.appendChild(container);
     const appended = vi.spyOn(container, 'appendChild');
-    const clone = clonePreview(host.querySelector<HTMLElement>('#row')!, { container });
+    const clone = cloneOf(host.querySelector<HTMLElement>('#row')!, { container });
     expect(appended).toHaveBeenCalledOnce();
     expect(container.childNodes).toHaveLength(0);
     expect(clone.isConnected).toBe(false);
@@ -122,7 +125,7 @@ describe('clone style snapshot', () => {
       const value = this.matches('.icon') ? '16px' : 'auto';
       return { get: (name: string) => (name === 'width' ? { toString: () => value } : undefined) } as never;
     };
-    const clone = clonePreview(host.querySelector<HTMLElement>('#row')!);
+    const clone = cloneOf(host.querySelector<HTMLElement>('#row')!);
     const box = clone.children[0] as HTMLElement;
     expect((box.children[0] as HTMLElement).style.width).toBe('16px');
     // 100px in the clone once the icon has its width: within half a pixel of the source's.

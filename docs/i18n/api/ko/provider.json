@@ -3,6 +3,10 @@
     "source": "957ec8f6ce",
     "text": "정렬 가능한 리스트나 트리(보이는 행)에서의 자리: `index`는 0부터 세며, 전체 개수는 `length`입니다."
   },
+  "AnnouncedPosition.label": {
+    "source": "702bfecdc2",
+    "text": "리스트의 `label`(사람이 부르는 이름)."
+  },
   "AnnouncementContext": {
     "source": "884af39ecf",
     "text": "이벤트 외에 안내 문구가 다루는 내용입니다. 기본 문구와 같은 내용을 말하는 직접 만든 문구(다른 언어, 다른 표현)에 씁니다."

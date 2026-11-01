@@ -51,8 +51,8 @@ export const fitsScreen = (page: Page): Promise<boolean> =>
     page.viewportSize()!,
   );
 
-/** The default overlay content: the clone taken at drag start (a <table> wrapper for rows). */
-export const overlayClone = (page: Page): Locator => page.locator('[data-dnd-overlay] > div > div > *').first();
+/** The default overlay content: the clone taken at drag start, in the box with its custom properties (a <table> wrapper for rows). */
+export const overlayClone = (page: Page): Locator => page.locator('[data-dnd-overlay] > div > div > div > *').first();
 
 /** Presses on `from`, moves past the activation distance, then glides to `to`. */
 export const drag = async (

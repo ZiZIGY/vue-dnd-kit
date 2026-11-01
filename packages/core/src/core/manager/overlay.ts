@@ -244,9 +244,10 @@ export function createOverlay(ctx: ManagerContext) {
      * synchronously, before the placeholder re-renders. Overlay components get it too:
      * they may show it (`DragPreview`).
      */
-    pickUp(id: Key, entry: DraggableEntry, caught?: ReadonlyMap<Key, PreviewSource>) {
+    pickUp(id: Key, entry: DraggableEntry, caught?: ReadonlyMap<Key, PreviewSource>, browser = false) {
       source = entry;
-      previewEnabled = entry.getOverlay() !== false;
+      // The browser's own drag draws its image: no overlay.
+      previewEnabled = !browser && entry.getOverlay() !== false;
       // A drag that catches a landing overlay takes its clones: the slots are still hidden.
       previews = new Map(previewEnabled ? caught : undefined);
       const preview = previewEnabled && !previews.has(id) ? takePreview(id) : null;

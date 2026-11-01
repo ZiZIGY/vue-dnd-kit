@@ -124,6 +124,10 @@ export type {
   DraggableOptions,
   DraggableReturn,
   DroppableOptions,
+  ExternalAccept,
+  ExternalData,
+  ExternalFile,
+  NativeDragOptions,
   DroppableReturn,
   Placement,
 

@@ -3,6 +3,10 @@
     "source": "7cfd4640f1",
     "text": "ドラッグが並べ替え可能なリストから来た場合のアイテムオブジェクト。"
   },
+  "DragItem.label": {
+    "source": "97ccfdec34",
+    "text": "その `label`（人が呼ぶ名前）。"
+  },
   "DragItem.type": {
     "source": "9189758463",
     "text": "ドラッグ可能な要素の正規化された `type`。空の場合は、どのドロップターゲットにも当てはまります。"
@@ -15,6 +19,10 @@
     "source": "173336b06e",
     "text": "ドラッグ中のすべての id。主となるものが先頭です（マルチドラッグ）。"
   },
+  "Active.label": {
+    "source": "6b580da2fb",
+    "text": "ドラッグを始めたアイテムの `label`（人が呼ぶ名前）。"
+  },
   "Active.element": {
     "source": "b0e7f2b9f5",
     "text": "ドラッグが始まった要素。DOM から切り離されることがあります（仮想リスト、リスト間の移動）。"
@@ -22,6 +30,10 @@
   "Active.rect": {
     "source": "7964e6f559",
     "text": "ドラッグ開始時の `element` のレイアウト上の矩形。"
+  },
+  "Over.label": {
+    "source": "c388687981",
+    "text": "ターゲットの `label`（人が呼ぶ名前）。"
   },
   "Over.accepted": {
     "source": "48997f2ee2",

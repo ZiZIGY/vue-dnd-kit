@@ -1,4 +1,4 @@
-import { createApp, defineComponent, h, ref, useTemplateRef, type Component, type PropType } from 'vue';
+import { createApp, defineComponent, h, nextTick, ref, useTemplateRef, type Component, type PropType } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SortableItemOptions, SortableListOptions } from '../types';
 import { DnDProvider } from '../core/DnDProvider';
@@ -128,49 +128,92 @@ describe('axis of sortable items', () => {
   });
 });
 
-describe('two lists in one component', () => {
+describe('several lists in one component', () => {
   afterEach(() => {
     mounted.splice(0).forEach((unmount) => unmount());
     vi.restoreAllMocks();
   });
 
-  /** A component with one list, or `count` lists (and trees) of its own. */
-  const Lists = (count: number, tree = false) =>
-    defineComponent({
-      setup() {
-        for (let i = 0; i < count; i++) {
-          const target = useTemplateRef<HTMLElement>(`list${i}`);
-          if (tree && i === count - 1) makeSortableTree(target, { items: ref([{ id: `t${i}` }]) });
-          else makeSortableList(target, { items: ref([{ id: `a${i}` }]) });
-        }
-        return () => h('div', Array.from({ length: count }, (_, i) => h('ul', { ref: `list${i}` })));
-      },
-    });
-
-  const renderIn = (child: Component) => mount({ setup: () => () => h(DnDProvider, null, { default: () => h(child) }) });
-
-  it('warns in development: the first list loses its items; each list needs its own component', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    renderIn(Lists(2));
-    expect(warn).toHaveBeenCalledTimes(1);
-    expect(String(warn.mock.calls[0]![0])).toMatch(/^\[vue-dnd-kit\] Two sortable lists.*Render each list in its own component\.$/);
-    // A list and a tree share the same context.
-    renderIn(Lists(2, true));
-    expect(warn).toHaveBeenCalledTimes(2);
+  /** An item keyed by its list's `getKey`, showing its index; its slot goes inside it. */
+  const Item = defineComponent({
+    props: { task: { type: Object as PropType<Task>, required: true } },
+    setup(props, { slots }) {
+      const { index } = makeSortableItem(useTemplateRef<HTMLElement>('el'), { item: () => props.task });
+      return () => h('li', { ref: 'el', 'data-index': index.value }, slots.default?.());
+    },
   });
 
-  it('one list per component, nested or side by side, does not warn', () => {
+  const renderIn = (child: Component) =>
+    mount({
+      setup: () => () =>
+        h(DnDProvider, null, {
+          default: () => [h({ setup: () => () => ((manager = useManager()), null) }), h(child)],
+        }),
+    });
+
+  const typesOf = (key: string) => manager.getDraggable(key)?.getTypes();
+
+  it('each item is in the list whose element holds it: its key, its group, its index', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const One = Lists(1);
-    renderIn(defineComponent({ setup: () => () => h('div', [h(One), h(One), h(Lists(1, true))]) }));
     renderIn(
       defineComponent({
         setup() {
-          makeSortableList(useTemplateRef<HTMLElement>('outer'), { items: ref([{ id: 'column' }]) });
-          return () => h('div', { ref: 'outer' }, [h(One)]);
+          const todo = makeSortableList(useTemplateRef<HTMLElement>('todo'), {
+            items: ref([{ uid: 't1' }, { uid: 't2' }]),
+            getKey: (task: Task) => `todo-${task.uid}`,
+            group: 'todo',
+          });
+          const done = makeSortableList(useTemplateRef<HTMLElement>('done'), {
+            items: ref([{ uid: 'd1' }]),
+            getKey: (task: Task) => `done-${task.uid}`,
+            group: 'done',
+          });
+          return () =>
+            h('div', [
+              h('ul', { ref: 'todo' }, todo.items.value.map((task) => h(Item, { key: task.uid, task }))),
+              h('ul', { ref: 'done' }, done.items.value.map((task) => h(Item, { key: task.uid, task }))),
+            ]);
         },
       }),
     );
+    await nextTick();
+    expect(rowOf('todo-t2')?.getAttribute('data-index')).toBe('1');
+    expect(rowOf('done-d1')?.getAttribute('data-index')).toBe('0');
+    expect(typesOf('todo-t1')).toEqual(['todo']);
+    expect(typesOf('done-d1')).toEqual(['done']);
+    // Known by the first list's key only until it rendered.
+    expect(rowOf('todo-d1')).toBeUndefined();
     expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('nested lists of one component: an item is in the innermost list around it', async () => {
+    renderIn(
+      defineComponent({
+        setup() {
+          const columns = makeSortableList(useTemplateRef<HTMLElement>('columns'), {
+            items: ref([{ uid: 'todo', id: 'todo' }]),
+            group: 'columns',
+          });
+          const cards = makeSortableList(useTemplateRef<HTMLElement>('cards'), {
+            items: ref([{ uid: 'c1', id: 'c1' }, { uid: 'c2', id: 'c2' }]),
+            group: 'cards',
+          });
+          return () =>
+            h(
+              'ul',
+              { ref: 'columns' },
+              columns.items.value.map((column) =>
+                h(Item, { key: column.uid, task: column }, () =>
+                  h('ul', { ref: 'cards' }, cards.items.value.map((card) => h(Item, { key: card.uid, task: card }))),
+                ),
+              ),
+            );
+        },
+      }),
+    );
+    await nextTick();
+    expect(typesOf('todo')).toEqual(['columns']);
+    expect(typesOf('c2')).toEqual(['cards']);
+    expect(rowOf('c2')?.getAttribute('data-index')).toBe('1');
   });
 });

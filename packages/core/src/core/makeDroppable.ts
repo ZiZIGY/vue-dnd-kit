@@ -13,10 +13,13 @@ import { matchesRule } from './accept';
 import { createId, toElement } from '../utils/dom';
 import { read } from '../utils/read';
 import { getCenter } from '../animation/layout';
+import { takesExternal } from './native/data';
 
-/** Hook used by the sortable layer to accept by group rules instead of `accept`. */
+/** Hooks used by the sortable layer: it accepts by group rules instead of `accept`. */
 export interface DroppableInternals {
   accepts?: (active: Active) => boolean;
+  /** The list's group: its lists take its items from another window of the app. */
+  getGroup?: () => string;
 }
 
 export function createDroppable<TData>(
@@ -28,14 +31,18 @@ export function createDroppable<TData>(
   const fallbackId = createId('droppable');
   const id = computed<Key>(() => read(options.id) ?? fallbackId);
 
+  // A drag from outside the page by its own rule (`external`); a list's group rules take
+  // that in too, as they make items for it.
   const accepts =
     internals.accepts ??
     ((active: Active) =>
-      matchesRule(
-        unref(options.accept),
-        { active, items: active.items, types: active.items.flatMap((item) => item.type) },
-        read(options.acceptMode),
-      ));
+      active.external && !active.external.group
+        ? takesExternal(read(options.external), active.external)
+        : matchesRule(
+            unref(options.accept),
+            { active, items: active.items, types: active.items.flatMap((item) => item.type) },
+            read(options.acceptMode),
+          ));
 
   const entry: DroppableEntry = {
     id: id.value,
@@ -45,8 +52,11 @@ export function createDroppable<TData>(
     options,
     getElement: () => toElement(target),
     getData: () => read(options.data),
+    getLabel: () => read(options.label),
     isDisabled: () => !!read(options.disabled),
     accepts,
+    getExternal: () => read(options.external),
+    getGroup: internals.getGroup,
     getOverlay: () => {
       const overlay = unref(options.overlay);
       return overlay ? markRaw(overlay) : undefined;

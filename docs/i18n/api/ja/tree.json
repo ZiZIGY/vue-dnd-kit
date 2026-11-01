@@ -31,6 +31,10 @@
     "source": "c0adaf519f",
     "text": "デフォルト：`useId()`。サーバーとクライアントの描画間で安定しています。一度だけ読み取られます。"
   },
+  "SortableTreeOptions.label": {
+    "source": "86c099a68f",
+    "text": "人がツリーを呼ぶ名前：スクリーンリーダー向けのテキストは id の代わりにこれを読み上げます。"
+  },
   "SortableTreeOptions.overlay": {
     "source": "cf37f2819a",
     "text": "このツリーの行用のオーバーレイコンポーネント（行自身の `overlay` が優先）。ドラッグ中に切り替えた ref は、すぐにそれを入れ替えます。"

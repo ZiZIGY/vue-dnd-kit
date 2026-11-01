@@ -1,15 +1,43 @@
 <script setup lang="ts">
-  import { useEventListener } from '@vueuse/core';
+  import { useEventListener, useScrollLock } from '@vueuse/core';
   import type { Component } from 'vue';
 
   /**
-   * Where a live demo plays: a bar on top (LIVE, a hint, the pointer's coordinates, reset),
-   * then dotted paper with the demo in the middle, framed by viewfinder corners. `bleed`:
-   * the demo takes the whole paper (a selection box drawn anywhere on it).
+   * Where a live demo plays: a bar on top (LIVE, a hint, the pointer's coordinates, expand,
+   * reset), then dotted paper with the demo in the middle, framed by viewfinder corners.
+   * `bleed`: the demo takes the whole paper (a selection box drawn anywhere on it).
    */
   defineProps<{ demo: Component | null; minHeight?: string; hint?: string; bleed?: boolean }>();
   const { t } = useI18n();
   const runs = ref(0);
+
+  // Expanded, the stage covers the viewport above the site, and the demo gets all the room.
+  // Not the Fullscreen API: it shows only the element made fullscreen, and the overlay of a
+  // drag renders in `body`, outside it. The stage moves to `body` (a disabled Teleport keeps
+  // the demo mounted as it is), so no transform of the page around it becomes its frame.
+  const expanded = ref(false);
+  const stage = useTemplateRef<HTMLElement>('stage');
+  const toggle = useTemplateRef<{ $el: HTMLElement }>('toggle');
+  /** The stage's height on the page, held by a placeholder while it is expanded. */
+  const held = ref(0);
+  const scrollLock = useScrollLock(import.meta.client ? document.body : null);
+  const setExpanded = (value: boolean) => {
+    if (value) held.value = stage.value?.offsetHeight ?? 0;
+    expanded.value = value;
+  };
+  watch(expanded, (now) => {
+    scrollLock.value = now;
+    // Back on the page, the focus returns to the button that expanded it.
+    if (!now) nextTick(() => toggle.value?.$el.focus());
+  });
+  // Escape collapses it, unless it cancels a drag or a rubber band first (the page is marked
+  // while one runs) or something in the demo used it.
+  useEventListener('keydown', (event: KeyboardEvent) => {
+    if (!expanded.value || event.key !== 'Escape' || event.defaultPrevented) return;
+    if (document.documentElement.hasAttribute('data-dnd-dragging')) return;
+    expanded.value = false;
+  });
+  onBeforeUnmount(() => (scrollLock.value = false));
 
   // The pointer over the paper, in px from its top-left corner. Read on the window: a drag
   // captures the pointer, and the overlay it moves sits outside the paper.
@@ -38,76 +66,118 @@
 </script>
 
 <template>
+  <!-- Its place on the page, kept while it is expanded: the page doesn't scroll away. -->
   <div
-    class="stage flex flex-col"
-    :style="{ minHeight: minHeight ?? '20rem' }"
+    v-if="expanded"
+    aria-hidden="true"
+    :style="{ height: `${held}px` }"
+  />
+  <Teleport
+    to="body"
+    :disabled="!expanded"
   >
-    <div class="flex h-11 shrink-0 items-center gap-4 border-b border-default ps-4 pe-1.5">
-      <span class="label inline-flex items-center gap-2 text-[10px] text-(--ui-primary)">
-        <span class="size-1.5 animate-blink bg-(--ui-primary)" />
-        Live
-      </span>
-      <span
-        v-if="hint"
-        class="label hidden truncate text-[10px] text-dimmed sm:block"
-        >{{ hint }}</span
-      >
-      <span
-        aria-hidden="true"
-        class="ms-auto hidden font-mono text-[10px] tracking-[0.08em] text-dimmed tabular-nums md:block"
-      >
-        X {{ coordinate(pointer?.x) }} <span class="text-(--ui-text-dimmed)/50">·</span> Y {{ coordinate(pointer?.y) }}
-      </span>
-      <UTooltip :text="t('example.reset')">
-        <UButton
-          color="neutral"
-          variant="ghost"
-          size="sm"
-          square
-          icon="i-lucide-rotate-ccw"
-          :aria-label="t('example.reset')"
-          class="max-md:ms-auto"
-          @click="runs++"
-        />
-      </UTooltip>
-    </div>
-
     <div
-      ref="paper"
-      class="relative flex flex-1 items-center justify-center"
-      :class="bleed ? '' : 'px-5 py-14 sm:px-12'"
+      ref="stage"
+      class="stage flex flex-col"
+      :class="expanded ? 'stage-expanded fixed inset-0 z-[60] bg-default' : ''"
+      :style="expanded ? undefined : { minHeight: minHeight ?? '20rem' }"
+      :role="expanded ? 'dialog' : undefined"
+      :aria-modal="expanded || undefined"
+      :aria-label="expanded ? (hint ?? t('example.preview')) : undefined"
     >
-      <div
-        aria-hidden="true"
-        class="dot-paper fade-radial pointer-events-none absolute inset-0 opacity-70"
-      />
-      <Motion
-        v-for="corner in CORNERS"
-        :key="corner.class"
-        as="span"
-        aria-hidden="true"
-        class="pointer-events-none absolute size-3 border-(--ui-text-dimmed)"
-        :class="corner.class"
-        :initial="{ opacity: 0, ...corner.from }"
-        :while-in-view="{ opacity: 1, x: 0, y: 0 }"
-        :in-view-options="{ once: true }"
-        :transition="{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.2 }"
-      />
-      <div
-        class="w-full"
-        :class="bleed ? 'absolute inset-0' : 'relative'"
-      >
-        <ClientOnly>
-          <component
-            :is="demo"
-            v-if="demo"
-            :key="runs"
+      <div class="flex h-11 shrink-0 items-center gap-4 border-b border-default ps-4 pe-1.5">
+        <span class="label inline-flex items-center gap-2 text-[10px] text-(--ui-primary)">
+          <span class="size-1.5 animate-blink bg-(--ui-primary)" />
+          Live
+        </span>
+        <span
+          v-if="hint"
+          class="label hidden truncate text-[10px] text-dimmed sm:block"
+          >{{ hint }}</span
+        >
+        <span
+          aria-hidden="true"
+          class="ms-auto hidden font-mono text-[10px] tracking-[0.08em] text-dimmed tabular-nums md:block"
+        >
+          X {{ coordinate(pointer?.x) }} <span class="text-(--ui-text-dimmed)/50">·</span> Y {{ coordinate(pointer?.y) }}
+        </span>
+        <UTooltip :text="t(expanded ? 'example.collapse' : 'example.expand')">
+          <UButton
+            ref="toggle"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            square
+            :icon="expanded ? 'i-lucide-minimize-2' : 'i-lucide-maximize-2'"
+            :aria-label="t(expanded ? 'example.collapse' : 'example.expand')"
+            :aria-pressed="expanded"
+            class="max-md:ms-auto"
+            @click="setExpanded(!expanded)"
           />
-          <template #fallback>
-            <p class="label text-center text-[10px] text-dimmed">{{ t('example.loading') }}</p>
-          </template>
-        </ClientOnly>
+        </UTooltip>
+        <UTooltip :text="t('example.reset')">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            square
+            icon="i-lucide-rotate-ccw"
+            :aria-label="t('example.reset')"
+            @click="runs++"
+          />
+        </UTooltip>
+      </div>
+
+      <div
+        ref="paper"
+        class="relative flex flex-1 justify-center"
+        :class="[bleed ? '' : 'px-5 py-14 sm:px-12', expanded ? 'min-h-0 items-stretch overflow-auto' : 'items-center']"
+      >
+        <div
+          aria-hidden="true"
+          class="dot-paper fade-radial pointer-events-none absolute inset-0 opacity-70"
+        />
+        <Motion
+          v-for="corner in CORNERS"
+          :key="corner.class"
+          as="span"
+          aria-hidden="true"
+          class="pointer-events-none absolute size-3 border-(--ui-text-dimmed)"
+          :class="corner.class"
+          :initial="{ opacity: 0, ...corner.from }"
+          :while-in-view="{ opacity: 1, x: 0, y: 0 }"
+          :in-view-options="{ once: true }"
+          :transition="{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.2 }"
+        />
+        <!-- Expanded, the demo's box takes the paper's height: a demo that fills it grows
+             (`flex: 1` or `height: 100%` on its root), a smaller one stays in the middle. -->
+        <div
+          class="w-full"
+          :class="[bleed ? 'absolute inset-0' : 'relative', expanded && !bleed ? 'flex h-full flex-col justify-center' : '']"
+        >
+          <ClientOnly>
+            <component
+              :is="demo"
+              v-if="demo"
+              :key="runs"
+            />
+            <template #fallback>
+              <p class="label text-center text-[10px] text-dimmed">{{ t('example.loading') }}</p>
+            </template>
+          </ClientOnly>
+        </div>
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>
+
+<style>
+  /* Expanded, the stage covers the page from <body>, above the site's header (z-index 60).
+     What Nuxt UI portals into <body> while it is (menus, tooltips, dialogs) goes above it:
+     their wrappers come with `z-index: auto`. A drag's overlay and its ghosts keep their own,
+     far higher one. */
+  body:has(> .stage-expanded) > :not(#__nuxt, #teleports, .stage-expanded, [data-dnd-overlay], [data-dnd-ghost]),
+  body:has(> .stage-expanded) #teleports > * {
+    z-index: 70 !important;
+  }
+</style>

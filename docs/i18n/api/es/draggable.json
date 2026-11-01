@@ -7,6 +7,10 @@
     "source": "2dac667235",
     "text": "Id estable. Pasa un getter en las listas virtuales, donde los elementos se reciclan. Por defecto: `useId()`, estable entre el renderizado en el servidor y en el cliente, pero nuevo en cada instancia del componente."
   },
+  "DraggableOptions.label": {
+    "source": "4edf4ca05a",
+    "text": "El nombre que le da la gente: los textos para lectores de pantalla lo dicen en lugar del id (`Picked up Tomato`). Los eventos lo llevan en `active.label` y en `items`."
+  },
   "DraggableOptions.handle": {
     "source": "1330de430e",
     "text": "Elemento o selector dentro del elemento arrastrable que inicia el arrastre (y recibe los atributos)."
@@ -47,13 +51,25 @@
     "source": "3d7102b110",
     "text": "Desplazamiento que hay que aplicar cuando `overlay: false`: el del arrastre, menos lo que se ha movido desde el inicio el contenido en el que está el elemento (se desplazó la página o un contenedor), para que el elemento siga bajo el puntero."
   },
-  "DroppableOptions": {
-    "source": "c1de31b385",
-    "text": "Opciones de `makeDroppable`.\n\n**Soltar dentro de un ítem.** Un destino de drop en el elemento de un ítem ordenable (o dentro de él) funciona como en cualquier otro sitio, con una regla mientras la lista de ese ítem ordenaría el arrastre: solo cuenta mientras el puntero está en el centro del ítem (del 25 al 75 % a lo largo del eje de la lista; x en las cuadrículas), donde el drop va al destino y la lista no se mueve por él. Cerca de los bordes del ítem, la lista ordena como siempre. Un destino cuyo `accept` rechaza el arrastre se deja fuera, así que la lista ordena sobre el ítem como sobre cualquier otro (no hace falta desactivarlo). El teclado se detiene en un destino así antes de pasar de largo su ítem. Un destino nunca forma parte de su propio arrastre: ni dentro (ni encima) de un ítem arrastrado, ni en el hueco donde aterriza uno. Para sacar los ítems de su lista en `onDrop`, llama a `e.source.remove()`.\n\nTodas las opciones salvo los callbacks aceptan un valor, una ref o un getter (`accept`, `overlay`, `dropAnimation`: un valor o una ref) y se leen en vivo, mientras un arrastre busca su destino."
+  "DroppableFileOptions": {
+    "source": "a8634f2607",
+    "text": "Los archivos que un destino de drop acepta desde el equipo (`DroppableOptions.files`)."
+  },
+  "DroppableFileOptions.accept": {
+    "source": "ad1d472c41",
+    "text": "Como en `<input accept>`: tipos MIME (`image/*`, `application/pdf`) y extensiones (`.md`), en una cadena separada por comas o una lista. Por defecto: cualquier archivo. Mientras los archivos se mantienen sobre el destino, el navegador solo dice sus tipos: las extensiones se comprueban al soltar."
+  },
+  "DroppableFileOptions.multiple": {
+    "source": "03eb21a25d",
+    "text": "Varios archivos a la vez (`true` por defecto); `false` rechaza un arrastre de más de uno."
   },
   "DroppableOptions.id": {
     "source": "ea58d47829",
     "text": "Por defecto: `useId()`, estable entre el renderizado en el servidor y en el cliente."
+  },
+  "DroppableOptions.label": {
+    "source": "5e751a1320",
+    "text": "El nombre que le da la gente: los textos para lectores de pantalla lo dicen en lugar del id (`over Trash`); los eventos lo llevan en `over.label`."
   },
   "DroppableOptions.accept": {
     "source": "aae01588b5",
@@ -75,9 +91,21 @@
     "source": "0f0a6dd259",
     "text": "Cómo aterriza el overlay cuando se suelta aquí, en lugar de la `dropAnimation` del ítem arrastrado y la del provider: `false` lo deja donde se soltó (allí se reproduce la animación propia de un componente de overlay, una salpicadura), una función lo anima. Un valor o una ref, que se lee al soltar."
   },
+  "DroppableOptions.files": {
+    "source": "7e3cd8ab22",
+    "text": "Acepta archivos arrastrados desde el equipo (el arrastrar y soltar propio del navegador, no el de la biblioteca): `isOver` e `isAccepting` los siguen igual que a los arrastres, y el drop va a `onFiles`. `true` acepta cualquier archivo. De varios destinos anidados, el más interior con `files` los recibe. Un valor, una ref o un getter, que se lee en vivo."
+  },
+  "DroppableOptions.onFiles": {
+    "source": "9badb8a1d8",
+    "text": "Los archivos soltados sobre él que `files` acepta (sin las carpetas), con el evento `drop` del navegador."
+  },
+  "DroppableReturn.isOver": {
+    "source": "0fd66351a2",
+    "text": "Hay un arrastre sobre él (también archivos desde el equipo, con `files`)."
+  },
   "DroppableReturn.isAccepting": {
-    "source": "520ef3c1da",
-    "text": "Se está arrastrando algo y este destino lo acepta."
+    "source": "8cfac2b573",
+    "text": "Se está arrastrando algo y este destino lo acepta (también archivos que se mantienen sobre él y que `files` acepta)."
   },
   "DroppableReturn.placement": {
     "source": "4e1160d2d2",

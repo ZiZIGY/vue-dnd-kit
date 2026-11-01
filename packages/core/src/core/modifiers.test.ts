@@ -63,6 +63,11 @@ describe('snapToGrid', () => {
     expect(offset.y).toBe(47);
   });
 
+  it('snaps one axis when only its size is given', () => {
+    expect(snapToGrid({ y: 15, origin: 'delta' })(args({ x: 33, y: 47 }))).toEqual({ x: 33, y: 45 });
+    expect(snapToGrid({ x: 20, origin: 'delta' })(args({ x: 33, y: 47 }))).toEqual({ x: 40, y: 47 });
+  });
+
   it('carries a smooth marker for the overlay only when asked to', () => {
     expect(getOverlaySmoothing([snapToGrid(20)])).toBeNull();
     expect(getOverlaySmoothing([restrictToVerticalAxis, snapToGrid({ x: 20, y: 20, smooth: true })])).toEqual({

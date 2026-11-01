@@ -3,6 +3,10 @@
     "source": "7cfd4640f1",
     "text": "L'objet item, quand le glissement vient d'une liste triable."
   },
+  "DragItem.label": {
+    "source": "97ccfdec34",
+    "text": "Son `label`, le nom que les gens lui donnent."
+  },
   "DragItem.type": {
     "source": "9189758463",
     "text": "`type` normalisé de l'élément déplaçable ; vide signifie qu'il convient à n'importe quelle cible de dépôt."
@@ -15,6 +19,10 @@
     "source": "173336b06e",
     "text": "Tous les ids glissés, en commençant par l'id principal (multi-drag)."
   },
+  "Active.label": {
+    "source": "6b580da2fb",
+    "text": "Le `label` de l'item d'où le glissement est parti, le nom que les gens lui donnent."
+  },
   "Active.element": {
     "source": "b0e7f2b9f5",
     "text": "Élément depuis lequel le glissement a commencé. Il peut être détaché du DOM (listes virtuelles, déplacements entre listes)."
@@ -22,6 +30,10 @@
   "Active.rect": {
     "source": "7964e6f559",
     "text": "Rectangle de mise en page d'`element` au début du glissement."
+  },
+  "Over.label": {
+    "source": "c388687981",
+    "text": "Le `label` de la cible, le nom que les gens lui donnent."
   },
   "Over.accepted": {
     "source": "48997f2ee2",

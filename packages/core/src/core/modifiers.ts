@@ -89,8 +89,10 @@ export const restrictToFirstScrollableAncestor: Modifier = ({ transform, overlay
 };
 
 export interface SnapToGridOptions {
-  x: number;
-  y: number;
+  /** The cell's width in px. Without one (or 0), the drag moves freely along x. */
+  x?: number;
+  /** The cell's height in px. Without one (or 0), the drag moves freely along y: `{ y: 15 }` snaps the time of a calendar event only. */
+  y?: number;
   /**
    * `'container'` (default): the overlay's top-left lands on grid lines drawn from the
    * container's top-left (`containerRect`: the sortable list or the parent element).
@@ -109,7 +111,7 @@ export type SmoothModifier = Modifier & { smooth?: Required<AnimationOptions> };
 
 const DEFAULT_SMOOTH: Required<AnimationOptions> = { duration: 80, easing: 'ease-out' };
 
-const snap = (value: number, size: number) => (size > 0 ? Math.round(value / size) * size : value);
+const snap = (value: number, size = 0) => (size > 0 ? Math.round(value / size) * size : value);
 
 /** Snaps the overlay to a grid (rounding to the nearest cell). */
 export const snapToGrid = (size: number | SnapToGridOptions): Modifier => {

@@ -3,6 +3,10 @@
     "source": "7cfd4640f1",
     "text": "드래그가 정렬 가능한 리스트에서 왔을 때의 항목 객체."
   },
+  "DragItem.label": {
+    "source": "97ccfdec34",
+    "text": "해당 항목의 `label`(사람이 부르는 이름)."
+  },
   "DragItem.type": {
     "source": "9189758463",
     "text": "draggable의 정규화된 `type`. 비어 있으면 어떤 드롭 대상에도 맞습니다."
@@ -15,6 +19,10 @@
     "source": "173336b06e",
     "text": "드래그 중인 모든 id. 주 항목이 맨 앞입니다(멀티 드래그)."
   },
+  "Active.label": {
+    "source": "6b580da2fb",
+    "text": "드래그가 시작된 항목의 `label`(사람이 부르는 이름)."
+  },
   "Active.element": {
     "source": "b0e7f2b9f5",
     "text": "드래그가 시작된 요소. DOM에서 분리될 수 있습니다(가상 리스트, 리스트 사이 이동)."
@@ -22,6 +30,10 @@
   "Active.rect": {
     "source": "7964e6f559",
     "text": "드래그 시작 시점의 `element` 레이아웃 사각형."
+  },
+  "Over.label": {
+    "source": "c388687981",
+    "text": "대상의 `label`(사람이 부르는 이름)."
   },
   "Over.accepted": {
     "source": "48997f2ee2",

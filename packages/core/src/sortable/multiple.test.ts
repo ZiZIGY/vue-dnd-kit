@@ -41,7 +41,7 @@ describe('collapseIntoOverlay', () => {
     const style = document.createElement('style');
     style.textContent = '.list .row { padding: 6px 10px }';
     document.head.appendChild(style);
-    expect(setUp().ghost!.style.padding).toBe('6px 10px');
+    expect((setUp().ghost!.firstElementChild as HTMLElement).style.padding).toBe('6px 10px');
   });
 
   it('styles every ghost in one snapshot: the page lays out once per pass for all of them', () => {

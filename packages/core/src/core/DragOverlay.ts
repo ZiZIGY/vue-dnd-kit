@@ -115,6 +115,19 @@ const isEmpty = (nodes: VNodeArrayChildren): boolean =>
   );
 
 /**
+ * The overlay's props an overlay component declares: the others would fall through to its
+ * root as attributes (`active="[object Object]"`). A component that declares none (a
+ * function) gets them all, as its props.
+ */
+export const overlayProps = (component: Component, props: OverlaySlotProps): Record<string, unknown> => {
+  const all = props as unknown as Record<string, unknown>;
+  const declared = (component as { props?: readonly string[] | Record<string, unknown> }).props;
+  if (!declared) return all;
+  const names = Array.isArray(declared) ? declared : Object.keys(declared);
+  return Object.fromEntries(names.filter((name) => name in all).map((name) => [name, all[name]]));
+};
+
+/**
  * The drag's own overlay content by precedence: its component (the item's `overlay`,
  * else its list's), the provider's `#overlay` slot, the clone. A slot that renders
  * nothing for this drag (`v-if` on the item type) falls back to the clone.
@@ -125,7 +138,7 @@ export const renderOverlay = (
   props: OverlaySlotProps,
   fallback: Component,
 ): VNode | VNode[] => {
-  if (component) return h(component, props);
+  if (component) return h(component, overlayProps(component, props));
   const content = slot?.(props);
   return content && !isEmpty(content) ? content : h(fallback);
 };
@@ -305,7 +318,7 @@ export const DragOverlay = /* @__PURE__ */ defineComponent({
      */
     const content = (props: OverlaySlotProps, target: Component | undefined, own: Component | null) => {
       const renderOwn = () => renderOverlay(own, slots.default, props, DefaultPreview);
-      const shown = target ? h(target, props, { default: renderOwn }) : renderOwn();
+      const shown = target ? h(target, overlayProps(target, props), { default: renderOwn }) : renderOwn();
       // The content's root is keyed by its component: a new one is new content.
       const option = manager.props.overlayTransition;
       const change = option === false ? null : option === true || option == null ? DEFAULT_TRANSITION : option;

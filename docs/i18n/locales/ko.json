@@ -206,6 +206,8 @@
     "copied": "복사됨",
     "stackblitz": "StackBlitz에서 열기",
     "reset": "데모 초기화",
+    "expand": "전체 화면으로 펼치기",
+    "collapse": "페이지로 돌아가기 (Esc)",
     "loading": "데모 불러오는 중…"
   },
   "api": {

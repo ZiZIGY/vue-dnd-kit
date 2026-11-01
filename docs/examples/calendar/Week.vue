@@ -1,154 +1,342 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue';
-import { makeDragArea, snapToGrid, useDnDMonitor, type Key } from '@vue-dnd-kit/core';
+import { computed, onMounted, useTemplateRef, watch } from 'vue';
+import { useResizeObserver } from '@vueuse/core';
+import { makeDragArea, useDnD, useDnDMonitor, type Modifier } from '@vue-dnd-kit/core';
+import AllDayCell from './AllDayCell.vue';
 import DayColumn from './DayColumn.vue';
-import { DAY_WIDTH, FIRST_HOUR, HOUR_HEIGHT, LAST_HOUR, formatTime, type CalendarEvent } from './calendar';
+import { placeOf, spokenOf, type DragData, type Target } from './placement';
+import { HOUR_PX, STEP_PX, clock, dateNumber, shortWeekday, toPx, type Day } from './time';
 
-const DAYS = [
-  { name: 'Mon', date: 26 },
-  { name: 'Tue', date: 27, today: true },
-  { name: 'Wed', date: 28 },
-  { name: 'Thu', date: 29 },
-  { name: 'Fri', date: 30 },
-];
-const HOURS = Array.from({ length: LAST_HOUR - FIRST_HOUR + 1 }, (_, index) => FIRST_HOUR + index);
+/** The days in view, today, and the time now (minutes) for the line across the hours. */
+const props = defineProps<{ days: Day[]; today: Day; minutes: number }>();
+const scroller = useTemplateRef<HTMLElement>('scroller');
+const grid = useTemplateRef<HTMLElement>('grid');
+const heads = useTemplateRef<HTMLElement>('heads');
+const { active, over, position } = useDnD();
 
-const events = ref<CalendarEvent[]>([
-  { id: 'standup', title: 'Standup', day: 0, start: 9.5, duration: 0.5, color: '#3b82f6' },
-  { id: 'roadmap', title: 'Roadmap sync', day: 0, start: 13, duration: 1.5, color: '#a855f7' },
-  { id: 'review', title: 'Design review', day: 1, start: 10, duration: 1, color: '#ec4899' },
-  { id: 'check-in', title: 'Check-in', day: 1, start: 14.5, duration: 0.5, color: '#f59e0b' },
-  { id: 'focus', title: 'Focus time', day: 2, start: 9, duration: 2, color: '#42b883' },
-  { id: 'lunch', title: 'Lunch with Sam', day: 2, start: 12.5, duration: 1, color: '#f97316' },
-  { id: 'demo', title: 'Client demo', day: 3, start: 11, duration: 1, color: '#3b82f6' },
-  { id: 'retro', title: 'Sprint retro', day: 4, start: 15, duration: 1.5, color: '#a855f7' },
-]);
-
-const eventsOn = (day: number) => events.value.filter((event) => event.day === day);
-const move = (id: Key, day: number, start: number) => {
-  const event = events.value.find((item) => item.id === id);
-  if (event) Object.assign(event, { day, start });
+/**
+ * The hours' own modifier. Over the days, the dragged box moves by whole days, as many as the
+ * pointer crossed (an event beside another keeps its place in the day), and its top snaps to
+ * the quarters of an hour of the day it started in (`containerRect`, which follows the scroll).
+ * It runs first, so `origin + transform` is the pointer.
+ */
+const snapToWeek: Modifier = ({ transform, overlayRect, containerRect, origin }) => {
+  const days = grid.value?.getBoundingClientRect();
+  if (!days || !containerRect) return transform;
+  const width = days.width / props.days.length;
+  const column = (x: number) => Math.floor((x - days.left) / width);
+  const pointer = origin.x + transform.x;
+  const x = pointer < days.left || pointer >= days.right ? transform.x : (column(pointer) - column(origin.x)) * width;
+  const top = overlayRect.top - containerRect.top;
+  return { x, y: transform.y + Math.round(top / STEP_PX) * STEP_PX - top };
 };
 
-const days = useTemplateRef<HTMLElement>('days');
-// Rules for the drags that start in the week: they snap to its cells, a day wide and half
-// an hour high (gliding from one to the next), and stay inside it.
-makeDragArea(days, {
-  modifiers: [snapToGrid({ x: DAY_WIDTH, y: HOUR_HEIGHT / 2, smooth: true })],
-  restrictToArea: true,
+// Rules for every drag that starts in the hours: an event, one of its edges, or empty time.
+// The hours auto-scroll near their ends for any drag, from a narrower edge than the default:
+// the all-day row right above them stays easy to reach.
+makeDragArea(grid, { modifiers: [snapToWeek], autoScroll: { threshold: 0.12 } });
+
+// Keyboard drags over the hours: up and down by a quarter of an hour (with Shift, an hour),
+// left and right by a day. Elsewhere (the task list, the all-day row) the library's own
+// moves apply.
+useDnDMonitor({
+  getKeyboardCoordinates: (key, { pointer, direction }) => {
+    const hours = scroller.value;
+    if ((over.value?.data as Target | undefined)?.kind !== 'hours' || !hours || !grid.value) return undefined;
+    const dy = direction.y * STEP_PX * (key.shiftKey ? 4 : 1);
+    const next = { x: pointer.x + direction.x * (grid.value.offsetWidth / props.days.length), y: pointer.y + dy };
+    // Keyboard drags don't auto-scroll: near an end of the hours in view, the arrow scrolls
+    // them instead, and the event goes on in time where it is on the screen.
+    const view = hours.getBoundingClientRect();
+    const canScroll = dy < 0 ? hours.scrollTop > 0 : hours.scrollTop + hours.clientHeight < hours.scrollHeight;
+    if (canScroll && (next.y < view.top + HOUR_PX || next.y > view.bottom - HOUR_PX)) {
+      hours.scrollTop += dy;
+      return { x: next.x, y: pointer.y };
+    }
+    return next;
+  },
 });
 
-// Keyboard drags: an arrow moves the event by one cell, a day or half an hour.
-useDnDMonitor({
-  getKeyboardCoordinates: (_event, { pointer, direction }) => ({
-    x: pointer.x + direction.x * DAY_WIDTH,
-    y: pointer.y + (direction.y * HOUR_HEIGHT) / 2,
-  }),
+/** For screen readers: where a keyboard drag would land, as the arrows move it. */
+const spoken = computed(() => {
+  const data = active.value?.data as DragData | undefined;
+  if (active.value?.sensor !== 'keyboard' || data?.kind !== 'event') return '';
+  const place = placeOf(data.event, over.value, position.value);
+  return place ? spokenOf(place, data.event.duration) : '';
 });
+
+const todayAt = computed(() => props.days.indexOf(props.today));
+/** "GMT+2", in the corner above the hours. */
+const zone = new Intl.DateTimeFormat('en-US', { timeZoneName: 'shortOffset' })
+  .formatToParts(new Date())
+  .find((part) => part.type === 'timeZoneName')?.value;
+
+// Open on the working day, or on now when today is in view and it is daytime.
+let scrolled = 0;
+onMounted(() => {
+  const hours = scroller.value!;
+  const day = props.minutes >= 7 * 60 && props.minutes <= 21 * 60;
+  hours.scrollTop = toPx(todayAt.value >= 0 && day ? props.minutes : 8 * 60) - hours.clientHeight / 3;
+  scrolled = hours.scrollTop;
+});
+// Moved elsewhere in the page (a full-screen view takes it to <body>), an element loses its
+// scroll: the hours keep theirs.
+const keepScroll = () => (scrolled = scroller.value!.scrollTop);
+useResizeObserver(scroller, () => {
+  if (scroller.value) scroller.value.scrollTop = scrolled;
+});
+
+// Turning the week, its days slide in from the side it went to.
+watch(
+  () => props.days[0]!,
+  (first, before) => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const from = `translateX(${first > before ? 32 : -32}px)`;
+    for (const element of [heads.value, grid.value]) {
+      element?.animate([{ opacity: 0, transform: from }, { opacity: 1, transform: 'none' }], {
+        duration: 280,
+        easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+      });
+    }
+  },
+);
 </script>
 
 <template>
-  <div class="calendar">
-    <div class="week" :style="{ '--day': `${DAY_WIDTH}px`, '--hour': `${HOUR_HEIGHT}px` }">
-      <span class="corner">W44</span>
-      <div v-for="day in DAYS" :key="day.name" class="day-name" :class="{ today: day.today }">
-        <span>{{ day.name }}</span>
-        <strong>{{ day.date }}</strong>
+  <div class="week" :style="{ '--days': days.length }">
+    <div class="head">
+      <div class="labels" aria-hidden="true">
+        <span class="zone">{{ zone }}</span>
+        <span class="all-day">All day</span>
       </div>
-      <div class="hours">
-        <span v-for="hour in HOURS" :key="hour" :style="{ top: `${(hour - FIRST_HOUR) * HOUR_HEIGHT}px` }">
-          {{ formatTime(hour) }}
-        </span>
-      </div>
-      <div ref="days" class="days" :style="{ height: `${(LAST_HOUR - FIRST_HOUR) * HOUR_HEIGHT}px` }">
-        <DayColumn
-          v-for="(day, index) in DAYS"
-          :key="day.name"
-          :day="index"
-          :today="day.today"
-          :events="eventsOn(index)"
-          @move="move"
-        />
+      <div ref="heads" class="heads">
+        <div v-for="day in days" :key="day" class="day-name" :class="{ today: day === today }">
+          <span class="weekday">{{ shortWeekday(day) }}</span>
+          <span class="number">{{ dateNumber(day) }}</span>
+        </div>
+        <AllDayCell v-for="day in days" :key="day" :day="day" :today="day === today" />
       </div>
     </div>
+
+    <div ref="scroller" class="scroller" @scroll.passive="keepScroll">
+      <div class="hours">
+        <div class="gutter" aria-hidden="true">
+          <span
+            v-for="hour in 23"
+            :key="hour"
+            class="hour"
+            :class="{ near: todayAt >= 0 && Math.abs(minutes - hour * 60) < 20 }"
+            :style="{ top: `${toPx(hour * 60)}px` }"
+          >
+            {{ clock(hour * 60) }}
+          </span>
+          <span v-if="todayAt >= 0" class="now-time" :style="{ top: `${toPx(minutes)}px` }">{{ clock(minutes) }}</span>
+        </div>
+        <div ref="grid" class="days">
+          <DayColumn v-for="day in days" :key="day" :day="day" :today="day === today" />
+          <div v-if="todayAt >= 0" class="now" :style="{ top: `${toPx(minutes)}px`, '--today': todayAt }" aria-hidden="true" />
+        </div>
+      </div>
+    </div>
+
+    <p class="spoken" aria-live="polite">{{ spoken }}</p>
   </div>
 </template>
 
 <style scoped>
-/* On a narrow screen the week scrolls sideways. */
-.calendar {
-  overflow-x: auto;
-}
-
 .week {
-  display: grid;
-  grid-template-columns: 48px repeat(5, var(--day));
-  width: max-content;
-  margin: 0 auto;
-  padding: 0 4px 8px;
+  --gutter: 56px;
+  --hour: 48px; /* HOUR_PX */
+  --step: 12px; /* STEP_PX */
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  user-select: none;
 }
 
-.corner {
+/* The days' names and the all-day row. It keeps the room of the hours' scrollbar, so the
+   columns line up with theirs. */
+.head {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: var(--gutter) 1fr;
+  overflow: hidden;
+  scrollbar-gutter: stable;
+  box-shadow:
+    0 1px 0 var(--line),
+    0 6px 12px -10px rgb(0 0 0 / 0.25);
+}
+
+.labels {
+  display: grid;
+  grid-template-rows: 44px auto;
+  color: var(--muted);
+  font-size: 10px;
+  text-align: right;
+}
+
+.zone {
   align-self: end;
-  padding-bottom: 12px;
-  font: 10px/1 ui-monospace, Menlo, Consolas, monospace;
-  opacity: 0.45;
+  padding: 0 8px 6px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.all-day {
+  padding: 8px 8px 0 0;
+}
+
+.heads {
+  display: grid;
+  grid-template-columns: repeat(var(--days), minmax(0, 1fr));
+  grid-template-rows: 44px auto;
 }
 
 .day-name {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 0 10px 12px;
+  min-width: 0;
+  padding: 0 10px;
+  box-shadow: inset 1px 0 0 var(--line);
+  white-space: nowrap;
 }
 
-.day-name span {
-  font: 600 11px/1 ui-monospace, Menlo, Consolas, monospace;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  opacity: 0.55;
-}
-
-.day-name strong {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  font-size: 15px;
+.weekday {
+  color: var(--muted);
+  font-size: 11px;
   font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-.day-name.today span {
+.number {
+  min-width: 28px;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 28px;
+  font-variant-numeric: tabular-nums;
+}
+
+.today .weekday {
   color: #42b883;
-  opacity: 1;
 }
 
-.day-name.today strong {
+.today .number {
+  border-radius: 14px;
   background: #42b883;
   color: #fff;
+  text-align: center;
 }
 
-/* The hour labels sit on the lines. */
+.scroller {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
 .hours {
+  display: grid;
+  grid-template-columns: var(--gutter) 1fr;
+  height: calc(24 * var(--hour));
+  padding-bottom: 1px;
+}
+
+.gutter {
   position: relative;
 }
 
-.hours span {
+/* Each hour's label sits on its line. */
+.hour,
+.now-time {
   position: absolute;
-  right: 10px;
+  right: 8px;
   translate: 0 -50%;
-  font: 10px/1 ui-monospace, Menlo, Consolas, monospace;
-  opacity: 0.45;
+  font-size: 10.5px;
+  line-height: 14px;
+  font-variant-numeric: tabular-nums;
 }
 
-/* The drag area: exactly five days wide and the hours high, the grid starting at its corner. */
+.hour {
+  color: var(--muted);
+  transition: opacity 0.2s;
+}
+
+.hour.near {
+  opacity: 0;
+}
+
+.now-time {
+  right: 4px;
+  z-index: 1;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--now);
+  color: #fff;
+  font-weight: 600;
+}
+
 .days {
+  position: relative;
   display: grid;
-  grid-column: 2 / -1;
-  grid-template-columns: repeat(5, var(--day));
-  box-shadow:
-    inset 0 -1px 0 color-mix(in srgb, currentColor 12%, transparent),
-    inset -1px 0 0 color-mix(in srgb, currentColor 12%, transparent);
+  grid-template-columns: repeat(var(--days), minmax(0, 1fr));
+  box-shadow: inset -1px 0 0 var(--line);
+}
+
+/* Now: a faint line across the week, a strong one across today. */
+.now {
+  position: absolute;
+  right: 0;
+  left: 0;
+  z-index: 3;
+  border-top: 1px solid color-mix(in srgb, var(--now) 45%, transparent);
+  pointer-events: none;
+}
+
+.now::before,
+.now::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--today) * 100% / var(--days));
+  background: var(--now);
+}
+
+.now::before {
+  top: -1.5px;
+  width: calc(100% / var(--days));
+  height: 2px;
+}
+
+.now::after {
+  top: -5.5px;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  border-radius: 50%;
+}
+
+/* On a phone, a narrower column of hours. */
+@container (max-width: 560px) {
+  .week {
+    --gutter: 44px;
+  }
+
+  .day-name {
+    padding: 0 6px;
+  }
+}
+
+.spoken {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 </style>

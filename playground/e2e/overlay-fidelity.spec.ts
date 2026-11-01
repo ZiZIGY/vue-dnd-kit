@@ -167,7 +167,7 @@ const pixelDifference = (page: Page, a: Buffer, b: Buffer): Promise<number> =>
 
 /** The default overlay's clone: the element itself, or the row in its table wrapper. */
 const overlayClone = (page: Page, row = false): Locator =>
-  row ? page.locator('[data-dnd-overlay] tr') : page.locator('[data-dnd-overlay] > div > div > *').first();
+  row ? page.locator('[data-dnd-overlay] tr') : page.locator('[data-dnd-overlay] > div > div > div > *').first();
 
 interface Case {
   page: string;
@@ -290,7 +290,8 @@ test.describe('multi-drag clones look like their sources', () => {
         for (const record of records) {
           for (const node of record.addedNodes) {
             if (!(node instanceof Element) || !node.hasAttribute('data-dnd-ghost')) continue;
-            const { display, justifyContent, paddingRight } = getComputedStyle(node);
+            // The ghost is the box that carries the clone's custom properties: the clone is in it.
+            const { display, justifyContent, paddingRight } = getComputedStyle(node.firstElementChild!);
             target.__ghostLooks.push({ display, justifyContent, paddingRight });
           }
         }

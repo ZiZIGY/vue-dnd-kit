@@ -15,7 +15,7 @@ import {
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Active, OverlayProps, OverlaySlotProps, SortableItemOptions } from '../types';
 import { DnDProvider } from './DnDProvider';
-import { renderOverlay } from './DragOverlay';
+import { overlayProps, renderOverlay } from './DragOverlay';
 import { useManager } from './context';
 import type { DnDManager } from './manager';
 import { makeDraggable, toOverlay } from './makeDraggable';
@@ -59,6 +59,16 @@ describe('overlay precedence (pure)', () => {
     const component = defineComponent({ render: () => null });
     expect(toOverlay(component)).toBe(component);
     expect(isReactive(reactive({ component }).component)).toBe(false);
+  });
+
+  it('gives a component the props it declares only: the others would land on its root as attributes', () => {
+    const all = { ...props, status: 'dragging', over: null } as OverlaySlotProps;
+    const declares = defineComponent({ props: { items: Array, status: String }, render: () => null });
+    expect(overlayProps(declares, all)).toEqual({ items: all.items, status: 'dragging' });
+    expect(overlayProps(defineComponent({ props: ['over'], render: () => null }), all)).toEqual({ over: null });
+    // A function declares none: it gets them all, as its props.
+    const fn = () => null;
+    expect(overlayProps(fn, all)).toBe(all);
   });
 });
 
@@ -208,7 +218,7 @@ describe('overlay precedence (mounted)', () => {
     manager.selection.add('b1').add('b2');
     expect(await drag('b2')).toBe('clone');
     // What `DragPreview` shows: the overlay and the multi-drag column.
-    for (const id of ['b1', 'b2']) expect(manager.getPreview(id)!.element.style.padding).toBe('3px');
+    for (const id of ['b1', 'b2']) expect((manager.getPreview(id)!.element.firstElementChild as HTMLElement).style.padding).toBe('3px');
     await end();
     style.remove();
   });

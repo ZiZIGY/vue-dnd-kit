@@ -88,8 +88,10 @@ export function createDetection(ctx: ManagerContext) {
     const all = new Map<Element, DroppableEntry>();
     const byElement = new Map<Element, DroppableEntry>();
     const elements = new Map<Key, HTMLElement>();
+    // A drag from outside the page is for the targets that take such drags only (`external`).
+    const external = !!current.external && !current.external.group;
     for (const entry of droppables.values()) {
-      if (entry.isDisabled()) continue;
+      if (entry.isDisabled() || (external && !entry.getExternal?.())) continue;
       const element = entry.getElement();
       if (!element?.isConnected || isOwned(element, current)) continue;
       all.set(element, entry);
@@ -146,6 +148,7 @@ export function createDetection(ctx: ManagerContext) {
     return {
       id,
       data: entry.getData(),
+      label: entry.getLabel?.(),
       element,
       rect: measurer.measure(element),
       accepted: entry.accepts(current),

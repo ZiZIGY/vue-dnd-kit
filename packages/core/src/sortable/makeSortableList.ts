@@ -47,19 +47,40 @@ export interface SortableContext {
   getAxis?: () => 'x' | 'y' | undefined;
 }
 
-export const SORTABLE_CONTEXT: InjectionKey<SortableContext> = Symbol('vue-dnd-kit-sortable');
+/** What the lists (and trees) of a component give the items it renders: several are told apart by the DOM. */
+export interface SortableScope {
+  contexts: SortableContext[];
+}
+
+export const SORTABLE_CONTEXT: InjectionKey<SortableScope> = Symbol('vue-dnd-kit-sortable');
+
+/** The scope of each component with lists: provided once, its later lists join it. */
+const scopes = new WeakMap<object, SortableScope>();
+
+/**
+ * The context of the list an item is in: the component's only list, or of several the
+ * innermost whose element holds the item's element (the first while it isn't rendered).
+ */
+export const contextOf = (scope: SortableScope, element: Element | null): SortableContext => {
+  const { contexts } = scope;
+  if (contexts.length === 1 || !element) return contexts[0]!;
+  let found: SortableContext | undefined;
+  let container: Element | null = null;
+  for (const context of contexts) {
+    const own = context.list.getElement();
+    if (own?.contains(element) && (!container || container.contains(own))) {
+      found = context;
+      container = own;
+    }
+  }
+  return found ?? contexts[0]!;
+};
 
 /** `item.id`, or the item itself for primitives (lists and trees). */
 export const defaultGetKey = (item: unknown): Key =>
   item !== null && typeof item === 'object' && 'id' in item
     ? ((item as { id: Key }).id)
     : (item as Key);
-
-/** Bundlers replace it: development builds keep the warnings, production drops them. */
-declare const process: { env: { NODE_ENV?: string } };
-
-/** Components that provide a sortable context (development only). */
-const providers = new WeakSet<object>();
 
 export const provideSortableContext = (
   group: SortableGroup,
@@ -70,18 +91,7 @@ export const provideSortableContext = (
   getModifiers?: () => Modifier[] | undefined,
   getAxis?: () => 'x' | 'y' | undefined,
 ): void => {
-  if (process.env.NODE_ENV !== 'production') {
-    // A second list overrides the first one's context: every item of the component
-    // registers with the last list, and the first list's items stop sorting.
-    const instance = getCurrentInstance();
-    if (instance && providers.has(instance)) {
-      console.warn(
-        '[vue-dnd-kit] Two sortable lists (makeSortableList, makeSortableTree) in one component: their items all join the last one, so the others stop sorting. Render each list in its own component.',
-      );
-    }
-    if (instance) providers.add(instance);
-  }
-  provide(SORTABLE_CONTEXT, {
+  const context: SortableContext = {
     group,
     list,
     getKey: getKey as (item: unknown) => Key,
@@ -89,7 +99,51 @@ export const provideSortableContext = (
     getDropAnimation: () => unref(dropAnimation),
     getModifiers,
     getAxis,
-  });
+  };
+  // Several lists in one component: its items find theirs by the DOM (`contextOf`).
+  const instance = getCurrentInstance();
+  const own = instance && scopes.get(instance);
+  if (own) {
+    own.contexts.push(context);
+    return;
+  }
+  const scope: SortableScope = { contexts: [context] };
+  if (instance) scopes.set(instance, scope);
+  provide(SORTABLE_CONTEXT, scope);
+};
+
+/**
+ * A drop into a list with `filter`: the new order of the shown keys (`next`) as the whole
+ * array. Each hidden item stays after the shown one it followed, or, when that one moved
+ * (`inserted`) or left, after the nearest before it that stayed (first, without one).
+ */
+export const withHidden = <T>(
+  all: readonly T[],
+  shown: readonly Key[],
+  next: readonly Key[],
+  inserted: readonly Key[],
+  getKey: (item: T) => Key,
+  lookup: (key: Key) => unknown,
+): unknown[] => {
+  const visible = new Set(shown);
+  const stayed = new Set(next);
+  for (const key of inserted) stayed.delete(key);
+  const first: T[] = [];
+  const after = new Map<Key, T[]>();
+  let anchor: Key | null = null;
+  for (const item of all) {
+    const key = getKey(item);
+    if (visible.has(key)) {
+      if (stayed.has(key)) anchor = key;
+    } else if (anchor === null) {
+      first.push(item);
+    } else {
+      let hidden = after.get(anchor);
+      if (!hidden) after.set(anchor, (hidden = []));
+      hidden.push(item);
+    }
+  }
+  return [...first, ...next.flatMap((key) => [lookup(key), ...(after.get(key) ?? [])])];
 };
 
 let warnedClone = false;
@@ -120,8 +174,10 @@ export function makeSortableList<T>(
   const group = useSortableGroup(manager, groupOptions?.name ?? `sortable:${id}`);
   const getKey = (options.getKey ?? defaultGetKey) as (item: T) => Key;
   const source = () => read<readonly T[]>(options.items) as T[];
+  // `filter`: the list shows, and sorts, only these.
+  const shown = computed(() => (options.filter ? source().filter(options.filter) : source()));
 
-  const keys = computed(() => source().map(getKey));
+  const keys = computed(() => shown.value.map(getKey));
   const byKey = computed(() => {
     const map = new Map<Key, T>();
     for (const item of source()) map.set(getKey(item), item);
@@ -161,12 +217,14 @@ export function makeSortableList<T>(
       : undefined,
     create: options.createItem
       ? (active) => {
-          const item = options.createItem!(active);
-          return item === undefined ? undefined : { key: getKey(item), item };
+          const made = options.createItem!(active);
+          return made === undefined ? undefined : (Array.isArray(made) ? made : [made]).map((item: T) => ({ key: getKey(item), item }));
         }
       : undefined,
+    external: () => read(options.external),
+    keyOf: (item) => getKey(item as T),
     isReadonly: () => !isRef(options.items) || isReadonly(options.items),
-    build: (next, lookup) => next.map(lookup),
+    build: (next, lookup, inserted) => (options.filter ? withHidden(source(), keys.value, next, inserted, getKey, lookup) : next.map(lookup)),
     // The very array the drop's `result` holds.
     commit: (built) => {
       (options.items as Ref<T[]>).value = built as T[];
@@ -186,12 +244,15 @@ export function makeSortableList<T>(
     // not stop at the inner card list it happens to be over.
     {
       id,
+      label: options.label,
       disabled: () => !!read(options.disabled) || group.isInert(entry),
       // As a target: what the overlay shows over it, and how it lands in it.
       overlay: options.overOverlay,
       dropAnimation: options.overDropAnimation,
+      // Drags from outside the page it takes (with `createItem`).
+      external: options.external,
     },
-    { accepts: (active) => group.accepts(entry, active) },
+    { accepts: (active) => group.accepts(entry, active), getGroup: () => group.name },
   );
 
   provideSortableContext(
@@ -211,7 +272,7 @@ export function makeSortableList<T>(
     const order = draft.value;
     if (!order) {
       rendered = null;
-      return source();
+      return shown.value;
     }
     const session = group.session.value;
     const lookup = (key: Key) => group.lookup(key) as T;

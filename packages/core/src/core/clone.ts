@@ -108,8 +108,8 @@ export const copyElement = (source: HTMLElement): HTMLElement => {
 
 /**
  * The overlay's clone of `source`: a copy that fills the overlay box, with the computed
- * styles it would lose outside its list inlined (`snapshot.ts`). A table row comes in a
- * table of its own.
+ * styles it would lose outside its list inlined (`snapshot.ts`), in a box that carries the
+ * custom properties it inherits. A table row comes in a table of its own.
  */
 export const clonePreview = (source: HTMLElement, options: CloneOptions = {}): HTMLElement =>
   clonePreviews([source], options)[0]!;
@@ -118,10 +118,15 @@ export const clonePreview = (source: HTMLElement, options: CloneOptions = {}): H
 const prepare = (source: HTMLElement) => {
   const clone = copyElement(source);
   const computed = getComputedStyle(source);
+  // The custom properties the source inherits go on a box around the copy: inline on the
+  // copy they would beat its own rules in the overlay (Tailwind's `--tw-ring-shadow` from
+  // `in-data-[dnd-overlay]:ring-2`). The snapshot inlines those that don't reach it.
+  const box = document.createElement('div');
+  box.style.cssText = 'width:100%;height:100%';
   for (let index = 0; index < computed.length; index++) {
     const property = computed.item(index);
     if (property.startsWith('--')) {
-      clone.style.setProperty(property, computed.getPropertyValue(property));
+      box.style.setProperty(property, computed.getPropertyValue(property));
     }
   }
   // The clone fills the overlay box: when the box takes the size of another list's
@@ -136,8 +141,8 @@ const prepare = (source: HTMLElement) => {
     transition: 'none',
     pointerEvents: 'none',
   });
-  const mount = source.tagName === 'TR' ? wrapTableRow(clone, source) : clone;
-  return { source, clone, mount, positioned: computed.position !== 'static' };
+  box.appendChild(source.tagName === 'TR' ? wrapTableRow(clone, source) : clone);
+  return { source, clone, mount: box, positioned: computed.position !== 'static' };
 };
 
 /**

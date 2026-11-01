@@ -64,8 +64,8 @@
     "text": "Bäume: Elternknoten, den die abgelegten Knoten bekommen, `null` auf der Wurzelebene."
   },
   "SortableListOptions": {
-    "source": "ad5d98cc02",
-    "text": "Optionen von `makeSortableList`. Eine Liste (oder ein Baum) pro Komponente: Sie stellt den Kontext bereit, den ihre Elemente lesen, sodass eine zweite in derselben Komponente die Elemente der ersten übernehmen würde (Entwicklungs-Builds warnen davor).\n\nOptionen nehmen einen Wert, ein Ref oder einen Getter entgegen (`overlay`, `animation`: einen Wert oder ein Ref) und werden gelesen, wenn die Liste sie braucht, sodass eine Änderung spätestens ab dem nächsten Drag gilt. Ausnahmen: `id` und `group` werden einmal gelesen, wenn die Liste erstellt wird; `items` ist das Modell selbst; Funktionen (`getKey`, `clone`, `createItem`, die Callbacks) werden so übergeben, wie sie sind."
+    "source": "5578e6dad0",
+    "text": "Optionen von `makeSortableList`. Eine Liste (oder ein Baum) pro Komponente: Sie stellt den Kontext bereit, den ihre Elemente lesen, sodass eine zweite in derselben Komponente die Elemente der ersten übernehmen würde (Entwicklungs-Builds warnen davor).\n\nOptionen nehmen einen Wert, ein Ref oder einen Getter entgegen (`overlay`, `animation`: einen Wert oder ein Ref) und werden gelesen, wenn die Liste sie braucht, sodass eine Änderung spätestens ab dem nächsten Drag gilt. Ausnahmen: `id` und `group` werden einmal gelesen, wenn die Liste erstellt wird; `items` ist das Modell selbst; Funktionen (`getKey`, `filter`, `clone`, `createItem`, die Callbacks) werden so übergeben, wie sie sind."
   },
   "SortableListOptions.items": {
     "source": "bcf07acd7a",
@@ -75,9 +75,17 @@
     "source": "f5ae57e9ca",
     "text": "Standard: `item.id` oder bei Primitiven das Element selbst. Liefert auch die Schlüssel für `makeSortableItem({ item })`."
   },
+  "SortableListOptions.filter": {
+    "source": "68bbc0dba4",
+    "text": "Zeigt nur die Elemente, für die es `true` zurückgibt (eine Suche, ein Tag): `items` (das zurückgegebene) enthält sie, und ein Drag sortiert unter ihnen. Die anderen behalten ihre Plätze in der Quelle: Ein Drop schreibt das ganze Array, jedes ausgeblendete Element weiterhin hinter dem gezeigten, dem es folgte (hinter dem nächsten, das an seinem Platz blieb, wenn jenes sich bewegt hat). Reaktiv: Was es liest (ein Ref mit der Suchanfrage), gilt sofort."
+  },
   "SortableListOptions.id": {
     "source": "c0adaf519f",
     "text": "Standard: `useId()`, stabil zwischen Server- und Client-Rendering. Wird einmal gelesen."
+  },
+  "SortableListOptions.label": {
+    "source": "afaee09f48",
+    "text": "Der lesbare Name der Liste: Screenreader-Texte nennen ihn statt ihrer ID (`position 2 of 5 in Garden`)."
   },
   "SortableListOptions.overlay": {
     "source": "47e3eb4c8a",
@@ -210,6 +218,10 @@
   "SortableItemOptions.handle": {
     "source": "519bda20d7",
     "text": "Element oder Selektor innerhalb des Elements, der den Drag startet (und die Attribute bekommt)."
+  },
+  "SortableItemOptions.label": {
+    "source": "93ed063b77",
+    "text": "Der lesbare Name des Elements: Screenreader-Texte nennen ihn statt seines Schlüssels (`Picked up Tomato at position 2 of 5 in Garden`). Events tragen ihn als `active.label` und in `items`."
   },
   "SortableItemOptions.activation": {
     "source": "07b1465312",

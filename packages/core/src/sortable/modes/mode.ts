@@ -27,7 +27,7 @@ export interface SortableMode {
   /** Which dragged keys `list`, which isn't disabled, takes. */
   partition(g: GroupContext, list: ListEntry, current: Session): Partition;
   /** The drag can never enter `list`. */
-  inert?(list: ListEntry): boolean;
+  inert?(list: ListEntry, g: GroupContext): boolean;
   /** The drag enters `target`: makes its slot there; `false` when it can have none. */
   enter?(g: GroupContext, current: Session, target: ListEntry): boolean;
   /**

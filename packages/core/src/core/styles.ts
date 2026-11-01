@@ -14,6 +14,7 @@ const STYLE_ID = 'vue-dnd-kit-styles';
 // A touch drag starts (200ms) before iOS shows its link callout and magnifier (~500ms),
 // and WebKit reads `-webkit-touch-callout` when it recognises that long press.
 // The `!important` rules stay out of the layer: in one, they would beat the page's own.
+// `--dnd-cursor`: the grabbed element's own cursor (`dragCursor`), else the page's, else `grabbing`.
 const CSS = `
 @layer vue-dnd-kit {
   :where([data-dnd-placeholder]) { opacity: 0.4; }
@@ -22,7 +23,7 @@ const CSS = `
 :where(html[data-dnd-dragging]),
 :where(html[data-dnd-dragging] *) { user-select: none !important; -webkit-user-select: none !important; overflow-anchor: none !important; }
 :where(html[data-dnd-dragging="pointer"]),
-:where(html[data-dnd-dragging="pointer"] *) { cursor: grabbing !important; -webkit-touch-callout: none !important; }
+:where(html[data-dnd-dragging="pointer"] *) { cursor: var(--dnd-cursor, grabbing) !important; -webkit-touch-callout: none !important; }
 `;
 
 export const injectDefaultStyles = (): void => {
@@ -34,15 +35,29 @@ export const injectDefaultStyles = (): void => {
   document.head.prepend(style);
 };
 
-/** Marks the document as dragging; returns the restore function. */
-export const markDocumentDragging = (sensor: 'pointer' | 'keyboard'): (() => void) => {
+/**
+ * Cursors that only say "press here": a drag shows `grabbing` instead. Any other (a resize
+ * handle's `ns-resize`, `move`, an image) is the grabbed element's own and stays.
+ */
+const PRESS_CURSORS = new Set(['auto', 'default', 'pointer', 'text', 'vertical-text', 'grab', '-webkit-grab', 'help', 'context-menu', 'cell']);
+
+/** The cursor a pointer drag of `grabbed` keeps: its own, or `null` when it only said "press here". */
+export const dragCursor = (grabbed: Element): string | null => {
+  const { cursor } = getComputedStyle(grabbed);
+  return !cursor || PRESS_CURSORS.has(cursor) ? null : cursor;
+};
+
+/** Marks the document as dragging (with `cursor`, a pointer drag's: see `dragCursor`); returns the restore function. */
+export const markDocumentDragging = (sensor: 'pointer' | 'keyboard', cursor: string | null = null): (() => void) => {
   const root = document.documentElement;
   root.setAttribute('data-dnd-dragging', sensor);
+  if (cursor) root.style.setProperty('--dnd-cursor', cursor);
   document.getSelection()?.removeAllRanges();
   const preventSelection = (event: Event) => event.preventDefault();
   document.addEventListener('selectstart', preventSelection);
   return () => {
     root.removeAttribute('data-dnd-dragging');
+    if (cursor && root.style.getPropertyValue('--dnd-cursor') === cursor) root.style.removeProperty('--dnd-cursor');
     document.removeEventListener('selectstart', preventSelection);
   };
 };

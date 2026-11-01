@@ -10,14 +10,14 @@ import { makeDraggable } from './makeDraggable';
 let manager: DnDManager;
 let unmount: (() => void) | null = null;
 
-const mountCard = () => {
+const mountCard = (cursor?: string) => {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const Card = defineComponent({
     setup() {
       manager = useManager();
       makeDraggable(useTemplateRef<HTMLElement>('el'), { id: 'card' });
-      return () => h('div', { ref: 'el' }, 'card');
+      return () => h('div', { ref: 'el', style: cursor && { cursor } }, 'card');
     },
   });
   const app = createApp({ setup: () => () => h(DnDProvider, { dropAnimation: false }, { default: () => h(Card) }) });
@@ -76,6 +76,38 @@ describe('the document while a drop waits for onBeforeDrop', () => {
     manager.cancel();
     expect(dragging()).toBeNull();
     expect(canSelect()).toBe(true);
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+  });
+});
+
+describe('the cursor of a pointer drag', () => {
+  afterEach(() => {
+    unmount?.();
+    unmount = null;
+  });
+
+  const cursor = () => document.documentElement.style.getPropertyValue('--dnd-cursor');
+
+  it("keeps the grabbed element's own cursor for the drag (a resize handle's)", async () => {
+    mountCard('ns-resize');
+    manager.start('card', { x: 1, y: 1 }, 'pointer');
+    expect(cursor()).toBe('ns-resize');
+    manager.cancel();
+    expect(cursor()).toBe('');
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+  });
+
+  it('one that only said "press here" becomes `grabbing` (the default style); keyboard drags set none', async () => {
+    mountCard('grab');
+    manager.start('card', { x: 1, y: 1 }, 'pointer');
+    expect(cursor()).toBe('');
+    manager.cancel();
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+    unmount!();
+    mountCard('move');
+    manager.start('card', { x: 1, y: 1 }, 'keyboard');
+    expect(cursor()).toBe('');
+    manager.cancel();
     await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
   });
 });

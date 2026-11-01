@@ -135,6 +135,52 @@ describe('multi-drag modes', () => {
   });
 });
 
+describe('a list with `createItem`', () => {
+  afterEach(() => {
+    unmount?.();
+    unmount = null;
+  });
+
+  it("stays out of a drag of another group's item: only plain draggables are made into items", async () => {
+    const GroupList = defineComponent({
+      props: { listId: { type: String, required: true }, group: { type: String, required: true }, create: Boolean },
+      setup(props) {
+        const { items } = makeSortableList(useTemplateRef<HTMLElement>('list'), {
+          id: props.listId,
+          group: props.group,
+          items: ref([`${props.listId}1`].map((id) => ({ id }))),
+          createItem: props.create ? (active) => ({ id: `made-${String(active.id)}` }) : undefined,
+        });
+        return () => h('ul', { ref: 'list' }, items.value.map((task) => h(Row, { key: task.id, rowId: task.id })));
+      },
+    });
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const app = createApp({
+      setup: () => () =>
+        h(DnDProvider, { dropAnimation: false, animation: false }, {
+          default: () => [
+            h({ setup: () => ((manager = useManager()), () => null) }),
+            h(GroupList, { listId: 'a', group: 'a' }),
+            h(GroupList, { listId: 'b', group: 'b', create: true }),
+          ],
+        }),
+    });
+    app.mount(container);
+    unmount = () => {
+      app.unmount();
+      container.remove();
+    };
+    await nextTick();
+    expect(manager.start('a1', { x: 1, y: 1 }, 'pointer')).toBe(true);
+    await nextTick();
+    // B isn't a target of this drag: it makes no item for it, and doesn't stop it.
+    expect(manager.getDroppable('b')!.isDisabled()).toBe(true);
+    expect(container.querySelectorAll('ul')[1]!.querySelectorAll('li')).toHaveLength(1);
+    await cancel();
+  });
+});
+
 describe("a 'group' block over a drop target that is no list", () => {
   const ROW = 40;
   /** A panel holding the list (0–220) and a zone of its own beside it (300–500). */

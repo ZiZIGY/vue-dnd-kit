@@ -168,13 +168,17 @@ describe('drop into an item', () => {
     await nextTick();
     await pickUp('a1');
     // g1 spans 80–120; its middle band is 90–110. The top edge band leaves it to the list.
+    const slot = () => container.querySelector('[data-list] [data-id="a1"]')!.getAttribute('data-dnd-placeholder');
     await moveTo(84);
     expect(manager.over.value?.id).not.toBe('group:g1');
+    expect(slot()).toBe('');
     await moveTo(100);
     expect(manager.over.value?.id).toBe('group:g1');
     expect(manager.over.value?.accepted).toBe(true);
     // a1 passed a2 on the way (crossing its center), but not g1.
     expect(rows(container)).toEqual(['a2', 'a1', 'g1', 'a3']);
+    // The slot only holds the place: the drop goes into g1 (for CSS, `"into"`).
+    expect(slot()).toBe('into');
 
     await drop();
     expect(drops).toEqual(['a1>g1']);

@@ -23,6 +23,9 @@ const sameIndicator = (a: SortableIndicator | null, b: SortableIndicator | null)
 export const setIndicator = (g: GroupContext, value: SortableIndicator | null) => {
   if (sameIndicator(g.indicator.value, value)) return false;
   g.indicator.value = value;
+  // What a drop would do may follow the line (an item made for a plain draggable goes in).
+  const current = g.session.value;
+  if (current) g.manager.mode.value = current.mode.dragMode(g, current);
   return true;
 };
 

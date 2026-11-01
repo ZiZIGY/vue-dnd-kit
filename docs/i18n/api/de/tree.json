@@ -31,6 +31,10 @@
     "source": "c0adaf519f",
     "text": "Standard: `useId()`, stabil zwischen Server- und Client-Rendering. Wird einmal gelesen."
   },
+  "SortableTreeOptions.label": {
+    "source": "86c099a68f",
+    "text": "Der lesbare Name des Baums: Screenreader-Texte nennen ihn statt seiner ID."
+  },
   "SortableTreeOptions.overlay": {
     "source": "cf37f2819a",
     "text": "Overlay-Komponente für die Zeilen dieses Baums (das eigene `overlay` einer Zeile gewinnt). Ein mitten im Drag umgeschaltetes Ref tauscht sie sofort."

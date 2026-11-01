@@ -18,6 +18,8 @@ import type { Sensor } from './sensor';
 /** A place in a sortable list or tree (its visible rows): `index` counts from 0, out of `length`. */
 export interface AnnouncedPosition {
   list: Key;
+  /** The list's `label`, what people call it. */
+  label?: string;
   index: number;
   length: number;
 }
@@ -34,7 +36,7 @@ export interface AnnouncementContext {
    */
   position?: AnnouncedPosition;
   /** A swap: the item exchanged with the dragged one, and where it is now. */
-  partner?: { key: Key; position: AnnouncedPosition };
+  partner?: { key: Key; label?: string; position: AnnouncedPosition };
   /** How many items the drag carries. */
   count: number;
   /** The drag copies (`group.pull: 'clone'`, the copy modifier). */

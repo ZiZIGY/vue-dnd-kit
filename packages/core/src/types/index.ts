@@ -15,3 +15,4 @@ export type * from './sortable';
 export type * from './tree';
 export type * from './selection';
 export type * from './area';
+export type * from './native';

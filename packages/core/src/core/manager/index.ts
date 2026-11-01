@@ -107,8 +107,10 @@ export function createDnDManager(props: DnDProviderProps) {
         (flight) => key === (flight.landingKey ?? flight.active.id) || flight.items.has(flight.landings.get(key) ?? key),
       ),
     announce: events.announce,
-    // updateActive, start, move, drop, cancel, destroy
+    // updateActive, start, move, drop, cancel, endOutside, destroy
     ...createSession(ctx),
+    /** The running drop is of a drag out of the page that something else took (`endOutside`). */
+    getDroppedOutside: () => ctx.droppedOutside,
     scheduleFrame: loop.scheduleFrame,
     /** Runs the pending frame now (discrete keyboard moves need `pointer`/`over` updated at once). */
     flushFrame: loop.flushFrame,

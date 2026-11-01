@@ -3,6 +3,10 @@
     "source": "957ec8f6ce",
     "text": "Ein Platz in einer sortierbaren Liste oder einem Baum (unter seinen sichtbaren Zeilen): `index` zählt ab 0, von `length`."
   },
+  "AnnouncedPosition.label": {
+    "source": "702bfecdc2",
+    "text": "Das `label` der Liste, der lesbare Name."
+  },
   "AnnouncementContext": {
     "source": "884af39ecf",
     "text": "Worum es in einer Ansage geht, über das Event hinaus: für eigene Texte (eine andere Sprache, andere Worte), die sagen, was die eingebauten sagen."

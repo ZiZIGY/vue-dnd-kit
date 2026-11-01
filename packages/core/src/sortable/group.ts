@@ -15,7 +15,7 @@
  * block once (`viewOf`), and every move takes the whole block along.
  */
 
-import { computed, effectScope, type ShallowRef } from 'vue';
+import { computed, effectScope, type ComputedRef, type ShallowRef } from 'vue';
 import type { Active, Coordinates, Key, SortableIndicator } from '../types';
 import type { DnDManager } from '../core/manager';
 import { devtoolsHook } from '../core/devtoolsHook';
@@ -29,7 +29,7 @@ import { targetRule } from './combine';
 import { captureLayout, watchLayout } from './flip';
 import { watchChanges } from './autoAnimate';
 import { useCopyModifier } from './modifier';
-import { move, start } from './session';
+import { move, standsApart, start } from './session';
 import { beforeDrop, cancel, end, resume } from './drop';
 import { getKeyboardCoordinates } from './keyboard';
 import { placeAt } from './place';
@@ -41,6 +41,12 @@ export interface SortableGroup {
   session: ShallowRef<Session | null>;
   /** Insertion line of `placeholder: 'indicator'` lists, while the pointer is over one. */
   indicator: ShallowRef<SortableIndicator | null>;
+  /**
+   * The drag is over a drop target that is no list and keeps the slot where it is (one
+   * inside an item, a folder in a grid of files): the drop goes there, the slot only holds
+   * its place, so the layout under the pointer stays still.
+   */
+  into: ComputedRef<boolean>;
   /** Shows the insertion line (trees move it with their own keys). */
   showIndicator(value: SortableIndicator | null): void;
   addList(entry: ListEntry): () => void;
@@ -90,6 +96,13 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
   const removeRule = manager.addTargetRule(targetRule(g));
   // The overlay's `to`: where this group would put the drag.
   const destination = scope.run(() => computed(stableDestination(g)))!;
+  // A target apart from the lists (a trash can) sends the slot home instead (`sendHome`).
+  const into = scope.run(() =>
+    computed(() => {
+      const over = manager.over.value;
+      return !!session.value && !!over?.accepted && !lists.has(over.id) && !standsApart(g, over.element);
+    }),
+  )!;
   const removeDestination = manager.addDestinationResolver(() => destination.value);
   // `e.source.remove()` in a trash zone's onDrop marks the dragged items for removal.
   const removeSource = manager.addSourceResolver((active) => {
@@ -108,6 +121,7 @@ function createGroup(manager: DnDManager, name: string, release: () => void): So
     manager,
     session,
     indicator: g.indicator,
+    into,
     addList(entry) {
       lists.set(entry.id, entry);
       return () => {

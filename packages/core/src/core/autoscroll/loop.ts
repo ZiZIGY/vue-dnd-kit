@@ -124,8 +124,9 @@ export function useAutoScroll(manager: DnDManager): void {
     scrollBy(scroller, left, top);
   };
 
+  // Not while the browser's own drag is out of the window: its last point stays at an edge.
   const isPointerDrag = () =>
-    manager.status.value === 'dragging' && manager.active.value?.sensor === 'pointer';
+    manager.status.value === 'dragging' && manager.active.value?.sensor === 'pointer' && !manager.outside.value;
 
   const tick = (now: number) => {
     frame = 0;

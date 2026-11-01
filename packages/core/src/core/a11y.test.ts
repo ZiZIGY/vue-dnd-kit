@@ -96,6 +96,60 @@ describe('announcements', () => {
     expect(manager.announcement.value).toBe('Dragging was cancelled. Draggable item free was dropped.');
   });
 
+  it('say what an item and a list are called (`label`) instead of their ids, as written', async () => {
+    const Labeled = defineComponent({
+      props: { rowId: { type: String, required: true } },
+      setup(props) {
+        makeSortableItem(useTemplateRef<HTMLElement>('el'), { id: () => props.rowId, label: () => `iPhone ${props.rowId}` });
+        return () => h('li', { ref: 'el' }, props.rowId);
+      },
+    });
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const app = createApp({
+      setup: () => () =>
+        h(DnDProvider, { dropAnimation: false }, {
+          default: () => [
+            h({
+              setup() {
+                manager = useManager();
+                const { items } = makeSortableList(useTemplateRef<HTMLElement>('list'), {
+                  id: 'l',
+                  label: 'Phones',
+                  items: ref([{ id: 'a' }, { id: 'b' }]),
+                });
+                return () => h('ul', { ref: 'list' }, items.value.map((row) => h(Labeled, { key: row.id, rowId: row.id })));
+              },
+            }),
+            h({
+              setup() {
+                makeDraggable(useTemplateRef<HTMLElement>('el'), { id: 'free', label: 'Tomato' });
+                return () => h('span', { ref: 'el' }, 'free');
+              },
+            }),
+          ],
+        }),
+    });
+    app.mount(container);
+    mounted.push(() => {
+      app.unmount();
+      container.remove();
+    });
+    await nextTick();
+
+    manager.start('a', { x: 1, y: 1 }, 'keyboard');
+    expect(manager.announcement.value).toBe('Picked up iPhone a at position 1 of 2 in Phones.');
+    // The events carry it too, for texts and overlays of your own.
+    expect(manager.active.value).toMatchObject({ label: 'iPhone a', items: [{ id: 'a', label: 'iPhone a' }] });
+    await cancel();
+    expect(manager.announcement.value).toBe('Dragging was cancelled. iPhone a returned to position 1 of 2 in Phones.');
+
+    manager.start('free', { x: 1, y: 1 }, 'keyboard');
+    expect(manager.announcement.value).toBe('Picked up Tomato.');
+    await cancel();
+    expect(manager.announcement.value).toBe('Dragging was cancelled. Tomato was dropped.');
+  });
+
   it('a move is not announced for the target found at pickup', async () => {
     const container = mountBoard({ onDragOver: ({ over }) => `Over ${String(over?.id)}.` });
     await nextTick();

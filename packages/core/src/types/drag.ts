@@ -2,6 +2,7 @@
 
 import type { Ref } from 'vue';
 import type { Coordinates, DnDStatus, Key, MaybePromise, Rect, SensorType } from './primitives';
+import type { ExternalData } from './native';
 
 // ─── Drag state ────────────────────────────────────────────────────────────────
 
@@ -10,6 +11,8 @@ export interface DragItem<T = unknown> {
   /** Item object when the drag comes from a sortable list. */
   item?: T;
   data: unknown;
+  /** Its `label`, what people call it. */
+  label?: string;
   /** Normalized `type` of the draggable; empty means it fits any drop target. */
   type: string[];
 }
@@ -21,17 +24,28 @@ export interface Active<T = unknown> {
   ids: Key[];
   items: DragItem<T>[];
   data: unknown;
+  /** The `label` of the item the drag started from, what people call it. */
+  label?: string;
   type: string[];
   /** Element the drag started from. It may get detached (virtual lists, cross-list moves). */
   element: HTMLElement;
   /** Layout rect of `element` at drag start. */
   rect: Rect;
   sensor: SensorType;
+  /**
+   * A drag from outside the page (files, a link, text, or items from another window of the
+   * app): what it carries. Its `items` are made for it (`element` is a stand-in).
+   */
+  external?: ExternalData;
+  /** The browser's own drag (`native`, or one from outside): it draws the dragged image, there is no overlay. */
+  native?: boolean;
 }
 
 export interface Over {
   id: Key;
   data: unknown;
+  /** The target's `label`, what people call it. */
+  label?: string;
   element: HTMLElement;
   rect: Rect;
   /** Whether the target's `accept` rule accepts the dragged items. */
@@ -84,6 +98,8 @@ export interface DnDEvent<T = unknown> {
   mode: DragMode;
   /** Present when the dragged items come from a sortable list. */
   source?: DragSource;
+  /** A drag from outside the page: what it carries (`active.external`). Its data comes at the drop. */
+  external?: ExternalData;
 }
 
 export interface DnDEndEvent<T = unknown> extends DnDEvent<T> {
@@ -91,6 +107,11 @@ export interface DnDEndEvent<T = unknown> extends DnDEvent<T> {
   dropped: boolean;
   /** Ids accepted by `onBeforeDrop` (all dragged ids unless a subset was returned). */
   accepted: Key[];
+  /**
+   * A drag out of the page (`native`) dropped somewhere else: what that place did with it.
+   * `'move'` takes the items out of their sortable list here; `'copy'` and `'link'` leave them.
+   */
+  droppedOutside?: 'move' | 'copy' | 'link';
 }
 
 /**

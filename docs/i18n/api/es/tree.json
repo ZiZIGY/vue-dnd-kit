@@ -31,6 +31,10 @@
     "source": "c0adaf519f",
     "text": "Por defecto: `useId()`, estable entre el renderizado en el servidor y en el cliente. Se lee una vez."
   },
+  "SortableTreeOptions.label": {
+    "source": "86c099a68f",
+    "text": "El nombre que la gente le da al árbol: los textos para lectores de pantalla lo dicen en lugar de su id."
+  },
   "SortableTreeOptions.overlay": {
     "source": "cf37f2819a",
     "text": "Componente de overlay para las filas de este árbol (el `overlay` propio de una fila tiene prioridad). Una ref cambiada a mitad del arrastre lo cambia al instante."

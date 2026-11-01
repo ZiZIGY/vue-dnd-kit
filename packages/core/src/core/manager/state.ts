@@ -123,6 +123,8 @@ export const createDragState = () => ({
    */
   containerShift: shallowRef<Coordinates>({ x: 0, y: 0 }),
   activationProgress: shallowRef(0),
+  /** The browser's own drag (`native`) went out of the window: nothing here follows it then. */
+  outside: shallowRef(false),
   isAutoScrolling: shallowRef(false),
   /** The containers auto-scroll moved in its last frame (the window aside): a new array when they change. */
   autoScrollers: shallowRef<readonly Element[]>([]),
@@ -170,6 +172,8 @@ export interface ManagerContext extends DragState, RegistryLookups, RegistryMemb
   pointerElement: Element | null;
   /** Takes the page out of drag mode (cursor, text selection); set while it is in it. */
   restoreDocument: (() => void) | null;
+  /** A drag out of the page dropped somewhere else (`endOutside`): what that place did with it. */
+  droppedOutside?: 'move' | 'copy' | 'link';
 
   events: Events;
   overlay: Overlay;

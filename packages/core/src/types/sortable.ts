@@ -13,6 +13,7 @@ import type {
 } from './primitives';
 import type { AcceptMode, Active, BeforeDropResult, DragMode } from './drag';
 import type { AutoAnimation, DropAnimation, LayoutAnimation } from './animation';
+import type { ExternalAccept, ExternalData, NativeDragOptions } from './native';
 import type { Modifier } from './collision';
 import type { AutoScrollOptions } from './provider';
 
@@ -103,6 +104,8 @@ export interface SortableDropEvent<T = unknown> {
   preventDefault(): void;
   /** `preventDefault()` was called, in `onBeforeDrop` or `onDrop`. */
   readonly defaultPrevented: boolean;
+  /** A drag from outside the page (`external`): what it carried, its data in. */
+  external?: ExternalData;
 }
 
 export interface SortableIndicator {
@@ -124,15 +127,14 @@ export interface SortableIndicator {
 }
 
 /**
- * Options of `makeSortableList`. One list (or tree) per component: it provides the
- * context its items read, so a second one in the same component would take the first
- * one's items (development builds warn about it).
+ * Options of `makeSortableList`. A component may make several lists (and trees): each
+ * item rendered in it joins the innermost one whose element holds it.
  *
  * Options take a value, a ref or a getter (`overlay`, `animation`: a value or a ref) and
  * are read when the list needs them, so a change applies to the next drag at the latest.
  * Exceptions: `id` and `group` are read once, when the list is created; `items` is the
- * model itself; functions (`getKey`, `clone`, `createItem`, the callbacks) are passed as
- * they are.
+ * model itself; functions (`getKey`, `filter`, `clone`, `createItem`, the callbacks) are
+ * passed as they are.
  */
 export interface SortableListOptions<T> {
   /**
@@ -144,8 +146,18 @@ export interface SortableListOptions<T> {
   items: SortableItems<T>;
   /** Default: `item.id`, or the item itself for primitives. Also keys `makeSortableItem({ item })`. */
   getKey?: (item: T) => Key;
+  /**
+   * Shows only the items it returns `true` for (a search, a tag): `items` (the returned
+   * one) has them, and a drag sorts among them. The others keep their places in the source:
+   * a drop writes the whole array, each hidden item still after the shown one it followed
+   * (after the nearest that stayed, when that one moved). Reactive: what it reads (a query
+   * ref) applies at once. `e.to.index` and `activeIndex` count the shown items.
+   */
+  filter?: (item: T) => boolean;
   /** Default: `useId()`, stable between server and client render. Read once. */
   id?: Key;
+  /** What people call the list: screen reader texts say it instead of its id (`position 2 of 5 in Garden`). */
+  label?: MaybeReadonlyRefOrGetter<string | undefined>;
   /**
    * Overlay component for this list's items (an item's own `overlay` wins). It receives
    * `OverlayProps` and stays for the whole drag, also over other lists, unless the target
@@ -208,8 +220,20 @@ export interface SortableListOptions<T> {
    * Accepts plain draggables from outside: creates the item to insert. With the keyboard,
    * an arrow toward the list takes the draggable in (level with it, as moves between
    * lists go), and the created item then moves by slots like any other.
+   *
+   * A drag from outside the page (`external`) is asked twice: while it is held, for the
+   * item that shows where it goes (only `active.external.fileTypes` and `types` are known
+   * then), and at the drop, with its data (`active.external.dropped`), for what is
+   * inserted. A list of items inserts them all where the slot was: a file each.
    */
-  createItem?: (active: Active) => T | undefined;
+  createItem?: (active: Active) => T | T[] | undefined;
+  /**
+   * Takes drags from outside the page: files, links, text (see `ExternalAccept`). The list
+   * makes room for them as for a plain draggable, with `createItem`, which it needs. Items
+   * of its group dragged in from another window of the app (`native`) need neither: they
+   * come in as themselves. A value, a ref or a getter, read live.
+   */
+  external?: MaybeReadonlyRefOrGetter<ExternalAccept | undefined>;
   /**
    * A drop outside every target: keep the items where the placeholder is, cancel, or
    * remove them. Default `'placeholder'` (`'cancel'` with `placeholder: 'indicator'`).
@@ -296,6 +320,11 @@ export interface SortableItemOptions<TData = unknown> {
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
   type?: MaybeReadonlyRefOrGetter<string | string[] | undefined>;
   data?: MaybeReadonlyRefOrGetter<TData>;
+  /**
+   * What people call the item: screen reader texts say it instead of its key (`Picked up
+   * Tomato at position 2 of 5 in Garden`). Events carry it as `active.label` and in `items`.
+   */
+  label?: MaybeReadonlyRefOrGetter<string | undefined>;
   /** Overrides the provider's `activation`. Read when a press starts. */
   activation?: MaybeReadonlyRefOrGetter<ActivationOptions | undefined>;
   /** Extra gate, e.g. drag only while a key is held. */
@@ -305,6 +334,12 @@ export interface SortableItemOptions<TData = unknown> {
    * own. Live: turning it off removes what the library set.
    */
   attributes?: MaybeReadonlyRefOrGetter<boolean | undefined>;
+  /**
+   * A mouse drag of it is the browser's own drag, which can leave the page (see
+   * `DraggableOptions.native`). It carries the item too: the lists of its group in another
+   * window of the app take it, and when one does, it leaves this list (`'move'`).
+   */
+  native?: MaybeReadonlyRefOrGetter<boolean | NativeDragOptions | undefined>;
 }
 
 export interface SortableItemReturn {

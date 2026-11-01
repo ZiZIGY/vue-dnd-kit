@@ -18,6 +18,7 @@ import { nearLastTarget } from './stability';
 import { cancelAnnouncement, endAnnouncement } from './announcements';
 import { settleBlock } from './session';
 import { modeOf } from './modes/swap';
+import { insert, remake } from './modes/insert';
 import { isFinal, toVerdict } from '../core/verdict';
 
 export interface DropResult {
@@ -61,8 +62,10 @@ const dropResult = (
   const find = (key: Key) => lookup(g, key);
   const built = new Map<ListEntry, unknown[]>();
   for (const [list, keys] of next) built.set(list, list.build(keys, find, list.id === facts.to.list ? inserted : []));
+  const external = g.manager.active.value?.external;
   const event: SortableDropEvent = {
     ...facts,
+    ...(external && { external }),
     result: new Map([...built].map(([list, items]) => [list.id, items])),
     preventDefault: () => {
       current.prevented = true;
@@ -250,8 +253,12 @@ const decide = (g: GroupContext, current: Session, event: DnDEvent): MaybePromis
   if (g.session.value !== current) return;
   // A refusing list cancels the drop in the manager; don't ask the user about it.
   if (event.over && !event.over.accepted) return;
-  const outside = isOutside(current, event);
-  const rule = outside ? listOf(g, current.list ?? current.origin.list)?.dropOutside() : undefined;
+  // A drag out of the page (`native`) dropped somewhere else: a move takes the items out of
+  // their lists (the place that took them has them now), a copy or a link leaves them.
+  const elsewhere = g.manager.getDroppedOutside();
+  if (elsewhere && elsewhere !== 'move') return;
+  const outside = !elsewhere && isOutside(current, event);
+  const rule = elsewhere ? 'remove' : outside ? listOf(g, current.list ?? current.origin.list)?.dropOutside() : undefined;
   if (rule === 'cancel') return false;
   let result: DropResult | null;
   if (rule === 'remove') {
@@ -260,6 +267,12 @@ const decide = (g: GroupContext, current: Session, event: DnDEvent): MaybePromis
     result = computeRemoval(g, current.keys);
   } else {
     current.marker = g.indicator.value ?? (outside ? current.indicator : null);
+    // A drag from outside the page brings its data now: the list it goes into makes its
+    // items again from it.
+    if (event.active.external?.dropped && current.mode === insert) {
+      const list = listOf(g, current.list) ?? (current.marker ? g.lists.get(current.marker.list) : undefined);
+      if (list) remake(g, list, current, event.active);
+    }
     result = computeResult(g, null, current.marker);
   }
   current.result = result;
@@ -286,7 +299,7 @@ export const end = (g: GroupContext, event: DnDEndEvent) => {
   const unchanged = !!prepared && sameKeys(prepared.event.accepted, current.keys.filter((key) => kept.has(key)));
   if (current.removed) {
     result = unchanged ? prepared : computeRemoval(g, event.accepted);
-  } else if (!isForeign(g, event)) {
+  } else if (!isForeign(g, event) && !g.manager.getDroppedOutside()) {
     result = unchanged ? prepared : computeResult(g, kept, current.marker);
   }
   if (result) {

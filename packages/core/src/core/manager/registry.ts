@@ -18,7 +18,9 @@ import type {
   DropAnimation,
   DropDestination,
   DroppableOptions,
+  ExternalAccept,
   Key,
+  NativeDragOptions,
   Modifier,
   SortablePosition,
 } from '../../types';
@@ -32,6 +34,8 @@ export interface DraggableEntry {
   /** Element that receives focus and keyboard activation. */
   getFocusTarget(): HTMLElement | null;
   getData(): unknown;
+  /** What people call it (`label`). */
+  getLabel?(): string | undefined;
   getTypes(): string[];
   isDisabled(): boolean;
   getActivation?(): ActivationOptions | undefined;
@@ -48,14 +52,24 @@ export interface DraggableEntry {
   getItem?(): unknown;
   /** Sortable integration: container used by `restrictToParent`. */
   getContainer?(): HTMLElement | null;
+  /** A mouse drag of it is the browser's own drag (`native`): its options, else `undefined`. */
+  getNative?(): NativeDragOptions | undefined;
+  /** Sortable integration: the item's group, which another window's lists take it by. */
+  getGroup?(): string;
 }
 
 export interface DroppableEntry {
   id: Key;
   getElement(): HTMLElement | null;
   getData(): unknown;
+  /** What people call it (`label`). */
+  getLabel?(): string | undefined;
   isDisabled(): boolean;
   accepts(active: Active): boolean;
+  /** What it takes from drags that come from outside the page (`external`); without it, it ignores them. */
+  getExternal?(): ExternalAccept | undefined;
+  /** A sortable list or tree: its group, whose items it takes from another window of the app. */
+  getGroup?(): string;
   getPriority(): number;
   /** A sortable list or tree: what drops on it is shown in it, as a slot. */
   sortable?: boolean;

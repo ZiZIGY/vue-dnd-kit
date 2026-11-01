@@ -121,6 +121,8 @@ function createHost(manager: DnDManager): Host {
     if (!found || found.entry.isDisabled()) return null;
     const { entry, element } = found;
     const { event } = options;
+    // A mouse drag of a `native` draggable is the browser's own (`native/bridge.ts`).
+    if ((event as Partial<PointerEvent> | undefined)?.pointerType === 'mouse' && entry.getNative?.()) return null;
     if (event && entry.canDrag && !entry.canDrag(event)) return null;
 
     const control: DragControl = track(

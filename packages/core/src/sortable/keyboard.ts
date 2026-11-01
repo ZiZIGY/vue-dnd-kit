@@ -18,7 +18,7 @@ import { accepts, canSwap, isSwapping } from './accept';
 import { applySwap } from './modes/swap';
 import { findDroppable } from '../core/sensors/steps';
 import { collect, viewOf } from './block';
-import { keepSlotHome, moveActive, returnToOrigin } from './slot';
+import { goHome, keepSlotHome, moveActive, regather, returnToOrigin } from './slot';
 import { indicateAt, markSwapAt, setIndicator } from './indicator';
 import { intoPoint } from './combine';
 import { enters } from './modes/mode';
@@ -141,11 +141,11 @@ const keyboardIndicator = async (
 ): Promise<Coordinates | undefined> => {
   const strategy = list.strategy();
   const step = strategy === 'vertical' ? direction.y : direction.x;
-  // A list that swaps: the mark goes from item to item (by rows in grids); back on the
-  // dragged item, there is none.
+  const keys = keysOf(list);
+  const shown = g.indicator.value;
   if (isSwapping(g, current, list)) {
-    const keys = keysOf(list);
-    const shown = g.indicator.value;
+    // A list that swaps: the mark goes from item to item (by rows in grids); back on the
+    // dragged item, there is none.
     const from = shown?.list === list.id && shown.side === 'swap' ? shown.index : keys.indexOf(current.slot);
     const element = from < 0 ? null : g.items.get(keys[from]!)?.();
     let next: number | null = null;
@@ -156,40 +156,37 @@ const keyboardIndicator = async (
       next = from + step;
     }
     if (next !== null && next >= 0 && next < keys.length) return markSwapAt(g, list, keys[next]!);
-    if (step || strategy === 'grid') return undefined;
+  } else if (step) {
+    const own = list.id === current.list ? keys.indexOf(current.slot) : -1;
+    const marker = shown?.list === list.id ? shown : null;
+    let next = (marker ? marker.index : Math.max(own, 0)) + step;
+    // Right before or after the active item the drop changes nothing: skip those positions.
+    while (own >= 0 && (next === own || next === own + 1)) next += step;
+    if (next >= 0 && next <= keys.length) return indicateAt(g, list, next);
   }
-  if (!step) {
-    const other = adjacentList(g, list, active, direction);
-    if (!other || !enters(g, current, other)) return undefined;
-    // The line, where the keyboard took the drag, stands for the slot.
-    const from = createRect(pointer.x, pointer.y, 0, 0);
-    // Into another list that swaps: the mark goes on its item level with the line.
-    if (isSwapping(g, current, other)) {
-      const keys = keysOf(other);
-      const level = keys[Math.min(insertionIndex(g, other, from, current), keys.length - 1)];
-      return level === undefined ? undefined : markSwapAt(g, other, level);
-    }
-    if (other.placeholder() === 'indicator') return indicateAcross(g, current, other, from);
-    // A list that moves takes the slot; the line goes away.
-    setIndicator(g, null);
-    moveActive(g, other, insertionIndex(g, other, from, current), null);
-    await nextTick();
-    return g.session.value === current ? slotCenter(g, current, true) : undefined;
+  // Across, or past the end (lists stacked along the axis): the next list that way.
+  const other = adjacentList(g, list, active, direction);
+  if (!other || !enters(g, current, other)) return undefined;
+  // The line, where the keyboard took the drag, stands for the slot.
+  const from = createRect(pointer.x, pointer.y, 0, 0);
+  // Into another list that swaps: the mark goes on its item level with the line.
+  if (isSwapping(g, current, other)) {
+    const others = keysOf(other);
+    const level = others[Math.min(insertionIndex(g, other, from, current), others.length - 1)];
+    return level === undefined ? undefined : markSwapAt(g, other, level);
   }
-  const keys = keysOf(list);
-  const own = list.id === current.list ? keys.indexOf(current.slot) : -1;
-  const shown = g.indicator.value;
-  const marker = shown?.list === list.id ? shown : null;
-  let next = (marker ? marker.index : Math.max(own, 0)) + step;
-  // Right before or after the active item the drop changes nothing: skip those positions.
-  while (own >= 0 && (next === own || next === own + 1)) next += step;
-  if (next < 0 || next > keys.length) return undefined;
-  return indicateAt(g, list, next);
+  if (other.placeholder() === 'indicator') return indicateAcross(g, current, other, from);
+  // A list that moves takes the slot; the line goes away.
+  setIndicator(g, null);
+  moveActive(g, other, insertionIndex(g, other, from, current), null);
+  await nextTick();
+  return g.session.value === current ? slotCenter(g, current, true) : undefined;
 };
 
 /**
  * Past the end of the lists: the arrow takes the drag to the next plain drop target that way
- * (a trash zone), which a drop then goes to. `undefined` without one.
+ * (a trash zone), which a drop then goes to, and the items go home there as with the
+ * pointer (`goHome`). `undefined` without one.
  */
 const jumpAway = (
   g: GroupContext,
@@ -201,6 +198,7 @@ const jumpAway = (
   const found = findDroppable(g.manager, active, from, direction, (id) => g.lists.has(id));
   if (!found) return undefined;
   current.away = found.id;
+  goHome(g, current, null);
   return found.point;
 };
 
@@ -237,11 +235,15 @@ export const getKeyboardCoordinates = async (
       const next = jumpAway(g, current, active, pointer, direction);
       if (next && !(along(home) > 0 && along(home) < along(next))) return next;
       current.away = null;
+      // Back from it: a `'group'` block forms again around the slot.
+      if (current.apart) regather(g, current);
       return home;
     }
   }
   if (list.placeholder() === 'indicator') {
-    return (await keyboardIndicator(g, current, list, context)) ?? jumpAway(g, current, active, pointer, direction) ?? center();
+    // Nowhere to go: the overlay stays on the line (at home without one).
+    const stay = () => (marker ? pointer : center());
+    return (await keyboardIndicator(g, current, list, context)) ?? jumpAway(g, current, active, pointer, direction) ?? stay();
   }
 
   const strategy = list.strategy();
@@ -273,6 +275,8 @@ export const getKeyboardCoordinates = async (
     if (step) {
       const next = position + step;
       if (next >= 0 && next < keys.length) index = next;
+      // Past its end: the next list that way (lists stacked along the axis).
+      else across = true;
     } else {
       across = true;
     }

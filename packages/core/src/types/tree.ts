@@ -4,6 +4,7 @@ import type { Component, ComputedRef } from 'vue';
 import type { Key, MaybeElementRef, MaybePromise, MaybeReadonlyRef, MaybeReadonlyRefOrGetter, Size } from './primitives';
 import type { AcceptMode, Active, BeforeDropResult } from './drag';
 import type { AutoAnimation, DropAnimation, LayoutAnimation } from './animation';
+import type { ExternalAccept } from './native';
 import type { Modifier } from './collision';
 import type { AutoScrollOptions } from './provider';
 import type {
@@ -89,6 +90,8 @@ export interface SortableTreeOptions<T> {
   withChildren?: (node: T, children: T[]) => T;
   /** Default: `useId()`, stable between server and client render. Read once. */
   id?: Key;
+  /** What people call the tree: screen reader texts say it instead of its id. */
+  label?: MaybeReadonlyRefOrGetter<string | undefined>;
   /** Overlay component for this tree's rows (a row's own `overlay` wins). A ref switched mid-drag swaps it at once. */
   overlay?: MaybeReadonlyRef<Component | undefined>;
   /**
@@ -144,9 +147,17 @@ export interface SortableTreeOptions<T> {
    * Accepts plain draggables from outside: creates the node to insert, at the projected
    * position and depth (`canNest` and `maxDepth` apply to it). With the keyboard, an arrow
    * toward the tree takes the draggable in, level with the row it goes before, and the
-   * arrow keys then move the node like any other.
+   * arrow keys then move the node like any other. A drag from outside the page (`external`)
+   * is asked twice, while it is held and at the drop (see the list's `createItem`); a
+   * folder node with a child per file holds several files.
    */
   createItem?: (active: Active) => T | undefined;
+  /**
+   * Takes drags from outside the page: files, links, text (see `ExternalAccept`), with
+   * `createItem`. Nodes of its group dragged in from another window of the app come in as
+   * themselves. A value, a ref or a getter, read live.
+   */
+  external?: MaybeReadonlyRefOrGetter<ExternalAccept | undefined>;
   /**
    * A drop outside every target: keep the nodes where the placeholder is, cancel, or
    * remove them. Default `'placeholder'` (`'cancel'` with `placeholder: 'indicator'`).

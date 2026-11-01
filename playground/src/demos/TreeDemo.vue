@@ -111,7 +111,6 @@
     <div class="layout">
       <div class="side">
         <h3>Clipboard</h3>
-        <!-- Its own component: a list made next to the tree in this one would give the tree's rows its context. -->
         <FileList
           v-model="clipboard"
           list-id="clipboard"

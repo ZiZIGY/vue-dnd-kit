@@ -64,8 +64,8 @@
     "text": "树：被放下的节点将得到的父节点，在根层级时为 `null`。"
   },
   "SortableListOptions": {
-    "source": "ad5d98cc02",
-    "text": "`makeSortableList` 的选项。每个组件一个列表（或树）：它提供其项读取的上下文，所以同一组件中的第二个列表会拿走第一个列表的项（开发构建会对此发出警告）。\n\n选项接受值、ref 或 getter（`overlay`、`animation`：值或 ref），并在列表需要时读取，所以变化最迟在下一次拖拽时生效。例外：`id` 和 `group` 只在创建列表时读取一次；`items` 就是模型本身；函数（`getKey`、`clone`、`createItem`、各个回调）按原样传入。"
+    "source": "5578e6dad0",
+    "text": "`makeSortableList` 的选项。每个组件一个列表（或树）：它提供其项读取的上下文，所以同一组件中的第二个列表会拿走第一个列表的项（开发构建会对此发出警告）。\n\n选项接受值、ref 或 getter（`overlay`、`animation`：值或 ref），并在列表需要时读取，所以变化最迟在下一次拖拽时生效。例外：`id` 和 `group` 只在创建列表时读取一次；`items` 就是模型本身；函数（`getKey`、`filter`、`clone`、`createItem`、各个回调）按原样传入。"
   },
   "SortableListOptions.items": {
     "source": "bcf07acd7a",
@@ -75,9 +75,17 @@
     "source": "f5ae57e9ca",
     "text": "默认：`item.id`；对于原始值，则是项本身。也用于为 `makeSortableItem({ item })` 生成 key。"
   },
+  "SortableListOptions.filter": {
+    "source": "68bbc0dba4",
+    "text": "只显示它返回 `true` 的项（搜索、标签）：`items`（返回的那个）包含这些项，拖拽在它们之间排序。其余项在源数组中保持原位：放置会写入整个数组，每个隐藏项仍跟在它原先跟随的显示项之后（那一项被移动时，跟在最近的留在原处的项之后）。响应式：它读取的东西（搜索词的 ref）立即生效。"
+  },
   "SortableListOptions.id": {
     "source": "c0adaf519f",
     "text": "默认：`useId()`，在服务端和客户端渲染之间保持稳定。只读取一次。"
+  },
+  "SortableListOptions.label": {
+    "source": "afaee09f48",
+    "text": "人们对列表的称呼：屏幕阅读器文本会说出它，而不是列表的 id（`position 2 of 5 in Garden`）。"
   },
   "SortableListOptions.overlay": {
     "source": "47e3eb4c8a",
@@ -210,6 +218,10 @@
   "SortableItemOptions.handle": {
     "source": "519bda20d7",
     "text": "项内部用于开始拖拽的元素或选择器（它也会得到相关属性）。"
+  },
+  "SortableItemOptions.label": {
+    "source": "93ed063b77",
+    "text": "人们对项的称呼：屏幕阅读器文本会说出它，而不是项的 key（`Picked up Tomato at position 2 of 5 in Garden`）。事件以 `active.label` 和在 `items` 中携带它。"
   },
   "SortableItemOptions.activation": {
     "source": "07b1465312",

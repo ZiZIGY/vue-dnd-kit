@@ -3,24 +3,24 @@ import type { Key, MaybeElementRef, SortableItemOptions, SortableItemReturn } fr
 import { createDraggable } from '../core/makeDraggable';
 import { toElement } from '../utils/dom';
 import { read } from '../utils/read';
-import { SORTABLE_CONTEXT } from './makeSortableList';
+import { SORTABLE_CONTEXT, contextOf } from './makeSortableList';
 
 /**
  * Makes an element an item of the closest sortable list. Must be called in a
- * component rendered inside the component that called `makeSortableList`.
+ * component rendered inside the component that called `makeSortableList`; of several
+ * lists there, the item is in the one whose element holds it.
  * Identify the item with `id` or `item` (keyed by the list's `getKey`).
  */
 export function makeSortableItem<TData = unknown>(
   target: MaybeElementRef,
   options: SortableItemOptions<TData>,
 ): SortableItemReturn {
-  const context = inject(SORTABLE_CONTEXT, null);
-  if (!context) {
+  const scope = inject(SORTABLE_CONTEXT, null);
+  if (!scope) {
     throw new Error(
       '[vue-dnd-kit] makeSortableItem() must be used inside a component rendered by a list that called makeSortableList().',
     );
   }
-  const { group, list, getKey } = context;
   if (options.id == null && options.item == null) {
     throw new Error(
       '[vue-dnd-kit] makeSortableItem() needs `id` or `item`. Sortable keys must come from your data: ' +
@@ -28,39 +28,46 @@ export function makeSortableItem<TData = unknown>(
         'by a virtual list), and the drag would lose the item.',
     );
   }
-  const manager = group.manager;
-  const key = computed<Key>(() => (options.id != null ? read(options.id) : getKey(read(options.item))));
   const getElement = () => toElement(target);
+  // The list it is in: of several lists in one component, known once it has rendered.
+  const context = computed(() => contextOf(scope, getElement()));
+  const group = () => context.value.group;
+  const list = () => context.value.list;
+  const manager = group().manager;
+  const key = computed<Key>(() => (options.id != null ? read(options.id) : context.value.getKey(read(options.item))));
 
   const draggable = createDraggable(
     target,
     {
       id: key,
       handle: options.handle,
-      disabled: () => !!read(options.disabled) || list.isDisabled(),
-      type: () => read(options.type) ?? group.name,
+      disabled: () => !!read(options.disabled) || list().isDisabled(),
+      type: () => read(options.type) ?? group().name,
       data: options.data,
+      label: options.label,
       activation: options.activation,
       canDrag: options.canDrag,
       attributes: options.attributes,
       overlay: options.overlay,
       dropAnimation: options.dropAnimation,
-      modifiers: () => read(options.modifiers) ?? context.getModifiers?.(),
-      axis: () => read(options.axis) ?? context.getAxis?.(),
+      modifiers: () => read(options.modifiers) ?? context.value.getModifiers?.(),
+      axis: () => read(options.axis) ?? context.value.getAxis?.(),
+      native: options.native,
     },
     {
-      getItem: () => group.lookup(key.value),
-      getContainer: () => list.getElement(),
-      getOverlay: context.getOverlay,
-      getDropAnimation: context.getDropAnimation,
+      getItem: () => group().lookup(key.value),
+      getGroup: () => group().name,
+      getContainer: () => list().getElement(),
+      getOverlay: () => context.value.getOverlay(),
+      getDropAnimation: () => context.value.getDropAnimation(),
       roleDescription: 'sortable',
     },
   );
 
-  let unregister = group.registerItem(key.value, getElement);
-  watch(key, (next) => {
+  let unregister = group().registerItem(key.value, getElement);
+  watch([key, group], ([next, to]) => {
     unregister();
-    unregister = group.registerItem(next, getElement);
+    unregister = to.registerItem(next, getElement);
   });
   onScopeDispose(() => unregister());
 
@@ -90,15 +97,17 @@ export function makeSortableItem<TData = unknown>(
     () => {
       const element = getElement();
       if (!element) return;
-      element.toggleAttribute('data-dnd-placeholder', isPlaceholder.value);
+      // `"into"`: the drop goes into a target the slot only holds the place next to.
+      if (!isPlaceholder.value) element.removeAttribute('data-dnd-placeholder');
+      else element.setAttribute('data-dnd-placeholder', group().into.value ? 'into' : '');
       element.toggleAttribute('data-dnd-dragging', isLeftBehind.value);
     },
     { flush: 'post' },
   );
 
   const indicator = computed(() => {
-    const value = group.indicator.value;
-    return value && value.list === list.id && value.key === key.value ? value : null;
+    const value = group().indicator.value;
+    return value && value.list === list().id && value.key === key.value ? value : null;
   });
 
   return {
@@ -106,6 +115,6 @@ export function makeSortableItem<TData = unknown>(
     isPlaceholder,
     selected: draggable.selected,
     indicator,
-    index: computed(() => group.indexOf(list, key.value)),
+    index: computed(() => group().indexOf(list(), key.value)),
   };
 }

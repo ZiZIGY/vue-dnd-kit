@@ -3,6 +3,10 @@
     "source": "957ec8f6ce",
     "text": "Um lugar em uma lista ordenável ou árvore (nas linhas visíveis dela): `index` conta a partir de 0, de um total de `length`."
   },
+  "AnnouncedPosition.label": {
+    "source": "702bfecdc2",
+    "text": "O `label` da lista, como as pessoas a chamam."
+  },
   "AnnouncementContext": {
     "source": "884af39ecf",
     "text": "Do que trata um anúncio, além do evento: para textos seus (outro idioma, outras palavras) que dizem o mesmo que os textos embutidos."

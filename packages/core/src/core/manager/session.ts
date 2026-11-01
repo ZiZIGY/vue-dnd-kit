@@ -16,6 +16,7 @@ import type {
   DragItem,
   DropAnimation,
   DropDestination,
+  ExternalData,
   Key,
   Rect,
   SensorType,
@@ -31,7 +32,7 @@ import {
   type OverlayItemLanding,
 } from '../../animation/drop';
 import { isFocusLost, nextFrame } from '../../utils/dom';
-import { markDocumentDragging } from '../styles';
+import { dragCursor, markDocumentDragging } from '../styles';
 import { vibrate } from '../haptics';
 import { isFinal, toVerdict, type Verdict } from '../verdict';
 import { NO_LANDINGS, type Flight, type ManagerContext } from './state';
@@ -49,6 +50,8 @@ export function createSession(ctx: ManagerContext) {
   let releasedTo: DropDestination | null = null;
   /** The target's overlay as the drag was released: the drop lands showing it, whatever `onDrop` changes. */
   let releasedTarget: Component | undefined;
+  /** The cursor of the running pointer drag (`dragCursor`), kept through a resume. */
+  let cursor: string | null = null;
   const targetOverlay = (): Component | undefined => {
     const over = ctx.over.value;
     return over?.accepted ? ctx.droppables.get(over.id)?.getOverlay?.() : undefined;
@@ -77,6 +80,7 @@ export function createSession(ctx: ManagerContext) {
         id,
         item: entry?.getItem?.(),
         data: entry?.getData(),
+        label: entry?.getLabel?.(),
         type: entry?.getTypes() ?? [],
       };
     });
@@ -86,8 +90,18 @@ export function createSession(ctx: ManagerContext) {
     if (ctx.active.value) ctx.active.value = { ...ctx.active.value, ...patch };
   };
 
-  /** Starts a drag of `id` from `coordinates` (sensors: `SensorContext.activate`); `touch`: started by touch. */
-  const start = (id: Key, coordinates: Coordinates, sensor: SensorType, touch = false): boolean => {
+  /**
+   * Starts a drag of `id` from `coordinates` (sensors: `SensorContext.activate`); `touch`:
+   * started by touch. `browser`: the browser's own drag (`native/bridge.ts`), with no
+   * overlay; a drag from outside the page brings its items and what it carries.
+   */
+  const start = (
+    id: Key,
+    coordinates: Coordinates,
+    sensor: SensorType,
+    touch = false,
+    browser?: { items?: DragItem[]; external?: ExternalData },
+  ): boolean => {
     // One drag at a time, and none while a drop is still being decided. Landings don't
     // hold the next drag back.
     if (ctx.active.value || ctx.status.value === 'selecting') return false;
@@ -104,13 +118,15 @@ export function createSession(ctx: ManagerContext) {
     // only where the box is over the item, else from the item as any pickup.
     if (caughtAt && sensor !== 'pointer' && !containsPoint(caughtAt, coordinates)) caughtAt = null;
     if (caught) land(caught);
-    const ids =
-      ctx.selection.has(id) && ctx.selection.size > 1
+    const ids = browser?.items
+      ? browser.items.map((item) => item.id)
+      : ctx.selection.has(id) && ctx.selection.size > 1
         ? [id, ...[...ctx.selection].filter((key) => key !== id)]
         : [id];
-    const items = buildItems(ids);
+    const items = browser?.items ?? buildItems(ids);
     const modifiers = entry.getModifiers?.() ?? [];
-    ctx.overlay.pickUp(id, entry, caught?.previews);
+    ctx.droppedOutside = undefined;
+    ctx.overlay.pickUp(id, entry, caught?.previews, !!browser);
     ctx.overlayColumn.value = null;
     ctx.landings.value = NO_LANDINGS;
     ctx.overlayItems.clear();
@@ -119,10 +135,12 @@ export function createSession(ctx: ManagerContext) {
       ids,
       items,
       data: items[0]!.data,
+      label: items[0]!.label,
       type: items[0]!.type,
       element,
       rect: getLayoutRect(element),
       sensor,
+      ...(browser && { native: true, external: browser.external }),
     };
     const container = entry.getContainer?.() ?? element.parentElement;
     ctx.origin = coordinates;
@@ -139,7 +157,14 @@ export function createSession(ctx: ManagerContext) {
     ctx.detection.begin();
     ctx.loop.reset();
     ctx.status.value = 'dragging';
-    ctx.restoreDocument = markDocumentDragging(sensor);
+    if (sensor === 'pointer' && !browser) {
+      // What the pointer grabbed: the element under it (a handle, a part of it) shows its cursor.
+      const hit = document.elementFromPoint(coordinates.x, coordinates.y);
+      cursor = dragCursor(hit && element.contains(hit) ? hit : element);
+    } else {
+      cursor = null;
+    }
+    ctx.restoreDocument = markDocumentDragging(sensor, cursor);
 
     const event = ctx.events.createEvent();
     ctx.events.emit('onDragStart', event);
@@ -202,6 +227,7 @@ export function createSession(ctx: ManagerContext) {
     ctx.overlayColumn.value = null;
     ctx.overlayItems.clear();
     ctx.activationProgress.value = 0;
+    ctx.outside.value = false;
     ctx.status.value = restStatus();
   };
 
@@ -418,7 +444,7 @@ export function createSession(ctx: ManagerContext) {
     // The overlay follows the pointer again.
     waiting.stop();
     ctx.status.value = 'dragging';
-    ctx.restoreDocument = markDocumentDragging(event.active.sensor);
+    ctx.restoreDocument = markDocumentDragging(event.active.sensor, cursor);
     ctx.events.emit('onDragResume', event);
     ctx.events.announce('onDragResume', event);
     // Where the pointer is now: the user may have moved it during the wait.
@@ -483,9 +509,34 @@ export function createSession(ctx: ManagerContext) {
       ...event,
       dropped: !!target,
       accepted: Array.isArray(verdict) ? verdict : event.active.ids,
+      ...(ctx.droppedOutside && { droppedOutside: ctx.droppedOutside }),
     };
     vibrate(ctx.props.haptics, 'drop', ctx.touch);
     return conclude('onDragEnd', endEvent);
+  };
+
+  /**
+   * A drag out of the page (`native`) was dropped somewhere else (`effect`): the drop is
+   * over no target here. A move takes the items out of their sortable list (as a trash
+   * zone's `e.source.remove()`); a copy or a link leaves them. `'none'`: it was cancelled.
+   */
+  const endOutside = (effect: 'move' | 'copy' | 'link' | 'none') => {
+    const current = ctx.active.value;
+    if (ctx.status.value !== 'dragging' || !current) return;
+    if (effect === 'none') return cancel();
+    ctx.loop.flushFrame();
+    ctx.droppedOutside = effect;
+    ctx.over.value = null;
+    if (effect === 'move') {
+      for (const resolve of ctx.sourceResolvers) {
+        const source = resolve(current);
+        if (source) {
+          source.remove();
+          break;
+        }
+      }
+    }
+    return drop();
   };
 
   const destroy = () => {
@@ -511,6 +562,7 @@ export function createSession(ctx: ManagerContext) {
     move,
     drop,
     cancel,
+    endOutside,
     destroy,
     restStatus,
     isAtRest,

@@ -1,9 +1,17 @@
 <script setup lang="ts">
 import { onMounted, useTemplateRef } from 'vue';
-import type { Answer, Task } from './types';
+import { useDnD } from '@vue-dnd-kit/core';
+import Icon from './Icon.vue';
+import type { Answer, Card } from './store';
 
-defineProps<{ cards: Task[] }>();
+defineProps<{ cards: Card[] }>();
 const emit = defineEmits<{ answer: [answer: Answer] }>();
+
+// While the drop waits, `useDnD()` keeps the drag as it was at release. Keep dragging is
+// offered to a pointer that let go; the Status buttons play keyboard drags, with no hand to
+// carry on with.
+const { active } = useDnD();
+const byHand = active.value?.sensor === 'pointer';
 
 const dialog = useTemplateRef<HTMLDialogElement>('dialog');
 // A modal dialog sits on top of everything, the overlay waiting where it was let go too.
@@ -16,16 +24,21 @@ const reply = (answer: Answer) => {
 </script>
 
 <template>
-  <!-- Escape (the dialog's `cancel` event) answers like Cancel. -->
-  <dialog ref="dialog" class="confirm" @cancel.prevent="reply('reject')">
-    <p class="question">{{ cards.length > 1 ? `Move ${cards.length} cards to Done?` : 'Move to Done?' }}</p>
+  <!-- Escape answers like Cancel; handled here, it doesn't also leave the expanded frame. -->
+  <dialog ref="dialog" class="confirm" @keydown.esc.prevent="reply('reject')" @cancel.prevent="reply('reject')">
+    <span class="badge"><Icon name="check" /></span>
+    <p class="question">{{ cards.length > 1 ? `Complete ${cards.length} cards?` : 'Complete this card?' }}</p>
+    <p class="note">Cards in Done count as shipped in this sprint.</p>
     <ul class="subjects">
-      <li v-for="card in cards" :key="card.id">{{ card.title }}</li>
+      <li v-for="card in cards" :key="card.id">
+        <span class="id">{{ card.id }}</span>
+        {{ card.title }}
+      </li>
     </ul>
     <div class="actions">
       <button type="button" @click="reply('reject')">Cancel</button>
-      <button type="button" @click="reply('continue')">Keep dragging</button>
-      <button type="button" class="primary" autofocus @click="reply('accept')">Move</button>
+      <button v-if="byHand" type="button" @click="reply('continue')">Keep dragging</button>
+      <button type="button" class="primary" autofocus @click="reply('accept')">Move to Done</button>
     </div>
   </dialog>
 </template>
@@ -34,31 +47,68 @@ const reply = (answer: Answer) => {
 .confirm {
   /* A modal dialog centers itself with auto margins: keep them if a CSS reset zeroes margins. */
   margin: auto;
-  width: min(340px, calc(100vw - 32px));
-  padding: 20px;
-  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
-  border-radius: 14px;
-  background: Canvas;
+  width: min(380px, calc(100vw - 32px));
+  padding: 22px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 16px;
+  background: light-dark(#fff, #18181b);
+  box-shadow:
+    0 0 0 1px light-dark(rgb(15 15 20 / 0.08), rgb(255 255 255 / 0.08)),
+    0 30px 60px -20px rgb(0 0 0 / 0.6);
   color: CanvasText;
-  box-shadow: 0 24px 48px -16px rgb(0 0 0 / 0.5);
 }
 
 .confirm::backdrop {
-  background: rgb(0 0 0 / 0.4);
+  background: rgb(10 10 12 / 0.35);
+  backdrop-filter: blur(2px);
+}
+
+.badge {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  background: color-mix(in srgb, #42b883 16%, transparent);
+  color: #42b883;
+  font-size: 20px;
 }
 
 .question {
   margin: 0;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.note {
+  margin: 4px 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: 0.6;
 }
 
 .subjects {
-  margin: 6px 0 18px;
-  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 140px;
+  margin: 0 0 20px;
+  padding: 10px 12px;
+  overflow-y: auto;
+  border-radius: 10px;
+  background: color-mix(in srgb, currentColor 5%, transparent);
   font-size: 13px;
+  font-weight: 500;
   list-style: none;
-  opacity: 0.7;
+}
+
+.id {
+  margin-right: 6px;
+  font: 500 11px/1 'Geist Mono', ui-monospace, Menlo, Consolas, monospace;
+  opacity: 0.5;
 }
 
 .actions {
@@ -69,13 +119,18 @@ const reply = (answer: Answer) => {
 }
 
 button {
-  padding: 7px 12px;
+  height: 32px;
+  padding: 0 12px;
   border: 0;
   border-radius: 8px;
   background: color-mix(in srgb, currentColor 8%, transparent);
   color: inherit;
-  font: 600 12px/1.2 system-ui, sans-serif;
+  font: 600 12px/1 system-ui, sans-serif;
   cursor: pointer;
+}
+
+button:hover {
+  background: color-mix(in srgb, currentColor 13%, transparent);
 }
 
 button.primary {
@@ -83,8 +138,25 @@ button.primary {
   color: #fff;
 }
 
+button.primary:hover {
+  background: #3aa776;
+}
+
 button:focus-visible {
   outline: 2px solid #42b883;
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .confirm[open] {
+    animation: appear 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
 }
 </style>

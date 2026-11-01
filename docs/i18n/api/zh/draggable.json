@@ -7,6 +7,10 @@
     "source": "2dac667235",
     "text": "稳定的 id。在元素会被回收的虚拟列表中，传入 getter。默认：`useId()`，在服务端和客户端渲染之间保持稳定，但每个组件实例都不同。"
   },
+  "DraggableOptions.label": {
+    "source": "4edf4ca05a",
+    "text": "人们对它的称呼：屏幕阅读器文本会说出它，而不是 id（`Picked up Tomato`）。事件以 `active.label` 和在 `items` 中携带它。"
+  },
   "DraggableOptions.handle": {
     "source": "1330de430e",
     "text": "可拖拽元素内部用于开始拖拽的元素或选择器（它也会得到相关属性）。"
@@ -47,13 +51,25 @@
     "source": "3d7102b110",
     "text": "使用 `overlay: false` 时要应用的偏移量：拖拽的偏移量，减去元素所在的内容自开始以来移动的距离（页面或某个容器滚动了），这样元素会一直停在指针下方。"
   },
-  "DroppableOptions": {
-    "source": "c1de31b385",
-    "text": "`makeDroppable` 的选项。\n\n**放进一个项。** 位于可排序项元素上（或其内部）的放置目标与其他地方的放置目标一样工作，只有一条规则适用于该项所在列表本会对拖拽进行排序的情况：只有当指针位于项的中间部分时它才生效（沿列表轴向的 25–75%；网格中为 x 轴），此时放置会进入目标，列表也不会为它移动。靠近项的边缘时，列表照常排序。`accept` 拒绝这次拖拽的目标会被排除在外，所以列表会像对待其他项一样在这个项上方排序（无需禁用它）。键盘会在越过这个项之前先停在这样的目标上。目标永远不会属于它自己的拖拽：不会位于任何被拖拽的项之内（或之上），也不会位于某个项将落入的位置中。要在 `onDrop` 中把这些项移出它们的列表，调用 `e.source.remove()`。\n\n除回调外，每个选项都接受值、ref 或 getter（`accept`、`overlay`、`dropAnimation`：值或 ref），并在拖拽查找目标时实时读取。"
+  "DroppableFileOptions": {
+    "source": "a8634f2607",
+    "text": "放置目标从电脑接收的文件（`DroppableOptions.files`）。"
+  },
+  "DroppableFileOptions.accept": {
+    "source": "ad1d472c41",
+    "text": "写法与 `<input accept>` 相同：MIME 类型（`image/*`、`application/pdf`）和扩展名（`.md`），可以是逗号分隔的字符串或列表。默认：任何文件。文件悬停在目标上方时，浏览器只告知它们的类型：扩展名在放置时才检查。"
+  },
+  "DroppableFileOptions.multiple": {
+    "source": "03eb21a25d",
+    "text": "一次接收多个文件（默认 `true`）；`false` 会拒绝多于一个文件的拖拽。"
   },
   "DroppableOptions.id": {
     "source": "ea58d47829",
     "text": "默认：`useId()`，在服务端和客户端渲染之间保持稳定。"
+  },
+  "DroppableOptions.label": {
+    "source": "5e751a1320",
+    "text": "人们对它的称呼：屏幕阅读器文本会说出它，而不是 id（`over Trash`）；事件以 `over.label` 携带它。"
   },
   "DroppableOptions.accept": {
     "source": "aae01588b5",
@@ -75,9 +91,21 @@
     "source": "0f0a6dd259",
     "text": "浮层被放到这里时如何落位，替代被拖拽项和 provider 的 `dropAnimation`：`false` 让它停在放下的地方（浮层组件自己的动画，比如溅开，会在那里播放），函数则为它添加动画。值或 ref，在放置时读取。"
   },
+  "DroppableOptions.files": {
+    "source": "7e3cd8ab22",
+    "text": "接收从电脑拖进来的文件（浏览器自己的拖放，而不是本库的）：`isOver` 和 `isAccepting` 跟踪文件，就像跟踪拖拽一样，放置会交给 `onFiles`。`true` 接收任何文件。目标互相嵌套时，由最内层带 `files` 的目标接收。值、ref 或 getter，实时读取。"
+  },
+  "DroppableOptions.onFiles": {
+    "source": "9badb8a1d8",
+    "text": "放到它上面、被 `files` 接收的文件（文件夹除外），以及浏览器的 `drop` 事件。"
+  },
+  "DroppableReturn.isOver": {
+    "source": "0fd66351a2",
+    "text": "有拖拽位于它上方（使用 `files` 时，也包括来自电脑的文件）。"
+  },
   "DroppableReturn.isAccepting": {
-    "source": "520ef3c1da",
-    "text": "有东西正在被拖拽，并且这个目标接收它。"
+    "source": "8cfac2b573",
+    "text": "有东西正在被拖拽，并且这个目标接收它（也包括悬停在它上方、被 `files` 接收的文件）。"
   },
   "DroppableReturn.placement": {
     "source": "4e1160d2d2",

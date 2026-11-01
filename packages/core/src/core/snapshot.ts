@@ -86,12 +86,25 @@ const collect = (source: Element, clone: Styled): Entry[] => {
   return entries;
 };
 
+/**
+ * The root's custom properties: the box around the clone passes on those that inherit; the
+ * others (`@property` with `inherits: false`) are compared as the look is.
+ */
+const readCustom = (style: CSSStyleDeclaration, into: Map<string, string>) => {
+  for (let index = 0; index < style.length; index++) {
+    const name = style.item(index);
+    if (name.startsWith('--')) into.set(name, style.getPropertyValue(name));
+  }
+  return into;
+};
+
 const readSource = (entry: Entry) => {
   const style = getComputedStyle(entry.source);
   const { parent } = entry;
   const sizes = read(style, parent ? SIZES : []);
+  const look = read(style, LOOK);
   entry.passes = [
-    read(style, LOOK),
+    parent ? look : readCustom(style, look),
     read(style, parent ? RESOLVED : RESOLVED.slice(0, 2)),
     sizes,
     sizes,

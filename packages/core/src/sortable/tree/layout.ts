@@ -228,6 +228,18 @@ export const treeLayout = <T>(t: TreeContext<T>): ListLayout => ({
     const current = t.state;
     if (!current) return undefined;
     const draftKeys = t.group.keysOf(t.entry);
+    const own = !copying(t) && nesting(t) !== 'hover' ? items.find((item) => item.key === current.lead) : undefined;
+    if (own && event.pointer.y >= own.rect.top && event.pointer.y <= own.rect.bottom) {
+      // Over the dragged row itself, sideways nests it where it stands (or takes it out a
+      // level): the line at its own place, once the offset asks for another depth.
+      const position = gapPosition(draftKeys, own.index, movingRows(t, current), rows(t));
+      const depth = projectDepth(position, offsetFromBase(t, current, event), depthFilter(t))?.depth;
+      if (depth == null || depth === current.startDepth) {
+        clearSpot(t);
+        return null;
+      }
+      return lineAt(t, current, position, depth, lineBefore(t, position));
+    }
     const line = projectTreeIndicator({
       pointer: event.pointer,
       items,

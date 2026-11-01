@@ -56,6 +56,7 @@ export function createEvents(ctx: ManagerContext) {
       delta: { x: p.x - origin.x, y: p.y - origin.y },
       mode: ctx.mode.value,
       source,
+      ...(current.external && { external: current.external }),
       // Measured when read (it reads the target's layout), once.
       get position() {
         if (position === undefined) position = positionIn(current, over, offset);

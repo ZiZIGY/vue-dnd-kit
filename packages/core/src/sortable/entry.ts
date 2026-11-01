@@ -10,6 +10,7 @@ import type {
   AutoAnimation,
   BeforeDropResult,
   DropOutside,
+  ExternalAccept,
   Key,
   LayoutAnimation,
   MaybePromise,
@@ -71,8 +72,15 @@ export interface ListEntry {
   acceptMode?(): AcceptMode;
   /** Copies an item (`pull: 'clone'`, the copy modifier). */
   clone?(item: unknown): CreatedItem | undefined;
-  /** Makes an item for a plain draggable entering the list. */
-  create?(active: Active): CreatedItem | undefined;
+  /**
+   * Makes the items for a plain draggable (or a drag from outside the page) entering the
+   * list: the first takes the slot, the others go in after it at the drop. None: it can't.
+   */
+  create?(active: Active): CreatedItem[] | undefined;
+  /** What it takes from drags that come from outside the page (`external`). */
+  external?(): ExternalAccept | undefined;
+  /** The key of an item (`getKey`): another window's items come in as they are. */
+  keyOf?(item: unknown): Key;
   /** Animates changes of the items that no drag made (`autoAnimate.ts`). Default: off. */
   animate?(): AutoAnimation | undefined;
 }

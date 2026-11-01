@@ -64,8 +64,8 @@
     "text": "Árvores: pai que os nós soltos recebem, `null` no nível das raízes."
   },
   "SortableListOptions": {
-    "source": "ad5d98cc02",
-    "text": "Opções de `makeSortableList`. Uma lista (ou árvore) por componente: ela fornece o contexto que os itens dela leem, então uma segunda lista no mesmo componente pegaria os itens da primeira (os builds de desenvolvimento avisam sobre isso).\n\nAs opções aceitam um valor, um ref ou um getter (`overlay`, `animation`: um valor ou um ref) e são lidas quando a lista precisa delas, então uma mudança vale, no máximo, a partir do próximo arraste. Exceções: `id` e `group` são lidos uma única vez, quando a lista é criada; `items` é o próprio model; funções (`getKey`, `clone`, `createItem`, os callbacks) são passadas como estão."
+    "source": "5578e6dad0",
+    "text": "Opções de `makeSortableList`. Uma lista (ou árvore) por componente: ela fornece o contexto que os itens dela leem, então uma segunda lista no mesmo componente pegaria os itens da primeira (os builds de desenvolvimento avisam sobre isso).\n\nAs opções aceitam um valor, um ref ou um getter (`overlay`, `animation`: um valor ou um ref) e são lidas quando a lista precisa delas, então uma mudança vale, no máximo, a partir do próximo arraste. Exceções: `id` e `group` são lidos uma única vez, quando a lista é criada; `items` é o próprio model; funções (`getKey`, `filter`, `clone`, `createItem`, os callbacks) são passadas como estão."
   },
   "SortableListOptions.items": {
     "source": "bcf07acd7a",
@@ -75,9 +75,17 @@
     "source": "f5ae57e9ca",
     "text": "Padrão: `item.id`, ou o próprio item no caso de primitivos. Também define as keys de `makeSortableItem({ item })`."
   },
+  "SortableListOptions.filter": {
+    "source": "68bbc0dba4",
+    "text": "Mostra só os itens para os quais retorna `true` (uma busca, uma tag): `items` (o retornado) contém esses itens, e um arraste ordena entre eles. Os outros mantêm os seus lugares na origem: um drop escreve o array inteiro, com cada item oculto ainda depois do visível que ele seguia (depois do mais próximo que ficou, quando aquele se moveu). Reativo: o que ele lê (um ref de busca) vale na hora."
+  },
   "SortableListOptions.id": {
     "source": "c0adaf519f",
     "text": "Padrão: `useId()`, estável entre a renderização no servidor e no cliente. Lido uma única vez."
+  },
+  "SortableListOptions.label": {
+    "source": "afaee09f48",
+    "text": "Como as pessoas chamam a lista: os textos para leitores de tela dizem isso em vez do id dela (`position 2 of 5 in Garden`)."
   },
   "SortableListOptions.overlay": {
     "source": "47e3eb4c8a",
@@ -210,6 +218,10 @@
   "SortableItemOptions.handle": {
     "source": "519bda20d7",
     "text": "Elemento ou seletor dentro do item que inicia o arraste (e recebe os atributos)."
+  },
+  "SortableItemOptions.label": {
+    "source": "93ed063b77",
+    "text": "Como as pessoas chamam o item: os textos para leitores de tela dizem isso em vez da key dele (`Picked up Tomato at position 2 of 5 in Garden`). Os eventos o trazem como `active.label` e em `items`."
   },
   "SortableItemOptions.activation": {
     "source": "07b1465312",

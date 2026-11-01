@@ -31,6 +31,10 @@
     "source": "c0adaf519f",
     "text": "Par défaut : `useId()`, stable entre le rendu serveur et le rendu client. Lu une seule fois."
   },
+  "SortableTreeOptions.label": {
+    "source": "86c099a68f",
+    "text": "Le nom que les gens donnent à l'arbre : les textes pour les lecteurs d'écran le disent à la place de son id."
+  },
   "SortableTreeOptions.overlay": {
     "source": "cf37f2819a",
     "text": "Composant d'overlay pour les lignes de cet arbre (l'`overlay` propre à une ligne l'emporte). Une ref changée en plein glissement le remplace aussitôt."

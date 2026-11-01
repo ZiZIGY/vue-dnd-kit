@@ -7,6 +7,10 @@
     "source": "2dac667235",
     "text": "Id stable. Passez un getter dans les listes virtuelles, où les éléments sont recyclés. Par défaut : `useId()`, stable entre le rendu serveur et le rendu client, mais nouveau pour chaque instance du composant."
   },
+  "DraggableOptions.label": {
+    "source": "4edf4ca05a",
+    "text": "Le nom que les gens lui donnent : les textes pour les lecteurs d'écran le disent à la place de l'id (`Picked up Tomato`). Les événements le transportent dans `active.label` et dans `items`."
+  },
   "DraggableOptions.handle": {
     "source": "1330de430e",
     "text": "Élément ou sélecteur, à l'intérieur de l'élément déplaçable, qui lance le glissement (et reçoit les attributs)."
@@ -47,13 +51,25 @@
     "source": "3d7102b110",
     "text": "Décalage à appliquer quand `overlay: false` : celui du glissement, moins la distance dont le contenu où se trouve l'élément s'est déplacé depuis le début (la page ou un conteneur a défilé), pour que l'élément reste sous le pointeur."
   },
-  "DroppableOptions": {
-    "source": "c1de31b385",
-    "text": "Options de `makeDroppable`.\n\n**Déposer dans un item.** Une cible de dépôt placée sur l'élément d'un item triable (ou à l'intérieur) fonctionne comme partout ailleurs, avec une règle pendant que la liste de cet item trierait le glissement : elle ne compte que tant que le pointeur est au milieu de l'item (de 25 à 75 % le long de l'axe de la liste ; x dans les grilles), là où le dépôt va dans la cible et où la liste ne bouge pas pour lui. Près des bords de l'item, la liste trie comme d'habitude. Une cible dont l'`accept` refuse le glissement est ignorée : la liste trie donc au-dessus de l'item comme au-dessus de n'importe quel autre (inutile de la désactiver). Le clavier s'arrête sur une telle cible avant de dépasser son item. Une cible ne fait jamais partie de son propre glissement : ni dans (ou sur) un item glissé, ni dans l'emplacement où l'un d'eux atterrit. Pour sortir les items de leur liste dans `onDrop`, appelez `e.source.remove()`.\n\nChaque option sauf les callbacks accepte une valeur, une ref ou un getter (`accept`, `overlay`, `dropAnimation` : une valeur ou une ref) et est lue en direct, pendant qu'un glissement cherche sa cible."
+  "DroppableFileOptions": {
+    "source": "a8634f2607",
+    "text": "Les fichiers qu'une cible de dépôt accepte depuis l'ordinateur (`DroppableOptions.files`)."
+  },
+  "DroppableFileOptions.accept": {
+    "source": "ad1d472c41",
+    "text": "Comme pour `<input accept>` : des types MIME (`image/*`, `application/pdf`) et des extensions (`.md`), dans une chaîne séparée par des virgules ou une liste. Par défaut : n'importe quel fichier. Tant que les fichiers sont tenus au-dessus de la cible, le navigateur ne donne que leurs types : les extensions sont vérifiées au dépôt."
+  },
+  "DroppableFileOptions.multiple": {
+    "source": "03eb21a25d",
+    "text": "Plusieurs fichiers à la fois (`true` par défaut) ; `false` refuse un glissement de plus d'un fichier."
   },
   "DroppableOptions.id": {
     "source": "ea58d47829",
     "text": "Par défaut : `useId()`, stable entre le rendu serveur et le rendu client."
+  },
+  "DroppableOptions.label": {
+    "source": "5e751a1320",
+    "text": "Le nom que les gens lui donnent : les textes pour les lecteurs d'écran le disent à la place de l'id (`over Trash`) ; les événements le transportent dans `over.label`."
   },
   "DroppableOptions.accept": {
     "source": "aae01588b5",
@@ -75,9 +91,21 @@
     "source": "0f0a6dd259",
     "text": "Comment l'overlay atterrit quand il est déposé ici, à la place de la `dropAnimation` de l'item glissé et de celle du provider : `false` le laisse là où il a été déposé (l'animation propre à un composant d'overlay, une éclaboussure, s'y joue), une fonction l'anime. Une valeur ou une ref, lue au dépôt."
   },
+  "DroppableOptions.files": {
+    "source": "7e3cd8ab22",
+    "text": "Accepte les fichiers glissés depuis l'ordinateur (le glisser-déposer propre au navigateur, pas celui de la bibliothèque) : `isOver` et `isAccepting` les suivent comme ils suivent les glissements, et le dépôt va à `onFiles`. `true` accepte n'importe quel fichier. Parmi des cibles imbriquées, la plus intérieure dotée de `files` les reçoit. Une valeur, une ref ou un getter, lu en direct."
+  },
+  "DroppableOptions.onFiles": {
+    "source": "9badb8a1d8",
+    "text": "Les fichiers déposés sur elle que `files` accepte (dossiers ignorés), avec l'événement `drop` du navigateur."
+  },
+  "DroppableReturn.isOver": {
+    "source": "0fd66351a2",
+    "text": "Un glissement est au-dessus d'elle (des fichiers depuis l'ordinateur aussi, avec `files`)."
+  },
   "DroppableReturn.isAccepting": {
-    "source": "520ef3c1da",
-    "text": "Quelque chose est en cours de glissement et cette cible l'accepte."
+    "source": "8cfac2b573",
+    "text": "Quelque chose est en cours de glissement et cette cible l'accepte (des fichiers tenus au-dessus d'elle que `files` accepte, aussi)."
   },
   "DroppableReturn.placement": {
     "source": "4e1160d2d2",

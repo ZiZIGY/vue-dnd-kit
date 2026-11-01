@@ -3,6 +3,10 @@
     "source": "957ec8f6ce",
     "text": "Une place dans une liste ou un arbre triable (ses lignes visibles) : `index` compte à partir de 0, sur un total de `length`."
   },
+  "AnnouncedPosition.label": {
+    "source": "702bfecdc2",
+    "text": "Le `label` de la liste, le nom que les gens lui donnent."
+  },
   "AnnouncementContext": {
     "source": "884af39ecf",
     "text": "Ce dont parle une annonce, au-delà de l'événement : pour vos propres textes (une autre langue, d'autres mots) qui disent ce que disent les textes intégrés."

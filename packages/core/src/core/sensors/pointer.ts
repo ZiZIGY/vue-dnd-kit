@@ -7,11 +7,17 @@
  */
 
 import { defaultDocument, defaultWindow, useEventListener } from '@vueuse/core';
-import type { PointerKind, SensorDrag } from '../../types';
+import type { Coordinates, PointerKind, SensorDrag } from '../../types';
 import { defineSensor } from './host';
 
 /** How long the click suppressor waits for the click that follows a drop. */
 const CLICK_SUPPRESS_MS = 100;
+
+/**
+ * Movement (px) a press may make and stay a click: a drag that starts at once (a mouse
+ * on a handle) and is let go where it started clicks what was pressed.
+ */
+const CLICK_TOLERANCE = 3;
 
 const pointerKind = (event: PointerEvent): PointerKind =>
   event.pointerType === 'touch' || event.pointerType === 'pen' ? event.pointerType : 'mouse';
@@ -73,6 +79,11 @@ interface Press {
   /** `null` while a resumed drag is carried with no button held: any primary pointer moves it. */
   pointerId: number | null;
   drag: SensorDrag;
+  kind: PointerKind;
+  /** Where it was pressed; `null` for a carried drag. */
+  point: Coordinates | null;
+  /** It went past `CLICK_TOLERANCE`: a drag, not a click. */
+  moved: boolean;
   /** Undoes `makeSelectableForPress` once the press has been handled. */
   restoreSelectable: () => void;
   stops: Array<() => void>;
@@ -94,6 +105,19 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
       press = null;
     };
 
+    /**
+     * Capture on <body>, not on the item: the item may be recreated mid-drag. Captured,
+     * the click of the press would go to <body>: a press waits until it has moved.
+     */
+    const capture = (pointerId: number | null) => {
+      if (pointerId === null) return;
+      try {
+        document.body.setPointerCapture(pointerId);
+      } catch {
+        // The pointer may already be gone; document listeners still work.
+      }
+    };
+
     /** The pointer of the press; a carried drag (no button held) follows the primary one. */
     const isOurs = (event: PointerEvent) =>
       !!press && (press.pointerId === null ? event.isPrimary : event.pointerId === press.pointerId);
@@ -102,15 +126,21 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
       if (!press || !isOurs(event)) return;
       // The mousedown that came with the press has been handled by now.
       press.restoreSelectable();
+      const { point } = press;
+      if (!press.moved && point && Math.hypot(event.clientX - point.x, event.clientY - point.y) > CLICK_TOLERANCE) {
+        press.moved = true;
+        if (press.drag.started) capture(press.pointerId);
+      }
       press.drag.move({ x: event.clientX, y: event.clientY });
     };
 
     const onPointerUp = (event: PointerEvent) => {
       if (!press || event.pointerId !== press.pointerId) return;
-      const { drag } = press;
+      const { drag, kind, moved } = press;
       release();
-      // Even when the drag was cancelled meanwhile (Escape): the press was a drag.
-      if (drag.started) suppressNextClick();
+      // Even when the drag was cancelled meanwhile (Escape): the press was a drag. A mouse
+      // press that started at once and didn't move is a click (a touch held still is not).
+      if (drag.started && (moved || kind === 'touch')) suppressNextClick();
       void drag.drop();
     };
 
@@ -157,11 +187,7 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
       event.preventDefault();
       event.stopPropagation();
       press.pointerId = event.pointerId;
-      try {
-        document.body.setPointerCapture(event.pointerId);
-      } catch {
-        // The pointer may already be gone; document listeners still work.
-      }
+      capture(event.pointerId);
       press.drag.move({ x: event.clientX, y: event.clientY });
     };
 
@@ -175,6 +201,9 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
       press = {
         pointerId: null,
         drag,
+        kind: 'mouse',
+        point: null,
+        moved: true,
         restoreSelectable: () => {},
         stops: [
           useEventListener(window, 'pointerdown', onCarriedDown, { capture: true }),
@@ -194,18 +223,15 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
       if (!(target instanceof Element)) return;
       const kind = pointerKind(event);
       const { pointerId } = event;
+      const point = { x: event.clientX, y: event.clientY };
       const drag = context.activate({
         target,
-        point: { x: event.clientX, y: event.clientY },
+        point,
         event,
         activation: kind,
         onStart() {
-          // Capture on <body>, not on the item: the item may be recreated mid-drag.
-          try {
-            document.body.setPointerCapture(pointerId);
-          } catch {
-            // The pointer may already be gone; document listeners still work.
-          }
+          // A drag that starts at once (`press` isn't set yet) waits for the pointer to move.
+          if (kind === 'touch' || press?.moved) capture(pointerId);
         },
         // An aborted activation (moved past the tolerance, Escape) ends the press. A drag
         // that ended keeps it until the pointerup, whose click it swallows.
@@ -238,6 +264,9 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
       press = {
         pointerId,
         drag,
+        kind,
+        point,
+        moved: false,
         // WebKit dispatches no `selectstart` for a `user-select: none` node, yet still
         // auto-scrolls: such a node is selectable for the press, so it can be cancelled.
         restoreSelectable: kind === 'touch' ? () => {} : makeSelectableForPress(target),

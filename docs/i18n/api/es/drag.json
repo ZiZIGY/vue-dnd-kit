@@ -3,6 +3,10 @@
     "source": "7cfd4640f1",
     "text": "El objeto del ítem cuando el arrastre viene de una lista ordenable."
   },
+  "DragItem.label": {
+    "source": "97ccfdec34",
+    "text": "Su `label`, el nombre que le da la gente."
+  },
   "DragItem.type": {
     "source": "9189758463",
     "text": "`type` normalizado del elemento arrastrable; vacío significa que encaja con cualquier destino de drop."
@@ -15,6 +19,10 @@
     "source": "173336b06e",
     "text": "Todos los ids arrastrados, empezando por el principal (multi-drag)."
   },
+  "Active.label": {
+    "source": "6b580da2fb",
+    "text": "El `label` del ítem desde el que empezó el arrastre, el nombre que le da la gente."
+  },
   "Active.element": {
     "source": "b0e7f2b9f5",
     "text": "Elemento desde el que empezó el arrastre. Puede quedar desconectado del DOM (listas virtuales, movimientos entre listas)."
@@ -22,6 +30,10 @@
   "Active.rect": {
     "source": "7964e6f559",
     "text": "Rectángulo de layout de `element` al inicio del arrastre."
+  },
+  "Over.label": {
+    "source": "c388687981",
+    "text": "El `label` del destino, el nombre que le da la gente."
   },
   "Over.accepted": {
     "source": "48997f2ee2",

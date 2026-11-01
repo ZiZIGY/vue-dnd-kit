@@ -3,6 +3,10 @@
     "source": "7cfd4640f1",
     "text": "拖拽来自可排序列表时的项对象。"
   },
+  "DragItem.label": {
+    "source": "97ccfdec34",
+    "text": "它的 `label`，即人们对它的称呼。"
+  },
   "DragItem.type": {
     "source": "9189758463",
     "text": "可拖拽元素经过规范化的 `type`；为空表示它符合任何放置目标。"
@@ -15,6 +19,10 @@
     "source": "173336b06e",
     "text": "所有被拖拽的 id，主项在最前（多项拖拽）。"
   },
+  "Active.label": {
+    "source": "6b580da2fb",
+    "text": "拖拽开始时那个项的 `label`，即人们对它的称呼。"
+  },
   "Active.element": {
     "source": "b0e7f2b9f5",
     "text": "拖拽开始时所在的元素。它可能会被移出文档（虚拟列表、跨列表移动）。"
@@ -22,6 +30,10 @@
   "Active.rect": {
     "source": "7964e6f559",
     "text": "拖拽开始时 `element` 的布局矩形。"
+  },
+  "Over.label": {
+    "source": "c388687981",
+    "text": "目标的 `label`，即人们对它的称呼。"
   },
   "Over.accepted": {
     "source": "48997f2ee2",

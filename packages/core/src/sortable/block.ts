@@ -57,6 +57,7 @@ export const pickUp = (
       id: key,
       item: snapshot.get(key),
       data: manager.getDraggable(key)?.getData(),
+      label: manager.getDraggable(key)?.getLabel?.(),
       type: itemTypes(g, key),
     }));
     manager.updateActive({ ids, items: dragItems });

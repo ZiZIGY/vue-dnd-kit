@@ -321,8 +321,15 @@ export function makeSelectionArea(
     if (!current || event.pointerId !== current.pointerId) return;
     current.pointer = { x: event.clientX, y: event.clientY };
     const { x, y } = current.origin;
-    if (Math.hypot(current.pointer.x - x, current.pointer.y - y) > CLICK_TOLERANCE) {
+    if (!current.moved && Math.hypot(current.pointer.x - x, current.pointer.y - y) > CLICK_TOLERANCE) {
       current.moved = true;
+      // Captured once it is a band, not at the press: a press that doesn't move stays a
+      // click on what was pressed.
+      try {
+        document.body.setPointerCapture(current.pointerId);
+      } catch {
+        // The pointer may already be gone; document listeners still work.
+      }
     }
     schedule();
   };
@@ -377,11 +384,6 @@ export function makeSelectionArea(
       useEventListener(document, 'selectstart', preventDefault),
       useEventListener(document, 'dragstart', preventDefault),
     );
-    try {
-      document.body.setPointerCapture(event.pointerId);
-    } catch {
-      // The pointer may already be gone; document listeners still work.
-    }
     update();
   };
 

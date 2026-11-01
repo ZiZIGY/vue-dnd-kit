@@ -206,6 +206,8 @@
     "copied": "Copiado",
     "stackblitz": "Abrir no StackBlitz",
     "reset": "Reiniciar a demo",
+    "expand": "Expandir para tela cheia",
+    "collapse": "Voltar à página (Esc)",
     "loading": "Carregando a demo…"
   },
   "api": {

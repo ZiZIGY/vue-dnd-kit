@@ -61,6 +61,8 @@ export interface Session {
   copies: Map<Key, Key | null>;
   /** Item made for an external draggable, per list. */
   created: Map<Key, Key | null>;
+  /** The other items a list made for it (`createItem` gave several), which the drop puts after the slot. */
+  extra: Map<Key, Key[]>;
   /** Item the active one is exchanged with (`behavior: 'swap'`). */
   swap: Key | null;
   /** Last valid indicator; kept after leaving the list for `dropOutside: 'placeholder'`. */
@@ -187,8 +189,15 @@ export const isForeign = (g: GroupContext, event: DnDEvent) => !!event.over && !
 export const listOf = (g: GroupContext, id: Key | null) => (id == null ? undefined : g.lists.get(id));
 
 /** A position in a list as announced, out of the list's current length. */
+/** What people call a list of the group: its `label` (its drop target's). */
+export const listLabel = (g: GroupContext, list: Key): string | undefined => g.manager.getDroppable(list)?.getLabel?.();
+
+/** What people call an item: its `label` (its draggable's). */
+export const itemLabel = (g: GroupContext, key: Key): string | undefined => g.manager.getDraggable(key)?.getLabel?.();
+
 export const spotIn = (g: GroupContext, list: Key, index: number): SortableSpot => ({
   list,
+  label: listLabel(g, list),
   index,
   length: g.lists.get(list)?.getKeys().length ?? 0,
 });

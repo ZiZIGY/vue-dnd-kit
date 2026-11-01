@@ -15,6 +15,8 @@ export interface DraggableInternals {
   getOverlay?: () => Component | undefined;
   /** Drop animation when the option has none (a sortable item: its list's). */
   getDropAnimation?: () => DropAnimation | undefined;
+  /** A sortable item's group: another window's lists of it take the item. */
+  getGroup?: () => string;
 }
 
 /**
@@ -23,8 +25,6 @@ export interface DraggableInternals {
  */
 export const toOverlay = (overlay: boolean | Component | undefined): boolean | Component =>
   overlay == null || overlay === true ? true : overlay && markRaw(overlay);
-
-const preventNativeDrag = (event: Event) => event.preventDefault();
 
 // ─── Attributes ────────────────────────────────────────────────────────────────
 // The library only ever touches attributes it added itself: anything already on the
@@ -165,10 +165,22 @@ export function createDraggable<TData>(
     },
     getFocusTarget: () => getHandleElement() ?? getElement(),
     getData: () => read(options.data),
+    getLabel: () => read(options.label),
     getTypes: () => normalizeTypes(read(options.type)),
     isDisabled: () => !!read(options.disabled) || manager.inDisabledArea(getElement()),
     getItem: internals.getItem,
     getContainer: internals.getContainer,
+    getNative: () => {
+      const native = read(options.native);
+      return native ? (native === true ? {} : native) : undefined;
+    },
+    getGroup: internals.getGroup,
+  };
+
+  // The browser's own drag of the element (an image, a link, a selection in it) would fight
+  // the library's; with `native`, a mouse drag is that drag (`native/bridge.ts`).
+  const preventNativeDrag = (event: Event) => {
+    if (!entry.getNative!()) event.preventDefault();
   };
 
   let unregister = manager.registerDraggable(entry);
@@ -238,7 +250,8 @@ export function createDraggable<TData>(
   // The overlay as the drag took it at its start. The element moves with the content it
   // is in (scrolling): what that content moved is taken off, so it stays under the pointer.
   const transform = computed(() => {
-    if (manager.active.value?.id !== id.value || manager.hasOverlay) return null;
+    // The browser's own drag (`native`) leaves the element in place and draws its image.
+    if (manager.active.value?.id !== id.value || manager.hasOverlay || manager.active.value.native) return null;
     const { x, y } = manager.transform.value;
     const shift = manager.containerShift.value;
     return shift.x || shift.y ? { x: x - shift.x, y: y - shift.y } : manager.transform.value;

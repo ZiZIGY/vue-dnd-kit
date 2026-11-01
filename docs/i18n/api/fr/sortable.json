@@ -64,8 +64,8 @@
     "text": "Arbres : parent que reçoivent les nœuds déposés, `null` au niveau racine."
   },
   "SortableListOptions": {
-    "source": "ad5d98cc02",
-    "text": "Options de `makeSortableList`. Une liste (ou un arbre) par composant : elle fournit le contexte que lisent ses items, et une seconde liste dans le même composant prendrait donc les items de la première (les builds de développement le signalent).\n\nLes options acceptent une valeur, une ref ou un getter (`overlay`, `animation` : une valeur ou une ref) et sont lues quand la liste en a besoin : un changement s'applique donc au plus tard au glissement suivant. Exceptions : `id` et `group` sont lus une seule fois, à la création de la liste ; `items` est le modèle lui-même ; les fonctions (`getKey`, `clone`, `createItem`, les callbacks) sont passées telles quelles."
+    "source": "5578e6dad0",
+    "text": "Options de `makeSortableList`. Une liste (ou un arbre) par composant : elle fournit le contexte que lisent ses items, et une seconde liste dans le même composant prendrait donc les items de la première (les builds de développement le signalent).\n\nLes options acceptent une valeur, une ref ou un getter (`overlay`, `animation` : une valeur ou une ref) et sont lues quand la liste en a besoin : un changement s'applique donc au plus tard au glissement suivant. Exceptions : `id` et `group` sont lus une seule fois, à la création de la liste ; `items` est le modèle lui-même ; les fonctions (`getKey`, `filter`, `clone`, `createItem`, les callbacks) sont passées telles quelles."
   },
   "SortableListOptions.items": {
     "source": "bcf07acd7a",
@@ -75,9 +75,17 @@
     "source": "f5ae57e9ca",
     "text": "Par défaut : `item.id`, ou l'item lui-même pour les primitives. Sert aussi de clé à `makeSortableItem({ item })`."
   },
+  "SortableListOptions.filter": {
+    "source": "68bbc0dba4",
+    "text": "N'affiche que les items pour lesquels elle renvoie `true` (une recherche, une étiquette) : `items` (celui qui est renvoyé) les contient, et un glissement trie parmi eux. Les autres gardent leur place dans la source : un dépôt écrit le tableau entier, chaque item masqué toujours après l'item affiché qu'il suivait (après le plus proche resté en place, quand celui-là a bougé). Réactive : ce qu'elle lit (une ref de recherche) s'applique aussitôt."
+  },
   "SortableListOptions.id": {
     "source": "c0adaf519f",
     "text": "Par défaut : `useId()`, stable entre le rendu serveur et le rendu client. Lu une seule fois."
+  },
+  "SortableListOptions.label": {
+    "source": "afaee09f48",
+    "text": "Le nom que les gens donnent à la liste : les textes pour les lecteurs d'écran le disent à la place de son id (`position 2 of 5 in Garden`)."
   },
   "SortableListOptions.overlay": {
     "source": "47e3eb4c8a",
@@ -210,6 +218,10 @@
   "SortableItemOptions.handle": {
     "source": "519bda20d7",
     "text": "Élément ou sélecteur, à l'intérieur de l'item, qui lance le glissement (et reçoit les attributs)."
+  },
+  "SortableItemOptions.label": {
+    "source": "93ed063b77",
+    "text": "Le nom que les gens donnent à l'item : les textes pour les lecteurs d'écran le disent à la place de sa clé (`Picked up Tomato at position 2 of 5 in Garden`). Les événements le transportent dans `active.label` et dans `items`."
   },
   "SortableItemOptions.activation": {
     "source": "07b1465312",
