@@ -1,0 +1,86 @@
+{
+  "ExternalFile": {
+    "source": "ca098238e1",
+    "text": "外部からのドラッグに含まれるファイルで、`ExternalAccept.files` に問い合わせるときの形です。ファイルがページの上にある間、ブラウザーが教えるのはタイプだけです：`name` と `size` はドロップ時に届きます。"
+  },
+  "ExternalFile.type": {
+    "source": "5ac7937354",
+    "text": "MIME タイプ（`image/png`）。ブラウザーが判別できない場合は `''`。"
+  },
+  "ExternalAccept": {
+    "source": "f9ed0b389d",
+    "text": "ドロップターゲット、リスト、ツリーが、ページの外から来るドラッグから受け取るもの：デスクトップからのファイル、別のアプリやタブからのリンクやテキスト（`external`）。"
+  },
+  "ExternalAccept.files": {
+    "source": "38901e0629",
+    "text": "ファイル：`true` ならすべて受け取ります。または `<input accept>` と同じ形式：MIME タイプ（`image/*`、`application/pdf`）と拡張子（`.md`）を、カンマ区切りの文字列か配列で指定します。拡張子はドロップ時に確認されます。または、ファイルごとに呼ばれる関数（`false` で拒否）。フォルダーは決して受け取りません。"
+  },
+  "ExternalAccept.multiple": {
+    "source": "03eb21a25d",
+    "text": "一度に複数のファイル（デフォルトは `true`）。`false` は 2 つ以上のファイルのドラッグを拒否します。"
+  },
+  "ExternalAccept.links": {
+    "source": "0ae2ab5ac6",
+    "text": "リンク（`text/uri-list`）：別のタブからドラッグされたアドレス、ページ内のリンク。"
+  },
+  "ExternalAccept.text": {
+    "source": "45b39d4b6c",
+    "text": "プレーンテキスト（`text/plain`）：別のアプリからドラッグされた選択範囲。"
+  },
+  "ExternalAccept.types": {
+    "source": "e5f8f6c5ee",
+    "text": "受け取るそのほかの MIME タイプ。ほかのアプリが提供するとおりに指定します。"
+  },
+  "ExternalData": {
+    "source": "52e1ec34b0",
+    "text": "ページの外からのドラッグ（`Active.external`、`DnDEvent.external`）。ドラッグ中、ブラウザーは何を運んでいるかは教えますが、データは教えません：ファイル、リンク、テキストはドロップ時に届きます（`dropped`）。"
+  },
+  "ExternalData.types": {
+    "source": "840a3fb6e3",
+    "text": "提供している MIME タイプ（`Files`、`text/uri-list`、`text/plain`、アプリ独自のもの）。"
+  },
+  "ExternalData.fileTypes": {
+    "source": "bfd5b216bc",
+    "text": "ファイルの MIME タイプで、ファイルごとに 1 つ（ブラウザーが判別できない場合は `''`）。"
+  },
+  "ExternalData.files": {
+    "source": "7788852b5f",
+    "text": "ドロップ時：ターゲットが受け取るファイル（フォルダーと拒否されたファイルは除く）。"
+  },
+  "ExternalData.urls": {
+    "source": "aa2cefaeaa",
+    "text": "ドロップ時：リンク（`text/uri-list`）。"
+  },
+  "ExternalData.text": {
+    "source": "1eacad3d45",
+    "text": "ドロップ時：プレーンテキスト。"
+  },
+  "ExternalData.html": {
+    "source": "5f19057654",
+    "text": "ドロップ時：HTML。"
+  },
+  "ExternalData.getData": {
+    "source": "044c2022ec",
+    "text": "ドロップ時：提供している任意のタイプのデータ（ドロップ前と、提供していないタイプでは `''`）。"
+  },
+  "ExternalData.dropped": {
+    "source": "11a898fda6",
+    "text": "ドロップされました：上のデータがそろっています。"
+  },
+  "ExternalData.group": {
+    "source": "5706afced8",
+    "text": "アプリの別のウィンドウからドラッグされてきたライブラリのアイテム（`native`）：その並べ替え可能なグループの名前。そのグループのリストは、自分のリストの 1 つから来たかのようにそれらを受け入れます。`active.items` にそれらが入っています。"
+  },
+  "NativeDragOptions": {
+    "source": "22b6caa629",
+    "text": "マウスでページの外へドラッグできるドラッグ可能な要素や並べ替え可能なアイテム（`native`）：デスクトップへ、別のアプリへ、別のタブへ、アプリの別のウィンドウへ。"
+  },
+  "NativeDragOptions.data": {
+    "source": "5cec79d1b0",
+    "text": "ほかのアプリやページが受け取るもの：MIME タイプ → テキスト。例：`{ 'text/plain': title, 'text/uri-list': url }`。ドラッグの開始時に読み取られます。並べ替え可能なアイテムは、アプリの別のウィンドウにある同じグループのリストのために、自分自身も運びます。"
+  },
+  "NativeDragOptions.effect": {
+    "source": "67e99c2b14",
+    "text": "ドラッグがドロップ先に許可すること（`effectAllowed`）。デフォルトは `'copyMove'`：移動ならアイテムはこちらのリストから取り除かれ、コピーなら残ります。"
+  }
+}

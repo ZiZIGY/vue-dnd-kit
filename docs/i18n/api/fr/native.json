@@ -1,0 +1,86 @@
+{
+  "ExternalFile": {
+    "source": "ca098238e1",
+    "text": "Un fichier d'un glissement venu de l'extérieur, tel que `ExternalAccept.files` est interrogé à son sujet. Tant que les fichiers sont tenus au-dessus de la page, le navigateur ne donne que leurs types : `name` et `size` arrivent au dépôt."
+  },
+  "ExternalFile.type": {
+    "source": "5ac7937354",
+    "text": "Son type MIME (`image/png`) ; `''` quand le navigateur ne peut pas le dire."
+  },
+  "ExternalAccept": {
+    "source": "f9ed0b389d",
+    "text": "Ce qu'une cible de dépôt, une liste ou un arbre accepte des glissements venus de l'extérieur de la page : des fichiers depuis le bureau, un lien ou du texte depuis une autre application ou un autre onglet (`external`)."
+  },
+  "ExternalAccept.files": {
+    "source": "38901e0629",
+    "text": "Des fichiers : `true` les accepte tous. Ou comme pour `<input accept>` : des types MIME (`image/*`, `application/pdf`) et des extensions (`.md`), dans une chaîne séparée par des virgules ou une liste ; les extensions sont vérifiées au dépôt. Ou une fonction interrogée pour chaque fichier (`false` le refuse). Les dossiers ne sont jamais acceptés."
+  },
+  "ExternalAccept.multiple": {
+    "source": "03eb21a25d",
+    "text": "Plusieurs fichiers à la fois (`true` par défaut) ; `false` refuse un glissement de plus d'un fichier."
+  },
+  "ExternalAccept.links": {
+    "source": "0ae2ab5ac6",
+    "text": "Des liens (`text/uri-list`) : une adresse glissée depuis un autre onglet, un lien d'une page."
+  },
+  "ExternalAccept.text": {
+    "source": "45b39d4b6c",
+    "text": "Du texte brut (`text/plain`) : une sélection glissée depuis une autre application."
+  },
+  "ExternalAccept.types": {
+    "source": "e5f8f6c5ee",
+    "text": "D'autres types MIME acceptés, exactement tels que les autres applications les proposent."
+  },
+  "ExternalData": {
+    "source": "52e1ec34b0",
+    "text": "Un glissement venu de l'extérieur de la page (`Active.external`, `DnDEvent.external`). Pendant qu'il est tenu, le navigateur dit ce qu'il transporte, pas les données : les fichiers, les liens et le texte arrivent au dépôt (`dropped`)."
+  },
+  "ExternalData.types": {
+    "source": "840a3fb6e3",
+    "text": "Les types MIME qu'il propose (`Files`, `text/uri-list`, `text/plain`, ceux propres à une application)."
+  },
+  "ExternalData.fileTypes": {
+    "source": "bfd5b216bc",
+    "text": "Les types MIME de ses fichiers, un par fichier (`''` quand le navigateur ne peut pas le dire)."
+  },
+  "ExternalData.files": {
+    "source": "7788852b5f",
+    "text": "Au dépôt : les fichiers que la cible accepte (sans les dossiers ni les fichiers refusés)."
+  },
+  "ExternalData.urls": {
+    "source": "aa2cefaeaa",
+    "text": "Au dépôt : ses liens (`text/uri-list`)."
+  },
+  "ExternalData.text": {
+    "source": "1eacad3d45",
+    "text": "Au dépôt : son texte brut."
+  },
+  "ExternalData.html": {
+    "source": "5f19057654",
+    "text": "Au dépôt : son HTML."
+  },
+  "ExternalData.getData": {
+    "source": "044c2022ec",
+    "text": "Au dépôt : les données de n'importe quel type qu'il propose (`''` avant, et pour un type qu'il ne propose pas)."
+  },
+  "ExternalData.dropped": {
+    "source": "11a898fda6",
+    "text": "Il a été déposé : les données ci-dessus sont là."
+  },
+  "ExternalData.group": {
+    "source": "5706afced8",
+    "text": "Des items de la bibliothèque glissés depuis une autre fenêtre de l'application (`native`) : le nom de leur groupe triable. Les listes de ce groupe les acceptent comme s'ils venaient de l'une de leurs propres listes ; `active.items` les contient."
+  },
+  "NativeDragOptions": {
+    "source": "22b6caa629",
+    "text": "Un élément déplaçable ou un item triable qu'une souris peut faire glisser hors de la page (`native`) : vers le bureau, une autre application, un autre onglet, une autre fenêtre de l'application."
+  },
+  "NativeDragOptions.data": {
+    "source": "5cec79d1b0",
+    "text": "Ce que reçoivent les autres applications et pages : type MIME → texte, par exemple `{ 'text/plain': title, 'text/uri-list': url }`. Lu au début du glissement. Les items triables se transportent aussi eux-mêmes, pour les listes de leur groupe dans une autre fenêtre de l'application."
+  },
+  "NativeDragOptions.effect": {
+    "source": "67e99c2b14",
+    "text": "Ce que le glissement permet à l'endroit où il est déposé (`effectAllowed`). Par défaut `'copyMove'` : un déplacement retire ici les items de leur liste, une copie les laisse."
+  }
+}

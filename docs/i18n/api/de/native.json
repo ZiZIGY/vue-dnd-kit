@@ -1,0 +1,86 @@
+{
+  "ExternalFile": {
+    "source": "ca098238e1",
+    "text": "Eine Datei eines Drags von außerhalb, so wie `ExternalAccept.files` nach ihr gefragt wird. Solange die Dateien über der Seite gehalten werden, nennt der Browser nur ihre Typen: `name` und `size` kommen beim Drop."
+  },
+  "ExternalFile.type": {
+    "source": "5ac7937354",
+    "text": "Ihr MIME-Typ (`image/png`); `''`, wenn der Browser ihn nicht nennen kann."
+  },
+  "ExternalAccept": {
+    "source": "f9ed0b389d",
+    "text": "Was ein Drop-Ziel, eine Liste oder ein Baum von Drags annimmt, die von außerhalb der Seite kommen: Dateien vom Desktop, einen Link oder Text aus einer anderen App oder einem anderen Tab (`external`)."
+  },
+  "ExternalAccept.files": {
+    "source": "38901e0629",
+    "text": "Dateien: `true` nimmt jede an. Oder wie bei `<input accept>`: MIME-Typen (`image/*`, `application/pdf`) und Dateiendungen (`.md`), als String mit Kommas oder als Liste; Dateiendungen werden beim Drop geprüft. Oder eine Funktion, die zu jeder Datei gefragt wird (`false` lehnt sie ab). Ordner werden nie angenommen."
+  },
+  "ExternalAccept.multiple": {
+    "source": "03eb21a25d",
+    "text": "Mehrere Dateien auf einmal (Standard `true`); `false` lehnt einen Drag mit mehr als einer Datei ab."
+  },
+  "ExternalAccept.links": {
+    "source": "0ae2ab5ac6",
+    "text": "Links (`text/uri-list`): eine Adresse, die aus einem anderen Tab gezogen wird, ein Link aus einer Seite."
+  },
+  "ExternalAccept.text": {
+    "source": "45b39d4b6c",
+    "text": "Reiner Text (`text/plain`): eine Auswahl, die aus einer anderen App gezogen wird."
+  },
+  "ExternalAccept.types": {
+    "source": "e5f8f6c5ee",
+    "text": "Andere MIME-Typen, die es annimmt, genau so, wie andere Apps sie anbieten."
+  },
+  "ExternalData": {
+    "source": "52e1ec34b0",
+    "text": "Ein Drag von außerhalb der Seite (`Active.external`, `DnDEvent.external`). Solange er gehalten wird, sagt der Browser, was er trägt, nicht die Daten: Die Dateien, Links und der Text kommen beim Drop (`dropped`)."
+  },
+  "ExternalData.types": {
+    "source": "840a3fb6e3",
+    "text": "Die MIME-Typen, die er anbietet (`Files`, `text/uri-list`, `text/plain`, eigene einer App)."
+  },
+  "ExternalData.fileTypes": {
+    "source": "bfd5b216bc",
+    "text": "Die MIME-Typen seiner Dateien, einer pro Datei (`''`, wenn der Browser ihn nicht nennen kann)."
+  },
+  "ExternalData.files": {
+    "source": "7788852b5f",
+    "text": "Beim Drop: die Dateien, die das Ziel annimmt (ohne Ordner und abgelehnte Dateien)."
+  },
+  "ExternalData.urls": {
+    "source": "aa2cefaeaa",
+    "text": "Beim Drop: seine Links (`text/uri-list`)."
+  },
+  "ExternalData.text": {
+    "source": "1eacad3d45",
+    "text": "Beim Drop: sein reiner Text."
+  },
+  "ExternalData.html": {
+    "source": "5f19057654",
+    "text": "Beim Drop: sein HTML."
+  },
+  "ExternalData.getData": {
+    "source": "044c2022ec",
+    "text": "Beim Drop: die Daten jedes Typs, den er anbietet (`''` vorher und für einen Typ, den er nicht anbietet)."
+  },
+  "ExternalData.dropped": {
+    "source": "11a898fda6",
+    "text": "Er wurde abgelegt: Die Daten oben sind da."
+  },
+  "ExternalData.group": {
+    "source": "5706afced8",
+    "text": "Elemente der Bibliothek, die aus einem anderen Fenster der App hereingezogen werden (`native`): der Name ihrer sortierbaren Gruppe. Die Listen dieser Gruppe nehmen sie an, als kämen sie aus einer ihrer eigenen Listen; `active.items` enthält sie."
+  },
+  "NativeDragOptions": {
+    "source": "22b6caa629",
+    "text": "Ein ziehbares oder sortierbares Element, das eine Maus aus der Seite hinausziehen kann (`native`): auf den Desktop, in eine andere App, einen anderen Tab, ein anderes Fenster der App."
+  },
+  "NativeDragOptions.data": {
+    "source": "5cec79d1b0",
+    "text": "Was andere Apps und Seiten bekommen: MIME-Typ → Text, z. B. `{ 'text/plain': title, 'text/uri-list': url }`. Wird beim Start des Drags gelesen. Sortierbare Elemente tragen außerdem sich selbst, für die Listen ihrer Gruppe in einem anderen Fenster der App."
+  },
+  "NativeDragOptions.effect": {
+    "source": "67e99c2b14",
+    "text": "Was der Drag dem Ort, an dem er abgelegt wird, erlaubt (`effectAllowed`). Standard `'copyMove'`: Ein Verschieben nimmt die Elemente hier aus ihrer Liste, eine Kopie lässt sie dort."
+  }
+}

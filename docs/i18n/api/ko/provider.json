@@ -111,6 +111,10 @@
     "source": "6852def127",
     "text": "드래그 중에 오버레이가 한 컴포넌트에서 다른 컴포넌트로 바뀌는 방식(드롭 대상의 `overlay`가 넘겨받거나, `overlay` ref가 바뀔 때). `true`(기본값)는 150 ms 동안 크로스페이드하고, `false`는 바로 교체하며, 객체는 내용의 루트를 감싸는 Vue `<Transition>`의 props입니다(`name`, `mode`, GSAP이나 motion용 JS 훅). `mode: 'out-in'`이 없으면 둘이 동시에 보입니다. 떠나는 쪽에 `position: absolute`를 주어(`.<name>-leave-active`) 박스 안에서 겹치게 하세요."
   },
+  "DnDProviderProps.overlayClass": {
+    "source": "fe858c5071",
+    "text": "오버레이 콘텐츠(`[data-dnd-overlay-content]`)의 클래스. 오버레이 박스를 채우는 요소로, 라이브러리가 박스를 옮기고 크기를 바꾸는 동안 전체를 애니메이션할 대상입니다. 이 요소의 트랜지션은 드래그가 집힐 때 `@starting-style`에서 실행되고, 안착할 때 거꾸로 실행됩니다(`[data-dnd-overlay='dropping']`). 드롭은 이 트랜지션을 기다립니다. 일반 CSS는 `<style scoped>` 밖에서(또는 `:global(...)`로), Tailwind는 `starting:`과 `in-data-[dnd-overlay=dragging]:`으로 이 요소를 지정합니다."
+  },
   "DnDProviderProps.announcements": {
     "source": "0729e8985f",
     "text": "일부 이벤트에 쓸 직접 만든 문구(`Announcements` 참고). `false`면 라이브 리전이 아무것도 읽지 않습니다."

@@ -1,0 +1,86 @@
+{
+  "ExternalFile": {
+    "source": "ca098238e1",
+    "text": "Um arquivo de um arraste de fora, como `ExternalAccept.files` é consultado sobre ele. Enquanto os arquivos estão sobre a página, o navegador informa só os tipos deles: `name` e `size` chegam no drop."
+  },
+  "ExternalFile.type": {
+    "source": "5ac7937354",
+    "text": "O tipo MIME dele (`image/png`); `''` quando o navegador não sabe dizer."
+  },
+  "ExternalAccept": {
+    "source": "f9ed0b389d",
+    "text": "O que um alvo de drop, uma lista ou uma árvore aceita de arrastes que vêm de fora da página: arquivos da área de trabalho, um link ou texto de outro app ou aba (`external`)."
+  },
+  "ExternalAccept.files": {
+    "source": "38901e0629",
+    "text": "Arquivos: `true` aceita qualquer um. Ou como no `<input accept>`: tipos MIME (`image/*`, `application/pdf`) e extensões (`.md`), uma string com vírgulas ou uma lista; as extensões são verificadas no drop. Ou uma função consultada sobre cada arquivo (`false` o recusa). Pastas nunca são aceitas."
+  },
+  "ExternalAccept.multiple": {
+    "source": "03eb21a25d",
+    "text": "Vários arquivos de uma vez (padrão `true`); `false` recusa um arraste de mais de um."
+  },
+  "ExternalAccept.links": {
+    "source": "0ae2ab5ac6",
+    "text": "Links (`text/uri-list`): um endereço arrastado de outra aba, um link de uma página."
+  },
+  "ExternalAccept.text": {
+    "source": "45b39d4b6c",
+    "text": "Texto simples (`text/plain`): uma seleção arrastada de outro app."
+  },
+  "ExternalAccept.types": {
+    "source": "e5f8f6c5ee",
+    "text": "Outros tipos MIME que ele aceita, exatamente como outros apps os oferecem."
+  },
+  "ExternalData": {
+    "source": "52e1ec34b0",
+    "text": "Um arraste de fora da página (`Active.external`, `DnDEvent.external`). Enquanto o arraste continua, o navegador diz o que ele carrega, não os dados: os arquivos, links e texto chegam no drop (`dropped`)."
+  },
+  "ExternalData.types": {
+    "source": "840a3fb6e3",
+    "text": "Os tipos MIME que ele oferece (`Files`, `text/uri-list`, `text/plain`, os de um app)."
+  },
+  "ExternalData.fileTypes": {
+    "source": "bfd5b216bc",
+    "text": "Os tipos MIME dos arquivos dele, um por arquivo (`''` quando o navegador não sabe dizer)."
+  },
+  "ExternalData.files": {
+    "source": "7788852b5f",
+    "text": "No drop: os arquivos que o alvo aceita (pastas e arquivos recusados ficam de fora)."
+  },
+  "ExternalData.urls": {
+    "source": "aa2cefaeaa",
+    "text": "No drop: os links dele (`text/uri-list`)."
+  },
+  "ExternalData.text": {
+    "source": "1eacad3d45",
+    "text": "No drop: o texto simples dele."
+  },
+  "ExternalData.html": {
+    "source": "5f19057654",
+    "text": "No drop: o HTML dele."
+  },
+  "ExternalData.getData": {
+    "source": "044c2022ec",
+    "text": "No drop: os dados de qualquer tipo que ele oferece (`''` antes disso, e para um tipo que ele não oferece)."
+  },
+  "ExternalData.dropped": {
+    "source": "11a898fda6",
+    "text": "Ele foi solto: os dados acima estão disponíveis."
+  },
+  "ExternalData.group": {
+    "source": "5706afced8",
+    "text": "Itens da biblioteca arrastados de outra janela do app (`native`): o nome do grupo ordenável deles. As listas desse grupo os aceitam como se viessem de uma das próprias listas; `active.items` os contém."
+  },
+  "NativeDragOptions": {
+    "source": "22b6caa629",
+    "text": "Um draggable ou item ordenável que um mouse pode arrastar para fora da página (`native`): para a área de trabalho, para outro app, outra aba, outra janela do app."
+  },
+  "NativeDragOptions.data": {
+    "source": "5cec79d1b0",
+    "text": "O que outros apps e páginas recebem: tipo MIME → texto, por exemplo `{ 'text/plain': title, 'text/uri-list': url }`. Lido quando o arraste começa. Itens ordenáveis também carregam a si mesmos, para as listas do grupo deles em outra janela do app."
+  },
+  "NativeDragOptions.effect": {
+    "source": "67e99c2b14",
+    "text": "O que o arraste permite ao lugar onde é solto (`effectAllowed`). Padrão `'copyMove'`: uma movimentação tira os itens da lista deles aqui, uma cópia os mantém."
+  }
+}

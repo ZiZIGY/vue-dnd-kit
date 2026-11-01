@@ -96,8 +96,12 @@
     "text": "创建副本（`group.pull: 'clone'`、复制修饰键）。复制时必需。返回带有整棵子树的副本：被复制的文件夹会保留它的子节点。副本及其每个后代都需要自己的 key（用 `getKey` 读取），就像树中的每个节点一样。"
   },
   "SortableTreeOptions.createItem": {
-    "source": "28224fdbf4",
-    "text": "接收来自外部的普通可拖拽元素：在预测的位置和深度创建要插入的节点（`canNest` 和 `maxDepth` 对它同样适用）。使用键盘时，朝树的方向按方向键即可把可拖拽元素放进来，与它将插入其前方的那一行平齐，之后方向键会像移动其他节点一样移动这个节点。"
+    "source": "82145232b2",
+    "text": "接收来自外部的普通可拖拽元素：在预测的位置和深度创建要插入的节点（`canNest` 和 `maxDepth` 对它同样适用）。使用键盘时，朝树的方向按方向键即可把可拖拽元素放进来，与它将插入其前方的那一行平齐，之后方向键会像移动其他节点一样移动这个节点。来自页面之外的拖拽（`external`）会被询问两次，拖拽进行时和放置时各一次（见列表的 `createItem`）；一个为每个文件带一个子节点的文件夹节点可以容纳多个文件。"
+  },
+  "SortableTreeOptions.external": {
+    "source": "275eee4f69",
+    "text": "接收来自页面之外的拖拽：文件、链接、文本（见 `ExternalAccept`），配合 `createItem`。从应用另一个窗口拖进来的同一分组的节点以自身进入。值、ref 或 getter，实时读取。"
   },
   "SortableTreeOptions.dropOutside": {
     "source": "324ddf9a40",
@@ -110,6 +114,10 @@
   "SortableTreeOptions.animate": {
     "source": "9004d33175",
     "text": "与 `SortableListOptions` 中相同，作用于可见的行：被添加、删除或移动的节点，以及节点展开或折叠时显示或隐藏的行（`collapsed`）。"
+  },
+  "SortableTreeOptions.animateSize": {
+    "source": "3c8789d16e",
+    "text": "树自身的尺寸跟随它的行，与列表一样（`animateSize`）。默认 `true`。"
   },
   "SortableTreeOptions.autoScroll": {
     "source": "3216318fc0",

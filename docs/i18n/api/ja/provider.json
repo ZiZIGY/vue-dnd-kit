@@ -111,6 +111,10 @@
     "source": "6852def127",
     "text": "ドラッグ中にオーバーレイがあるコンポーネントから別のコンポーネントへ変わる仕方（ドロップターゲットの `overlay` に切り替わる、`overlay` の ref が切り替えられる）：`true`（デフォルト）は 150 ms でクロスフェードし、`false` はすぐに入れ替え、オブジェクトはコンテンツのルートを囲む Vue の `<Transition>` の props です（`name`、`mode`、GSAP や motion 用の JS フック）。`mode: 'out-in'` がないと両方が同時に表示されます：去る側に `position: absolute` を付けて（`.<name>-leave-active`）、ボックスの中で重なるようにしてください。"
   },
+  "DnDProviderProps.overlayClass": {
+    "source": "fe858c5071",
+    "text": "オーバーレイのコンテンツ（`[data-dnd-overlay-content]`）のクラス。オーバーレイのボックスを満たす要素で、ライブラリがボックスを動かしたりサイズを変えたりする間、全体としてアニメーションさせるのはこの要素です。これに付けたトランジションは、ドラッグの持ち上げ時に `@starting-style` から実行され、着地時に逆向きに実行されます（`[data-dnd-overlay='dropping']`）：ドロップはその完了を待ちます。通常の CSS は `<style scoped>` の外で（または `:global(...)` で）、Tailwind は `starting:` と `in-data-[dnd-overlay=dragging]:` でこの要素を指定できます。"
+  },
   "DnDProviderProps.announcements": {
     "source": "0729e8985f",
     "text": "一部のイベント用の独自テキスト（`Announcements` を参照）。`false` でライブリージョンを無音にします。"

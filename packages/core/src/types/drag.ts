@@ -37,7 +37,7 @@ export interface Active<T = unknown> {
    * app): what it carries. Its `items` are made for it (`element` is a stand-in).
    */
   external?: ExternalData;
-  /** The browser's own drag (`native`, or one from outside): it draws the dragged image, there is no overlay. */
+  /** The browser's own drag (`native`, or one from outside): the browser draws the dragged image, and there is no overlay. */
   native?: boolean;
 }
 

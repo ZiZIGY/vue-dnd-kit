@@ -16,6 +16,7 @@ import type { Key, Rect } from '../types';
 import { fadeIn, flip, getRect, type FlipBatch, type FlipEntry } from '../animation/layout';
 import { keysOf, listOfKey, type GroupContext, type Session } from './context';
 import type { ListEntry } from './entry';
+import { animateSizes, captureSizes, type SizeSnapshot } from './resize';
 
 interface Snapshot {
   element: HTMLElement;
@@ -185,10 +186,12 @@ export const bump = (g: GroupContext) => {
 /** Runs a FLIP pass around every render `bump` causes. Call inside the group's effect scope. */
 export const watchLayout = (g: GroupContext) => {
   let snapshot = new Map<Key, Snapshot>();
+  let sizes: SizeSnapshot[] = [];
   watch(
     g.version,
     () => {
       snapshot = capture(g);
+      sizes = captureSizes(g, g.lists.values());
       g.fresh = new Set();
     },
     { flush: 'pre' },
@@ -199,6 +202,8 @@ export const watchLayout = (g: GroupContext) => {
       const fresh = g.fresh ?? NO_KEYS;
       g.fresh = null;
       g.dragPass = false;
+      // The lists resize first: the items measure where that leaves them.
+      animateSizes(sizes, (list) => list.animation());
       animate(g, snapshot, fresh, true);
     },
     { flush: 'post' },

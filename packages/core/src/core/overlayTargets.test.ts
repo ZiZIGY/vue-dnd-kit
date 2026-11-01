@@ -213,8 +213,10 @@ describe("a drop target's overlay", () => {
     expect(kinds()).toEqual(['seed']);
     await pointTo(at(2));
     await shows(['droplet', 'seed']);
-    // The content's root stays the overlay's child: CSS like `[data-dnd-overlay] > *` holds.
-    expect(overlay()!.firstElementChild!.getAttribute('data-kind')).toBe('droplet');
+    // The content's root stays the child of the box's content: `[data-dnd-overlay-content] > *` holds.
+    const content = overlay()!.firstElementChild!;
+    expect(content.hasAttribute('data-dnd-overlay-content')).toBe(true);
+    expect(content.firstElementChild!.getAttribute('data-kind')).toBe('droplet');
     // A target that refuses the drag doesn't change it.
     await pointTo(at(3));
     await shows(['seed']);

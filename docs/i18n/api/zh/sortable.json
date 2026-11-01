@@ -43,6 +43,10 @@
     "source": "0d1dce05c0",
     "text": "在 `onBeforeDrop` 或 `onDrop` 中调用过 `preventDefault()`。"
   },
+  "SortableDropEvent.external": {
+    "source": "25e3ab04b3",
+    "text": "来自页面之外的拖拽（`external`）：它携带的内容，包括它的数据。"
+  },
   "SortableIndicator.index": {
     "source": "0043b67077",
     "text": "在渲染出的列表中的插入位置。"
@@ -64,8 +68,8 @@
     "text": "树：被放下的节点将得到的父节点，在根层级时为 `null`。"
   },
   "SortableListOptions": {
-    "source": "5578e6dad0",
-    "text": "`makeSortableList` 的选项。每个组件一个列表（或树）：它提供其项读取的上下文，所以同一组件中的第二个列表会拿走第一个列表的项（开发构建会对此发出警告）。\n\n选项接受值、ref 或 getter（`overlay`、`animation`：值或 ref），并在列表需要时读取，所以变化最迟在下一次拖拽时生效。例外：`id` 和 `group` 只在创建列表时读取一次；`items` 就是模型本身；函数（`getKey`、`filter`、`clone`、`createItem`、各个回调）按原样传入。"
+    "source": "f8e2e84b3b",
+    "text": "`makeSortableList` 的选项。一个组件可以创建多个列表（和树）：组件中渲染的每个项都会加入元素包含它的最内层列表。\n\n选项接受值、ref 或 getter（`overlay`、`animation`：值或 ref），并在列表需要时读取，所以变化最迟在下一次拖拽时生效。例外：`id` 和 `group` 只在创建列表时读取一次；`items` 就是模型本身；函数（`getKey`、`filter`、`clone`、`createItem`、各个回调）按原样传入。"
   },
   "SortableListOptions.items": {
     "source": "bcf07acd7a",
@@ -76,8 +80,8 @@
     "text": "默认：`item.id`；对于原始值，则是项本身。也用于为 `makeSortableItem({ item })` 生成 key。"
   },
   "SortableListOptions.filter": {
-    "source": "68bbc0dba4",
-    "text": "只显示它返回 `true` 的项（搜索、标签）：`items`（返回的那个）包含这些项，拖拽在它们之间排序。其余项在源数组中保持原位：放置会写入整个数组，每个隐藏项仍跟在它原先跟随的显示项之后（那一项被移动时，跟在最近的留在原处的项之后）。响应式：它读取的东西（搜索词的 ref）立即生效。"
+    "source": "f2604f67b6",
+    "text": "只显示它返回 `true` 的项（搜索、标签）：`items`（返回的那个）包含这些项，拖拽在它们之间排序。其余项在源数组中保持原位：放置会写入整个数组，每个隐藏项仍跟在它原先跟随的显示项之后（那一项被移动时，跟在最近的留在原处的项之后）。响应式：它读取的东西（搜索词的 ref）立即生效。`e.to.index` 和 `activeIndex` 按显示的项计数。"
   },
   "SortableListOptions.id": {
     "source": "c0adaf519f",
@@ -144,8 +148,12 @@
     "text": "创建副本（`pull: 'clone'`、复制修饰键）。复制时必需。"
   },
   "SortableListOptions.createItem": {
-    "source": "5c9f1d3856",
-    "text": "接收来自外部的普通可拖拽元素：创建要插入的项。使用键盘时，朝列表方向按方向键即可把可拖拽元素放进来（与它平齐，就像在列表之间移动那样），之后新创建的项会像其他项一样逐个位置移动。"
+    "source": "5676dc9273",
+    "text": "接收来自外部的普通可拖拽元素：创建要插入的项。使用键盘时，朝列表方向按方向键即可把可拖拽元素放进来（与它平齐，就像在列表之间移动那样），之后新创建的项会像其他项一样逐个位置移动。\n\n来自页面之外的拖拽（`external`）会被询问两次：拖拽进行时，询问用来显示它将去往哪里的项（此时只知道 `active.external.fileTypes` 和 `types`）；放置时，带着它的数据（`active.external.dropped`），询问要插入的内容。返回一组项时，它们会全部插入到占位所在的位置：每个文件一项。"
+  },
+  "SortableListOptions.external": {
+    "source": "9ae9a7ef2d",
+    "text": "接收来自页面之外的拖拽：文件、链接、文本（见 `ExternalAccept`）。列表像为普通可拖拽元素那样为它们腾出位置，这需要 `createItem`。从应用另一个窗口拖进来的同一分组的项（`native`）两者都不需要：它们以自身进入。值、ref 或 getter，实时读取。"
   },
   "SortableListOptions.dropOutside": {
     "source": "bffdd0d062",
@@ -158,6 +166,10 @@
   "SortableListOptions.animate": {
     "source": "86283c7ec0",
     "text": "为非拖拽引起的 `items` 变化添加动画：被添加、删除、移动和过滤的项（参见 `AutoAnimation`）。默认：provider 的 `animate`，除非在那里设置，否则关闭。在 `items` 变化时读取。"
+  },
+  "SortableListOptions.animateSize": {
+    "source": "382b485c30",
+    "text": "列表自身的尺寸跟随它的项：当拖拽带入或带走一个项时（以及放置时，和 `animate` 展示的变化中），它以 `animation` 的时长和缓动增大或缩小到新尺寸，而不是跳变，周围的内容也随之移动。默认 `true`；`false` 让它跳变。每次变化时读取。"
   },
   "SortableListOptions.autoScroll": {
     "source": "0c0b0867b3",
@@ -234,6 +246,10 @@
   "SortableItemOptions.attributes": {
     "source": "db7791f2d8",
     "text": "设置 role/tabindex/aria-* 属性（默认 `true`），永远不会覆盖用户自己设置的。实时生效：关闭后，库设置的属性会被移除。"
+  },
+  "SortableItemOptions.native": {
+    "source": "6b13bbb4b9",
+    "text": "用鼠标拖拽它就是浏览器自己的拖拽，可以离开页面（见 `DraggableOptions.native`）。它还携带这个项：应用另一个窗口中同一分组的列表会接收它，一旦被接收，它就离开这个列表（`'move'`）。"
   },
   "SortableItemReturn.isDragging": {
     "source": "f148b949fd",

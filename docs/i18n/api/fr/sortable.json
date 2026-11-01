@@ -43,6 +43,10 @@
     "source": "0d1dce05c0",
     "text": "`preventDefault()` a été appelé, dans `onBeforeDrop` ou dans `onDrop`."
   },
+  "SortableDropEvent.external": {
+    "source": "25e3ab04b3",
+    "text": "Un glissement venu de l'extérieur de la page (`external`) : ce qu'il transportait, données comprises."
+  },
   "SortableIndicator.index": {
     "source": "0043b67077",
     "text": "Position d'insertion dans la liste telle qu'elle est rendue."
@@ -64,8 +68,8 @@
     "text": "Arbres : parent que reçoivent les nœuds déposés, `null` au niveau racine."
   },
   "SortableListOptions": {
-    "source": "5578e6dad0",
-    "text": "Options de `makeSortableList`. Une liste (ou un arbre) par composant : elle fournit le contexte que lisent ses items, et une seconde liste dans le même composant prendrait donc les items de la première (les builds de développement le signalent).\n\nLes options acceptent une valeur, une ref ou un getter (`overlay`, `animation` : une valeur ou une ref) et sont lues quand la liste en a besoin : un changement s'applique donc au plus tard au glissement suivant. Exceptions : `id` et `group` sont lus une seule fois, à la création de la liste ; `items` est le modèle lui-même ; les fonctions (`getKey`, `filter`, `clone`, `createItem`, les callbacks) sont passées telles quelles."
+    "source": "f8e2e84b3b",
+    "text": "Options de `makeSortableList`. Un composant peut créer plusieurs listes (et arbres) : chaque item rendu dedans rejoint la plus intérieure dont l'élément le contient.\n\nLes options acceptent une valeur, une ref ou un getter (`overlay`, `animation` : une valeur ou une ref) et sont lues quand la liste en a besoin : un changement s'applique donc au plus tard au glissement suivant. Exceptions : `id` et `group` sont lus une seule fois, à la création de la liste ; `items` est le modèle lui-même ; les fonctions (`getKey`, `filter`, `clone`, `createItem`, les callbacks) sont passées telles quelles."
   },
   "SortableListOptions.items": {
     "source": "bcf07acd7a",
@@ -76,8 +80,8 @@
     "text": "Par défaut : `item.id`, ou l'item lui-même pour les primitives. Sert aussi de clé à `makeSortableItem({ item })`."
   },
   "SortableListOptions.filter": {
-    "source": "68bbc0dba4",
-    "text": "N'affiche que les items pour lesquels elle renvoie `true` (une recherche, une étiquette) : `items` (celui qui est renvoyé) les contient, et un glissement trie parmi eux. Les autres gardent leur place dans la source : un dépôt écrit le tableau entier, chaque item masqué toujours après l'item affiché qu'il suivait (après le plus proche resté en place, quand celui-là a bougé). Réactive : ce qu'elle lit (une ref de recherche) s'applique aussitôt."
+    "source": "f2604f67b6",
+    "text": "N'affiche que les items pour lesquels elle renvoie `true` (une recherche, une étiquette) : `items` (celui qui est renvoyé) les contient, et un glissement trie parmi eux. Les autres gardent leur place dans la source : un dépôt écrit le tableau entier, chaque item masqué toujours après l'item affiché qu'il suivait (après le plus proche resté en place, quand celui-là a bougé). Réactive : ce qu'elle lit (une ref de recherche) s'applique aussitôt. `e.to.index` et `activeIndex` comptent les items affichés."
   },
   "SortableListOptions.id": {
     "source": "c0adaf519f",
@@ -144,8 +148,12 @@
     "text": "Crée des copies (`pull: 'clone'`, touche modificatrice de copie). Obligatoire pour copier."
   },
   "SortableListOptions.createItem": {
-    "source": "5c9f1d3856",
-    "text": "Accepte des éléments déplaçables simples venus de l'extérieur : crée l'item à insérer. Au clavier, une flèche en direction de la liste y fait entrer l'élément déplaçable (à sa hauteur, comme pour les déplacements entre listes), et l'item créé se déplace ensuite par emplacements comme n'importe quel autre."
+    "source": "5676dc9273",
+    "text": "Accepte des éléments déplaçables simples venus de l'extérieur : crée l'item à insérer. Au clavier, une flèche en direction de la liste y fait entrer l'élément déplaçable (à sa hauteur, comme pour les déplacements entre listes), et l'item créé se déplace ensuite par emplacements comme n'importe quel autre.\n\nPour un glissement venu de l'extérieur de la page (`external`), elle est appelée deux fois : pendant le glissement, pour l'item qui montre où il va (seuls `active.external.fileTypes` et `types` sont connus à ce moment-là), et au dépôt, avec ses données (`active.external.dropped`), pour ce qui est inséré. Un tableau d'items est inséré en entier là où était l'emplacement : un item par fichier."
+  },
+  "SortableListOptions.external": {
+    "source": "9ae9a7ef2d",
+    "text": "Accepte les glissements venus de l'extérieur de la page : fichiers, liens, texte (voir `ExternalAccept`). La liste leur fait de la place comme à un élément déplaçable simple, avec `createItem`, dont elle a besoin. Les items de son groupe glissés depuis une autre fenêtre de l'application (`native`) n'ont besoin ni de l'un ni de l'autre : ils entrent tels quels. Une valeur, une ref ou un getter, lu en direct."
   },
   "SortableListOptions.dropOutside": {
     "source": "bffdd0d062",
@@ -158,6 +166,10 @@
   "SortableListOptions.animate": {
     "source": "86283c7ec0",
     "text": "Anime les changements de `items` qui ne viennent pas d'un glissement : items ajoutés, retirés, déplacés et filtrés (voir `AutoAnimation`). Par défaut : l'`animate` du provider, désactivé sauf s'il y est défini. Lu quand `items` change."
+  },
+  "SortableListOptions.animateSize": {
+    "source": "382b485c30",
+    "text": "La taille de la liste elle-même suit ses items : quand un glissement fait entrer ou sortir un item (et au dépôt, et pour les changements que montre `animate`), elle grandit ou rétrécit jusqu'à sa nouvelle taille avec la durée et l'easing d'`animation` au lieu de sauter, et ce qui l'entoure suit le mouvement. `true` par défaut ; `false` la laisse sauter. Lue à chaque changement."
   },
   "SortableListOptions.autoScroll": {
     "source": "0c0b0867b3",
@@ -234,6 +246,10 @@
   "SortableItemOptions.attributes": {
     "source": "db7791f2d8",
     "text": "Définit les attributs role/tabindex/aria-* (`true` par défaut), sans jamais écraser ceux de l'utilisateur. Réactif : le désactiver retire ce que la bibliothèque avait défini."
+  },
+  "SortableItemOptions.native": {
+    "source": "6b13bbb4b9",
+    "text": "Un glissement à la souris est le glissement propre au navigateur, qui peut quitter la page (voir `DraggableOptions.native`). Il transporte aussi l'item : les listes de son groupe dans une autre fenêtre de l'application l'acceptent, et quand l'une d'elles le fait, il quitte cette liste (`'move'`)."
   },
   "SortableItemReturn.isDragging": {
     "source": "f148b949fd",

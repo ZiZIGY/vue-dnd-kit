@@ -43,6 +43,10 @@
     "source": "0d1dce05c0",
     "text": "`preventDefault()` foi chamado, no `onBeforeDrop` ou no `onDrop`."
   },
+  "SortableDropEvent.external": {
+    "source": "25e3ab04b3",
+    "text": "Um arraste de fora da página (`external`): o que ele carregava, com os dados dele."
+  },
   "SortableIndicator.index": {
     "source": "0043b67077",
     "text": "Posição de inserção na lista como renderizada."
@@ -64,8 +68,8 @@
     "text": "Árvores: pai que os nós soltos recebem, `null` no nível das raízes."
   },
   "SortableListOptions": {
-    "source": "5578e6dad0",
-    "text": "Opções de `makeSortableList`. Uma lista (ou árvore) por componente: ela fornece o contexto que os itens dela leem, então uma segunda lista no mesmo componente pegaria os itens da primeira (os builds de desenvolvimento avisam sobre isso).\n\nAs opções aceitam um valor, um ref ou um getter (`overlay`, `animation`: um valor ou um ref) e são lidas quando a lista precisa delas, então uma mudança vale, no máximo, a partir do próximo arraste. Exceções: `id` e `group` são lidos uma única vez, quando a lista é criada; `items` é o próprio model; funções (`getKey`, `filter`, `clone`, `createItem`, os callbacks) são passadas como estão."
+    "source": "f8e2e84b3b",
+    "text": "Opções de `makeSortableList`. Um componente pode criar várias listas (e árvores): cada item renderizado nele entra na mais interna cujo elemento o contém.\n\nAs opções aceitam um valor, um ref ou um getter (`overlay`, `animation`: um valor ou um ref) e são lidas quando a lista precisa delas, então uma mudança vale, no máximo, a partir do próximo arraste. Exceções: `id` e `group` são lidos uma única vez, quando a lista é criada; `items` é o próprio model; funções (`getKey`, `filter`, `clone`, `createItem`, os callbacks) são passadas como estão."
   },
   "SortableListOptions.items": {
     "source": "bcf07acd7a",
@@ -76,8 +80,8 @@
     "text": "Padrão: `item.id`, ou o próprio item no caso de primitivos. Também define as keys de `makeSortableItem({ item })`."
   },
   "SortableListOptions.filter": {
-    "source": "68bbc0dba4",
-    "text": "Mostra só os itens para os quais retorna `true` (uma busca, uma tag): `items` (o retornado) contém esses itens, e um arraste ordena entre eles. Os outros mantêm os seus lugares na origem: um drop escreve o array inteiro, com cada item oculto ainda depois do visível que ele seguia (depois do mais próximo que ficou, quando aquele se moveu). Reativo: o que ele lê (um ref de busca) vale na hora."
+    "source": "f2604f67b6",
+    "text": "Mostra só os itens para os quais retorna `true` (uma busca, uma tag): `items` (o retornado) contém esses itens, e um arraste ordena entre eles. Os outros mantêm os seus lugares na origem: um drop escreve o array inteiro, com cada item oculto ainda depois do visível que ele seguia (depois do mais próximo que ficou, quando aquele se moveu). Reativo: o que ele lê (um ref de busca) vale na hora. `e.to.index` e `activeIndex` contam os itens mostrados."
   },
   "SortableListOptions.id": {
     "source": "c0adaf519f",
@@ -144,8 +148,12 @@
     "text": "Cria cópias (`pull: 'clone'`, tecla modificadora de cópia). Obrigatório para copiar."
   },
   "SortableListOptions.createItem": {
-    "source": "5c9f1d3856",
-    "text": "Aceita draggables simples de fora: cria o item a inserir. Pelo teclado, uma seta em direção à lista leva o draggable para dentro dela (na altura dele, como nos movimentos entre listas), e o item criado então se move de posição em posição como qualquer outro."
+    "source": "5676dc9273",
+    "text": "Aceita draggables simples de fora: cria o item a inserir. Pelo teclado, uma seta em direção à lista leva o draggable para dentro dela (na altura dele, como nos movimentos entre listas), e o item criado então se move de posição em posição como qualquer outro.\n\nUm arraste de fora da página (`external`) faz a pergunta duas vezes: durante o arraste, pelo item que mostra para onde ele vai (só `active.external.fileTypes` e `types` são conhecidos nesse momento), e no drop, com os dados dele (`active.external.dropped`), pelo que é inserido. Um array de itens insere todos onde estava a posição: um por arquivo."
+  },
+  "SortableListOptions.external": {
+    "source": "9ae9a7ef2d",
+    "text": "Aceita arrastes de fora da página: arquivos, links, texto (veja `ExternalAccept`). A lista abre espaço para eles como para um draggable simples, com `createItem`, que ela exige. Itens do grupo dela arrastados de outra janela do app (`native`) não precisam de nenhum dos dois: entram como eles mesmos. Um valor, um ref ou um getter, lido ao vivo."
   },
   "SortableListOptions.dropOutside": {
     "source": "bffdd0d062",
@@ -158,6 +166,10 @@
   "SortableListOptions.animate": {
     "source": "86283c7ec0",
     "text": "Anima as mudanças em `items` que nenhum arraste fez: itens adicionados, removidos, movidos e filtrados (veja `AutoAnimation`). Padrão: o `animate` do provider, desligado a menos que definido ali. Lido quando `items` muda."
+  },
+  "SortableListOptions.animateSize": {
+    "source": "382b485c30",
+    "text": "O tamanho da própria lista acompanha os itens dela: quando um arraste traz um item ou leva um embora (e no drop, e nas mudanças que `animate` mostra), ela cresce ou encolhe até o novo tamanho com a duração e o easing de `animation` em vez de pular, e o que está em volta se move junto. Padrão `true`; `false` a deixa pular. Lido a cada mudança."
   },
   "SortableListOptions.autoScroll": {
     "source": "0c0b0867b3",
@@ -234,6 +246,10 @@
   "SortableItemOptions.attributes": {
     "source": "db7791f2d8",
     "text": "Define os atributos role/tabindex/aria-* (padrão `true`), sem nunca sobrescrever os que o usuário definiu. Ao vivo: desligar remove o que a biblioteca definiu."
+  },
+  "SortableItemOptions.native": {
+    "source": "6b13bbb4b9",
+    "text": "Um arraste dele com o mouse é o arraste do próprio navegador, que pode sair da página (veja `DraggableOptions.native`). Ele também carrega o item: as listas do grupo dele em outra janela do app o aceitam, e quando uma aceita, ele sai desta lista (`'move'`)."
   },
   "SortableItemReturn.isDragging": {
     "source": "f148b949fd",

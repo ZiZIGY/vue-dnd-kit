@@ -43,6 +43,10 @@
     "source": "0d1dce05c0",
     "text": "Se llamó a `preventDefault()`, en `onBeforeDrop` o en `onDrop`."
   },
+  "SortableDropEvent.external": {
+    "source": "25e3ab04b3",
+    "text": "Un arrastre desde fuera de la página (`external`): lo que llevaba, con sus datos."
+  },
   "SortableIndicator.index": {
     "source": "0043b67077",
     "text": "Posición de inserción en la lista tal como se renderiza."
@@ -64,8 +68,8 @@
     "text": "Árboles: el padre que reciben los nodos soltados, `null` en el nivel raíz."
   },
   "SortableListOptions": {
-    "source": "5578e6dad0",
-    "text": "Opciones de `makeSortableList`. Una lista (o un árbol) por componente: proporciona el contexto que leen sus ítems, así que una segunda lista en el mismo componente se quedaría con los ítems de la primera (las builds de desarrollo avisan de ello).\n\nLas opciones aceptan un valor, una ref o un getter (`overlay`, `animation`: un valor o una ref) y se leen cuando la lista las necesita, así que un cambio se aplica, como muy tarde, en el siguiente arrastre. Excepciones: `id` y `group` se leen una sola vez, al crear la lista; `items` es el propio modelo; las funciones (`getKey`, `filter`, `clone`, `createItem`, los callbacks) se pasan tal cual."
+    "source": "f8e2e84b3b",
+    "text": "Opciones de `makeSortableList`. Un componente puede crear varias listas (y árboles): cada ítem renderizado en él se une a la más interior cuyo elemento lo contiene.\n\nLas opciones aceptan un valor, una ref o un getter (`overlay`, `animation`: un valor o una ref) y se leen cuando la lista las necesita, así que un cambio se aplica, como muy tarde, en el siguiente arrastre. Excepciones: `id` y `group` se leen una sola vez, al crear la lista; `items` es el propio modelo; las funciones (`getKey`, `filter`, `clone`, `createItem`, los callbacks) se pasan tal cual."
   },
   "SortableListOptions.items": {
     "source": "bcf07acd7a",
@@ -76,8 +80,8 @@
     "text": "Por defecto: `item.id`, o el propio ítem en el caso de los primitivos. También da la clave de `makeSortableItem({ item })`."
   },
   "SortableListOptions.filter": {
-    "source": "68bbc0dba4",
-    "text": "Muestra solo los ítems para los que devuelve `true` (una búsqueda, una etiqueta): `items` (el que se devuelve) los contiene, y un arrastre ordena entre ellos. Los demás conservan su sitio en el origen: un drop escribe el array entero, con cada ítem oculto todavía después del visible al que seguía (después del más cercano que se quedó quieto, si ese se movió). Reactiva: lo que lee (una ref de búsqueda) se aplica al momento."
+    "source": "f2604f67b6",
+    "text": "Muestra solo los ítems para los que devuelve `true` (una búsqueda, una etiqueta): `items` (el que se devuelve) los contiene, y un arrastre ordena entre ellos. Los demás conservan su sitio en el origen: un drop escribe el array entero, con cada ítem oculto todavía después del visible al que seguía (después del más cercano que se quedó quieto, si ese se movió). Reactiva: lo que lee (una ref de búsqueda) se aplica al momento. `e.to.index` y `activeIndex` cuentan los ítems visibles."
   },
   "SortableListOptions.id": {
     "source": "c0adaf519f",
@@ -144,8 +148,12 @@
     "text": "Crea copias (`pull: 'clone'`, la tecla modificadora de copia). Necesaria para copiar."
   },
   "SortableListOptions.createItem": {
-    "source": "5c9f1d3856",
-    "text": "Acepta elementos arrastrables simples de fuera: crea el ítem que se va a insertar. Con el teclado, una flecha hacia la lista mete en ella el elemento arrastrable (a su misma altura, como en los movimientos entre listas), y el ítem creado se mueve luego por huecos como cualquier otro."
+    "source": "5676dc9273",
+    "text": "Acepta elementos arrastrables simples de fuera: crea el ítem que se va a insertar. Con el teclado, una flecha hacia la lista mete en ella el elemento arrastrable (a su misma altura, como en los movimientos entre listas), y el ítem creado se mueve luego por huecos como cualquier otro.\n\nCon un arrastre desde fuera de la página (`external`), se le pregunta dos veces: mientras se mantiene, por el ítem que muestra adónde va (entonces solo se conocen `active.external.fileTypes` y `types`), y al soltar, con sus datos (`active.external.dropped`), por lo que se inserta. Un array de ítems se inserta entero donde estaba el hueco: uno por archivo."
+  },
+  "SortableListOptions.external": {
+    "source": "9ae9a7ef2d",
+    "text": "Acepta arrastres desde fuera de la página: archivos, enlaces, texto (consulta `ExternalAccept`). La lista les hace sitio como a un elemento arrastrable simple, con `createItem`, que necesita. Los ítems de su grupo arrastrados desde otra ventana de la app (`native`) no necesitan ninguna de las dos: entran tal cual. Un valor, una ref o un getter, que se lee en vivo."
   },
   "SortableListOptions.dropOutside": {
     "source": "bffdd0d062",
@@ -158,6 +166,10 @@
   "SortableListOptions.animate": {
     "source": "86283c7ec0",
     "text": "Anima los cambios de `items` que no vienen de un arrastre: ítems añadidos, quitados, movidos y filtrados (consulta `AutoAnimation`). Por defecto: el `animate` del provider, desactivado salvo que se active ahí. Se lee cuando cambia `items`."
+  },
+  "SortableListOptions.animateSize": {
+    "source": "382b485c30",
+    "text": "El tamaño propio de la lista sigue a sus ítems: cuando un arrastre mete un ítem o saca uno (y al soltar, y en los cambios que muestra `animate`), crece o se encoge hasta su nuevo tamaño con la duración y el easing de `animation` en lugar de saltar, y lo que hay alrededor se mueve con ella. Por defecto `true`; `false` la deja saltar. Se lee en cada cambio."
   },
   "SortableListOptions.autoScroll": {
     "source": "0c0b0867b3",
@@ -234,6 +246,10 @@
   "SortableItemOptions.attributes": {
     "source": "db7791f2d8",
     "text": "Pone los atributos role/tabindex/aria-* (`true` por defecto), sin sobrescribir nunca los del usuario. En vivo: desactivarlo elimina lo que puso la biblioteca."
+  },
+  "SortableItemOptions.native": {
+    "source": "6b13bbb4b9",
+    "text": "Un arrastre con el ratón es el arrastre propio del navegador, que puede salir de la página (consulta `DraggableOptions.native`). También lleva el ítem: las listas de su grupo en otra ventana de la app lo aceptan, y cuando una lo hace, sale de esta lista (`'move'`)."
   },
   "SortableItemReturn.isDragging": {
     "source": "f148b949fd",

@@ -47,21 +47,17 @@
     "source": "f3f57590a6",
     "text": "Setzt role-/tabindex-/aria-*-Attribute (Standard `true`) und überschreibt nie deine eigenen. Die ID der Anweisungen des Providers wird einem vorhandenen `aria-describedby` als weiteres Token hinzugefügt (ein Tooltip eines UI-Kits auf demselben Element behält sein eigenes), und nur dieses Token wird je entfernt. Live: Ausschalten entfernt, was die Bibliothek gesetzt hat."
   },
+  "DraggableOptions.native": {
+    "source": "c7441f484f",
+    "text": "Ein Maus-Drag des Elements ist der eigene Drag des Browsers, der die Seite verlassen kann: auf den Desktop, in eine andere App oder einen anderen Tab, in ein anderes Fenster der App. Auf der Seite funktioniert er wie gewohnt (Ziele, Listen, die Platz machen), aber der Browser zeichnet das gezogene Bild statt des Overlays. Drags per Touch und Tastatur bleiben die der Bibliothek. `true` trägt das `label` als Text. Wird gelesen, wenn ein Druck beginnt."
+  },
   "DraggableReturn.transform": {
     "source": "3d7102b110",
     "text": "Versatz, der bei `overlay: false` anzuwenden ist: der des Drags, abzüglich dessen, wie weit sich der Inhalt, in dem das Element liegt, seit dem Start bewegt hat (die Seite oder ein Container wurde gescrollt), sodass das Element unter dem Zeiger bleibt."
   },
-  "DroppableFileOptions": {
-    "source": "a8634f2607",
-    "text": "Dateien vom Computer, die ein Drop-Ziel annimmt (`DroppableOptions.files`)."
-  },
-  "DroppableFileOptions.accept": {
-    "source": "ad1d472c41",
-    "text": "Wie bei `<input accept>`: MIME-Typen (`image/*`, `application/pdf`) und Dateiendungen (`.md`), als String mit Kommas oder als Liste. Standard: jede Datei. Solange Dateien über dem Ziel gehalten werden, nennt der Browser nur ihre Typen: Dateiendungen werden beim Drop geprüft."
-  },
-  "DroppableFileOptions.multiple": {
-    "source": "03eb21a25d",
-    "text": "Mehrere Dateien auf einmal (Standard `true`); `false` lehnt einen Drag mit mehr als einer Datei ab."
+  "DroppableOptions": {
+    "source": "c1de31b385",
+    "text": "Optionen von `makeDroppable`.\n\n**Drop in ein Element.** Ein Drop-Ziel auf dem DOM-Element eines sortierbaren Elements (oder darin) funktioniert wie überall sonst, mit einer Regel, solange die Liste dieses Elements den Drag sortieren würde: Es zählt nur, solange der Zeiger in der Mitte des Elements ist (25–75 % entlang der Achse der Liste; x in Rastern), wo der Drop in das Ziel geht und die Liste sich dafür nicht bewegt. Nahe den Rändern des Elements sortiert die Liste wie gewohnt. Ein Ziel, dessen `accept` den Drag ablehnt, wird ausgelassen, sodass die Liste über dem Element sortiert wie über jedem anderen (es muss nicht deaktiviert werden). Die Tastatur hält auf einem solchen Ziel an, bevor sie an seinem Element vorbeigeht. Ein Ziel ist nie eines seines eigenen Drags: nicht in (oder auf) einem gezogenen Element und nicht in dem Slot, in dem eines landet. Um die Elemente in `onDrop` aus ihrer Liste zu nehmen, rufe `e.source.remove()` auf.\n\nJede Option außer den Callbacks nimmt einen Wert, ein Ref oder einen Getter entgegen (`accept`, `overlay`, `dropAnimation`: einen Wert oder ein Ref) und wird live gelesen, während ein Drag sein Ziel sucht."
   },
   "DroppableOptions.id": {
     "source": "ea58d47829",
@@ -91,21 +87,17 @@
     "source": "0f0a6dd259",
     "text": "Wie das Overlay landet, wenn es hier abgelegt wird, statt der `dropAnimation` des gezogenen Elements und des Providers: `false` lässt es dort, wo es abgelegt wurde (die eigene Animation einer Overlay-Komponente, ein Spritzer, läuft dort ab), eine Funktion animiert es. Ein Wert oder ein Ref, gelesen beim Drop."
   },
-  "DroppableOptions.files": {
-    "source": "7e3cd8ab22",
-    "text": "Nimmt Dateien an, die vom Computer hereingezogen werden (das eigene Drag and Drop des Browsers, nicht das der Bibliothek): `isOver` und `isAccepting` folgen ihnen, wie sie Drags folgen, und der Drop geht an `onFiles`. `true` nimmt jede Datei an. Von ineinander liegenden Zielen nimmt das innerste mit `files` sie an. Ein Wert, ein Ref oder ein Getter, live gelesen."
-  },
-  "DroppableOptions.onFiles": {
-    "source": "9badb8a1d8",
-    "text": "Die darauf abgelegten Dateien, die `files` annimmt (ohne Ordner), mit dem `drop`-Event des Browsers."
+  "DroppableOptions.external": {
+    "source": "b80f2c5709",
+    "text": "Nimmt Drags von außerhalb der Seite an: Dateien vom Desktop, einen Link oder Text aus einer anderen App oder einem anderen Tab (das Drag and Drop des Browsers). Sie funktionieren wie die Drags der Bibliothek (`isOver`, `isAccepting`, die Events), und `e.external` hat beim Drop ihre Daten. Ziele ohne `external` ignorieren sie. Ein Wert, ein Ref oder ein Getter, live gelesen."
   },
   "DroppableReturn.isOver": {
-    "source": "0fd66351a2",
-    "text": "Ein Drag ist darüber (mit `files` auch Dateien vom Computer)."
+    "source": "bd388d0ac7",
+    "text": "Ein Drag ist darüber (mit `external` auch einer von außerhalb der Seite)."
   },
   "DroppableReturn.isAccepting": {
-    "source": "8cfac2b573",
-    "text": "Etwas wird gezogen, und dieses Ziel nimmt es an (auch Dateien darüber, die `files` annimmt)."
+    "source": "520ef3c1da",
+    "text": "Etwas wird gezogen, und dieses Ziel nimmt es an."
   },
   "DroppableReturn.placement": {
     "source": "4e1160d2d2",

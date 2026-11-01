@@ -86,6 +86,7 @@ export function makeSortableTree<T>(
     placeholder: () => read(options.placeholder) ?? 'item',
     animation: () => unref(options.animation) ?? manager.props.animation,
     animate: () => read(options.animate) ?? manager.props.animate,
+    animateSize: () => read(options.animateSize) ?? true,
     isDisabled: () => !!read(options.disabled),
     canSort: () => true,
     pull: () => pullOf(groupOptions, !!options.clone),

@@ -83,4 +83,6 @@ export interface ListEntry {
   keyOf?(item: unknown): Key;
   /** Animates changes of the items that no drag made (`autoAnimate.ts`). Default: off. */
   animate?(): AutoAnimation | undefined;
+  /** Its own size follows its items smoothly (`resize.ts`). Default: on. */
+  animateSize?(): boolean;
 }

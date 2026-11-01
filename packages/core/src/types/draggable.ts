@@ -123,8 +123,8 @@ export interface Placement {
  * grids), where the drop goes into the target and the list doesn't move for it. Near the
  * item's edges the list sorts as usual. A target whose `accept` refuses the drag is left
  * out, so the list sorts over the item like over any other (no need to disable it). The
- * keyboard stops on such a target before moving past its item. A target is never one of
- * its own drag: not in (or on) any dragged item, nor in the slot one lands in. To move the
+ * keyboard stops on such a target before moving past its item. A drag never targets what
+ * it carries: no target in (or on) a dragged item, nor in the slot one lands in. To move the
  * items out of their list in `onDrop`, call `e.source.remove()`.
  *
  * Every option but the callbacks takes a value, a ref or a getter (`accept`, `overlay`,

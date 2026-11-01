@@ -104,7 +104,7 @@ export interface SortableDropEvent<T = unknown> {
   preventDefault(): void;
   /** `preventDefault()` was called, in `onBeforeDrop` or `onDrop`. */
   readonly defaultPrevented: boolean;
-  /** A drag from outside the page (`external`): what it carried, its data in. */
+  /** A drag from outside the page (`external`): what it carried, with its data (it was dropped). */
   external?: ExternalData;
 }
 
@@ -230,8 +230,8 @@ export interface SortableListOptions<T> {
   /**
    * Takes drags from outside the page: files, links, text (see `ExternalAccept`). The list
    * makes room for them as for a plain draggable, with `createItem`, which it needs. Items
-   * of its group dragged in from another window of the app (`native`) need neither: they
-   * come in as themselves. A value, a ref or a getter, read live.
+   * of its group dragged in from another window of the app (`native`) need neither option:
+   * they come in as themselves. A value, a ref or a getter, read live.
    */
   external?: MaybeReadonlyRefOrGetter<ExternalAccept | undefined>;
   /**
@@ -248,6 +248,13 @@ export interface SortableListOptions<T> {
    * Read when `items` changes.
    */
   animate?: MaybeReadonlyRefOrGetter<AutoAnimation | undefined>;
+  /**
+   * The list's own size follows its items: when a drag brings an item in or takes one out
+   * (and at the drop, and for the changes `animate` shows), it grows or shrinks to its new
+   * size with `animation`'s duration and easing instead of jumping, and what is around it
+   * moves along. Default `true`; `false` lets it jump. Read on every change.
+   */
+  animateSize?: MaybeReadonlyRefOrGetter<boolean | undefined>;
   /** Overrides the provider's `autoScroll` for this list's scroll container. Read when the drag starts. */
   autoScroll?: MaybeReadonlyRefOrGetter<boolean | AutoScrollOptions | undefined>;
   /**

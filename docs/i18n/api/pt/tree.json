@@ -96,8 +96,12 @@
     "text": "Cria cópias (`group.pull: 'clone'`, a tecla modificadora de cópia). Obrigatório para copiar. Retorne a cópia com toda a sua subárvore: uma pasta copiada mantém os filhos. A cópia e cada um dos seus descendentes precisam de keys próprias (lidas com `getKey`), como todo nó de uma árvore."
   },
   "SortableTreeOptions.createItem": {
-    "source": "28224fdbf4",
-    "text": "Aceita draggables simples de fora: cria o nó a inserir, na posição e profundidade projetadas (`canNest` e `maxDepth` se aplicam a ele). Pelo teclado, uma seta em direção à árvore leva o draggable para dentro dela, no nível da linha antes da qual ele entra, e as setas então movem o nó como qualquer outro."
+    "source": "82145232b2",
+    "text": "Aceita draggables simples de fora: cria o nó a inserir, na posição e profundidade projetadas (`canNest` e `maxDepth` se aplicam a ele). Pelo teclado, uma seta em direção à árvore leva o draggable para dentro dela, no nível da linha antes da qual ele entra, e as setas então movem o nó como qualquer outro. Um arraste de fora da página (`external`) faz a pergunta duas vezes, durante o arraste e no drop (veja o `createItem` da lista); um nó de pasta com um filho por arquivo guarda vários arquivos."
+  },
+  "SortableTreeOptions.external": {
+    "source": "275eee4f69",
+    "text": "Aceita arrastes de fora da página: arquivos, links, texto (veja `ExternalAccept`), com `createItem`. Nós do grupo dela arrastados de outra janela do app entram como eles mesmos. Um valor, um ref ou um getter, lido ao vivo."
   },
   "SortableTreeOptions.dropOutside": {
     "source": "324ddf9a40",
@@ -110,6 +114,10 @@
   "SortableTreeOptions.animate": {
     "source": "9004d33175",
     "text": "Como em `SortableListOptions`, para as linhas visíveis: nós adicionados, removidos ou movidos, e as linhas que um nó mostra ou oculta ao expandir ou recolher (`collapsed`)."
+  },
+  "SortableTreeOptions.animateSize": {
+    "source": "3c8789d16e",
+    "text": "O tamanho da própria árvore acompanha as linhas dela, como o de uma lista (`animateSize`). Padrão `true`."
   },
   "SortableTreeOptions.autoScroll": {
     "source": "3216318fc0",

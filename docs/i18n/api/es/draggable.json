@@ -47,21 +47,17 @@
     "source": "f3f57590a6",
     "text": "Pone los atributos role/tabindex/aria-* (`true` por defecto), sin sobrescribir nunca los del usuario. El id de las instrucciones del provider se añade a un `aria-describedby` existente como un token más (el tooltip de un kit de UI en el mismo elemento conserva el suyo), y solo se elimina ese token. En vivo: desactivarlo elimina lo que puso la biblioteca."
   },
+  "DraggableOptions.native": {
+    "source": "c7441f484f",
+    "text": "Un arrastre con el ratón es el arrastre propio del navegador, que puede salir de la página: al escritorio, a otra app o pestaña, a otra ventana de la app. En la página funciona como siempre (destinos, listas que hacen sitio), pero el navegador dibuja la imagen arrastrada en lugar del overlay. Los arrastres táctiles y con teclado siguen siendo de la biblioteca. `true` lleva el `label` como texto. Se lee cuando empieza una pulsación."
+  },
   "DraggableReturn.transform": {
     "source": "3d7102b110",
     "text": "Desplazamiento que hay que aplicar cuando `overlay: false`: el del arrastre, menos lo que se ha movido desde el inicio el contenido en el que está el elemento (se desplazó la página o un contenedor), para que el elemento siga bajo el puntero."
   },
-  "DroppableFileOptions": {
-    "source": "a8634f2607",
-    "text": "Los archivos que un destino de drop acepta desde el equipo (`DroppableOptions.files`)."
-  },
-  "DroppableFileOptions.accept": {
-    "source": "ad1d472c41",
-    "text": "Como en `<input accept>`: tipos MIME (`image/*`, `application/pdf`) y extensiones (`.md`), en una cadena separada por comas o una lista. Por defecto: cualquier archivo. Mientras los archivos se mantienen sobre el destino, el navegador solo dice sus tipos: las extensiones se comprueban al soltar."
-  },
-  "DroppableFileOptions.multiple": {
-    "source": "03eb21a25d",
-    "text": "Varios archivos a la vez (`true` por defecto); `false` rechaza un arrastre de más de uno."
+  "DroppableOptions": {
+    "source": "c1de31b385",
+    "text": "Opciones de `makeDroppable`.\n\n**Soltar dentro de un ítem.** Un destino de drop en el elemento de un ítem ordenable (o dentro de él) funciona como en cualquier otro sitio, con una regla mientras la lista de ese ítem ordenaría el arrastre: solo cuenta mientras el puntero está en el centro del ítem (del 25 al 75 % a lo largo del eje de la lista; x en cuadrículas), donde el drop va al destino y la lista no se mueve por él. Cerca de los bordes del ítem, la lista ordena como siempre. Un destino cuyo `accept` rechaza el arrastre se omite, así que la lista ordena sobre el ítem como sobre cualquier otro (no hace falta desactivarlo). El teclado se detiene en un destino así antes de pasar de largo su ítem. Un destino nunca es destino de su propio arrastre: ni dentro de (o sobre) un ítem arrastrado, ni en el hueco donde cae uno. Para sacar los ítems de su lista en `onDrop`, llama a `e.source.remove()`.\n\nTodas las opciones salvo los callbacks aceptan un valor, una ref o un getter (`accept`, `overlay`, `dropAnimation`: un valor o una ref) y se leen en vivo, mientras un arrastre busca su destino."
   },
   "DroppableOptions.id": {
     "source": "ea58d47829",
@@ -91,21 +87,17 @@
     "source": "0f0a6dd259",
     "text": "Cómo aterriza el overlay cuando se suelta aquí, en lugar de la `dropAnimation` del ítem arrastrado y la del provider: `false` lo deja donde se soltó (allí se reproduce la animación propia de un componente de overlay, una salpicadura), una función lo anima. Un valor o una ref, que se lee al soltar."
   },
-  "DroppableOptions.files": {
-    "source": "7e3cd8ab22",
-    "text": "Acepta archivos arrastrados desde el equipo (el arrastrar y soltar propio del navegador, no el de la biblioteca): `isOver` e `isAccepting` los siguen igual que a los arrastres, y el drop va a `onFiles`. `true` acepta cualquier archivo. De varios destinos anidados, el más interior con `files` los recibe. Un valor, una ref o un getter, que se lee en vivo."
-  },
-  "DroppableOptions.onFiles": {
-    "source": "9badb8a1d8",
-    "text": "Los archivos soltados sobre él que `files` acepta (sin las carpetas), con el evento `drop` del navegador."
+  "DroppableOptions.external": {
+    "source": "b80f2c5709",
+    "text": "Acepta arrastres desde fuera de la página: archivos desde el escritorio, un enlace o texto desde otra app o pestaña (el arrastrar y soltar del navegador). Funcionan como los arrastres de la biblioteca (`isOver`, `isAccepting`, los eventos), y `e.external` tiene sus datos al soltar. Los destinos sin `external` los ignoran. Un valor, una ref o un getter, que se lee en vivo."
   },
   "DroppableReturn.isOver": {
-    "source": "0fd66351a2",
-    "text": "Hay un arrastre sobre él (también archivos desde el equipo, con `files`)."
+    "source": "bd388d0ac7",
+    "text": "Hay un arrastre sobre él (también uno desde fuera de la página, con `external`)."
   },
   "DroppableReturn.isAccepting": {
-    "source": "8cfac2b573",
-    "text": "Se está arrastrando algo y este destino lo acepta (también archivos que se mantienen sobre él y que `files` acepta)."
+    "source": "520ef3c1da",
+    "text": "Se está arrastrando algo y este destino lo acepta."
   },
   "DroppableReturn.placement": {
     "source": "4e1160d2d2",

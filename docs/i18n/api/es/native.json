@@ -1,0 +1,86 @@
+{
+  "ExternalFile": {
+    "source": "ca098238e1",
+    "text": "Un archivo de un arrastre de fuera, tal como se le pregunta por él a `ExternalAccept.files`. Mientras los archivos se mantienen sobre la página, el navegador solo dice sus tipos: `name` y `size` llegan al soltar."
+  },
+  "ExternalFile.type": {
+    "source": "5ac7937354",
+    "text": "Su tipo MIME (`image/png`); `''` cuando el navegador no lo sabe."
+  },
+  "ExternalAccept": {
+    "source": "f9ed0b389d",
+    "text": "Lo que un destino de drop, una lista o un árbol acepta de los arrastres que vienen de fuera de la página: archivos desde el escritorio, un enlace o texto desde otra app o pestaña (`external`)."
+  },
+  "ExternalAccept.files": {
+    "source": "38901e0629",
+    "text": "Archivos: `true` acepta cualquiera. O como en `<input accept>`: tipos MIME (`image/*`, `application/pdf`) y extensiones (`.md`), en una cadena separada por comas o una lista; las extensiones se comprueban al soltar. O una función a la que se pregunta por cada archivo (`false` lo rechaza). Las carpetas nunca se aceptan."
+  },
+  "ExternalAccept.multiple": {
+    "source": "03eb21a25d",
+    "text": "Varios archivos a la vez (`true` por defecto); `false` rechaza un arrastre de más de uno."
+  },
+  "ExternalAccept.links": {
+    "source": "0ae2ab5ac6",
+    "text": "Enlaces (`text/uri-list`): una dirección arrastrada desde otra pestaña, un enlace de una página."
+  },
+  "ExternalAccept.text": {
+    "source": "45b39d4b6c",
+    "text": "Texto plano (`text/plain`): una selección arrastrada desde otra app."
+  },
+  "ExternalAccept.types": {
+    "source": "e5f8f6c5ee",
+    "text": "Otros tipos MIME que acepta, exactamente como los ofrecen otras apps."
+  },
+  "ExternalData": {
+    "source": "52e1ec34b0",
+    "text": "Un arrastre desde fuera de la página (`Active.external`, `DnDEvent.external`). Mientras se mantiene, el navegador dice lo que lleva, no los datos: los archivos, enlaces y texto llegan al soltar (`dropped`)."
+  },
+  "ExternalData.types": {
+    "source": "840a3fb6e3",
+    "text": "Los tipos MIME que ofrece (`Files`, `text/uri-list`, `text/plain`, los propios de una app)."
+  },
+  "ExternalData.fileTypes": {
+    "source": "bfd5b216bc",
+    "text": "Los tipos MIME de sus archivos, uno por archivo (`''` cuando el navegador no lo sabe)."
+  },
+  "ExternalData.files": {
+    "source": "7788852b5f",
+    "text": "Al soltar: los archivos que acepta el destino (sin las carpetas ni los archivos rechazados)."
+  },
+  "ExternalData.urls": {
+    "source": "aa2cefaeaa",
+    "text": "Al soltar: sus enlaces (`text/uri-list`)."
+  },
+  "ExternalData.text": {
+    "source": "1eacad3d45",
+    "text": "Al soltar: su texto plano."
+  },
+  "ExternalData.html": {
+    "source": "5f19057654",
+    "text": "Al soltar: su HTML."
+  },
+  "ExternalData.getData": {
+    "source": "044c2022ec",
+    "text": "Al soltar: los datos de cualquier tipo que ofrezca (`''` antes, y para un tipo que no ofrece)."
+  },
+  "ExternalData.dropped": {
+    "source": "11a898fda6",
+    "text": "Se soltó: los datos de arriba ya están."
+  },
+  "ExternalData.group": {
+    "source": "5706afced8",
+    "text": "Ítems de la biblioteca arrastrados desde otra ventana de la app (`native`): el nombre de su grupo ordenable. Las listas de ese grupo los aceptan como si vinieran de una de sus propias listas; `active.items` los contiene."
+  },
+  "NativeDragOptions": {
+    "source": "22b6caa629",
+    "text": "Un elemento arrastrable o un ítem ordenable que un ratón puede arrastrar fuera de la página (`native`): al escritorio, a otra app, a otra pestaña, a otra ventana de la app."
+  },
+  "NativeDragOptions.data": {
+    "source": "5cec79d1b0",
+    "text": "Lo que reciben otras apps y páginas: tipo MIME → texto, p. ej. `{ 'text/plain': title, 'text/uri-list': url }`. Se lee cuando empieza el arrastre. Los ítems ordenables también se llevan a sí mismos, para las listas de su grupo en otra ventana de la app."
+  },
+  "NativeDragOptions.effect": {
+    "source": "67e99c2b14",
+    "text": "Lo que el arrastre permite hacer al sitio donde se suelta (`effectAllowed`). Por defecto `'copyMove'`: un movimiento saca aquí los ítems de su lista, una copia los deja."
+  }
+}

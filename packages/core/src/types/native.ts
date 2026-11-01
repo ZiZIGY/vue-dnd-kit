@@ -75,9 +75,9 @@ export interface ExternalData {
  */
 export interface NativeDragOptions {
   /**
-   * What other apps and pages get: MIME type → text, e.g. `{ 'text/plain': title,
-   * 'text/uri-list': url }`. Read when the drag starts. Sortable items also carry
-   * themselves, for the lists of their group in another window of the app.
+   * What other apps and pages get: text by MIME type, as
+   * `{ 'text/plain': title, 'text/uri-list': url }`. Read when the drag starts. Sortable
+   * items also carry themselves, for the lists of their group in another window of the app.
    */
   data?: (active: Active) => Record<string, string>;
   /**

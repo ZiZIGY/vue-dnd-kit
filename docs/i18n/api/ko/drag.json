@@ -31,6 +31,14 @@
     "source": "7964e6f559",
     "text": "드래그 시작 시점의 `element` 레이아웃 사각형."
   },
+  "Active.external": {
+    "source": "c2c230e8a3",
+    "text": "페이지 밖에서 온 드래그(파일, 링크, 텍스트, 또는 앱의 다른 창에서 온 항목)가 담고 있는 것. 이 드래그의 `items`는 드래그를 위해 만들어집니다(`element`는 대역입니다)."
+  },
+  "Active.native": {
+    "source": "70b681b12e",
+    "text": "브라우저 자체의 드래그(`native`, 또는 외부에서 온 드래그). 드래그되는 이미지는 브라우저가 그리며, 오버레이는 없습니다."
+  },
   "Over.label": {
     "source": "c388687981",
     "text": "대상의 `label`(사람이 부르는 이름)."
@@ -87,6 +95,10 @@
     "source": "d69f88797f",
     "text": "드래그 중인 항목이 정렬 가능한 리스트에서 왔을 때 존재합니다."
   },
+  "DnDEvent.external": {
+    "source": "88a096f69f",
+    "text": "페이지 밖에서 온 드래그가 담고 있는 것(`active.external`). 데이터는 드롭할 때 옵니다."
+  },
   "DnDEndEvent.dropped": {
     "source": "8ada0b47b1",
     "text": "드래그가 모든 드롭 대상 바깥에서 끝나면 false."
@@ -94,6 +106,10 @@
   "DnDEndEvent.accepted": {
     "source": "bf82d1aeb9",
     "text": "`onBeforeDrop`이 수락한 id(일부를 반환하지 않았다면 드래그 중인 모든 id)."
+  },
+  "DnDEndEvent.droppedOutside": {
+    "source": "43906c7a55",
+    "text": "페이지 밖으로 나간 드래그(`native`)가 다른 곳에 드롭되었을 때, 그곳이 그 드래그로 한 일. `'move'`는 이쪽의 정렬 가능한 리스트에서 항목을 빼고, `'copy'`와 `'link'`는 그대로 둡니다."
   },
   "BeforeDropResult": {
     "source": "056be141e8",

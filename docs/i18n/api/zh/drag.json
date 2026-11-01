@@ -31,6 +31,14 @@
     "source": "7964e6f559",
     "text": "拖拽开始时 `element` 的布局矩形。"
   },
+  "Active.external": {
+    "source": "c2c230e8a3",
+    "text": "来自页面之外的拖拽（文件、链接、文本，或来自应用另一个窗口的项）：它携带的内容。它的 `items` 是为它生成的（`element` 是一个替身）。"
+  },
+  "Active.native": {
+    "source": "70b681b12e",
+    "text": "浏览器自己的拖拽（`native`，或来自外部的拖拽）：拖拽的图像由浏览器绘制，没有浮层。"
+  },
   "Over.label": {
     "source": "c388687981",
     "text": "目标的 `label`，即人们对它的称呼。"
@@ -87,6 +95,10 @@
     "source": "d69f88797f",
     "text": "当被拖拽的项来自可排序列表时存在。"
   },
+  "DnDEvent.external": {
+    "source": "88a096f69f",
+    "text": "来自页面之外的拖拽：它携带的内容（`active.external`）。它的数据在放置时到来。"
+  },
   "DnDEndEvent.dropped": {
     "source": "8ada0b47b1",
     "text": "拖拽结束在所有放置目标之外时为 false。"
@@ -94,6 +106,10 @@
   "DnDEndEvent.accepted": {
     "source": "bf82d1aeb9",
     "text": "被 `onBeforeDrop` 接受的 id（除非返回了一个子集，否则就是所有被拖拽的 id）。"
+  },
+  "DnDEndEvent.droppedOutside": {
+    "source": "43906c7a55",
+    "text": "拖出页面的拖拽（`native`）被放到别处时：那个地方对它做了什么。`'move'` 会把这些项从这里的可排序列表中拿走；`'copy'` 和 `'link'` 则保留它们。"
   },
   "BeforeDropResult": {
     "source": "056be141e8",

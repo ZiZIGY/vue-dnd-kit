@@ -1,0 +1,86 @@
+{
+  "ExternalFile": {
+    "source": "ca098238e1",
+    "text": "来自外部的拖拽中的一个文件，即询问 `ExternalAccept.files` 时传入的形式。文件悬停在页面上方时，浏览器只告知它们的类型：`name` 和 `size` 在放置时到来。"
+  },
+  "ExternalFile.type": {
+    "source": "5ac7937354",
+    "text": "它的 MIME 类型（`image/png`）；浏览器无法判断时为 `''`。"
+  },
+  "ExternalAccept": {
+    "source": "f9ed0b389d",
+    "text": "放置目标、列表或树从来自页面之外的拖拽中接收什么：来自桌面的文件、来自另一个应用或标签页的链接或文本（`external`）。"
+  },
+  "ExternalAccept.files": {
+    "source": "38901e0629",
+    "text": "文件：`true` 接收任何文件。或者按 `<input accept>` 的写法：MIME 类型（`image/*`、`application/pdf`）和扩展名（`.md`），可以是逗号分隔的字符串或列表；扩展名在放置时检查。或者是一个对每个文件逐一询问的函数（返回 `false` 表示拒绝该文件）。从不接收文件夹。"
+  },
+  "ExternalAccept.multiple": {
+    "source": "03eb21a25d",
+    "text": "一次接收多个文件（默认 `true`）；`false` 会拒绝多于一个文件的拖拽。"
+  },
+  "ExternalAccept.links": {
+    "source": "0ae2ab5ac6",
+    "text": "链接（`text/uri-list`）：从另一个标签页拖来的地址、来自某个页面的链接。"
+  },
+  "ExternalAccept.text": {
+    "source": "45b39d4b6c",
+    "text": "纯文本（`text/plain`）：从另一个应用拖来的一段选中内容。"
+  },
+  "ExternalAccept.types": {
+    "source": "e5f8f6c5ee",
+    "text": "它接收的其他 MIME 类型，写法与其他应用提供它们时完全一致。"
+  },
+  "ExternalData": {
+    "source": "52e1ec34b0",
+    "text": "来自页面之外的拖拽（`Active.external`、`DnDEvent.external`）。拖拽进行时，浏览器只告知它携带了什么，而不给出数据：文件、链接和文本在放置时到来（`dropped`）。"
+  },
+  "ExternalData.types": {
+    "source": "840a3fb6e3",
+    "text": "它提供的 MIME 类型（`Files`、`text/uri-list`、`text/plain`、某个应用自己的类型）。"
+  },
+  "ExternalData.fileTypes": {
+    "source": "bfd5b216bc",
+    "text": "它的文件的 MIME 类型，每个文件一个（浏览器无法判断时为 `''`）。"
+  },
+  "ExternalData.files": {
+    "source": "7788852b5f",
+    "text": "放置时：目标接收的文件（不含文件夹和被拒绝的文件）。"
+  },
+  "ExternalData.urls": {
+    "source": "aa2cefaeaa",
+    "text": "放置时：它的链接（`text/uri-list`）。"
+  },
+  "ExternalData.text": {
+    "source": "1eacad3d45",
+    "text": "放置时：它的纯文本。"
+  },
+  "ExternalData.html": {
+    "source": "5f19057654",
+    "text": "放置时：它的 HTML。"
+  },
+  "ExternalData.getData": {
+    "source": "044c2022ec",
+    "text": "放置时：它提供的任意类型的数据（放置之前，以及对于它不提供的类型，为 `''`）。"
+  },
+  "ExternalData.dropped": {
+    "source": "11a898fda6",
+    "text": "它已被放下：上面的数据已经可用。"
+  },
+  "ExternalData.group": {
+    "source": "5706afced8",
+    "text": "从应用另一个窗口拖进来的本库的项（`native`）：它们的可排序分组的名称。该分组的列表会接收它们，就像它们来自自己的某个列表一样；`active.items` 中包含它们。"
+  },
+  "NativeDragOptions": {
+    "source": "22b6caa629",
+    "text": "可以用鼠标拖出页面的可拖拽元素或可排序项（`native`）：拖到桌面上，拖进另一个应用、另一个标签页、应用的另一个窗口。"
+  },
+  "NativeDragOptions.data": {
+    "source": "5cec79d1b0",
+    "text": "其他应用和页面得到的内容：MIME 类型 → 文本，例如 `{ 'text/plain': title, 'text/uri-list': url }`。在拖拽开始时读取。可排序项还会携带它们自身，供应用另一个窗口中同一分组的列表使用。"
+  },
+  "NativeDragOptions.effect": {
+    "source": "67e99c2b14",
+    "text": "这次拖拽允许它被放到的地方做什么（`effectAllowed`）。默认 `'copyMove'`：移动会把这些项从这里的列表中拿走，复制则保留它们。"
+  }
+}

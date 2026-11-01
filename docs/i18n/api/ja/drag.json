@@ -31,6 +31,14 @@
     "source": "7964e6f559",
     "text": "ドラッグ開始時の `element` のレイアウト上の矩形。"
   },
+  "Active.external": {
+    "source": "c2c230e8a3",
+    "text": "ページの外からのドラッグ（ファイル、リンク、テキスト、またはアプリの別のウィンドウからのアイテム）：それが運ぶもの。その `items` はこのドラッグのために作られます（`element` は代役です）。"
+  },
+  "Active.native": {
+    "source": "70b681b12e",
+    "text": "ブラウザー自身のドラッグ（`native`、または外部からのドラッグ）：ドラッグ中の画像はブラウザーが描き、オーバーレイはありません。"
+  },
   "Over.label": {
     "source": "c388687981",
     "text": "ターゲットの `label`（人が呼ぶ名前）。"
@@ -87,6 +95,10 @@
     "source": "d69f88797f",
     "text": "ドラッグ中のアイテムが並べ替え可能なリストから来た場合に存在します。"
   },
+  "DnDEvent.external": {
+    "source": "88a096f69f",
+    "text": "ページの外からのドラッグ：それが運ぶもの（`active.external`）。データはドロップ時に届きます。"
+  },
   "DnDEndEvent.dropped": {
     "source": "8ada0b47b1",
     "text": "ドラッグがすべてのドロップターゲットの外で終わった場合は false。"
@@ -94,6 +106,10 @@
   "DnDEndEvent.accepted": {
     "source": "bf82d1aeb9",
     "text": "`onBeforeDrop` が受け入れた id（一部が返されなかった限り、ドラッグ中のすべての id）。"
+  },
+  "DnDEndEvent.droppedOutside": {
+    "source": "43906c7a55",
+    "text": "ページの外へのドラッグ（`native`）がほかの場所でドロップされたとき：その場所がそれをどう扱ったか。`'move'` はアイテムをこちらの並べ替え可能なリストから取り除き、`'copy'` と `'link'` は残します。"
   },
   "BeforeDropResult": {
     "source": "056be141e8",

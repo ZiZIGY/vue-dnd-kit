@@ -31,6 +31,14 @@
     "source": "7964e6f559",
     "text": "Layout-Rechteck von `element` beim Start des Drags."
   },
+  "Active.external": {
+    "source": "c2c230e8a3",
+    "text": "Ein Drag von außerhalb der Seite (Dateien, ein Link, Text oder Elemente aus einem anderen Fenster der App): was er trägt. Seine `items` werden für ihn erstellt (`element` ist ein Platzhalter)."
+  },
+  "Active.native": {
+    "source": "70b681b12e",
+    "text": "Der eigene Drag des Browsers (`native` oder einer von außerhalb): Er zeichnet das gezogene Bild, es gibt kein Overlay."
+  },
   "Over.label": {
     "source": "c388687981",
     "text": "Das `label` des Ziels, der lesbare Name."
@@ -87,6 +95,10 @@
     "source": "d69f88797f",
     "text": "Vorhanden, wenn die gezogenen Elemente aus einer sortierbaren Liste kommen."
   },
+  "DnDEvent.external": {
+    "source": "88a096f69f",
+    "text": "Ein Drag von außerhalb der Seite: was er trägt (`active.external`). Seine Daten kommen beim Drop."
+  },
   "DnDEndEvent.dropped": {
     "source": "8ada0b47b1",
     "text": "False, wenn der Drag außerhalb aller Drop-Ziele geendet hat."
@@ -94,6 +106,10 @@
   "DnDEndEvent.accepted": {
     "source": "bf82d1aeb9",
     "text": "Von `onBeforeDrop` angenommene IDs (alle gezogenen IDs, sofern keine Teilmenge zurückgegeben wurde)."
+  },
+  "DnDEndEvent.droppedOutside": {
+    "source": "43906c7a55",
+    "text": "Ein Drag aus der Seite hinaus (`native`), der woanders abgelegt wurde: was dieser Ort damit gemacht hat. `'move'` nimmt die Elemente hier aus ihrer sortierbaren Liste; `'copy'` und `'link'` lassen sie dort."
   },
   "BeforeDropResult": {
     "source": "056be141e8",

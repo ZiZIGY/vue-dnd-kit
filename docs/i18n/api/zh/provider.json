@@ -111,6 +111,10 @@
     "source": "6852def127",
     "text": "拖拽过程中浮层从一个组件换成另一个组件的方式（放置目标的 `overlay` 接管，或 `overlay` ref 被切换）：`true`（默认）在 150 ms 内交叉淡入淡出，`false` 立即替换，对象则是包裹内容根元素的 Vue `<Transition>` 的 props（`name`、`mode`，以及用于 GSAP 或 motion 的 JS 钩子）。没有 `mode: 'out-in'` 时两者会同时显示：给离开的那个设置 `position: absolute`（`.<name>-leave-active`），让它们在盒子里叠在一起。"
   },
+  "DnDProviderProps.overlayClass": {
+    "source": "fe858c5071",
+    "text": "浮层内容（`[data-dnd-overlay-content]`）的 class，即填满浮层盒子的那个元素：库移动盒子并调整其尺寸时，要整体添加动画的就是它。它上面的过渡在拖拽拿起时从 `@starting-style` 开始运行，落位时反向运行（`[data-dnd-overlay='dropping']`）：放置会等待它完成。普通 CSS 要在 `<style scoped>` 之外（或用 `:global(...)`）才能选中它，Tailwind 则用 `starting:` 和 `in-data-[dnd-overlay=dragging]:`。"
+  },
   "DnDProviderProps.announcements": {
     "source": "0729e8985f",
     "text": "为部分事件提供自己的文本（参见 `Announcements`）；`false` 让实时区域保持静默。"

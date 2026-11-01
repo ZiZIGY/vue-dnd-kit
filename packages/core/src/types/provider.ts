@@ -154,6 +154,15 @@ export interface DnDProviderProps {
    * `position: absolute` (`.<name>-leave-active`) so they stack in the box.
    */
   overlayTransition?: boolean | TransitionProps;
+  /**
+   * Classes for the overlay's content (`[data-dnd-overlay-content]`), the element that
+   * fills the overlay box: the one to animate as a whole while the library moves and
+   * sizes the box. A transition on it runs from `@starting-style` as the drag picks up,
+   * and back as it lands (`[data-dnd-overlay='dropping']`): the drop waits for it. Plain
+   * CSS reaches it outside `<style scoped>` (or with `:global(...)`), Tailwind with
+   * `starting:` and `in-data-[dnd-overlay=dragging]:`.
+   */
+  overlayClass?: string | Record<string, boolean> | Array<string | Record<string, boolean>>;
   /** Own texts for some events (see `Announcements`); `false` keeps the live region silent. */
   announcements?: Partial<Announcements> | false;
   screenReaderInstructions?: string;

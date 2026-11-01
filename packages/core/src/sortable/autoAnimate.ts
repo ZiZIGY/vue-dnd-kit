@@ -16,6 +16,7 @@ import { expandRect, flip, getRect, intersects, type FlipBatch, type FlipEntry }
 import { enter, leave, resolveAutoAnimation, type AutoAnimationParts, type Leaving } from '../animation/presence';
 import { indexMap, listOfKey, sameKeys, type GroupContext } from './context';
 import type { ListEntry } from './entry';
+import { animateSizes, captureSizes, type SizeSnapshot } from './resize';
 
 interface Captured {
   element: HTMLElement;
@@ -30,6 +31,8 @@ export interface AutoPass {
   lists: Map<ListEntry, { parts: AutoAnimationParts; previous: readonly Key[] }>;
   /** Items of those lists that were near the visible area before the change. */
   snapshot: Map<Key, Captured>;
+  /** Sizes of those lists before the change (`animateSize`). */
+  sizes: SizeSnapshot[];
 }
 
 const NO_KEYS: ReadonlySet<Key> = new Set();
@@ -49,7 +52,7 @@ const measure = (g: GroupContext, list: ListEntry, previous: readonly Key[]) => 
   if (!parts) return;
   let pass = g.auto;
   if (!pass) {
-    const created: AutoPass = (pass = g.auto = { lists: new Map(), snapshot: new Map() });
+    const created: AutoPass = (pass = g.auto = { lists: new Map(), snapshot: new Map(), sizes: [] });
     g.fresh ??= new Set();
     // The render may unmount this list before its post-flush watcher plays the pass.
     void nextTick(() => {
@@ -58,6 +61,7 @@ const measure = (g: GroupContext, list: ListEntry, previous: readonly Key[]) => 
       g.fresh = null;
     });
   }
+  if (!pass.lists.has(list)) pass.sizes.push(...captureSizes(g, [list]));
   pass.lists.set(list, { parts, previous });
   const region = nearRegion(g, list);
   if (!region) return;
@@ -123,6 +127,8 @@ const play = (g: GroupContext) => {
     if (region && intersects(to, region)) entering.push({ key, element: element!, to, parts });
   }
 
+  // The lists resize first: the items measure where that leaves them.
+  animateSizes(pass.sizes, (list) => lists.get(list)?.parts.move?.option);
   const batches: FlipBatch[] = [];
   for (const [list, entries] of moves) {
     const { option, defaults } = lists.get(list)!.parts.move;

@@ -111,6 +111,10 @@
     "source": "6852def127",
     "text": "Comment l'overlay passe d'un composant à un autre pendant un glissement (l'`overlay` d'une cible de dépôt prend le relais, une ref d'`overlay` est changée) : `true` (par défaut) les enchaîne en fondu en 150 ms, `false` les échange aussitôt, et un objet donne les props d'une `<Transition>` Vue autour de la racine du contenu (`name`, `mode`, hooks JS pour GSAP ou motion). Sans `mode: 'out-in'`, les deux s'affichent en même temps : donnez à celui qui part `position: absolute` (`.<name>-leave-active`) pour qu'ils s'empilent dans la boîte."
   },
+  "DnDProviderProps.overlayClass": {
+    "source": "fe858c5071",
+    "text": "Classes pour le contenu de l'overlay (`[data-dnd-overlay-content]`), l'élément qui remplit la boîte de l'overlay : celui à animer d'un bloc pendant que la bibliothèque déplace et dimensionne la boîte. Une transition sur lui part de `@starting-style` à la saisie, et revient à l'atterrissage (`[data-dnd-overlay='dropping']`) : le dépôt l'attend. Le CSS simple l'atteint en dehors de `<style scoped>` (ou avec `:global(...)`), Tailwind avec `starting:` et `in-data-[dnd-overlay=dragging]:`."
+  },
   "DnDProviderProps.announcements": {
     "source": "0729e8985f",
     "text": "Vos propres textes pour certains événements (voir `Announcements`) ; `false` rend la région live muette."

@@ -154,6 +154,14 @@ const hint = computed(() => {
     scale: 1.02;
   }
 
+  /* The lift starts from the card as it lay: the overlay appears already holding it. */
+  @starting-style {
+    .held .grabbed {
+      rotate: 0deg;
+      scale: 1;
+    }
+  }
+
   .refused {
     animation: shake 0.3s;
   }

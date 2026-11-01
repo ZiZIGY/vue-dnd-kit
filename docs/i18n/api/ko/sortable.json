@@ -43,6 +43,10 @@
     "source": "0d1dce05c0",
     "text": "`onBeforeDrop` 또는 `onDrop`에서 `preventDefault()`가 호출되었습니다."
   },
+  "SortableDropEvent.external": {
+    "source": "25e3ab04b3",
+    "text": "페이지 밖에서 온 드래그(`external`)가 담고 있던 것. 데이터도 들어 있습니다."
+  },
   "SortableIndicator.index": {
     "source": "0043b67077",
     "text": "렌더링된 리스트 기준의 삽입 위치."
@@ -64,8 +68,8 @@
     "text": "트리: 드롭된 노드가 갖게 될 부모. 루트 단계에서는 `null`."
   },
   "SortableListOptions": {
-    "source": "5578e6dad0",
-    "text": "`makeSortableList`의 옵션. 컴포넌트 하나에 리스트(또는 트리) 하나입니다. 리스트는 항목이 읽는 컨텍스트를 제공하므로, 같은 컴포넌트의 두 번째 리스트는 첫 번째 리스트의 항목을 가져가 버립니다(개발 빌드에서 경고합니다).\n\n옵션은 값, ref, getter를 받으며(`overlay`, `animation`: 값 또는 ref) 리스트가 필요할 때 읽으므로, 변경은 늦어도 다음 드래그부터 적용됩니다. 예외: `id`와 `group`은 리스트가 만들어질 때 한 번만 읽습니다. `items`는 모델 자체입니다. 함수(`getKey`, `filter`, `clone`, `createItem`, 콜백)는 그대로 넘깁니다."
+    "source": "f8e2e84b3b",
+    "text": "`makeSortableList`의 옵션. 컴포넌트 하나가 리스트(와 트리)를 여러 개 만들 수 있습니다. 그 안에서 렌더링되는 각 항목은 자신을 감싸는 요소를 가진 가장 안쪽 리스트에 들어갑니다.\n\n옵션은 값, ref, getter를 받으며(`overlay`, `animation`: 값 또는 ref) 리스트가 필요할 때 읽으므로, 변경은 늦어도 다음 드래그부터 적용됩니다. 예외: `id`와 `group`은 리스트가 만들어질 때 한 번만 읽습니다. `items`는 모델 자체입니다. 함수(`getKey`, `filter`, `clone`, `createItem`, 콜백)는 그대로 넘깁니다."
   },
   "SortableListOptions.items": {
     "source": "bcf07acd7a",
@@ -76,8 +80,8 @@
     "text": "기본값: `item.id`, 원시값이면 항목 자체. `makeSortableItem({ item })`의 key도 이것으로 정합니다."
   },
   "SortableListOptions.filter": {
-    "source": "68bbc0dba4",
-    "text": "`true`를 반환한 항목만 보여 줍니다(검색, 태그). 반환되는 `items`에는 그 항목들만 있고, 드래그는 그 안에서 정렬합니다. 나머지 항목은 원본에서 자기 자리를 유지합니다. 드롭은 배열 전체를 기록하며, 숨겨진 각 항목은 원래 뒤따르던 보이는 항목 뒤에 그대로 남습니다(그 항목이 옮겨졌다면 남아 있는 가장 가까운 항목 뒤). 반응형: 함수가 읽는 것(검색어 ref)은 바로 적용됩니다."
+    "source": "f2604f67b6",
+    "text": "`true`를 반환한 항목만 보여 줍니다(검색, 태그). 반환되는 `items`에는 그 항목들만 있고, 드래그는 그 안에서 정렬합니다. 나머지 항목은 원본에서 자기 자리를 유지합니다. 드롭은 배열 전체를 기록하며, 숨겨진 각 항목은 원래 뒤따르던 보이는 항목 뒤에 그대로 남습니다(그 항목이 옮겨졌다면 남아 있는 가장 가까운 항목 뒤). 반응형: 함수가 읽는 것(검색어 ref)은 바로 적용됩니다. `e.to.index`와 `activeIndex`는 보이는 항목을 기준으로 셉니다."
   },
   "SortableListOptions.id": {
     "source": "c0adaf519f",
@@ -144,8 +148,12 @@
     "text": "복사본을 만듭니다(`pull: 'clone'`, 복사 모디파이어 키). 복사하려면 필수입니다."
   },
   "SortableListOptions.createItem": {
-    "source": "5c9f1d3856",
-    "text": "외부의 일반 draggable을 받아들입니다. 삽입할 항목을 만듭니다. 키보드에서는 리스트 쪽 화살표 키를 누르면 draggable이 (리스트 사이 이동처럼 같은 높이로) 리스트에 들어가고, 만들어진 항목은 다른 항목처럼 자리 단위로 움직입니다."
+    "source": "5676dc9273",
+    "text": "외부의 일반 draggable을 받아들입니다. 삽입할 항목을 만듭니다. 키보드에서는 리스트 쪽 화살표 키를 누르면 draggable이 (리스트 사이 이동처럼 같은 높이로) 리스트에 들어가고, 만들어진 항목은 다른 항목처럼 자리 단위로 움직입니다.\n\n페이지 밖에서 온 드래그(`external`)에 대해서는 두 번 호출됩니다. 드래그하는 동안에는 어디로 갈지 보여 주는 항목을 위해(이때는 `active.external.fileTypes`와 `types`만 알 수 있습니다), 드롭할 때는 데이터와 함께(`active.external.dropped`) 삽입할 것을 위해서입니다. 항목 배열을 반환하면 모두 자리가 있던 곳에 삽입됩니다. 파일마다 하나씩입니다."
+  },
+  "SortableListOptions.external": {
+    "source": "9ae9a7ef2d",
+    "text": "페이지 밖에서 오는 드래그를 받습니다. 파일, 링크, 텍스트(`ExternalAccept` 참고). 리스트는 일반 draggable과 마찬가지로 `createItem`으로 자리를 만들며, 그래서 `createItem`이 필요합니다. 앱의 다른 창에서 끌어온 같은 그룹의 항목(`native`)에는 둘 다 필요 없습니다. 항목 자체로 들어옵니다. 값, ref 또는 getter이며 실시간으로 읽습니다."
   },
   "SortableListOptions.dropOutside": {
     "source": "bffdd0d062",
@@ -158,6 +166,10 @@
   "SortableListOptions.animate": {
     "source": "86283c7ec0",
     "text": "드래그가 아닌 `items` 변경을 애니메이션합니다: 추가, 제거, 이동, 필터링된 항목(`AutoAnimation` 참고). 기본값: 프로바이더의 `animate`. 프로바이더에서 설정하지 않으면 꺼져 있습니다. `items`가 바뀔 때 읽습니다."
+  },
+  "SortableListOptions.animateSize": {
+    "source": "382b485c30",
+    "text": "리스트 자체의 크기가 항목을 따라갑니다. 드래그가 항목을 들여오거나 내보낼 때(그리고 드롭할 때와 `animate`가 보여 주는 변경에서도), 리스트는 한 번에 바뀌지 않고 `animation`의 지속 시간과 이징으로 새 크기까지 커지거나 줄어들며, 주변의 것도 함께 움직입니다. 기본값 `true`. `false`이면 한 번에 바뀝니다. 변경될 때마다 읽습니다."
   },
   "SortableListOptions.autoScroll": {
     "source": "0c0b0867b3",
@@ -234,6 +246,10 @@
   "SortableItemOptions.attributes": {
     "source": "db7791f2d8",
     "text": "role/tabindex/aria-* 속성을 설정합니다(기본값 `true`). 사용자가 직접 지정한 속성은 덮어쓰지 않습니다. 실시간: 끄면 라이브러리가 설정한 것을 제거합니다."
+  },
+  "SortableItemOptions.native": {
+    "source": "6b13bbb4b9",
+    "text": "이 항목의 마우스 드래그가 브라우저 자체의 드래그가 되어 페이지를 떠날 수 있습니다(`DraggableOptions.native` 참고). 항목 자체도 담아 갑니다. 앱의 다른 창에 있는 같은 그룹의 리스트가 그 항목을 받으며, 받으면 항목은 이 리스트를 떠납니다(`'move'`)."
   },
   "SortableItemReturn.isDragging": {
     "source": "f148b949fd",

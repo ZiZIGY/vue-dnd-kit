@@ -96,8 +96,12 @@
     "text": "Crea copias (`group.pull: 'clone'`, la tecla modificadora de copia). Necesaria para copiar. Devuelve la copia con todo su subárbol: una carpeta copiada conserva sus hijos. La copia y cada uno de sus descendientes necesitan claves propias (que se leen con `getKey`), como todo nodo de un árbol."
   },
   "SortableTreeOptions.createItem": {
-    "source": "28224fdbf4",
-    "text": "Acepta elementos arrastrables simples de fuera: crea el nodo que se va a insertar, en la posición y la profundidad proyectadas (se le aplican `canNest` y `maxDepth`). Con el teclado, una flecha hacia el árbol mete en él el elemento arrastrable, al nivel de la fila delante de la que va, y luego las flechas mueven el nodo como a cualquier otro."
+    "source": "82145232b2",
+    "text": "Acepta elementos arrastrables simples de fuera: crea el nodo que se va a insertar, en la posición y la profundidad proyectadas (se le aplican `canNest` y `maxDepth`). Con el teclado, una flecha hacia el árbol mete en él el elemento arrastrable, al nivel de la fila delante de la que va, y luego las flechas mueven el nodo como a cualquier otro. Con un arrastre desde fuera de la página (`external`), se le pregunta dos veces, mientras se mantiene y al soltar (consulta el `createItem` de la lista); un nodo carpeta con un hijo por archivo admite varios archivos."
+  },
+  "SortableTreeOptions.external": {
+    "source": "275eee4f69",
+    "text": "Acepta arrastres desde fuera de la página: archivos, enlaces, texto (consulta `ExternalAccept`), con `createItem`. Los nodos de su grupo arrastrados desde otra ventana de la app entran tal cual. Un valor, una ref o un getter, que se lee en vivo."
   },
   "SortableTreeOptions.dropOutside": {
     "source": "324ddf9a40",
@@ -110,6 +114,10 @@
   "SortableTreeOptions.animate": {
     "source": "9004d33175",
     "text": "Como en `SortableListOptions`, para las filas visibles: nodos añadidos, quitados o movidos, y las filas que un nodo muestra u oculta al expandirse o plegarse (`collapsed`)."
+  },
+  "SortableTreeOptions.animateSize": {
+    "source": "3c8789d16e",
+    "text": "El tamaño propio del árbol sigue a sus filas, como el de una lista (`animateSize`). Por defecto `true`."
   },
   "SortableTreeOptions.autoScroll": {
     "source": "3216318fc0",

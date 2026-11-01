@@ -96,8 +96,12 @@
     "text": "복사본을 만듭니다(`group.pull: 'clone'`, 복사 모디파이어 키). 복사하려면 필수입니다. 하위 트리 전체를 포함한 복사본을 반환하세요. 복사한 폴더는 자식을 유지합니다. 트리의 모든 노드처럼, 복사본과 그 모든 자손에는 각자의 key(`getKey`로 읽음)가 필요합니다."
   },
   "SortableTreeOptions.createItem": {
-    "source": "28224fdbf4",
-    "text": "외부의 일반 draggable을 받아들입니다. 투영된 위치와 깊이에 삽입할 노드를 만듭니다(`canNest`와 `maxDepth`가 적용됩니다). 키보드에서는 트리 쪽 화살표 키를 누르면 draggable이 그 앞에 들어갈 행과 같은 단계로 트리에 들어가고, 이후 화살표 키로 다른 노드처럼 옮길 수 있습니다."
+    "source": "82145232b2",
+    "text": "외부의 일반 draggable을 받아들입니다. 투영된 위치와 깊이에 삽입할 노드를 만듭니다(`canNest`와 `maxDepth`가 적용됩니다). 키보드에서는 트리 쪽 화살표 키를 누르면 draggable이 그 앞에 들어갈 행과 같은 단계로 트리에 들어가고, 이후 화살표 키로 다른 노드처럼 옮길 수 있습니다. 페이지 밖에서 온 드래그(`external`)에 대해서는 드래그하는 동안과 드롭할 때 두 번 호출됩니다(리스트의 `createItem` 참고). 파일마다 자식이 하나씩 있는 폴더 노드라면 여러 파일을 담을 수 있습니다."
+  },
+  "SortableTreeOptions.external": {
+    "source": "275eee4f69",
+    "text": "페이지 밖에서 오는 드래그를 `createItem`과 함께 받습니다. 파일, 링크, 텍스트(`ExternalAccept` 참고). 앱의 다른 창에서 끌어온 같은 그룹의 노드는 노드 자체로 들어옵니다. 값, ref 또는 getter이며 실시간으로 읽습니다."
   },
   "SortableTreeOptions.dropOutside": {
     "source": "324ddf9a40",
@@ -110,6 +114,10 @@
   "SortableTreeOptions.animate": {
     "source": "9004d33175",
     "text": "`SortableListOptions`와 같으며, 보이는 행에 적용됩니다: 추가, 제거, 이동된 노드, 그리고 노드를 펼치거나 접을 때(`collapsed`) 보이거나 숨겨지는 행."
+  },
+  "SortableTreeOptions.animateSize": {
+    "source": "3c8789d16e",
+    "text": "트리 자체의 크기도 리스트처럼 행을 따라갑니다(`animateSize`). 기본값 `true`."
   },
   "SortableTreeOptions.autoScroll": {
     "source": "3216318fc0",

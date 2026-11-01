@@ -111,6 +111,10 @@
     "source": "6852def127",
     "text": "Как оверлей меняется с одного компонента на другой во время драга (его подменяет `overlay` цели, переключается ref `overlay`): `true` (по умолчанию) — кроссфейд за 150 мс, `false` — мгновенная смена, а объект — это пропсы Vue `<Transition>` вокруг корня содержимого (`name`, `mode`, JS-хуки для GSAP или motion). Без `mode: 'out-in'` оба видны одновременно: дайте уходящему `position: absolute` (`.<name>-leave-active`), чтобы они наложились друг на друга в блоке."
   },
+  "DnDProviderProps.overlayClass": {
+    "source": "fe858c5071",
+    "text": "Классы для содержимого оверлея (`[data-dnd-overlay-content]`) — элемента, который заполняет блок оверлея: именно его анимируют целиком, пока библиотека двигает блок и задаёт его размер. CSS-переход на нём запускается от `@starting-style` при захвате и идёт обратно, когда оверлей приземляется (`[data-dnd-overlay='dropping']`): бросок его ждёт. Обычный CSS достаёт до него вне `<style scoped>` (или через `:global(...)`), Tailwind — через `starting:` и `in-data-[dnd-overlay=dragging]:`."
+  },
   "DnDProviderProps.announcements": {
     "source": "0729e8985f",
     "text": "Свои тексты для некоторых событий (см. `Announcements`); `false` заставляет live-регион молчать."

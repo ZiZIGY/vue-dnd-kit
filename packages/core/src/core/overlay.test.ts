@@ -114,14 +114,14 @@ const Free = defineComponent({
 
 const showFirstList = shallowRef(true);
 
-const mountBoard = () => {
+const mountBoard = (providerProps: Record<string, unknown> = {}) => {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const app = createApp({
     setup: () => () =>
       h(
         DnDProvider,
-        { dropAnimation: false },
+        { dropAnimation: false, ...providerProps },
         {
           default: () =>
             h({
@@ -185,6 +185,18 @@ describe('overlay precedence (mounted)', () => {
     await end();
     expect(await drag('b2')).toBe('clone');
     expect(overlay()!.textContent).toContain('b2');
+    await end();
+  });
+
+  it('fills the box with its content element, which takes `overlayClass`: the page animates it, the library the box', async () => {
+    mountBoard({ overlayClass: ['lift', { tilted: true }] });
+    await nextTick();
+    expect(await drag('b2')).toBe('clone');
+    const content = overlay()!.firstElementChild as HTMLElement;
+    expect(content.hasAttribute('data-dnd-overlay-content')).toBe(true);
+    expect(content.className).toBe('lift tilted');
+    expect(content.style.width).toBe('100%');
+    expect(content.textContent).toContain('b2');
     await end();
   });
 

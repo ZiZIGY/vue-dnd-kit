@@ -19,7 +19,8 @@ const lanes = ref([
 </script>
 
 <template>
-  <DnDProvider>
+  <!-- `overlay-class`: the overlay's content, the whole of what follows the pointer, lifts as one. -->
+  <DnDProvider overlay-class="pipeline-hand">
     <div class="pipeline">
       <Lane v-for="lane in lanes" :key="lane.id" :lane="lane" />
     </div>
@@ -34,5 +35,30 @@ const lanes = ref([
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
+}
+</style>
+
+<!-- Not scoped: the overlay's content element is the library's, rendered outside this component. -->
+<style>
+@media (prefers-reduced-motion: no-preference) {
+  /* Picked up, the whole overlay lifts and tilts; let go, it lies flat again as it lands. */
+  .pipeline-hand {
+    transition:
+      rotate 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+      scale 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  [data-dnd-overlay='dragging'] > .pipeline-hand {
+    rotate: 3deg;
+    scale: 1.05;
+  }
+
+  /* Where the lift starts: the box appears already `dragging`, a transition needs a before. */
+  @starting-style {
+    [data-dnd-overlay='dragging'] > .pipeline-hand {
+      rotate: 0deg;
+      scale: 1;
+    }
+  }
 }
 </style>

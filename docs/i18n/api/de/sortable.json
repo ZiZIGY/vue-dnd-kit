@@ -43,6 +43,10 @@
     "source": "0d1dce05c0",
     "text": "`preventDefault()` wurde aufgerufen, in `onBeforeDrop` oder `onDrop`."
   },
+  "SortableDropEvent.external": {
+    "source": "25e3ab04b3",
+    "text": "Ein Drag von außerhalb der Seite (`external`): was er trug, mit seinen Daten."
+  },
   "SortableIndicator.index": {
     "source": "0043b67077",
     "text": "Einfügeposition in der Liste, wie sie gerendert ist."
@@ -64,8 +68,8 @@
     "text": "Bäume: Elternknoten, den die abgelegten Knoten bekommen, `null` auf der Wurzelebene."
   },
   "SortableListOptions": {
-    "source": "5578e6dad0",
-    "text": "Optionen von `makeSortableList`. Eine Liste (oder ein Baum) pro Komponente: Sie stellt den Kontext bereit, den ihre Elemente lesen, sodass eine zweite in derselben Komponente die Elemente der ersten übernehmen würde (Entwicklungs-Builds warnen davor).\n\nOptionen nehmen einen Wert, ein Ref oder einen Getter entgegen (`overlay`, `animation`: einen Wert oder ein Ref) und werden gelesen, wenn die Liste sie braucht, sodass eine Änderung spätestens ab dem nächsten Drag gilt. Ausnahmen: `id` und `group` werden einmal gelesen, wenn die Liste erstellt wird; `items` ist das Modell selbst; Funktionen (`getKey`, `filter`, `clone`, `createItem`, die Callbacks) werden so übergeben, wie sie sind."
+    "source": "f8e2e84b3b",
+    "text": "Optionen von `makeSortableList`. Eine Komponente kann mehrere Listen (und Bäume) erstellen: Jedes darin gerenderte Element gehört zur innersten, deren DOM-Element es enthält.\n\nOptionen nehmen einen Wert, ein Ref oder einen Getter entgegen (`overlay`, `animation`: einen Wert oder ein Ref) und werden gelesen, wenn die Liste sie braucht, sodass eine Änderung spätestens ab dem nächsten Drag gilt. Ausnahmen: `id` und `group` werden einmal gelesen, wenn die Liste erstellt wird; `items` ist das Modell selbst; Funktionen (`getKey`, `filter`, `clone`, `createItem`, die Callbacks) werden so übergeben, wie sie sind."
   },
   "SortableListOptions.items": {
     "source": "bcf07acd7a",
@@ -76,8 +80,8 @@
     "text": "Standard: `item.id` oder bei Primitiven das Element selbst. Liefert auch die Schlüssel für `makeSortableItem({ item })`."
   },
   "SortableListOptions.filter": {
-    "source": "68bbc0dba4",
-    "text": "Zeigt nur die Elemente, für die es `true` zurückgibt (eine Suche, ein Tag): `items` (das zurückgegebene) enthält sie, und ein Drag sortiert unter ihnen. Die anderen behalten ihre Plätze in der Quelle: Ein Drop schreibt das ganze Array, jedes ausgeblendete Element weiterhin hinter dem gezeigten, dem es folgte (hinter dem nächsten, das an seinem Platz blieb, wenn jenes sich bewegt hat). Reaktiv: Was es liest (ein Ref mit der Suchanfrage), gilt sofort."
+    "source": "f2604f67b6",
+    "text": "Zeigt nur die Elemente, für die es `true` zurückgibt (eine Suche, ein Tag): `items` (das zurückgegebene) enthält sie, und ein Drag sortiert unter ihnen. Die anderen behalten ihre Plätze in der Quelle: Ein Drop schreibt das ganze Array, jedes ausgeblendete Element weiterhin hinter dem gezeigten, dem es folgte (hinter dem nächsten, das an seinem Platz blieb, wenn jenes sich bewegt hat). Reaktiv: Was es liest (ein Ref mit der Suchanfrage), gilt sofort. `e.to.index` und `activeIndex` zählen die gezeigten Elemente."
   },
   "SortableListOptions.id": {
     "source": "c0adaf519f",
@@ -144,8 +148,12 @@
     "text": "Erstellt Kopien (`pull: 'clone'`, Modifier-Taste zum Kopieren). Zum Kopieren erforderlich."
   },
   "SortableListOptions.createItem": {
-    "source": "5c9f1d3856",
-    "text": "Nimmt einfache ziehbare Elemente von außen an: erstellt das einzufügende Element. Mit der Tastatur holt ein Pfeil in Richtung der Liste das ziehbare Element herein (auf seiner Höhe, wie bei Bewegungen zwischen Listen), und das erstellte Element bewegt sich dann wie jedes andere von Slot zu Slot."
+    "source": "5676dc9273",
+    "text": "Nimmt einfache ziehbare Elemente von außen an: erstellt das einzufügende Element. Mit der Tastatur holt ein Pfeil in Richtung der Liste das ziehbare Element herein (auf seiner Höhe, wie bei Bewegungen zwischen Listen), und das erstellte Element bewegt sich dann wie jedes andere von Slot zu Slot.\n\nBei einem Drag von außerhalb der Seite (`external`) wird es zweimal gefragt: während er gehalten wird, nach dem Element, das zeigt, wo er hinkommt (dann sind nur `active.external.fileTypes` und `types` bekannt), und beim Drop, mit seinen Daten (`active.external.dropped`), nach dem, was eingefügt wird. Ein Array von Elementen wird komplett dort eingefügt, wo der Slot war: eines pro Datei."
+  },
+  "SortableListOptions.external": {
+    "source": "9ae9a7ef2d",
+    "text": "Nimmt Drags von außerhalb der Seite an: Dateien, Links, Text (siehe `ExternalAccept`). Die Liste macht ihnen Platz wie einem einfachen ziehbaren Element, mit `createItem`, das sie dafür braucht. Elemente ihrer Gruppe, die aus einem anderen Fenster der App hereingezogen werden (`native`), brauchen keins von beiden: Sie kommen als sie selbst hinein. Ein Wert, ein Ref oder ein Getter, live gelesen."
   },
   "SortableListOptions.dropOutside": {
     "source": "bffdd0d062",
@@ -158,6 +166,10 @@
   "SortableListOptions.animate": {
     "source": "86283c7ec0",
     "text": "Animiert Änderungen von `items`, die kein Drag ausgelöst hat: hinzugefügte, entfernte, verschobene und gefilterte Elemente (siehe `AutoAnimation`). Standard: `animate` des Providers, aus, sofern dort nicht gesetzt. Wird gelesen, wenn sich `items` ändert."
+  },
+  "SortableListOptions.animateSize": {
+    "source": "382b485c30",
+    "text": "Die eigene Größe der Liste folgt ihren Elementen: Wenn ein Drag ein Element hereinbringt oder herausnimmt (und beim Drop und bei den Änderungen, die `animate` zeigt), wächst oder schrumpft sie mit Dauer und Easing von `animation` auf ihre neue Größe, statt zu springen, und was um sie herum ist, bewegt sich mit. Standard `true`; `false` lässt sie springen. Wird bei jeder Änderung gelesen."
   },
   "SortableListOptions.autoScroll": {
     "source": "0c0b0867b3",
@@ -234,6 +246,10 @@
   "SortableItemOptions.attributes": {
     "source": "db7791f2d8",
     "text": "Setzt role-/tabindex-/aria-*-Attribute (Standard `true`) und überschreibt nie deine eigenen. Live: Ausschalten entfernt, was die Bibliothek gesetzt hat."
+  },
+  "SortableItemOptions.native": {
+    "source": "6b13bbb4b9",
+    "text": "Ein Maus-Drag des Elements ist der eigene Drag des Browsers, der die Seite verlassen kann (siehe `DraggableOptions.native`). Er trägt auch das Element: Die Listen seiner Gruppe in einem anderen Fenster der App nehmen es an, und wenn eine das tut, verlässt es diese Liste (`'move'`)."
   },
   "SortableItemReturn.isDragging": {
     "source": "f148b949fd",

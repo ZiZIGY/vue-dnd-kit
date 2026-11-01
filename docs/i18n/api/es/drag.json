@@ -31,6 +31,14 @@
     "source": "7964e6f559",
     "text": "Rectángulo de layout de `element` al inicio del arrastre."
   },
+  "Active.external": {
+    "source": "c2c230e8a3",
+    "text": "Un arrastre desde fuera de la página (archivos, un enlace, texto o ítems de otra ventana de la app): lo que lleva. Sus `items` se crean para él (`element` es un sustituto)."
+  },
+  "Active.native": {
+    "source": "70b681b12e",
+    "text": "El arrastre propio del navegador (`native`, o uno de fuera): él dibuja la imagen arrastrada, no hay overlay."
+  },
   "Over.label": {
     "source": "c388687981",
     "text": "El `label` del destino, el nombre que le da la gente."
@@ -87,6 +95,10 @@
     "source": "d69f88797f",
     "text": "Presente cuando los ítems arrastrados vienen de una lista ordenable."
   },
+  "DnDEvent.external": {
+    "source": "88a096f69f",
+    "text": "Un arrastre desde fuera de la página: lo que lleva (`active.external`). Sus datos llegan al soltar."
+  },
   "DnDEndEvent.dropped": {
     "source": "8ada0b47b1",
     "text": "Falso cuando el arrastre terminó fuera de todo destino de drop."
@@ -94,6 +106,10 @@
   "DnDEndEvent.accepted": {
     "source": "bf82d1aeb9",
     "text": "Ids aceptados por `onBeforeDrop` (todos los ids arrastrados, salvo que se devolviera un subconjunto)."
+  },
+  "DnDEndEvent.droppedOutside": {
+    "source": "43906c7a55",
+    "text": "Un arrastre fuera de la página (`native`) soltado en otro sitio: lo que ese sitio hizo con él. `'move'` saca aquí los ítems de su lista ordenable; `'copy'` y `'link'` los dejan."
   },
   "BeforeDropResult": {
     "source": "056be141e8",

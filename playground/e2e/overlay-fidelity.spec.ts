@@ -167,7 +167,7 @@ const pixelDifference = (page: Page, a: Buffer, b: Buffer): Promise<number> =>
 
 /** The default overlay's clone: the element itself, or the row in its table wrapper. */
 const overlayClone = (page: Page, row = false): Locator =>
-  row ? page.locator('[data-dnd-overlay] tr') : page.locator('[data-dnd-overlay] > div > div > div > *').first();
+  row ? page.locator('[data-dnd-overlay] tr') : page.locator('[data-dnd-overlay-content] > div > div > div > *').first();
 
 interface Case {
   page: string;

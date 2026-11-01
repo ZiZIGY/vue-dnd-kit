@@ -47,21 +47,17 @@
     "source": "f3f57590a6",
     "text": "role/tabindex/aria-* 속성을 설정합니다(기본값 `true`). 사용자가 직접 지정한 속성은 덮어쓰지 않습니다. 프로바이더 안내 지침의 id는 기존 `aria-describedby`에 토큰 하나로 추가되며(같은 요소에 있는 UI 키트 툴팁의 id는 유지됩니다), 제거할 때도 그 토큰만 제거합니다. 실시간: 끄면 라이브러리가 설정한 것을 제거합니다."
   },
+  "DraggableOptions.native": {
+    "source": "c7441f484f",
+    "text": "이 요소의 마우스 드래그가 브라우저 자체의 드래그가 되어 페이지를 떠날 수 있습니다. 데스크톱으로, 다른 앱이나 탭으로, 앱의 다른 창으로. 페이지 위에서는 평소처럼 동작하지만(대상, 자리를 만드는 리스트), 오버레이 대신 브라우저가 드래그되는 이미지를 그립니다. 터치와 키보드 드래그는 라이브러리의 드래그로 남습니다. `true`는 `label`을 텍스트로 담습니다. 누르기가 시작될 때 읽습니다."
+  },
   "DraggableReturn.transform": {
     "source": "3d7102b110",
     "text": "`overlay: false`일 때 적용할 오프셋. 드래그의 오프셋에서 요소가 들어 있는 내용이 시작 이후 움직인 만큼(페이지나 컨테이너가 스크롤됨)을 뺀 값이므로, 요소가 포인터 아래에 머뭅니다."
   },
-  "DroppableFileOptions": {
-    "source": "a8634f2607",
-    "text": "드롭 대상이 컴퓨터에서 받는 파일(`DroppableOptions.files`)."
-  },
-  "DroppableFileOptions.accept": {
-    "source": "ad1d472c41",
-    "text": "`<input accept>`와 같은 형식: MIME 타입(`image/*`, `application/pdf`)과 확장자(`.md`)를 쉼표로 구분한 문자열이나 배열로 지정합니다. 기본값: 모든 파일. 파일이 대상 위에 있는 동안 브라우저는 타입만 알려 주므로, 확장자는 드롭할 때 확인합니다."
-  },
-  "DroppableFileOptions.multiple": {
-    "source": "03eb21a25d",
-    "text": "한 번에 여러 파일(기본값 `true`). `false`는 두 개 이상의 파일을 드래그하면 거부합니다."
+  "DroppableOptions": {
+    "source": "c1de31b385",
+    "text": "`makeDroppable`의 옵션.\n\n**항목 안으로 드롭.** 정렬 가능한 항목의 요소(또는 그 안)에 있는 드롭 대상은 다른 곳과 똑같이 동작하지만, 그 항목의 리스트가 드래그를 정렬하려는 동안에는 규칙이 하나 있습니다. 포인터가 항목의 가운데(리스트 축을 따라 25~75%, 그리드에서는 x)에 있을 때만 유효하며, 그곳에서는 드롭이 대상 안으로 들어가고 리스트는 그 때문에 움직이지 않습니다. 항목의 가장자리 근처에서는 리스트가 평소처럼 정렬합니다. `accept`가 드래그를 거부하는 대상은 제외되므로, 리스트는 다른 항목과 마찬가지로 그 항목 위에서 정렬합니다(비활성화할 필요가 없습니다). 키보드는 항목을 지나가기 전에 이런 대상에서 멈춥니다. 대상은 결코 자기 자신의 드래그의 대상이 되지 않습니다. 드래그 중인 항목 안(또는 위)에 있는 대상도, 드래그 중인 항목이 안착할 자리 안에 있는 대상도 마찬가지입니다. `onDrop`에서 항목을 리스트에서 빼려면 `e.source.remove()`를 호출하세요.\n\n콜백을 제외한 모든 옵션은 값, ref 또는 getter를 받으며(`accept`, `overlay`, `dropAnimation`: 값 또는 ref), 드래그가 대상을 찾는 동안 실시간으로 읽습니다."
   },
   "DroppableOptions.id": {
     "source": "ea58d47829",
@@ -91,21 +87,17 @@
     "source": "0f0a6dd259",
     "text": "여기에 드롭될 때 오버레이가 안착하는 방식으로, 드래그 중인 항목과 프로바이더의 `dropAnimation` 대신 쓰입니다. `false`는 드롭한 자리에 그대로 두고(오버레이 컴포넌트 자체의 애니메이션, 예를 들어 스플래시가 그곳에서 재생됩니다), 함수는 오버레이를 애니메이션합니다. 값 또는 ref이며, 드롭할 때 읽습니다."
   },
-  "DroppableOptions.files": {
-    "source": "7e3cd8ab22",
-    "text": "컴퓨터에서 끌어온 파일을 받습니다(라이브러리가 아닌 브라우저 자체의 드래그 앤 드롭). `isOver`와 `isAccepting`은 드래그를 따르듯 파일도 따르고, 드롭은 `onFiles`로 전달됩니다. `true`는 모든 파일을 받습니다. 대상이 서로 중첩되어 있으면 `files`가 있는 가장 안쪽 대상이 받습니다. 값, ref 또는 getter이며 실시간으로 읽습니다."
-  },
-  "DroppableOptions.onFiles": {
-    "source": "9badb8a1d8",
-    "text": "여기에 드롭된 파일 중 `files`가 받는 파일(폴더 제외)과 브라우저의 `drop` 이벤트."
+  "DroppableOptions.external": {
+    "source": "b80f2c5709",
+    "text": "페이지 밖에서 오는 드래그를 받습니다. 데스크톱의 파일, 다른 앱이나 탭의 링크나 텍스트(브라우저의 드래그 앤 드롭). 이런 드래그는 라이브러리의 드래그와 똑같이 동작하며(`isOver`, `isAccepting`, 이벤트), 드롭할 때 `e.external`에 데이터가 들어 있습니다. `external`이 없는 대상은 이런 드래그를 무시합니다. 값, ref 또는 getter이며 실시간으로 읽습니다."
   },
   "DroppableReturn.isOver": {
-    "source": "0fd66351a2",
-    "text": "드래그가 위에 있습니다(`files`가 있으면 컴퓨터에서 온 파일도)."
+    "source": "bd388d0ac7",
+    "text": "드래그가 위에 있습니다(`external`이 있으면 페이지 밖에서 온 드래그도)."
   },
   "DroppableReturn.isAccepting": {
-    "source": "8cfac2b573",
-    "text": "무언가가 드래그되고 있고 이 대상이 그것을 받아들입니다(`files`가 받는 파일이 위에 있을 때도)."
+    "source": "520ef3c1da",
+    "text": "무언가가 드래그되고 있고 이 대상이 그것을 받아들입니다."
   },
   "DroppableReturn.placement": {
     "source": "4e1160d2d2",

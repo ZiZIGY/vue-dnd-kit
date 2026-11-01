@@ -31,6 +31,14 @@
     "source": "7964e6f559",
     "text": "Rectangle de mise en page d'`element` au début du glissement."
   },
+  "Active.external": {
+    "source": "c2c230e8a3",
+    "text": "Un glissement venu de l'extérieur de la page (des fichiers, un lien, du texte, ou des items d'une autre fenêtre de l'application) : ce qu'il transporte. Ses `items` sont créés pour lui (`element` est un substitut)."
+  },
+  "Active.native": {
+    "source": "70b681b12e",
+    "text": "Le glissement propre au navigateur (`native`, ou un glissement venu de l'extérieur) : il dessine l'image glissée, il n'y a pas d'overlay."
+  },
   "Over.label": {
     "source": "c388687981",
     "text": "Le `label` de la cible, le nom que les gens lui donnent."
@@ -87,6 +95,10 @@
     "source": "d69f88797f",
     "text": "Présent quand les items glissés viennent d'une liste triable."
   },
+  "DnDEvent.external": {
+    "source": "88a096f69f",
+    "text": "Un glissement venu de l'extérieur de la page : ce qu'il transporte (`active.external`). Ses données arrivent au dépôt."
+  },
   "DnDEndEvent.dropped": {
     "source": "8ada0b47b1",
     "text": "Faux quand le glissement s'est terminé hors de toute cible de dépôt."
@@ -94,6 +106,10 @@
   "DnDEndEvent.accepted": {
     "source": "bf82d1aeb9",
     "text": "Ids acceptés par `onBeforeDrop` (tous les ids glissés, sauf si un sous-ensemble a été renvoyé)."
+  },
+  "DnDEndEvent.droppedOutside": {
+    "source": "43906c7a55",
+    "text": "Un glissement hors de la page (`native`) déposé ailleurs : ce que cet endroit en a fait. `'move'` retire ici les items de leur liste triable ; `'copy'` et `'link'` les laissent."
   },
   "BeforeDropResult": {
     "source": "056be141e8",

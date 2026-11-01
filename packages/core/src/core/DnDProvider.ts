@@ -76,6 +76,7 @@ export const DnDProvider = /* @__PURE__ */ defineComponent({
     overlayFit: { type: String as PropType<'slot' | 'source'>, default: 'slot' },
     overlayPreviews: { type: [Number, String] as PropType<number | 'all'>, default: 5 },
     overlayTransition: { type: [Boolean, Object] as PropType<boolean | TransitionProps>, default: true },
+    overlayClass: { type: [String, Object, Array] as PropType<DnDProviderProps['overlayClass']>, default: undefined },
     announcements: { type: [Boolean, Object] as PropType<Partial<Announcements> | false>, default: undefined },
     screenReaderInstructions: String,
     defaultStyles: { type: Boolean, default: true },

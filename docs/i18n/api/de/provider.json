@@ -111,6 +111,10 @@
     "source": "6852def127",
     "text": "Wie das Overlay während eines Drags von einer Komponente zur anderen wechselt (das `overlay` eines Drop-Ziels übernimmt, ein `overlay`-Ref wird umgeschaltet): `true` (Standard) blendet sie in 150 ms über, `false` tauscht sie sofort, und ein Objekt sind die Props einer Vue-`<Transition>` um die Wurzel des Inhalts (`name`, `mode`, JS-Hooks für GSAP oder motion). Ohne `mode: 'out-in'` sind beide gleichzeitig zu sehen: Gib der ausgehenden `position: absolute` (`.<name>-leave-active`), damit sie sich in der Box stapeln."
   },
+  "DnDProviderProps.overlayClass": {
+    "source": "fe858c5071",
+    "text": "Klassen für den Inhalt des Overlays (`[data-dnd-overlay-content]`), das Element, das die Overlay-Box füllt: das, das als Ganzes animiert wird, während die Bibliothek die Box bewegt und ihre Größe setzt. Eine Transition darauf läuft beim Aufnehmen von `@starting-style` aus und beim Landen zurück (`[data-dnd-overlay='dropping']`): Der Drop wartet auf sie. Einfaches CSS erreicht es außerhalb von `<style scoped>` (oder mit `:global(...)`), Tailwind mit `starting:` und `in-data-[dnd-overlay=dragging]:`."
+  },
   "DnDProviderProps.announcements": {
     "source": "0729e8985f",
     "text": "Eigene Texte für einige Events (siehe `Announcements`); `false` lässt die Live-Region stumm."

@@ -178,6 +178,9 @@ const transitionable = (content: VNode | VNode[]): VNode | null => {
   return node && isVNode(node) && node.type !== Comment && node.type !== Fragment ? node : null;
 };
 
+/** The content's box: the whole overlay box, which positioned content (a crossfade) is placed in. */
+const CONTENT_STYLE = { width: '100%', height: '100%', position: 'relative' } as const;
+
 /** The box's style where it doesn't move with the pointer: a landing box, at `rect`. */
 const boxStyle = (rect: Rect) =>
   ({
@@ -215,13 +218,17 @@ const OverlayBox = /* @__PURE__ */ defineComponent({
   },
   setup(props, { slots, attrs }) {
     provide(OVERLAY_SCOPE, () => props.scope);
+    const manager = useManager();
     const element = shallowRef<HTMLElement | null>(null);
     watch(element, (value) => props.onElement(value));
     // `data-dnd-overlay` says what the box is doing, for CSS: `dragging`, then `dropping`
     // while it lands (or waits for an async `onBeforeDrop`). A landing box's style is one
-    // object for its whole flight: it is written once.
+    // object for its whole flight: it is written once. The library moves and sizes the box;
+    // `data-dnd-overlay-content` fills it and is the page's to animate (a lift, a tilt).
     return () =>
-      h('div', { ...attrs, ref: element, style: props.boxStyle, 'data-dnd-overlay': props.status }, slots.default?.());
+      h('div', { ...attrs, ref: element, style: props.boxStyle, 'data-dnd-overlay': props.status }, [
+        h('div', { 'data-dnd-overlay-content': '', class: manager.props.overlayClass, style: CONTENT_STYLE }, slots.default?.()),
+      ]);
   },
 });
 

@@ -254,6 +254,13 @@ h3 {
     rotate: 1.5deg;
   }
 
+  /* The column tilts as it is picked up, not only back as it lands. */
+  @starting-style {
+    [data-dnd-overlay='dragging'] .column {
+      rotate: 0deg;
+    }
+  }
+
   /* Refusing: the count shakes its head. */
   .refusing .count {
     animation: shake 0.3s;

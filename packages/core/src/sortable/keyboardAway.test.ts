@@ -39,14 +39,14 @@ const Later = defineComponent({
  * A list of three 40px rows at the top, and a trash zone at y 200–260 below it; with
  * `stacked`, another list of the group between them (`Later`).
  */
-const mount = ({ indicator = false, stacked = false } = {}) => {
+const mount = ({ indicator = false, stacked = false, animation = false } = {}) => {
   tasks = ref(['a', 'b', 'c'].map((id) => ({ id })));
   later = ref(['x', 'y'].map((id) => ({ id })));
   const container = document.createElement('div');
   document.body.appendChild(container);
   const app = createApp({
     setup: () => () =>
-      h(DnDProvider, { dropAnimation: false, animation: false }, {
+      h(DnDProvider, { dropAnimation: false, animation }, {
         default: () =>
           h({
             setup() {
@@ -183,5 +183,30 @@ describe('keyboard: lists stacked along their axis', () => {
     await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
     expect(tasks.value.map((task) => task.id)).toEqual(['b', 'c']);
     expect(later.value.map((task) => task.id)).toEqual(['a', 'x', 'y']);
+  });
+});
+
+describe('the lists resize smoothly (`animateSize`)', () => {
+  it('the list a slot leaves shrinks, the one it enters grows: from their old size to the new', async () => {
+    // happy-dom has no layout: a list is as tall as its rows.
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (this: HTMLElement) {
+      return this.tagName === 'UL' ? this.children.length * ROW : ROW;
+    });
+    const resizes: string[] = [];
+    vi.spyOn(HTMLElement.prototype, 'animate').mockImplementation(function (this: HTMLElement, keyframes) {
+      const frames = keyframes as Keyframe[];
+      if (this.tagName === 'UL' && frames[0]?.height) {
+        resizes.push(`${this.hasAttribute('data-later') ? 'later' : 'tasks'}:${frames[0].height}→${frames[1]!.height}`);
+      }
+      return { cancel() {}, finish() {}, addEventListener() {}, finished: Promise.resolve() } as unknown as Animation;
+    });
+    mount({ stacked: true, animation: true });
+    await nextTick();
+    manager.start('c', { x: 100, y: 2.5 * ROW }, 'keyboard');
+    await nextTick();
+    await press('ArrowDown');
+    expect(resizes).toEqual(['tasks:120px→80px', 'later:80px→120px']);
+    manager.cancel();
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
   });
 });

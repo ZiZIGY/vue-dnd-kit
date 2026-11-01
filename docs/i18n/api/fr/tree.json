@@ -96,8 +96,12 @@
     "text": "Crée des copies (`group.pull: 'clone'`, la touche modificatrice de copie). Obligatoire pour copier. Renvoyez la copie avec tout son sous-arbre : un dossier copié garde ses enfants. La copie et chacun de ses descendants ont besoin de leurs propres clés (lues avec `getKey`), comme chaque nœud d'un arbre."
   },
   "SortableTreeOptions.createItem": {
-    "source": "28224fdbf4",
-    "text": "Accepte des éléments déplaçables simples venus de l'extérieur : crée le nœud à insérer, à la position et à la profondeur projetées (`canNest` et `maxDepth` s'y appliquent). Au clavier, une flèche en direction de l'arbre y fait entrer l'élément déplaçable, au niveau de la ligne devant laquelle il va, et les flèches déplacent ensuite le nœud comme n'importe quel autre."
+    "source": "82145232b2",
+    "text": "Accepte des éléments déplaçables simples venus de l'extérieur : crée le nœud à insérer, à la position et à la profondeur projetées (`canNest` et `maxDepth` s'y appliquent). Au clavier, une flèche en direction de l'arbre y fait entrer l'élément déplaçable, au niveau de la ligne devant laquelle il va, et les flèches déplacent ensuite le nœud comme n'importe quel autre. Pour un glissement venu de l'extérieur de la page (`external`), elle est appelée deux fois, pendant le glissement et au dépôt (voir le `createItem` de la liste) ; un nœud dossier avec un enfant par fichier contient plusieurs fichiers."
+  },
+  "SortableTreeOptions.external": {
+    "source": "275eee4f69",
+    "text": "Accepte les glissements venus de l'extérieur de la page : fichiers, liens, texte (voir `ExternalAccept`), avec `createItem`. Les nœuds de son groupe glissés depuis une autre fenêtre de l'application entrent tels quels. Une valeur, une ref ou un getter, lu en direct."
   },
   "SortableTreeOptions.dropOutside": {
     "source": "324ddf9a40",
@@ -110,6 +114,10 @@
   "SortableTreeOptions.animate": {
     "source": "9004d33175",
     "text": "Comme dans `SortableListOptions`, pour les lignes visibles : nœuds ajoutés, retirés ou déplacés, et lignes qu'un nœud affiche ou masque quand il se déplie ou se replie (`collapsed`)."
+  },
+  "SortableTreeOptions.animateSize": {
+    "source": "3c8789d16e",
+    "text": "La taille de l'arbre lui-même suit ses lignes, comme celle d'une liste (`animateSize`). `true` par défaut."
   },
   "SortableTreeOptions.autoScroll": {
     "source": "3216318fc0",

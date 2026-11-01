@@ -31,6 +31,14 @@
     "source": "7964e6f559",
     "text": "Retângulo de layout de `element` no início do arraste."
   },
+  "Active.external": {
+    "source": "c2c230e8a3",
+    "text": "Um arraste de fora da página (arquivos, um link, texto, ou itens de outra janela do app): o que ele carrega. Os `items` dele são criados para ele (`element` é um substituto)."
+  },
+  "Active.native": {
+    "source": "70b681b12e",
+    "text": "O arraste do próprio navegador (`native`, ou um de fora): ele desenha a imagem arrastada, não há overlay."
+  },
   "Over.label": {
     "source": "c388687981",
     "text": "O `label` do alvo, como as pessoas o chamam."
@@ -87,6 +95,10 @@
     "source": "d69f88797f",
     "text": "Presente quando os itens arrastados vêm de uma lista ordenável."
   },
+  "DnDEvent.external": {
+    "source": "88a096f69f",
+    "text": "Um arraste de fora da página: o que ele carrega (`active.external`). Os dados dele chegam no drop."
+  },
   "DnDEndEvent.dropped": {
     "source": "8ada0b47b1",
     "text": "False quando o arraste terminou fora de todos os alvos de drop."
@@ -94,6 +106,10 @@
   "DnDEndEvent.accepted": {
     "source": "bf82d1aeb9",
     "text": "Ids aceitos pelo `onBeforeDrop` (todos os ids arrastados, a menos que um subconjunto tenha sido retornado)."
+  },
+  "DnDEndEvent.droppedOutside": {
+    "source": "43906c7a55",
+    "text": "Um arraste para fora da página (`native`) solto em outro lugar: o que aquele lugar fez com ele. `'move'` tira os itens da lista ordenável deles aqui; `'copy'` e `'link'` os mantêm."
   },
   "BeforeDropResult": {
     "source": "056be141e8",

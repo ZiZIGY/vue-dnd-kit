@@ -171,6 +171,8 @@ export interface SortableTreeOptions<T> {
    * the rows a node shows or hides as it expands or collapses (`collapsed`).
    */
   animate?: MaybeReadonlyRefOrGetter<AutoAnimation | undefined>;
+  /** The tree's own size follows its rows, as a list's does (`animateSize`). Default `true`. */
+  animateSize?: MaybeReadonlyRefOrGetter<boolean | undefined>;
   /** Overrides the provider's `autoScroll` for this tree's scroll container. Read when the drag starts. */
   autoScroll?: MaybeReadonlyRefOrGetter<boolean | AutoScrollOptions | undefined>;
   /** As in `SortableListOptions`: the element that takes drops for the tree, default the tree's own. */
