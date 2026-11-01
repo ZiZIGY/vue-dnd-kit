@@ -5,17 +5,18 @@ import Column from './Column.vue';
 
 const columns = reactive([
   {
-    id: 'open',
-    title: 'Open',
-    pulls: [
-      { id: 'pr-12', title: '#12 Faster search', approved: true },
-      { id: 'pr-15', title: '#15 New logo', approved: false },
-      { id: 'pr-18', title: '#18 Fix typo', approved: true },
-      { id: 'pr-21', title: '#21 Drop IE', approved: false },
+    id: 'desktop',
+    title: 'Desktop',
+    files: [
+      { id: 'notes', name: 'notes.pdf', size: 2 },
+      { id: 'demo', name: 'demo.mov', size: 48 },
+      { id: 'logo', name: 'logo.png', size: 1 },
+      { id: 'backup', name: 'backup.zip', size: 120 },
     ],
   },
-  { id: 'main', title: 'Merge to main', rule: 'put' as const, pulls: [] },
-  { id: 'release', title: 'Merge to release', rule: 'onBeforeDrop' as const, pulls: [] },
+  // Both take files of 10 MB at most, and say so at different times.
+  { id: 'email', title: 'Email', rule: 'put' as const, files: [] },
+  { id: 'chat', title: 'Chat', rule: 'onBeforeDrop' as const, files: [] },
 ]);
 </script>
 

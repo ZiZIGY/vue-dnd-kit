@@ -92,7 +92,7 @@
       "lists": {
         "title": "Listen und Raster",
         "text": "Rendere einen Entwurf deines Arrays, und er ordnet sich schon während des Ziehens neu. Beim Drop wird die neue Reihenfolge in dein Ref geschrieben. Vertikal, horizontal oder als Raster beliebiger Größe.",
-        "hint": "Ziehe einen Track oder eine App",
+        "hint": "Ordne die Apps neu oder ziehe eine ins Dock",
         "label": "Sortierbar"
       },
       "kanban": {
@@ -123,7 +123,7 @@
         "label": "Einschränkungen",
         "title": "Achsen, Grenzen und Raster",
         "text": "Ein Drag-Bereich legt die Regeln für alles fest, was darin gezogen wird: eine Achse sperren, Drags innerhalb seiner Ränder halten, am Raster einrasten – und das alles ändern, während die App läuft.",
-        "hint": "Stelle die Regeln um, dann ziehe eine Notiz"
+        "hint": "Stelle die Regeln um, dann ziehe eine Form"
       }
     },
     "more": [

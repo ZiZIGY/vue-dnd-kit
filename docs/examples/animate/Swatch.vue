@@ -25,6 +25,7 @@ makeSortableItem(el, { item: () => props.swatch });
   align-items: center;
   justify-content: center;
   gap: 8px;
+  aspect-ratio: 1;
   border-radius: 16px;
   background: color-mix(in srgb, var(--color) 14%, Canvas);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color) 30%, transparent);

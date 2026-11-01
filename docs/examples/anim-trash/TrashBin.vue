@@ -11,8 +11,11 @@ const falling = ref(0);
 const shut = ref(0);
 
 const el = useTemplateRef<HTMLElement>('el');
+const bin = useTemplateRef<SVGElement>('bin');
 const { isOver } = makeDroppable(el, {
   id: 'trash',
+  // What the overlay reads as `over.data`: the bin, to aim the photo at its mouth.
+  data: () => ({ bin: bin.value }),
   // Over the bin, the photo is crumpled up; dropped, it falls in (see Crumple.vue).
   overlay: Crumple,
   // The box stays where it was let go: its content does the landing.
@@ -35,13 +38,16 @@ useDnDMonitor({
 
 <template>
   <div ref="el" class="trash" :class="{ over: isOver, open: isOver || falling > 0 }">
-    <svg :key="shut" class="bin" :class="{ shut }" viewBox="0 0 64 72" aria-hidden="true">
-      <g class="lid">
-        <path d="M24 11V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v4" />
-        <rect x="6" y="11" width="52" height="6" rx="3" />
+    <svg ref="bin" class="bin" viewBox="0 0 64 72" aria-hidden="true">
+      <!-- A new element for every photo in: the lid claps and the bin rocks again. -->
+      <g :key="shut" :class="{ shut: shut > 0 }">
+        <g class="lid">
+          <path d="M24 11V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v4" />
+          <rect x="6" y="11" width="52" height="6" rx="3" />
+        </g>
+        <path d="M11 23h42l-4 43a4 4 0 0 1-4 4H19a4 4 0 0 1-4-4z" />
+        <path d="M25 33v27M32 33v27M39 33v27" />
       </g>
-      <path class="can" d="M11 23h42l-4 43a4 4 0 0 1-4 4H19a4 4 0 0 1-4-4z" />
-      <path d="M25 33v27M32 33v27M39 33v27" />
     </svg>
     <span class="caption">{{ isOver ? 'Release to delete' : 'Trash' }}</span>
   </div>
@@ -81,9 +87,13 @@ useDnDMonitor({
   stroke-linejoin: round;
 }
 
-.lid {
-  /* Hinged at its left end. */
+/* Turned in the drawing's own units: the bin rocks on its base, the lid on its left end. */
+.bin g {
   transform-box: view-box;
+  transform-origin: 32px 70px;
+}
+
+.bin .lid {
   transform-origin: 6px 17px;
   transition: rotate 0.2s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
@@ -92,17 +102,19 @@ useDnDMonitor({
   rotate: -32deg;
 }
 
-/* The lid claps shut on the photo, and the bin rocks. */
-.bin.shut {
-  animation: rock 0.45s ease-out;
-}
-
-.bin.shut .lid {
-  animation: clap 0.3s cubic-bezier(0.5, 0, 0.5, 1.6);
-}
-
 .caption {
   font-weight: 600;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The lid claps shut on the photo, and the bin rocks. */
+  .shut {
+    animation: rock 0.45s ease-out;
+  }
+
+  .shut .lid {
+    animation: clap 0.3s cubic-bezier(0.5, 0, 0.5, 1.6);
+  }
 }
 
 @keyframes clap {
@@ -118,13 +130,6 @@ useDnDMonitor({
 
   60% {
     rotate: 4deg;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bin.shut,
-  .bin.shut .lid {
-    animation: none;
   }
 }
 </style>

@@ -92,7 +92,7 @@
       "lists": {
         "title": "Listas e grades",
         "text": "Renderize um rascunho do seu array e ele se reordena ao vivo enquanto você arrasta. No drop, a nova ordem é gravada no seu ref. Vertical, horizontal ou uma grade de qualquer tamanho.",
-        "hint": "Arraste uma faixa ou um app",
+        "hint": "Reorganize os apps ou leve um para o dock",
         "label": "Ordenável"
       },
       "kanban": {
@@ -123,7 +123,7 @@
         "label": "Restrições",
         "title": "Eixos, limites e grades",
         "text": "Uma área de arraste define as regras para tudo o que é arrastado dentro dela: trave um eixo, mantenha os arrastes dentro das bordas, encaixe numa grade — e mude tudo isso com o app rodando.",
-        "hint": "Troque as regras, depois arraste uma nota"
+        "hint": "Troque as regras, depois arraste uma forma"
       }
     },
     "more": [

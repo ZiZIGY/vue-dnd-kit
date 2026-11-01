@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { DnDProvider } from '@vue-dnd-kit/core';
-import Inbox from './Inbox.vue';
+import Expenses from './Expenses.vue';
 </script>
 
 <template>
   <DnDProvider>
-    <Inbox />
+    <Expenses />
   </DnDProvider>
 </template>

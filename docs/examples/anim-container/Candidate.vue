@@ -45,6 +45,7 @@ const initials = computed(() =>
   outline-offset: 2px;
 }
 
+/* The copy in the overlay, held up off the page. */
 [data-dnd-overlay] .candidate {
   box-shadow:
     0 0 0 1px color-mix(in srgb, currentColor 9%, transparent),
@@ -63,11 +64,35 @@ const initials = computed(() =>
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  /* Opens where it appears, then breathes until the card lands. */
+  /* Picked up: the copy lifts and tilts. */
+  [data-dnd-overlay='dragging'] .candidate {
+    animation: lift 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  /* Let go: it lies flat again while it lands. */
+  [data-dnd-overlay='dropping'] .candidate {
+    animation: settle 0.25s ease-in forwards;
+  }
+
+  /* The slot opens where it appears, then breathes until the card lands. */
   .candidate[data-dnd-placeholder] {
     animation:
       open 0.2s ease-out,
       breathe 1.2s ease-in-out 0.2s infinite;
+  }
+}
+
+@keyframes lift {
+  to {
+    rotate: 3deg;
+    scale: 1.04;
+  }
+}
+
+@keyframes settle {
+  from {
+    rotate: 3deg;
+    scale: 1.04;
   }
 }
 

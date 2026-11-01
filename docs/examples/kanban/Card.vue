@@ -1,36 +1,34 @@
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeSortableItem } from '@vue-dnd-kit/core';
+import type { Candidate } from './candidates';
 
-const props = defineProps<{ card: { id: string; title: string; tag: string } }>();
+const props = defineProps<{ card: Candidate }>();
 const el = useTemplateRef<HTMLElement>('el');
 makeSortableItem(el, { item: () => props.card });
-
-const TAGS: Record<string, string> = {
-  Design: '#f59e0b',
-  Docs: '#3b82f6',
-  Video: '#a855f7',
-  Core: '#42b883',
-  A11y: '#ec4899',
-};
 </script>
 
 <template>
   <li ref="el" class="card">
-    <span class="tag" :style="{ '--tag': TAGS[card.tag] }">{{ card.tag }}</span>
-    <span class="title">{{ card.title }}</span>
-    <span class="id">{{ card.id.toUpperCase() }}</span>
+    <span class="avatar" :style="{ '--hue': card.hue }" aria-hidden="true">{{ card.name[0] }}</span>
+    <span class="text">
+      <strong>{{ card.name }}</strong>
+      <small>{{ card.role }}</small>
+    </span>
+    <span class="score" :aria-label="`${card.score} of 5`">
+      <i v-for="star in 5" :key="star" :class="{ on: star <= card.score }" />
+    </span>
   </li>
 </template>
 
 <style scoped>
 .card {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 12px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 10px;
+  padding: 10px 12px;
   border-radius: 10px;
   background: Canvas;
   box-shadow:
@@ -44,6 +42,13 @@ const TAGS: Record<string, string> = {
 .card:focus-visible {
   outline: 2px solid #42b883;
   outline-offset: 2px;
+}
+
+[data-dnd-overlay] .card {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, currentColor 12%, transparent),
+    0 16px 28px -14px rgb(0 0 0 / 0.55);
+  rotate: 1.5deg;
 }
 
 /* The slot the dragged card will land in. */
@@ -60,22 +65,45 @@ const TAGS: Record<string, string> = {
   background: color-mix(in srgb, currentColor 3%, Canvas);
 }
 
-.tag {
-  padding: 3px 7px;
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--tag) 16%, transparent);
-  color: var(--tag);
-  font-size: 11px;
-  font-weight: 600;
+.avatar {
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, hsl(var(--hue) 70% 62%), hsl(calc(var(--hue) + 40) 60% 42%));
+  color: #fff;
+  font-weight: 700;
 }
 
-.title {
-  font-weight: 500;
-  line-height: 1.35;
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
-.id {
-  font: 10px/1 ui-monospace, Menlo, Consolas, monospace;
-  opacity: 0.45;
+.text small {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0.6;
+}
+
+.score {
+  display: flex;
+  gap: 3px;
+}
+
+.score i {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: color-mix(in srgb, currentColor 15%, transparent);
+}
+
+.score i.on {
+  background: #f59e0b;
 }
 </style>

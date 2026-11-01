@@ -1,34 +1,35 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue';
 import type { DnDStatus, DragItem, DropDestination } from '@vue-dnd-kit/core';
-import FileIcon from './FileIcon.vue';
-import { FILES, pathOf, trail, type FileNode } from './files';
+import NodeIcon from './NodeIcon.vue';
+import { MENU, pathOf, trail, type MenuNode } from './menu';
 
-// The dragged row, and under it where a drop would put it now: `to` changes as the
-// drag moves through the tree (its `parentKey` is the folder, `null` at the root).
+// The dragged row, and under it where a drop would put it now: `to` changes as the drag
+// moves through the menu (`parentKey` is the section, `null` at the top level; `index` its
+// place among the section's rows).
 const props = defineProps<{ items: DragItem[]; to: DropDestination | null; status: DnDStatus }>();
-const files = inject(FILES)!;
+const menu = inject(MENU)!;
 
-const file = computed(() => props.items[0]!.item as FileNode);
-// The files don't change before the drop: where it is now is where it comes from.
-const from = computed(() => trail(files.value, file.value.id)?.at(-2)?.id ?? null);
-const where = computed(() => (props.to ? pathOf(files.value, props.to.parentKey) : null));
+const page = computed(() => props.items[0]!.item as MenuNode);
+// The menu doesn't change before the drop: where the page is now is where it comes from.
+const from = computed(() => trail(menu.value, page.value.id)?.at(-2)?.id ?? null);
+const where = computed(() => (props.to ? pathOf(menu.value, props.to.parentKey) : null));
 const stays = computed(() => props.to && (props.to.parentKey ?? null) === from.value);
 </script>
 
 <template>
   <div class="move">
     <div class="row">
-      <FileIcon :name="file.name" :folder="file.folder" />
-      <span class="name">{{ file.name }}</span>
+      <NodeIcon :section="page.section" />
+      <span class="name">{{ page.title }}</span>
       <span v-if="items.length > 1" class="more">+{{ items.length - 1 }}</span>
     </div>
-    <!-- Gone once the drop is decided: the row lands, the files have changed. -->
-    <p v-if="where" class="where" :class="{ stays, gone: status !== 'dragging' }">
-      <template v-if="stays">Stays in <code>{{ where }}</code></template>
+    <!-- Gone once the drop is decided: the row lands, the menu has changed. -->
+    <p v-if="to && where" class="where" :class="{ stays, gone: status !== 'dragging' }">
+      <span v-if="stays">Stays in <b>{{ where }}</b>, row {{ to.index + 1 }}</span>
       <template v-else>
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9m-3.5-3.5L12 8l-3.5 3.5" /></svg>
-        Move into <code>{{ where }}</code>
+        <span>Move to <b>{{ where }}</b>, row {{ to.index + 1 }}</span>
       </template>
     </p>
   </div>
@@ -53,7 +54,7 @@ const stays = computed(() => props.to && (props.to.parentKey ?? null) === from.v
   box-shadow:
     0 0 0 1px color-mix(in srgb, currentColor 14%, transparent),
     0 12px 24px -10px rgb(0 0 0 / 0.5);
-  font: 13px/1 ui-monospace, Menlo, Consolas, monospace;
+  font-size: 13px;
 }
 
 .name {
@@ -103,8 +104,8 @@ const stays = computed(() => props.to && (props.to.parentKey ?? null) === from.v
   opacity: 0;
 }
 
-.where code {
-  font: 12px/1 ui-monospace, Menlo, Consolas, monospace;
+.where b {
+  font-weight: 700;
 }
 
 .where svg {

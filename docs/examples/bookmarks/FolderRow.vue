@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue';
-import { makeDroppable, makeSortableItem } from '@vue-dnd-kit/core';
+import { ref, toRef, useTemplateRef } from 'vue';
+import { makeDroppable, makeSortableItem, makeSortableList } from '@vue-dnd-kit/core';
+import LinkRow from './LinkRow.vue';
+import type { Folder, Link } from './bookmarks';
 
-type Link = { id: string; title: string; host: string; hue: number };
-const props = defineProps<{ folder: { id: string; title: string; links: Link[] } }>();
+const props = defineProps<{ folder: Folder }>();
+const emit = defineEmits<{ add: [links: Link[]] }>();
 
 const el = useTemplateRef<HTMLElement>('el');
 makeSortableItem(el, { item: () => props.folder, type: 'folder' });
@@ -14,12 +16,19 @@ makeSortableItem(el, { item: () => props.folder, type: 'folder' });
 const { isOver } = makeDroppable(el, {
   accept: 'link',
   onDrop: (e) => {
-    props.folder.links.push(...e.active.items.map((entry) => entry.item as Link));
+    emit('add', e.active.items.map((entry) => entry.item as Link));
     e.source?.remove(); // and out of the list they came from
   },
 });
 
+// Open, the folder's links are a list of the same group: they sort, and drag back out.
+// It takes links only: a folder never goes into a folder.
 const open = ref(false);
+const inner = useTemplateRef<HTMLElement>('inner');
+const { items: links } = makeSortableList(inner, {
+  items: toRef(props.folder, 'links'),
+  group: { name: 'bookmarks', put: ({ types }) => types.every((type) => type === 'link') },
+});
 </script>
 
 <template>
@@ -35,9 +44,8 @@ const open = ref(false);
       <span class="title">{{ folder.title }}</span>
       <span class="count">{{ folder.links.length }}</span>
     </div>
-    <ul v-if="open" class="links">
-      <li v-for="link in folder.links" :key="link.id">{{ link.title }} <small>{{ link.host }}</small></li>
-      <li v-if="!folder.links.length" class="none">Empty</li>
+    <ul v-if="open" ref="inner" class="links" :data-empty="links.length ? undefined : 'Empty: drop links here'">
+      <LinkRow v-for="link in links" :key="link.id" :link="link" />
     </ul>
   </li>
 </template>
@@ -140,23 +148,24 @@ svg {
 }
 
 .links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 40px;
   margin: 0;
-  padding: 0 12px 10px 42px;
+  padding: 0 8px 8px 34px;
   list-style: none;
 }
 
-.links li {
-  padding: 4px 0;
-  opacity: 0.8;
-}
-
-.links small {
-  margin-left: 6px;
-  font: 11px/1 ui-monospace, Menlo, Consolas, monospace;
+/* An open folder with no links: room to drop one in. */
+.links[data-empty]::before {
+  content: attr(data-empty);
+  display: grid;
+  place-items: center;
+  height: 40px;
+  border: 1.5px dashed color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 8px;
+  font-size: 12px;
   opacity: 0.55;
-}
-
-.links .none {
-  opacity: 0.45;
 }
 </style>

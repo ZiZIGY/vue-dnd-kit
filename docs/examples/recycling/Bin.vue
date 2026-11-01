@@ -20,7 +20,7 @@ const { active } = useDnD();
 const state = computed(() => {
   if (!active.value) return null;
   if (isOver.value) return isAccepting.value ? 'over' : 'refused';
-  return isAccepting.value ? 'accepting' : 'idle';
+  return isAccepting.value ? 'accepting' : 'unfit';
 });
 </script>
 
@@ -86,7 +86,7 @@ const state = computed(() => {
 }
 
 /* A drag is on, and this bin can't take it. */
-.bin.idle {
+.bin.unfit {
   opacity: 0.45;
 }
 

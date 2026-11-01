@@ -29,8 +29,9 @@ const into = (zone: 'archive' | 'trash') => (event: DnDEvent) => {
 };
 const archive = useTemplateRef<HTMLElement>('archive');
 const trash = useTemplateRef<HTMLElement>('trash');
-const { isOver: overArchive } = makeDroppable(archive, { id: 'Archive', onDrop: into('archive') });
-const { isOver: overTrash } = makeDroppable(trash, { id: 'Trash', onDrop: into('trash') });
+// Each zone's `data` says what a drop there does: the overlay reads it from `over`.
+const { isOver: overArchive } = makeDroppable(archive, { id: 'Archive', data: { verb: 'Archive' }, onDrop: into('archive') });
+const { isOver: overTrash } = makeDroppable(trash, { id: 'Trash', data: { verb: 'Delete', danger: true }, onDrop: into('trash') });
 </script>
 
 <template>

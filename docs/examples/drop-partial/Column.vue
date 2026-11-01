@@ -1,38 +1,40 @@
 <script setup lang="ts">
 import { ref, toRef, useTemplateRef } from 'vue';
 import { makeSortableList, useDnD } from '@vue-dnd-kit/core';
-import ChangeRow from './ChangeRow.vue';
+import PersonRow from './PersonRow.vue';
+import { CAPACITY, seatsLeft, type Person } from './server';
 
-interface Change {
-  id: string;
-  title: string;
-  approved: boolean;
-}
-
-const props = defineProps<{ column: { id: string; title: string; approvedOnly?: boolean; changes: Change[] } }>();
+const props = defineProps<{ column: { id: string; title: string; seats?: boolean; people: Person[] } }>();
 
 const notice = ref('');
+// Seats booked by others, as the server last said.
+const others = ref(0);
+const why = ref('');
 const { selection } = useDnD();
 const list = useTemplateRef<HTMLElement>('list');
 const { items, isOver } = makeSortableList(list, {
   id: props.column.id,
-  items: toRef(props.column, 'changes'),
-  group: 'release',
-  // Some keys: those land, the others fly back to where they came from.
-  onBeforeDrop: (event) => {
-    if (!props.column.approvedOnly || event.sameList) return 'accept';
-    const approved = event.items.filter((change) => change.approved).map((change) => change.id);
+  items: toRef(props.column, 'people'),
+  group: 'workshop',
+  // Only the server knows how many seats are left. The drop waits for it, the overlay
+  // where it was let go, then takes as many people as fit: the others fly back.
+  onBeforeDrop: async (event) => {
+    if (!props.column.seats || event.sameList) return 'accept';
+    notice.value = 'Checking seats…';
+    const { free, takenElsewhere } = await seatsLeft(props.column.people.length + others.value);
+    others.value += takenElsewhere;
+    why.value = takenElsewhere ? 'a seat just went to someone else' : 'the workshop is full';
+    if (!free) notice.value = `None booked: ${why.value}`;
     // No keys at all: nothing lands, and `onDrop` isn't called.
-    if (!approved.length) notice.value = 'Nothing shipped: not approved';
-    return approved;
+    return event.keys.slice(0, free);
   },
   onDrop: (event) => {
-    if (!props.column.approvedOnly || event.sameList) return;
-    // The changes sent back stay selected.
+    if (!props.column.seats || event.sameList) return;
+    // The people sent back stay selected.
     selection.delete(...event.accepted);
     notice.value = event.rejected.length
-      ? `${event.accepted.length} shipped, ${event.rejected.length} sent back: not approved`
-      : `${event.accepted.length} shipped`;
+      ? `${event.accepted.length} booked, ${event.rejected.length} back: ${why.value}`
+      : `${event.accepted.length} booked`;
   },
 });
 </script>
@@ -41,12 +43,12 @@ const { items, isOver } = makeSortableList(list, {
   <section class="column" :class="{ over: isOver }">
     <h3>
       {{ column.title }}
-      <span v-if="column.approvedOnly" class="rule">approved only</span>
+      <span v-if="column.seats" class="seats">{{ column.people.length + others }} / {{ CAPACITY }} seats</span>
     </h3>
-    <ul ref="list" class="changes">
-      <ChangeRow v-for="change in items" :key="change.id" :change="change" />
+    <ul ref="list" class="people">
+      <PersonRow v-for="person in items" :key="person.id" :person="person" />
     </ul>
-    <p v-if="column.approvedOnly" class="notice" role="status">{{ notice }}</p>
+    <p v-if="column.seats" class="notice" role="status">{{ notice }}</p>
   </section>
 </template>
 
@@ -74,17 +76,17 @@ h3 {
   font-weight: 600;
 }
 
-.rule {
-  font: 10px/1 ui-monospace, Menlo, Consolas, monospace;
+.seats {
+  font: 11px/1 ui-monospace, Menlo, Consolas, monospace;
   font-weight: 400;
-  opacity: 0.55;
+  opacity: 0.6;
 }
 
-.changes {
+.people {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-height: 190px;
+  min-height: 210px;
   margin: 0;
   padding: 0;
   list-style: none;

@@ -92,7 +92,7 @@
       "lists": {
         "title": "Listes et grilles",
         "text": "Rendez un brouillon de votre tableau, et il se réordonne en direct pendant le glissement. Au dépôt, le nouvel ordre est écrit dans votre ref. Vertical, horizontal ou en grille de n'importe quelle taille.",
-        "hint": "Faites glisser un morceau ou une application",
+        "hint": "Réorganisez les applications ou placez-en une dans le dock",
         "label": "Tri"
       },
       "kanban": {
@@ -123,7 +123,7 @@
         "label": "Contraintes",
         "title": "Axes, limites et grilles",
         "text": "Une zone de glissement fixe les règles de tout ce qui y est glissé : verrouillez un axe, gardez les glissements dans ses bords, alignez sur une grille — et changez ces règles pendant que l'application tourne.",
-        "hint": "Changez les règles, puis faites glisser une note"
+        "hint": "Changez les règles, puis faites glisser une forme"
       }
     },
     "more": [

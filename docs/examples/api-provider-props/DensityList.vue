@@ -7,8 +7,13 @@ const tasks = defineModel<{ id: string; title: string }[]>({ required: true });
 defineProps<{ title: string; compact?: boolean }>();
 
 const list = useTemplateRef<HTMLElement>('list');
-// Two lists of one group, with rows of two sizes: what `overlay-fit` is about.
-const { items, isOver } = makeSortableList(list, { items: tasks, group: 'density' });
+// Two lists of one group, with rows of two sizes: what `overlay-fit` is about. `clone`
+// makes the copies a held `copy-modifier` asks for.
+const { items, isOver } = makeSortableList(list, {
+  items: tasks,
+  group: 'density',
+  clone: (task) => ({ ...task, id: `${task.id}-${Math.random().toString(36).slice(2, 6)}` }),
+});
 </script>
 
 <template>
@@ -35,7 +40,7 @@ const { items, isOver } = makeSortableList(list, { items: tasks, group: 'density
   width: 160px;
 }
 
-/* The list the collision function picked. */
+/* The list under the drag. */
 .column.over {
   box-shadow: inset 0 0 0 1.5px #42b883;
 }

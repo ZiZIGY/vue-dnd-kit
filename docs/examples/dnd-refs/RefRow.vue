@@ -15,7 +15,7 @@ const onClick = (event: MouseEvent) => {
 </script>
 
 <template>
-  <li ref="el" class="row" :class="{ placeholder: isPlaceholder, dragging: isDragging, selected }" @click="onClick">
+  <li ref="el" class="row" :class="{ placeholder: isPlaceholder, selected }" @click="onClick">
     <span class="title">
       <i v-if="task.urgent" class="urgent" aria-label="Urgent" />
       {{ task.title }}

@@ -19,7 +19,7 @@ const { items } = makeSortableList(board, {
   items: notes,
   strategy: 'grid',
   // An async `onBeforeDrop` keeps the overlay where it was let go, as `dropping`, until it resolves.
-  onBeforeDrop: () => (props.slowSave ? new Promise<true>((resolve) => setTimeout(() => resolve(true), 1200)) : true),
+  onBeforeDrop: () => (props.slowSave ? new Promise<true>((resolve) => setTimeout(() => resolve(true), 1000)) : true),
 });
 </script>
 

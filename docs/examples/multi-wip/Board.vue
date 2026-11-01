@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useDnD } from '@vue-dnd-kit/core';
+import { useDnD, useDnDMonitor } from '@vue-dnd-kit/core';
 import WipColumn from './WipColumn.vue';
 import { COLUMNS } from './board';
 
 const columns = ref(COLUMNS.map((column) => ({ ...column, cards: [...column.cards] })));
 const { selection } = useDnD();
+// What the last drop left out, until the next drag starts.
 const notice = ref('');
+useDnDMonitor({ onDragStart: () => (notice.value = '') });
 </script>
 
 <template>

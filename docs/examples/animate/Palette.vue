@@ -103,8 +103,9 @@ button:focus-visible {
 
 .tiles {
   display: grid;
-  grid-template-columns: repeat(4, 76px);
-  grid-auto-rows: 76px;
+  /* Narrower on a phone: four tiles to a row all the same. */
+  grid-template-columns: repeat(4, minmax(0, 76px));
+  align-content: start;
   gap: 12px;
   min-height: 164px;
 }

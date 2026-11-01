@@ -1,22 +1,19 @@
 <script setup lang="ts">
-import { computed, useTemplateRef } from 'vue';
+import { useTemplateRef } from 'vue';
 import { makeDraggable, useDnD } from '@vue-dnd-kit/core';
+import Formation from './Formation.vue';
+import { SIZE, type Icon } from './icons';
 
-const props = defineProps<{
-  icon: { id: string; name: string; kind: string; x: number; y: number };
-  offset: { x: number; y: number } | null;
-}>();
+const props = defineProps<{ icon: Icon }>();
 
 const el = useTemplateRef<HTMLElement>('el');
-const { isDragging, selected } = makeDraggable(el, { id: () => props.icon.id });
-const { active, selection } = useDnD();
-
-// The grabbed icon travels in the overlay; the others selected with it follow by the offset.
-const grabbed = computed(() => active.value?.id === props.icon.id);
-const follow = computed(() => {
-  const { offset } = props;
-  return isDragging.value && !grabbed.value && offset ? `${offset.x}px ${offset.y}px` : undefined;
+// The icon's data is where it lies: the overlay lays the dragged icons out by it.
+const { isDragging, selected } = makeDraggable(el, {
+  id: () => props.icon.id,
+  data: () => props.icon,
+  overlay: Formation,
 });
+const { selection } = useDnD();
 
 const onClick = (event: MouseEvent) => {
   if (event.ctrlKey || event.metaKey) selected.value = !selected.value;
@@ -30,8 +27,8 @@ const COLORS: Record<string, string> = { jpg: '#42b883', txt: '#94a3b8', mp3: '#
   <div
     ref="el"
     class="icon"
-    :class="{ selected, grabbed }"
-    :style="{ left: `${icon.x}px`, top: `${icon.y}px`, translate: follow }"
+    :class="{ selected, dragging: isDragging }"
+    :style="{ left: `${icon.x}px`, top: `${icon.y}px`, width: `${SIZE}px`, height: `${SIZE}px` }"
     @click="onClick"
   >
     <svg v-if="icon.kind === 'folder'" viewBox="0 0 40 32" aria-hidden="true">
@@ -49,9 +46,9 @@ const COLORS: Record<string, string> = { jpg: '#42b883', txt: '#94a3b8', mp3: '#
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   box-sizing: border-box;
-  width: 76px;
   padding: 6px 4px;
   border-radius: 10px;
   cursor: grab;
@@ -67,13 +64,14 @@ const COLORS: Record<string, string> = { jpg: '#42b883', txt: '#94a3b8', mp3: '#
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #42b883 60%, transparent);
 }
 
-/* Its copy is in the overlay: the icon itself waits, pale. */
-.icon.grabbed {
-  opacity: 0.3;
+/* Dragged, and landing: their copies are in the overlay, the icons wait where they were. */
+.icon.dragging {
+  opacity: 0.35;
 }
 
-/* The copy in the overlay sits on no desktop: it gets a background of its own. */
+/* The copies in the overlay sit on no desktop: they get a background of their own. */
 [data-dnd-overlay] .icon {
+  opacity: 1;
   background: color-mix(in srgb, #42b883 18%, Canvas);
   box-shadow: 0 14px 26px -12px rgb(0 0 0 / 0.6);
 }

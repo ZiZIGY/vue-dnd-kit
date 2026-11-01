@@ -3,9 +3,7 @@ import { ref, useTemplateRef } from 'vue';
 import { makeSortableList } from '@vue-dnd-kit/core';
 import FolderRow from './FolderRow.vue';
 import LinkRow from './LinkRow.vue';
-
-type Link = { id: string; title: string; host: string; hue: number };
-type Folder = { id: string; title: string; links: Link[] };
+import { isFolder, type Folder, type Link } from './bookmarks';
 
 const bookmarks = ref<(Link | Folder)[]>([
   { id: 'vue', title: 'Vue', host: 'vuejs.org', hue: 153 },
@@ -15,10 +13,9 @@ const bookmarks = ref<(Link | Folder)[]>([
   { id: 'github', title: 'GitHub', host: 'github.com', hue: 270 },
   { id: 'caniuse', title: 'Can I use', host: 'caniuse.com', hue: 30 },
 ]);
-const isFolder = (entry: Link | Folder): entry is Folder => 'links' in entry;
-
+// One group with the folders' own lists: links move between them.
 const list = useTemplateRef<HTMLElement>('list');
-const { items } = makeSortableList(list, { items: bookmarks });
+const { items } = makeSortableList(list, { items: bookmarks, group: 'bookmarks' });
 </script>
 
 <template>
@@ -26,7 +23,7 @@ const { items } = makeSortableList(list, { items: bookmarks });
     <h4>Bookmarks</h4>
     <ul ref="list" class="rows">
       <template v-for="entry in items" :key="entry.id">
-        <FolderRow v-if="isFolder(entry)" :folder="entry" />
+        <FolderRow v-if="isFolder(entry)" :folder="entry" @add="(links) => entry.links.push(...links)" />
         <LinkRow v-else :link="entry" />
       </template>
     </ul>

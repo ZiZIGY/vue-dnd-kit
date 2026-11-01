@@ -1,27 +1,26 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { DnDProvider, closestCenter, pointerFirst, pointerWithin, type DropAnimation } from '@vue-dnd-kit/core';
+import { DnDProvider, type ActivationOptions } from '@vue-dnd-kit/core';
 import PropRow from './PropRow.vue';
 import DensityList from './DensityList.vue';
 
-const COLLISIONS = { pointerFirst, pointerWithin, closestCenter };
-const DROPS: Record<string, DropAnimation> = {
-  true: true,
-  false: false,
-  '{ duration: 900 }': { duration: 900, easing: 'cubic-bezier(.2, .8, .2, 1)' },
+const ACTIVATIONS: Record<string, ActivationOptions | undefined> = {
+  default: undefined,
+  '{ mouse: { delay: 300 } }': { mouse: { delay: 300, tolerance: 5 } },
 };
 
-const collision = ref<keyof typeof COLLISIONS>('pointerFirst');
 const overlayFit = ref<'slot' | 'source'>('slot');
-const animation = ref<'true' | 'false'>('true');
-const dropAnimation = ref('true');
+const activation = ref('default');
+const keyboard = ref<'true' | 'false'>('true');
+const copyModifier = ref<'Alt' | 'Shift' | 'null'>('Alt');
 
 // The provider reads its props when it needs them: a change applies to the next drag.
 const props = computed(() => ({
-  collision: COLLISIONS[collision.value],
   overlayFit: overlayFit.value,
-  animation: animation.value === 'true',
-  dropAnimation: DROPS[dropAnimation.value],
+  activation: ACTIVATIONS[activation.value],
+  // `false` turns keyboard drags off; an object sets their keys and steps.
+  keyboard: keyboard.value === 'true' ? undefined : (false as const),
+  copyModifier: copyModifier.value === 'null' ? null : copyModifier.value,
 }));
 
 const compact = ref([
@@ -38,10 +37,10 @@ const roomy = ref([
   <DnDProvider v-bind="props">
     <div class="demo">
       <div class="props" role="group" aria-label="DnDProvider props">
-        <PropRow v-model="collision" name=":collision" :options="Object.keys(COLLISIONS) as (keyof typeof COLLISIONS)[]" />
         <PropRow v-model="overlayFit" name="overlay-fit" :options="['slot', 'source']" />
-        <PropRow v-model="animation" name=":animation" :options="['true', 'false']" />
-        <PropRow v-model="dropAnimation" name=":drop-animation" :options="Object.keys(DROPS)" />
+        <PropRow v-model="activation" name=":activation" :options="Object.keys(ACTIVATIONS)" />
+        <PropRow v-model="keyboard" name=":keyboard" :options="['true', 'false']" />
+        <PropRow v-model="copyModifier" name="copy-modifier" :options="['Alt', 'Shift', 'null']" />
       </div>
       <div class="lists">
         <DensityList v-model="compact" title="Compact" compact />

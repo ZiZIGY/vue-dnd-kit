@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { DnDProvider } from '@vue-dnd-kit/core';
-import FileTree from './FileTree.vue';
+import Inventory from './Inventory.vue';
 </script>
 
 <template>
   <DnDProvider>
-    <FileTree />
+    <Inventory />
   </DnDProvider>
 </template>

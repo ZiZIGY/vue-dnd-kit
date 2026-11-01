@@ -3,7 +3,7 @@ import { useTemplateRef } from 'vue';
 import { makeSortableItem } from '@vue-dnd-kit/core';
 import AppIcon from './AppIcon.vue';
 
-const props = defineProps<{ app: { id: string; name: string } }>();
+const props = defineProps<{ app: { id: string; name: string }; inDock?: boolean }>();
 const el = useTemplateRef<HTMLElement>('el');
 makeSortableItem(el, { item: () => props.app });
 </script>
@@ -11,7 +11,8 @@ makeSortableItem(el, { item: () => props.app });
 <template>
   <div ref="el" class="tile">
     <AppIcon :id="app.id" />
-    <span class="name">{{ app.name }}</span>
+    <!-- In the dock, the icon alone. -->
+    <span v-if="!inDock" class="name">{{ app.name }}</span>
   </div>
 </template>
 

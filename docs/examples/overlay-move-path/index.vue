@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { provide, ref } from 'vue';
 import { DnDProvider } from '@vue-dnd-kit/core';
-import FileTree from './FileTree.vue';
-import { FILES, project } from './files';
+import MenuTree from './MenuTree.vue';
+import { MENU, site } from './menu';
 
-// Provided above the provider: its overlay renders under it, so the overlay sees them too.
-provide(FILES, ref(project()));
+// Provided above the provider: its overlay renders under it, so the overlay sees it too.
+provide(MENU, ref(site()));
 </script>
 
 <template>
   <DnDProvider>
-    <FileTree />
+    <MenuTree />
   </DnDProvider>
 </template>

@@ -23,7 +23,8 @@ makeSortableItem(el, {
       <small>{{ chat.text }}</small>
     </span>
     <time>{{ chat.time }}</time>
-    <span class="grip" aria-hidden="true">⠿</span>
+    <!-- Only where it works: a button, so a keyboard drag starts from it too. -->
+    <button v-if="handle" type="button" class="grip" :aria-label="`Move the chat with ${chat.name}`">⠿</button>
   </li>
 </template>
 
@@ -97,22 +98,19 @@ time {
   opacity: 0.45;
 }
 
+/* The only place a drag starts: a touch on it never scrolls. */
 .grip {
   display: grid;
   place-items: center;
   width: 26px;
   height: 32px;
   margin-right: -4px;
+  padding: 0;
+  border: 0;
   border-radius: 7px;
-  font-size: 16px;
-  opacity: 0.3;
-}
-
-/* The only place a drag starts: it shows, and a touch on it never scrolls. */
-.by-handle .grip {
   background: color-mix(in srgb, #42b883 14%, transparent);
   color: #42b883;
-  opacity: 1;
+  font-size: 16px;
   cursor: grab;
   touch-action: none;
 }

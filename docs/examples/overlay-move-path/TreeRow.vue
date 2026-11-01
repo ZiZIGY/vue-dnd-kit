@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeSortableItem, type FlatNode, type Key } from '@vue-dnd-kit/core';
-import FileIcon from './FileIcon.vue';
-import type { FileNode } from './files';
+import NodeIcon from './NodeIcon.vue';
+import type { MenuNode } from './menu';
 
-const props = defineProps<{ node: FlatNode<FileNode>; indent: number }>();
+const props = defineProps<{ node: FlatNode<MenuNode>; indent: number }>();
 const emit = defineEmits<{ toggle: [key: Key] }>();
 const el = useTemplateRef<HTMLElement>('el');
 makeSortableItem(el, { id: () => props.node.key });
@@ -14,10 +14,10 @@ makeSortableItem(el, { id: () => props.node.key });
   <!-- Indented by its margin, not its padding: the row itself moves with its depth, so the
        overlay takes the slot's width and lands on its level, and a depth change slides. -->
   <div ref="el" class="row" :style="{ marginInlineStart: `${node.depth * indent}px` }">
-    <!-- One guide per level, like an editor's file explorer: left of the row, in its margin. -->
+    <!-- One guide per level: left of the row, in its margin. -->
     <span v-for="level in node.depth" :key="level" class="guide" :style="{ left: `${15 - (node.depth - level + 1) * indent}px` }" />
     <button
-      v-if="node.item.folder"
+      v-if="node.item.section"
       type="button"
       class="toggle"
       :class="{ open: !node.collapsed }"
@@ -27,8 +27,8 @@ makeSortableItem(el, { id: () => props.node.key });
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4" /></svg>
     </button>
     <span v-else class="toggle" />
-    <FileIcon :name="node.item.name" :folder="node.item.folder" :open="!node.collapsed" />
-    <span class="name">{{ node.item.name }}</span>
+    <NodeIcon :section="node.item.section" />
+    <span class="name">{{ node.item.title }}</span>
   </div>
 </template>
 
@@ -41,9 +41,9 @@ makeSortableItem(el, { id: () => props.node.key });
   height: 30px;
   padding: 0 10px 0 8px;
   border-radius: 6px;
-  /* Its own background, the explorer's: the overlay, a copy of the row, isn't see-through. */
+  /* Its own background, the editor's: the overlay, a copy of the row, isn't see-through. */
   background: color-mix(in srgb, currentColor 3%, Canvas);
-  font: 13px/1 ui-monospace, Menlo, Consolas, monospace;
+  font-size: 13px;
   cursor: grab;
   user-select: none;
 }

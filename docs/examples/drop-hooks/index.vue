@@ -1,27 +1,12 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { ref } from 'vue';
 import { DnDProvider } from '@vue-dnd-kit/core';
-import Column from './Column.vue';
 import Monitor from './Monitor.vue';
-
-type Answer = 'accept' | 'reject';
-const ANSWERS: Answer[] = ['accept', 'reject'];
-
-const columns = reactive([
-  {
-    id: 'todo',
-    title: 'To do',
-    tasks: [
-      { id: 'draft', title: 'Draft the post' },
-      { id: 'review', title: 'Get a review' },
-      { id: 'publish', title: 'Publish it' },
-    ],
-  },
-  { id: 'done', title: 'Done', tasks: [{ id: 'outline', title: 'Outline' }] },
-]);
+import Notes from './Notes.vue';
+import { ANSWERS, type Answer } from './types';
 
 const monitorAnswer = ref<Answer>('accept');
-const listAnswer = ref<Answer>('accept');
+const targetAnswer = ref<Answer>('accept');
 
 // Every hook of the last drop, in the order they ran.
 const steps = ref<{ who: string; what: string }[]>([]);
@@ -33,6 +18,7 @@ const trace = (who: string, what: string) => steps.value.push({ who, what });
     @drag-start="steps = []"
     @drag-end="trace('provider', '@drag-end')"
     @drag-cancel="trace('provider', '@drag-cancel')"
+    @drag-settle="trace('provider', '@drag-settle: landed')"
   >
     <div class="demo">
       <div class="switches">
@@ -44,22 +30,20 @@ const trace = (who: string, what: string) => steps.value.push({ who, what });
           </label>
         </fieldset>
         <fieldset>
-          <legend>lists answer</legend>
-          <label v-for="value in ANSWERS" :key="value" :class="{ on: listAnswer === value }">
-            <input v-model="listAnswer" type="radio" :value="value" />
+          <legend>target answers</legend>
+          <label v-for="value in ANSWERS" :key="value" :class="{ on: targetAnswer === value }">
+            <input v-model="targetAnswer" type="radio" :value="value" />
             {{ value }}
           </label>
         </fieldset>
       </div>
       <div class="layout">
-        <div class="board">
-          <Column v-for="column in columns" :key="column.id" :column="column" :answer="listAnswer" :trace="trace" />
-        </div>
+        <Notes :answer="targetAnswer" :trace="trace" />
         <ol class="steps" aria-label="Hooks of the last drop">
           <li v-for="(step, index) in steps" :key="index">
             <span class="who">{{ step.who }}</span>{{ step.what }}
           </li>
-          <li v-if="!steps.length" class="empty">Move a card to see the hooks run</li>
+          <li v-if="!steps.length" class="empty">Move a note, or drop one in the trash</li>
         </ol>
       </div>
       <Monitor :answer="monitorAnswer" :trace="trace" />
@@ -128,12 +112,6 @@ input {
   align-items: flex-start;
   justify-content: center;
   gap: 16px;
-}
-
-.board {
-  display: grid;
-  grid-template-columns: repeat(2, 130px);
-  gap: 10px;
 }
 
 .steps {

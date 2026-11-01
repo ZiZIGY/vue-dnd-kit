@@ -2,9 +2,10 @@
 import { useTemplateRef } from 'vue';
 import { makeSortableItem } from '@vue-dnd-kit/core';
 
-const props = defineProps<{ ticket: { id: string; title: string; tag: string; approved: boolean } }>();
+const props = defineProps<{ ticket: { id: string; title: string; tag: string; approved: boolean }; column: string }>();
 const el = useTemplateRef<HTMLElement>('el');
-makeSortableItem(el, { item: () => props.ticket });
+// Its column as `data`: Done's overlay tells tickets arriving from the ones already there.
+makeSortableItem(el, { item: () => props.ticket, data: () => ({ column: props.column }) });
 </script>
 
 <template>

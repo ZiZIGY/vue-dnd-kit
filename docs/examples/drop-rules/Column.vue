@@ -1,37 +1,33 @@
 <script setup lang="ts">
 import { ref, toRef, useTemplateRef } from 'vue';
-import { makeSortableList, type SortableGroupOptions } from '@vue-dnd-kit/core';
+import { makeSortableList, useDnDMonitor, type SortableGroupOptions } from '@vue-dnd-kit/core';
 import Card from './Card.vue';
-
-interface Pull {
-  id: string;
-  title: string;
-  approved: boolean;
-}
+import { LIMIT, fits, type Attachment } from './files';
 
 const props = defineProps<{
-  column: { id: string; title: string; rule?: 'put' | 'onBeforeDrop'; pulls: Pull[] };
+  column: { id: string; title: string; rule?: 'put' | 'onBeforeDrop'; files: Attachment[] };
 }>();
-
-const approved = (pulls: Pull[]) => pulls.every((pull) => pull.approved);
 
 // The same rule, two ways.
 // `group.put`: asked while dragging. A refused drag never enters the list.
 const group: SortableGroupOptions =
   props.column.rule === 'put'
-    ? { name: 'merge', put: ({ items }) => approved(items as Pull[]) }
-    : { name: 'merge' };
+    ? { name: 'attachments', put: ({ items }) => fits(items as Attachment[]) }
+    : { name: 'attachments' };
 
+// What the last release sent back, until the next drag.
 const notice = ref('');
+useDnDMonitor({ onDragStart: () => (notice.value = '') });
+
 const list = useTemplateRef<HTMLElement>('list');
 const { items, isOver, isAccepting } = makeSortableList(list, {
   id: props.column.id,
-  items: toRef(props.column, 'pulls'),
+  items: toRef(props.column, 'files'),
   group,
   // `onBeforeDrop`: asked on release. The drag enters the list, then flies back.
   onBeforeDrop: (event) => {
-    if (props.column.rule !== 'onBeforeDrop' || approved(event.items)) return 'accept';
-    notice.value = `${event.items[0]!.title}: sent back`;
+    if (props.column.rule !== 'onBeforeDrop' || fits(event.items)) return 'accept';
+    notice.value = `${event.items[0]!.name}: over ${LIMIT} MB, sent back`;
     return 'reject';
   },
 });
@@ -41,11 +37,11 @@ const { items, isOver, isAccepting } = makeSortableList(list, {
   <section class="column" :class="{ over: isOver && isAccepting, refuses: isOver && !isAccepting }">
     <h3>{{ column.title }}</h3>
     <code v-if="column.rule" class="rule">{{ column.rule === 'put' ? 'group.put' : 'onBeforeDrop' }}</code>
-    <ul ref="list" class="pulls">
-      <Card v-for="pull in items" :key="pull.id" :pull="pull" />
+    <ul ref="list" class="files">
+      <Card v-for="file in items" :key="file.id" :file="file" />
     </ul>
     <p v-if="column.rule === 'onBeforeDrop'" class="notice" role="status">{{ notice }}</p>
-    <p v-else-if="column.rule === 'put'" class="notice refused">{{ isOver && !isAccepting ? 'Not approved: refused' : '' }}</p>
+    <p v-else-if="column.rule === 'put'" class="notice refused">{{ isOver && !isAccepting ? `Over ${LIMIT} MB: refused` : '' }}</p>
   </section>
 </template>
 
@@ -85,7 +81,7 @@ h3 {
   color: #42b883;
 }
 
-.pulls {
+.files {
   display: flex;
   flex-direction: column;
   gap: 6px;

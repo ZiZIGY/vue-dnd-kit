@@ -2,24 +2,35 @@
 import { computed, inject, useTemplateRef } from 'vue';
 import { makeDroppable, useDnD } from '@vue-dnd-kit/core';
 import Piece from './Piece.vue';
-import { isDark, type Piece as PieceData } from './chess';
+import PromotionOverlay from './PromotionOverlay.vue';
+import { isDark, isLastRank, type Piece as PieceData } from './chess';
 import { GAME } from './game';
 
 const props = defineProps<{ square: string }>();
 const game = inject(GAME)!;
 const el = useTemplateRef<HTMLElement>('el');
+const { active } = useDnD();
+/** The piece in hand, as it was when it was picked up. */
+const held = computed(() => active.value?.data as PieceData | undefined);
 
 const { isOver, isAccepting } = makeDroppable(el, {
   id: props.square,
   // A rule, asked while a piece is dragged: the square takes the piece's legal moves only.
   // Anything else is refused, and the piece flies back.
   accept: ({ active }) => game.canMove(active.id, props.square),
+  // Over the last rank, a pawn in hand shows the piece it becomes: this square's overlay
+  // takes the place of the piece's own. It is read once more after `onDrop`, for the
+  // landing: hence the pawn as it was picked up, not the game's piece, a queen by then.
+  overlay: computed(() => (held.value?.kind === 'P' && isLastRank(props.square) ? PromotionOverlay : undefined)),
+  // Asked on release. A pawn reaching the last rank waits here, the overlay on the square,
+  // until you pick its new piece: 'accept', 'reject' (Escape) or 'continue' (keep dragging).
+  onBeforeDrop: ({ active }) =>
+    game.promotes(active.id, props.square) ? game.askPromotion(props.square) : 'accept',
   onDrop: ({ active }) => game.move(String(active.id), props.square),
 });
 
 const piece = computed(() => game.pieceAt(props.square));
-const { active } = useDnD();
-const from = computed(() => (active.value?.data as PieceData | undefined)?.square === props.square);
+const from = computed(() => held.value?.square === props.square);
 const last = computed(() => game.last.value?.from === props.square || game.last.value?.to === props.square);
 </script>
 
@@ -27,6 +38,7 @@ const last = computed(() => game.last.value?.from === props.square || game.last.
   <div
     ref="el"
     class="square"
+    :data-square="square"
     :class="{
       dark: isDark(square),
       marked: from || last,

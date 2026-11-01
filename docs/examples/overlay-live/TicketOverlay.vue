@@ -7,8 +7,9 @@ import type { DnDStatus, DragItem, DragMode, Over } from '@vue-dnd-kit/core';
 const props = defineProps<{ items: DragItem[]; over: Over | null; accepted: boolean; status: DnDStatus; mode: DragMode }>();
 const ticket = computed(() => props.items[0]?.item as { title: string; tag: string; approved: boolean });
 
+// Dropping without a target: a cancel or a refused drop flies back where it was.
 const state = computed(() => {
-  if (props.status === 'dropping') return props.over ? 'landed' : 'landing';
+  if (props.status === 'dropping') return props.over ? 'landed' : 'back';
   if (!props.over) return 'free';
   return props.accepted ? 'ok' : 'refused';
 });
@@ -23,8 +24,8 @@ const hint = computed(() => {
       return `${column} takes approved tickets only`;
     case 'landed':
       return `${copy ? 'Copied' : 'Moved'} to ${column}`;
-    case 'landing':
-      return 'Landing';
+    case 'back':
+      return 'Back where it was';
     default:
       return 'Drop on a column · Alt copies';
   }

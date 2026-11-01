@@ -33,11 +33,11 @@
 
   const SHOWCASES = [
     { key: 'drop', example: 'drop-zones', focus: 'Folder.vue', height: '40rem', guide: 'drag-and-drop' },
-    { key: 'lists', example: 'lists', focus: 'Playlist.vue', height: '34rem', guide: 'sortable-lists' },
+    { key: 'lists', example: 'lists', focus: 'HomeScreen.vue', height: '34rem', guide: 'sortable-lists' },
     { key: 'kanban', example: 'kanban', focus: 'Column.vue', height: '30rem', guide: 'shared-lists' },
-    { key: 'tree', example: 'tree', focus: 'FileTree.vue', height: '34rem', guide: 'trees' },
+    { key: 'tree', example: 'tree', focus: 'Inventory.vue', height: '34rem', guide: 'trees' },
     { key: 'multi', example: 'multi-drag', focus: 'Gallery.vue', height: '30rem', bleed: true, guide: 'multi-drag' },
-    { key: 'constraints', example: 'constraints', focus: 'Board.vue', height: '32rem', guide: 'constraints' },
+    { key: 'constraints', example: 'constraints', focus: 'Slide.vue', height: '32rem', guide: 'constraints' },
   ];
   const showcases = computed(() => SHOWCASES.map((showcase) => ({ ...showcase, docs: docs(`guides/${showcase.guide}`) })));
 

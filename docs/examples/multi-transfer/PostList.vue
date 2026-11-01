@@ -1,26 +1,32 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue';
+import { useTemplateRef } from 'vue';
 import { makeSortableList } from '@vue-dnd-kit/core';
 import PostCard from './PostCard.vue';
+import { pickCover, type Choice, type Post } from './posts';
 
-type Post = { id: string; title: string; cover: number | null };
-const props = defineProps<{ id: string; title: string; needsCover?: boolean }>();
+const props = defineProps<{
+  id: string;
+  title: string;
+  /** Asks what to do with posts without a cover; only lists that need one ask. */
+  ask?: (missing: Post[], ready: number) => Promise<Choice>;
+}>();
 const posts = defineModel<Post[]>('posts', { required: true });
-const notice = ref('');
 
 const list = useTemplateRef<HTMLElement>('list');
 const { items, isOver } = makeSortableList(list, {
   id: props.id,
   items: posts,
   group: 'blog',
-  // Scheduled takes only the posts that have a cover: the keys returned are the ones
-  // accepted, and the others fly back where they came from.
-  onBeforeDrop: (event) => {
-    if (!props.needsCover || event.sameList) return true;
-    const ready = event.keys.filter((_, index) => event.items[index]!.cover !== null);
-    const missing = event.keys.length - ready.length;
-    notice.value = `${ready.length} scheduled` + (missing ? ` · ${missing} without a cover` : '');
-    return ready;
+  // A scheduled post needs a cover. Dropped with posts that have none, the list asks what
+  // to do, and the drop waits for the answer: every post (covers added), the ready ones
+  // (the keys returned; the others fly back), or none.
+  onBeforeDrop: async (event) => {
+    const missing = event.items.filter((post) => post.cover === null);
+    if (!props.ask || event.sameList || !missing.length) return true;
+    const choice = await props.ask(missing, event.items.length - missing.length);
+    if (choice === 'cover') missing.forEach((post) => (post.cover = pickCover()));
+    if (choice === 'ready') return event.keys.filter((_, index) => event.items[index]!.cover !== null);
+    return choice === 'cover';
   },
 });
 </script>
@@ -29,13 +35,12 @@ const { items, isOver } = makeSortableList(list, {
   <section class="column" :class="{ over: isOver }">
     <h3>
       {{ title }}
-      <small v-if="needsCover">with a cover</small>
+      <small v-if="ask">with a cover</small>
       <span class="count">{{ posts.length }}</span>
     </h3>
     <ul ref="list" class="posts">
       <PostCard v-for="post in items" :key="post.id" :post="post" />
     </ul>
-    <p v-if="notice" class="notice">{{ notice }}</p>
   </section>
 </template>
 
@@ -86,11 +91,5 @@ small {
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.notice {
-  margin: 10px 4px 0;
-  font-size: 12px;
-  color: #42b883;
 }
 </style>

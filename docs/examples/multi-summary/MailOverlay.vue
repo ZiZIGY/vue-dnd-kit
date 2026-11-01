@@ -4,21 +4,21 @@ import type { DragItem, Over } from '@vue-dnd-kit/core';
 
 const props = defineProps<{ items: DragItem[]; over: Over | null }>();
 
-// One summary for any number of mails: the count, the first subject, where they go.
+// One summary for any number of mails: the count, the first subject, and what the drop
+// does, from the `data` of the zone under it.
 const first = computed(() => props.items[0]?.item as { subject: string });
 const count = computed(() => props.items.length);
+const zone = computed(() => props.over?.data as { verb: string; danger?: boolean } | undefined);
 const action = computed(() => {
   const noun = count.value === 1 ? 'conversation' : 'conversations';
-  if (props.over?.id === 'Archive') return `Archive ${count.value} ${noun}`;
-  if (props.over?.id === 'Trash') return `Delete ${count.value} ${noun}`;
-  return `Move ${count.value} ${noun}`;
+  return `${zone.value?.verb ?? 'Move'} ${count.value} ${noun}`;
 });
 </script>
 
 <template>
   <!-- The box keeps the row's size; the summary hangs off its middle, by the pointer. -->
   <div class="box">
-    <div class="summary" :class="{ stack: count > 1, danger: over?.id === 'Trash' }">
+    <div class="summary" :class="{ stack: count > 1, danger: zone?.danger }">
       <span class="count">{{ count }}</span>
       <span class="text">
         <strong>{{ action }}</strong>

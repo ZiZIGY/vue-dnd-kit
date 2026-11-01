@@ -18,7 +18,7 @@ const style = computed(() => (transform.value ? { transform: `translate(${transf
 
 <template>
   <div ref="el" class="card" :class="{ dragging: isDragging, handled: handle, self, disabled }" :style="style">
-    <span v-if="handle" ref="grip" class="grip" aria-label="Drag">⋮⋮</span>
+    <button v-if="handle" ref="grip" type="button" class="grip" aria-label="Drag">⋮⋮</button>
     <strong>{{ title }}</strong>
     <code>{{ code }}</code>
   </div>
@@ -75,13 +75,17 @@ const style = computed(() => (transform.value ? { transform: `translate(${transf
   opacity: 0.55;
 }
 
+/* A button: it takes focus, so a keyboard drag starts from it too. */
 .grip {
   position: absolute;
   top: 50%;
   left: 12px;
   translate: 0 -50%;
   padding: 4px 2px;
+  border: 0;
   border-radius: 4px;
+  background: none;
+  color: inherit;
   font-size: 13px;
   letter-spacing: -2px;
   opacity: 0.5;

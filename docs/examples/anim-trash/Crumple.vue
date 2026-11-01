@@ -14,11 +14,12 @@ const fall = ref<Record<string, string> | null>(null);
 watch(
   () => props.status,
   (status) => {
-    if (status !== 'dropping' || !props.over || !paper.value) return;
-    // While the drop animates, `over` is the bin it was dropped on.
-    const bin = props.over.element.querySelector('svg')?.getBoundingClientRect();
+    if (status !== 'dropping' || !paper.value) return;
+    // While the drop animates, `over` is the bin it was dropped on: its `data` has the drawing.
+    const bin = (props.over?.data as { bin?: SVGElement | null } | undefined)?.bin?.getBoundingClientRect();
     if (!bin) return;
     const from = paper.value.getBoundingClientRect();
+    // To the middle of its mouth, a third of the way down the drawing.
     fall.value = {
       '--dx': `${bin.left + bin.width / 2 - (from.left + from.width / 2)}px`,
       '--dy': `${bin.top + bin.height * 0.3 - (from.top + from.height / 2)}px`,

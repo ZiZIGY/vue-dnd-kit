@@ -92,7 +92,7 @@
       "lists": {
         "title": "Lists and grids",
         "text": "Render a draft of your array and it reorders live while you drag. On drop, the new order is written into your ref. Vertical, horizontal or a grid of any size.",
-        "hint": "Drag a track or an app",
+        "hint": "Rearrange the apps, or move one into the dock",
         "label": "Sortable"
       },
       "kanban": {
@@ -123,7 +123,7 @@
         "label": "Constraints",
         "title": "Axes, bounds and grids",
         "text": "A drag area sets the rules for everything dragged inside it: lock an axis, keep drags within its edges, snap to a grid — and change them while the app runs.",
-        "hint": "Switch the rules, then drag a note"
+        "hint": "Switch the rules, then drag a shape"
       }
     },
     "more": [

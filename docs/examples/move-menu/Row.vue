@@ -40,10 +40,10 @@ const withKeys = () => {
     <span class="points">{{ task.points }}</span>
     <span ref="menu" class="more">
       <button type="button" aria-label="Move…" :aria-expanded="open" @click="open = !open">⋯</button>
-      <span v-if="open" class="menu" role="menu">
-        <button type="button" role="menuitem" @click="choose(withKeys)">Move with arrow keys</button>
-        <button type="button" role="menuitem" @click="choose(toOther)">Send to {{ other.title }}</button>
-        <button type="button" role="menuitem" :disabled="index === 0" @click="choose(toTop)">To the top</button>
+      <span v-if="open" class="menu" role="group" aria-label="Move">
+        <button type="button" @click="choose(withKeys)">Move with arrow keys</button>
+        <button type="button" @click="choose(toOther)">Send to {{ other.title }}</button>
+        <button type="button" :disabled="index === 0" @click="choose(toTop)">To the top</button>
       </span>
     </span>
   </li>

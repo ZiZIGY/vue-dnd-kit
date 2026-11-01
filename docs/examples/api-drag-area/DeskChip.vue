@@ -5,11 +5,13 @@ import { makeDraggable } from '@vue-dnd-kit/core';
 const props = defineProps<{ chip: { id: string; x: number; y: number } }>();
 const el = useTemplateRef<HTMLElement>('el');
 // Nothing about axes, grids or bounds here: the area around the chip decides.
-makeDraggable(el, { id: () => props.chip.id });
+const { isDragging } = makeDraggable(el, { id: () => props.chip.id });
 </script>
 
 <template>
-  <div ref="el" class="chip" :style="{ left: `${chip.x}px`, top: `${chip.y}px` }">{{ chip.id }}</div>
+  <div ref="el" class="chip" :class="{ dragging: isDragging }" :style="{ left: `${chip.x}px`, top: `${chip.y}px` }">
+    {{ chip.id }}
+  </div>
 </template>
 
 <style scoped>
@@ -28,6 +30,11 @@ makeDraggable(el, { id: () => props.chip.id });
   font: 600 13px/1 ui-monospace, Menlo, Consolas, monospace;
   cursor: grab;
   user-select: none;
+}
+
+/* Its copy is in the overlay until it lands: the chip waits where it was, pale. */
+.chip.dragging {
+  opacity: 0.35;
 }
 
 .chip:focus-visible {

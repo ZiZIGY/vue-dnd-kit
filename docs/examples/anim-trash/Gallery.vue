@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue';
+import { computed, ref, useTemplateRef } from 'vue';
 import { makeSortableList, type DnDEvent } from '@vue-dnd-kit/core';
 import Photo from './Photo.vue';
 import TrashBin from './TrashBin.vue';
@@ -25,17 +25,19 @@ const photos = ref<PhotoItem[]>([
 const grid = useTemplateRef<HTMLElement>('grid');
 const { items } = makeSortableList(grid, { items: photos, strategy: 'grid' });
 
-/** The photos as they were before the last delete, for Undo. */
-const last = ref<{ before: PhotoItem[]; count: number } | null>(null);
+/** The deleted photos, each with the place it had: Undo puts the last one back there. */
+const deleted = ref<{ photo: PhotoItem; index: number }[]>([]);
+const last = computed(() => deleted.value[deleted.value.length - 1]);
 
 const remove = (event: DnDEvent) => {
-  last.value = { before: photos.value.slice(), count: event.active.ids.length };
+  const index = photos.value.findIndex((photo) => photo.id === event.active.id);
+  deleted.value.push({ photo: photos.value[index]!, index });
   event.source?.remove();
 };
 
 const undo = () => {
-  if (last.value) photos.value = last.value.before;
-  last.value = null;
+  const { photo, index } = deleted.value.pop()!;
+  photos.value.splice(index, 0, photo);
 };
 </script>
 
@@ -47,7 +49,7 @@ const undo = () => {
     <div class="side">
       <TrashBin @drop="remove" />
       <p v-if="last" class="toast" role="status">
-        {{ last.count === 1 ? 'Photo deleted' : `${last.count} photos deleted` }}
+        {{ last.photo.file }} deleted
         <button type="button" @click="undo">Undo</button>
       </p>
     </div>
@@ -81,6 +83,7 @@ const undo = () => {
 
 .toast {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
@@ -89,7 +92,6 @@ const undo = () => {
   border-radius: 9px;
   background: color-mix(in srgb, currentColor 8%, Canvas);
   font-size: 12px;
-  animation: toast 0.25s ease-out;
 }
 
 .toast button {
@@ -101,6 +103,12 @@ const undo = () => {
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .toast {
+    animation: toast 0.25s ease-out;
+  }
 }
 
 @keyframes toast {

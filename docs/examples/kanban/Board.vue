@@ -4,29 +4,29 @@ import Column from './Column.vue';
 
 const columns = reactive([
   {
-    id: 'todo',
-    title: 'To do',
+    id: 'applied',
+    title: 'Applied',
     color: '#a1a1aa',
     cards: [
-      { id: 'vdk-12', title: 'Pick a colour palette', tag: 'Design' },
-      { id: 'vdk-15', title: 'Write release notes', tag: 'Docs' },
-      { id: 'vdk-16', title: 'Record the demo', tag: 'Video' },
+      { id: 'mira', name: 'Mira Okafor', role: 'Product designer', hue: 280, score: 4 },
+      { id: 'tom', name: 'Tom Becker', role: 'Frontend engineer', hue: 200, score: 3 },
+      { id: 'yuki', name: 'Yuki Sato', role: 'Data analyst', hue: 20, score: 5 },
     ],
   },
   {
-    id: 'doing',
-    title: 'In progress',
+    id: 'interview',
+    title: 'Interview',
     color: '#f59e0b',
     cards: [
-      { id: 'vdk-9', title: 'Sortable trees', tag: 'Core' },
-      { id: 'vdk-11', title: 'Keyboard drags', tag: 'A11y' },
+      { id: 'lena', name: 'Lena Ivanova', role: 'Backend engineer', hue: 150, score: 4 },
+      { id: 'raj', name: 'Raj Patel', role: 'Product manager', hue: 330, score: 3 },
     ],
   },
   {
-    id: 'done',
-    title: 'Done',
+    id: 'offer',
+    title: 'Offer',
     color: '#42b883',
-    cards: [{ id: 'vdk-4', title: 'Kanban boards', tag: 'Core' }],
+    cards: [{ id: 'ana', name: 'Ana Costa', role: 'QA engineer', hue: 100, score: 5 }],
   },
 ]);
 </script>

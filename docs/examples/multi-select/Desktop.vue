@@ -1,16 +1,10 @@
 <script setup lang="ts">
 import { ref, useTemplateRef } from 'vue';
-import {
-  makeDroppable,
-  makeSelectionArea,
-  useDnD,
-  useDnDMonitor,
-  type Coordinates,
-  type SelectionStrategy,
-} from '@vue-dnd-kit/core';
+import { makeDroppable, makeSelectionArea, useDnD } from '@vue-dnd-kit/core';
 import DesktopIcon from './DesktopIcon.vue';
+import { SIZE, type Icon } from './icons';
 
-const icons = ref([
+const icons = ref<Icon[]>([
   { id: 'docs', name: 'Documents', kind: 'folder', x: 20, y: 16 },
   { id: 'photos', name: 'Photos', kind: 'folder', x: 20, y: 112 },
   { id: 'trip', name: 'trip.jpg', kind: 'jpg', x: 120, y: 30 },
@@ -19,56 +13,39 @@ const icons = ref([
   { id: 'cv', name: 'cv.pdf', kind: 'pdf', x: 330, y: 24 },
 ]);
 
-const strategy = ref<SelectionStrategy>('toggle');
-const withShift = ref(false);
-
 const desktop = useTemplateRef<HTMLElement>('desktop');
 // A press on the empty desktop draws a band; the icons it crosses are selected.
-const { isSelecting, style } = makeSelectionArea(desktop, {
-  strategy,
-  modifier: () => (withShift.value ? { keys: ['Shift'], method: 'every' } : undefined),
-});
+const { isSelecting, style } = makeSelectionArea(desktop);
 
-// The desktop takes the drop, and every dragged icon moves by the same offset.
-makeDroppable(desktop, { id: 'desktop' });
-const { selection, status } = useDnD();
-const offset = ref<Coordinates | null>(null);
-const SIZE = 76;
 const clamp = (value: number, max: number) => Math.min(Math.max(0, Math.round(value)), max - SIZE);
 
-useDnDMonitor({
-  // The other selected icons follow the one in hand.
-  onDragMove: ({ delta }) => (offset.value = delta),
-  onDragCancel: () => (offset.value = null),
-  onDragEnd({ active, delta, over }) {
-    offset.value = null;
+makeDroppable(desktop, {
+  id: 'desktop',
+  // `position` is where the grabbed icon was let go, on the desktop: it goes there, and
+  // the others keep their places around it. All of them stay on the desktop.
+  onDrop: ({ active, position }) => {
     const area = desktop.value;
-    if (over?.id !== 'desktop' || !area) return;
+    const grabbed = icons.value.find((icon) => icon.id === active.id);
+    if (!area || !grabbed || !position) return;
+    const shift = { x: position.x - grabbed.x, y: position.y - grabbed.y };
     for (const icon of icons.value) {
       if (!active.ids.includes(icon.id)) continue;
-      icon.x = clamp(icon.x + delta.x, area.clientWidth);
-      icon.y = clamp(icon.y + delta.y, area.clientHeight);
+      icon.x = clamp(icon.x + shift.x, area.clientWidth);
+      icon.y = clamp(icon.y + shift.y, area.clientHeight);
     }
   },
 });
+
+const { selection, status } = useDnD();
 </script>
 
 <template>
   <div class="computer">
-    <div class="controls">
-      <div class="segmented" role="group" aria-label="strategy">
-        <button type="button" :aria-pressed="strategy === 'toggle'" @click="strategy = 'toggle'">'toggle'</button>
-        <button type="button" :aria-pressed="strategy === 'select'" @click="strategy = 'select'">'select'</button>
-      </div>
-      <button type="button" class="toggle" :aria-pressed="withShift" @click="withShift = !withShift">
-        Hold Shift to draw
-      </button>
-    </div>
     <!-- On a narrow screen, the desktop scrolls sideways. -->
     <div class="scroll">
       <!-- The area needs a position: the band is placed inside it. -->
       <div ref="desktop" class="desktop">
-        <DesktopIcon v-for="icon in icons" :key="icon.id" :icon="icon" :offset="offset" />
+        <DesktopIcon v-for="icon in icons" :key="icon.id" :icon="icon" />
         <div v-if="isSelecting" class="band" :style="style" />
       </div>
     </div>
@@ -84,56 +61,6 @@ useDnDMonitor({
   width: 100%;
   max-width: 520px;
   margin: 0 auto;
-}
-
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.segmented {
-  display: flex;
-  padding: 3px;
-  border-radius: 10px;
-  background: color-mix(in srgb, currentColor 7%, transparent);
-}
-
-button {
-  padding: 6px 10px;
-  border: 0;
-  border-radius: 8px;
-  background: none;
-  color: inherit;
-  font: 600 12px/1.2 system-ui, sans-serif;
-  cursor: pointer;
-}
-
-.segmented button {
-  font-family: ui-monospace, Menlo, Consolas, monospace;
-  font-weight: 400;
-}
-
-.segmented button[aria-pressed='true'] {
-  background: Canvas;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
-}
-
-.toggle {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 15%, transparent);
-  opacity: 0.6;
-}
-
-.toggle[aria-pressed='true'] {
-  background: color-mix(in srgb, #42b883 14%, transparent);
-  box-shadow: inset 0 0 0 1px #42b883;
-  color: #42b883;
-  opacity: 1;
-}
-
-button:focus-visible {
-  outline: 2px solid #42b883;
-  outline-offset: 2px;
 }
 
 .scroll {

@@ -41,6 +41,9 @@ const announcements = computed<Partial<Announcements>>(() => {
 </script>
 
 <template>
+  <!-- `lang` around the provider: its live region renders inside, and a screen reader
+       speaks the announcements in their own language. -->
+  <div :lang="lang">
   <DnDProvider :announcements="announcements" :screen-reader-instructions="texts.instructions">
     <div class="demo">
       <div class="languages" role="radiogroup" aria-label="Language of the announcements">
@@ -62,6 +65,7 @@ const announcements = computed<Partial<Announcements>>(() => {
       </div>
     </div>
   </DnDProvider>
+  </div>
 </template>
 
 <style scoped>

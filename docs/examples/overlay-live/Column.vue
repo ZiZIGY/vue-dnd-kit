@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { toRef, useTemplateRef } from 'vue';
 import { makeSortableList } from '@vue-dnd-kit/core';
+import DoneOverlay from './DoneOverlay.vue';
 import TicketCard from './TicketCard.vue';
 import TicketOverlay from './TicketOverlay.vue';
 
@@ -18,7 +19,9 @@ const { items, isOver, isAccepting } = makeSortableList(list, {
   group: { name: 'release', put: strict ? ({ items }) => (items as Ticket[]).every((t) => t.approved) : true },
   // Alt-drag copies (`mode: 'copy'`); a copy needs an id of its own.
   clone: (ticket) => ({ ...ticket, id: crypto.randomUUID() }),
+  // The tickets' own overlay, in every column, and Done's around it while over Done.
   overlay: TicketOverlay,
+  overOverlay: strict ? DoneOverlay : undefined,
 });
 </script>
 
@@ -30,7 +33,7 @@ const { items, isOver, isAccepting } = makeSortableList(list, {
       <span class="count">{{ column.tickets.length }}</span>
     </h3>
     <ul ref="list" class="tickets">
-      <TicketCard v-for="ticket in items" :key="ticket.id" :ticket="ticket" />
+      <TicketCard v-for="ticket in items" :key="ticket.id" :ticket="ticket" :column="column.id" />
     </ul>
   </section>
 </template>

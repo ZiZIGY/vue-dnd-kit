@@ -12,11 +12,14 @@ const { items } = makeSortableList(listRef, { id: 'queue', items: tracks });
 const { status } = useDnD();
 const { moveItem, startDrag } = useDnDActions();
 
-/** Five moves in a row: each call waits for the one before to land. */
+/** A new order (Fisher–Yates: every order as likely), as moves in a row: each waits for the one before to land. */
 const shuffle = async () => {
-  for (const track of [...tracks.value].sort(() => Math.random() - 0.5)) {
-    await moveItem(track.id, { index: Math.floor(Math.random() * tracks.value.length) });
+  const order = [...tracks.value];
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j]!, order[i]!];
   }
+  for (const [index, track] of order.entries()) await moveItem(track.id, { index });
 };
 
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

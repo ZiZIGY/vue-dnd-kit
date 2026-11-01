@@ -2,9 +2,9 @@
 import { toRef, useTemplateRef } from 'vue';
 import { makeSortableList } from '@vue-dnd-kit/core';
 import Card from './Card.vue';
+import type { Candidate } from './candidates';
 
-type Task = { id: string; title: string; tag: string };
-const props = defineProps<{ column: { id: string; title: string; color: string; cards: Task[] } }>();
+const props = defineProps<{ column: { id: string; title: string; color: string; cards: Candidate[] } }>();
 
 const zone = useTemplateRef<HTMLElement>('zone');
 const list = useTemplateRef<HTMLElement>('list');

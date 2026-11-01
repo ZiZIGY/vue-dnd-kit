@@ -5,23 +5,31 @@ import Column from './Column.vue';
 
 const columns = reactive([
   {
-    id: 'review',
-    title: 'In review',
-    changes: [
-      { id: 'cache', title: 'Cache the feed', approved: true },
-      { id: 'retry', title: 'Retry on 503', approved: false },
-      { id: 'icons', title: 'New icon set', approved: true },
-      { id: 'locale', title: 'Polish locale', approved: false },
+    id: 'waiting',
+    title: 'Waiting list',
+    people: [
+      { id: 'ada', name: 'Ada', hue: 200 },
+      { id: 'bo', name: 'Bo', hue: 30 },
+      { id: 'cy', name: 'Cyrus', hue: 280 },
+      { id: 'dee', name: 'Dee', hue: 140 },
     ],
   },
-  { id: 'release', title: 'Release 2.4', approvedOnly: true, changes: [] },
+  {
+    id: 'workshop',
+    title: 'Workshop',
+    seats: true,
+    people: [
+      { id: 'eli', name: 'Eli', hue: 340 },
+      { id: 'fay', name: 'Fay', hue: 90 },
+    ],
+  },
 ]);
 </script>
 
 <template>
   <DnDProvider>
     <div class="demo">
-      <p class="tip">Tick a few changes, then drag one of them to the release</p>
+      <p class="tip">Tick a few people, then drag one of them into the workshop</p>
       <div class="board">
         <Column v-for="column in columns" :key="column.id" :column="column" />
       </div>
@@ -45,7 +53,7 @@ const columns = reactive([
 
 .board {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 240px));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 230px));
   justify-content: center;
   gap: 14px;
   width: 100%;

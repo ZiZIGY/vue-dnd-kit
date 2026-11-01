@@ -18,9 +18,13 @@ const lanes: { label: string; animation: LayoutAnimation; dropAnimation: DropAni
 const letters = ['A', 'B', 'C', 'D'];
 const rows = ref(lanes.map(() => letters.map((id, i) => ({ id, hue: 150 + i * 40 }))));
 
-/** The same new order in every lane: `animate` plays it four ways. */
+/** The same new order in every lane (Fisher–Yates: every order as likely): `animate` plays it four ways. */
 const shuffle = () => {
-  const order = [...letters].sort(() => Math.random() - 0.5);
+  const order = [...letters];
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j]!, order[i]!];
+  }
   rows.value = rows.value.map((lane) => order.map((id) => lane.find((row) => row.id === id)!));
 };
 </script>

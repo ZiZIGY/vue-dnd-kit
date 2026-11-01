@@ -92,7 +92,7 @@
       "lists": {
         "title": "Listas y cuadrículas",
         "text": "Renderiza un borrador de tu array y se reordenará en vivo mientras arrastras. Al soltar, el nuevo orden se escribe en tu ref. Vertical, horizontal o una cuadrícula de cualquier tamaño.",
-        "hint": "Arrastra una canción o una app",
+        "hint": "Reordena las apps o pasa una al dock",
         "label": "Ordenable"
       },
       "kanban": {
@@ -123,7 +123,7 @@
         "label": "Restricciones",
         "title": "Ejes, límites y cuadrículas",
         "text": "Un área de arrastre fija las reglas de todo lo que se arrastra dentro de ella: bloquea un eje, mantén los arrastres dentro de sus bordes, ajusta a una cuadrícula — y cámbialas mientras la app se ejecuta.",
-        "hint": "Cambia las reglas y luego arrastra una nota"
+        "hint": "Cambia las reglas y luego arrastra una forma"
       }
     },
     "more": [
