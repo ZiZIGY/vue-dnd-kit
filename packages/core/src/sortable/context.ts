@@ -78,6 +78,11 @@ export interface Session {
   stop: { key: Key; direction: Coordinates } | null;
   /** Keyboard: on the plain drop target `away` (a trash zone) the arrows took the drag to, past the list. */
   away: Key | null;
+  /**
+   * Multi-drag `'group'` over a zone of its own or a refusing target: the block came apart,
+   * the lists show every dragged item where it started until a list is hovered again.
+   */
+  apart: boolean;
 }
 
 /** What every session starts with, whatever is dragged. */

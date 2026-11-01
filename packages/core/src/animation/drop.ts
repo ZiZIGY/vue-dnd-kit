@@ -246,14 +246,18 @@ export const intoOverlayItems = async (option: DropAnimation | undefined, clones
 
 /**
  * Dragged items without a clone in the overlay (past `overlayPreviews`, custom overlays) fade in
- * where they are during the drop, from their placeholder opacity. The animations hold
- * full opacity until the caller cancels them, once the placeholder marks are gone.
+ * where they are during the drop: from their placeholder opacity, or from nothing when the
+ * page styles placeholders another way (hidden content at full opacity). Read while they
+ * are still marked. The animations hold full opacity until the caller cancels them.
  */
 export const fadeInPlace = (option: DropAnimation | undefined, elements: HTMLElement[]): Animation[] => {
   const timing = elements.length ? companionTiming(option) : null;
   if (!timing) return [];
   // Reads first, then writes.
-  const opacities = elements.map((element) => getComputedStyle(element).opacity);
+  const opacities = elements.map((element) => {
+    const { opacity } = getComputedStyle(element);
+    return opacity === '1' && element.hasAttribute('data-dnd-placeholder') ? '0' : opacity;
+  });
   return elements.flatMap((element, index) => {
     const opacity = opacities[index]!;
     if (!canAnimate(element) || opacity === '1' || opacity === '') return [];

@@ -7,6 +7,7 @@ import { DragPreview } from '../core/DragPreview';
 import { useManager } from '../core/context';
 import type { DnDManager } from '../core/manager';
 import { makeDraggable } from '../core/makeDraggable';
+import { makeDroppable } from '../core/makeDroppable';
 import { layoutColumn, layoutPile } from './column';
 import { makeSortableItem } from './makeSortableItem';
 import { makeSortableList } from './makeSortableList';
@@ -131,6 +132,134 @@ describe('multi-drag modes', () => {
     expect(previews.map((preview) => preview.hasAttribute('data-dnd-overlay-item'))).toEqual([false, true]);
     await cancel();
     expect(manager.overlayItems.size).toBe(0);
+  });
+});
+
+describe("a 'group' block over a drop target that is no list", () => {
+  const ROW = 40;
+  /** A panel holding the list (0–220) and a zone of its own beside it (300–500). */
+  const rectOf = (element: Element) => {
+    if (element.closest('[data-dnd-overlay]')) return createRect(0, 0, 0, 0);
+    const zone = element.getAttribute('data-zone');
+    if (zone === 'panel') return createRect(0, 0, 220, 400);
+    if (zone === 'trash') return createRect(300, 0, 200, 100);
+    if (element.tagName === 'UL') return createRect(0, 0, 200, element.children.length * ROW);
+    if (element.tagName === 'LI') return createRect(0, [...element.parentElement!.children].indexOf(element) * ROW, 200, ROW);
+    return createRect(0, 0, 0, 0);
+  };
+  let dropped: string[][];
+
+  const mount = (ids: string[], removes = false) => {
+    dropped = [];
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const app = createApp({
+      setup: () => () =>
+        h(DnDProvider, { dropAnimation: false, animation: false }, {
+          default: () =>
+            h({
+              setup() {
+                manager = useManager();
+                const { items } = makeSortableList(useTemplateRef<HTMLElement>('list'), { items: ref(ids.map((id) => ({ id }))) });
+                makeDroppable(useTemplateRef<HTMLElement>('panel'), { id: 'panel' });
+                makeDroppable(useTemplateRef<HTMLElement>('trash'), {
+                  id: 'trash',
+                  onDrop: (event) => {
+                    dropped.push(event.active.ids.map(String));
+                    if (removes) event.source?.remove();
+                  },
+                });
+                return () => [
+                  h('div', { ref: 'panel', 'data-zone': 'panel' }, [
+                    h('ul', { ref: 'list' }, items.value.map((task) => h(Row, { key: task.id, rowId: task.id }))),
+                  ]),
+                  h('div', { ref: 'trash', 'data-zone': 'trash' }),
+                ];
+              },
+            }),
+        }),
+    });
+    app.mount(container);
+    unmount = () => {
+      app.unmount();
+      container.remove();
+    };
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+      return rectOf(this) as DOMRect;
+    });
+    vi.spyOn(document, 'elementFromPoint').mockImplementation((x, y) => {
+      const candidates = [...container.querySelectorAll('li'), ...container.querySelectorAll('ul, [data-zone]')];
+      return candidates.find((element) => containsPoint(rectOf(element), { x, y })) ?? null;
+    });
+    return container;
+  };
+
+  const moveTo = async (point: { x: number; y: number }) => {
+    manager.move(point);
+    manager.flushFrame();
+    await nextTick();
+  };
+  const dimmed = (container: HTMLElement) =>
+    [...container.querySelectorAll('ul > li[data-dnd-dragging]')].map((row) => row.getAttribute('data-id'));
+
+  afterEach(() => {
+    unmount?.();
+    unmount = null;
+    vi.restoreAllMocks();
+  });
+
+  it('a zone of its own takes the block apart: every item shows where it started; back over the list, it forms again', async () => {
+    const container = mount(['x1', 'x2', 'x3', 'x4', 'x5']);
+    await nextTick();
+    await pickUp('x3', 'x5', 'x1');
+    expect(rows(container).join(',')).toContain('x1,x3,x5');
+    await moveTo({ x: 400, y: 50 });
+    expect(manager.over.value?.id).toBe('trash');
+    expect(rows(container)).toEqual(['x1', 'x2', 'x3', 'x4', 'x5']);
+    // The grabbed one keeps its slot; the others are dragged, left in their places.
+    expect(slots(container)).toEqual(['x3']);
+    expect(dimmed(container)).toEqual(['x1', 'x5']);
+    await moveTo({ x: 100, y: 3 * ROW + 20 });
+    await vi.waitFor(() => expect(slots(container)).toEqual(['x1', 'x3', 'x5']));
+    expect(rows(container).join(',')).toContain('x1,x3,x5');
+    await cancel();
+    expect(rows(container)).toEqual(['x1', 'x2', 'x3', 'x4', 'x5']);
+  });
+
+  it('dropped there, the lists stay as they were unless its onDrop takes the items out', async () => {
+    let container = mount(['x1', 'x2', 'x3', 'x4']);
+    await nextTick();
+    await pickUp('x2', 'x4');
+    await moveTo({ x: 400, y: 50 });
+    await manager.drop();
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+    await nextTick();
+    expect(dropped).toEqual([['x2', 'x4']]);
+    expect(rows(container)).toEqual(['x1', 'x2', 'x3', 'x4']);
+    unmount!();
+    vi.restoreAllMocks();
+
+    container = mount(['x1', 'x2', 'x3', 'x4'], true);
+    await nextTick();
+    await pickUp('x2', 'x4');
+    await moveTo({ x: 400, y: 50 });
+    await manager.drop();
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+    await nextTick();
+    expect(rows(container)).toEqual(['x1', 'x3']);
+  });
+
+  it('a target around the lists (between them) keeps the block where it is', async () => {
+    const container = mount(['x1', 'x2', 'x3', 'x4', 'x5']);
+    await nextTick();
+    await pickUp('x3', 'x5', 'x1');
+    const gathered = rows(container);
+    expect(gathered.join(',')).toContain('x1,x3,x5');
+    await moveTo({ x: 210, y: 50 });
+    expect(manager.over.value?.id).toBe('panel');
+    expect(rows(container)).toEqual(gathered);
+    expect(slots(container)).toEqual(['x1', 'x3', 'x5']);
+    await cancel();
   });
 });
 

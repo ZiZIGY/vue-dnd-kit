@@ -6,7 +6,7 @@
  * the next drag may already start, and settles once it has landed (`onDragSettle`).
  */
 
-import { nextTick } from 'vue';
+import { nextTick, type Component } from 'vue';
 import type {
   Active,
   Coordinates,
@@ -47,6 +47,12 @@ export function createSession(ctx: ManagerContext) {
   const waiting = createFollow(() => ctx.overlayElement.value);
   /** Where the drop would go as the drag was released (the overlay's `to`). */
   let releasedTo: DropDestination | null = null;
+  /** The target's overlay as the drag was released: the drop lands showing it, whatever `onDrop` changes. */
+  let releasedTarget: Component | undefined;
+  const targetOverlay = (): Component | undefined => {
+    const over = ctx.over.value;
+    return over?.accepted ? ctx.droppables.get(over.id)?.getOverlay?.() : undefined;
+  };
 
   const restoreDocument = () => {
     ctx.restoreDocument?.();
@@ -225,15 +231,17 @@ export function createSession(ctx: ManagerContext) {
       landings: ctx.landings.value,
       column: ctx.overlayColumn.value,
       ...ctx.overlay.release(),
-      target: over?.accepted ? ctx.droppables.get(over.id)?.getOverlay?.() : undefined,
+      target: over?.accepted ? releasedTarget : undefined,
       rect: shift ? offsetRect(box, shift.x, shift.y) : box,
       items: new Map(ctx.overlayItems),
       element: ctx.overlay.enabled ? ctx.overlayElement.value : null,
       follow: createFollow(() => flight.element),
+      released: new Set(),
       fades: [],
       done: false,
     };
     releasedTo = null;
+    releasedTarget = undefined;
     ctx.flights.value = [...ctx.flights.value, flight];
     clear();
     return flight;
@@ -278,9 +286,10 @@ export function createSession(ctx: ManagerContext) {
   /**
    * Multi-drag: the overlay's clones of the other items (the column's cells, a pile's, a
    * custom layout's `DragPreview`s) land on their own slots with the box; items without a
-   * clone (past `overlayPreviews`, custom overlays) fade in where they are, instead of
-   * popping to full opacity when the drop ends. Into a zone, the clones go in one after
-   * another, the box after them; the items still shown fade in where they are.
+   * clone (past `overlayPreviews`, custom overlays) show at once and fade in where they
+   * are, instead of waiting as placeholders and popping when the drop ends. Into a zone,
+   * the clones go in one after another, the box after them; the items still shown fade
+   * in where they are.
    */
   const landItems = (
     flight: Flight,
@@ -298,18 +307,27 @@ export function createSession(ctx: ManagerContext) {
     };
     const items: OverlayItemLanding[] = [];
     const resting: HTMLElement[] = [];
+    const released = new Set<Key>();
     for (const id of current.ids) {
       if (id === current.id) continue;
       const clone = flight.items.get(id);
       const target = elementOf(id);
       if (into || !clone?.isConnected) {
         if (target) resting.push(target);
+        released.add(id);
         continue;
       }
       const to = landingRect(target);
       items.push({ element: clone, from: getRect(clone), to });
     }
+    // Read while they are still placeholders: a placeholder styled by the page (its content
+    // hidden, a tint) fades in from nothing.
     flight.fades = fadeInPlace(animation, resting);
+    if (released.size) {
+      flight.released = released;
+      flight.landings = new Map([...flight.landings].filter(([, id]) => !released.has(id)));
+      ctx.flights.value = [...ctx.flights.value];
+    }
     if (into) return intoOverlayItems(animation, clonesOf(flight), into);
     return (flight.column?.land ?? landOverlayItems)(animation, items, box);
   };
@@ -411,6 +429,7 @@ export function createSession(ctx: ManagerContext) {
     if (ctx.status.value !== 'dragging' || !ctx.active.value) return;
     ctx.loop.flushFrame();
     releasedTo = ctx.getDestination();
+    releasedTarget = targetOverlay();
     const id = session;
     ctx.status.value = 'dropping';
     // `onBeforeDrop` may wait for the user (a confirmation dialog): the page stops being

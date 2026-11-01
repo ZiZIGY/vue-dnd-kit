@@ -115,7 +115,9 @@ const animation = (by: string): DropAnimation => (context: DropAnimationContext)
 };
 
 const seedOverlay = shallowRef<Component>(Seed);
+const waterOverlay = shallowRef<Component | undefined>(Droplet);
 const waterLanding = shallowRef<DropAnimation | undefined>(animation('water'));
+let onWaterDrop: (() => void) | null = null;
 
 /**
  * Column 0: list A (its items' overlay and landing), 1: list B (its own overlay and landing
@@ -135,7 +137,11 @@ const mountBoard = (provider: Record<string, unknown> = {}, listA: Record<string
           h({ setup: () => () => ((manager = useManager()), null) }),
           h(List, { listId: 'A', rows: a, column: 0, options: { overlay: AItem, dropAnimation: animation('A'), ...listA } }),
           h(List, { listId: 'B', rows: b, column: 1, options: { overOverlay: OverB, overDropAnimation: animation('B') } }),
-          h(Zone, { zoneId: 'water', column: 2, options: { overlay: Droplet, dropAnimation: waterLanding } }),
+          h(Zone, {
+            zoneId: 'water',
+            column: 2,
+            options: { overlay: waterOverlay, dropAnimation: waterLanding, onDrop: () => onWaterDrop?.() },
+          }),
           h(Zone, { zoneId: 'stone', column: 3, options: { accept: () => false, overlay: Rock } }),
           h(Free, { freeId: 'seed', column: 4, options: { overlay: seedOverlay, dropAnimation: animation('seed') } }),
         ],
@@ -193,7 +199,9 @@ afterEach(() => {
   unmount?.();
   unmount = null;
   seedOverlay.value = Seed;
+  waterOverlay.value = Droplet;
   waterLanding.value = animation('water');
+  onWaterDrop = null;
   vi.restoreAllMocks();
 });
 
@@ -241,6 +249,24 @@ describe("a drop target's overlay", () => {
     expect(overlay()?.getAttribute('data-dnd-overlay')).toBe('dropping');
     expect(kinds()).toEqual(['droplet', 'seed']);
     await drop;
+    await idle();
+  });
+
+  it('lands as it showed when let go, whatever the drop changes', async () => {
+    mountBoard();
+    await settle();
+    // The drop turns the zone's overlay into another one (state its `overlay` reads).
+    onWaterDrop = () => (waterOverlay.value = Rock);
+    let land = () => {};
+    waterLanding.value = () => new Promise<void>((resolve) => (land = resolve));
+    await start('seed', at(4));
+    await pointTo(at(2));
+    await shows(['droplet', 'seed']);
+    void manager.drop();
+    await settle();
+    expect(overlay()?.getAttribute('data-dnd-overlay')).toBe('dropping');
+    expect(kinds()).toEqual(['droplet', 'seed']);
+    land();
     await idle();
   });
 

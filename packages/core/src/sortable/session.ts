@@ -57,6 +57,7 @@ export const start = (g: GroupContext, event: DnDEvent) => {
     prevented: false,
     stop: null,
     away: null,
+    apart: false,
   };
 
   if (!sources.has(activeKey)) {
@@ -94,15 +95,51 @@ const leave = (g: GroupContext, current: Session) => {
 };
 
 /**
- * The pointer is over a target that refuses the drag: a drop there is cancelled and the
- * items fly back. The slot goes home first, so the lists show where they would land
- * instead of the last list that took it. Trees keep it: their places have a depth.
+ * The dragged items go home: the lists show where a drop here leaves them instead of the
+ * last list that took them. Over a target that refuses the drag, the drop is cancelled and
+ * they fly back; over a zone of its own (a trash can, a playlist), the drop is the zone's,
+ * and the lists keep them unless its `onDrop` takes them out. A `'group'` block comes
+ * apart, each item back in its own place. Trees keep the slot: their places have a depth.
  */
-const refused = (g: GroupContext, current: Session, event: DnDEvent) => {
+const sendHome = (g: GroupContext, current: Session, event: DnDEvent) => {
   leave(g, current);
   if (current.list == null || listOf(g, current.list)?.layout.nested || listOf(g, current.origin.list)?.layout.nested) return;
+  if (current.grouped && current.mode === sort) return takeApart(g, current);
   returnToOrigin(g, event.pointer);
 };
+
+/** A `'group'` block comes apart: the lists show their items as they are, the dragged ones dimmed in place. */
+const takeApart = (g: GroupContext, current: Session) => {
+  if (current.apart) return;
+  for (const list of g.lists.values()) list.draft.value = [...list.getKeys()];
+  current.list = current.origin.list;
+  current.block = [current.lead];
+  current.apart = true;
+  syncManager(g);
+  bump(g);
+};
+
+/** Back over a list: the block forms again where the drag picked it up, as it did at the start. */
+const regather = (g: GroupContext, current: Session) => {
+  for (const list of g.lists.values()) list.draft.value = current.base.get(list.id) ?? [...list.getKeys()];
+  current.list = current.origin.list;
+  current.block = current.keys;
+  current.apart = false;
+  g.gathering = true;
+  syncManager(g);
+  bump(g);
+};
+
+/**
+ * A drop target that is no list of the group and stands apart from them: not inside one
+ * (a target in an item, "drop into an item"), not around one (a panel holding the lists,
+ * between them).
+ */
+const standsApart = (g: GroupContext, element: Element) =>
+  ![...g.lists.values()].some((list) => {
+    const container = list.getElement();
+    return !!container && (container.contains(element) || element.contains(container));
+  });
 
 /** Extension hook: runs on every move over a valid target, guarded or not (trees update depth here). */
 const afterMove = (g: GroupContext, current: Session, event: DnDEvent) => {
@@ -166,12 +203,17 @@ export const move = (g: GroupContext, event: DnDEvent) => {
   }
   if (!over.accepted) {
     current.target = null;
-    return refused(g, current, event);
+    return sendHome(g, current, event);
   }
   const target = lists.get(over.id);
   if (!target || target.isDisabled()) {
     current.target = null;
-    return leave(g, current);
+    return !target && standsApart(g, over.element) ? sendHome(g, current, event) : leave(g, current);
+  }
+  // Back from a zone of its own: the block forms again first; the next pass projects it.
+  if (current.apart) {
+    regather(g, current);
+    return followBlock(g, current, event);
   }
   // The list the slot just left can't take it back until the pointer moves on.
   const blocked = target.id !== current.list && blocksList(current.hysteresis, target.id);

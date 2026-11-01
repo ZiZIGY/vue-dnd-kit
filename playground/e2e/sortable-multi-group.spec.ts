@@ -387,6 +387,45 @@ test.describe("multi-drag 'group'", () => {
     check();
   });
 
+  test('items without a clone show as the drop starts, not when the box lands: whatever placeholders look like', async ({
+    page,
+  }) => {
+    const check = guard(page);
+    // Placeholders as the page may style them: full opacity, their content hidden.
+    await page.addStyleTag({ content: '[data-dnd-placeholder] { opacity: 1 } [data-dnd-placeholder] > * { visibility: hidden }' });
+    await select(page, 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7');
+    await pickUp(page, item(page, 'a4'));
+    await glide(page, await center(item(page, 'b2')));
+    await layoutSettled(page);
+    await page.evaluate(() => {
+      const win = window as Window & { __fadeFrom?: Record<string, unknown> };
+      win.__fadeFrom = {};
+      const animate = Element.prototype.animate;
+      Element.prototype.animate = function (this: Element, keyframes, options) {
+        const first = (Array.isArray(keyframes) ? keyframes[0] : null) as Keyframe | null;
+        if (first && 'opacity' in first && !this.closest('[data-dnd-overlay]')) {
+          win.__fadeFrom![this.getAttribute('data-id') ?? ''] = first.opacity;
+        }
+        const animation = animate.call(this, keyframes, options);
+        // The box lands ten times slower: it is still in flight below on any machine.
+        if (this.hasAttribute('data-dnd-overlay')) animation.playbackRate = 0.1;
+        return animation;
+      };
+    });
+    await page.mouse.up();
+    await expect(overlay(page)).toHaveAttribute('data-dnd-overlay', 'dropping');
+    // a1 and a7 have no clone: they show at once, while the others wait for theirs.
+    await expect.poll(async () => (await placeholders(page)).ids).toEqual(['a2', 'a3', 'a4', 'a5', 'a6']);
+    await expect(overlay(page)).toHaveCount(1);
+    expect(await page.evaluate(() => (window as Window & { __fadeFrom?: Record<string, unknown> }).__fadeFrom)).toEqual({
+      a1: '0',
+      a7: '0',
+    });
+    await waitForIdle(page);
+    await expect(item(page, 'a1')).toHaveCSS('opacity', '1');
+    check();
+  });
+
   test('with reduced motion nothing animates, and the result is the same', async ({ page }) => {
     const check = guard(page);
     await page.emulateMedia({ reducedMotion: 'reduce' });

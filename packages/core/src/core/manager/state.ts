@@ -92,6 +92,11 @@ export interface Flight {
   element: HTMLElement | null;
   /** Keeps the box on what it lands on while the page scrolls. */
   follow: Follow;
+  /**
+   * The other dragged items nothing in the box lands on (no clone of theirs flies): they
+   * show at once, fading in, rather than wait as placeholders for the box to land.
+   */
+  released: ReadonlySet<Key>;
   /** Fades of items without a clone, kept until their placeholder marks are gone. */
   fades: Animation[];
   /** Landed, or the provider went away: its awaited steps do nothing. */

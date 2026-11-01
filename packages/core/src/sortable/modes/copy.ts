@@ -81,6 +81,8 @@ const switchCopy = (g: GroupContext, copying: boolean) => {
   current.slot = slot;
   current.swap = null;
   current.hysteresis = null;
+  // Built afresh from the slot's list: a block taken apart (`apart`) forms again.
+  current.apart = false;
   current.block = blockFor(g, current, anchor?.list ?? (copying ? undefined : listOf(g, current.origin.list)));
   const moving = new Set(current.block);
   for (const list of g.lists.values()) {

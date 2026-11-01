@@ -87,8 +87,8 @@ export function createDnDManager(props: DnDProviderProps) {
     isOwned: detection.isOwned,
     /** A slot a landing overlay flies to: hidden (`data-dnd-placeholder`) until it is there. */
     isLanding: (key: Key): boolean => ctx.flights.value.some((flight) => flight.slot === key || flight.landings.has(key)),
-    /** The flight landing this dragged item, if one is. */
-    flightOf: (id: Key) => ctx.flights.value.find((flight) => flight.active.ids.includes(id)),
+    /** The flight landing this dragged item, if one is (and lands something on it). */
+    flightOf: (id: Key) => ctx.flights.value.find((flight) => flight.active.ids.includes(id) && !flight.released.has(id)),
     /** The item of a landing box under `point`, the newest on top: a press there catches it in flight. */
     catchAt: (point: Coordinates): Key | null => {
       for (const flight of [...ctx.flights.value].reverse()) {
