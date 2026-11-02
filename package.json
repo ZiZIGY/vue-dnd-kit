@@ -1,41 +1,22 @@
 {
   "name": "vue-dnd-kit",
   "private": true,
-  "description": "Drag and Drop toolkit for Vue 3",
+  "description": "Drag and drop for Vue 3: the packages, the docs and the playground. Each folder installs on its own (see CONTRIBUTING.md).",
   "scripts": {
-    "dev": "vitepress dev docs",
-    "build": "vitepress build docs",
-    "preview": "vitepress preview docs",
-    "playground": "yarn --cwd playground dev",
-    "playground:host": "yarn --cwd playground dev:host",
-    "dev:v2": "yarn --cwd packages/core build && concurrently -n core,docs -c blue,green \"yarn --cwd packages/core start\" \"yarn dev\""
+    "docs": "npm run dev --prefix docs",
+    "playground": "npm run dev --prefix playground",
+    "test": "npm run test --prefix packages/core && npm run test --prefix packages/actions && npm run test --prefix packages/devtools",
+    "typecheck": "npm run typecheck --prefix packages/core && npm run typecheck --prefix packages/actions && npm run typecheck --prefix packages/devtools && npm run typecheck --prefix playground",
+    "e2e": "npm run e2e --prefix playground"
   },
   "keywords": [
     "vue",
     "drag-and-drop",
     "dnd",
     "draggable",
+    "sortable",
     "vue3"
   ],
   "author": "ZiZIGY",
-  "license": "MIT",
-  "devDependencies": {
-    "concurrently": "^9.1.2"
-  },
-  "dependencies": {
-    "@iconify/vue": "^5.0.0",
-    "@tailwindcss/vite": "^4.1.18",
-    "@types/node": "^26.6.6",
-    "@vue-dnd-kit/core": "^2.1.5",
-    "@vue-dnd-kit/core-v1": "npm:@vue-dnd-kit/core@^1.7.0",
-    "@vueuse/core": "^14.2.1",
-    "gsap": "^3.14.2",
-    "motion-v": "^1.10.3",
-    "npm": "^11.9.0",
-    "ogl": "^1.0.11",
-    "tailwindcss": "^4.1.18",
-    "three": "^0.182.0",
-    "unplugin-vue-components": "^31.0.0",
-    "vitepress": "^1.6.4"
-  }
+  "license": "MIT"
 }
