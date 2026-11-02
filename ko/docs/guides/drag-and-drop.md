@@ -1,0 +1,1066 @@
+---
+title: "드래그 앤 드롭"
+description: "makeDraggable로 자유롭게 드래그하고 makeDroppable로 드롭 대상을 만듭니다. 어떤 드래그는 받고 어떤 드래그는 거부하는 타입별 대상, 평면도, 휴지통, 리스트 안의 폴더, 리스트가 받아들이는 일반 항목까지."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/drag-and-drop"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+정렬 가능한 리스트가 아닌 모든 것에는 `makeDraggable`과 `makeDroppable`을 쓰세요. 분리수거함에
+넣는 쓰레기, 평면도 위의 가구, 폴더로 옮기는 파일, 휴지통, 체스판 같은 것입니다.
+
+<example height="29rem" hint="쓰레기를 분리수거함에 나눠 넣으세요. 배터리를 받는 수거함은 없습니다" name="recycling">
+
+
+
+</example>
+
+## draggable
+
+```vue [WasteItem.vue]
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import { makeDraggable } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ waste: { id: string; name: string; type: string } }>();
+const el = useTemplateRef<HTMLElement>('el');
+
+const { isDragging } = makeDraggable(el, {
+  id: () => props.waste.id,      // read back as `active.id`
+  type: () => props.waste.type,  // matched by the targets' `accept`
+  data: () => props.waste,       // anything: `active.data`
+});
+</script>
+
+<template>
+  <div ref="el" :class="{ dragging: isDragging }">{{ waste.name }}</div>
+</template>
+```
+
+id는 데이터에서 가져와 getter로 넘기세요. 기본 id는 `useId()`에서 오며 컴포넌트 인스턴스마다
+새로 만들어지므로, 앱의 다른 부분에는 아무 의미가 없습니다. 옵션은 필요할 때 읽으므로, getter나
+ref를 넘기면 항상 최신 값이 유지됩니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      옵션
+    </th>
+    
+    <th>
+      하는 일
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        id
+      </code>
+      
+      , <code>
+        data
+      </code>
+      
+      , <code>
+        type
+      </code>
+    </td>
+    
+    <td>
+      무엇을 드래그하는지, 무엇을 싣고 가는지, 대상의 <code>
+        accept
+      </code>
+      
+      가 무엇과 비교하는지.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        handle
+      </code>
+    </td>
+    
+    <td>
+      내부의 선택자나 요소. 그것으로만 드래그를 시작합니다. <a href="/docs/guides/sortable-lists#handles">
+        핸들
+      </a>
+      
+      을 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      드래그가 시작되지 않습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        overlay
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        true
+      </code>
+      
+      (기본값): 복사본이 포인터를 따라갑니다. 컴포넌트: 직접 만든 미리보기. <code>
+        false
+      </code>
+      
+      : 요소 자체가 움직입니다(<a href="#without-an-overlay">
+        아래 참고
+      </a>
+      
+      ).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        axis
+      </code>
+      
+      , <code>
+        modifiers
+      </code>
+    </td>
+    
+    <td>
+      드래그를 <code>
+        'x'
+      </code>
+      
+      나 <code>
+        'y'
+      </code>
+      
+      로 고정하고, 스냅하고, 경계 안에 둡니다. <a href="/docs/guides/constraints">
+        제약
+      </a>
+      
+      을 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        keyboard
+      </code>
+    </td>
+    
+    <td>
+      화살표 키로 움직이는 방식: 픽셀 단위(기본값) 또는 대상에서 대상으로(<a href="#keyboard">
+        아래 참고
+      </a>
+      
+      ).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activation
+      </code>
+      
+      , <code>
+        canDrag
+      </code>
+    </td>
+    
+    <td>
+      누르기가 드래그로 바뀌는 시점. <a href="/docs/guides/sensors">
+        센서
+      </a>
+      
+      를 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        attributes
+      </code>
+    </td>
+    
+    <td>
+      키보드와 스크린 리더를 위한 <code>
+        role
+      </code>
+      
+      , <code>
+        tabindex
+      </code>
+      
+      , <code>
+        aria-*
+      </code>
+      
+      (기본값 <code>
+        true
+      </code>
+      
+      ).
+    </td>
+  </tr>
+</tbody>
+</table>
+
+<table>
+<thead>
+  <tr>
+    <th>
+      반환값
+    </th>
+    
+    <th>
+      의미
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        isDragging
+      </code>
+    </td>
+    
+    <td>
+      이 요소를 드래그하는 중입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        selected
+      </code>
+    </td>
+    
+    <td>
+      쓰기 가능하며, 프로바이더의 <a href="/docs/guides/multi-drag">
+        선택
+      </a>
+      
+      에 연결됩니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        transform
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        overlay: false
+      </code>
+      
+      일 때 쓰는 드래그 오프셋.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        id
+      </code>
+    </td>
+    
+    <td>
+      사용 중인 id.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+버튼, 입력 필드 등 상호작용하는 자식 요소는 포인터 드래그를 시작하지 않으므로, draggable 안에서도
+그대로 동작합니다. 모든 옵션은 [makeDraggable API](https://zizigy.github.io/docs/api/make-draggable)에 있습니다.
+
+## 드롭 대상
+
+```vue [Bin.vue]
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import { makeDroppable, type Key } from '@vue-dnd-kit/core';
+import type { Bin, Waste } from './waste';
+
+const props = defineProps<{ bin: Bin; items: Waste[] }>();
+const emit = defineEmits<{ drop: [id: Key] }>();
+const el = useTemplateRef<HTMLElement>('el');
+
+const { isOver, isAccepting } = makeDroppable(el, {
+  id: props.bin.id,
+  accept: props.bin.accept,   // 'glass', ['paper', 'cardboard'], a function…
+  onDrop: (event) => emit('drop', event.active.id),
+});
+</script>
+
+<template>
+  <section ref="el" :class="{ accepting: isAccepting, over: isOver && isAccepting, refused: isOver && !isAccepting }">
+    <WasteItem v-for="waste in items" :key="waste.id" :waste="waste" />
+  </section>
+</template>
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      반환값
+    </th>
+    
+    <th>
+      <code>
+        true
+      </code>
+      
+      인 경우
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        isOver
+      </code>
+    </td>
+    
+    <td>
+      드래그가 이 대상 위에 있습니다. 대상이 드래그를 받든 안 받든 마찬가지입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isAccepting
+      </code>
+    </td>
+    
+    <td>
+      무언가를 드래그하는 중이고 이 대상이 그것을 받습니다. 유효한 대상을 강조하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        placement
+      </code>
+    </td>
+    
+    <td>
+      불리언이 아닙니다. <code>
+        { top, right, bottom, left }
+      </code>
+      
+      , 즉 포인터가 있는 대상의 절반 영역이며, 대상 위에 있지 않으면 <code>
+        null
+      </code>
+      
+      입니다. "이 카드 앞 / 뒤"에 쓰세요.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`isAccepting` 없이 `isOver`만 참이면 드래그가 자신을 거부하는 대상 위에 있다는 뜻입니다. 위의
+수거함처럼 이를 표시하세요. 그곳에 드롭하면 취소되고 항목은 원래 자리로 돌아갑니다. 항목을 받을 수
+없는 수거함은 항목이 이동하는 동안 흐려집니다. 다른 표현 방법은
+[스타일링](https://zizigy.github.io/docs/guides/styling#drop-targets-yes-and-no)에 있습니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      옵션
+    </th>
+    
+    <th>
+      하는 일
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        id
+      </code>
+      
+      , <code>
+        data
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        over.id
+      </code>
+      
+      와 <code>
+        over.data
+      </code>
+      
+      로 다시 읽습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        accept
+      </code>
+      
+      , <code>
+        acceptMode
+      </code>
+    </td>
+    
+    <td>
+      어떤 드래그를 받는지(<a href="#which-drags-a-target-takes">
+        다음 섹션
+      </a>
+      
+      ).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      아무것도 받지 않고, 드래그는 그 위를 그냥 지나갑니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        priority
+      </code>
+    </td>
+    
+    <td>
+      중첩 없이 대상이 겹칠 때 높은 쪽이 우선합니다(기본값 0).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onDragEnter
+      </code>
+      
+      , <code>
+        onDragLeave
+      </code>
+    </td>
+    
+    <td>
+      드래그가 들어오거나 나갔습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+      , <code>
+        onDrop
+      </code>
+    </td>
+    
+    <td>
+      드롭을 결정하고, 적용합니다(<a href="#the-drop">
+        아래 참고
+      </a>
+      
+      ).
+    </td>
+  </tr>
+</tbody>
+</table>
+
+## 대상이 받는 드래그
+
+draggable의 `type`을 대상의 `accept`와 비교합니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        accept
+      </code>
+    </th>
+    
+    <th>
+      받는 것
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      생략 또는 <code>
+        '*'
+      </code>
+    </td>
+    
+    <td>
+      모든 것.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'glass'
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        glass
+      </code>
+      
+       타입의 draggable과 타입이 없는 draggable.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        ['paper', 'cardboard']
+      </code>
+    </td>
+    
+    <td>
+      둘 중 한 타입과 타입이 없는 draggable.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        ({ active, items, types }) => boolean
+      </code>
+    </td>
+    
+    <td>
+      함수가 정하는 대로.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`type`이 없는 draggable은 모든 문자열 규칙에 맞습니다. `type`은 배열(`['paper', 'large']`)일 수도
+있으며, 하나만 맞으면 충분합니다. 함수는 드래그에 관한 무엇이든 보고 결정할 수 있습니다. 위의
+퇴비 수거함은 타입이 아니라 항목의 데이터를 읽습니다.
+
+```ts [waste.ts]
+{
+  id: 'compost',
+  accept: ({ items }) => items.every((item) => (item.data as Waste).compostable),
+}
+```
+
+`accept`는 드래그가 대상을 찾는 동안 실시간으로 읽습니다. 바꾸려면 ref를 넘기세요.
+
+여러 항목을 한 번에 드래그할 때 `acceptMode`는 몇 개가 맞아야 하는지 정합니다. `'all'`(기본값)
+또는 `'some'`입니다. `'some'`이면 `onBeforeDrop`에서 남길 id를 반환하세요. 나머지는 원래 자리로
+돌아갑니다. [드롭 결정하기](https://zizigy.github.io/docs/guides/drop-decisions)를 참고하세요.
+
+## 드롭
+
+일반 드롭 대상의 `onDrop`은 데이터를 **직접** 바꾸는 곳입니다. 라이브러리는 스스로 아무것도
+옮기지 않습니다.
+
+```vue [index.vue]
+<script setup lang="ts">
+/** Where each item is: the tray or a bin. */
+const place = reactive<Record<string, string>>(Object.fromEntries(WASTE.map((waste) => [waste.id, 'tray'])));
+const itemsIn = (bin: string) => WASTE.filter((waste) => place[waste.id] === bin);
+const drop = (bin: string, id: Key) => (place[String(id)] = bin);
+</script>
+
+<template>
+  <Bin v-for="bin in BINS" :key="bin.id" :bin="bin" :items="itemsIn(bin.id)" @drop="drop(bin.id, $event)" />
+</template>
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      이벤트 필드
+    </th>
+    
+    <th>
+      담고 있는 것
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        active
+      </code>
+    </td>
+    
+    <td>
+      드래그: <code>
+        id
+      </code>
+      
+      , <code>
+        ids
+      </code>
+      
+      , <code>
+        items
+      </code>
+      
+      (각각 <code>
+        { id, data, type, item }
+      </code>
+      
+      ), <code>
+        data
+      </code>
+      
+      , <code>
+        type
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        over
+      </code>
+    </td>
+    
+    <td>
+      이 대상: <code>
+        id
+      </code>
+      
+      , <code>
+        data
+      </code>
+      
+      , <code>
+        element
+      </code>
+      
+      , <code>
+        rect
+      </code>
+      
+      , <code>
+        accepted
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        pointer
+      </code>
+      
+      , <code>
+        delta
+      </code>
+    </td>
+    
+    <td>
+      포인터의 위치와 시작점에서 움직인 거리.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        position
+      </code>
+    </td>
+    
+    <td>
+      드래그 중인 박스가 이 대상 안에서 놓인 위치(<a href="#leave-it-where-it-was-dropped">
+        다음 섹션
+      </a>
+      
+      ).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        source
+      </code>
+    </td>
+    
+    <td>
+      항목이 정렬 가능한 리스트에서 왔을 때 설정됩니다: <code>
+        { list, remove() }
+      </code>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`active.ids`에는 드래그 중인 모든 id가 들어 있으며, 집은 항목이 처음입니다. 순서는
+`onBeforeDrop`(결정), `onDrop`(적용), 그다음 프로바이더의 `drag-end`입니다. 페이지의 모든 드래그를
+한곳에서 들으려면 `useDnDMonitor`를 쓰세요([프로바이더](https://zizigy.github.io/docs/guides/provider) 참고). 드롭 전에
+확인을 묻거나, 드래그를 계속하거나, 일부 항목만 받으려면 [드롭 결정하기](https://zizigy.github.io/docs/guides/drop-decisions)를
+참고하세요.
+
+## 놓은 자리에 그대로 두기
+
+평면도, 캔버스, 보드에서는 항목이 놓은 자리에 그대로 남습니다. 모든 이벤트에는 `position`이
+들어 있습니다. 절대 위치로 배치한 항목을 놓은 자리에 두는 `left` / `top` 값입니다.
+
+<example height="28rem" hint="가구를 방 안으로 드래그하고, 옮기거나 다시 돌려놓으세요" name="room-planner">
+
+
+
+</example>
+
+```ts [Planner.vue]
+const room = useTemplateRef<HTMLElement>('room');
+makeDroppable(room, {
+  id: 'room',
+  onDrop: ({ active, position }) => {
+    const piece = find(active.id);
+    if (!piece || !position || !room.value) return;
+    // Clamped, so a piece let go half outside stays inside the walls.
+    piece.x = clamp(position.x, room.value.clientWidth - piece.width);
+    piece.y = clamp(position.y, room.value.clientHeight - piece.height);
+    piece.place = 'room';
+  },
+});
+```
+
+```vue [Piece.vue]
+<div ref="el" class="piece" :style="{ left: `${piece.x}px`, top: `${piece.y}px` }">…</div>
+```
+
+`position`은 `over` 안에서 드래그 중인 박스의 왼쪽 위 모서리입니다. 대상의 패딩 가장자리부터 재며
+스크롤 양이 더해집니다. 방의 테두리, 즉 벽은 포함하지 않습니다. 아무것도 없는 곳 위에서는
+`null`입니다.
+
+<tip>
+
+위치를 `active.rect`와 `delta`로 계산하지 마세요. 그러면 대상의 테두리와 스크롤이 빠집니다. 이런
+보드를 위한 그리드, 경계, 축 고정은 [제약](https://zizigy.github.io/docs/guides/constraints)에 있습니다.
+
+</tip>
+
+## 오버레이 없이
+
+기본적으로는 요소의 복사본이 포인터를 따라가고 요소는 제자리에 남습니다. 창고에 있는 가구가 그렇게
+동작합니다. `overlay: false`면 복사본이 없고, 드래그가 반환하는 `transform`으로 요소 자체가
+움직입니다. 방 안의 가구가 그렇습니다.
+
+```ts [Piece.vue]
+const inRoom = computed(() => props.piece.place === 'room');
+const { isDragging, transform } = makeDraggable(el, {
+  id: () => props.piece.id,
+  overlay: computed(() => !inRoom.value),   // a value or a ref, read when the drag starts
+});
+
+const style = computed(() => ({
+  left: `${props.piece.x}px`,
+  top: `${props.piece.y}px`,
+  ...(transform.value && { transform: `translate3d(${transform.value.x}px, ${transform.value.y}px, 0)` }),
+}));
+```
+
+- 이때 `position`은 요소 자체의 모서리이므로 드롭 핸들러는 그대로 둬도 됩니다.
+- 움직이는 동안 요소가 포인터 아래에 있지만, 대상을 찾을 때 라이브러리는 요소를 통과해서 봅니다.
+드래그하는 동안에는 이웃 요소보다 위로 올리세요(`z-index`).
+- 요소는 페이지와 함께 스크롤되지만 오버레이는 그렇지 않습니다. `transform`은 드래그가 시작된 뒤
+컨테이너가 움직인 만큼을 빼므로, 페이지가 스크롤되어도 요소는 포인터 아래에 머뭅니다.
+- 요소는 자기 컨테이너 안에서 움직입니다. `overflow: hidden`인 부모가 요소를 자르고, 쌓임 맥락이
+무엇 위를 지나갈지 결정합니다. 오버레이에는 두 문제 모두 없습니다.
+
+복사본 대신 커스텀 미리보기를 쓰려면 [오버레이](https://zizigy.github.io/docs/guides/overlay)를 참고하세요.
+
+## 휴지통 영역
+
+정렬 가능한 리스트에서 시작한 드래그에는 `e.source`가 있습니다. `remove()`를 호출하면 리스트가
+항목을 버립니다.
+
+<example height="34rem" hint="알림을 Done이나 Delete로 드래그한 뒤 실행 취소해 보세요" name="triage">
+
+
+
+</example>
+
+```ts [Triage.vue]
+const triage = (bin: 'done' | 'deleted') => (e: DnDEvent) => {
+  bins[bin].push(...e.active.items.map((entry) => entry.item as Notice));
+  e.source?.remove();
+};
+
+makeDroppable(doneZone, { id: 'done', onDrop: triage('done') });
+makeDroppable(trashZone, { id: 'trash', onDrop: triage('deleted') });
+```
+
+- `e.active.items[i].item`은 리스트의 항목 그 자체입니다. 보관해 두면 실행 취소로 원래 자리에
+되돌릴 수 있습니다.
+- 그다음 리스트 자체의 `onDrop`이 `to.index === -1`로 실행되고, `e.result`에는 항목이 빠진
+리스트가 들어 있습니다.
+- 항목이 더 이상 어디에도 표시되지 않으므로 오버레이는 영역 안으로 줄어들며 사라집니다.
+- 리스트는 모든 대상 밖에 드롭된 것을 제거할 수도 있습니다.
+[`dropOutside`](https://zizigy.github.io/docs/guides/shared-lists#dropping-outside)를 참고하세요.
+
+<note>
+
+키보드에서는 화살표 키가 리스트의 항목을 그 리스트와 같은 그룹 리스트의 자리 사이에서 옮깁니다.
+리스트의 끝을 지나면 다음 입력으로 그 방향의 드롭 대상(여기서는 휴지통)으로 옮기고, 반대쪽 화살표로 되돌립니다.
+그래도 많은 사람에게는 버튼, 메뉴, `Delete` 키가 더 빠르므로 함께 제공하세요.
+
+</note>
+
+## 정렬 가능한 항목 안으로 드롭
+
+정렬 가능한 리스트의 행도 드롭 대상이 될 수 있습니다. 북마크를 받는 폴더, 작업을 받는 그룹 같은
+것입니다. 항목의 요소에 droppable을 두세요.
+
+<example height="28rem" hint="링크를 폴더 가운데에 놓으세요. 가장자리 근처에서는 정렬됩니다. 폴더를 열면 링크를 밖으로 드래그할 수 있습니다" name="bookmarks">
+
+
+
+</example>
+
+```ts [FolderRow.vue]
+const el = useTemplateRef<HTMLElement>('el');
+makeSortableItem(el, { item: () => props.folder, type: 'folder' });
+
+const { isOver } = makeDroppable(el, {
+  accept: 'link',
+  onDrop: (e) => {
+    emit('add', e.active.items.map((entry) => entry.item as Link)); // Bookmarks adds them
+    e.source?.remove();   // take them out of the list they came from
+  },
+});
+```
+
+열린 폴더는 링크를 같은 그룹의 리스트로 보여 주며, 이 리스트는 링크만 받습니다. 링크는 그 안에서
+정렬되고, 최상위나 다른 폴더로 다시 끌어낼 수 있습니다.
+
+리스트가 드래그를 정렬하려는 동안, 이런 대상은 자기 항목의 **가운데**(리스트 축을 따라 25~75%)에서만
+유효합니다. 그곳에서는 드롭이 항목 안으로 들어가고 리스트는 움직이지 않습니다. 가장자리
+근처에서는 리스트가 평소처럼 정렬합니다.
+
+- `accept`가 드래그를 거부하는 대상은 건너뜁니다. 리스트는 다른 항목과 마찬가지로 그 항목 위에서
+정렬합니다. 폴더는 링크만 받으므로, 폴더를 드래그하면 다른 폴더를 지나쳐 정렬됩니다.
+- 대상은 자기 자신의 드래그를 받지 않습니다.
+- 키보드에서는 화살표 키가 먼저 폴더에서 멈추고, 같은 방향으로 한 번 더 누르면 폴더를 지나갑니다.
+- 드롭한 뒤에는 항목이 더 이상 표시되지 않으므로, 오버레이는 원래 자리로 돌아가지 않고 폴더 안으로
+줄어들며 사라집니다.
+- 폴더 위에서는 리스트가 드래그 중인 행의 자리를 원래 위치에 그대로 두므로, 포인터 아래에서 아무것도
+밀리지 않습니다. 이때 그 자리에는 `data-dnd-placeholder="into"`가 붙습니다. 드롭은 그 자리로 가지
+않으므로, 원하면 숨기세요(`[data-dnd-placeholder='into'] { opacity: 0 }`).
+
+[파일 관리자](https://zizigy.github.io/docs/examples/file-manager)는 중첩된 폴더가 있는 그리드에서 같은 일을 합니다.
+
+## 일반 draggable을 리스트로
+
+정렬 가능한 리스트는 `makeDraggable`로 드래그한 항목에서 리스트 항목을 만드는 방법을 알면 그 항목을
+받아들입니다.
+
+<example height="26rem" hint="블록을 일정표로 드래그하세요. 시간이 드래그를 따라 바뀝니다" name="day-planner">
+
+
+
+</example>
+
+```ts [Agenda.vue]
+const { items } = makeSortableList(list, {
+  items: agenda,
+  createItem: (active) => ({ ...(active.data as Block), id: `entry-${++created}` }),
+});
+```
+
+draggable이 리스트 위에 있는 동안, 만들어진 항목은 초안에 들어가 다른 행처럼 템플릿으로
+렌더링됩니다. 일정표의 시간도 이미 그 항목을 셉니다. 항목은 드롭할 때 실제가 되며(`mode: 'insert'`,
+`from.list === null`), 오버레이는 그 위에 안착합니다.
+
+- 거부하려면 `undefined`를 반환하세요. `createItem`이 없는 리스트는 일반 draggable을 무시합니다.
+- 새 항목에는 고유한 key를 주세요. 블록은 팔레트에 그대로 남습니다.
+- 키보드에서는 리스트 쪽으로 화살표 키를 누르면 draggable이 같은 높이로 리스트에 들어가고, 그다음
+화살표 키로 자리 단위로 움직입니다.
+
+## 컴퓨터의 파일
+
+데스크톱이나 파일 관리자에서 끌어온 파일은 라이브러리의 드래그가 아닙니다. 파일을 옮기는 것은
+브라우저입니다. 드롭 대상은 `external`로 파일을 받고, 드롭하면 파일이 `e.external`에 담겨 옵니다.
+
+<example height="22rem" hint="컴퓨터에서 이미지나 PDF 파일을 영역으로 드래그하세요" name="file-drop">
+
+
+
+</example>
+
+```ts [AvatarDrop.vue]
+const { isOver, isAccepting } = makeDroppable(el, {
+  external: { files: 'image/*', multiple: false },
+  onDrop: (e) => show(e.external!.files[0]!),
+});
+```
+
+- `files`는 `<input accept>`와 같은 방식입니다. MIME 타입(`image/*`, `application/pdf`)과
+확장자(`.md`). `true`는 모든 파일을 받고, 함수는 파일마다 결정합니다. `links`와 `text`는 다른 앱과
+탭에서 드래그한 것을, `types`는 그 밖의 MIME 타입을 받습니다.
+- 이 드래그는 프로바이더의 드래그로 실행됩니다. `isOver`, `isAccepting`, 이벤트, 안내 문구가 다른
+드래그와 똑같이 동작합니다. `external`이 없는 대상은 이 드래그를 무시합니다. 오버레이는 없습니다.
+드래그되는 이미지는 브라우저가 그립니다.
+- 파일이 페이지 위에 있는 동안 브라우저는 타입만 알려 줍니다(`e.external.fileTypes`). 이름, 크기,
+내용은 드롭과 함께 오고, 확장자도 그때 확인합니다. 폴더는 제외됩니다. `multiple: false`이면 여러
+파일을 드래그할 때 거부됩니다.
+
+리스트도 파일, 링크, 텍스트를 받으며, 드래그하는 동안 그것들을 위한 자리를 만듭니다. 항목은 페이지를
+떠나 다른 앱이나 여러분 앱의 다른 창으로 갈 수도 있습니다. [파일과 다른 앱](https://zizigy.github.io/docs/guides/native)을
+참고하세요.
+
+<tip>
+
+키보드와 스크린 리더 사용자는 파일을 드래그할 수 없습니다. 데모의 Browse처럼 영역 옆에
+`<input type="file">`을 함께 두세요.
+
+</tip>
+
+## 키보드
+
+포커스된 draggable은 <kbd value="Space">
+
+
+
+</kbd>
+
+나 <kbd value="Enter">
+
+
+
+</kbd>
+
+로 집고, 같은 키로 드롭하며,
+<kbd value="Escape">
+
+
+
+</kbd>
+
+로 취소합니다. 그 사이에는 화살표 키로 움직입니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        keyboard
+      </code>
+    </th>
+    
+    <th>
+      화살표 키
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'pixels'
+      </code>
+      
+      (기본값)
+    </td>
+    
+    <td>
+      프로바이더의 <code>
+        keyboard.step
+      </code>
+      
+      인 25 px씩 움직입니다. <kbd value="Shift">
+        
+      </kbd>
+      
+      를 누르면 네 배 멀리 갑니다. 가구가 이렇게 움직입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'droppables'
+      </code>
+    </td>
+    
+    <td>
+      그 방향에서 자신을 받는 가장 가까운 대상으로 건너뜁니다. 쓰레기는 수거함에서 수거함으로 건너뛰며, 자신을 거부하는 수거함은 건너뜁니다.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+```ts
+makeDraggable(el, { id: () => props.waste.id, type: () => props.waste.type, keyboard: 'droppables' });
+```
+
+키는 프로바이더에서 다시 지정할 수 있습니다. 자세한 내용은 [접근성](https://zizigy.github.io/docs/guides/accessibility)에
+있습니다.
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

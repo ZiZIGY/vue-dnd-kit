@@ -1,0 +1,390 @@
+---
+title: "虚拟列表"
+description: "用 TanStack Virtual 或 VueUse 的 useVirtualList 对成千上万行进行排序——把草稿交给虚拟化器，用 id 作为行的 key，并让被拖拽的行保持挂载。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/virtual-lists"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+排序是数据驱动的：每次重新排序时，草稿 `items` 都是一个新数组，行以项为 key，动画也只需要已挂载的行。所以任何根据数组渲染的虚拟化器都能用——把草稿而不是你的数组交给它。
+
+<example height="32.5rem" hint="10,000 行，DOM 中只有寥寥几行：拖动一行，或在拖拽时滚动" name="virtual-list">
+
+
+
+</example>
+
+## 规则
+
+1. 把**草稿 items** 交给虚拟化器，而不是你的源数组。
+2. **用项的 key 作为行的 key**，永远不要用索引。TanStack 和 VueUse 的官方示例用索引作为 key；把它改掉。
+3. 以 **getter** 的形式把 id 传给 `makeSortableItem`，即 `{ id: () => props.item.id }`：虚拟化器可能会把另一个项交给同一个行组件。
+4. 把大数组放在 **shallowRef** 中。库从不深度遍历你的数据。
+5. 让占位元素与行保持相同尺寸：隐藏它的内容，不要让它塌陷。
+6. 至少预渲染（overscan）5 行（VueUse：至少 1 行），这样行在自动滚动到达之前就已挂载。
+7. 不要为行的 `height`、`margin` 或 `padding` 添加动画，也不要在滚动容器上设置 `will-change`。
+
+## VueUse useVirtualList
+
+就是上面的演示。每一行高度相同，VueUse 的计算保持 O(1)：
+
+```vue [TaskList.vue]
+<script setup lang="ts">
+import { shallowRef, useTemplateRef } from 'vue';
+import { useVirtualList } from '@vueuse/core';
+import { makeSortableList } from '@vue-dnd-kit/core';
+
+const ROW = 44;
+const tasks = shallowRef(makeTasks(10_000));
+
+// The outer element is the sortable list: `containerProps` owns the scroller's ref.
+const listRef = useTemplateRef<HTMLElement>('list');
+const { items } = makeSortableList(listRef, { items: tasks });
+
+// Fed with the draft `items`, so the rows move while you drag.
+const { list, containerProps, wrapperProps } = useVirtualList(items, { itemHeight: ROW, overscan: 8 });
+</script>
+
+<template>
+  <div ref="list">
+    <div v-bind="containerProps" style="height: 308px">
+      <div v-bind="wrapperProps">
+        <!-- Keyed by id, not by index as in VueUse's docs. -->
+        <Row v-for="{ data } in list" :key="data.id" :task="data" :height="ROW" />
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+- `itemHeight` 是行的实际高度，包括边框。行之间不要有外边距：VueUse 不会计算它们。
+- 可排序列表是外层元素，因为 `containerProps` 会把它自己的 `ref` 绑定到滚动容器上。自动滚动仍能找到滚动容器：它滚动的是指针下方的容器。
+- VueUse 无法让某一行保持挂载：被拖拽的行在你把它滚出视野时会被卸载。这没有问题，见[哪些保持挂载](#what-stays-mounted)。
+
+## TanStack Virtual
+
+TanStack 会测量每一行，所以行可以和它的内容一样高。它还能让被拖拽的行保持挂载，无论你从它那里滚出多远：
+
+<example height="34.5rem" hint="把一条笔记拖到列表正下方并停住：被拖拽的行保持固定" name="virtual-tanstack">
+
+
+
+</example>
+
+```vue [NoteList.vue]
+<script setup lang="ts">
+import { computed, shallowRef, useTemplateRef } from 'vue';
+import { defaultRangeExtractor, useVirtualizer, type Range } from '@tanstack/vue-virtual';
+import { makeSortableList } from '@vue-dnd-kit/core';
+
+const notes = shallowRef(makeNotes(5_000));
+
+// The scroller is the sortable list: the library sorts it and auto-scrolls it.
+const scrollRef = useTemplateRef<HTMLElement>('scroll');
+const { items, activeIndex, captureLayout } = makeSortableList(scrollRef, { items: notes });
+
+// One computed that reads the draft once: TanStack memoizes the measurements and the range
+// on `getItemKey` and `rangeExtractor`, so they must be new functions after every reorder.
+const virtualizer = useVirtualizer(
+  computed(() => {
+    const arr = items.value;
+    const pin = activeIndex.value;
+    return {
+      count: arr.length,
+      getScrollElement: () => scrollRef.value,
+      estimateSize: () => 92,
+      overscan: 6,
+      getItemKey: (index: number) => arr[index]!.id,
+      // The dragged row stays mounted, however far you scroll from it.
+      rangeExtractor: (range: Range) => {
+        const indexes = defaultRangeExtractor(range);
+        return pin < 0 || indexes.includes(pin) ? indexes : [...indexes, pin].sort((a, b) => a - b);
+      },
+      // Measurements land after the library's animation pass: animate them too.
+      onChange: () => captureLayout(),
+    };
+  }),
+);
+const rows = computed(() => virtualizer.value.getVirtualItems());
+const measure = (el: unknown) => virtualizer.value.measureElement(el as HTMLElement | null);
+</script>
+
+<template>
+  <div ref="scroll" style="height: 340px; overflow: auto; contain: strict">
+    <div :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
+      <div
+        v-for="row in rows"
+        :key="(row.key as string)"
+        :ref="measure"
+        :data-index="row.index"
+        :style="{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${row.start}px)` }"
+      >
+        <NoteRow :note="items[row.index]!" />
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+每一部分的作用：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      部分
+    </th>
+    
+    <th>
+      原因
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      来自 <code>
+        items
+      </code>
+      
+       的 <code>
+        count
+      </code>
+      
+       和 <code>
+        getItemKey
+      </code>
+    </td>
+    
+    <td>
+      虚拟化器渲染的是草稿，所以拖拽时行会移动。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      用一个 <code>
+        computed
+      </code>
+      
+       包住选项
+    </td>
+    
+    <td>
+      每次重新排序后，<code>
+        getItemKey
+      </code>
+      
+       和 <code>
+        rangeExtractor
+      </code>
+      
+       都必须是新函数，否则 TanStack 会保留旧的测量结果和范围。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      带 <code>
+        data-index
+      </code>
+      
+       的 <code>
+        measureElement
+      </code>
+    </td>
+    
+    <td>
+      每一行在渲染时被测量：<code>
+        estimateSize
+      </code>
+      
+       只是最初的估计。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      带 <code>
+        activeIndex
+      </code>
+      
+       的 <code>
+        rangeExtractor
+      </code>
+    </td>
+    
+    <td>
+      被拖拽的行滚出渲染范围时，把它加回范围中。本列表没有行被拖拽时，<code>
+        activeIndex
+      </code>
+      
+       为 <code>
+        -1
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onChange: () => captureLayout()
+      </code>
+    </td>
+    
+    <td>
+      重新测量会在库为重新排序添加动画之后移动行。<code>
+        captureLayout()
+      </code>
+      
+       也为这次移动添加动画。在拖拽之外它什么都不做。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+被拖拽的行什么时候会离开范围？指针位于列表上方时，它的空位会跟随指针。把指针移到列表正下方并停在那里：自动滚动继续，空位留在原处，很快它就远在屏幕上的行之上了。固定让它保持挂载，所以放置会落到一个真实的元素上。使用 `placeholder: 'indicator'` 的列表在整个拖拽期间都把被拖拽的行留在原处，所以在那里这一点更加重要。
+
+- 固定需要行像上面那样逐一绝对定位。渲染成一整块带内边距区域的虚拟化器无法在很远的地方添加一行。
+- 行组件以 getter 形式传入它的 id：`makeSortableItem(el, { id: () => props.note.id })`。
+- 保持 TanStack 的 `anchorTo: 'start'`，即默认值。使用 `lanes` 时，需要 `@tanstack/virtual-core` 3.19 或更新版本（`@tanstack/vue-virtual` 会安装它）。
+
+## 虚拟化的看板列
+
+每一列都是独立的可排序列表和独立的虚拟化器，这些列表共享一个 `group`。三列各 1,000 张卡片，只渲染几十张：
+
+<example height="34rem" hint="在各有 1,000 张卡片的列之间移动卡片" name="virtual-kanban">
+
+
+
+</example>
+
+从另一列进来的卡片在这一列中还没有测量结果。在同一个 computed 中读取被拖拽卡片的实际尺寸 `activeSize`，用它来估计：
+
+```ts [Column.vue]
+const { items, activeIndex, activeSize, captureLayout } = makeSortableList(scrollRef, {
+  id: props.column.id,
+  items: props.column.cards, // a shallowRef per column
+  group: 'board',
+});
+
+const virtualizer = useVirtualizer(
+  computed(() => {
+    const arr = items.value;
+    const pin = activeIndex.value;
+    const size = activeSize.value;
+    return {
+      count: arr.length,
+      getScrollElement: () => scrollRef.value,
+      // A card coming from another column gets its real height before it is measured.
+      estimateSize: (index: number) => (index === pin && size ? size.height + GAP : 72),
+      // …getItemKey, rangeExtractor and onChange as above
+    };
+  }),
+);
+```
+
+- 以 `shallowRef` 的形式给每一列提供数据：列表把放置写入其中，1,000 张卡片也不会被深层代理。
+- `activeSize` 是拖拽开始时被拖拽元素的尺寸。加上你的空位在卡片周围增加的部分：这里卡片下方的间距（`GAP`）是空位的内边距，所以虚拟化器也会把它测量进去。
+- 标题统计的是 `items.length`，即草稿：卡片一进入或离开，它就会变化。
+
+## 哪些保持挂载
+
+被拖拽的行可能在拖拽期间被卸载：它被滚出了范围，或虚拟化器回收了它的组件。拖拽不受影响。浮层继续显示该项，选中集合按 id 保留，项会落到草稿放置它的地方。动画只涉及已挂载的行。
+
+只要虚拟化器能做到，就仍然让被拖拽的行保持挂载，就像 TanStack 的做法用 `rangeExtractor` 实现的那样。列表会告诉你是哪一行：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      列表返回
+    </th>
+    
+    <th>
+      用途
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        items
+      </code>
+    </td>
+    
+    <td>
+      草稿：把它交给虚拟化器。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeIndex
+      </code>
+    </td>
+    
+    <td>
+      本列表草稿中需要保持挂载的那一行的索引，不在这里时为 <code>
+        -1
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeKey
+      </code>
+    </td>
+    
+    <td>
+      那一行的 key，不在这里时为 <code>
+        null
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeSize
+      </code>
+    </td>
+    
+    <td>
+      拖拽开始时被拖拽行的尺寸：用它估计进入的行。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        captureLayout()
+      </code>
+    </td>
+    
+    <td>
+      在一次不是由库造成的布局变化（重新测量）之前调用。它会让行从原来的位置以动画过渡。在拖拽之外它什么都不做。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+## 树
+
+`makeSortableTree` 返回由可见行组成的扁平 `items`，所以树的虚拟化方式与列表相同：以 `node.key` 为 key，由 `activeIndex` 和 `activeKey` 指出需要保持挂载的行。见[树](https://zizigy.github.io/docs/guides/trees)。
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

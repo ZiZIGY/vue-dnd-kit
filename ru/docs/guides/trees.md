@@ -1,0 +1,661 @@
+---
+title: "Деревья"
+description: "Оглавления, меню, оргструктуры и бэклоги на makeSortableTree — рендерятся плоско с глубинами, вкладываются драгом вбок или наведением на строку, с правилами, свёрнутыми узлами, линией вставки и списками в той же группе."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/trees"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+Дерево — это сортируемый список, у строк которого есть глубина. Перетащите раздел влево или
+вправо, чтобы сменить его уровень, или задержите его над серединой другого раздела, чтобы
+бросить внутрь. Номера следуют за драгом.
+
+<example height="45.5rem" hint="Перетащите раздел вбок или переключите режим вложения" name="tree-outline">
+
+
+
+</example>
+
+## Плоский рендеринг
+
+`makeSortableTree` принимает ваши вложенные данные и возвращает видимые узлы **плоским
+списком**, по порядку, каждый со своей `depth`. Вы рендерите этот список и сами делаете
+отступы у строк. Все строки остаются соседями в одном контейнере, поэтому скользят и
+анимируются, как строки списка.
+
+```vue [Outline.vue]
+<script setup lang="ts">
+import { ref, useTemplateRef } from 'vue';
+import { makeSortableTree } from '@vue-dnd-kit/core';
+import Heading from './Heading.vue';
+
+interface Section { id: string; title: string; children?: Section[] }
+
+const outline = ref<Section[]>([
+  { id: 'start', title: 'Getting started', children: [{ id: 'install', title: 'Installation' }] },
+  { id: 'faq', title: 'FAQ' },
+]);
+
+const root = useTemplateRef<HTMLElement>('root');
+const { items, projected } = makeSortableTree(root, {
+  items: outline,     // the root nodes: a writable ref takes every drop
+  indentation: 24,    // px per level: match the rows' indentation
+  maxDepth: 2,
+});
+</script>
+
+<template>
+  <ol ref="root">
+    <Heading v-for="node in items" :key="node.key" :node="node" />
+  </ol>
+</template>
+```
+
+```vue [Heading.vue]
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import { makeSortableItem, type FlatNode } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ node: FlatNode<{ id: string; title: string }> }>();
+const el = useTemplateRef<HTMLElement>('el');
+makeSortableItem(el, { id: () => props.node.key });
+</script>
+
+<template>
+  <li ref="el" :style="{ marginInlineStart: `${node.depth * 24}px` }">{{ node.item.title }}</li>
+</template>
+```
+
+Строки используют `makeSortableItem`, как строки списка. Делайте отступ через margin, а не
+padding: тогда вместе с глубиной сдвигается сама строка. Оверлей принимает ширину слота и
+приземляется на его уровне, а смена глубины скользит, как любое другое перемещение. Padding
+сдвинул бы только то, что внутри строки, а оверлей — копия строки в момент захвата — остался
+бы на уровне, с которого начался драг. `items` содержит `FlatNode`:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Поле <code>
+        FlatNode
+      </code>
+    </th>
+    
+    <th>
+      Что в нём
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        key
+      </code>
+    </td>
+    
+    <td>
+      Ключ узла (<code>
+        getKey
+      </code>
+      
+      , по умолчанию <code>
+        node.id
+      </code>
+      
+      ). Используйте его для <code>
+        :key
+      </code>
+      
+       и <code>
+        id
+      </code>
+      
+       строки.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        item
+      </code>
+    </td>
+    
+    <td>
+      Ваш узел.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        depth
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        0
+      </code>
+      
+       у корней. Глубина перетаскиваемого узла — та, на которой он <strong>
+        приземлился бы
+      </strong>
+      
+      , поэтому отступ его слота меняется вживую.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        parentKey
+      </code>
+    </td>
+    
+    <td>
+      Ключ родителя, <code>
+        null
+      </code>
+      
+       у корней.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        index
+      </code>
+    </td>
+    
+    <td>
+      Индекс среди соседних узлов.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        hasChildren
+      </code>
+      
+      , <code>
+        collapsed
+      </code>
+    </td>
+    
+    <td>
+      Для кнопки раскрытия.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Поскольку `items` — черновик, всё, что вы из него вычисляете, следует за драгом: демо
+нумерует разделы по `items`, так что «2.1» становится «3.1», пока вы двигаете. `projected` —
+куда приземлился бы перетаскиваемый узел, `{ depth, parentKey }`, или `null`, пока он не над
+этим деревом.
+
+Потомки читаются из `node.children` и записываются туда же. Для данных другой формы есть
+`getChildren` и `setChildren`; [оргструктура](#rules) ниже хранит их в `members`:
+
+```ts
+makeSortableTree(root, {
+  items: org,
+  getChildren: (member) => member.members,
+  setChildren: (member, members) => { member.members = members; },
+});
+```
+
+## Вложение
+
+Драг меняет глубину двумя способами, оба включены по умолчанию:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        nesting
+      </code>
+    </th>
+    
+    <th>
+      Глубина берётся из…
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'offset'
+      </code>
+    </td>
+    
+    <td>
+      Драга вбок: каждые <code>
+        indentation
+      </code>
+      
+       пикселей влево или вправо — уровень вверх или вниз, насколько позволяют строки вокруг слота.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'hover'
+      </code>
+    </td>
+    
+    <td>
+      Удержания драга над серединой строки: бросок попадает внутрь неё, первым потомком.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'both'
+      </code>
+    </td>
+    
+    <td>
+      Любого из двух. По умолчанию.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Задайте `indentation` равным тому отступу, который ваши строки добавляют на уровень (по
+умолчанию `24`), чтобы слот следовал за указателем: в демо переключитесь на `40` и
+перетаскивайте вбок. Только с `'hover'` драг вбок сохраняет уровень, и вкладывает лишь
+середина строки. Обе опции принимают ref или геттер и применяются к следующему драгу.
+
+С `axis: 'y'` (или `restrictToVerticalAxis`) драг не может двигаться вбок, но строки всё равно
+вкладываются наведением.
+
+## Правила
+
+Engineering принимает людей и команды; Leadership заблокирован; ничто не уходит глубже, чем
+команда в команде. Раскройте и сверните команды: строки, которые они показывают и скрывают,
+въезжают и уезжают.
+
+<example height="41rem" hint="Переносите людей между командами; попробуйте Leadership и третий уровень" name="tree-org">
+
+
+
+</example>
+
+```ts [OrgTree.vue]
+const { items } = makeSortableTree(root, {
+  items: org,
+  getChildren: (member) => member.members,
+  setChildren: (member, members) => { member.members = members; },
+  // Only teams take members, and a locked team takes no one.
+  canNest: (_member, team) => team.kind === 'team' && !team.locked,
+  maxDepth: 2,
+  collapsed,
+  animate: true,
+});
+```
+
+```ts [OrgRow.vue]
+// A locked row doesn't drag (and says so with `aria-disabled`).
+makeSortableItem(el, { id: () => props.node.key, disabled: () => !!props.node.item.locked });
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Опция
+    </th>
+    
+    <th>
+      Ограничивает
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        canNest(node, parent)
+      </code>
+    </td>
+    
+    <td>
+      Может ли <code>
+        node
+      </code>
+      
+       встать под <code>
+        parent
+      </code>
+      
+      . Мульти-драг спрашивает для каждого перетаскиваемого узла. Корни разрешены всегда.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        maxDepth
+      </code>
+    </td>
+    
+    <td>
+      Наибольшая допустимая глубина, у корней — <code>
+        0
+      </code>
+      
+      . Потомки перетаскиваемого узла учитываются: команда с участниками уходит не глубже <code>
+        maxDepth - 1
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      На строке: она не перетаскивается. На дереве: из него ничего не перетаскивается и в него ничего не бросается.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        group.put
+      </code>
+    </td>
+    
+    <td>
+      Принимает ли дерево элементы из других списков и деревьев вообще.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+    </td>
+    
+    <td>
+      Всё остальное, решается при броске: см. <a href="/docs/guides/drop-decisions">
+        решение о броске
+      </a>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Когда правило отклоняет глубину, слот берёт самую глубокую из допустимых: перетащите Noor ниже
+Raj и вправо, и слот останется на верхнем уровне, ведь Leadership заблокирован, а Raj —
+человек. Где не подходит ни одна глубина, слот туда не переходит. Копии и узлы из
+`createItem` тоже подчиняются `canNest` и `maxDepth`.
+
+### Свёрнутые узлы
+
+`collapsed` — `Set` ключей, чьи потомки скрыты, в виде ref или геттера. Их потомков нет в
+`items`; `node.collapsed` и `node.hasChildren` управляют кнопкой:
+
+```ts
+const collapsed = ref(new Set<Key>());
+const toggle = (key: Key) => (collapsed.value.has(key) ? collapsed.value.delete(key) : collapsed.value.add(key));
+```
+
+Перетаскиваемый узел берёт с собой всё своё поддерево, свёрнутое или нет. С `animate: true`
+строки, которые узел показывает или скрывает при раскрытии и сворачивании, анимированно
+появляются и исчезают, как и изменения данных, сделанные не драгом.
+
+## Линия вставки
+
+Перетащите шаблон слева в меню или подвиньте пункт: меню стоит на месте, а линия показывает,
+куда попадёт бросок, начинаясь на том уровне, где он приземлится. Над серединой страницы или
+группы вместо этого подсвечивается строка.
+
+<example height="31rem" hint="Перетащите шаблон в меню или подвиньте пункт вбок" name="tree-menu">
+
+
+
+</example>
+
+С `placeholder: 'indicator'` дерево во время драга не двигается. Каждая строка читает свой
+`indicator` и рисует линию:
+
+```vue [MenuRow.vue]
+<script setup lang="ts">
+import { computed, useTemplateRef } from 'vue';
+import { makeSortableItem, type FlatNode } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ node: FlatNode<MenuItem>; indent: number }>();
+const el = useTemplateRef<HTMLElement>('el');
+const { indicator } = makeSortableItem(el, { id: () => props.node.key });
+
+// 'inside': the drop goes into this row. Otherwise a line before or after it.
+const inside = computed(() => indicator.value?.side === 'inside');
+const line = computed(() => {
+  const value = indicator.value;
+  if (!value || value.side === 'inside') return null;
+  // From the level the drop lands at, measured from this row's own level.
+  return { side: value.side, left: `${((value.depth ?? 0) - props.node.depth) * props.indent}px` };
+});
+</script>
+
+<template>
+  <div ref="el" class="item" :class="{ inside }" :style="{ marginLeft: `${node.depth * indent}px` }">
+    {{ node.item.title }}
+    <span v-if="line" class="line" :class="line.side" :style="{ left: line.left }" />
+  </div>
+</template>
+
+<style scoped>
+.item { position: relative; }
+.item.inside { box-shadow: 0 0 0 1.5px #42b883; }
+.line { position: absolute; right: 0; height: 2px; background: #42b883; }
+.line.before { top: -3px; }
+.line.after { bottom: -3px; }
+</style>
+```
+
+В деревьях `indicator` добавляет `depth` и `parentKey`: уровень и родителя, которых получат
+брошенные узлы. Драг вбок двигает линию между уровнями, и клавиатура тоже двигает линию. В
+этом режиме бросок вне дерева отменяется.
+
+Шаблоны — обычные перетаскиваемые элементы (`makeDraggable`) с `data`. Дерево превращает их в
+новые узлы через `createItem`, в позиции и на глубине линии:
+
+```ts [MenuTree.vue]
+let created = 0;
+makeSortableTree(root, {
+  items: menu,
+  placeholder: 'indicator',
+  maxDepth: 1,
+  canNest: (_item, parent) => parent.kind !== 'link',
+  createItem: (active) => {
+    const template = active.data as { title: string; kind: MenuItem['kind'] };
+    return { id: `new-${++created}`, title: `New ${template.title.toLowerCase()}`, kind: template.kind };
+  },
+});
+```
+
+Полоса над меню рендерит `menu`, сохранённые данные, а не `items`: она меняется только при
+броске.
+
+## Деревья и списки в одной группе
+
+История, перенесённая в бэклог, сохраняет свои задачи, скрытыми, и приносит их обратно в
+роадмап. Удерживайте <kbd value="Alt">
+
+
+
+</kbd>
+
+ во время драга из роадмапа, чтобы вместо этого
+скопировать.
+
+<example height="29.5rem" hint="Перенесите Saved cards в бэклог и обратно; Alt копирует" name="tree-backlog">
+
+
+
+</example>
+
+Дерево и список с одинаковым `group` обмениваются узлами, как два списка. Узел сохраняет своё
+поддерево, куда бы ни попал: список его просто не показывает. Один и тот же компонент строки
+служит обоим, поскольку `makeSortableItem({ item })` получает ключ от того списка или дерева,
+которому принадлежит строка.
+
+Копирование работает как в списках (`clone`, `pull: 'clone'`, клавиша копирования), но `clone`
+должен вернуть копию **со всем её поддеревом**, и каждому узлу в ней нужен новый ключ:
+
+```ts [Roadmap.vue]
+let copies = 0;
+const copy = (work: Work): Work => ({ ...work, id: `${work.id}-copy-${++copies}`, children: work.children?.map(copy) });
+
+makeSortableTree(root, {
+  items: roadmap,
+  group: 'work',
+  canNest: (work, parent) => RANK[parent.kind] < RANK[work.kind],
+  maxDepth: 2,
+  clone: copy,
+});
+```
+
+Про группы, копирование и `createItem` см. [списки с общими элементами](https://zizigy.github.io/docs/guides/shared-lists).
+
+## Бросок
+
+Событие броска дерева — то же, что у списка, с `parentKey`, добавленным в `from` и `to`:
+
+```ts
+makeSortableTree(root, {
+  items: outline,
+  onDrop: (e) => {
+    console.log(e.keys, e.from.parentKey, '→', e.to.parentKey, e.to.index);
+  },
+});
+```
+
+`to.index` — позиция среди новых соседних узлов, отсчитанная после того, как узел покинул
+старое место. При броске библиотека даёт изменённым узлам их новых потомков (`setChildren`) и
+записывает новый массив корней в ваш ref.
+
+`e.result.get(treeId)` — новое дерево в виде нового массива корней: узлы на изменённых путях —
+копии, нетронутые поддеревья общие, а ваши узлы остаются как есть. Для стора или
+иммутабельных данных передайте геттер, вызовите `e.preventDefault()` и сохраните `e.result`
+(см. [решение о броске](https://zizigy.github.io/docs/guides/drop-decisions#stores-and-servers-controlled-lists)).
+Копии делаются через `withChildren(node, children)`, по умолчанию `{ ...node }` с новыми
+потомками; для экземпляров классов передайте свою функцию.
+
+## Клавиатура и мульти-драг
+
+Поставьте фокус на строку, нажмите <kbd value="Space">
+
+
+
+</kbd>
+
+, затем:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Клавиша
+    </th>
+    
+    <th>
+      Перемещает узел
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <kbd value="ArrowUp">
+        
+      </kbd>
+      
+       / <kbd value="ArrowDown">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      В слот выше или ниже, по одной строке.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="ArrowRight">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      На уровень глубже, под строку выше, где позволяют правила.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="ArrowLeft">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      На уровень вверх, из родителя.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="Space">
+        
+      </kbd>
+      
+       / <kbd value="Escape">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      Бросает его / возвращает на место.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+В режиме индикатора стрелки вместо этого двигают линию. Из списка или шаблона рядом с деревом
+стрелка в сторону дерева забирает элемент на уровень строки, перед которой он встанет.
+
+Выделенные узлы перемещаются вместе одним блоком, каждый со своим поддеревом, в порядке
+документа. Выделенный узел внутри другого выделенного едет в поддереве своего родителя. См.
+[мульти-драг](https://zizigy.github.io/docs/guides/multi-drag).
+
+Все опции — в [API makeSortableTree](https://zizigy.github.io/docs/api/make-sortable-tree). Для деревьев на тысячи
+строк см. [виртуальные списки](https://zizigy.github.io/docs/guides/virtual-lists).
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

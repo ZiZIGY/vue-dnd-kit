@@ -1,0 +1,351 @@
+---
+title: "共享项的列表"
+description: "同一分组的列表可以移动、复制和交换项——整列都能接收放置，pull 和 put 决定什么能进出，面板负责复制，受控列表把每次放置应用到带撤销历史的 store。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/shared-lists"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="31rem" hint="在列表之间移动 story；关闭再打开放置区域" name="sprint-planning">
+
+
+
+</example>
+
+## 分组
+
+`group` 名称相同的列表可以交换项。默认情况下，每个列表自成一个分组。
+
+```vue [Column.vue]
+<script setup lang="ts">
+import { toRef, useTemplateRef } from 'vue';
+import { makeSortableList } from '@vue-dnd-kit/core';
+import StoryCard from './StoryCard.vue';
+
+type Story = { id: string; title: string; points: number };
+const props = defineProps<{ column: { id: string; title: string; stories: Story[] } }>();
+
+const list = useTemplateRef<HTMLElement>('list');
+const { items, isOver } = makeSortableList(list, {
+  id: props.column.id,                     // names the list in drop events
+  items: toRef(props.column, 'stories'),   // a writable ref into the reactive column
+  group: 'planning',                       // same name: stories move between these lists
+});
+</script>
+
+<template>
+  <section :class="{ over: isOver }">
+    <h3>{{ column.title }}</h3>
+    <ul ref="list">
+      <StoryCard v-for="story in items" :key="story.id" :story="story" />
+    </ul>
+  </section>
+</template>
+```
+
+```vue [index.vue]
+<script setup lang="ts">
+import { reactive } from 'vue';
+import Column from './Column.vue';
+
+const columns = reactive([
+  { id: 'backlog', title: 'Backlog', stories: [{ id: 's1', title: 'Saved searches', points: 5 }] },
+  { id: 'sprint', title: 'Sprint 14', stories: [] },
+]);
+</script>
+
+<template>
+  <Column v-for="column in columns" :key="column.id" :column="column" />
+</template>
+```
+
+- 这里每一列都是一个组件，列通常也是这样写的。一个组件也可以创建多个列表，例如并排固定的 Todo 和 Done：每张卡片加入元素包含它的那个列表。
+- `toRef(props.column, 'stories')` 是可写的，因为父组件传入的是响应式对象。放置会写入两个数组，即 story 离开的那个和进入的那个，两列的点数也随之更新。
+- `id` 在放置事件中以 `from.list` 和 `to.list` 出现，也是 `e.result` 的 key，`e.result` 包含这次放置所改变的每个列表的新数组。`id` 和 `group` 只读取一次。
+- key 在整个分组中必须唯一。
+
+列表的 `onDrop` 只为放**进**它的放置运行。从 `backlog` 移到 `sprint` 会调用 `sprint` 列表的 `onDrop`，它的 `e.result` 包含两个列表的新数组。
+
+## 整列接收放置：`dropzone`
+
+高高的列里放一个短列表，最后一张卡片下面会留出空白。使用 `dropzone` 时，由另一个元素替列表接收放置：这里是整列。在最后一个 story 下方松开，它会落到末尾。story 仍在 `<ul>` 中；只有接收放置的区域变大了。演示会在拖拽时给这个区域加上轮廓：关闭它之后，只有列表本身接收 story。
+
+```ts [Column.vue]
+const zone = useTemplateRef<HTMLElement>('zone');
+const { items } = makeSortableList(list, {
+  items: toRef(props.column, 'stories'),
+  group: 'planning',
+  dropzone: zone,   // or a getter: () => (wholeColumn.value ? zone.value : undefined)
+});
+```
+
+<tip>
+
+没有 `dropzone` 时，空列表仍需要有尺寸才能接收放置：给它设置 `min-height`。
+
+</tip>
+
+## 什么能进出：`pull` 和 `put`
+
+`group` 也接受对象。`pull` 规定什么可以离开列表，`put` 规定什么可以进入：
+
+<example height="36rem" hint="在列表之间拖动文件：每个列表都会说明它是否接收，以及为什么不接收" name="group-rules">
+
+
+
+</example>
+
+<table>
+<thead>
+  <tr>
+    <th>
+      选项
+    </th>
+    
+    <th>
+      取值
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        pull
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        true
+      </code>
+      
+      （默认）：项可以离开。<code>
+        false
+      </code>
+      
+      ：不能离开。<code>
+        'clone'
+      </code>
+      
+      ：副本离开，项留下。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        put
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        true
+      </code>
+      
+      （默认）：项可以进入。<code>
+        false
+      </code>
+      
+      ：什么都不能进入。函数：由你按每次拖拽决定。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+```ts [index.vue]
+// Inbox: gives, takes nothing.
+group: { name: 'files', pull: true, put: false }
+
+// Templates: gives copies, takes nothing, keeps its order.
+group: { name: 'files', pull: 'clone', put: false }, sort: false
+
+// Images: takes images only.
+group: { name: 'files', put: ({ types }) => types.every((type) => type === 'image') }
+```
+
+`put` 函数会收到 `{ keys, items, types, from, to }`：被拖拽的 key 和项、它们的类型、它们来自的列表（普通可拖拽元素为 `null`）以及本列表。`types` 是被拖拽项的 `type` 选项（`makeSortableItem(el, { item, type })`）；没有该选项的项按分组名计。列表内部的移动总是允许的：Inbox 仍可以对自己的文件排序。
+
+在拒绝该拖拽的列表上方，空位会回到拖拽开始的地方，这样各列表显示的就是放置会产生的结果：什么都没有。在那里放置会被取消，项飞回原处。在这样的拖拽中，列表的 `isAccepting` 为 `false`，而在它上方时 `isOver` 仍为 `true`：演示中的每个列表就是这样知道该说什么的。
+
+在列表之外的独立放置目标（例如垃圾桶）上方，空位同样会回到原处：在那里放置归该目标处理，列表会保留该项，除非目标的 `onDrop` 把它移出（`event.source.remove()`）。列表内部的目标（放进某一项）和包住列表的目标（容纳这些列表的面板）则让空位留在原处。
+
+```ts [RuleList.vue]
+const { items, isOver, isAccepting } = makeSortableList(el, { … });
+const { active } = useDnD();
+const verdict = computed(() => (active.value ? (isAccepting.value ? 'takes' : 'refuses') : null));
+```
+
+### 数量限制
+
+一个最多容纳三个文件的列表，Shortlist：
+
+```ts [index.vue]
+const shortlist = reactive({
+  files: [/* … */],
+  group: { name: 'files', put: ({ keys }: SortablePutContext) => shortlist.files.length + keys.length <= 3 },
+});
+```
+
+拖拽询问时，它会读取自己的项。把它装满，它就会拒绝下一个文件，并在标题中显示原因。
+
+拖拽多个不同类型的选中项时，`acceptMode` 规定是 `'all'`（默认）还是 `'some'` 必须通过 `put`。使用 `'some'` 时，通过的项落位，其余的飞回原处。见[多项拖拽](https://zizigy.github.io/docs/guides/multi-drag#taking-only-some)。
+
+## 复制：面板和 Alt 键
+
+<example height="26rem" hint="从面板拖出；按住 Alt 拖拽会复制；放到 Page 面板之外即可删除" name="palette">
+
+
+
+</example>
+
+```ts [Palette.vue]
+makeSortableList(list, {
+  items: templates,
+  group: { name: 'blocks', pull: 'clone', put: false },  // copies go out, nothing comes in
+  sort: false,                                           // its own order stays
+  clone: (block) => ({ ...block, id: crypto.randomUUID() }),
+});
+```
+
+```ts [Sheet.vue]
+makeSortableList(list, {
+  items: blocks,
+  group: 'blocks',
+  clone: (block) => ({ ...block, id: crypto.randomUUID() }),  // for Alt-drags
+  dropOutside: 'remove',                                      // drag off the Page panel to delete
+});
+```
+
+- `pull: 'clone'` 会复制从该列表拖出的每一次拖拽。原件留下，副本被拖走并落位。
+- 拖拽时按住 <kbd value="Alt">
+
+
+
+</kbd>
+
+ 也会复制，从任何带 `clone` 函数的列表都可以：副本由它生成。用 provider 的 `copyModifier` 更换按键，或设为 `null` 关闭。
+- 无论哪种方式，项所来自的列表都需要 `clone`。它必须返回带有**新 key** 的副本。没有 `clone` 就不会复制任何东西。
+- 放置事件带有 `mode: 'copy'`，`e.items` 是副本。浮层组件也会收到 `mode`，可以在复制时显示一个“+”（见[浮层](https://zizigy.github.io/docs/guides/overlay)）。
+
+## 在列表之间交换
+
+同一分组的两个列表都设置了 `behavior: 'swap'` 时，它们之间可以交换项：被拖拽的项占据悬停项的位置，悬停的项移到被拖拽项所在的列表。它必须被允许离开自己的列表（`pull: true`）并进入另一个列表（`put`）。[可排序列表](https://zizigy.github.io/docs/guides/sortable-lists#swap-instead-of-shift)中的值班轮换就在它的两列之间交换。
+
+## 普通可拖拽元素
+
+列表有 `createItem` 时，会接收用 `makeDraggable` 拖来的项（一个标签、一个模板、来自树的一个文件）。`group.put` 同样对它们做决定，此时 `from: null`。见[把普通可拖拽元素拖进列表](https://zizigy.github.io/docs/guides/drag-and-drop#plain-draggables-into-a-list)。
+
+## 放到外面
+
+拖拽在没有任何目标的地方结束时会发生什么，由列表的 `dropOutside` 决定：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        dropOutside
+      </code>
+    </th>
+    
+    <th>
+      项
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'placeholder'
+      </code>
+      
+      （默认）
+    </td>
+    
+    <td>
+      落到空位最后显示的地方。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'cancel'
+      </code>
+    </td>
+    
+    <td>
+      飞回原处。<code>
+        placeholder: 'indicator'
+      </code>
+      
+       时的默认值。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'remove'
+      </code>
+    </td>
+    
+    <td>
+      离开它们的列表：拖出去即删除。面板演示中的页面就是这样做的。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`'remove'` 会先询问列表的 `onBeforeDrop`。然后列表的 `onDrop` 以 `to.index === -1` 运行，`e.result` 是去掉这些项之后的列表。接收放置的垃圾桶也是同样的工作方式：见[回收区](https://zizigy.github.io/docs/guides/drag-and-drop#trash-zones)。
+
+## 受控列表
+
+列表可以读取不归它所有的 store：Pinia、服务端状态、不可变数据。以 getter（或 `computed`、只读 ref）的形式传入 `items`：库永远不会写入它。在 `onDrop` 中调用 `e.preventDefault()`，然后自己应用 `e.result`：
+
+<example height="26rem" hint="在桌子之间移动客人，然后逐步撤销" name="seating-undo">
+
+
+
+</example>
+
+```ts [Table.vue]
+const { items } = makeSortableList(list, {
+  id: props.id,
+  items: () => props.seating.state.tables[props.id]!,   // read-only
+  group: 'seating',
+  onDrop: (e) => {
+    e.preventDefault();                                   // no write
+    props.seating.apply(e.result, `${e.items[0]?.name} → ${props.title}`);
+  },
+});
+```
+
+```ts [store.ts]
+const apply = (result: ReadonlyMap<Key, Guest[]>, label: string) => {
+  const before = [...result.keys()].map((id): [Key, Guest[]] => [id, state.tables[id]!]);
+  for (const [id, guests] of result) state.tables[id] = guests;
+  state.history.unshift({ label, before });
+};
+
+const undo = () => {
+  const last = state.history.shift();
+  for (const [id, guests] of last?.before ?? []) state.tables[id] = guests;
+};
+```
+
+- `e.result` 把这次放置改变的每个列表映射到它的新数组：移动后是两张桌子，重新排序后是一张。它们都是新数组，所以 store 可以保留旧数组用于撤销。
+- 草稿跟随 store：在 `onDrop` 中（或在异步的 `onBeforeDrop` 完成之前）应用 `result`，浮层就会按新顺序落位。
+- `preventDefault()` 会跳过对 `result` 中每个列表的写入。如果哪里都没有应用，列表保持原样，项飞回原处。
+- 如果只读列表的放置被留给库来处理，开发构建会发出警告：那样什么都不会改变。
+
+要在放置落位之前保存到服务器，或先询问用户，见[决定放置](https://zizigy.github.io/docs/guides/drop-decisions)。所有列表选项见 [makeSortableList API](https://zizigy.github.io/docs/api/make-sortable-list)。
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

@@ -1,0 +1,1005 @@
+---
+title: "拖放"
+description: "用 makeDraggable 实现自由拖拽，用 makeDroppable 创建放置目标——按类型接收部分拖拽、拒绝其他拖拽的目标，平面布置图，回收区，列表中的文件夹，以及被列表接收的普通项。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/drag-and-drop"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+凡是不属于可排序列表的场景，都用 `makeDraggable` 和 `makeDroppable`：把垃圾放进回收箱、在平面图上摆家具、把文件放进文件夹、垃圾桶、棋盘。
+
+<example height="29rem" hint="把垃圾分进回收箱；没有哪个箱子接收电池" name="recycling">
+
+
+
+</example>
+
+## 可拖拽元素
+
+```vue [WasteItem.vue]
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import { makeDraggable } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ waste: { id: string; name: string; type: string } }>();
+const el = useTemplateRef<HTMLElement>('el');
+
+const { isDragging } = makeDraggable(el, {
+  id: () => props.waste.id,      // read back as `active.id`
+  type: () => props.waste.type,  // matched by the targets' `accept`
+  data: () => props.waste,       // anything: `active.data`
+});
+</script>
+
+<template>
+  <div ref="el" :class="{ dragging: isDragging }">{{ waste.name }}</div>
+</template>
+```
+
+以 getter 的形式传入来自你数据的 id。默认 id 来自 `useId()`，每个组件实例都不同，所以对应用的其他部分毫无意义。选项在需要时才读取，因此 getter 或 ref 能让它们保持最新。
+
+<table>
+<thead>
+  <tr>
+    <th>
+      选项
+    </th>
+    
+    <th>
+      作用
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        id
+      </code>
+      
+      、<code>
+        data
+      </code>
+      
+      、<code>
+        type
+      </code>
+    </td>
+    
+    <td>
+      拖拽的是谁、携带什么，以及目标的 <code>
+        accept
+      </code>
+      
+       匹配什么。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        handle
+      </code>
+    </td>
+    
+    <td>
+      内部的一个选择器或元素：只有它能开始拖拽。见<a href="/docs/guides/sortable-lists#handles">
+        手柄
+      </a>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      不开始任何拖拽。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        overlay
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        true
+      </code>
+      
+      （默认）：一个副本跟随指针。一个组件：你自己的预览。<code>
+        false
+      </code>
+      
+      ：元素自己移动（<a href="#without-an-overlay">
+        见下文
+      </a>
+      
+      ）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        axis
+      </code>
+      
+      、<code>
+        modifiers
+      </code>
+    </td>
+    
+    <td>
+      把拖拽锁定到 <code>
+        'x'
+      </code>
+      
+       或 <code>
+        'y'
+      </code>
+      
+      、吸附、限制在边界内：见<a href="/docs/guides/constraints">
+        约束
+      </a>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        keyboard
+      </code>
+    </td>
+    
+    <td>
+      方向键如何移动它：按像素（默认）或从目标到目标（<a href="#keyboard">
+        见下文
+      </a>
+      
+      ）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activation
+      </code>
+      
+      、<code>
+        canDrag
+      </code>
+    </td>
+    
+    <td>
+      按下何时变成拖拽：见<a href="/docs/guides/sensors">
+        传感器
+      </a>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        attributes
+      </code>
+    </td>
+    
+    <td>
+      供键盘和屏幕阅读器使用的 <code>
+        role
+      </code>
+      
+      、<code>
+        tabindex
+      </code>
+      
+       和 <code>
+        aria-*
+      </code>
+      
+      （默认 <code>
+        true
+      </code>
+      
+      ）。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+<table>
+<thead>
+  <tr>
+    <th>
+      返回值
+    </th>
+    
+    <th>
+      是什么
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        isDragging
+      </code>
+    </td>
+    
+    <td>
+      此元素正被拖拽。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        selected
+      </code>
+    </td>
+    
+    <td>
+      可写，绑定到 provider 的<a href="/docs/guides/multi-drag">
+        选中集合
+      </a>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        transform
+      </code>
+    </td>
+    
+    <td>
+      拖拽偏移，用于 <code>
+        overlay: false
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        id
+      </code>
+    </td>
+    
+    <td>
+      正在使用的 id。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+按钮、输入框和其他可交互的子元素不会开始指针拖拽，所以它们在可拖拽元素内部照常工作。所有选项见 [makeDraggable API](https://zizigy.github.io/docs/api/make-draggable)。
+
+## 放置目标
+
+```vue [Bin.vue]
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import { makeDroppable, type Key } from '@vue-dnd-kit/core';
+import type { Bin, Waste } from './waste';
+
+const props = defineProps<{ bin: Bin; items: Waste[] }>();
+const emit = defineEmits<{ drop: [id: Key] }>();
+const el = useTemplateRef<HTMLElement>('el');
+
+const { isOver, isAccepting } = makeDroppable(el, {
+  id: props.bin.id,
+  accept: props.bin.accept,   // 'glass', ['paper', 'cardboard'], a function…
+  onDrop: (event) => emit('drop', event.active.id),
+});
+</script>
+
+<template>
+  <section ref="el" :class="{ accepting: isAccepting, over: isOver && isAccepting, refused: isOver && !isAccepting }">
+    <WasteItem v-for="waste in items" :key="waste.id" :waste="waste" />
+  </section>
+</template>
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      返回值
+    </th>
+    
+    <th>
+      为 <code>
+        true
+      </code>
+      
+       的条件
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        isOver
+      </code>
+    </td>
+    
+    <td>
+      拖拽位于此目标上方，无论它是否接收该拖拽。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isAccepting
+      </code>
+    </td>
+    
+    <td>
+      有东西正被拖拽，且此目标接收它：用它点亮有效的目标。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        placement
+      </code>
+    </td>
+    
+    <td>
+      不是布尔值：<code>
+        { top, right, bottom, left }
+      </code>
+      
+      ，指针位于目标的哪几半；未悬停时为 <code>
+        null
+      </code>
+      
+      。用它实现“放在这张卡片之前 / 之后”。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+有 `isOver` 而没有 `isAccepting`，表示拖拽位于拒绝它的目标上方。像上面的回收箱那样把它显示出来：在那里放置会被取消，项飞回原处。项移动时，不能接收它的回收箱会淡出；更多样式见[样式](https://zizigy.github.io/docs/guides/styling#drop-targets-yes-and-no)。
+
+<table>
+<thead>
+  <tr>
+    <th>
+      选项
+    </th>
+    
+    <th>
+      作用
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        id
+      </code>
+      
+      、<code>
+        data
+      </code>
+    </td>
+    
+    <td>
+      以 <code>
+        over.id
+      </code>
+      
+       和 <code>
+        over.data
+      </code>
+      
+       读回。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        accept
+      </code>
+      
+      、<code>
+        acceptMode
+      </code>
+    </td>
+    
+    <td>
+      它接收哪些拖拽（<a href="#which-drags-a-target-takes">
+        下一节
+      </a>
+      
+      ）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      什么都不接收，拖拽会从它上方经过。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        priority
+      </code>
+    </td>
+    
+    <td>
+      目标重叠但不嵌套时，值高者胜出（默认 0）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onDragEnter
+      </code>
+      
+      、<code>
+        onDragLeave
+      </code>
+    </td>
+    
+    <td>
+      拖拽进入或离开。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+      、<code>
+        onDrop
+      </code>
+    </td>
+    
+    <td>
+      决定放置，然后应用它（<a href="#the-drop">
+        见下文
+      </a>
+      
+      ）。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+## 目标接收哪些拖拽
+
+可拖拽元素的 `type` 与目标的 `accept` 进行匹配：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        accept
+      </code>
+    </th>
+    
+    <th>
+      接收
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      省略或 <code>
+        '*'
+      </code>
+    </td>
+    
+    <td>
+      一切。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'glass'
+      </code>
+    </td>
+    
+    <td>
+      类型为 <code>
+        glass
+      </code>
+      
+       的可拖拽元素，以及没有类型的。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        ['paper', 'cardboard']
+      </code>
+    </td>
+    
+    <td>
+      两种类型之一，以及没有类型的。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        ({ active, items, types }) => boolean
+      </code>
+    </td>
+    
+    <td>
+      由你的函数决定。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+没有 `type` 的可拖拽元素符合任何字符串规则。`type` 也可以是数组（`['paper', 'large']`）：只要有一个类型匹配即可。函数可以根据拖拽的任何信息做决定。上面的堆肥箱读取的是项的数据，而不是类型：
+
+```ts [waste.ts]
+{
+  id: 'compost',
+  accept: ({ items }) => items.every((item) => (item.data as Waste).compostable),
+}
+```
+
+`accept` 是在拖拽寻找目标时实时读取的：传入一个 ref 就能改变它。
+
+同时拖拽多个项时，`acceptMode` 规定需要有多少项符合：`'all'`（默认）或 `'some'`。使用 `'some'` 时，从 `onBeforeDrop` 返回要保留的 id，其余的飞回原处。见[决定放置](https://zizigy.github.io/docs/guides/drop-decisions)。
+
+## 放置
+
+普通放置目标的 `onDrop` 是**你**修改数据的地方。库自己不会移动任何东西：
+
+```vue [index.vue]
+<script setup lang="ts">
+/** Where each item is: the tray or a bin. */
+const place = reactive<Record<string, string>>(Object.fromEntries(WASTE.map((waste) => [waste.id, 'tray'])));
+const itemsIn = (bin: string) => WASTE.filter((waste) => place[waste.id] === bin);
+const drop = (bin: string, id: Key) => (place[String(id)] = bin);
+</script>
+
+<template>
+  <Bin v-for="bin in BINS" :key="bin.id" :bin="bin" :items="itemsIn(bin.id)" @drop="drop(bin.id, $event)" />
+</template>
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      事件字段
+    </th>
+    
+    <th>
+      内容
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        active
+      </code>
+    </td>
+    
+    <td>
+      拖拽：<code>
+        id
+      </code>
+      
+      、<code>
+        ids
+      </code>
+      
+      、<code>
+        items
+      </code>
+      
+      （每项为 <code>
+        { id, data, type, item }
+      </code>
+      
+      ）、<code>
+        data
+      </code>
+      
+      、<code>
+        type
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        over
+      </code>
+    </td>
+    
+    <td>
+      此目标：<code>
+        id
+      </code>
+      
+      、<code>
+        data
+      </code>
+      
+      、<code>
+        element
+      </code>
+      
+      、<code>
+        rect
+      </code>
+      
+      、<code>
+        accepted
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        pointer
+      </code>
+      
+      、<code>
+        delta
+      </code>
+    </td>
+    
+    <td>
+      指针在哪里，以及它从起点移动了多远。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        position
+      </code>
+    </td>
+    
+    <td>
+      被拖拽的盒子在此目标中的位置（<a href="#leave-it-where-it-was-dropped">
+        下一节
+      </a>
+      
+      ）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        source
+      </code>
+    </td>
+    
+    <td>
+      项来自可排序列表时才有：<code>
+        { list, remove() }
+      </code>
+      
+      。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`active.ids` 包含所有被拖拽的 id，抓起的那个在最前。顺序是 `onBeforeDrop`（决定）、`onDrop`（应用），然后是 provider 的 `drag-end`。要在一个地方监听页面上的每一次拖拽，使用 `useDnDMonitor`（见 [provider](https://zizigy.github.io/docs/guides/provider)）。要在放置前询问、让拖拽继续，或只接受部分项，见[决定放置](https://zizigy.github.io/docs/guides/drop-decisions)。
+
+## 放在哪就留在哪
+
+平面布置图、画布、白板：项停在你松开的地方。每个事件都带有 `position`，即能让绝对定位的项正好停在放置处的 `left` / `top`。
+
+<example height="28rem" hint="把家具拖进房间、在房间里移动，或放回去" name="room-planner">
+
+
+
+</example>
+
+```ts [Planner.vue]
+const room = useTemplateRef<HTMLElement>('room');
+makeDroppable(room, {
+  id: 'room',
+  onDrop: ({ active, position }) => {
+    const piece = find(active.id);
+    if (!piece || !position || !room.value) return;
+    // Clamped, so a piece let go half outside stays inside the walls.
+    piece.x = clamp(position.x, room.value.clientWidth - piece.width);
+    piece.y = clamp(position.y, room.value.clientHeight - piece.height);
+    piece.place = 'room';
+  },
+});
+```
+
+```vue [Piece.vue]
+<div ref="el" class="piece" :style="{ left: `${piece.x}px`, top: `${piece.y}px` }">…</div>
+```
+
+`position` 是被拖拽盒子在 `over` 中的左上角，从它的内边距边缘量起，并加上了它的滚动距离：房间的边框，也就是墙壁，不计算在内。下方没有目标时它为 `null`。
+
+<tip>
+
+不要用 `active.rect` 和 `delta` 计算位置：那样会漏掉目标的边框和滚动。这类画板所需的网格、边界和轴锁定见[约束](https://zizigy.github.io/docs/guides/constraints)。
+
+</tip>
+
+## 不使用浮层
+
+默认情况下，元素的一个副本跟随指针，元素本身留在原地：仓库里的家具就是这样。使用 `overlay: false` 时没有副本，元素按拖拽返回的 `transform` 自己移动：房间里的家具就是这样。
+
+```ts [Piece.vue]
+const inRoom = computed(() => props.piece.place === 'room');
+const { isDragging, transform } = makeDraggable(el, {
+  id: () => props.piece.id,
+  overlay: computed(() => !inRoom.value),   // a value or a ref, read when the drag starts
+});
+
+const style = computed(() => ({
+  left: `${props.piece.x}px`,
+  top: `${props.piece.y}px`,
+  ...(transform.value && { transform: `translate3d(${transform.value.x}px, ${transform.value.y}px, 0)` }),
+}));
+```
+
+- 此时 `position` 是元素自己的角，所以放置处理函数无需改动。
+- 元素移动时位于指针下方；查找目标时，库会透过它查找。拖拽期间把它提升到相邻元素之上（`z-index`）。
+- 它随页面滚动，浮层则不会：`transform` 会减去拖拽开始以来它的容器移动的距离，所以页面滚动时它仍停在指针下方。
+- 它在自己的容器内移动：`overflow: hidden` 的父元素会裁剪它，它的层叠上下文决定它会经过哪些元素的上方。浮层没有这两个问题。
+
+要用自定义预览代替副本，见[浮层](https://zizigy.github.io/docs/guides/overlay)。
+
+## 回收区
+
+从可排序列表开始的拖拽带有 `e.source`。调用 `remove()`，列表就会去掉这些项：
+
+<example height="34rem" hint="把一条通知拖到 Done 或 Delete，然后撤销" name="triage">
+
+
+
+</example>
+
+```ts [Triage.vue]
+const triage = (bin: 'done' | 'deleted') => (e: DnDEvent) => {
+  bins[bin].push(...e.active.items.map((entry) => entry.item as Notice));
+  e.source?.remove();
+};
+
+makeDroppable(doneZone, { id: 'done', onDrop: triage('done') });
+makeDroppable(trashZone, { id: 'trash', onDrop: triage('deleted') });
+```
+
+- `e.active.items[i].item` 就是列表中的项本身。保留它，撤销时就能把它放回原来的位置。
+- 随后列表自己的 `onDrop` 以 `to.index === -1` 运行，`e.result` 是去掉这些项之后的列表。
+- 浮层缩小进区域中，因为项已不再显示在任何地方。
+- 列表也可以移除放到所有目标之外的项：见 [`dropOutside`](https://zizigy.github.io/docs/guides/shared-lists#dropping-outside)。
+
+<note>
+
+使用键盘时，方向键在列表的位置之间以及同一分组的列表之间移动列表项；越过列表的末端后，再按一次会把项继续带到那个方向上的放置目标（这里是垃圾桶），按相反方向的方向键则把它带回来。不过对很多人来说，按钮、菜单或 `Delete` 键仍然更快：也提供其中一种。
+
+</note>
+
+## 放进可排序项
+
+可排序列表的一行也可以是放置目标：接收书签的文件夹、接收任务的分组。在项的元素上加一个 droppable：
+
+<example height="28rem" hint="把链接放到文件夹的中间；靠近边缘时则排序。打开文件夹可以把链接拖出来" name="bookmarks">
+
+
+
+</example>
+
+```ts [FolderRow.vue]
+const el = useTemplateRef<HTMLElement>('el');
+makeSortableItem(el, { item: () => props.folder, type: 'folder' });
+
+const { isOver } = makeDroppable(el, {
+  accept: 'link',
+  onDrop: (e) => {
+    emit('add', e.active.items.map((entry) => entry.item as Link)); // Bookmarks adds them
+    e.source?.remove();   // take them out of the list they came from
+  },
+});
+```
+
+打开的文件夹把它的链接显示为同一分组的列表，只接收链接：链接在里面排序，也能拖回顶层或拖进另一个文件夹。
+
+当列表本会对该拖拽进行排序时，这样的目标只在项的**中间**（沿列表轴向的 25% 到 75%）生效。在那里放置会放进项中，列表不会移动。靠近边缘时，列表照常排序。
+
+- `accept` 拒绝该拖拽的目标会被跳过：列表在该项上方照常排序，就像在其他项上方一样。文件夹只接收链接，所以拖拽的文件夹会直接越过其他文件夹排序。
+- 目标永远不会收到自己的拖拽。
+- 使用键盘时，方向键会先停在文件夹上；朝同一方向再按一次就会越过它。
+- 放置后该项不再显示，所以浮层会缩小进文件夹，而不是飞回原处。
+- 在文件夹上方时，列表把被拖拽行的位置留在原处，指针下的内容就不会移动。这时该位置带有 `data-dnd-placeholder="into"`：放置不会落到那里，所以可以把它隐藏（`[data-dnd-placeholder='into'] { opacity: 0 }`）。
+
+[文件管理器](https://zizigy.github.io/docs/examples/file-manager)在网格中做了同样的事，并带有嵌套文件夹。
+
+## 把普通可拖拽元素拖进列表
+
+可排序列表知道如何从 `makeDraggable` 拖来的元素创建项时，就会接收它们：
+
+<example height="26rem" hint="把一个时间块拖进日程；时间随拖拽更新" name="day-planner">
+
+
+
+</example>
+
+```ts [Agenda.vue]
+const { items } = makeSortableList(list, {
+  items: agenda,
+  createItem: (active) => ({ ...(active.data as Block), id: `entry-${++created}` }),
+});
+```
+
+可拖拽元素位于列表上方时，创建出的项就在草稿中，由你的模板像其他行一样渲染：日程的时间已经把它计算在内。放置时它成为真正的项（`mode: 'insert'`、`from.list === null`），浮层落到它上面。
+
+- 返回 `undefined` 表示拒绝。没有 `createItem` 的列表会忽略普通可拖拽元素。
+- 给新项一个它自己的 key：时间块仍留在面板中。
+- 使用键盘时，朝列表方向按方向键会把可拖拽元素接收进列表，与它平齐，之后的方向键按位置移动它。
+
+## 来自电脑的文件
+
+从桌面或文件管理器拖进来的文件不是本库的拖拽：它们由浏览器携带。放置目标用 `external` 接收它们，放置时它们在 `e.external` 中：
+
+<example height="22rem" hint="把电脑上的图片或 PDF 文件拖到这些区域上" name="file-drop">
+
+
+
+</example>
+
+```ts [AvatarDrop.vue]
+const { isOver, isAccepting } = makeDroppable(el, {
+  external: { files: 'image/*', multiple: false },
+  onDrop: (e) => show(e.external!.files[0]!),
+});
+```
+
+- `files` 的写法与 `<input accept>` 相同：MIME 类型（`image/*`、`application/pdf`）和扩展名（`.md`）。`true` 接收任何文件，函数则逐个文件做决定。`links` 和 `text` 接收其他应用和标签页拖来的内容，`types` 接收任何其他 MIME 类型。
+- 这次拖拽作为 provider 的拖拽运行：`isOver`、`isAccepting`、各个事件和播报都和其他拖拽一样工作。没有 `external` 的目标会忽略它。没有浮层：拖拽的图像由浏览器绘制。
+- 文件悬停在页面上方时，浏览器只告知它们的类型（`e.external.fileTypes`）。文件名、大小和内容随放置一起到来，扩展名也在那时检查。文件夹会被排除；使用 `multiple: false` 时，拖入多个文件会被拒绝。
+
+列表也接收文件、链接和文本，并在拖拽进行时为它们腾出位置。项也可以离开页面，进入另一个应用或你的应用的另一个窗口：见[文件与其他应用](https://zizigy.github.io/docs/guides/native)。
+
+<tip>
+
+键盘和屏幕阅读器用户无法拖拽文件。在放置区旁边提供一个 `<input type="file">`，就像演示中的 Browse 那样。
+
+</tip>
+
+## 键盘
+
+获得焦点的可拖拽元素用 <kbd value="Space">
+
+
+
+</kbd>
+
+ 或 <kbd value="Enter">
+
+
+
+</kbd>
+
+ 拿起，用同样的键放下，:kbd{value="Escape"} 取消。在这之间，方向键移动它：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        keyboard
+      </code>
+    </th>
+    
+    <th>
+      按一次方向键
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'pixels'
+      </code>
+      
+      （默认）
+    </td>
+    
+    <td>
+      移动 25 px，即 provider 的 <code>
+        keyboard.step
+      </code>
+      
+      。按住 <kbd value="Shift">
+        
+      </kbd>
+      
+       时移动四倍距离。家具就是这样移动的。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'droppables'
+      </code>
+    </td>
+    
+    <td>
+      跳到该方向上最近的、接收它的目标。垃圾从一个回收箱跳到另一个，并跳过拒绝它的箱子。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+```ts
+makeDraggable(el, { id: () => props.waste.id, type: () => props.waste.type, keyboard: 'droppables' });
+```
+
+按键可以在 provider 上重新绑定。更多内容见[无障碍](https://zizigy.github.io/docs/guides/accessibility)。
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

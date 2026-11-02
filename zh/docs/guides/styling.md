@@ -1,0 +1,730 @@
+---
+title: "样式"
+description: "为拖拽的每一种状态设置样式——用于纯 CSS 的 data 属性、用于 class 的 ref、表明接收与否的目标、拖拽期间的浮层和页面、默认样式、Tailwind 以及 UI 库。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/styling"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+库几乎不设置任何样式。拖拽的每种状态都以两种方式提供给你：一种是 `data-dnd-*` 属性，用于纯 CSS；另一种是组合式函数返回的 ref，用于 class 和条件渲染的标记。按你的技术栈选择其一，或两者并用。
+
+## data 属性
+
+下面的行完全没有状态 class：所有外观都来自属性。面板会列出页面上随时出现和消失的属性。按住 <kbd value="Ctrl">
+
+
+
+</kbd>
+
+ 或 <kbd value="Meta">
+
+
+
+</kbd>
+
+ 选中两行并拖动它们：多项拖拽中的其他项也会出现。
+
+<example height="25rem" hint="拖动一行，然后 Ctrl/⌘ 单击两行并拖动它们" name="dnd-attributes">
+
+
+
+</example>
+
+<table>
+<thead>
+  <tr>
+    <th>
+      属性
+    </th>
+    
+    <th>
+      位于
+    </th>
+    
+    <th>
+      时机
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        data-dnd-placeholder
+      </code>
+    </td>
+    
+    <td>
+      可排序项
+    </td>
+    
+    <td>
+      它是被拖拽项将落入的位置。拖拽位于<a href="/docs/guides/drag-and-drop#drop-into-a-sortable-item">
+        项内部的放置目标
+      </a>
+      
+      上方时为 <code>
+        "into"
+      </code>
+      
+      ：放置会落到那个目标里，空位只是占住它的位置。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        data-dnd-dragging
+      </code>
+    </td>
+    
+    <td>
+      可排序项
+    </td>
+    
+    <td>
+      它被拖拽但留在原处：<code>
+        'gaps'
+      </code>
+      
+       模式下多项拖拽中的其他项。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        data-dnd-dragging="pointer"
+      </code>
+      
+       或 <code>
+        "keyboard"
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        <html>
+      </code>
+    </td>
+    
+    <td>
+      整个拖拽期间。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        data-dnd-overlay="dragging"
+      </code>
+      
+       或 <code>
+        "dropping"
+      </code>
+    </td>
+    
+    <td>
+      浮层盒子
+    </td>
+    
+    <td>
+      始终存在。落位期间以及异步 <code>
+        onBeforeDrop
+      </code>
+      
+       等待期间为 <code>
+        dropping
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        data-dnd-overlay-content
+      </code>
+    </td>
+    
+    <td>
+      浮层的内容
+    </td>
+    
+    <td>
+      始终存在：填满盒子、承载它所显示内容的元素。动画由你来加；它接收 provider 的 <code>
+        overlayClass
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        data-dnd-leaving
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        animate
+      </code>
+      
+       留下的副本
+    </td>
+    
+    <td>
+      离开的项淡出期间。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        data-dnd-no-clone
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        由你设置
+      </strong>
+    </td>
+    
+    <td>
+      把该元素排除在浮层的副本之外：提示框、菜单、徽标。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+```css [TaskRow.vue]
+/* The slot a dragged row will land in: a striped gap. */
+.row[data-dnd-placeholder] {
+  opacity: 1;
+  background: repeating-linear-gradient(-45deg, color-mix(in srgb, #42b883 16%, transparent) 0 6px, transparent 6px 12px);
+}
+
+.row[data-dnd-placeholder] > * {
+  visibility: hidden;   /* an empty slot of the row's exact size */
+}
+
+/* Selected rows left in place by a multi-drag (`multiple: 'gaps'`). */
+.row[data-dnd-dragging] {
+  opacity: 0.4;
+}
+
+/* The copy in the overlay, while it travels. */
+[data-dnd-overlay='dragging'] .row {
+  box-shadow: 0 0 0 1.5px #42b883, 0 14px 24px -10px rgb(0 0 0 / 0.55);
+}
+```
+
+```vue [TaskRow.vue]
+<li ref="el" class="row" :aria-selected="selected">
+  <span class="title">{{ task.title }}</span>
+  <button type="button" data-dnd-no-clone @click.stop="task.done = !task.done">✓</button>
+</li>
+```
+
+- 浮层中行的副本保留它的 class 和属性，包括 Vue 的作用域属性，所以 `[data-dnd-overlay] .row` 写在行自己的 `<style scoped>` 中也有效。副本自身没有 `data-dnd-*` 标记：空位的副本不是空位。
+- 选中状态没有对应的属性。把 `selected` ref 映射到某个属性上（上面的 `aria-selected`），或使用 class。
+- 普通可拖拽元素和放置目标（`makeDraggable`、`makeDroppable`）没有 `data-dnd-*` 状态属性：用它们的 ref 设置样式。
+
+## 返回的 ref
+
+同样的状态以 ref 的形式提供，外加列表和目标特有的状态。下面的每一行和每个列表都会打印出当前为 true 的 ref，它们的 class 也来自这些 ref。Icebox 拒绝紧急任务：拖一个到它上面试试。
+
+<example height="24rem" hint="把一个任务拖到另一个列表；Ctrl/⌘ 单击可以选中多个" name="dnd-refs">
+
+
+
+</example>
+
+```vue [RefRow.vue]
+<script setup lang="ts">
+const { isDragging, isPlaceholder, selected } = makeSortableItem(el, { item: () => props.task });
+</script>
+
+<template>
+  <li ref="el" class="row" :class="{ placeholder: isPlaceholder, dragging: isDragging, selected }">…</li>
+</template>
+
+<style scoped>
+.row.selected { box-shadow: 0 0 0 1.5px #3b82f6; }
+.row.placeholder { opacity: 1; box-shadow: inset 0 0 0 1.5px #42b883; }   /* beats the default 40% */
+.row.placeholder .title { visibility: hidden; }
+</style>
+```
+
+```vue [RefList.vue]
+<script setup lang="ts">
+const { items, isOver, isAccepting } = makeSortableList(el, { items, group });
+</script>
+
+<template>
+  <section :class="{ accepting: isAccepting, over: isOver && isAccepting, refused: isOver && !isAccepting }">…</section>
+</template>
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      组合式函数
+    </th>
+    
+    <th>
+      状态
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        makeSortableItem
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        isDragging
+      </code>
+      
+      、<code>
+        isPlaceholder
+      </code>
+      
+      、<code>
+        selected
+      </code>
+      
+      、<code>
+        indicator
+      </code>
+      
+      、<code>
+        index
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeSortableList
+      </code>
+      
+      、<code>
+        makeSortableTree
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        isOver
+      </code>
+      
+      、<code>
+        isAccepting
+      </code>
+      
+      、<code>
+        indicator
+      </code>
+      
+      、<code>
+        activeKey
+      </code>
+      
+      、<code>
+        activeIndex
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeDraggable
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        isDragging
+      </code>
+      
+      、<code>
+        selected
+      </code>
+      
+      、<code>
+        transform
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeDroppable
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        isOver
+      </code>
+      
+      、<code>
+        isAccepting
+      </code>
+      
+      、<code>
+        placement
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeDragArea
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        isDragging
+      </code>
+      
+      、<code>
+        isAutoScrolling
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        useDnD()
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        status
+      </code>
+      
+      、<code>
+        active
+      </code>
+      
+      、<code>
+        over
+      </code>
+      
+      、<code>
+        pointer
+      </code>
+      
+      、<code>
+        activation.progress
+      </code>
+      
+      、<code>
+        isAutoScrolling
+      </code>
+    </td>
+  </tr>
+</tbody>
+</table>
+
+- `isPlaceholder`：此元素是被拖拽项将落入的位置。在 `'group'` 模式的多项拖拽中，随之移动的项的位置也是占位。
+- `isDragging`：该项是拖拽的一部分：多项拖拽中的每个被拖拽项都是。
+- `isAccepting`：有东西正被拖拽，且此目标接收它。点亮可以放置的地方。
+- `isOver`：拖拽位于此目标上方，无论它是否接收。`isOver && !isAccepting` 表示拒绝：把它显示出来。
+- `indicator`：在[指示器模式](https://zizigy.github.io/docs/guides/sortable-lists#an-insertion-line)下插入线的位置。
+- `activation.progress`：触摸长按或 `delay` 进行期间从 0 到 1。用它填充一个圆环。
+
+## 放置目标：接收与拒绝
+
+拖拽进行时，目标有四种外观：接收该拖拽；接收且指针在它上方；拒绝该拖拽；拒绝且指针在它上方。把四种都显示出来，并在被拖拽的项上也表明这一点。
+
+<example height="23rem" hint="把一种颜色拖过各个调色板：合适的那个欢迎它，其他的不接收" name="drop-highlights">
+
+
+
+</example>
+
+```ts [Palette.vue]
+const { isOver, isAccepting } = makeDroppable(el, { accept: props.tone, onDrop });
+
+const { active } = useDnD();
+const state = computed(() => {
+  if (!active.value) return '';
+  if (isOver.value) return isAccepting.value ? 'over' : 'refused';
+  return isAccepting.value ? 'accepting' : 'refusing';
+});
+```
+
+```css [Palette.vue]
+.palette.accepting { border-style: dashed; border-color: #42b883; }          /* an invitation */
+.palette.over { border-color: #42b883; background: color-mix(in srgb, #42b883 14%, Canvas); }
+.palette.refusing { opacity: 0.45; }                                          /* out of the way */
+.palette.refused { border-color: #f43f5e; animation: shake 0.3s; }            /* a drop here is cancelled */
+```
+
+被拖拽的色块是 provider 的 `#overlay` 插槽。它会收到 `over` 和 `accepted`：在拒绝该拖拽的目标上方时，`accepted` 为 `false`。
+
+```vue [index.vue]
+<template #overlay="{ active, over, accepted }">
+  <div
+    class="lifted"
+    :class="{ yes: over && accepted, no: over && !accepted }"
+    :style="{ background: (active.data as { color: string }).color }"
+  >
+    <span v-if="over" class="badge">{{ accepted ? '+' : '✕' }}</span>
+  </div>
+</template>
+```
+
+在浮层之外，`useDnD().over.value?.accepted` 表达的是同样的信息。更多关于浮层组件的内容见[浮层](https://zizigy.github.io/docs/guides/overlay)。
+
+## 浮层与页面
+
+两个属性涵盖了拖拽的其余部分：浮层盒子上的 `data-dnd-overlay`，以及 `<html>` 上的 `data-dnd-dragging`，值为 `"pointer"` 或 `"keyboard"`。便签上方的栏读取第二个属性，并说明哪些按键可用。开启慢速保存：浮层会在你松开的地方保持 `dropping`，直到 `onBeforeDrop` 完成，并把这一点显示出来。
+
+<example height="27rem" hint="先用鼠标、再用键盘拖动一张便签；开启慢速保存" name="overlay-theme">
+
+
+
+</example>
+
+```css [index.vue]
+.bar .pointer,
+.bar .keyboard,
+html[data-dnd-dragging] .bar .idle { display: none; }
+
+html[data-dnd-dragging='pointer'] .bar .pointer,
+html[data-dnd-dragging='keyboard'] .bar .keyboard { display: inline; }
+```
+
+```css [StickyNote.vue]
+[data-dnd-overlay='dragging'] .note {
+  box-shadow: 0 0 0 2px #42b883, 0 22px 30px -14px rgb(0 0 0 / 0.6);
+}
+
+/* Landing, and waiting for the save. */
+[data-dnd-overlay='dropping'] .note { opacity: 0.85; }
+[data-dnd-overlay='dropping'] .saving { display: flex; }
+```
+
+- `dropping` 涵盖落位以及异步 `onBeforeDrop` 的等待。等待期间，`<html>` 退出拖拽模式：页面的光标和文本选择恢复，所以确认对话框照常工作。
+- 为盒子**内部**的内容设置样式。盒子本身由库通过 `transform` 移动，并通过 `width` 和 `height` 设置尺寸。它的内容元素 `[data-dnd-overlay-content]` 填满盒子，归你使用：在这里抬起和倾斜整个浮层（见[动画](https://zizigy.github.io/docs/guides/animations#the-overlay-lift-tilt-settle)）。
+- 副本的根元素内联了 `transform: none`：用 `rotate` 和 `scale` 旋转或放大它。过渡和关键帧都能作用于它：见[动画](https://zizigy.github.io/docs/guides/animations#the-overlay-lift-tilt-settle)。
+- 副本按元素本来的样子显示，不会猜测背景。由列表绘制背景的行（白色 `<ul>` 中的 `<li>`、表格行）需要一个背景：`[data-dnd-overlay] .row { background: Canvas; }`。
+- 副本位于一个 `<div>` 中，这个 `<div>` 带有元素继承的自定义属性（主题颜色、`--tw-*`），所以它们在浮层中仍然生效，而副本自己的规则（`in-data-[dnd-overlay]:ring-2`）仍然优先于它们。按 class 选择副本，而不是按它在盒子中的层级深度。
+
+## 默认样式
+
+provider 会在每个文档中注入一次几条规则。它们被包在 `:where()` 中，所以优先级为零，你的任何规则都会胜出：
+
+```css
+:where([data-dnd-placeholder]) { opacity: 0.4; }
+:where([data-dnd-dragging]:not(html)) { opacity: 0.4; }
+:where(html[data-dnd-dragging]), :where(html[data-dnd-dragging] *) {
+  user-select: none !important;
+  overflow-anchor: none !important;
+}
+:where(html[data-dnd-dragging='pointer']), :where(html[data-dnd-dragging='pointer'] *) {
+  cursor: var(--dnd-cursor, grabbing) !important;
+  -webkit-touch-callout: none !important;
+}
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      规则
+    </th>
+    
+    <th>
+      原因
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      空位为 40%
+    </td>
+    
+    <td>
+      这样即使完全不写 CSS，列表看起来也正常。上面的每个演示都覆盖了它。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      留下的项为 40%
+    </td>
+    
+    <td>
+      同上，用于 <code>
+        'gaps'
+      </code>
+      
+       模式的多项拖拽。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      禁用 <code>
+        user-select
+      </code>
+    </td>
+    
+    <td>
+      拖拽不会选中它经过的文本。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      禁用 <code>
+        overflow-anchor
+      </code>
+    </td>
+    
+    <td>
+      页面不会为了让移动中的行保持可见而滚动。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      拖拽光标
+    </td>
+    
+    <td>
+      指针拖拽期间，在所有地方。默认为 <code>
+        grabbing
+      </code>
+      
+      ，除非抓起的元素有自己的光标：调整大小手柄的 <code>
+        ns-resize
+      </code>
+      
+      、<code>
+        move
+      </code>
+      
+      、图片会在整个拖拽期间保留自己的光标（<code>
+        grab
+      </code>
+      
+      、<code>
+        pointer
+      </code>
+      
+       之类的仍会变成 <code>
+        grabbing
+      </code>
+      
+      ）。可拖拽项上的 <code>
+        cursor: grab
+      </code>
+      
+       由你自己添加。在 <code>
+        <html>
+      </code>
+      
+       上设置 <code>
+        --dnd-cursor
+      </code>
+      
+       可以换一个默认光标。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      禁用触摸标注
+    </td>
+    
+    <td>
+      iOS 不会在长按时打开链接菜单。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+在 provider 上设置 `:default-styles="false"` 会省去这些规则。库仍会标记 `<html>`，仍会在拖拽开始时清除文本选择，并在拖拽结束前阻止新的选择：只是去掉了 CSS。这些规则由第一个需要它们的 provider 注入一次，之后一直保留：要关闭它们，需要在页面的每个 provider 上都关闭。
+
+```vue
+<DnDProvider :default-styles="false">
+```
+
+## Tailwind CSS
+
+这些属性可以作为变体使用：元素本身用 `data-[…]`，祖先用任意变体。
+
+```vue [TaskRow.vue]
+<li
+  ref="el"
+  class="rounded-lg bg-white shadow-sm
+         data-[dnd-placeholder]:bg-transparent data-[dnd-placeholder]:opacity-100
+         data-[dnd-placeholder]:outline-dashed
+         [[data-dnd-overlay=dragging]_&]:shadow-xl"
+  :class="{ 'ring-2 ring-emerald-500': selected }"
+>
+```
+
+```vue [Hint.vue]
+<p class="hidden [html[data-dnd-dragging=keyboard]_&]:block">Arrows move · Space drops</p>
+```
+
+<note>
+
+库的外观（40% 的透明度）位于它自己的级联层 `vue-dnd-kit` 中，该层在所有其他层之前声明。Tailwind v4 的工具类以及基于它构建的 UI 库也位于级联层中，而它们的层排在后面，所以无需 `!` 就能胜出。不在级联层中的 CSS 无论如何都会胜出。
+
+</note>
+
+在 Tailwind v4 中，`in-data-[dnd-overlay=dragging]:shadow-xl` 是祖先变体的更简短写法。
+
+<warning>
+
+在 Vue 的 scoped CSS 中，`:global()` 会作用于整个选择器：`:global(html[data-dnd-dragging]) .hint` 只会编译成 `html[data-dnd-dragging]`，结果把整个页面隐藏了。祖先不要用它包裹，写成 `html[data-dnd-dragging] .hint`：Vue 只给最后一部分加作用域。
+
+</warning>
+
+## UI 库
+
+- 组合式函数既接受元素也接受组件：对 UI 库的卡片或列表项使用 `useTemplateRef` 是可行的，库会读取它的根元素。
+- 在 UI 库有对应 props 的地方，把状态传给它们（`:active="selected"`、`:color="isOver ? 'primary' : undefined"`），其余的作为 class 传入。
+- UI 库的列表项通常自身没有背景：由列表绘制背景。这样它们在浮层中的副本就是透明的。给它一个背景：```css
+[data-dnd-overlay] .v-list-item { background: rgb(var(--v-theme-surface)); }
+```
+- 副本会略去 Vuetify、Quasar、PrimeVue 和 Naive UI 的按下涟漪。其他不应随之移动的东西，比如提示框或菜单按钮，用 `data-dnd-no-clone` 标记。
+
+## 不要这样做
+
+- 不要给可排序项的 `transform` 或 `translate` 加 CSS `transition`：库会自己为它们添加动画，并在测量时取消这类过渡。
+- 不要用 `<TransitionGroup>` 包裹可排序项：移动会被动画两次。使用列表的 `animate`。
+- 不要为[虚拟列表](/docs/guides/virtual-lists)中行的 `height`、`margin` 或 `padding` 添加动画。
+- 在 `prefers-reduced-motion: reduce` 下，务必停止你在拖拽相关处添加的过渡。库已经停止了它自己的过渡。
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

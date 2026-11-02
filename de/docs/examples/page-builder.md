@@ -1,0 +1,269 @@
+---
+title: "Page-Builder"
+description: "Eine Landingpage, per Drag and Drop zusammengesetzt – Abschnitte aus einer Palette, die über der Seite zum echten Ding werden, Elemente, die zwischen Spalten wandern, ein Ebenenbaum auf denselben Daten, Bearbeiten direkt im Text, Gerätebreiten und Undo."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/de/docs/examples/page-builder"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="45rem" hint="Ziehe einen Abschnitt oder ein Element auf die Seite; doppelklicke einen Text, um ihn zu bearbeiten" name="page-builder" title="Page-Builder">
+
+
+
+</example>
+
+Klappe den Rahmen auf Vollbild auf: Die Palette dockt links an, die Ebenen rechts, und die Seite
+nimmt den Platz dazwischen ein. Schmaler teilen sie sich eine Schublade, die sich aus der oberen
+Leiste öffnet.
+
+## Worauf du achten solltest
+
+- **Canvas.vue**: Die Seite ist eine sortierbare Liste von Abschnitten mit
+`placeholder: 'indicator'`. Sie bleibt still, während ein Abschnitt unterwegs ist, und eine
+Linie zwischen zwei Abschnitten sagt, wohin er kommt: 500 px hohe Abschnitte bei jedem Slot aus
+dem Weg zu schieben, würde die ganze Seite durchschütteln. `dropzone` gibt den Drop an die ganze
+Leinwand, ein neben oder unter der Seite losgelassener Abschnitt landet also trotzdem.
+- **ColumnList.vue**: Jede Spalte jedes Abschnitts ist eine Liste der Gruppe `blocks`. Elemente
+wandern zwischen Spalten und Abschnitten und sortieren sich live: Die Seite zeigt das Ergebnis,
+während du ziehst. Jede Spalte ist eine eigene Komponente, und die Spalten sind Listen in den
+Elementen einer anderen Liste.
+- **Palette.vue**: Die Abschnittsvorlagen sind eine Liste der Gruppe der Seite mit
+`pull: 'clone'`, `put: false` und `sort: false`: Sie gibt Kopien heraus und nimmt nichts zurück.
+Die Elemente darunter (**ElementChip.vue**) sind einfache ziehbare Elemente, und eine Spalte
+macht mit `createItem` den Block daraus.
+- **Layers.vue**: dieselbe Seite als sortierbarer Baum, auf denselben Daten. Eine dort
+verschobene Zeile verschiebt sich auf der Seite, und umgekehrt.
+- **builder.ts**: die Seite, die Auswahl, das Gerät und der Verlauf. Drops schreiben die Seite
+über die Listen; die Buttons der Werkzeugleiste und die Tastenkürzel ändern sie hier. Jede
+Änderung ist ein Schritt von Undo.
+
+## Ein Abschnitt in der Hand ist der echte Abschnitt
+
+**SectionGhost.vue** ist das Overlay sowohl der Abschnitte der Seite als auch der Vorlagen der
+Palette. Über der Seite (`to.list` ist die Liste der Seite) rendert es den Abschnitt selbst, in
+der Breite der Seite, verkleinert unter dem Zeiger. Wenn der Drop entschieden ist
+(`status: 'dropping'`), skaliert es zurück auf 1, während die Box zum Platz des Abschnitts
+fliegt: Sie landet genau darauf. Der Drop wartet auf diese Transition, am Ende springt also nichts.
+
+```vue [SectionGhost.vue]
+<script setup lang="ts">
+const props = defineProps<{ items: DragItem[]; status: DnDStatus; to: DropDestination | null }>();
+const section = computed(() => props.items[0]!.item as Section);
+const fromPalette = computed(() => !find(section.value.id));
+const onPage = computed(() => props.to?.list === PAGE);
+
+const look = computed(() => {
+  if (fromPalette.value && !onPage.value) return 'card'; // still the palette's card
+  return props.status === 'dropping' ? 'landing' : 'ghost';
+});
+</script>
+
+<template>
+  <DragPreview v-if="look === 'card'" :id="items[0]!.id" :style="{ width: '100%', height: '100%' }" />
+  <div v-else class="replica" :class="look" :style="{ width: `${pageWidth}px`, '--shrink': shrink }">
+    <SectionView :section="section" />
+  </div>
+</template>
+
+<style scoped>
+.replica { transform-origin: 0 0; scale: var(--shrink); transition: scale 0.25s ease; }
+.replica.landing { scale: 1; }
+</style>
+```
+
+Abseits der Seite bleibt eine Vorlage, was sie in der Palette war: `DragPreview` zeigt die Kopie
+ihrer Karte, die die Bibliothek angelegt hat. Der Platz des Abschnitts auf der Seite ist der Slot:
+Während du ziehst, wartet er dort, abgeblendet; nach dem Drop bleibt sein neuer Platz leer, bis das
+Overlay darauf gelandet ist.
+
+```css [PageSection.vue]
+.page-section[data-dnd-placeholder] { opacity: 0; }
+html[data-dnd-dragging] .page-section[data-dnd-placeholder] { opacity: 0.35; }
+```
+
+Jeder Abschnitt zeichnet die Linie aus seinem eigenen `indicator` und sagt, was der Drop tut:
+*Move Features here* oder *Add Pricing here* für eine Vorlage.
+
+## Elemente: in den Farben des Abschnitts, in den sie kommen
+
+Blöcke werden an ihrem ganzen Körper gezogen; ein Abschnitt am Griff seines Etiketts, da sein
+Körper Inhalt zum Klicken und Ziehen ist. **BlockGhost.vue**, das Overlay von Blöcken und Chips,
+liest aus `to` die Spalte, in die es käme, und übernimmt die Farben ihres Abschnitts: Ein Button
+über dem dunklen Footer wird hell, bevor du loslässt. Die Box hat die Größe des Slots des Blocks
+dort (`overlayFit: 'slot'`, der Standard), und der Block ordnet sich darin so an, wie er es nach
+dem Drop tun wird.
+
+```ts [BlockGhost.vue]
+// The column it would go into (`to.list` is the column's id): its section's tone.
+const look = computed(() => {
+  const at = props.to && find(String(props.to.list));
+  return at ? { ...TONES[SECTIONS[at.section.kind].tone], ...typeScale(pageWidth.value) } : null;
+});
+```
+
+Ein Chip der Palette ist ein einfaches ziehbares Element, das seine Art trägt. Jede Spalte macht
+einen Block daraus, und der neue Block sitzt in der Spalte, vom eigenen Template der Spalte
+gerendert, bis du loslässt oder weiterziehst:
+
+```ts [ColumnList.vue]
+makeSortableList(list, {
+  id: props.column.id,
+  items: blocks,
+  group: 'blocks',
+  overlay: BlockGhost,
+  createItem: (active) => {
+    const kind = (active.data as ChipData | undefined)?.kind;
+    return kind ? createBlock(BLOCKS[kind].spec) : undefined;
+  },
+});
+```
+
+`blocks` ist ein beschreibbares `computed` über `props.column.blocks` statt `toRef`: Undo legt neue
+Objekte in die Seite, und die Spalte muss ihnen folgen.
+
+## Vorlagen: Kopien hinaus, nichts hinein
+
+```ts [Palette.vue]
+makeSortableList(list, {
+  id: 'templates',
+  items: templates,
+  group: { name: 'sections', pull: 'clone', put: false },
+  sort: false,
+  clone: (template) => createSection(template.kind), // new ids all the way down
+  overlay: SectionGhost,
+});
+```
+
+Die Vorlagen sind echte Abschnitte, ihre Karten zeigen sie also (herausgezoomt), und das Overlay
+kann sie rendern. Ein Klick auf eine Karte oder <kbd value="Enter">
+
+
+
+</kbd>
+
+ fügt den Abschnitt nach dem
+ausgewählten ein: Die Seite lässt sich ganz ohne Ziehen bauen.
+
+## Ebenen: dieselbe Seite als Baum
+
+```ts [Layers.vue]
+makeSortableTree(tree, {
+  id: LAYERS,
+  items: sections as Ref<LayerNode[]>,
+  // Keys of their own: the canvas's lists already drag these ids.
+  getKey: (node) => `layer-${node.id}`,
+  getChildren: (node) => (isSection(node) ? node.columns : isColumn(node) ? node.blocks : undefined),
+  setChildren: (node, children) => { … },
+  // Blocks go into columns, nothing into blocks, sections stay at the top.
+  canNest: (node, parent) => levelOf(node) === levelOf(parent) + 1,
+  maxDepth: 2,
+  placeholder: 'indicator',
+  // A tree takes any row at its top level: a block let go there flies back.
+  onBeforeDrop: (event) => (event.to.parentKey !== null || event.items.every(isSection) ? 'accept' : 'reject'),
+});
+```
+
+Schlüssel gelten für den ganzen Provider, also bekommen die Zeilen eigene Schlüssel. Die Spalten
+sind auch Zeilen, `disabled`: Sie nehmen Blöcke an und bleiben, wo sie sind. Wo ein Block nicht
+hindarf, zwischen zwei Abschnitten, wird seine Linie rot. Das Darüberfahren über eine Zeile
+umrandet ihren Knoten auf der Seite; einen Knoten auf der Seite auszuwählen öffnet hier seinen
+Abschnitt und scrollt seine Zeile ins Bild.
+
+## Bearbeiten direkt im Text, und die Tastatur
+
+Ein Block lässt sich von überall auf ihm ziehen, seine Texte sind also nicht bearbeitbar, bis du
+ihn doppelklickst: Dann sind sie `contenteditable`, und `canDrag` lehnt die Drags ab, sodass ein
+Drücken den Cursor setzt. **EditableText.vue** schreibt das DOM nur dann aus dem Modell, wenn
+der Text gerade nicht bearbeitet wird, der Cursor springt also nie, und Undo wird trotzdem
+sichtbar.
+
+Der Provider behält <kbd value="Space">
+
+
+
+</kbd>
+
+ für Drags und überlässt <kbd value="Enter">
+
+
+
+</kbd>
+
+ dem Editor:
+
+```vue [index.vue]
+<DnDProvider
+  :keyboard="{ keys: { start: ['Space'], drop: ['Space', 'Enter'], cancel: ['Escape'] } }"
+  :announcements="announcements"
+  :screen-reader-instructions="instructions"
+>
+```
+
+Springe mit Tab zu einem Block: <kbd value="Space">
+
+
+
+</kbd>
+
+ nimmt ihn auf, und die Pfeile bewegen ihn
+durch seine Spalte und in die nächsten; <kbd value="Enter">
+
+
+
+</kbd>
+
+ bearbeitet ihn. Ein Abschnitt bewegt
+sich an seinem Griff genauso oder mit den Pfeilen seiner Werkzeugleiste. <kbd value="Ctrl">
+
+
+
+</kbd>
+
+<kbd value="Z">
+
+
+
+</kbd>
+
+ macht rückgängig, <kbd value="Delete">
+
+
+
+</kbd>
+
+ entfernt, <kbd value="Ctrl">
+
+
+
+</kbd>
+
+<kbd value="D">
+
+
+
+</kbd>
+
+ dupliziert. Screenreader hören „the Hero section, position 3 of 7 on the page“
+statt IDs.
+
+## Undo und Änderungen ohne Drag
+
+Jeder Drop ist ein Schritt des Verlaufs: Ein Monitor sichert die Seite, sobald die Listen sie
+geschrieben haben.
+
+```ts [Builder.vue]
+useDnDMonitor({ onDragEnd: () => builder.commit() });
+```
+
+Undo legt einen Schnappschuss zurück. Die Listen haben `animate` an, also gleitet, was der
+Schnappschuss verschoben hat, dorthin, wie auch die Abschnitte, die die Werkzeugleiste hoch und
+runter bewegt; hinzugefügte Abschnitte blenden sich ein und gelöschte aus.
+
+Mehr dazu: [Sortierbare Listen](https://zizigy.github.io/docs/guides/sortable-lists#an-insertion-line) ·
+[Listen mit gemeinsamen Elementen](https://zizigy.github.io/docs/guides/shared-lists) · [Bäume](https://zizigy.github.io/docs/guides/trees) ·
+[Das Overlay](https://zizigy.github.io/docs/guides/overlay) · [Animationen](https://zizigy.github.io/docs/guides/animations) ·
+[Barrierefreiheit](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

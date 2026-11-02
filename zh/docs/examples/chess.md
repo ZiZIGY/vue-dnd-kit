@@ -1,0 +1,105 @@
+---
+title: "国际象棋"
+description: "一个国际象棋棋盘——合法走法会亮起，手中的棋子会说明某个格子为什么被拒绝，兵会询问要升变成什么，机器人用真实的拖拽回应。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/chess"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="36rem" hint="拖动一枚白棋，或使用 Tab 和 Space；Bot 执黑" name="chess" title="国际象棋">
+
+
+
+</example>
+
+## 看点
+
+- **Square.vue**：64 个格子中的每一个都是放置目标，它的 `accept` 是一个函数。拖动棋子时会询问它，所以格子只接收这枚棋子的合法走法；放到其他任何地方都会被拒绝，棋子飞回原处。合法的格子根据 `isAccepting` 亮起：游戏自身没有任何状态在跟踪拖拽。
+- **Piece.vue**：一个普通可拖拽元素，不轮到它这一方时为 `disabled`。`keyboard: 'droppables'` 让方向键在接收这枚棋子的格子之间跳转：也就是它的合法走法，别无其他。`snapCenterToCursor` 让棋子保持在指针下方居中，触摸会立即开始拖拽（`activation`）。`canDrag` 让你在代码走棋时碰不到机器人的棋子和棋盘，而不需要禁用任何东西：由代码发起的拖拽没有输入事件，所以不会为它们询问 `canDrag`。
+- **chess.ts** 和 **game.ts**：规则和对局，其中没有任何拖放代码：考虑将军的合法走法、王车易位、吃过路兵、升变、子力不足的和棋、棋谱记法、悔棋。`onDrop` 中的一步棋会生成新的局面，浮层落到被移动的棋子上。
+
+## 手中的棋子
+
+**PieceOverlay.vue** 是棋子的 `overlay` 组件。它读取每个浮层都会收到的 props，并说明放到它下方的格子上会发生什么：在被拒绝的格子上方（设置了 `over`，`accepted` 为 false），棋子变红并给出原因；在吃子的格子上方，它显示一个靶标以及要吃掉的棋子。放置一旦确定（`status: 'dropping'`），提示消失，棋子落定。
+
+```ts [PieceOverlay.vue]
+const props = defineProps<{
+  active: Active;
+  over: Over | null;
+  accepted: boolean;
+  status: DnDStatus;
+}>();
+
+const hint = computed(() => {
+  const square = props.over ? String(props.over.id) : null;
+  if (props.status !== 'dragging' || !square || square === piece.value.square) return null;
+  if (props.accepted) {
+    const taken = game.takes(piece.value.id, square);
+    return taken ? { type: 'capture', text: `Takes ${NAMES[taken.kind]}` } : null;
+  }
+  // "Pinned", "King in check", "Not a legal move"
+  return { type: 'refused', text: game.whyNot(piece.value.id, square) };
+});
+```
+
+`Board.vue` 根据 `useDnD()` 的 `active` 和 `over`，从棋子原来的格子到它下方的格子画一个箭头。provider 的 `haptics` 在触摸拖拽经过合法格子时以及放置被拒绝时振动；`index.vue` 中的 `announcements` 说出同样的原因：“f7, pinned”。
+
+## 升变：等待回答的放置
+
+在最后一横排上方，手中的兵会显示它将升变成的棋子：格子自己的 `overlay`（`PromotionOverlay.vue`）取代了棋子的浮层。松开时，格子的 `onBeforeDrop` 返回一个 promise，浮层在格子上等待，同时旁边页面上的普通元素 **PromotionPicker.vue** 询问要升变成哪个棋子。选择一个棋子回答 `'accept'`，Escape 或 Cancel 回答 `'reject'`（兵飞回原处），Keep dragging 回答 `'continue'`：兵重新跟随指针，下一次单击放下它并再次询问。
+
+```ts [Square.vue]
+makeDroppable(el, {
+  id: props.square,
+  accept: ({ active }) => game.canMove(active.id, props.square),
+  // Shown instead of the piece's overlay while a pawn is over the last rank.
+  overlay: computed(() =>
+    held.value?.kind === 'P' && isLastRank(props.square) ? PromotionOverlay : undefined,
+  ),
+  // A promise: the drop waits on the square until the picker answers.
+  onBeforeDrop: ({ active }) =>
+    game.promotes(active.id, props.square) ? game.askPromotion(props.square) : 'accept',
+  onDrop: ({ active }) => game.move(String(active.id), props.square),
+});
+```
+
+放置目标的 `onBeforeDrop` 收到普通的拖拽事件，并且只在它的 `accept` 接受了该拖拽时才会被询问；可排序列表的 `onBeforeDrop` 收到列表的 `SortableDropEvent`，其中带有放置的 `result`。目标的 `overlay` 在 `onDrop` 之后还会为落位再读取一次：它检查的是拿起时的兵（`active.data`），而不是对局，因为此时在对局中它已经是后了。
+
+## 机器人、回放和王车易位：由代码执行的拖拽
+
+**autoplay.ts** 用 `@vue-dnd-kit/actions` 走棋：机器人的走法（`bot.ts`，一个贪心算法）、**Replay** 的走法，以及每次王车易位中车的那一步，包括你的易位。每一步都是真实的拖拽：被拿起，逐帧滑过棋盘，经过格子的 `accept` 和 `onDrop` 放下，并像你的拖拽一样被播报和动画。脚本化的升变会自带升变的棋子，所以选择器不会打开；Escape 会像取消其他拖拽一样取消脚本化的拖拽。
+
+```ts [autoplay.ts]
+const { startDrag } = useDnDActions();
+
+const drag = startDrag(id); // from the piece's center
+for (let frame = 1; frame <= FRAMES; frame++) {
+  const t = easeOut(frame / FRAMES);
+  const point = { x: start.x + (end.x - start.x) * t, y: start.y + (end.y - start.y) * t };
+  if (!(await drag.moveTo(point))) return false; // cancelled meanwhile (Escape)
+}
+return drag.drop(); // true once it has landed, false if the square refused it
+```
+
+王车易位分两步走，就像手动走棋那样：王走两列，然后它的车被拖过王，所以车从不跳跃。
+
+## 吃子、悔棋和新对局
+
+被吃掉的棋子进入它这一方的 **Tray.vue**：一个只为 `animate` 而使用的可排序列表（`disabled`，那里不能拖拽任何东西）。它的 `enter` 是一个函数：新棋子从它被吃掉的格子飞进来，其他棋子让出空间。
+
+```ts [Tray.vue]
+makeSortableList(tray, {
+  items: () => props.pieces,
+  getKey: (piece) => `taken-${piece.id}`,
+  disabled: true,
+  animate: { enter: flyIn, leave: false },
+});
+```
+
+Undo 和 New game 不经拖拽就改变局面，所以 **glide.ts** 手动为它们添加动画（FLIP）：每枚棋子从原来的位置（格子上或托盘中）飞到现在的位置。与机器人对弈时，Undo 会把你的走法连同它的回应一起撤销。
+
+延伸阅读：[决定放置](https://zizigy.github.io/docs/guides/drop-decisions) · [浮层](https://zizigy.github.io/docs/guides/overlay#targets-that-change-the-overlay) · [程序化拖拽](https://zizigy.github.io/docs/guides/sensors#programmatic-drags) · [数据变化：`animate`](https://zizigy.github.io/docs/guides/animations#data-changes-animate) · [无障碍](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

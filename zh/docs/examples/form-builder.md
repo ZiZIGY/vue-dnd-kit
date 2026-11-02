@@ -1,0 +1,220 @@
+---
+title: "表单构建器"
+description: "一个用 Nuxt UI 制作的表单构建器——从面板拖出字段，在行中并排摆放，在面板中编辑，然后在带校验的实时预览中填写，并导出为 Vue 代码。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/form-builder"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="44rem" hint="把字段拖进表单，放到另一个字段旁边就成为多列" name="form-builder" title="表单构建器">
+
+
+
+</example>
+
+这里的每个控件都是 Nuxt UI 组件：表单的字段（`UInput`、`USelect`、`URadioGroup`、`UInputRating`、`UFileUpload`……）、它们周围的面板、预览中的 `UForm`。Vue DnD Kit 负责移动它们。把演示展开到全屏：面板、表单和设置会并排显示。
+
+## 看点
+
+- **PaletteGroup.vue**：面板中的一个分区是一个只往外复制的可排序列表：`group: { name: 'fields', pull: 'clone', put: false }` 加上 `sort: false`。它的项和表单中的字段一样，所以拖进某一行的副本就是一个普通字段；`clone` 给它一个自己的 key。单击（或 <kbd value="Enter">
+
+
+
+</kbd>
+
+）无需拖拽即可添加字段。
+- **FormRow.vue**：一行同时是两样东西，就像看板的一列：它是表单行列表中的一项，通过抓手拖动；它也是面板分组中最多容纳三个字段的列表。它的 `put` 拒绝第四个：在已满的行上方，手中的字段变红并说明原因，在那里放置会被取消。
+- **NewRowZone.vue**：把字段放到两行之间的空隙中，或放到最后一行下方，它就会获得自己的一行。这些地方也是列表：同一分组的空列表，它们的 id 说明新行插在哪里。
+- **FieldCard.vue**：各行使用指示器模式（`placeholder: 'indicator'`），所以拖动字段时没有东西移动：字段旁边的一条线显示它将去往哪里。在较窄的构建器中，一行的字段会堆叠起来，线显示在它们上方或下方。
+- **Trash.vue**：拖动表单中的字段时，面板会变成垃圾桶：一个只接收表单字段的普通放置目标（`accept: 'fields'`，即它们分组的名称），并用 `event.source.remove()` 删除它们。
+- **OptionList.vue**：下拉框或多选题的选项本身是设置面板中的一个可排序列表，通过抓手拖动，所以它们的文本仍可编辑。
+- **form.ts**：表单，以及唯一会改变它的代码。各个列表读取它但从不写入，所以 Undo 和 Redo 能看到每一次改动，包括放置。
+
+## 一行字段是列表中的列表
+
+表单的行和每一行的字段是两个分组的列表：`rows` 和 `fields`。拖拽只会进入它自己分组的列表：无论如何嵌套，字段永远不会落到行之间，行也永远不会落进另一行里面。
+
+```ts [FormRow.vue]
+// The row is an item of the form's rows, dragged by its grip...
+makeSortableItem(el, { item: () => props.row, handle: grip });
+
+// ...and a list of up to three fields side by side, in the group of the palette.
+const { items, isOver, isAccepting } = makeSortableList(list, {
+  id: rowList(props.row.id),
+  items: () => props.row.fields,
+  group: { name: 'fields', put: ({ keys }) => props.row.fields.length + keys.length <= MAX_COLUMNS },
+  strategy: () => (props.stacked ? 'vertical' : 'horizontal'),
+  placeholder: 'indicator',
+  overlay: FieldOverlay,
+  clone: cloneField, // Alt-drag copies a field
+  animate: true,
+  onDrop: form.drop,
+});
+```
+
+新行需要一个可以放置的地方。每一行在它上方的空隙上都有一条带状区域，最后一行下方的空间也是这样一个地方：`fields` 分组的一个空列表，从不显示任何项。在带状区域上方时，列表处于 `isOver`，带状区域画出它的线。带状区域只在有东西被拖拽时才接收指针（`html[data-dnd-dragging]`），所以从不妨碍单击：
+
+```vue [NewRowZone.vue]
+<script setup lang="ts">
+const NONE: readonly Field[] = [];
+const { isOver, isAccepting } = makeSortableList(el, {
+  id: newRowList(props.before), // 'new:<row id>', or 'new:end'
+  items: () => NONE,
+  group: 'fields',
+  placeholder: 'indicator',
+  // A band across the page: up and down are the keys that cross it, to the next list.
+  strategy: 'horizontal',
+  onDrop: form.drop,
+});
+</script>
+
+<template>
+  <div
+    ref="el"
+    class="pointer-events-none absolute inset-x-0 -top-[18px] z-10 h-6 in-data-[dnd-dragging]:pointer-events-auto"
+  >
+    <span class="… bg-primary" :class="isOver ? 'opacity-100' : 'opacity-0'" />
+  </div>
+</template>
+```
+
+键盘也能找到这些带状区域。键盘拖拽按列表在页面上的位置，用垂直于列表方向的方向键从一个列表移到另一个列表：对横向的行来说是上下键，对同样是横向的带状区域也是如此。所以 <kbd value="ArrowUp">
+
+
+
+</kbd>
+
+ 和 <kbd value="ArrowDown">
+
+
+
+</kbd>
+
+ 会依次经过各行以及行之间的空隙。
+
+## 一个 store，一个 Undo：从不写入的列表
+
+构建器的每个列表都从 getter 获取它的项，所以库从不写入它们（[受控列表](https://zizigy.github.io/docs/guides/shared-lists#controlled-lists)）。它们的 `onDrop` 是 `form.drop`：它取消写入，把 `event.result`（这次放置改变的每个列表的新数组）交给表单。列表的 id 说明每个数组是什么：某一行的字段、各行的顺序，或要创建的一行。
+
+```ts [form.ts]
+function apply(result: ReadonlyMap<Key, unknown[]>) {
+  commit(() => {
+    const created: [before: string, fields: Field[]][] = [];
+    for (const [list, items] of result) {
+      const [type, id] = String(list).split(':') as [string, string];
+      if (list === ROWS) state.rows = items as Row[];
+      else if (type === 'row') state.rows.find((row) => row.id === id)!.fields = items as Field[];
+      else if (type === 'new' && items.length) created.push([id, items as Field[]]);
+    }
+    for (const [before, items] of created) {
+      const index = state.rows.findIndex((row) => row.id === before);
+      state.rows.splice(index < 0 ? state.rows.length : index, 0, row(...items));
+    }
+  });
+}
+
+/** `onDrop` of every list: applies the drop, and selects a field that was just added. */
+function drop(event: SortableDropEvent<unknown>) {
+  event.preventDefault();
+  apply(event.result);
+  if (event.mode === 'copy') selectedId.value = (event.items[0] as Field).id;
+  forgetGone();
+}
+```
+
+`commit` 为 Undo 保存表单的快照，做出改动，并删除移动后留空的行，这一切都发生在放置落位之前，所以浮层会飞到字段真正所在的地方。垃圾桶走的是同一条路：`event.source.remove()` 以移除该字段后的结果运行这一行的 `onDrop`（`to.index` 为 `-1`）。在设置中输入也经过 `commit`，同一个设置项中的按键共用一个 key：逐字输入的标签只算一步 Undo。
+
+## 手中的字段
+
+面板和各行共用一个浮层组件。它在一个框中显示库对被拖拽内容的副本（`DragPreview`：从面板拖出的是一个小标签，从表单拖出的是整个字段，包括它的 Nuxt UI 控件），并用一个徽章说明放置会做什么：复制（:kbd{value="Alt"}）、在垃圾桶上方时删除、在已满的行上方时什么都不做。
+
+```vue [FieldOverlay.vue]
+<script setup lang="ts">
+const props = defineProps<{ items: DragItem[]; over: Over | null; accepted: boolean; status: DnDStatus; mode: DragMode }>();
+
+const entry = computed(() => props.items[0]!);
+const state = computed(() => {
+  if (props.status === 'dropping') return 'landing';
+  if (props.over?.id === TRASH) return 'delete';
+  // A row that refuses the field: it is full.
+  if (props.over && !props.accepted) return 'full';
+  // Palette fields are copies too, but they say nothing: adding is what they do.
+  if (props.mode === 'copy' && !entry.value.type.includes('new-field')) return 'copy';
+  return 'move';
+});
+</script>
+
+<template>
+  <!-- LOOKS: lifted and tilted, red when refused, smaller over the trash, flat as it lands. -->
+  <div class="relative size-full rounded-md bg-default ring-2 …" :class="LOOKS[state]">
+    <DragPreview :id="entry.id" class="rounded-md" :style="{ width: '100%', height: '100%' }" />
+    <UBadge v-if="badge" :label="badge.label" :icon="badge.icon" :color="badge.color" size="sm" />
+  </div>
+</template>
+```
+
+面板中的项有自己的 `type`，即 `'new-field'`：浮层据此区分它们，而接收 `'fields'` 的垃圾桶不会接收它们。
+
+## 搭配 Nuxt UI
+
+文档是一个带有 `@nuxt/ui` 模块的 Nuxt 应用，Nuxt 的组件自动导入也作用于这些示例：这些文件直接使用 `<UInput>`、`<UFormField>` 或 `<UTabs>` 而不导入它们，就像 Nuxt UI 项目那样。使用 Nuxt UI Vite 插件的 Vue 应用也会以同样的方式自动导入它们；没有该插件时，逐个导入：`import UButton from '@nuxt/ui/components/Button.vue'`。类型来自 `@nuxt/ui`（`import type { FormSubmitEvent } from '@nuxt/ui'`）。
+
+- **构建期间，字段只是图示**。 `FieldView.vue` 在画布和预览中以同样的方式渲染字段：一个 `UFormField` 包裹它的控件。在画布上，它位于一个 `inert` 元素中，所以在输入框上按下会开始拖拽而不是输入，:kbd{value="Tab"} 也会跳过这些输入框。卡片的工具栏（一个由带提示的按钮组成的 `UFieldGroup`）通过 `data-dnd-no-clone` 不进入浮层的副本。
+- **状态就是 Tailwind 变体**。 库用属性标记它的状态，Tailwind 把这些属性当作变体读取：被移动的字段上的 `data-[dnd-placeholder]:outline-dashed`、手中的行上的 `in-data-[dnd-overlay]:bg-default`、带状区域上的 `in-data-[dnd-dragging]:pointer-events-auto`。颜色使用 Nuxt UI 的语义色（`bg-default`、`ring-primary`、`text-error`）：浅色和深色模式无需额外处理。
+- **预览是一个真正的 UForm**。 `schema.ts` 根据字段生成一个 Zod schema，`UForm` 用它校验答案：`name` 把每个 `UFormField` 和它的规则关联起来，错误信息显示在字段下方。提交表单就能看到它提交了什么。
+- **导出**会把同一个表单写成一个独立组件：Nuxt UI 控件、一个 Zod schema、一个 `reactive` 状态，以及在手机上会堆叠的网格行。
+- **布局跟随构建器的宽度**（`useElementSize`），而不是窗口的宽度：全屏时是三个面板；在页面中，设置取代面板的位置；再窄一些时，面板变成表单上方的一排小标签，设置变成覆盖在表单上的抽屉。其余的由容器查询（`@lg:`）完成。
+
+<note>
+
+StackBlitz 按钮会在一个普通的 Vite 项目中打开这些文件，其中没有 Nuxt UI。要运行这个示例，把文件夹复制到一个带有 `@nuxt/ui` 模块和 `zod` 的 Nuxt 应用中，并在某个页面上渲染 `index.vue`。
+
+</note>
+
+## 键盘和屏幕阅读器
+
+用 Tab 移到一个字段上，按 <kbd value="Space">
+
+
+
+</kbd>
+
+ 拿起它。:kbd{value="ArrowLeft"} 和 <kbd value="ArrowRight">
+
+
+
+</kbd>
+
+ 沿它所在的行移动它，:kbd{value="ArrowUp"} 和 <kbd value="ArrowDown">
+
+
+
+</kbd>
+
+ 把它移到其他行以及行之间的空隙（新的一行），:kbd{value="Space"} 放下它，:kbd{value="Escape"} 把它放回原处。provider 只用 Space 进行拖拽（`keyboard: { keys: { start: ['Space'], drop: ['Space'] } }`），这样 <kbd value="Enter">
+
+
+
+</kbd>
+
+ 就可以用来打开字段的设置。:kbd{value="Delete"} 删除字段，:kbd{value="Ctrl"} <kbd value="D">
+
+
+
+</kbd>
+
+ 复制它，:kbd{value="Ctrl"} <kbd value="Z">
+
+
+
+</kbd>
+
+ 撤销。
+
+provider 的 `announcements` 使用构建器自己的说法：“Work email: row 2, column 2 of 2”“New date field: a new row above row 3”。`form.describe` 把库给出的位置（列表 id 和索引）转换成这些说法。
+
+延伸阅读：[共享项的列表](https://zizigy.github.io/docs/guides/shared-lists) · [插入线](https://zizigy.github.io/docs/guides/sortable-lists#an-insertion-line) · [浮层](https://zizigy.github.io/docs/guides/overlay) · [样式：Tailwind 和 UI 库](https://zizigy.github.io/docs/guides/styling#tailwind-css) · [无障碍](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

@@ -1,0 +1,176 @@
+---
+title: "Project board"
+description: "A product board in the spirit of Linear and Trello — columns you reorder, WIP limits, a question before Done, multi-select with a selection bar, filters the drags work through, a trash with Undo, and a card panel whose Status buttons play real drags."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/docs/examples/board"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="40rem" hint="Drag cards and columns; click a card to open it, Ctrl/Cmd-click to select" name="board" title="Project board">
+
+
+
+</example>
+
+## What to look at
+
+- **Board.vue**: the columns are a horizontal sortable list of their own (`strategy: 'horizontal'`, `axis: 'x'`), and each column is a sortable item dragged by its header
+(`handle`). Expanded, the board fills the screen; on a phone it scrolls sideways.
+- **Column.vue**: the cards of every column are one `group`, with the column's rules: its WIP
+limit, the question before Done, and the filters. Its header meter lights up the cards a drag
+would bring in.
+- **Card.vue**: a sortable item of `type: 'card'`, so the trash takes cards and not columns. A
+click opens it, Ctrl/Cmd-click selects it (`selected`); with the keyboard, Space picks it up,
+Enter opens it and X selects it.
+- **store.ts**: the board's data and rules, with no drag and drop in them, provided above the
+`DnDProvider` so the overlay reads it too.
+
+## A column's rules
+
+Each column hands its list four rules. `put` sees every card of a multi-drag at once: the column
+takes them all if they fit under its limit, or none. Over a full column the slot stays where the
+drag started, the column turns red and the cards in hand say why. `onBeforeDrop` asks before
+cards enter Done, and `animateChanges` slides the cards that come and go without a drag: a filter, Add
+card, Undo.
+
+```ts [Column.vue]
+const { items, isOver, isAccepting } = makeSortableList(list, {
+  id: props.column.id,
+  items: () => props.column.cards.filter(board.matches),
+  group: { name: 'cards', put: ({ keys }) => board.fits(props.column, keys) },
+  overlay: CardOverlay,
+  animateChanges: true,
+  onBeforeDrop: (event) => (props.column.confirm && !event.sameList ? board.ask(event.items) : 'accept'),
+  onDrop: (event) => {
+    event.preventDefault();
+    board.apply(event);
+  },
+});
+```
+
+## Filters, and drops the board applies
+
+The search and the people in the toolbar filter the cards, and every drag keeps working on what
+is shown. Each list reads its column through a getter, filtered, so the library never writes it:
+`onDrop` calls `preventDefault()` and hands `e.result`, the new filtered cards of every column the
+drop changed, to the board. The board puts them back into the places the shown cards had, and the
+cards the filters hide stay where they were.
+
+```ts [store.ts]
+const merge = (all: Card[], shown: Card[]) => {
+  const queue = [...shown];
+  const merged: Card[] = [];
+  for (const entry of all) {
+    if (!matches(entry)) merged.push(entry);
+    else if (queue.length) merged.push(queue.shift()!);
+  }
+  // Cards that came in from another column and found no place left: at the end.
+  return [...merged, ...queue];
+};
+```
+
+## The cards in hand
+
+**CardOverlay.vue** is the cards' `overlay`. The grabbed card lifts and tilts, the rest of a
+selection lies under it, built from `DragPreview` clones turned by their wrappers' `transform`, and
+a count sits on top. Under the cards, a hint says what letting go would do, from the overlay's
+`over` and `accepted`: *Move 2 cards to In review*, *Complete*, *Delete*, or *In review is full ·
+2 max*. Dropped into a column, each clone lands on its own slot; over the trash the pile shrinks,
+and dropped there the cards go in one after another.
+
+```ts [CardOverlay.vue]
+const hint = computed(() => {
+  if (props.status !== 'dragging' || !props.over) return null;
+  const many = props.items.length > 1 ? ` ${props.items.length} cards` : '';
+  if (props.over.id === 'trash') return { tone: 'danger', icon: 'trash', text: `Delete${many}` };
+  const column = board.column(props.over.id);
+  if (!column) return null;
+  if (!props.accepted) return { tone: 'danger', icon: 'limit', text: `${column.title} is full · ${column.limit} max` };
+  if (board.find(props.items[0]!.id)?.column.id === column.id) return null;
+  if (column.confirm) return { tone: 'done', column, text: `Complete${many}` };
+  return { tone: '', column, text: `Move${many} to ${column.title}` };
+});
+```
+
+A column dragged by its header is the default clone, tilted with the `rotate` property while
+`data-dnd-overlay` reads `dragging`.
+
+## Done asks first
+
+A drop into Done returns a promise from `onBeforeDrop`: the cards wait where they were let go
+while **ConfirmDialog.vue** asks. *Move to Done* answers `'accept'`, Cancel and Escape
+`'reject'` (the cards fly back), and *Keep dragging* `'continue'`: the cards follow the pointer
+again, and the next click drops them. Once the cards have landed (`onDragSettle`), their check
+pops in Done and the sprint's progress moves.
+
+```ts [Board.vue]
+useDnDMonitor({
+  onDragSettle: (event) => {
+    const target = event.over ? board.column(event.over.id) : undefined;
+    if ('dropped' in event && target?.confirm && event.source?.list !== target.id) board.complete(event.accepted);
+  },
+});
+```
+
+## Several cards, the trash and Undo
+
+Selected cards travel together: drag one, and every selected card comes along, from any column.
+The selection bar moves them, deletes them, or clears the selection (Escape does too). The
+**Trash.vue** is a plain drop target that takes cards only; it deletes them from the board, as
+the Delete buttons do, so the notice can put each one back where it was.
+
+```ts [Trash.vue]
+makeDroppable(el, {
+  id: 'trash',
+  accept: 'card',
+  onDrop: (event) => {
+    board.remove(event.active.ids);
+    selection.delete(...event.active.ids);
+  },
+});
+```
+
+## Moving without a drag
+
+A card's panel has Status buttons, and the selection bar has a button per column. They move
+cards with `@vue-dnd-kit/actions`: `moveItem` plays a real keyboard drag of the card, a selected
+one bringing the selection. It is announced and animated like yours, and the column's limit and
+the Done question apply to it as to any drag.
+
+```ts [store.ts]
+export function useMove() {
+  const board = inject(BOARD)!;
+  const { moveItem } = useDnDActions();
+  return (ids: Key[], target: Column) => {
+    if (!board.fits(target, ids)) return board.notify(`${target.title} is full: ${target.limit} cards at most`);
+    void moveItem(ids[0]!, { list: target.id });
+  };
+}
+```
+
+## Keyboard and screen readers
+
+Only Space picks a card up, so Enter is free to open it; the instructions say so. The arrows move
+a card by slots, and across to the next column that takes it: a full one is skipped, and past
+the last column the next press carries the card on to the trash. The announcements name cards and
+columns instead of ids: *"Picked up VDK-45, Haptics on Android tablets. Todo, position 6 of 6."*,
+*"In review is full: its limit is 2 cards."*
+
+```vue [index.vue]
+<DnDProvider
+  :keyboard="{ keys: { start: ['Space'] } }"
+  screen-reader-instructions="Space picks up a card or a column, the arrow keys move it, Space drops it, Escape cancels. Enter opens a card, X selects it."
+  :announcements="announcements"
+  :haptics="{ enter: true, refuse: true }"
+>
+```
+
+Read more: [Lists that share items](https://zizigy.github.io/docs/guides/shared-lists#controlled-lists) ·
+[Deciding a drop](https://zizigy.github.io/docs/guides/drop-decisions) · [Multi-drag](https://zizigy.github.io/docs/guides/multi-drag) ·
+[The overlay](https://zizigy.github.io/docs/guides/overlay#dragpreview-the-clone-in-your-layout) ·
+[Programmatic drags](https://zizigy.github.io/docs/guides/sensors#programmatic-drags) ·
+[Accessibility](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

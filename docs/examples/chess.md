@@ -1,0 +1,141 @@
+---
+title: "Chess"
+description: "A chess board — legal moves light up, the piece in hand says why a square is refused, a pawn asks what it becomes, and a bot plays back with real drags."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/docs/examples/chess"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="36rem" hint="Drag a white piece, or Tab and Space; Bot plays Black" name="chess" title="Chess">
+
+
+
+</example>
+
+## What to look at
+
+- **Square.vue**: each of the 64 squares is a drop target whose `accept` is a function. It is
+asked while a piece is dragged, so the square takes that piece's legal moves only; a drop
+anywhere else is refused and the piece flies back. The legal squares light up from
+`isAccepting`: no state of the game's own tracks the drag.
+- **Piece.vue**: a plain draggable, `disabled` when it isn't its side's turn. `keyboardMode: 'droppables'` makes the arrow keys jump between the squares that accept the piece: its legal
+moves, nothing else. `snapCenterToCursor` keeps the piece centered under the pointer, and a touch
+drags at once (`activation`). `canDrag` keeps your hands off the bot's pieces and off the board
+while code plays, without disabling anything: drags started by code have no input event, so
+`canDrag` isn't asked for them.
+- **chess.ts** and **game.ts**: the rules and the game, with no drag and drop in them: legal
+moves with check, castling, en passant, promotion, draws for lack of material, the notation,
+undo. A move in `onDrop` makes a new position, and the overlay lands on the moved piece.
+
+## The piece in hand
+
+**PieceOverlay.vue** is the pieces' `overlay` component. It reads the props every overlay gets
+and says what a drop on the square under it would do: over a refused square (`over` set,
+`accepted` false) the piece turns red and gives the reason, over a capture it shows a target and
+what it takes. Once the drop is decided (`status: 'dropping'`) the hint goes and the piece settles.
+
+```ts [PieceOverlay.vue]
+const props = defineProps<{
+  active: Active;
+  over: Over | null;
+  accepted: boolean;
+  status: DnDStatus;
+}>();
+
+const hint = computed(() => {
+  const square = props.over ? String(props.over.id) : null;
+  if (props.status !== 'dragging' || !square || square === piece.value.square) return null;
+  if (props.accepted) {
+    const taken = game.takes(piece.value.id, square);
+    return taken ? { type: 'capture', text: `Takes ${NAMES[taken.kind]}` } : null;
+  }
+  // "Pinned", "King in check", "Not a legal move"
+  return { type: 'refused', text: game.whyNot(piece.value.id, square) };
+});
+```
+
+`Board.vue` draws an arrow from the square the piece came from to the square under it, from
+`useDnD()`'s `active` and `over`. The provider's `haptics` vibrates a touch drag on a legal
+square and when a drop is refused; the `announcements` in `index.vue` speak the same reasons:
+"f7, pinned".
+
+## Promotion: a drop that waits for an answer
+
+Over the last rank, a pawn in hand shows the piece it becomes: the square's own `overOverlay`
+(`PromotionOverlay.vue`) takes the place of the piece's. On release, the square's `onBeforeDrop`
+returns a promise, and the overlay waits on the square while **PromotionPicker.vue**, a plain
+element of the page next to it, asks which piece. A piece answers `'accept'`, Escape or Cancel
+`'reject'` (the pawn flies back), and Keep dragging `'continue'`: the pawn follows the pointer
+again, and the next click drops it and asks again.
+
+```ts [Square.vue]
+makeDroppable(el, {
+  id: props.square,
+  accept: ({ active }) => game.canMove(active.id, props.square),
+  // Shown instead of the piece's overlay while a pawn is over the last rank.
+  overOverlay: computed(() =>
+    held.value?.kind === 'P' && isLastRank(props.square) ? PromotionOverlay : undefined,
+  ),
+  // A promise: the drop waits on the square until the picker answers.
+  onBeforeDrop: ({ active }) =>
+    game.promotes(active.id, props.square) ? game.askPromotion(props.square) : 'accept',
+  onDrop: ({ active }) => game.move(String(active.id), props.square),
+});
+```
+
+A drop target's `onBeforeDrop` gets the plain drag event and is asked only when its `accept` took
+the drag; a sortable list's gets the list's `SortableDropEvent`, with the `result` of the drop.
+The target's `overOverlay` is read once more after `onDrop`, for the landing: it checks the pawn as
+it was picked up (`active.data`), not the game, where it is a queen by then.
+
+## The bot, replays and castling: drags played by code
+
+**autoplay.ts** plays moves with `@vue-dnd-kit/actions`: the bot's (`bot.ts`, a greedy one),
+**Replay**'s, and the rook's step of every castling, yours included. Each is a real drag: picked
+up, glided over the board a frame at a time, dropped through the square's `accept` and `onDrop`,
+announced and animated as yours are. A scripted promotion brings its piece along, so the picker
+doesn't open; Escape cancels a scripted drag like any other.
+
+```ts [autoplay.ts]
+const { startDrag } = useDnDActions();
+
+const drag = startDrag(id); // from the piece's center
+for (let frame = 1; frame <= FRAMES; frame++) {
+  const t = easeOut(frame / FRAMES);
+  const point = { x: start.x + (end.x - start.x) * t, y: start.y + (end.y - start.y) * t };
+  if (!(await drag.moveTo(point))) return false; // cancelled meanwhile (Escape)
+}
+return drag.drop(); // true once it has landed, false if the square refused it
+```
+
+Castling is played in two moves, as by hand: the king goes two files, then its rook is dragged
+over it, so the rook never jumps.
+
+## Captures, undo and a new game
+
+Taken pieces go to their side's **Tray.vue**: a sortable list used for its `animateChanges` alone
+(`disabled`, nothing drags there). Its `enter` is a function: a new piece flies in from the square
+it was taken on, and the others make room.
+
+```ts [Tray.vue]
+makeSortableList(tray, {
+  items: () => props.pieces,
+  getKey: (piece) => `taken-${piece.id}`,
+  disabled: true,
+  animateChanges: { enter: flyIn, leave: false },
+});
+```
+
+Undo and New game change the position with no drag, so **glide.ts** animates them by hand
+(FLIP): every piece flies from where it was, on a square or in a tray, to where it is now.
+Against the bot, Undo takes back your move together with its answer.
+
+Read more: [Deciding a drop](https://zizigy.github.io/docs/guides/drop-decisions) ·
+[The overlay](https://zizigy.github.io/docs/guides/overlay#targets-that-change-the-overlay) ·
+[Programmatic drags](https://zizigy.github.io/docs/guides/sensors#programmatic-drags) ·
+[Data changes: `animateChanges`](https://zizigy.github.io/docs/guides/animations#data-changes-animatechanges) ·
+[Accessibility](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

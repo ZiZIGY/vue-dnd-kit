@@ -1,0 +1,571 @@
+---
+title: "多项拖拽与选择"
+description: "通过点击或框选选中多个项，然后一起拖拽——作为一个整体、留出空位，或叠进浮层中——放置时只接受其中一部分，并在你自己的浮层中显示它们。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/multi-drag"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+选中几个文件，然后拖动其中一个：其他文件会一起跟过来。切换 `multiple` 看看它们在途中如何表现，切换布局看看网格的浮层。
+
+<example height="35rem" hint="单击、Ctrl/Cmd 单击或 Shift 单击文件，然后拖动其中一个；切换模式" name="multi-modes">
+
+
+
+</example>
+
+## 选中集合
+
+每个 provider 保存一个选中集合：一个响应式的 id 集合。拖拽一个**已选中**的项会拖拽所有选中项，抓起的那个在最前。拖拽一个未选中的项则只拖拽它自己。
+
+库不决定用户如何选择：点击规则由你来定。库也从不自行清空选中集合，而且选中集合在组件卸载后依然保留，比如虚拟列表回收的那些行。
+
+### 点击：Ctrl/Cmd 和 Shift
+
+每个可排序项和可拖拽元素都返回 `selected`，这是一个绑定到选中集合的可写 ref。把它绑定到 class、复选框（`v-model="selected"`），或在点击处理函数中设置它：
+
+```vue [FileItem.vue]
+<script setup lang="ts">
+const { selected } = makeSortableItem(el, { item: () => props.file });
+</script>
+
+<template>
+  <li ref="el" class="file" :class="{ selected }" @click="emit('pick', $event)">…</li>
+</template>
+```
+
+演示中的列表掌管这些规则：单击选中一个文件，Ctrl/Cmd 单击添加或移除一个，Shift 单击选中从上次点击的文件开始的一段：
+
+```ts [Files.vue]
+const { selection } = useDnD();
+let anchor: string | null = null;
+
+const pick = (id: string, event: MouseEvent) => {
+  const ids = items.value.map((file) => file.id);
+  if (event.shiftKey && anchor) {
+    const [a, b] = [ids.indexOf(anchor), ids.indexOf(id)];
+    selection.set(ids.slice(Math.min(a, b), Math.max(a, b) + 1));
+    return;
+  }
+  if (event.ctrlKey || event.metaKey) selection.toggle(id);
+  else selection.set([id]);
+  anchor = id;
+};
+```
+
+结束拖拽的那次点击不会触发 `@click`，所以放置永远不会意外改变选中集合。项的操作请用 `@click`，而不是 `pointerup`。
+
+### 在任何地方：`useDnD().selection`
+
+```ts
+import { useDnD, useDnDMonitor } from '@vue-dnd-kit/core';
+
+const { selection } = useDnD();
+
+selection.has('a');               // is it selected?
+selection.add('a', 'b');          // select
+selection.delete('a');            // deselect
+selection.toggle('a');            // flip it, or force it: toggle('a', true)
+selection.set(['a', 'c']);        // exactly these
+selection.clear();
+selection.ids;                    // a reactive ReadonlySet<Key>
+
+// Clear it after every drop, if your UI wants that:
+useDnDMonitor({ onDragEnd: () => selection.clear() });
+```
+
+选中集合以 id 为键，所以它可以包含多个列表的项，也可以包含普通可拖拽元素：一次拖拽会带上 provider 之下的所有选中项。
+
+## 框选
+
+`makeSelectionArea` 把一个元素变成一块区域：在空白处按下会画出选框，选框经过的项会被选中。在这个桌面上，围着几个图标画一个选框，然后拖动其中一个：
+
+<example height="29rem" hint="在空白桌面上画一个框，然后拖动一个选中的图标" name="multi-select">
+
+
+
+</example>
+
+```vue [Desktop.vue]
+<script setup lang="ts">
+const desktop = useTemplateRef<HTMLElement>('desktop');
+const { isSelecting, style } = makeSelectionArea(desktop);
+</script>
+
+<template>
+  <!-- The area needs a position: the band is placed inside it. -->
+  <div ref="desktop" class="desktop">
+    <DesktopIcon v-for="icon in icons" :key="icon.id" :icon="icon" />
+    <div v-if="isSelecting" class="band" :style="style" />
+  </div>
+</template>
+
+<style scoped>
+.desktop { position: relative; height: 236px; }
+.band { border: 1px solid #42b883; background: color-mix(in srgb, #42b883 15%, transparent); }
+</style>
+```
+
+- 选框由你渲染：`style` 相对于区域的内容来定位它。
+- 区域需要一个**非 static 的定位**（`relative` 即可），否则选框会出现在别的地方。
+- 选框只能从区域本身开始，所以要让区域足够大：整个面板，项的周围留有空间，而不是一个紧贴的包裹元素。
+- 在项上按下会拖拽它。按钮、输入框和区域的滚动条保留它们自己的按下行为。
+- 区域或页面滚动时，选框始终锚定在内容上。:kbd{value="Escape"} 取消它并恢复选中集合。
+- 画选框期间，`useDnD().status` 为 `'selecting'`：桌面下方的那行文字读取的就是它。
+
+<table>
+<thead>
+  <tr>
+    <th>
+      选项
+    </th>
+    
+    <th>
+      作用
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        strategy
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'toggle'
+      </code>
+      
+      （默认）：选框经过的项切换选中状态。<code>
+        'select'
+      </code>
+      
+      ：最终只有选框内的项被选中，所以点击空白处会取消选中该区域的项。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        modifier
+      </code>
+    </td>
+    
+    <td>
+      画选框时必须按住的键：<code>
+        { keys: ['Shift'], method: 'every' }
+      </code>
+      
+      （或 <code>
+        'some'
+      </code>
+      
+      ）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        accept
+      </code>
+    </td>
+    
+    <td>
+      选框选中哪些可拖拽元素，是一条与它们的 <code>
+        type
+      </code>
+      
+       匹配的 <a href="/docs/guides/drag-and-drop#which-drags-a-target-takes">
+        accept 规则
+      </a>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      不能画选框；开启时会取消正在进行的选框。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onSelected(ids)
+      </code>
+    </td>
+    
+    <td>
+      选框结束时调用，传入选中集合。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        selection
+      </code>
+    </td>
+    
+    <td>
+      用你自己的 <code>
+        Ref<Set<Key>>
+      </code>
+      
+       代替 provider 的选中集合。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`strategy`、`modifier` 和 `disabled` 接受值、ref 或 getter，在按下开始选框时读取。区域嵌套时，由最内层的区域接收按下。[makeSelectionArea API](https://zizigy.github.io/docs/api/make-selection-area) 页面可以实时切换这些选项。
+
+### 按原有布局移动
+
+这些图标是普通可拖拽元素（`makeDraggable`），每个都以自己的图标作为 `data`。它们的浮层是演示自己的组件：它为每个被拖拽的图标渲染一个 `DragPreview`，按图标在桌面上的排布围绕抓起的那个摆放。图标在原处等待，由 `isDragging` 变暗，它一直为 `true`，直到它们的副本落位。
+
+```vue [Formation.vue]
+<script setup lang="ts">
+const props = defineProps<{ items: DragItem[] }>();
+
+const placed = computed(() => {
+  const grabbed = props.items[0]!.data as Icon;
+  return props.items.map(({ id, data }) => {
+    const icon = data as Icon;
+    return { id, left: `${icon.x - grabbed.x}px`, top: `${icon.y - grabbed.y}px` };
+  });
+});
+</script>
+
+<template>
+  <div class="formation">
+    <DragPreview v-for="{ id, left, top } in placed" :id="id" :key="id" class="copy" :style="{ left, top }" />
+  </div>
+</template>
+```
+
+```ts [DesktopIcon.vue]
+const { isDragging, selected } = makeDraggable(el, { id, data: () => props.icon, overlay: Formation });
+```
+
+桌面接收放置。它的 `position` 是抓起的图标被松开的位置，使用桌面的坐标：图标移到那里，其他图标移动同样的距离。随后每个副本落到新位置上它自己的图标上。放到桌面之外时，副本飞回各自的图标。
+
+```ts [Desktop.vue]
+makeDroppable(desktop, {
+  id: 'desktop',
+  onDrop: ({ active, position }) => {
+    const grabbed = icons.value.find((icon) => icon.id === active.id)!;
+    const shift = { x: position!.x - grabbed.x, y: position!.y - grabbed.y };
+    for (const icon of icons.value) {
+      if (!active.ids.includes(icon.id)) continue;
+      icon.x += shift.x; // the demo also keeps each icon on the desktop
+      icon.y += shift.y;
+    }
+  },
+});
+```
+
+默认情况下，拿起时最多为 5 个项生成克隆：provider 的 `overlay-previews="all"` 会为每个选中的图标生成一个。
+
+### 放进文件夹
+
+在这个窗口里，选框选中文件，文件夹接收它们。浮层是默认的那个：选中文件叠成的一叠。放进文件夹后，它们一个接一个进去，抓起的那个最后进去，文件夹把它们一口吞下。取消时，每个都飞回自己的文件。单击文件夹可以打开它，也可以把文件拖回路径中的 Home。
+
+<example height="33rem" hint="框选几个文件，把它们拖到一个文件夹上" name="multi-finder">
+
+
+
+</example>
+
+```vue [index.vue]
+<!-- Every picked file gets a clone at pickup: they all go in. -->
+<DnDProvider overlay-previews="all">
+  <Finder />
+</DnDProvider>
+```
+
+```ts [FolderTile.vue]
+makeDroppable(el, {
+  id: () => props.folder.id,
+  accept: 'file',
+  onDrop: (event) => emit('move', event.active.ids),
+});
+
+// The files are in: the folder gulps.
+useDnDMonitor({
+  onDragSettle: (event) => {
+    if ('dropped' in event && event.over?.id === props.folder.id) gulps.value++;
+  },
+});
+```
+
+这就是全部：文件随放置离开窗口，所以除了文件夹，它们无处落位，而默认的放置动画会把多项拖拽一项接一项地送进区域。`overlayPreviews` 决定拿起时有多少项获得克隆（默认 5 个）。每个克隆都会飞：飞进区域、飞到自己的位置，或飞回自己的项。
+
+文件夹是一个按钮：选框从不在按钮和输入框上开始，所以单击会打开它。
+
+## 其他项如何移动：`multiple`
+
+多项拖拽从哪个列表开始，就由哪个列表决定拖拽期间其他选中项的表现。在本页第一个演示中切换它：
+
+```ts
+makeSortableList(listRef, { items: files, multiple: 'gaps' });
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        multiple
+      </code>
+    </th>
+    
+    <th>
+      拖拽期间
+    </th>
+    
+    <th>
+      浮层
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'group'
+      </code>
+      
+      （默认）
+    </td>
+    
+    <td>
+      其他项离开原位，作为一整块位置随抓起的项一起移动，所以列表已经显示出放置的结果。
+    </td>
+    
+    <td>
+      沿列表方向排列的一列被拖拽项（最多 <code>
+        overlayPreviews
+      </code>
+      
+       个）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'gaps'
+      </code>
+    </td>
+    
+    <td>
+      其他项留在原处，被标记为 <code>
+        data-dnd-dragging
+      </code>
+      
+      ，直到放置。
+    </td>
+    
+    <td>
+      同样的一列。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'stack'
+      </code>
+    </td>
+    
+    <td>
+      其他项飞进浮层。
+    </td>
+    
+    <td>
+      抓起的项和一个计数。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+放置时，这些项按原有顺序一起落到目标索引处。在 `'group'` 和 `'gaps'` 中，浮层中的每个项都会飞到自己的位置。该选项在拖拽开始时读取，所以用 ref 或 getter 就能切换它。
+
+在不是列表的放置目标（例如垃圾桶或播放列表）上方，或在拒绝该拖拽的列表上方，`'group'` 的整块会散开：每个项重新显示在它自己的位置上，即在那里放置后的样子；悬停到列表上时，整块会重新形成。
+
+为 `'gaps'` 中留下的项设置样式，它们默认会被淡化：
+
+```css
+.file[data-dnd-dragging] {
+  opacity: 0.35;
+}
+```
+
+### 默认浮层
+
+在 `'group'` 和 `'gaps'` 中，浮层是被拖拽项按落位顺序排成的一列：抓起的那个在指针下方，其他的按放置顺序排在它前后（横向列表中则是一行）。它显示的数量由 provider 的 `overlayPreviews` 决定（默认 5 个，`'all'` 表示每个已渲染的项）。超出的项在它们所在的位置计数：列首的 `+N` 表示落在所显示项之前的项，列尾的 `+N` 表示落在之后的项。
+
+在网格中，一列完整的单元格会盖住页面，所以浮层是一叠：最多三个项在抓起的项后面呈扇形展开，顶部显示总数。把演示切换到 Grid 就能看到。
+
+普通可拖拽元素（`makeDraggable`）也会叠成一叠，就像上面的文件那样。浮层中的每个克隆都各自落位：放置到列表后落到自己的位置上，落到放置后它的项所在的地方（取消后回到原处），项从页面上消失时则依次飞入放置所进入的区域，盒子最后进入。
+
+## 只接受一部分
+
+列表的 `onBeforeDrop` 可以接受多项拖拽的一部分：返回它接受的 key，其余的飞回原处。它可以是异步的，并且可以询问：浮层在松开处等待，直到得到回答。这里 Scheduled 要有封面的文章。放入的文章中有没有封面的时，它会询问：补上缺少的封面并全部接受，只接受已就绪的文章，还是都不接受：
+
+<example height="28.5rem" hint="把选中的三篇草稿拖进 Scheduled，然后回答" name="multi-transfer">
+
+
+
+</example>
+
+```ts [PostList.vue]
+const { items } = makeSortableList(list, {
+  id: props.id,
+  items: posts,
+  group: 'blog',
+  onBeforeDrop: async (event) => {
+    const missing = event.items.filter((post) => post.cover === null);
+    if (!props.ask || event.sameList || !missing.length) return true;
+    const choice = await props.ask(missing, event.items.length - missing.length); // the question under the lists
+    if (choice === 'cover') missing.forEach((post) => (post.cover = pickCover()));
+    if (choice === 'ready') return event.keys.filter((_, index) => event.items[index]!.cover !== null);
+    return choice === 'cover'; // all of them, or none: they fly back
+  },
+});
+```
+
+- `event.keys` 是被拖拽的 key，`event.items[i]` 是 `event.keys[i]` 对应的项。
+- 回答之后，`onDrop` 会收到 `accepted` 和 `rejected`，`event.result` 是部分放置之后各列表的样子。
+- 放置等待期间，各列表继续把每篇被拖拽的文章显示在它将落位的地方：由回答决定。对于不需要询问的规则，`group.put` 在悬停时就会决定（见下文的[混合类型](#mixed-types)）。更多内容见[决定放置](https://zizigy.github.io/docs/guides/drop-decisions)。
+
+### 上限
+
+在这个看板上，In progress 和 Review 的卡片数量设有上限。已满的列什么都不接收：它的 `group.put` 会拒绝，那叠卡片在它上方变红。还能容纳部分选中卡片的列，会接收放得下的那些，其余的飞回原处。该列的浮层会在放置前说明这一点。
+
+<example height="31rem" hint="在 To do 中勾选三张卡片，把其中一张拖到 Review 上方，再拖到 In progress 上方" name="multi-wip">
+
+
+
+</example>
+
+```ts [WipColumn.vue]
+const room = (keys: Key[]) => limit - column.cards.filter((card) => !keys.includes(card.id)).length;
+
+makeSortableList(list, {
+  items: cards,
+  group: { name: 'board', put: ({ keys, from, to }) => from === to || room(keys) > 0 },
+  multiple: 'stack',
+  overlay: CardPile, // red where `accepted` is false
+  overOverlay: fit,
+  onBeforeDrop: (event) => {
+    if (event.sameList) return true;
+    const free = room(event.keys);
+    return free >= event.keys.length || event.keys.slice(0, free);
+  },
+});
+```
+
+`fit` 是一个函数，Vue 会把它当作函数式组件。它把只有这一列才知道的信息，也就是它还剩多少空位，交给 `FitBadge`，并把那叠卡片作为徽标的插槽传下去。
+
+```ts
+const fit: FunctionalComponent<OverlayProps> = (overlay, { slots }) =>
+  h(FitBadge, { count: overlay.items.length, room: room(overlay.items.map((item) => item.id)), limit }, slots);
+```
+
+### 混合类型
+
+列表也可以在放置之前按类型拒绝部分项。使用 `acceptMode: 'some'` 时，会对每个项单独询问 `group.put`：只要至少有一个项符合，列表就接收这次拖拽，其余的在放置时飞回原处。使用 `'all'`（默认）时，每个项都必须符合。
+
+```ts
+makeSortableList(gallery, {
+  items: photos,
+  group: { name: 'files', put: ({ types }) => types.includes('image') },
+  acceptMode: 'some',
+});
+```
+
+普通放置目标同样接受 `acceptMode`。见[共享项的列表](https://zizigy.github.io/docs/guides/shared-lists#limits)和[拖放](https://zizigy.github.io/docs/guides/drag-and-drop#which-drags-a-target-takes)。
+
+## 多个项的自定义浮层
+
+浮层组件和 provider 的 `#overlay` 插槽会收到 `items`：所有被拖拽的项，抓起的那个在最前。显示一个摘要而不是项本身：这里是数量、第一封邮件的主题，以及放置将做什么。
+
+<example height="26rem" hint="把勾选的邮件拖到 Archive 或 Trash，或单独拖一封" name="multi-summary">
+
+
+
+</example>
+
+```vue [MailOverlay.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import type { DragItem, Over } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[]; over: Over | null }>();
+
+const first = computed(() => props.items[0]?.item as Mail);
+const count = computed(() => props.items.length);
+// What the drop does, from the `data` of the zone under it.
+const zone = computed(() => props.over?.data as { verb: string; danger?: boolean } | undefined);
+const action = computed(() => {
+  const noun = count.value === 1 ? 'conversation' : 'conversations';
+  return `${zone.value?.verb ?? 'Move'} ${count.value} ${noun}`;
+});
+</script>
+
+<template>
+  <!-- The box keeps the row's size; the summary hangs off its middle, by the pointer. -->
+  <div class="box">
+    <div class="summary" :class="{ stack: count > 1, danger: zone?.danger }">
+      <span class="count">{{ count }}</span>
+      <strong>{{ action }}</strong>
+      <small>{{ first.subject }}{{ count > 1 ? ` and ${count - 1} more` : '' }}</small>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.box { position: relative; width: 100%; height: 100%; }
+.summary { position: absolute; top: calc(50% + 10px); left: calc(50% + 10px); width: 230px; }
+</style>
+```
+
+```ts [Mailbox.vue]
+// The box is centered on the pointer, so the summary hangs off the pointer and leaves
+// the zone under it in sight.
+const { items } = makeSortableList(list, { items: mails, overlay: MailOverlay, modifiers: [snapCenterToCursor] });
+
+// A zone takes the mails out of the inbox; its `data` tells the overlay what it does.
+makeDroppable(archive, {
+  id: 'Archive',
+  data: { verb: 'Archive' },
+  onDrop: (event) => {
+    event.source?.remove();
+    selection.clear();
+  },
+});
+```
+
+如果要排布真实的项，用 `DragPreview` 渲染它们的克隆，就像上面的[桌面](#moving-them-as-they-lie)那样；[浮层指南](https://zizigy.github.io/docs/guides/overlay#dragpreview-the-clone-in-your-layout)把一叠书扇形展开。克隆在拿起时生成，针对抓起的项以及按放置顺序紧邻它的其他项，数量为 `overlayPreviews`；对于其他任何项，`DragPreview` 渲染它的默认插槽。放置时每个预览都会落到它自己的项上。
+
+## 树
+
+在树中，选中的节点作为一个整体移动，每个都带着自己的子树，按文档顺序排列。位于另一个选中节点之内的选中节点，会随父节点的子树一起移动。见[树](https://zizigy.github.io/docs/guides/trees)。
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

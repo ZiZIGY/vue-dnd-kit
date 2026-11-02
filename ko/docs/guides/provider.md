@@ -1,0 +1,1604 @@
+---
+title: "프로바이더"
+description: "DnDProvider는 그 아래의 모든 드래그를 관리합니다. 대상을 찾고, 드래그를 시작하고, 스크롤하며, 일어나는 모든 일을 useDnD와 useDnDMonitor에 알립니다."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/provider"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+## 앱에 프로바이더 하나
+
+```vue [App.vue]
+<script setup lang="ts">
+import { DnDProvider } from '@vue-dnd-kit/core';
+</script>
+
+<template>
+  <DnDProvider>
+    <RouterView />
+  </DnDProvider>
+</template>
+```
+
+`DnDProvider` 하나를 `App.vue`나 레이아웃처럼 높은 곳에 두고 신경 쓰지 마세요. 모든
+컴포저블(`makeSortableList`, `makeDraggable`, `useDnD`…)은 자신이 실행되는 컴포넌트 위에서 가장
+가까운 프로바이더를 찾습니다.
+
+<warning>
+
+컴포저블은 프로바이더 **안에서 렌더링되는** 컴포넌트에서 실행해야 합니다. 자기 템플릿에
+`<DnDProvider>`가 들어 있는 컴포넌트에서 호출하면 `No <DnDProvider> found above this component`
+오류가 발생합니다. Vue의 `inject`는 조상만 볼 수 있기 때문입니다.
+
+</warning>
+
+## 프로바이더가 관리하는 것
+
+<table>
+<thead>
+  <tr>
+    <th>
+      부분
+    </th>
+    
+    <th>
+      프로바이더가 하는 일
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      입력
+    </td>
+    
+    <td>
+      포인터, 터치, 키보드 입력을 드래그로 바꿉니다(<code>
+        sensors
+      </code>
+      
+      , <code>
+        activation
+      </code>
+      
+      ). 드래그는 한 번에 하나입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      대상 찾기
+    </td>
+    
+    <td>
+      드래그 아래에 있는 드롭 대상을 히트 테스트하고(<code>
+        collision
+      </code>
+      
+      ) 대상에게 알립니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      오버레이
+    </td>
+    
+    <td>
+      포인터를 따라가는 박스를 <code>
+        body
+      </code>
+      
+      로 텔레포트해 렌더링하고, 드롭하면 안착시킵니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      선택
+    </td>
+    
+    <td>
+      선택된 id의 집합 하나를 그 아래의 모든 리스트와 draggable이 공유합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      자동 스크롤
+    </td>
+    
+    <td>
+      드래그가 컨테이너나 창의 가장자리에 다가가면 스크롤합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      라이브 리전
+    </td>
+    
+    <td>
+      집기, 이동, 드롭, 취소를 스크린 리더에 안내합니다.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+그 밖에는 아무것도 렌더링하지 않습니다. 마크업은 그대로 유지됩니다.
+
+## 옵션 한눈에 보기
+
+모든 옵션에는 잘 동작하는 기본값이 있어서, 보통 프로바이더에는 옵션을 넘기지 않습니다.
+프로바이더는 필요할 때 props를 읽습니다. 아래 데모에서는 `collision`, `activation`, `autoScroll`을
+실시간으로 바꿉니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Prop
+    </th>
+    
+    <th>
+      기본값
+    </th>
+    
+    <th>
+      설정하는 것
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        collision
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        pointerFirst
+      </code>
+    </td>
+    
+    <td>
+      드래그 아래의 대상을 고르는 방식. <a href="#finding-the-target">
+        아래 참고
+      </a>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activation
+      </code>
+    </td>
+    
+    <td>
+      마우스 4 px, 터치 200 ms
+    </td>
+    
+    <td>
+      누르기가 드래그로 바뀌는 시점(포인터 종류별). <a href="#when-a-press-becomes-a-drag">
+        아래 참고
+      </a>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        autoScroll
+      </code>
+    </td>
+    
+    <td>
+      켜짐
+    </td>
+    
+    <td>
+      가장자리 스크롤: <code>
+        { threshold, maxSpeed, acceleration }
+      </code>
+      
+       또는 <code>
+        false
+      </code>
+      
+      . <a href="#auto-scroll">
+        아래 참고
+      </a>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        haptics
+      </code>
+    </td>
+    
+    <td>
+      터치로 집을 때 짧은 진동
+    </td>
+    
+    <td>
+      터치 드래그의 진동, 또는 <code>
+        false
+      </code>
+      
+      . <a href="#haptics-and-the-copy-key">
+        아래 참고
+      </a>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        copyModifier
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'Alt'
+      </code>
+    </td>
+    
+    <td>
+      드래그하는 동안 누르고 있으면 이동을 복사로 바꾸는 키.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        modifiers
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        []
+      </code>
+    </td>
+    
+    <td>
+      모든 드래그에 적용하는 이동 규칙. <a href="/docs/guides/constraints">
+        제약
+      </a>
+      
+      을 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        animation
+      </code>
+      
+       / <code>
+        dropAnimation
+      </code>
+    </td>
+    
+    <td>
+      켜짐
+    </td>
+    
+    <td>
+      정렬 중 항목이 미끄러지는 애니메이션 / 오버레이의 안착. <a href="/docs/guides/animations">
+        애니메이션
+      </a>
+      
+      을 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        animate
+      </code>
+    </td>
+    
+    <td>
+      꺼짐
+    </td>
+    
+    <td>
+      리스트와 트리의 기본값: 드래그가 아닌 데이터 변경을 애니메이션합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        keyboard
+      </code>
+    </td>
+    
+    <td>
+      Space / Enter, Escape
+    </td>
+    
+    <td>
+      키보드 키와 이동 단위. <code>
+        false
+      </code>
+      
+      면 키보드 드래그를 끕니다. <a href="/docs/guides/accessibility#the-keyboard">
+        접근성
+      </a>
+      
+      을 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        sensors
+      </code>
+    </td>
+    
+    <td>
+      포인터 + 키보드
+    </td>
+    
+    <td>
+      입력을 드래그로 바꾸는 것. <a href="/docs/guides/sensors">
+        센서
+      </a>
+      
+      를 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        overlayTo
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'body'
+      </code>
+    </td>
+    
+    <td>
+      오버레이를 텔레포트할 위치.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        overlayFit
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'slot'
+      </code>
+    </td>
+    
+    <td>
+      오버레이 크기: 안착할 자리의 크기 또는 원본의 크기. <a href="/docs/guides/overlay">
+        오버레이
+      </a>
+      
+      를 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        overlayTransition
+      </code>
+    </td>
+    
+    <td>
+      크로스페이드
+    </td>
+    
+    <td>
+      드래그 중에 오버레이가 한 컴포넌트에서 다른 컴포넌트로 바뀌는 방식: <code>
+        false
+      </code>
+      
+       또는 <code>
+        <Transition>
+      </code>
+      
+       props. <a href="/docs/guides/overlay#targets-that-change-the-overlay">
+        오버레이를 바꾸는 대상
+      </a>
+      
+      을 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        overlayClass
+      </code>
+    </td>
+    
+    <td>
+      —
+    </td>
+    
+    <td>
+      오버레이 콘텐츠(<code>
+        [data-dnd-overlay-content]
+      </code>
+      
+      )에 붙는 클래스. 통째로 애니메이션할 요소입니다. 드래그로 집을 때는 들어 올리고, 안착할 때는 내려놓습니다. <a href="/docs/guides/animations#the-overlay-lift-tilt-settle">
+        오버레이: 들어 올리고, 기울이고, 내려놓기
+      </a>
+      
+      를 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        overlayPreviews
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        5
+      </code>
+    </td>
+    
+    <td>
+      멀티 드래그: 집을 때 클론을 받는 드래그 항목의 수, 또는 <code>
+        'all'
+      </code>
+      
+      . <a href="/docs/guides/multi-drag#the-default-overlay">
+        기본 오버레이
+      </a>
+      
+      를 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        announcements
+      </code>
+    </td>
+    
+    <td>
+      기본 문구
+    </td>
+    
+    <td>
+      스크린 리더 문구, 또는 <code>
+        false
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        screenReaderInstructions
+      </code>
+    </td>
+    
+    <td>
+      기본 문구
+    </td>
+    
+    <td>
+      모든 draggable이 <code>
+        aria-describedby
+      </code>
+      
+      로 가리키는 텍스트.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        defaultStyles
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        true
+      </code>
+    </td>
+    
+    <td>
+      드래그 상태용 명시도 0의 CSS를 주입합니다. <a href="/docs/guides/styling">
+        스타일링
+      </a>
+      
+      을 참고하세요.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+모든 형태가 담긴 전체 목록은 [DnDProvider API](https://zizigy.github.io/docs/api/dnd-provider)에 있습니다. 프로바이더는
+`drag-start`, `drag-move`, `drag-over`, `drag-end`, `drag-cancel`, `drag-settle` 이벤트도 내보냅니다.
+`useDnDMonitor`가 듣는 것과 같은 이벤트입니다.
+
+## 드래그 읽기: `useDnD()`
+
+<example height="27rem" hint="작업을 드래그하며 상태를 확인하세요" name="provider-state">
+
+
+
+</example>
+
+`useDnD()`는 프로바이더 아래의 어느 컴포넌트에서든 드래그를 반응형 상태로 반환합니다.
+
+```ts
+import { useDnD } from '@vue-dnd-kit/core';
+
+const { status, active, over, pointer, activation, isAutoScrolling, selection, cancel } = useDnD();
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      필드
+    </th>
+    
+    <th>
+      담고 있는 것
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        status
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'idle'
+      </code>
+      
+      , <code>
+        'activating'
+      </code>
+      
+      (활성화를 기다리는 누르기), <code>
+        'dragging'
+      </code>
+      
+      , <code>
+        'dropping'
+      </code>
+      
+      (진행 중인 드래그는 없지만 오버레이가 아직 안착 중이거나, 비동기 <code>
+        onBeforeDrop
+      </code>
+      
+      이 결정하는 중), <code>
+        'selecting'
+      </code>
+      
+      (선택 사각형).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        active
+      </code>
+    </td>
+    
+    <td>
+      드래그 중인 것: <code>
+        id
+      </code>
+      
+      , <code>
+        ids
+      </code>
+      
+      (드래그 중인 모든 id, 집은 항목이 처음), <code>
+        items
+      </code>
+      
+      , <code>
+        data
+      </code>
+      
+      , <code>
+        type
+      </code>
+      
+      , <code>
+        element
+      </code>
+      
+      , <code>
+        rect
+      </code>
+      
+      , <code>
+        sensor
+      </code>
+      
+      . 대기 중에는 <code>
+        null
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        over
+      </code>
+    </td>
+    
+    <td>
+      드래그 아래의 대상: <code>
+        id
+      </code>
+      
+      , <code>
+        data
+      </code>
+      
+      , <code>
+        element
+      </code>
+      
+      , <code>
+        rect
+      </code>
+      
+      , <code>
+        accepted
+      </code>
+      
+      . 아무것도 없으면 <code>
+        null
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        pointer
+      </code>
+    </td>
+    
+    <td>
+      모디파이어를 적용한 뒤의 뷰포트 좌표상 포인터.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activation.progress
+      </code>
+    </td>
+    
+    <td>
+      누르기가 활성화를 기다리는 동안 <code>
+        0
+      </code>
+      
+      에서 <code>
+        1
+      </code>
+      
+      까지. 링을 그릴 때 쓰세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isAutoScrolling
+      </code>
+    </td>
+    
+    <td>
+      자동 스크롤이 무언가를 움직이고 있습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        selection
+      </code>
+    </td>
+    
+    <td>
+      프로바이더의 선택: <code>
+        ids
+      </code>
+      
+      , <code>
+        has
+      </code>
+      
+      , <code>
+        add
+      </code>
+      
+      , <code>
+        delete
+      </code>
+      
+      , <code>
+        toggle
+      </code>
+      
+      , <code>
+        set
+      </code>
+      
+      , <code>
+        clear
+      </code>
+      
+      . <a href="/docs/guides/multi-drag">
+        멀티 드래그
+      </a>
+      
+      를 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        cancel()
+      </code>
+    </td>
+    
+    <td>
+      진행 중인 드래그(항목이 원래 자리로 돌아갑니다), 충전 중인 누르기, 선택 사각형을 취소합니다.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+```vue [DropHint.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useDnD } from '@vue-dnd-kit/core';
+
+const { status, over } = useDnD();
+const refused = computed(() => status.value === 'dragging' && over.value?.accepted === false);
+</script>
+
+<template>
+  <p v-if="refused" role="status">This list doesn't take that.</p>
+</template>
+```
+
+드롭이 결정되는 즉시 `active`, `over`, `pointer`는 `null`이 됩니다. 오버레이가 아직 안착 중이어도
+마찬가지입니다(`status`는 `'dropping'`입니다). 그래서 이 값들에서 파생된 UI가 새 데이터
+옆에 이전 드래그를 보여 주는 일은 없습니다. 비동기 `onBeforeDrop`이 기다리는 동안에는 놓은
+순간의 상태가 그대로 유지됩니다.
+
+다음 드래그는 안착을 기다리지 않습니다. 바로 시작되고, 직전 오버레이가 그 주위에서 안착하는
+동안 `status`는 `'dragging'`입니다. 안착 중인 오버레이를 누르면 날아가는 도중에 붙잡습니다.
+드래그는 오버레이가 있는 자리에서 이어집니다. 드래그의 오버레이가 제자리에 도착한 시점은
+`onDragSettle`이 알려 줍니다.
+
+## 모든 드래그 듣기: `useDnDMonitor()`
+
+```ts
+import { useDnDMonitor } from '@vue-dnd-kit/core';
+
+useDnDMonitor({
+  onDragStart: ({ active }) => {},
+  onDragMove: ({ pointer, delta }) => {},
+  onDragOver: ({ over }) => {},                  // the target changed
+  onBeforeDrop: (e) => 'accept',                 // or 'reject', 'continue', some ids; may be async
+  onDragEnd: ({ active, over, dropped, accepted, position }) => {},
+  onDragCancel: ({ active }) => {},
+  onDragResume: ({ active }) => {},              // onBeforeDrop answered 'continue'
+  onDragSettle: ({ active, over }) => {},        // its overlay has landed
+});
+```
+
+모니터는 어디서 시작했든 자기 프로바이더 아래의 모든 드래그를 듣습니다. 위 패널은 리스트를
+import하지 않고도 리스트의 드래그를 기록합니다. 모니터는 자신을 호출한 컴포넌트가 언마운트되면
+멈춥니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      이벤트
+    </th>
+    
+    <th>
+      시점
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        onDragStart
+      </code>
+    </td>
+    
+    <td>
+      드래그가 시작됩니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onDragMove
+      </code>
+    </td>
+    
+    <td>
+      드래그가 움직입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onDragOver
+      </code>
+    </td>
+    
+    <td>
+      드래그 아래의 대상이 바뀝니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+    </td>
+    
+    <td>
+      드래그를 놓습니다. 반환값이 드롭을 결정합니다. <a href="/docs/guides/drop-decisions">
+        드롭 결정하기
+      </a>
+      
+      를 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onDragEnd
+      </code>
+    </td>
+    
+    <td>
+      드롭이 완료되었습니다. 정렬 가능한 리스트는 이미 <code>
+        onDrop
+      </code>
+      
+      을 실행하고 새 순서를 기록했습니다. 대상이 없는 곳에서 끝나면 <code>
+        dropped
+      </code>
+      
+      는 <code>
+        false
+      </code>
+      
+      입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onDragCancel
+      </code>
+    </td>
+    
+    <td>
+      Escape, 드롭을 거부하는 대상 위의 드롭, 또는 <code>
+        'reject'
+      </code>
+      
+      로 답한 <code>
+        onBeforeDrop
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onDragResume
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+      이 <code>
+        'continue'
+      </code>
+      
+      로 답했습니다. 아무것도 드롭되지 않고 드래그가 계속됩니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onDragSettle
+      </code>
+    </td>
+    
+    <td>
+      드래그의 오버레이가 안착했습니다(또는 원래 자리로 돌아갔거나, 다음 드래그가 붙잡았습니다). <code>
+        onDragEnd
+      </code>
+      
+      나 <code>
+        onDragCancel
+      </code>
+      
+      이 받은 이벤트가 함께 전달됩니다. 그사이 다른 드래그가 시작되었을 수 있습니다.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+모든 이벤트에는 `active`, `over`, `pointer`, `delta`(시작점으로부터의 오프셋),
+`position`(드래그 중인 박스가 `over` 안에서 놓인 위치,
+[드래그 앤 드롭](https://zizigy.github.io/docs/guides/drag-and-drop#leave-it-where-it-was-dropped) 참고)이 들어 있고,
+정렬 가능한 리스트의 항목이라면 `source`도 들어 있습니다. 전체 형태는 [이벤트 API](https://zizigy.github.io/docs/api/events)에
+있습니다.
+
+<note>
+
+저장, 선택 해제, 분석처럼 "드롭 후"에 할 일은 `onDragEnd`에서 하세요. 리스트 자체의 `onDrop`은
+기록 **전에** 실행되므로 아직 이전 순서를 봅니다.
+
+</note>
+
+## 대상 찾기
+
+함수를 고른 뒤 핀이나 카드를 대상 위로 드래그해 보세요. 배지는 이 프레임에서 함수가 대상의
+순위를 어떻게 매기는지 보여 주며, 초록색이 선택된 대상입니다.
+
+<example height="33rem" hint="함수를 바꾸고, 중첩되거나 작거나 겹친 대상 위로 드래그하세요" name="collision-lab">
+
+
+
+</example>
+
+드래그의 매 프레임마다 프로바이더는 관련된 드롭 대상을 `collision`에 넘기고, 함수는 그 id를 좋은
+순서대로 반환합니다. 라이브러리에는 다섯 가지 함수가 들어 있습니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      함수
+    </th>
+    
+    <th>
+      순위를 매기는 대상
+    </th>
+    
+    <th>
+      어울리는 경우
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        pointerFirst
+      </code>
+    </td>
+    
+    <td>
+      포인터 아래에 있는 것. 아무것도 없으면 드래그 중인 박스와 겹치는 것.
+    </td>
+    
+    <td>
+      기본값: 포인터 아래에서는 정확하고, 빈틈에서는 너그럽습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        pointerWithin
+      </code>
+    </td>
+    
+    <td>
+      포인터 아래에 있는 것만, 가장 안쪽부터.
+    </td>
+    
+    <td>
+      정확한 대상: 빈틈에서는 어디에도 드롭되지 않습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        rectIntersection
+      </code>
+    </td>
+    
+    <td>
+      드래그 중인 박스와 겹치는 모든 대상: <code>
+        priority
+      </code>
+      
+      가 높은 순, 그다음 더 깊이 중첩된 순, 그다음 더 많이 겹친 순.
+    </td>
+    
+    <td>
+      작은 대상 위의 큰 항목, 포인터가 항목 가장자리에 있을 때.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        closestCenter
+      </code>
+    </td>
+    
+    <td>
+      모든 대상, 박스 중심에서 대상 중심까지의 거리순.
+    </td>
+    
+    <td>
+      멀리 있어도 항상 무언가가 선택됩니다. 같은 크기 항목의 그리드와 리스트.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        closestCorners
+      </code>
+    </td>
+    
+    <td>
+      모든 대상, 네 모서리 사이의 거리순.
+    </td>
+    
+    <td>
+      나란히 놓인 컬럼(칸반), 높이가 크게 다른 대상.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+포인터 아래에서 히트 테스트는 사용자가 보는 그대로를 따릅니다. 겹친 대상 중에서는 맨 위의 것만
+맞고(겹친 부분에서는 `back`이 아니라 항상 `front`), 중첩된 대상은 가장 안쪽이
+먼저입니다(`subfolder`, 그다음 `folder`).
+
+### 직접 만든 함수
+
+```ts [magnet.ts]
+import type { CollisionDetection, Coordinates, Rect } from '@vue-dnd-kit/core';
+
+/** How far the point is from the rect: 0 inside it. */
+const gap = (rect: Rect, point: Coordinates) =>
+  Math.hypot(
+    Math.max(rect.left - point.x, 0, point.x - rect.right),
+    Math.max(rect.top - point.y, 0, point.y - rect.bottom),
+  );
+
+/** What is under the pointer; in a gap, the nearest target within 40px. */
+export const magnet: CollisionDetection = ({ hits, pointer, candidates }) => {
+  if (hits.length) return hits;
+  return candidates
+    .filter((candidate) => gap(candidate.rect, pointer) <= 40)
+    .sort((a, b) => gap(a.rect, pointer) - gap(b.rect, pointer))
+    .map((candidate) => candidate.id);
+};
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      인자
+    </th>
+    
+    <th>
+      담고 있는 것
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        pointer
+      </code>
+    </td>
+    
+    <td>
+      모디파이어를 적용한 뒤의 포인터.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        overlayRect
+      </code>
+    </td>
+    
+    <td>
+      화면에 보이는 그대로의 드래그 중인 박스. 오버레이가 없으면 <code>
+        null
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        candidates
+      </code>
+    </td>
+    
+    <td>
+      관련된 모든 대상: <code>
+        id
+      </code>
+      
+      , <code>
+        rect
+      </code>
+      
+      (스크롤 컨테이너에 잘린, 보이는 부분), <code>
+        priority
+      </code>
+      
+      , <code>
+        depth
+      </code>
+      
+      (최상위는 <code>
+        0
+      </code>
+      
+      , 중첩될수록 커짐).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        hits
+      </code>
+    </td>
+    
+    <td>
+      히트 테스트로 찾은 포인터 아래의 대상, 좋은 순서대로.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+"대상 없음"은 빈 배열을 반환하세요. 비활성화된 대상, 드래그 중인 항목 안의 대상, 스크롤
+컨테이너에 가려진 대상은 함수에 전달되지 않습니다. 드래그를 거부하는 대상도 경쟁에는 참여합니다.
+그 위에서는 `over.accepted`가 `false`이고 드롭은 거부됩니다(정렬 가능한 항목 안의 대상은 대신
+비켜서므로, 리스트는 그 위에서 정렬됩니다). 데모는 고른 함수를 감싸 순위를 기록합니다.
+`(args) => (ranked.value = detect(args))`.
+
+<note>
+
+프로바이더는 함수가 요청하는 대상 전환을 완화합니다. 드래그가 방금 떠난 대상은 포인터가 10 px
+움직이기 전까지 다시 선택될 수 없으므로 경계에서 깜박이지 않습니다. 한 부모 안에 중첩된 대상
+사이(카드 컬럼의 빈틈)에서는 마지막 대상이 유지됩니다.
+
+</note>
+
+## 누르기가 드래그로 바뀌는 시점
+
+누르자마자 드래그되지는 않습니다. `activation`은 포인터 종류(`mouse`, `touch`, `pen`)마다 무엇을
+기다릴지 정합니다. px 단위의 `distance`, ms 단위의 `delay`(이를 넘으면 누르기를 포기하는
+`tolerance`와 함께 써서 페이지가 스크롤될 수 있게 합니다), 또는 둘 중 먼저 오는 것입니다.
+
+```vue
+<DnDProvider :activation="{ mouse: { distance: 8 }, touch: { delay: 300, tolerance: 8 } }">
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      포인터
+    </th>
+    
+    <th>
+      기본값
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        mouse
+      </code>
+      
+      , <code>
+        pen
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        { distance: 4 }
+      </code>
+      
+      : 클릭은 클릭으로 남습니다. <code>
+        handle
+      </code>
+      
+      을 마우스로 누르면 바로 시작하며, 움직이지 않으면 여전히 클릭입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        touch
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        { delay: 200, tolerance: 5 }
+      </code>
+      
+      : 길게 누르기. 손가락 아래에서 리스트가 계속 스크롤됩니다.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+지정하지 않은 종류는 기본값을 유지합니다. draggable 자체의 `activation`이
+[드래그 영역](https://zizigy.github.io/docs/guides/constraints)의 것보다 우선하고, 드래그 영역의 것이 프로바이더의 것보다
+우선합니다. 누르기가 기다리는 동안 `useDnD().status`는 `'activating'`이고 `activation.progress`는
+`0`에서 `1`까지 진행합니다. Escape나 `useDnD().cancel()`로 포기할 수 있습니다. 조건을 실시간으로
+시험해 보고 진행률로 길게 누르기 링을 그리는 방법은 [센서](https://zizigy.github.io/docs/guides/sensors#activation-constraints)에
+있습니다.
+
+## 자동 스크롤
+
+채널을 리스트의 위나 아래 쪽으로 드래그해 보세요. 초록색 띠가 가장자리 영역입니다. 띠 안으로
+깊이 들어갈수록 리스트가 빠르게 스크롤됩니다.
+
+<example height="37.5rem" hint="채널을 초록색 띠 안으로 드래그하세요" name="auto-scroll-edges">
+
+
+
+</example>
+
+`overflow: auto`나 `scroll`인 요소는 모두 저절로 스크롤되고, 창도 마찬가지입니다. 프로바이더는
+포인터 아래의 컨테이너를 먼저 스크롤하고, 그다음 그 조상, 그다음 창을 스크롤합니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      옵션
+    </th>
+    
+    <th>
+      기본값
+    </th>
+    
+    <th>
+      설정하는 것
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        threshold
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        0.2
+      </code>
+    </td>
+    
+    <td>
+      가장자리 영역. 컨테이너 크기에 대한 비율이며 24~96 px 사이입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        acceleration
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        10
+      </code>
+    </td>
+    
+    <td>
+      가장자리 끝에서의 속도(프레임당 px). 영역 안으로 들어간 깊이의 제곱에 비례해 커지므로, 처음에는 느리고 정밀합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        maxSpeed
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        25
+      </code>
+    </td>
+    
+    <td>
+      최고 속도. 가장자리를 넘어가면(포인터가 컨테이너 밖에 있으면) 속도가 여기까지 계속 커집니다.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`:auto-scroll="false"`로 끕니다. 포인터가 그 방향으로 움직인 뒤에야 그 방향으로 스크롤되므로,
+가장자리 근처에서 집은 항목이 저절로 스크롤되지는 않습니다. 리스트, 트리,
+[드래그 영역](https://zizigy.github.io/docs/guides/constraints)은 자기 컨테이너를 위한 `autoScroll`을 따로 받습니다.
+
+```ts
+makeSortableList(list, { items: channels, autoScroll: { maxSpeed: 10 } });
+```
+
+키보드 드래그는 자동 스크롤하지 않습니다. 대신 항목이 보이도록 스크롤합니다.
+`isAutoScrolling`(`useDnD()`나 드래그 영역에서 얻음)은 무언가가 스크롤되는 동안 `true`입니다.
+
+## 진동과 복사 키
+
+터치 드래그는 시작할 때 짧게 진동합니다. `:haptics="false"`로 끄고, 객체를 넘기면 진동을 하나씩
+설정할 수 있습니다.
+
+```vue
+<DnDProvider :haptics="{ start: true, enter: 10, drop: 10, refuse: [20, 40, 20] }">
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      키
+    </th>
+    
+    <th>
+      진동하는 시점
+    </th>
+    
+    <th>
+      기본값
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        start
+      </code>
+    </td>
+    
+    <td>
+      길게 누르기가 드래그로 바뀔 때.
+    </td>
+    
+    <td>
+      <code>
+        true
+      </code>
+      
+      (10 ms)
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        enter
+      </code>
+    </td>
+    
+    <td>
+      드래그가 자신을 받아들이는 대상에 들어갈 때.
+    </td>
+    
+    <td>
+      꺼짐
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        drop
+      </code>
+    </td>
+    
+    <td>
+      드롭이 완료될 때.
+    </td>
+    
+    <td>
+      꺼짐
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        refuse
+      </code>
+    </td>
+    
+    <td>
+      드롭이 거부되어 항목이 원래 자리로 돌아갈 때.
+    </td>
+    
+    <td>
+      꺼짐
+    </td>
+  </tr>
+</tbody>
+</table>
+
+각각 `true`(기본 패턴), ms 단위 길이, 켜짐/꺼짐 패턴, `false`를 받습니다. 터치로 시작한 드래그만
+진동하며, iOS Safari는 진동을 지원하지 않습니다.
+
+`copyModifier`는 리스트 사이를 드래그하는 동안 누르고 있으면 이동을 복사로 바꾸는 키입니다.
+기본값은 `'Alt'`이고, 어떤 `KeyboardEvent.key`든 쓸 수 있으며, `null`이면 없습니다. 항목이 출발하는
+리스트에는 `clone` 함수가 필요합니다. [항목을 공유하는 리스트](https://zizigy.github.io/docs/guides/shared-lists)를
+참고하세요.
+
+## 여러 프로바이더
+
+대부분의 앱에는 정확히 하나만 필요합니다. 위시리스트를 별도의 프로바이더 아래에 두고 책을 반대편으로
+옮겨 보세요. 책은 자기 프로바이더를 벗어날 수 없고, 바깥 모니터는 더 이상 위시리스트를 듣지
+못합니다.
+
+<example height="33.5rem" hint="책을 반대편으로 옮긴 뒤, 위시리스트에 별도의 프로바이더를 주세요" name="provider-nested">
+
+
+
+</example>
+
+```vue
+<DnDProvider>
+  <Shelf v-model="reading" />
+  <DnDProvider>
+    <Shelf v-model="wishlist" />
+    <EventLog />            <!-- hears the inner provider's drags only -->
+  </DnDProvider>
+</DnDProvider>
+```
+
+- 프로바이더는 서로 독립적입니다. 드래그는 한 프로바이더에서 다른 프로바이더로 넘어가지 않습니다.
+- 프로바이더를 중첩할 수 있습니다. **가장 가까운 소유자가 우선합니다.** 항목은 자신 위의 가장
+가까운 프로바이더에 속하고, 바깥 프로바이더는 그 항목을 무시합니다.
+- 프로바이더마다 선택, 오버레이, 라이브 리전, 모니터를 따로 가집니다.
+
+두 번째 프로바이더는 프로바이더 전체에 걸친 설정(충돌 감지, 키보드 키, 안내 문구)을 따로 두어야
+하고, 항목이 그 밖으로 나가지 않는 페이지 일부에만 의미가 있습니다. 페이지의 두 부분 사이에서
+항목이 움직이지 않는다면, 두 프로바이더 아래에 있지 않은지 확인하세요.
+
+<tip>
+
+페이지 일부에만 적용하는 규칙(스냅되는 보드, 터치를 더 길게 눌러야 하는 피드, 아무것도 드래그되지
+않는 패널)에는 별도의 프로바이더가 필요 없습니다.
+
+```ts
+makeDragArea(board, { modifiers: [snapToGrid(20)], activation: { touch: { delay: 400 } } });
+```
+
+영역의 항목은 앱의 프로바이더에 그대로 남아 있으므로 어디로든 옮길 수 있습니다.
+[제약](https://zizigy.github.io/docs/guides/constraints)을 참고하세요.
+
+</tip>
+
+다른 곳에 마운트된 앱(섀도 루트 안에 있거나 별도의 Vue 앱인 경우)도 기존 프로바이더에 합류할 수
+있습니다. 마운트하기 전에 `useDnDContext()`를 `provideDnDContext(app, context)`에 넘기세요. 히트
+테스트와 오버레이는 섀도 루트를 넘나들며 동작합니다.
+
+## SSR과 Nuxt
+
+프로바이더는 SSR에서 안전합니다. 리스트와 항목은 다른 마크업처럼 서버에서 렌더링됩니다. 오버레이와
+라이브 리전은 텔레포트되어 클라이언트에서만 마운트되므로 하이드레이션 불일치를 일으키지 않습니다.
+기본 id는 Vue의 `useId()`에서 오므로 서버와 클라이언트에서 일치합니다.
+
+Nuxt에서는 모듈이 `DnDProvider`를 전역으로 등록하고 컴포저블을 자동으로 import합니다.
+[설치](https://zizigy.github.io/docs/getting-started/installation#nuxt)를 참고하세요.
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

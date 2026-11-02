@@ -1,0 +1,680 @@
+---
+title: "접근성"
+description: "키보드 드래그, 스크린 리더 안내, ARIA 속성이 기본으로 들어 있습니다. 각각이 하는 일, 어떤 언어로든 문구를 쓰는 방법, 드래그 없이 옮기는 방법을 소개합니다."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/accessibility"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+이 페이지의 모든 것은 기본으로 켜져 있습니다. Tab으로 일정 항목에 이동해 <kbd value="Space">
+
+
+
+</kbd>
+
+를 누르고,
+화살표 키로 옮긴 뒤 다시 <kbd value="Space">
+
+
+
+</kbd>
+
+를 누르세요. 되돌리려면 <kbd value="Escape">
+
+
+
+</kbd>
+
+를 누릅니다.
+패널은 스크린 리더에 전달되는 내용을 고른 언어로 보여 줍니다.
+
+<example height="28.5rem" hint="Tab으로 항목에 이동하세요: Space, 화살표 키, Space. 언어를 바꿔 보세요" name="a11y-announcer">
+
+
+
+</example>
+
+보통 직접 해야 하는 것은 항목의 읽을 수 있는 문구, 그리고 드래그를 전혀 할 수 없는 사람을 위한 이동
+버튼입니다.
+
+## 키보드
+
+<table>
+<thead>
+  <tr>
+    <th>
+      키
+    </th>
+    
+    <th>
+      동작
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <kbd value="Space">
+        
+      </kbd>
+      
+       / <kbd value="Enter">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      포커스된 항목을 집습니다. 드롭합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      화살표 키
+    </td>
+    
+    <td>
+      옮깁니다. 리스트에서는 자리 단위, 트리에서는 행과 깊이 단위, 자유 드래그에서는 <code>
+        keyboard.step
+      </code>
+      
+       픽셀 단위입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="Escape">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      드래그를 취소합니다. 포인터 드래그도 취소합니다.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+- 리스트에서 같은 그룹의 다른 리스트 쪽으로 화살표 키를 누르면 항목이 그곳으로 옮겨집니다.
+- 자유 드래그에서는 <kbd value="Shift">
+
+
+
+</kbd>
+
+가 이동 단위를 키웁니다. `makeDraggable(el, { keyboard: 'droppables' })`를
+쓰면 화살표 키가 대신 항목을 받는 대상 사이를 건너뜁니다.
+- 키보드 드래그는 포커스된 draggable이나 그 핸들에서 시작합니다. 그 안의 버튼이나 입력 필드에서는
+절대 시작하지 않으므로, 이들은 자기 키를 그대로 씁니다.
+- 키보드 드래그는 가장자리에서 자동 스크롤하는 대신 항목이 보이도록 스크롤합니다.
+- 드롭한 뒤 포커스는 항목으로 돌아옵니다. 그 행이 다른 리스트에서 다시 렌더링되어도 마찬가지입니다.
+
+### 다른 키
+
+```vue
+<DnDProvider :keyboard="{ keys: { start: ['KeyD'], drop: ['KeyD', 'Enter'], cancel: ['Escape'] }, step: 10 }">
+```
+
+키 지정은 `event.code`(`'Space'`, `'KeyD'`)나 `event.key`(`'Enter'`)와 비교합니다. `step`은 자유
+드래그에서 화살표 키를 한 번 누를 때의 픽셀 수입니다(기본값 25). `:keyboard="false"`는 키보드
+드래그를 끄며, 그래도 <kbd value="Escape">
+
+
+
+</kbd>
+
+는 모든 드래그를 취소합니다. 키를 바꾸면
+`screen-reader-instructions`도 바꾸세요.
+
+## ARIA 속성
+
+각 바로가기에 포커스를 두거나 속성을 끄고, 라이브러리가 무엇을 설정하는지 보세요. 하나를 드래그하면
+버튼에 `aria-pressed`가 생겼다 사라지는 것을 볼 수 있습니다.
+
+<example height="27rem" hint="Tab으로 바로가기를 차례로 이동하세요. 속성을 켜고 꺼 보세요" name="a11y-attributes">
+
+
+
+</example>
+
+모든 draggable과 정렬 가능한 항목은 다음 속성을 받습니다. **직접 설정하지 않았다면** 말입니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      속성
+    </th>
+    
+    <th>
+      값
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        tabindex
+      </code>
+    </td>
+    
+    <td>
+      요소가 이미 포커스 가능하지 않을 때 <code>
+        0
+      </code>
+      
+      (<code>
+        <div>
+      </code>
+      
+      는 해당, <code>
+        <a href>
+      </code>
+      
+      나 <code>
+        <button>
+      </code>
+      
+      은 해당 안 됨).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        role
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        button
+      </code>
+      
+      . 이미 버튼인 <code>
+        <button>
+      </code>
+      
+      은 제외.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        aria-roledescription
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        draggable
+      </code>
+      
+      , 정렬 가능한 항목은 <code>
+        sortable
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        aria-describedby
+      </code>
+    </td>
+    
+    <td>
+      프로바이더의 안내문. 이미 있는 id 옆에 추가됩니다(툴팁의 id도 유지됩니다).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        aria-disabled
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        true
+      </code>
+      
+       또는 <code>
+        false
+      </code>
+      
+      : 항목이 비활성화되었는지(비활성화된 드래그 영역에 의한 경우 포함).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        aria-pressed
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        button
+      </code>
+      
+       역할의 요소에서, 드래그하는 동안 <code>
+        true
+      </code>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
+
+항목에 `attributes: false`를 주면 라이브러리가 설정한 속성이 실시간으로 제거됩니다. 패널은 속성을
+다시 읽어 보여 줍니다. `aria-describedby`는 프로바이더의 안내문을 가리키며, 스크린 리더는 항목 이름
+다음에 이를 읽습니다.
+
+### 드래그되는 링크와 버튼
+
+`aria-roledescription`은 역할 이름을 대체합니다. 스크린 리더는 "Inbox, button" 대신 "Inbox,
+sortable"이라고 읽습니다. 역할이 중요한 요소에는 직접 값을 설정하세요. 라이브러리는 이를 건드리지
+않습니다.
+
+```vue [Shortcut.vue]
+<script setup lang="ts">
+makeSortableItem(el, {
+  item: () => props.shortcut,
+  // Enter follows the link: only Space picks it up.
+  canDrag: (event) => !('key' in event && event.key === 'Enter'),
+});
+</script>
+
+<template>
+  <a ref="el" :href="shortcut.href" role="link" aria-roledescription="draggable link">
+    {{ shortcut.title }}
+  </a>
+</template>
+```
+
+- 링크는 계속 동작합니다. 클릭하면 열리지만, 드래그를 끝내는 클릭은 링크에 전달되지 않습니다.
+<kbd value="Enter">
+
+
+
+</kbd>
+
+는 드래그를 시작하게 되므로, `canDrag`가 이를 거절하고 브라우저가 링크를
+따라갑니다.
+- `<button>`도 클릭을 그대로 유지하며, 라이브러리는 `role`도 `tabindex`도 추가하지 않습니다.
+- 항목 **안의** 버튼, 링크, 입력 필드는 포인터 드래그를 시작하지 않으므로, 행에 자체 동작을 둘 수
+있습니다.
+
+### 핸들: 진짜 버튼으로 만드세요
+
+```vue [Track.vue]
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import { makeSortableItem } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ track: { id: string; title: string } }>();
+const el = useTemplateRef<HTMLElement>('el');
+makeSortableItem(el, { item: () => props.track, handle: '.grip' });
+</script>
+
+<template>
+  <li ref="el" class="track">
+    {{ track.title }}
+    <button type="button" class="grip" :aria-label="`Drag ${track.title}`">⠿</button>
+  </li>
+</template>
+```
+
+`handle`이 있으면 속성은 핸들에 들어가고, 키보드 드래그는 핸들에서 시작합니다(위의 **Archive**
+바로가기). `<button>`은 이미 포커스 가능하고 버튼이므로 `tabindex`나 `role`이 필요 없습니다.
+`aria-label`을 주세요. 그립 아이콘에는 이름이 없고, "Drag Midnight Drive"가 "button"보다 많은 것을
+알려 줍니다.
+
+<tip>
+
+키보드 드래그 내내 핸들이 포커스를 유지하고, 그 행은 자리가 됩니다. 자리를 비울 때는 핸들에
+`visibility: hidden`이나 `display: none` 대신 `opacity: 0`을 쓰세요. 숨겨진 요소는 포커스를 잃습니다.
+라이브러리가 드롭한 뒤 포커스를 돌려주지만, 그사이 스크린 리더가 "body"라고 읽을 수 있습니다.
+
+</tip>
+
+## 안내 문구
+
+프로바이더의 라이브 리전이 모든 집기, 이동, 드롭, 취소를 읽어 줍니다. 정렬 가능한 리스트는 항목이
+어디에 있는지 알려 줍니다. *"Picked up item t2 at position 2 of 5 in list playlist."* 이동은 드래그가
+500 ms 동안 멈춘 뒤에 안내되므로, 빠른 포인터 드래그를 자리마다 읽지는 않습니다. 데모의 패널은
+프로바이더가 받는 모든 문구를 기록하며, 포인터 드래그가 지나가는 이동도 포함합니다.
+
+기본 문구는 영어로 되어 있으며, `label`을 주지 않으면 대상을 id로 부릅니다. 항목, 리스트, 트리, 드롭
+대상은 모두 `label`을 받습니다.
+
+```ts
+makeSortableList(list, { items: tracks, label: 'Playlist' });
+makeSortableItem(el, { item: () => props.track, label: () => props.track.title });
+makeDroppable(bin, { label: 'Trash', onDrop });
+```
+
+*"Picked up Blue in Green at position 2 of 5 in Playlist."* 레이블은 직접 작성한 문구와 모니터에도
+전달됩니다. `active.label`, `over.label`, `active.items`의 각 항목, 그리고 context의
+`position.label`과 `partner.label`입니다.
+
+다른 언어나 다른 표현이 필요하면 일정표처럼 문구를 직접 작성하세요. 각 문구 함수는 이벤트와
+`context`를 받습니다. `context`에는 기본 문구가 읽어 줄 `position`(`list`, 0부터 세는 `index`,
+`length`, 리스트의 `label`)과 `count`, `copy`, 자리 맞바꾸기의 `partner`가 들어 있습니다.
+
+```ts [index.vue]
+const titleOf = (id: Key) => agenda.value.find((item) => item.id === id)?.title ?? String(id);
+
+const announcements = computed<Partial<Announcements>>(() => {
+  const t = LANGUAGES[lang.value]!;
+  return {
+    onDragStart: ({ active }, { position }) => position && t.start(titleOf(active.id), position.index + 1, position.length),
+    onDragOver: ({ active }, { position }) => position && t.move(titleOf(active.id), position.index + 1, position.length),
+    onDragEnd: ({ active }, { position }) => position && t.drop(titleOf(active.id), position.index + 1, position.length),
+    onDragCancel: ({ active }, { position }) => position && t.cancel(titleOf(active.id), position.index + 1),
+    onDragResume: ({ active }) => t.resume(titleOf(active.id)),
+  };
+});
+```
+
+```vue [index.vue]
+<DnDProvider :announcements="announcements" :screen-reader-instructions="texts.instructions">
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        context
+      </code>
+    </th>
+    
+    <th>
+      시작할 때
+    </th>
+    
+    <th>
+      움직이는 동안
+    </th>
+    
+    <th>
+      끝날 때
+    </th>
+    
+    <th>
+      취소할 때
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        position
+      </code>
+    </td>
+    
+    <td>
+      집은 자리
+    </td>
+    
+    <td>
+      안착할 자리. 리스트 밖에서는 없음
+    </td>
+    
+    <td>
+      안착한 자리
+    </td>
+    
+    <td>
+      돌아간 자리
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        partner
+      </code>
+    </td>
+    
+    <td>
+      
+    </td>
+    
+    <td>
+      자리 맞바꾸기: 맞바뀐 항목과 그 현재 자리
+    </td>
+    
+    <td>
+      드롭 뒤의 같은 정보
+    </td>
+    
+    <td>
+      
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        count
+      </code>
+      
+      , <code>
+        copy
+      </code>
+    </td>
+    
+    <td>
+      항목 수와 복사 여부
+    </td>
+    
+    <td>
+      
+    </td>
+    
+    <td>
+      
+    </td>
+    
+    <td>
+      
+    </td>
+  </tr>
+</tbody>
+</table>
+
+<table>
+<thead>
+  <tr>
+    <th>
+      이벤트
+    </th>
+    
+    <th>
+      읽어 주는 시점
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        onDragStart
+      </code>
+    </td>
+    
+    <td>
+      항목을 집을 때.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onDragOver
+      </code>
+    </td>
+    
+    <td>
+      항목이 다른 곳(리스트의 자리, 다른 대상)으로 옮겨진 뒤, 드래그가 500 ms 동안 멈췄을 때.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onDragEnd
+      </code>
+    </td>
+    
+    <td>
+      드롭했을 때. 새 순서는 이미 기록되어 있습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onDragCancel
+      </code>
+    </td>
+    
+    <td>
+      드래그가 취소되었거나 드롭이 거부되어 항목이 돌아갔을 때.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onDragResume
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+      이 <code>
+        'continue'
+      </code>
+      
+      로 답해 드래그가 계속될 때(<a href="/docs/guides/drop-decisions">
+        드롭 결정하기
+      </a>
+      
+       참고).
+    </td>
+  </tr>
+</tbody>
+</table>
+
+- 문구는 그 이벤트의 안내를 대체합니다. `undefined`는 기본 문구를 유지하고, `''`는 아무것도 읽지
+않습니다. 지정하지 않은 이벤트는 정렬 가능한 리스트의 위치처럼 기본 문구를 유지합니다.
+- `screenReaderInstructions`는 모든 draggable이 `aria-describedby`로 가리키는 텍스트입니다. 두
+props 모두 반응형이며, 데모는 언어를 실시간으로 바꿉니다.
+- `:announcements="false"`는 리전을 조용하게 합니다. 직접 만든 리전으로 안내할 때 등에 씁니다.
+
+<note>
+
+다른 언어로 하려면 다섯 문구와 안내문을 모두 주세요. 빠뜨린 것은 정렬 위치를 포함해 영어로
+읽힙니다. 스크린 리더가 알맞은 음성을 고르도록 페이지의 `lang`도 설정하세요.
+
+</note>
+
+## 드래그 없이 옮기기
+
+드래그를 전혀 할 수 없는 사람도 있습니다. WCAG 2.5.7은 단일 클릭으로 항목을 옮기는 방법을 요구합니다.
+각 행의 화살표와 체크 표시를 써 보세요. 드래그 없이 책을 옮기며, 포커스는 그 자리에 머뭅니다.
+
+<example height="27.5rem" hint="키보드로 화살표 버튼을 쓰거나, 그립을 드래그해 보세요" name="a11y-move-buttons">
+
+
+
+</example>
+
+버튼은 데이터를 바꾸고, 리스트가 이동을 그립니다. 리스트에 `animate`를 켜면 행이 드래그할 때처럼
+미끄러집니다(동작 줄이기를 요청한 사용자에게는 움직이지 않습니다).
+
+```ts [ReadingList.vue]
+const { items } = makeSortableList(list, { id: 'reading', items: books, animate: true });
+
+// Buttons change the data, not a drag: the provider says nothing, so this region does.
+const message = ref('');
+
+const move = (from: number, to: number) => {
+  const next = [...books.value];
+  const [book] = next.splice(from, 1);
+  next.splice(to, 0, book!);
+  books.value = next;
+  message.value = `${book!.title} moved to position ${to + 1} of ${next.length}.`;
+};
+```
+
+```vue [ReadingList.vue]
+<p class="status" role="status">{{ message }}</p>
+```
+
+### 포커스 유지하기
+
+DOM에서 요소를 옮기면 포커스가 사라지므로, 방금 누른 버튼도 포커스를 잃습니다. 행이 옮겨진 뒤
+포커스를 돌려주세요.
+
+```ts [BookRow.vue]
+const move = async (direction: 'up' | 'down') => {
+  emit('move', direction === 'up' ? props.index - 1 : props.index + 1);
+  await nextTick();
+  // Back on the same button, or on the other one when this one is now disabled.
+  const same = direction === 'up' ? up.value : down.value;
+  const other = direction === 'up' ? down.value : up.value;
+  (same?.disabled ? other : same)?.focus();
+};
+```
+
+사라지는 행(체크 표시로 책을 읽음 처리)은 포커스를 함께 가져갑니다. 포커스를 다음 행이나 마지막 행으로
+옮기세요. 드래그에는 이런 처리가 전혀 필요 없습니다. 라이브러리가 드롭한 항목 자체로 포커스를
+돌려주며, 그 항목이 다른 리스트에서 다시 렌더링되어도 마찬가지입니다.
+
+<tip>
+
+`@vue-dnd-kit/actions`를 쓰면 각 버튼이 실제 키보드 드래그가 됩니다. `moveItem(id, { index })`는
+안내되고, `onBeforeDrop`과 `onDrop`을 거치며, 애니메이션되고, 포커스를 항목에 유지합니다.
+[프로그래밍 방식 드래그](https://zizigy.github.io/docs/guides/sensors#programmatic-drags)를 참고하세요.
+
+</tip>
+
+## 터치
+
+터치 드래그는 200 ms 동안 길게 누른 뒤 시작합니다. 그 전에 5 px 넘게 움직이면 대신 페이지가
+스크롤되므로, 리스트를 계속 스크롤할 수 있습니다. 두 값은 프로바이더의 `activation`으로 조정하고,
+`useDnD().activation.progress`로 길게 누르기 링을 그리세요.
+[프로바이더](https://zizigy.github.io/docs/guides/provider#when-a-press-becomes-a-drag)를 참고하세요. 터치 드래그는 시작할 때
+짧게 진동하며, `:haptics="false"`로 끕니다.
+
+## 동작 줄이기
+
+`prefers-reduced-motion: reduce`에서는 라이브러리 자체의 애니메이션이 실행되지 않습니다. 정렬 중
+항목은 제자리로 바로 이동하고, 드롭할 때 오버레이가 날아가지 않으며, `animate`의 변경은 즉시
+나타납니다. 직접 만든 애니메이션 함수는 `reducedMotion: true`와 함께 계속 실행되므로, 건너뛸지 짧은
+페이드를 남길지 직접 정하세요. [애니메이션](https://zizigy.github.io/docs/guides/animations)을 참고하세요.
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

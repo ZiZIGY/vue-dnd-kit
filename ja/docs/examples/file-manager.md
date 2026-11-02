@@ -1,0 +1,173 @@
+---
+title: "ファイルマネージャー"
+description: "クラウドドライブ。グリッド表示とリスト表示、範囲選択、どこでもドロップを受け入れホバーで開くフォルダー、Alt でコピー、Undo 付きのゴミ箱、そしてデスクトップからドロップされるファイル。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/file-manager"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="40rem" hint="ファイルを枠で囲み、フォルダーにドロップしてみましょう。Alt でコピーです" name="file-manager" title="ファイルマネージャー">
+
+
+
+</example>
+
+## 注目ポイント
+
+- **FileView.vue**：開いているフォルダーは 1 つの並べ替え可能なリストで、タイルのグリッドか行のリストとして表示されます。範囲選択、クリック、キーで選択し、ドラッグは選択を運びます。
+- **useFolderDrop.ts**：画面上のすべてのフォルダーがドロップターゲットです：タイル、ツリーの行、お気に入り、パスのパンくず、ゴミ箱。ドラッグを拒否する理由を伝え、ファイルが入るとごくりと飲み込みます。
+- **FilesOverlay.vue**：ポインターに追従するもので、すべてのオーバーレイが受け取る props から作られています：件数付きの本物のタイルの山、Alt でコピーしている間の「+」、そしてドロップで何が起きるか。
+- **SidebarRow.vue**：ツリーの閉じたフォルダーは、ドラッグがその上で止まると開くので、サブフォルダーがドロップを受け取れます。**Favorites.vue** はそれ自体が並べ替え可能なリストで、その行もドロップターゲットです。
+- **useDesktopDrop.ts**：コンピューターからドラッグされてきたファイル。これはライブラリのではなくブラウザーのドラッグ＆ドロップで、ライブラリと並べて処理されます。
+- **drive.ts**：状態とすべての変更、Undo 付き。**index.vue**：キーを割り当て直したプロバイダーと、その読み上げ。
+
+## 1 つのリスト、2 つの表示
+
+グリッドとリストは同じ並べ替え可能なリストです。そのオプションはゲッターで、ドラッグの開始時に読み取られます：ストラテジーは表示に従い、列で並べ替えたフォルダー（`sort: false`）は並べ替わりません。それでもドラッグはそのフォルダーの中へ入れられます。
+
+```ts [FileView.vue]
+const { items } = makeSortableList(list, {
+  items: drive.entries,   // the open folder, sorted by a column or in your own order
+  group: 'files',
+  strategy: () => (grid.value ? 'grid' : 'vertical'),
+  sort: () => drive.sort.value.key === 'manual',
+  multiple: 'gaps',       // the other picked files wait in place, as in Finder
+  clone: drive.duplicateOf, // Alt-drag leaves the files and drops "Budget copy.xlsx"
+  dropzone: area,         // the empty space takes drops too
+  animate: true,          // a new sort, a new folder, files sent to the Trash slide and fade
+});
+```
+
+- `drive.entries` は書き込み可能な computed です：ライブラリは各ドロップをその `set` を通じて書き戻し、リストの `onDrop` はその前に Undo 用にドライブを保存します。
+- ウィンドウはフォルダーごとに新しい表示を作るので（`FileView` の `:key`）、フォルダーを開くことはリストの変化にならず、`animate` は再生されません。
+
+## 選択
+
+選択はプロバイダーが持ち、ユーザーがどう選択するかは表示が決めます。空いた場所を押すと選択枠が描かれます：そのままでは選択を置き換え、Shift、Ctrl、Cmd を押していると、枠が横切ったタイルの選択が反転します。ストラテジーはゲッターで、選択枠が始まるときに読み取られます。
+
+```ts [FileView.vue]
+let adding = false;
+const { isSelecting, style } = makeSelectionArea(area, {
+  strategy: () => (adding ? 'toggle' : 'select'),
+});
+
+// On the area, `@pointerdown.capture`: it runs before the band's own listener.
+const onPress = (event: PointerEvent) => {
+  adding = event.shiftKey || event.ctrlKey || event.metaKey;
+};
+```
+
+クリックは Finder に倣います：クリックで 1 つを選び、Ctrl/Cmd クリックで追加または除外し、Shift クリックで最後に選んだものからの範囲を選びます。矢印キーはファイルの間で 1 つのタブストップを動かし（ローミング `tabindex` で、ライブラリはこれに手を出しません）、Shift+矢印キーで選択を広げ、Enter で開き、F2 で名前を変え、Delete でゴミ箱に送り、文字を入力するとその名前へジャンプします。プロバイダーは Enter をアプリに返します：ファイルを持ち上げるのは Space だけです。
+
+```vue [index.vue]
+<script setup lang="ts">
+// Space picks a focused file up and drops it; Enter is left to open folders.
+const keyboard = { keys: { start: ['Space'], drop: ['Space', 'Enter'] } };
+</script>
+
+<template>
+  <DnDProvider :keyboard="keyboard" :announcements="announcements">
+    <FileManager />
+  </DnDProvider>
+</template>
+```
+
+## フォルダーはどこでもドロップを受け入れる
+
+`useFolderDrop` は、どんな要素もファイルを受け入れるフォルダーにします。タイルはグリッドの並べ替え可能なアイテムでもあります：そこではターゲットが有効なのはタイルの中央だけで、端の近くではグリッドが場所を空けます。`accept` はファイルがすでに入っているフォルダーと、フォルダー自身の中への移動を拒否します。拒否したタイルの上では、ほかのタイルと同じようにグリッドが並べ替えます。
+
+```ts [useFolderDrop.ts]
+const { id, isOver, isAccepting } = makeDroppable(target, {
+  disabled: () => !folder(),
+  data: () => drive.placeOf(folder()!),   // { name, trash, why }: the overlay reads it as `over.data`
+  accept: ({ active, types }) => types.includes('files') && !drive.whyNot(active.ids, folder()!),
+  onDrop: (event) => drive.dropInto(event, folder()!),
+});
+
+// The files are in once the overlay has landed in the folder: it gulps.
+useDnDMonitor({
+  onDragSettle: (event) => {
+    if ('dropped' in event && event.dropped && event.over?.id === id.value) gulps.value++;
+  },
+});
+```
+
+`dropInto` はファイルを移動し、`event.mode` が `'copy'`（`clone` を持つリストの上で Alt を押している）ならコピーします。移動では `event.source.remove()` を呼びます：グリッドはファイルを手放し、その `onDrop` が `to.index === -1` で実行されます。
+
+```ts [drive.ts]
+const dropInto = (event: DnDEvent, target: FolderEntry) => {
+  const dragged = entries.value.filter((entry) => event.active.ids.includes(entry.id));
+  const copying = event.mode === 'copy' && !isTrash(target) && !inTrash.value;
+  record(`${copying ? 'Copied' : 'Moved'} ${describe(dragged)} to ${isTrash(target) ? 'the Trash' : target.name}`);
+  if (copying) return put(target, dragged.map(copyEntry), current.value);
+  put(target, dragged, current.value);
+  // The grid lets them go: the library writes the open folder without them.
+  event.source?.remove();
+  selection.delete(...event.active.ids);
+};
+```
+
+お気に入りは、並べ替え可能なアイテム（`Favorites.vue` の中の、独自のグループのリスト）であると同時にドロップターゲットです：`FavoriteRow.vue` は行コンポーネントを `makeSortableItem` に渡し、`makeSortableItem` はそのルート要素を読み取ります。そして `SidebarRow.vue` が同じ要素をフォルダーにします。ドラッグしたお気に入りは端の近くでは並べ替わり、その上にドロップしたファイルはそのフォルダーに入ります。
+
+### スプリングロードフォルダー
+
+ツリーの閉じたフォルダーは、Finder のように、ドラッグがその上で止まると開きます：`isOver` がしばらく続くと、行が展開されます。サブフォルダーはドラッグの途中でマウントされ、すぐにドロップを受け取ります。
+
+```ts [SidebarRow.vue]
+const springing = computed(() => isOver.value && props.expandable && !props.expanded);
+watch(springing, (now) => {
+  clearTimeout(timer);
+  if (now) timer = setTimeout(() => emit('toggle'), 700);
+});
+```
+
+## オーバーレイ
+
+`FilesOverlay.vue` はリストの `overlay` です。グリッドからは、選んだタイルの本物のクローンである `DragPreview` を積み重ねます：枠にドロップすると各クローンが自分のタイルに着地し、フォルダーにドロップすると 1 つずつ順に入っていきます。行はリストと同じ幅なので、リストはボックスをポインターの中央に合わせ（`snapCenterToCursor`）、オーバーレイはそこから小さなチップを下げます。オーバーレイは関数で、Vue はそれを関数型コンポーネントとして扱います：読み取る props を渡し、2 つのうちどちらを描くかを伝えます。
+
+```ts [FileView.vue]
+overlay: ({ items, over, accepted, status, mode }: OverlayProps) =>
+  h(FilesOverlay, { items, over, accepted, status, mode, rows: !grid.value }),
+modifiers: () => (grid.value ? [] : [snapCenterToCursor]),
+```
+
+山の下では、ピルが離したら何が起きるかを、フォルダーの `data` から伝えます：「Move to Photos」、Alt を押している間は「Copy to Photos」（`mode`）、`accepted` が `false` のときは赤字でその理由です。
+
+```ts [FilesOverlay.vue]
+const place = computed(() => (props.status === 'dragging' ? (props.over?.data as DropPlace | undefined) : undefined));
+const pill = computed(() => {
+  if (!place.value) return null;
+  if (!props.accepted) return { refused: true, text: place.value.why ?? 'Can’t go here' };
+  if (place.value.trash) return { refused: false, text: 'Move to Trash' };
+  return { refused: false, text: `${props.mode === 'copy' ? 'Copy' : 'Move'} to ${place.value.name}` };
+});
+```
+
+プロバイダーの `announcements` も同じ `data` を読むので、スクリーンリーダーには「Over Photos. Drop to move 3 items there」や「Already in Documents」と聞こえます。組み込みのテキストならキーを読み上げるところを、ファイルの名前で呼びます。
+
+## デスクトップからのファイル
+
+コンピューターからファイルをウィンドウにドラッグしてみましょう：ファイルはポインターの下のフォルダー（タイル、サイドバーの行、パンくず）、なければ開いているフォルダーにアップロードされ、写真は中身が表示されます。ライブラリがドラッグするのはページの要素です。外部からのファイルはブラウザー自身のドラッグ＆ドロップ（`dragover` と `drop`）でやってくるので、ライブラリと並べて処理します。
+
+```ts [useDesktopDrop.ts]
+const dragover = (event: DragEvent) => {
+  if (!carriesFiles(event)) return;
+  // Cancelled, a `dragover` says the drop is welcome here.
+  event.preventDefault();
+  const folder = folderAt(event); // under the pointer: an element with a folder's `data-id`
+  // …nothing goes into the Trash…
+  drive.uploadTarget.value = folder.id; // that folder opens, as for the library's drags
+};
+```
+
+## Undo、ゴミ箱、その他
+
+- どの変更も、まずドライブのコピーを保存します。トーストの Undo（または Ctrl/Cmd+Z）でそこに戻ります。ゴミ箱はツリーの外にあるフォルダーです：中のものは元の場所を覚えていて、Put Back でそこへ戻ります。
+- `ContextMenu.vue`（右クリック、Shift+F10、または「⋯」ボタン）は、選択中のもの、または開いているフォルダーに対して動作します：その場で名前を変更、複製、お気に入りに追加、ゴミ箱へ移動、ゴミ箱を空にする。
+- 展開するとウィンドウがステージいっぱいに広がり、ファイルの隣に情報ペインが開きます。スマートフォンではサイドバーはドロワーになり、タップでフォルダーを開き、長押しでファイルを持ち上げます。
+
+さらに読む：[マルチドラッグと選択](https://zizigy.github.io/docs/guides/multi-drag) · [並べ替え可能なアイテムへのドロップ](https://zizigy.github.io/docs/guides/drag-and-drop#drop-into-a-sortable-item) · [`DragPreview`](https://zizigy.github.io/docs/guides/overlay#dragpreview-the-clone-in-your-layout) · [データの変化：`animate`](https://zizigy.github.io/docs/guides/animations#data-changes-animate) · [アクセシビリティ](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

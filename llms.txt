@@ -1,0 +1,83 @@
+# Vue DnD Kit
+
+> Drag and drop for Vue 3: sortable lists, kanban boards, trees, multi-drag, animations and accessibility out of the box.
+
+Canonical Origin: https://zizigy.github.io/vue-dnd-kit
+
+## LLM Resources
+
+- [Full Content](https://zizigy.github.io/vue-dnd-kit/llms-full.txt): Complete page content in markdown format.
+- [en-US.xml](https://zizigy.github.io/vue-dnd-kit/__sitemap__/en-US.xml): XML sitemap for search engines and crawlers.
+- [ru-RU.xml](https://zizigy.github.io/vue-dnd-kit/__sitemap__/ru-RU.xml): XML sitemap for search engines and crawlers.
+- [zh-CN.xml](https://zizigy.github.io/vue-dnd-kit/__sitemap__/zh-CN.xml): XML sitemap for search engines and crawlers.
+- [ja-JP.xml](https://zizigy.github.io/vue-dnd-kit/__sitemap__/ja-JP.xml): XML sitemap for search engines and crawlers.
+- [ko-KR.xml](https://zizigy.github.io/vue-dnd-kit/__sitemap__/ko-KR.xml): XML sitemap for search engines and crawlers.
+- [es-ES.xml](https://zizigy.github.io/vue-dnd-kit/__sitemap__/es-ES.xml): XML sitemap for search engines and crawlers.
+- [pt-BR.xml](https://zizigy.github.io/vue-dnd-kit/__sitemap__/pt-BR.xml): XML sitemap for search engines and crawlers.
+- [de-DE.xml](https://zizigy.github.io/vue-dnd-kit/__sitemap__/de-DE.xml): XML sitemap for search engines and crawlers.
+- [fr-FR.xml](https://zizigy.github.io/vue-dnd-kit/__sitemap__/fr-FR.xml): XML sitemap for search engines and crawlers.
+- [robots.txt](https://zizigy.github.io/vue-dnd-kit/robots.txt): Crawler rules and permissions.
+
+## Available Languages on Website
+
+- [English (en)](https://zizigy.github.io/vue-dnd-kit/index.md): 49 pages; content included below.
+- [Русский (ru)](https://zizigy.github.io/vue-dnd-kit/ru.md): 48 pages; visit this language for content.
+- [简体中文 (zh)](https://zizigy.github.io/vue-dnd-kit/zh.md): 48 pages; visit this language for content.
+- [日本語 (ja)](https://zizigy.github.io/vue-dnd-kit/ja.md): 48 pages; visit this language for content.
+- [한국어 (ko)](https://zizigy.github.io/vue-dnd-kit/ko.md): 48 pages; visit this language for content.
+- [Español (es)](https://zizigy.github.io/vue-dnd-kit/es.md): 48 pages; visit this language for content.
+- [Português (pt)](https://zizigy.github.io/vue-dnd-kit/pt.md): 48 pages; visit this language for content.
+- [Deutsch (de)](https://zizigy.github.io/vue-dnd-kit/de.md): 48 pages; visit this language for content.
+- [Français (fr)](https://zizigy.github.io/vue-dnd-kit/fr.md): 48 pages; visit this language for content.
+
+## Pages
+
+- [/](https://zizigy.github.io/vue-dnd-kit/index.md)
+- [/docs/api/animations](https://zizigy.github.io/vue-dnd-kit/docs/api/animations.md)
+- [/docs/api/dnd-provider](https://zizigy.github.io/vue-dnd-kit/docs/api/dnd-provider.md)
+- [/docs/api/drag-preview](https://zizigy.github.io/vue-dnd-kit/docs/api/drag-preview.md)
+- [/docs/api/events](https://zizigy.github.io/vue-dnd-kit/docs/api/events.md)
+- [/docs/api/make-drag-area](https://zizigy.github.io/vue-dnd-kit/docs/api/make-drag-area.md)
+- [/docs/api/make-draggable](https://zizigy.github.io/vue-dnd-kit/docs/api/make-draggable.md)
+- [/docs/api/make-droppable](https://zizigy.github.io/vue-dnd-kit/docs/api/make-droppable.md)
+- [/docs/api/make-selection-area](https://zizigy.github.io/vue-dnd-kit/docs/api/make-selection-area.md)
+- [/docs/api/make-sortable-item](https://zizigy.github.io/vue-dnd-kit/docs/api/make-sortable-item.md)
+- [/docs/api/make-sortable-list](https://zizigy.github.io/vue-dnd-kit/docs/api/make-sortable-list.md)
+- [/docs/api/make-sortable-tree](https://zizigy.github.io/vue-dnd-kit/docs/api/make-sortable-tree.md)
+- [/docs/api/modifiers](https://zizigy.github.io/vue-dnd-kit/docs/api/modifiers.md)
+- [/docs/api/sensors](https://zizigy.github.io/vue-dnd-kit/docs/api/sensors.md)
+- [/docs/api/types](https://zizigy.github.io/vue-dnd-kit/docs/api/types.md)
+- [/docs/api/use-dnd](https://zizigy.github.io/vue-dnd-kit/docs/api/use-dnd.md)
+- [/docs/changelog](https://zizigy.github.io/vue-dnd-kit/docs/changelog.md)
+- [/docs/changelog/v3-0-0-beta-1](https://zizigy.github.io/vue-dnd-kit/docs/changelog/v3-0-0-beta-1.md)
+- [/docs/changelog/v3-0-0-beta-2](https://zizigy.github.io/vue-dnd-kit/docs/changelog/v3-0-0-beta-2.md)
+- [/docs/examples](https://zizigy.github.io/vue-dnd-kit/docs/examples.md)
+- [/docs/examples/block-editor](https://zizigy.github.io/vue-dnd-kit/docs/examples/block-editor.md)
+- [/docs/examples/board](https://zizigy.github.io/vue-dnd-kit/docs/examples/board.md)
+- [/docs/examples/calendar](https://zizigy.github.io/vue-dnd-kit/docs/examples/calendar.md)
+- [/docs/examples/chess](https://zizigy.github.io/vue-dnd-kit/docs/examples/chess.md)
+- [/docs/examples/design-canvas](https://zizigy.github.io/vue-dnd-kit/docs/examples/design-canvas.md)
+- [/docs/examples/file-manager](https://zizigy.github.io/vue-dnd-kit/docs/examples/file-manager.md)
+- [/docs/examples/form-builder](https://zizigy.github.io/vue-dnd-kit/docs/examples/form-builder.md)
+- [/docs/examples/page-builder](https://zizigy.github.io/vue-dnd-kit/docs/examples/page-builder.md)
+- [/docs/getting-started/installation](https://zizigy.github.io/vue-dnd-kit/docs/getting-started/installation.md)
+- [/docs/getting-started/introduction](https://zizigy.github.io/vue-dnd-kit/docs/getting-started/introduction.md)
+- [/docs/getting-started/migrating-from-v2](https://zizigy.github.io/vue-dnd-kit/docs/getting-started/migrating-from-v2.md)
+- [/docs/getting-started/quick-start](https://zizigy.github.io/vue-dnd-kit/docs/getting-started/quick-start.md)
+- [/docs/guides/accessibility](https://zizigy.github.io/vue-dnd-kit/docs/guides/accessibility.md)
+- [/docs/guides/animations](https://zizigy.github.io/vue-dnd-kit/docs/guides/animations.md)
+- [/docs/guides/constraints](https://zizigy.github.io/vue-dnd-kit/docs/guides/constraints.md)
+- [/docs/guides/devtools](https://zizigy.github.io/vue-dnd-kit/docs/guides/devtools.md)
+- [/docs/guides/drag-and-drop](https://zizigy.github.io/vue-dnd-kit/docs/guides/drag-and-drop.md)
+- [/docs/guides/drop-decisions](https://zizigy.github.io/vue-dnd-kit/docs/guides/drop-decisions.md)
+- [/docs/guides/multi-drag](https://zizigy.github.io/vue-dnd-kit/docs/guides/multi-drag.md)
+- [/docs/guides/native](https://zizigy.github.io/vue-dnd-kit/docs/guides/native.md)
+- [/docs/guides/overlay](https://zizigy.github.io/vue-dnd-kit/docs/guides/overlay.md)
+- [/docs/guides/provider](https://zizigy.github.io/vue-dnd-kit/docs/guides/provider.md)
+- [/docs/guides/sensors](https://zizigy.github.io/vue-dnd-kit/docs/guides/sensors.md)
+- [/docs/guides/shared-lists](https://zizigy.github.io/vue-dnd-kit/docs/guides/shared-lists.md)
+- [/docs/guides/sortable-lists](https://zizigy.github.io/vue-dnd-kit/docs/guides/sortable-lists.md)
+- [/docs/guides/styling](https://zizigy.github.io/vue-dnd-kit/docs/guides/styling.md)
+- [/docs/guides/trees](https://zizigy.github.io/vue-dnd-kit/docs/guides/trees.md)
+- [/docs/guides/virtual-lists](https://zizigy.github.io/vue-dnd-kit/docs/guides/virtual-lists.md)
+- [/vue-dnd-kit](https://zizigy.github.io/vue-dnd-kit/vue-dnd-kit)

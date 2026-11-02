@@ -1,0 +1,148 @@
+---
+title: "Ajedrez"
+description: "Un tablero de ajedrez — los movimientos legales se iluminan, la pieza en la mano dice por qué se rechaza una casilla, un peón pregunta en qué se convierte, y un bot responde con arrastres reales."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/es/docs/examples/chess"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="36rem" hint="Arrastra una pieza blanca, o Tab y Espacio; el bot juega con negras" name="chess" title="Ajedrez">
+
+
+
+</example>
+
+## Qué observar
+
+- **Square.vue**: cada una de las 64 casillas es un destino de drop cuyo `accept` es una
+función. Se le pregunta mientras se arrastra una pieza, así que la casilla solo acepta los
+movimientos legales de esa pieza; un drop en cualquier otro sitio se rechaza y la pieza vuelve a
+su sitio. Las casillas legales se iluminan gracias a `isAccepting`: ningún estado propio del
+juego sigue el arrastre.
+- **Piece.vue**: un elemento arrastrable simple, `disabled` cuando no es el turno de su bando.
+`keyboard: 'droppables'` hace que las flechas salten entre las casillas que aceptan la pieza: sus
+movimientos legales, nada más. `snapCenterToCursor` mantiene la pieza centrada bajo el puntero, y
+un toque arrastra de inmediato (`activation`). `canDrag` te mantiene lejos de las piezas del bot y
+del tablero mientras juega el código, sin desactivar nada: los arrastres iniciados por código no
+tienen evento de entrada, así que a `canDrag` no se le pregunta por ellos.
+- **chess.ts** y **game.ts**: las reglas y la partida, sin nada de arrastrar y soltar:
+movimientos legales con jaque, enroque, captura al paso, promoción, tablas por falta de
+material, la notación, deshacer. Un movimiento en `onDrop` crea una posición nueva, y el overlay
+aterriza sobre la pieza movida.
+
+## La pieza en la mano
+
+**PieceOverlay.vue** es el componente `overlay` de las piezas. Lee las props que recibe todo
+overlay y dice lo que haría un drop en la casilla de debajo: sobre una casilla rechazada (`over`
+definido, `accepted` en false) la pieza se pone roja y da el motivo; sobre una captura, muestra una
+diana y lo que captura. Una vez decidido el drop (`status: 'dropping'`), la indicación desaparece y
+la pieza se asienta.
+
+```ts [PieceOverlay.vue]
+const props = defineProps<{
+  active: Active;
+  over: Over | null;
+  accepted: boolean;
+  status: DnDStatus;
+}>();
+
+const hint = computed(() => {
+  const square = props.over ? String(props.over.id) : null;
+  if (props.status !== 'dragging' || !square || square === piece.value.square) return null;
+  if (props.accepted) {
+    const taken = game.takes(piece.value.id, square);
+    return taken ? { type: 'capture', text: `Takes ${NAMES[taken.kind]}` } : null;
+  }
+  // "Pinned", "King in check", "Not a legal move"
+  return { type: 'refused', text: game.whyNot(piece.value.id, square) };
+});
+```
+
+`Board.vue` dibuja una flecha desde la casilla de la que vino la pieza hasta la casilla de debajo,
+a partir del `active` y el `over` de `useDnD()`. Los `haptics` del provider hacen vibrar un
+arrastre táctil sobre una casilla legal y cuando se rechaza un drop; los `announcements` de
+`index.vue` dicen los mismos motivos: "f7, pinned".
+
+## Promoción: un drop que espera una respuesta
+
+Sobre la última fila, un peón en la mano muestra la pieza en la que se convierte: el `overlay`
+propio de la casilla (`PromotionOverlay.vue`) ocupa el lugar del de la pieza. Al soltar, el
+`onBeforeDrop` de la casilla devuelve una promesa, y el overlay espera sobre la casilla mientras
+**PromotionPicker.vue**, un elemento normal de la página junto a ella, pregunta qué pieza. Una
+pieza responde `'accept'`, Escape o Cancel `'reject'` (el peón vuelve a su sitio), y Keep
+dragging `'continue'`: el peón vuelve a seguir al puntero, y el siguiente clic lo suelta y vuelve
+a preguntar.
+
+```ts [Square.vue]
+makeDroppable(el, {
+  id: props.square,
+  accept: ({ active }) => game.canMove(active.id, props.square),
+  // Shown instead of the piece's overlay while a pawn is over the last rank.
+  overlay: computed(() =>
+    held.value?.kind === 'P' && isLastRank(props.square) ? PromotionOverlay : undefined,
+  ),
+  // A promise: the drop waits on the square until the picker answers.
+  onBeforeDrop: ({ active }) =>
+    game.promotes(active.id, props.square) ? game.askPromotion(props.square) : 'accept',
+  onDrop: ({ active }) => game.move(String(active.id), props.square),
+});
+```
+
+El `onBeforeDrop` de un destino de drop recibe el evento de arrastre simple y solo se le pregunta
+cuando su `accept` aceptó el arrastre; el de una lista ordenable recibe el `SortableDropEvent` de
+la lista, con el `result` del drop. El `overlay` del destino se vuelve a leer una vez más después
+de `onDrop`, para el aterrizaje: comprueba el peón tal como se agarró (`active.data`), no la
+partida, donde para entonces ya es una dama.
+
+## El bot, las repeticiones y el enroque: arrastres hechos por código
+
+**autoplay.ts** juega movimientos con `@vue-dnd-kit/actions`: los del bot (`bot.ts`, uno
+voraz), los de **Replay**, y el paso de la torre de cada enroque, incluidos los tuyos. Cada uno es
+un arrastre real: agarrado, deslizado sobre el tablero fotograma a fotograma, soltado a través del
+`accept` y el `onDrop` de la casilla, anunciado y animado como los tuyos. Una promoción
+programada trae su pieza consigo, así que el selector no se abre; Escape cancela un arrastre
+programado como cualquier otro.
+
+```ts [autoplay.ts]
+const { startDrag } = useDnDActions();
+
+const drag = startDrag(id); // from the piece's center
+for (let frame = 1; frame <= FRAMES; frame++) {
+  const t = easeOut(frame / FRAMES);
+  const point = { x: start.x + (end.x - start.x) * t, y: start.y + (end.y - start.y) * t };
+  if (!(await drag.moveTo(point))) return false; // cancelled meanwhile (Escape)
+}
+return drag.drop(); // true once it has landed, false if the square refused it
+```
+
+El enroque se juega en dos movimientos, como a mano: el rey avanza dos columnas, y luego su torre
+se arrastra por encima de él, así que la torre nunca salta.
+
+## Capturas, deshacer y una partida nueva
+
+Las piezas capturadas van al **Tray.vue** de su bando: una lista ordenable que se usa solo por
+su `animate` (`disabled`, ahí no se arrastra nada). Su `enter` es una función: una pieza nueva
+llega volando desde la casilla en la que se capturó, y las demás le hacen sitio.
+
+```ts [Tray.vue]
+makeSortableList(tray, {
+  items: () => props.pieces,
+  getKey: (piece) => `taken-${piece.id}`,
+  disabled: true,
+  animate: { enter: flyIn, leave: false },
+});
+```
+
+Undo y New game cambian la posición sin arrastre, así que **glide.ts** los anima a mano (FLIP):
+cada pieza vuela desde donde estaba, en una casilla o en una bandeja, hasta donde está ahora.
+Contra el bot, Undo deshace tu movimiento junto con su respuesta.
+
+Más información: [Decidir un drop](https://zizigy.github.io/docs/guides/drop-decisions) ·
+[El overlay](https://zizigy.github.io/docs/guides/overlay#targets-that-change-the-overlay) ·
+[Arrastres programáticos](https://zizigy.github.io/docs/guides/sensors#programmatic-drags) ·
+[Cambios de datos: `animate`](https://zizigy.github.io/docs/guides/animations#data-changes-animate) ·
+[Accesibilidad](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

@@ -1,0 +1,687 @@
+---
+title: "Eixos, limites e grades"
+description: "Trave arrastes em um eixo, mantenha-os dentro de uma caixa, encaixe-os em uma grade ou em guias suas — para um item, uma lista ou uma parte inteira da página."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/constraints"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+Um arraste pode ser preso a um eixo, mantido dentro de uma caixa, encaixado em uma grade ou
+desviado por uma regra sua. As regras são **modificadores**: eles ajustam o deslocamento do
+arraste a cada quadro. Defina-os em um draggable, em uma lista ou em uma parte da página, e o
+overlay, os alvos de drop e o drop seguem todos eles.
+
+## Travar um eixo
+
+Os clipes de uma linha do tempo deslizam pela sua faixa. Desligue a trava e eles também podem
+trocar de faixa.
+
+<example height="22rem" hint="Arraste um clipe; desligue a trava e arraste-o para a outra faixa" name="axis-timeline">
+
+
+
+</example>
+
+```ts [TimelineClip.vue]
+const { isDragging } = makeDraggable(el, {
+  id: () => props.clip.id,
+  axis: () => (props.locked ? 'x' : undefined),
+});
+```
+
+`axis: 'x'` move só na horizontal, `'y'` só na vertical. `makeDraggable`, `makeSortableList`,
+`makeSortableTree`, `makeSortableItem` e `makeDragArea` aceitam essa opção:
+
+```ts
+makeSortableList(listRef, { items: tracks, axis: 'y' });
+```
+
+- A trava roda **depois de todos os modificadores**, então ela se mantém, não importa o que eles
+façam: um encaixe ou um limite não consegue tirar o item da sua linha.
+- A linha está no conteúdo, não na tela: ela se move com a lista (ou o elemento pai) onde o
+arraste começou. Role a página no meio do arraste e o item continua na mesma linha.
+- O `axis` do próprio item vence o da lista ou da árvore, e o de um draggable (ou da lista dele)
+vence o da área de arraste.
+- Ele é lido quando um arraste começa, então um getter pode alterná-lo, como acima.
+- Uma árvore travada em `'y'` ainda aninha: a profundidade passa a vir de parar sobre o meio de
+uma linha.
+
+<tip>
+
+Prefira `axis` aos modificadores `restrictToVerticalAxis` e `restrictToHorizontalAxis`. Eles fazem
+a mesma coisa, mas, como modificadores comuns, rodam no meio da cadeia, e um modificador depois
+deles (uma grade que encaixa os dois eixos) pode tirar o item do eixo de novo.
+
+</tip>
+
+## Modificadores
+
+Um modificador ajusta o deslocamento do arraste a cada quadro. O resultado dele move o overlay
+**e** é o ponto onde os alvos são procurados, então uma lista ordena pela posição travada,
+limitada ou encaixada, e a `position` do drop é onde a caixa terminou.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Modificador
+    </th>
+    
+    <th>
+      O que faz
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        restrictToParent
+      </code>
+    </td>
+    
+    <td>
+      Mantém o overlay dentro do contêiner em que o arraste começou: a lista ordenável, ou o elemento pai de um draggable simples.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        restrictToElement(target)
+      </code>
+    </td>
+    
+    <td>
+      Mantém o overlay dentro de um elemento: um template ref, um getter ou o próprio elemento.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        restrictToWindowEdges
+      </code>
+    </td>
+    
+    <td>
+      Mantém o overlay dentro da janela.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        restrictToFirstScrollableAncestor
+      </code>
+    </td>
+    
+    <td>
+      Mantém o overlay dentro do primeiro ancestral rolável do elemento arrastado.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        snapToGrid(size)
+      </code>
+    </td>
+    
+    <td>
+      Encaixa o overlay em uma grade (abaixo).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        snapCenterToCursor
+      </code>
+    </td>
+    
+    <td>
+      Centraliza o overlay sob o ponteiro em vez de manter o deslocamento de onde ele foi pego.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        restrictToVerticalAxis
+      </code>
+    </td>
+    
+    <td>
+      Move só na vertical. Prefira <code>
+        axis: 'y'
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        restrictToHorizontalAxis
+      </code>
+    </td>
+    
+    <td>
+      Move só na horizontal. Prefira <code>
+        axis: 'x'
+      </code>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`modifiers` é uma opção do provider, das áreas de arraste, das listas e árvores, e dos draggables
+e itens ordenáveis. Todas, menos a do provider, também aceitam um ref ou um getter, lido quando o
+arraste começa.
+
+### Manter dentro
+
+A própria imagem em uma videochamada fica na tela. Troque o limite e arraste-a para bem longe:
+
+<example height="29rem" hint="Arraste a própria imagem para fora da tela com cada limite" name="bounds-pip">
+
+
+
+</example>
+
+```ts [SelfView.vue]
+const { isDragging } = makeDraggable(el, {
+  id: 'self-view',
+  modifiers: () => props.modifiers, // [restrictToParent], [restrictToWindowEdges] or []
+});
+```
+
+- `restrictToParent` a mantém na tela, o elemento pai dela. Para um item ordenável, o "pai" é a
+lista dele, onde quer que a lista esteja no DOM.
+- `restrictToWindowEdges` deixa que ela saia da tela, mas não da janela. Solta fora da tela, ela
+não está sobre um alvo de drop, então volta ao lugar.
+- Sem limite, ela vai para qualquer lugar.
+
+Um limite mantém o **overlay** dentro, no tamanho que ele tem: com `overlayFit: 'slot'`, uma caixa
+que cresce sobre uma lista de itens mais largos é mantida dentro no novo tamanho.
+
+### Encaixar em uma grade
+
+Os nós de um fluxograma se encaixam na grade da tela de desenho. Troque o tamanho da célula e o
+deslizamento:
+
+<example height="29rem" hint="Arraste um nó; troque a grade e a suavização" name="snap-canvas">
+
+
+
+</example>
+
+```ts [FlowNode.vue]
+const { isDragging } = makeDraggable(el, {
+  id: () => props.node.id,
+  modifiers: () => [snapToGrid({ x: props.grid, y: props.grid, smooth: props.smooth })],
+});
+```
+
+`snapToGrid(24)` encaixa os dois eixos em células de 24 px. Um objeto define mais:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Opção
+    </th>
+    
+    <th>
+      Significado
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        x
+      </code>
+      
+      , <code>
+        y
+      </code>
+    </td>
+    
+    <td>
+      O tamanho da célula em pixels, por eixo. Deixe um de fora para encaixar só o outro: <code>
+        { y: 15 }
+      </code>
+      
+       encaixa um evento em quartos de hora e o deixa se mover livremente entre os dias.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        origin
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'container'
+      </code>
+      
+       (padrão): o canto superior esquerdo do overlay pousa em linhas de grade traçadas a partir do canto superior esquerdo do contêiner — a lista ordenável, ou o pai de um draggable simples. <code>
+        'delta'
+      </code>
+      
+      : o próprio deslocamento é arredondado, então um item que começou fora da grade continua fora dela e se move por células inteiras a partir de onde estava. Escolha isso para itens colocados em qualquer lugar (um canvas livre) que devem manter o próprio alinhamento.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        smooth
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        true
+      </code>
+      
+       ou <code>
+        { duration, easing }
+      </code>
+      
+      : o overlay desliza entre as células (80 ms por padrão). Os alvos usam a posição encaixada na hora.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Com `origin: 'container'`, desenhe a grade a partir da border box do contêiner: a tela de desenho
+acima tem a moldura como `box-shadow`, não como `border`, então as linhas dela começam bem na
+borda.
+
+### Um modificador seu
+
+As caixas de um slide pulam para as bordas e os centros das outras quando chegam perto, e guias
+rosa mostram as linhas em que elas ficam:
+
+<example height="26rem" hint="Arraste uma caixa para perto de outra, ou para o meio do slide" name="magnet-guides">
+
+
+
+</example>
+
+```ts [Slide.vue]
+import type { Modifier } from '@vue-dnd-kit/core';
+
+/** Near a line, the box jumps onto it. */
+const magnet: Modifier = ({ transform, overlayRect, containerRect, active }) => {
+  if (!containerRect) return transform;
+  const id = String(active.id);
+  const left = overlayRect.left - containerRect.left;
+  const top = overlayRect.top - containerRect.top;
+  return {
+    x: transform.x + pull(left, overlayRect.width, lines(id, 'x')),
+    y: transform.y + pull(top, overlayRect.height, lines(id, 'y')),
+  };
+};
+
+// In order: the magnet pulls, then the slide's edges hold.
+const modifiers = [magnet, restrictToParent];
+```
+
+Um modificador recebe `transform`, o deslocamento desde o início do arraste como os modificadores
+anteriores o deixaram, e retorna um novo. Ele também recebe o que pode precisar para calculá-lo:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Argumento
+    </th>
+    
+    <th>
+      O que é
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        transform
+      </code>
+    </td>
+    
+    <td>
+      O deslocamento até agora.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        overlayRect
+      </code>
+    </td>
+    
+    <td>
+      A caixa do overlay movida por <code>
+        transform
+      </code>
+      
+      , no tamanho que ela tem agora.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeRect
+      </code>
+    </td>
+    
+    <td>
+      O elemento arrastado quando o arraste começou.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        containerRect
+      </code>
+    </td>
+    
+    <td>
+      O contêiner em que o arraste começou (a lista ordenável, ou o elemento pai), onde ele está agora: acompanha a rolagem.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        windowRect
+      </code>
+    </td>
+    
+    <td>
+      A janela.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        origin
+      </code>
+    </td>
+    
+    <td>
+      O ponteiro quando o arraste começou.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        active
+      </code>
+      
+      , <code>
+        over
+      </code>
+    </td>
+    
+    <td>
+      O arraste e o alvo sob ele.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Os modificadores rodam a cada quadro: mantenha-os rápidos e sem efeitos colaterais. As guias
+acima são desenhadas a partir do `delta` do arraste no `onDragMove` de um monitor, que é o
+deslocamento depois de todos os modificadores. Tipos em [Modificadores](https://zizigy.github.io/docs/api/modifiers).
+
+## A ordem
+
+Modificadores de vários lugares rodam um depois do outro, cada um a partir do resultado do
+anterior:
+
+1. os `modifiers` do provider;
+2. os `modifiers` da área de arraste em que o arraste começou;
+3. os `modifiers` do próprio item arrastado ou, quando ele não tem, os da lista ou da árvore dele;
+4. o `restrictToArea` da área de arraste;
+5. a trava de `axis`.
+
+Dentro de um array, eles rodam em ordem, então coloque encaixes e ímãs antes dos limites: um
+limite por último mantém a caixa dentro, não importa o que os outros fizeram. O slide acima roda
+`[magnet, restrictToParent]`; na ordem inversa, o ímã poderia puxar uma caixa presa na borda do
+slide alguns pixels para além dela.
+
+Os `modifiers` de um item **substituem** os da lista; eles não se somam a eles. Os limites da área
+vêm depois do encaixe das etapas 1–3, então um item encaixado ainda fica dentro, e a trava de eixo
+vem por último de todos.
+
+## Listas limitadas mantêm as pontas
+
+Um painel de camadas: as linhas só se movem para cima e para baixo, e nunca saem do painel.
+Arraste a linha de cima até o fim:
+
+<example height="26rem" hint="Arraste Heading até o fim, além da borda do painel" name="bounded-layers">
+
+
+
+</example>
+
+```ts [Layers.vue]
+const { items } = makeSortableList(list, { items: layers, axis: 'y', modifiers: [restrictToParent] });
+```
+
+Um limite segura o overlay na borda da caixa enquanto o ponteiro continua. Assim que o ponteiro
+sai do overlay ao longo do eixo da lista, a lista passa a ordenar pelo ponteiro, então o primeiro
+e o último lugar continuam ao alcance, não importa como você segura o item. Grades continuam
+ordenando pelo overlay: segurado na borda, ele já cobre a célula da borda.
+
+## Regras para uma parte da página
+
+Duas áreas, dois conjuntos de regras. Os adesivos em Layout se encaixam na grade dela e não podem
+sair; os adesivos em Sketch vão para qualquer lugar, para Layout também. Um arraste mantém as
+regras da área em que começou, e a área cujas regras estão valendo se acende.
+
+<example height="25rem" hint="Arraste um adesivo em Layout, depois um de Sketch para Layout" name="drag-areas">
+
+
+
+</example>
+
+```vue [DragArea.vue]
+<script setup lang="ts">
+const area = useTemplateRef<HTMLElement>('area');
+const { isDragging } = makeDragArea(area, {
+  modifiers: () => (props.strict ? [snapToGrid(24)] : []),
+  restrictToArea: () => props.strict,
+});
+</script>
+
+<template>
+  <div ref="area" class="area" :class="{ busy: isDragging }">
+    <Sticker v-for="sticker in stickers" :key="sticker.id" :sticker="sticker" />
+  </div>
+</template>
+```
+
+`makeDragArea` define regras para os arrastes que **começam dentro** do seu elemento — draggables
+simples e itens ordenáveis igualmente, que então não precisam de regras próprias. Mantenha um
+`DnDProvider` para o app inteiro, e dê a um quadro, a uma tela de desenho ou a um feed uma área
+própria.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Opção
+    </th>
+    
+    <th>
+      O que faz
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        axis
+      </code>
+    </td>
+    
+    <td>
+      Trava os arrastes em um eixo. O <code>
+        axis
+      </code>
+      
+       do próprio draggable, ou o da lista dele, vence.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        modifiers
+      </code>
+    </td>
+    
+    <td>
+      Rodam depois dos do provider e antes dos do próprio draggable.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        restrictToArea
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        true
+      </code>
+      
+      : os arrastes ficam dentro do elemento da área.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        autoScroll
+      </code>
+    </td>
+    
+    <td>
+      Rolagem automática do contêiner de rolagem da área (o elemento, ou o ancestral rolável mais próximo dele). <code>
+        false
+      </code>
+      
+       a desliga ali.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activation
+      </code>
+    </td>
+    
+    <td>
+      <a href="/docs/guides/sensors#activation-constraints">
+        Ativação
+      </a>
+      
+       por tipo de ponteiro, como um toque mais longo em um feed que rola. A do próprio draggable vence; a do provider vem por último.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      Nenhum arraste começa na área, nem nas áreas dentro dela. Os draggables dela informam <code>
+        aria-disabled
+      </code>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Toda opção aceita um valor, um ref ou um getter, lido quando uma pressão ou um arraste começa. A
+área retorna `isDragging` (um arraste que começou aqui está em andamento, como mostra a moldura
+acesa acima) e `isAutoScrolling` (a rolagem automática está movendo o contêiner dela). Referência
+completa: [makeDragArea](https://zizigy.github.io/docs/api/make-drag-area).
+
+### Como as áreas se combinam
+
+- Um arraste segue a área em que **começou**, mesmo depois de sair dela. Passar por cima de uma
+área não muda nada, exceto o `autoScroll` dela: esse vale para todo arraste que rola o
+contêiner dela.
+- Áreas aninhadas não se mesclam: a mais próxima vence. `disabled` é a exceção, e é herdado: uma
+área desligada desliga também as áreas dentro dela.
+- A detecção de colisão, as teclas do teclado e os anúncios continuam valendo para o provider
+inteiro.
+
+<note>
+
+Por que não um segundo `DnDProvider` em volta do quadro? Os providers são independentes: um
+arraste nunca passa de um para outro, então os itens do quadro nunca poderiam sair dele. Aninhe um
+provider só quando uma parte da página precisa de configurações próprias de provider e os itens
+dela ficam dentro dela. Veja [O provider](https://zizigy.github.io/docs/guides/provider).
+
+</note>
+
+## Deixar onde foi solto
+
+A linha do tempo, a chamada, o fluxograma, o slide e as áreas acima mantêm cada item onde ele foi
+solto. Todo evento de arraste traz `position`: o canto superior esquerdo da caixa arrastada dentro
+do alvo, a partir da borda do padding dele e com a rolagem dele — o `left` e o `top` que colocam
+um item com posicionamento absoluto bem ali. Ela vem depois dos modificadores, então um nó
+encaixado pousa na grade.
+
+```ts [Flowchart.vue]
+makeDroppable(canvas, { id: 'canvas' });
+useDnDMonitor({
+  onDragEnd({ active, over, position }) {
+    const node = nodes.value.find((item) => item.id === active.id);
+    if (!node || over?.id !== 'canvas' || !position) return;
+    node.x = Math.round(position.x);
+    node.y = Math.round(position.y);
+  },
+});
+```
+
+Mais sobre arraste livre e alvos de drop em [Arrastar e soltar](https://zizigy.github.io/docs/guides/drag-and-drop).
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

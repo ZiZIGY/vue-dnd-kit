@@ -1,0 +1,622 @@
+---
+title: "드롭 결정하기"
+description: "드롭을 받거나, 거부하거나, 미룹니다. 드래그 중이나 놓을 때의 규칙, 멀티 드래그의 일부, 다이얼로그, 먼저 동의해야 하는 서버, 거부권을 가진 모니터, 모든 대상 밖의 드롭까지."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/drop-decisions"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+카드를 **Done**으로 드래그해 보세요. 드롭이 답을 기다립니다. 카드를 옮기거나, 다른 곳으로 계속
+드래그하거나, 취소할 수 있습니다.
+
+<example height="25rem" hint="카드를 Done으로 드래그하세요" name="drop-confirm">
+
+
+
+</example>
+
+## onBeforeDrop
+
+```ts
+makeSortableList(listRef, {
+  items: tasks,
+  onBeforeDrop: (e) => (e.items.some((task) => task.locked) ? 'reject' : 'accept'),
+});
+```
+
+리스트, 트리, 드롭 대상(`makeDroppable`), 모니터(`useDnDMonitor`)는 `onBeforeDrop`을 받습니다. 드래그를
+놓을 때, 무엇이든 바뀌기 전에 실행되며, 그 답이 결과를 정합니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      답
+    </th>
+    
+    <th>
+      일어나는 일
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'accept'
+      </code>
+      
+      , <code>
+        true
+      </code>
+      
+      , 또는 반환값 없음
+    </td>
+    
+    <td>
+      드롭이 완료됩니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'reject'
+      </code>
+      
+       또는 <code>
+        false
+      </code>
+    </td>
+    
+    <td>
+      드롭하지 않습니다. 항목은 원래 자리로 돌아갑니다. 오류를 던져도 거부됩니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      key 배열
+    </td>
+    
+    <td>
+      그 항목만 드롭되고, 나머지는 원래 자리로 돌아갑니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'continue'
+      </code>
+    </td>
+    
+    <td>
+      드롭하지 않고, 드래그가 계속됩니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      위 값 중 하나의 promise
+    </td>
+    
+    <td>
+      promise가 끝날 때까지 오버레이는 놓은 자리에서 기다립니다.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+리스트와 트리는 `SortableDropEvent`를 넘깁니다. `keys`, `items`, `from`, `to`, `mode`, `sameList`,
+그리고 드롭이 바꾸는 모든 리스트의 새 배열인 `result`입니다. 드롭 대상과 모니터는 범용 `DnDEvent`를
+받습니다. `active`, `over`, `position`, `source`입니다. [이벤트](https://zizigy.github.io/docs/api/events)를 참고하세요.
+
+## 드래그 중의 규칙, 놓을 때의 규칙
+
+Email과 Chat은 둘 다 최대 10 MB의 첨부 파일을 받습니다. **demo.mov**를 각각의 위로 드래그해 보세요.
+Email은 위에 머무는 동안 거부하고, Chat은 받았다가 놓으면 돌려보냅니다.
+
+<example height="27rem" hint="10 MB가 넘는 파일을 각 자리로 드래그하세요" name="drop-rules">
+
+
+
+</example>
+
+```ts [Column.vue]
+// Asked while dragging: a refused drag never enters the list.
+group: { name: 'attachments', put: ({ items }) => fits(items as Attachment[]) },
+
+// Asked on release: the drag enters the list, then flies back.
+onBeforeDrop: (e) => (fits(e.items) ? 'accept' : 'reject'),
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      
+    </th>
+    
+    <th>
+      <code>
+        group.put
+      </code>
+      
+      (또는 대상의 <code>
+        accept
+      </code>
+      
+      )
+    </th>
+    
+    <th>
+      <code>
+        onBeforeDrop
+      </code>
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      묻는 시점
+    </td>
+    
+    <td>
+      드래그 중, 드래그가 리스트에 닿자마자.
+    </td>
+    
+    <td>
+      드래그를 놓을 때 한 번.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      사용자가 보는 것
+    </td>
+    
+    <td>
+      리스트가 즉시 거부합니다. 자리가 열리지 않고, <code>
+        isAccepting
+      </code>
+      
+      이 <code>
+        false
+      </code>
+      
+      , <code>
+        over.accepted
+      </code>
+      
+      가 <code>
+        false
+      </code>
+      
+      입니다.
+    </td>
+    
+    <td>
+      자리는 평소처럼 열리고, 놓으면 항목이 돌아갑니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      아는 것
+    </td>
+    
+    <td>
+      무엇을 드래그하는지: <code>
+        keys
+      </code>
+      
+      , <code>
+        items
+      </code>
+      
+      , <code>
+        types
+      </code>
+      
+      , <code>
+        from
+      </code>
+      
+      , <code>
+        to
+      </code>
+      
+      .
+    </td>
+    
+    <td>
+      드롭 전체: <code>
+        to.index
+      </code>
+      
+      , <code>
+        sameList
+      </code>
+      
+      , <code>
+        mode
+      </code>
+      
+      , <code>
+        result
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      할 수 있는 것
+    </td>
+    
+    <td>
+      예, 아니요로 답하기.
+    </td>
+    
+    <td>
+      promise 기다리기, 일부 key만 받기, 드래그 계속하기.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+항목만 보고 알 수 있는 것(타입, 플래그, 개수)에는 `group.put`을 쓰세요. 사용자가 놓기 전에 알 수
+있습니다. 위치, 사용자의 답, 서버의 답에 달린 것에는 `onBeforeDrop`을 쓰세요. 대상 자체의 규칙이
+먼저입니다. 드래그를 거부하는 리스트나 대상 위에서는 드롭이 취소되고 그 `onBeforeDrop`은 호출되지
+않습니다.
+
+### 일부 항목만 받기
+
+어떤 규칙은 놓을 때 서버에 물어봐야만 확인할 수 있습니다. 이 워크숍의 좌석은 다른 사람들도
+예약합니다. 놓으면 리스트가 서버에 남은 좌석 수를 묻고, 끌어온 사람 중 그 수만큼만 받습니다. 몇 명을
+체크하고 함께 드래그해 보세요.
+
+<example height="28.5rem" hint="세 명을 체크하고 그중 한 명을 워크숍으로 드래그하세요" name="drop-partial">
+
+
+
+</example>
+
+```ts [Column.vue]
+makeSortableList(list, {
+  items: toRef(props.column, 'people'),
+  group: 'workshop',
+  // Some keys: those land, the others fly back to where they came from.
+  onBeforeDrop: async (e) => {
+    const { free } = await seatsLeft(props.column.people.length); // the overlay waits
+    return e.keys.slice(0, free);
+  },
+  onDrop: (e) => {
+    selection.delete(...e.accepted); // the ones sent back stay selected
+    notice.value = `${e.accepted.length} booked, ${e.rejected.length} back to the waiting list`;
+  },
+});
+```
+
+[멀티 드래그](https://zizigy.github.io/docs/guides/multi-drag)에서는 반환한 key의 항목이 함께 안착하고, 나머지는 원래 자리로
+돌아갑니다. 그다음 `onDrop`은 이를 `e.accepted`와 `e.rejected`로 보고, `e.result`는 최종 결과입니다.
+빈 배열은 아무것도 받지 않으므로 드롭이 거부됩니다.
+
+## 계속 드래그하기: 'continue'
+
+`'continue'`는 드래그가 아니라 드롭을 취소합니다. 위 다이얼로그에서 **Keep dragging**을 고르면, 항목은
+있던 자리에서 계속 손에 들려 있고, 페이지는 다시 드래그 모드로 돌아가며, 사용자는 하던 일을 계속합니다.
+
+- 마우스나 펜에서는 버튼을 누르지 않아도 항목이 포인터를 따라갑니다. 다음 놓기, 즉 클릭이 항목을
+드롭하며, 그 클릭은 아래 페이지에 전달되지 않습니다.
+- 터치에서는 손가락이 닿는 곳에서 항목을 다시 잡고, 손가락을 떼면 드롭합니다.
+- 키보드 드래그는 계속됩니다. 화살표 키로 항목을 움직이고, <kbd value="Space">
+
+
+
+</kbd>
+
+나
+<kbd value="Enter">
+
+
+
+</kbd>
+
+로 드롭합니다.
+- <kbd value="Escape">
+
+
+
+</kbd>
+
+는 다른 드래그처럼 취소합니다.
+- 다음 드롭에서 `onBeforeDrop`을 다시 묻습니다.
+
+모니터는 `onDragResume`을 듣고, 스크린 리더는 항목이 드롭되지 않고 여전히 움직이는 중이라고
+안내합니다(문구는 프로바이더의 `announcements.onDragResume`으로 바꿉니다).
+
+```ts
+useDnDMonitor({
+  onDragResume() {
+    hint.value = 'Still dragging: click to drop, Esc to cancel';
+  },
+});
+```
+
+## 사용자에게 묻기
+
+`onBeforeDrop`은 promise를 반환할 수 있습니다. 다이얼로그를 열고, 사용자가 고른 버튼으로 promise를
+resolve하세요.
+
+```ts [Column.vue]
+const { items } = makeSortableList(list, {
+  id: props.column.id,
+  items: toRef(props.column, 'tasks'),
+  group: 'release',
+  onBeforeDrop: (e) => (props.column.confirm && !e.sameList ? props.ask(e) : 'accept'),
+});
+```
+
+```ts [Board.vue]
+type Answer = 'accept' | 'continue' | 'reject';
+const question = shallowRef<{ title: string; resolve: (answer: Answer) => void } | null>(null);
+
+/** Opens the dialog: `onBeforeDrop` waits for the button the user picks. */
+const ask = (e: SortableDropEvent<Task>) =>
+  new Promise<Answer>((resolve) => {
+    question.value = { title: e.items[0]!.title, resolve };
+  });
+```
+
+promise가 대기 중인 동안:
+
+- 오버레이는 놓은 자리에서 `data-dnd-overlay="dropping"`으로 표시된 채 기다립니다.
+- `useDnD()`는 놓은 순간의 상태를 유지하고, `status`는 `'dropping'`입니다.
+- 페이지는 드래그 모드에서 벗어납니다. 커서와 텍스트 선택이 돌아오므로 다이얼로그가 평소처럼
+동작합니다.
+- 다른 드래그는 시작할 수 없습니다.
+
+<tip>
+
+`showModal()`로 연 모달 `<dialog>`는 top layer에 있어 기다리는 오버레이보다 위에 있습니다. 예제처럼
+다이얼로그의 `cancel` 이벤트(<kbd value="Escape">
+
+
+
+</kbd>
+
+)를 `'reject'`로 바꾸세요.
+
+</tip>
+
+## 훅의 순서
+
+메모의 순서를 바꾸고, 하나를 휴지통에 드롭한 뒤, 답을 바꿔서 다시 해 보세요. 패널에 마지막 드롭의
+훅이 실행된 순서대로 나열됩니다.
+
+<example height="27.5rem" hint="메모를 옮기거나 휴지통에 버린 뒤, 답 하나를 reject나 continue로 바꿔 보세요" name="drop-hooks">
+
+
+
+</example>
+
+1. 각 `useDnDMonitor`의 `onBeforeDrop`이 차례로 실행됩니다. `'reject'`나 `'continue'`가 나오면 묻기가
+끝나고, key는 드롭 범위를 좁힙니다.
+2. 대상의 `onBeforeDrop`: 항목이 들어가는 리스트나 트리, 또는 드롭 대상.
+3. 대상의 `onDrop`만 실행됩니다. 항목이 다른 리스트로 떠나는 리스트는 호출되지 않으며, 그 리스트의
+새 배열은 대상의 `e.result`에 있습니다. 항목이 제거될 때(휴지통 영역, `dropOutside: 'remove'`)는
+그 리스트의 `onDrop`이 `to.index`가 `-1`인 채로 실행됩니다.
+4. 기본 기록: 드롭이 바꾸는 각 리스트가 새 배열을 받습니다.
+5. 프로바이더(`@drag-end`)와 모니터의 `onDragEnd`. 그다음 오버레이가 안착하고,
+`onDragSettle`(`@drag-settle`)이 안착했음을 알립니다.
+
+거부된 드롭은 대신 `onDragCancel`(`@drag-cancel`)로 건너뛰고, 항목은 원래 자리로 돌아갑니다.
+`'continue'`도 묻기를 끝내며 `onDragResume`이 호출됩니다. 드래그는 계속되고, 다음 드롭에서 다시
+묻습니다.
+
+모니터가 대상보다 먼저 결정하므로, 리스트가 이미 자체 드롭을 적용한 뒤에 거부되는 일은 없습니다.
+그래서 앱의 모든 드롭에 관한 규칙은 모니터에 두면 됩니다.
+
+```ts [Monitor.vue]
+const { syncing } = useSync();
+
+// Read-only while syncing: every drop under the provider flies back.
+useDnDMonitor({
+  onBeforeDrop: () => (syncing.value ? 'reject' : 'accept'),
+});
+```
+
+## onDrop: 기록 전에 알림
+
+```ts
+makeSortableList(listRef, {
+  items: tasks,
+  onDrop: (e) => {
+    // `tasks` still holds the old order, `e.result` the new one.
+    console.log(e.keys, e.from, e.to, e.result.get(e.to.list));
+  },
+});
+```
+
+리스트의 `onDrop`은 드롭이 받아들여지면 리스트가 기록하기 직전에 동기적으로 실행됩니다. 기록 뒤에
+무언가를 하려면 프로바이더의 `@drag-end`나 `useDnDMonitor({ onDragEnd })`를 쓰세요. 일반 드롭
+대상에서는 `onDrop`에서 직접 데이터를 바꿉니다. 라이브러리는 대신 아무것도 옮기지 않습니다.
+
+## 스토어와 서버: 제어 리스트
+
+```ts
+const store = useBoardStore();
+const { items } = makeSortableList(listRef, {
+  id: 'todo',
+  group: 'board',
+  items: () => store.lists.todo, // a getter: read-only
+  onDrop: (e) => {
+    e.preventDefault();
+    for (const [listId, next] of e.result) store.setList(listId, next);
+  },
+});
+```
+
+라이브러리는 쓰기 가능한 ref에만 드롭을 기록합니다. getter, `computed`, `readonly` ref에는 절대
+기록하지 않습니다. `e.preventDefault()`를 호출하고 `e.result`, 즉 드롭이 바꾸는 모든 리스트의 새
+배열을 리스트 id별로 직접 적용하세요. 일부에만 기록하면 항목이 사라지거나 중복되므로,
+`preventDefault()`는 모든 리스트로의 기록을 건너뜁니다. 개발 빌드에서는 읽기 전용 리스트의 드롭을
+라이브러리에 맡기면 경고합니다.
+
+### 먼저 서버에 저장하기
+
+서버를 **flaky**(요청이 한 번 걸러 한 번 실패)나 **down**으로 두고 카드를 옮겨 보세요. 요청이 진행되는
+동안 카드는 배지를 달고 기다렸다가, 안착하거나 실패하면 원래 자리로 돌아갑니다.
+
+<example height="31.5rem" hint="카드를 옮긴 뒤 서버를 flaky나 down으로 바꿔 보세요" name="drop-server">
+
+
+
+</example>
+
+```ts [Column.vue]
+const { items } = makeSortableList(list, {
+  id: props.id,
+  // A getter: the library never writes it. The drop is applied below, once saved.
+  items: () => board[props.id]!,
+  group: 'sprint',
+  onBeforeDrop: async (e) => {
+    e.preventDefault();
+    try {
+      await saveMove(e.keys, e.to);
+    } catch {
+      return 'reject'; // nothing applied: the card flies back
+    }
+    for (const [id, tasks] of e.result) board[id] = tasks; // lands in its new place
+    return 'accept';
+  },
+});
+```
+
+promise가 resolve되기 전에 `e.result`를 적용하면 오버레이가 새 순서에 안착합니다. 요청이 실패하면
+아무것도 적용하지 말고 거부하세요. 항목은 원래 자리로 돌아가고, 모니터는 `onDragCancel`을 듣습니다.
+
+배지는 모든 드래그의 오버레이를 렌더링하는 프로바이더의 `#overlay` 슬롯에서 옵니다. `DragPreview`가
+평소의 카드 복사본을 보여 주고, 요청이 진행되는 동안 배지가 그 위에 표시됩니다.
+
+```vue [index.vue]
+<DnDProvider>
+  <Board />
+  <template #overlay="{ active }">
+    <div class="carried">
+      <DragPreview :id="active.id" />
+      <span v-if="saving" class="saving">Saving…</span>
+    </div>
+  </template>
+</DnDProvider>
+```
+
+## 모든 대상 밖에 드롭하기
+
+모드마다 앱을 독 밖으로 드래그해서 놓아 보세요.
+
+<example height="24.5rem" hint="앱을 독 밖으로 드래그해서 놓으세요" name="drop-outside">
+
+
+
+</example>
+
+```ts [Dock.vue]
+const { items } = makeSortableList(dock, {
+  items: apps,
+  strategy: 'horizontal',
+  dropOutside: () => props.dropOutside,
+  // Called on the list the items leave, with `to.index` -1, when they are removed.
+  onDrop: (e) => {
+    if (e.to.index === -1) notice.value = `Removed ${e.items.map((app) => app.name).join(', ')}`;
+  },
+});
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        dropOutside
+      </code>
+    </th>
+    
+    <th>
+      모든 대상 밖의 드롭은…
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'placeholder'
+      </code>
+    </td>
+    
+    <td>
+      플레이스홀더가 있는 곳, 즉 리스트가 마지막으로 보여 준 자리에 안착합니다. 기본값입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'cancel'
+      </code>
+    </td>
+    
+    <td>
+      취소됩니다. 항목은 원래 자리로 돌아갑니다. <code>
+        placeholder: 'indicator'
+      </code>
+      
+      일 때의 기본값입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'remove'
+      </code>
+    </td>
+    
+    <td>
+      항목을 리스트에서 제거합니다. 먼저 리스트의 <code>
+        onBeforeDrop
+      </code>
+      
+      에 묻고, 리스트의 <code>
+        onDrop
+      </code>
+      
+      은 <code>
+        to.index
+      </code>
+      
+      로 <code>
+        -1
+      </code>
+      
+      을 받습니다.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+드롭할 때 읽으므로 ref나 getter로 바꿀 수 있습니다. 휴지통 영역은 같은 일을 의도적으로 합니다.
+`makeDroppable(trash, { onDrop: (e) => e.source?.remove() })`.
+[드래그 앤 드롭](https://zizigy.github.io/docs/guides/drag-and-drop)을 참고하세요.
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

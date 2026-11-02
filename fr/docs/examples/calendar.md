@@ -1,0 +1,206 @@
+---
+title: "Calendrier de la semaine"
+description: "Un planning de la semaine — des événements déplacés d'un jour et d'un quart d'heure à l'autre, étirés par leurs bords, tracés sur un créneau libre, passés en journée entière, planifiés depuis une liste de tâches, avec annulation."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/calendar"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="44rem" hint="Déplacez ou étirez un événement, ou tracez-en un sur un créneau libre" name="calendar" title="Calendrier de la semaine">
+
+
+
+</example>
+
+## Ce qu'il faut regarder
+
+- **EventBlock.vue** : un événement dans les heures est un élément déplaçable simple dont
+l'overlay, **EventOverlay.vue**, dit où il atterrirait : "Wed 10:30 – 11:15". Les événements
+qui se chevauchent se placent côte à côte (`layoutDay` dans `placement.ts`).
+- **Edge.vue** : les bords haut et bas d'un événement sont des éléments déplaçables à part
+entière. Faites-en glisser un et l'événement s'étire, d'un quart d'heure à la fois.
+- **DayColumn.vue** : les heures de chaque jour sont une cible de dépôt, et sous ses événements
+se trouve aussi un élément déplaçable : appuyez sur un créneau libre et faites glisser pour
+tracer un nouvel événement, puis tapez son titre.
+- **AllDayCell.vue** et **Tasks.vue** : déposez un événement sur la cellule « journée entière »
+d'un jour et il perd son horaire ; déposez-le sur la liste de tâches et il perd son jour. Les
+tâches (**EventChip.vue**) se glissent dans la semaine, et gardent leur durée.
+- **Week.vue** : la zone de glissement des heures et leur propre modificateur, les
+déplacements au clavier, la ligne de l'heure actuelle.
+- **calendar.ts** : les événements et un historique d'annulation. Chaque changement passe par
+une seule fonction, et le toast propose de l'annuler.
+
+Agrandissez l'exemple : quand il y a la place, un panneau latéral affiche le mois, les calendriers
+à afficher ou masquer, et les tâches sous forme de liste. Sur un téléphone, la semaine devient
+trois jours, et un appui long fait glisser.
+
+## Une seule réponse pour chaque dépôt
+
+Ce que ferait un dépôt est demandé à quatre endroits : le libellé de l'overlay, le fantôme qu'une
+tâche montre dans le jour en dessous, ce qu'entendent les lecteurs d'écran, et le dépôt lui-même.
+Tous appellent `placeOf` : ils ne se contredisent donc jamais. Chaque cible de dépôt porte ce
+qu'elle est dans son `data`, et `position` est l'endroit où se trouve la boîte glissée à
+l'intérieur : son haut est l'heure.
+
+```ts [placement.ts]
+export function placeOf(event: CalendarEvent, over: Over | null, position: Coordinates | null): Place | null {
+  const target = over?.accepted ? (over.data as Target) : null;
+  if (!target) return null;
+  if (target.kind === 'tasks') return { day: null, start: null };
+  if (target.kind === 'all-day') return { day: target.day, start: null };
+  if (!position) return null;
+  return { day: target.day, start: clamp(minutesAt(position.y), 0, DAY_MINUTES - event.duration) };
+}
+```
+
+L'overlay la lit en direct, depuis `useDnD().position`, et garde sa dernière réponse pendant qu'il
+atterrit :
+
+```ts [EventOverlay.vue]
+const { position } = useDnD();
+const place = shallowRef(placeOf(event.value, props.over, position.value));
+watchEffect(() => {
+  if (props.status === 'dragging') place.value = placeOf(event.value, props.over, position.value);
+});
+```
+
+Un événement garde son id, son `data` et son overlay où qu'il soit : un bloc dans les heures, une
+pastille en journée entière ou parmi les tâches. Déposé ailleurs, il est rendu par un autre
+composant, et l'overlay atterrit quand même sur le nouvel élément.
+
+## Le modificateur propre aux heures
+
+`makeDragArea` donne aux glissements qui commencent dans les heures (un événement, un bord, un
+créneau libre) un modificateur à eux. Au-dessus des jours, la boîte se déplace par jours entiers,
+autant que le pointeur en a traversé : un événement à côté d'un autre garde donc sa place dans le
+jour ; son haut s'aligne sur les quarts d'heure du jour où il a commencé. `containerRect` est ce
+jour, là où il se trouve maintenant : il suit le défilement, et l'alignement tient pendant que les
+heures défilent automatiquement sous un glissement.
+
+```ts [Week.vue]
+const snapToWeek: Modifier = ({ transform, overlayRect, containerRect, origin }) => {
+  const days = grid.value?.getBoundingClientRect();
+  if (!days || !containerRect) return transform;
+  const width = days.width / props.days.length;
+  const column = (x: number) => Math.floor((x - days.left) / width);
+  const pointer = origin.x + transform.x;
+  const x = pointer < days.left || pointer >= days.right ? transform.x : (column(pointer) - column(origin.x)) * width;
+  const top = overlayRect.top - containerRect.top;
+  return { x, y: transform.y + Math.round(top / STEP_PX) * STEP_PX - top };
+};
+
+makeDragArea(grid, { modifiers: [snapToWeek], autoScroll: { threshold: 0.12 } });
+```
+
+L'`autoScroll` de la zone rétrécit le bord qui fait défiler les heures, pour chaque glissement
+au-dessus d'elles : la rangée « journée entière » juste au-dessus reste facile à atteindre. Les
+tâches et les événements sur la journée entière commencent hors de la zone et se déplacent
+librement ; le jour en dessous montre un fantôme là où ils atterriraient.
+
+## Étirer : un bord est un élément déplaçable
+
+Un bord se trouve à l'intérieur de l'élément de son événement, et un appui fait glisser l'élément
+déplaçable le plus proche : le bord. Il n'a pas d'overlay, ne bouge que vers le haut et le bas,
+et reste dans les heures visibles.
+
+```ts [Edge.vue]
+makeDraggable(el, {
+  id: () => `${props.event.id}-${props.edge}`,
+  type: 'edge',
+  data: (): DragData => ({ kind: 'edge', event: props.event, edge: props.edge }),
+  overlay: false,
+  axis: 'y',
+  modifiers: [restrictToFirstScrollableAncestor],
+  attributes: false, // no tab stop: Shift + arrows change the end of a focused event
+});
+```
+
+Le bord lui-même ne bouge pas. C'est l'événement qui grandit, depuis l'endroit où se trouve le
+bord dans le jour, lu dans `position` comme le dépôt le lira :
+
+```ts [EventBlock.vue]
+const time = computed(() =>
+  resizing.value && position.value
+    ? resizeTo(props.event, resizing.value, position.value)
+    : { start: props.event.start!, duration: props.event.duration },
+);
+```
+
+## Tracer sur un créneau libre
+
+Sous les événements, chaque jour a une piste, et la piste est un élément déplaçable sans overlay.
+Elle ne bouge jamais : la distance parcourue par sa boîte (`position`) est la distance parcourue
+par le pointeur depuis l'appui, alignée sur les quarts d'heure par la zone. Le jour montre le
+nouvel événement à mesure qu'il est tracé, et son dépôt le crée.
+
+```ts [DayColumn.vue]
+makeDraggable(lane, {
+  id: () => `new-${props.day}`,
+  type: 'new',
+  data: (): DragData => ({ kind: 'new', day: props.day, from: from.value }),
+  overlay: false,
+  axis: 'y',
+  attributes: false, // the New event button is the keyboard's way
+});
+```
+
+L'`accept` du jour est une fonction : il accepte n'importe quel événement, et seulement ses propres
+bords et pistes. Les cellules « journée entière » et la liste de tâches acceptent `'event'`, une
+chaîne : les types `edge` et `new` y sont donc refusés sans une ligne de code. Le dépôt tient en
+un seul gestionnaire :
+
+```ts [DayColumn.vue]
+onDrop: ({ active, over, position }) => {
+  const data = active.data as DragData;
+  if (!position) return;
+  if (data.kind === 'event') {
+    const place = placeOf(data.event, over, position);
+    if (place) calendar.place(data.event.id, place);
+  } else if (data.kind === 'edge') {
+    calendar.resize(data.event.id, resizeTo(data.event, data.edge, position));
+  } else {
+    const { start, duration } = rangeOf(data.from, data.from + position.y);
+    calendar.create(props.day, start, duration);
+  }
+},
+```
+
+## Le clavier
+
+Allez sur un événement avec Tab, saisissez-le avec Espace : le moniteur de la semaine répond aux
+flèches, `getKeyboardCoordinates`, avec le quart d'heure suivant (avec Maj, une heure) ou le jour
+suivant. Les glissements au clavier ne défilent pas automatiquement : près d'un bout des heures
+visibles, la flèche les fait donc défiler à la place. Les tâches et les événements sur la journée
+entière sautent de cible en cible (`keyboard: 'droppables'`) jusqu'à ce qu'ils soient au-dessus
+des heures.
+
+```ts [Week.vue]
+useDnDMonitor({
+  getKeyboardCoordinates: (key, { pointer, direction }) => {
+    // …only over the hours
+    const dy = direction.y * STEP_PX * (key.shiftKey ? 4 : 1);
+    const next = { x: pointer.x + direction.x * (grid.value.offsetWidth / props.days.length), y: pointer.y + dy };
+    if (canScroll && (next.y < view.top + HOUR_PX || next.y > view.bottom - HOUR_PX)) {
+      hours.scrollTop += dy;
+      return { x: next.x, y: pointer.y };
+    }
+    return next;
+  },
+});
+```
+
+Les `announcements` du provider dans `index.vue` disent ce qui a été saisi et comment le déplacer ;
+la semaine énonce l'horaire à mesure que les flèches le changent ("Tuesday, 10:30 to 11:15"), et
+le toast ce qu'un dépôt a changé. Sur un événement qui a le focus, Suppr le supprime, et Ctrl+Z
+annule n'importe quel changement.
+
+En savoir plus : [Votre propre modificateur](https://zizigy.github.io/docs/guides/constraints#your-own-modifier) ·
+[Des règles pour une partie de la page](https://zizigy.github.io/docs/guides/constraints#rules-for-a-part-of-the-page) ·
+[Le laisser là où il a été déposé](https://zizigy.github.io/docs/guides/drag-and-drop#leave-it-where-it-was-dropped) ·
+[Sans overlay](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay) ·
+[Composants d'overlay](https://zizigy.github.io/docs/guides/overlay#overlay-components) ·
+[Accessibilité](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

@@ -1,0 +1,351 @@
+---
+title: "アイテムを共有するリスト"
+description: "同じグループのリストはアイテムを移動、コピー、入れ替えできます——列全体がドロップを受け入れ、pull と put が出入りを決め、パレットはコピーし、制御されたリストは各ドロップを元に戻す履歴付きのストアに適用します。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/shared-lists"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="31rem" hint="ストーリーをリスト間で動かし、ドロップ領域をオフ・オンしてみましょう" name="sprint-planning">
+
+
+
+</example>
+
+## グループ
+
+同じ `group` 名を持つリストはアイテムをやり取りします。デフォルトでは、すべてのリストがそれぞれ独自のグループです。
+
+```vue [Column.vue]
+<script setup lang="ts">
+import { toRef, useTemplateRef } from 'vue';
+import { makeSortableList } from '@vue-dnd-kit/core';
+import StoryCard from './StoryCard.vue';
+
+type Story = { id: string; title: string; points: number };
+const props = defineProps<{ column: { id: string; title: string; stories: Story[] } }>();
+
+const list = useTemplateRef<HTMLElement>('list');
+const { items, isOver } = makeSortableList(list, {
+  id: props.column.id,                     // names the list in drop events
+  items: toRef(props.column, 'stories'),   // a writable ref into the reactive column
+  group: 'planning',                       // same name: stories move between these lists
+});
+</script>
+
+<template>
+  <section :class="{ over: isOver }">
+    <h3>{{ column.title }}</h3>
+    <ul ref="list">
+      <StoryCard v-for="story in items" :key="story.id" :story="story" />
+    </ul>
+  </section>
+</template>
+```
+
+```vue [index.vue]
+<script setup lang="ts">
+import { reactive } from 'vue';
+import Column from './Column.vue';
+
+const columns = reactive([
+  { id: 'backlog', title: 'Backlog', stories: [{ id: 's1', title: 'Saved searches', points: 5 }] },
+  { id: 'sprint', title: 'Sprint 14', stories: [] },
+]);
+</script>
+
+<template>
+  <Column v-for="column in columns" :key="column.id" :column="column" />
+</template>
+```
+
+- ここでは各列が 1 つのコンポーネントです。列はたいていそうなっています。1 つのコンポーネントで複数のリストを作ることもできます（固定の Todo と Done を横に並べるなど）：各カードは自分を含む要素のリストに加わります。
+- 親がリアクティブなオブジェクトを渡しているので、`toRef(props.column, 'stories')` は書き込み可能です。ドロップは、ストーリーが出ていった配列と入った配列の両方に書き込まれ、両方の列のポイントも追従します。
+- `id` はドロップイベントで `from.list` と `to.list` として現れ、`e.result`（ドロップで変わるすべてのリストの新しい配列）のキーにもなります。`id` と `group` は一度だけ読み取られます。
+- キーはグループ全体で一意である必要があります。
+
+リストの `onDrop` は、そのリスト**へ**のドロップで実行されます。`backlog` から `sprint` への移動では `sprint` リストの `onDrop` が呼ばれ、その `e.result` には両方のリストの新しい配列が入ります。
+
+## 列全体でドロップを受け入れる：`dropzone`
+
+縦長の列に短いリストがあると、最後のカードの下に空きができます。`dropzone` を使うと、別の要素がリストの代わりにドロップを受け入れます：ここでは列全体です。最後のストーリーの下で離すと、末尾に着地します。ストーリーは `<ul>` の中のままで、大きくなるのはドロップを受け入れる領域だけです。デモではドラッグ中にその領域を枠線で示しています。オフにすると、ストーリーを受け入れるのはリスト自体だけになります。
+
+```ts [Column.vue]
+const zone = useTemplateRef<HTMLElement>('zone');
+const { items } = makeSortableList(list, {
+  items: toRef(props.column, 'stories'),
+  group: 'planning',
+  dropzone: zone,   // or a getter: () => (wholeColumn.value ? zone.value : undefined)
+});
+```
+
+<tip>
+
+`dropzone` がない場合、空のリストがドロップを受け入れるにはサイズが必要です。`min-height` を指定してください。
+
+</tip>
+
+## 出入りするもの：`pull` と `put`
+
+`group` はオブジェクトも受け取ります。`pull` はリストから出てよいもの、`put` は入ってよいものを指定します。
+
+<example height="36rem" hint="ファイルをリスト間でドラッグしてみましょう。各リストが受け入れるかどうか、その理由を表示します" name="group-rules">
+
+
+
+</example>
+
+<table>
+<thead>
+  <tr>
+    <th>
+      オプション
+    </th>
+    
+    <th>
+      値
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        pull
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        true
+      </code>
+      
+      （デフォルト）：アイテムは出られます。<code>
+        false
+      </code>
+      
+      ：出られません。<code>
+        'clone'
+      </code>
+      
+      ：コピーが出ていき、アイテムは残ります。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        put
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        true
+      </code>
+      
+      （デフォルト）：アイテムは入れます。<code>
+        false
+      </code>
+      
+      ：何も入れません。関数：ドラッグごとにあなたが決めます。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+```ts [index.vue]
+// Inbox: gives, takes nothing.
+group: { name: 'files', pull: true, put: false }
+
+// Templates: gives copies, takes nothing, keeps its order.
+group: { name: 'files', pull: 'clone', put: false }, sort: false
+
+// Images: takes images only.
+group: { name: 'files', put: ({ types }) => types.every((type) => type === 'image') }
+```
+
+`put` 関数は `{ keys, items, types, from, to }` を受け取ります：ドラッグ中のキーとアイテム、それらの型、移動元のリスト（通常のドラッグ可能な要素では `null`）、そしてこのリストです。`types` はドラッグ中のアイテムの `type` オプション（`makeSortableItem(el, { item, type })`）で、指定のないアイテムはグループ名として扱われます。リスト内での移動は常に許可されます：Inbox は自分のファイルを並べ替えられます。
+
+ドラッグを拒否するリストの上では、枠はドラッグが始まった場所に戻るので、リストはドロップの結果、つまり何も起きないことを示します。そこでのドロップはキャンセルされ、アイテムは元の位置に戻ります。そのようなドラッグの間、リストの `isAccepting` は `false` で、その上では `isOver` は `true` のままです。デモの各リストはこれで何を表示するかを判断しています。
+
+リストの外にある独自のドロップターゲット（ゴミ箱など）の上でも、枠は元の場所に戻ります：そこでのドロップはターゲットのものであり、ターゲットの `onDrop` がアイテムを取り出さない限り（`event.source.remove()`）、リストはアイテムを保ちます。リストの中にあるターゲット（アイテムへのドロップ）やリストを囲むターゲット（リストを含むパネル）では、枠はその場に残ります。
+
+```ts [RuleList.vue]
+const { items, isOver, isAccepting } = makeSortableList(el, { … });
+const { active } = useDnD();
+const verdict = computed(() => (active.value ? (isAccepting.value ? 'takes' : 'refuses') : null));
+```
+
+### 上限
+
+ファイルを最大 3 つまで保持するリスト、Shortlist：
+
+```ts [index.vue]
+const shortlist = reactive({
+  files: [/* … */],
+  group: { name: 'files', put: ({ keys }: SortablePutContext) => shortlist.files.length + keys.length <= 3 },
+});
+```
+
+ドラッグから問い合わせがあると、自分のアイテムを読み取ります。いっぱいにすると次のファイルを拒否し、その理由をヘッダーに表示します。
+
+型の異なる複数の選択中アイテムをドラッグする場合、`acceptMode` は `'all'`（デフォルト）か `'some'` のどちらが `put` を通る必要があるかを指定します。`'some'` では、通ったものが着地し、それ以外は元の位置に戻ります。[マルチドラッグ](https://zizigy.github.io/docs/guides/multi-drag#taking-only-some)を参照してください。
+
+## コピー：パレットと Alt キー
+
+<example height="26rem" hint="パレットからドラッグしてみましょう。Alt を押しながらドラッグするとコピー、Page パネルの外へドロップすると削除です" name="palette">
+
+
+
+</example>
+
+```ts [Palette.vue]
+makeSortableList(list, {
+  items: templates,
+  group: { name: 'blocks', pull: 'clone', put: false },  // copies go out, nothing comes in
+  sort: false,                                           // its own order stays
+  clone: (block) => ({ ...block, id: crypto.randomUUID() }),
+});
+```
+
+```ts [Sheet.vue]
+makeSortableList(list, {
+  items: blocks,
+  group: 'blocks',
+  clone: (block) => ({ ...block, id: crypto.randomUUID() }),  // for Alt-drags
+  dropOutside: 'remove',                                      // drag off the Page panel to delete
+});
+```
+
+- `pull: 'clone'` は、リストから出るすべてのドラッグをコピーにします。元のアイテムは残り、コピーが運ばれて着地します。
+- ドラッグ中に <kbd value="Alt">
+
+
+
+</kbd>
+
+ を押していてもコピーになります。`clone` 関数を持つリストならどれからでも可能で、コピーはその関数が作ります。キーはプロバイダーの `copyModifier` で変更でき、`null` でオフにできます。
+- いずれの場合も、アイテムの移動元のリストには `clone` が必要です。`clone` は**新しいキー**を持つコピーを返す必要があります。`clone` がなければ何もコピーされません。
+- ドロップイベントは `mode: 'copy'` を持ち、`e.items` はコピーです。オーバーレイコンポーネントも `mode` を受け取るので、コピー中に「+」を表示できます（[オーバーレイ](https://zizigy.github.io/docs/guides/overlay)を参照）。
+
+## リスト間での入れ替え
+
+同じグループの 2 つのリストがどちらも `behavior: 'swap'` を持つ場合、互いの間でアイテムを入れ替えます。ドラッグ中のアイテムがホバーされたアイテムの場所に入り、ホバーされたアイテムはドラッグ中のアイテムのリストへ移ります。ホバーされたアイテムは自分のリストから出ること（`pull: true`）と、もう一方へ入ること（`put`）が許可されている必要があります。[並べ替え可能なリスト](https://zizigy.github.io/docs/guides/sortable-lists#swap-instead-of-shift)のオンコール当番表は、2 つの列の間で入れ替えを行います。
+
+## 通常のドラッグ可能な要素
+
+リストは `createItem` を持っていれば、`makeDraggable` でドラッグされたアイテム（チップ、テンプレート、ツリーのファイル）を受け入れます。`group.put` はそれらについても `from: null` で判断します。[通常のドラッグ可能な要素をリストへ](https://zizigy.github.io/docs/guides/drag-and-drop#plain-draggables-into-a-list)を参照してください。
+
+## 外へのドロップ
+
+ドラッグがどのターゲットの上でもなく終わったときに何が起きるかは、リストの `dropOutside` で決まります。
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        dropOutside
+      </code>
+    </th>
+    
+    <th>
+      アイテムは
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'placeholder'
+      </code>
+      
+      （デフォルト）
+    </td>
+    
+    <td>
+      枠が最後に表示された場所に着地します。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'cancel'
+      </code>
+    </td>
+    
+    <td>
+      元の位置に戻ります。<code>
+        placeholder: 'indicator'
+      </code>
+      
+       のときのデフォルトです。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'remove'
+      </code>
+    </td>
+    
+    <td>
+      リストから出ます：外へドラッグして削除。パレットのデモのページがこれを行っています。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`'remove'` はまずリストの `onBeforeDrop` に問い合わせます。その後、リストの `onDrop` が `to.index === -1` で実行され、`e.result` にはアイテムを除いたリストが入ります。ドロップを受け入れるゴミ箱も同じように動作します：[ゴミ箱ゾーン](https://zizigy.github.io/docs/guides/drag-and-drop#trash-zones)を参照。
+
+## 制御されたリスト
+
+リストは自分が所有していないストアを読み取れます：Pinia、サーバーの状態、イミュータブルなデータ。`items` をゲッター（または `computed`、読み取り専用の ref）として渡すと、ライブラリはそれに書き込みません。`onDrop` で `e.preventDefault()` を呼び、`e.result` を自分で適用してください。
+
+<example height="26rem" hint="ゲストをテーブル間で動かし、1 手ずつ元に戻してみましょう" name="seating-undo">
+
+
+
+</example>
+
+```ts [Table.vue]
+const { items } = makeSortableList(list, {
+  id: props.id,
+  items: () => props.seating.state.tables[props.id]!,   // read-only
+  group: 'seating',
+  onDrop: (e) => {
+    e.preventDefault();                                   // no write
+    props.seating.apply(e.result, `${e.items[0]?.name} → ${props.title}`);
+  },
+});
+```
+
+```ts [store.ts]
+const apply = (result: ReadonlyMap<Key, Guest[]>, label: string) => {
+  const before = [...result.keys()].map((id): [Key, Guest[]] => [id, state.tables[id]!]);
+  for (const [id, guests] of result) state.tables[id] = guests;
+  state.history.unshift({ label, before });
+};
+
+const undo = () => {
+  const last = state.history.shift();
+  for (const [id, guests] of last?.before ?? []) state.tables[id] = guests;
+};
+```
+
+- `e.result` は、ドロップで変わるすべてのリストを新しい配列に対応付けます：移動なら 2 つのテーブル、並べ替えなら 1 つです。新しい配列なので、ストアは元に戻す用に古い配列を保持できます。
+- ドラフトはストアに追従します。`onDrop` で（または非同期の `onBeforeDrop` が解決する前に）`result` を適用すれば、オーバーレイは新しい順序に着地します。
+- `preventDefault()` は `result` のすべてのリストへの書き込みをスキップします。どこにも適用しなければ、リストはそのままで、アイテムは元の位置に戻ります。
+- 読み取り専用のリストのドロップをライブラリに任せたままにすると、開発ビルドで警告が出ます：何も変わらないためです。
+
+ドロップが着地する前にサーバーへ保存する、あるいは先にユーザーに確認するには、[ドロップの判断](https://zizigy.github.io/docs/guides/drop-decisions)を参照してください。リストのすべてのオプションは [makeSortableList API](https://zizigy.github.io/docs/api/make-sortable-list) にあります。
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

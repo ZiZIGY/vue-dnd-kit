@@ -1,0 +1,105 @@
+---
+title: "チェス"
+description: "チェス盤。合法手が光り、手に持った駒はマスを拒否する理由を伝え、ポーンは何に成るかを尋ね、ボットは本物のドラッグで指し返します。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/chess"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="36rem" hint="白の駒をドラッグするか、Tab と Space を使ってみましょう。Bot が黒を指します" name="chess" title="チェス">
+
+
+
+</example>
+
+## 注目ポイント
+
+- **Square.vue**：64 のマスはそれぞれ、`accept` が関数のドロップターゲットです。この関数は駒がドラッグされている間に問い合わされるので、マスはその駒の合法手だけを受け入れます。ほかの場所へのドロップは拒否され、駒は元の位置に戻ります。合法なマスは `isAccepting` で光ります：ゲーム自身の状態でドラッグを追跡するものはありません。
+- **Piece.vue**：通常のドラッグ可能な要素で、その側の手番でないときは `disabled` です。`keyboard: 'droppables'` で、矢印キーは駒を受け入れるマス、つまりその合法手の間だけをジャンプします。`snapCenterToCursor` は駒をポインターの中央に保ち、タッチではすぐにドラッグが始まります（`activation`）。`canDrag` は、何も無効にせずに、ボットの駒や、コードが指している間の盤からあなたの手を遠ざけます：コードが始めたドラッグには入力イベントがないので、そのドラッグでは `canDrag` は問い合わされません。
+- **chess.ts** と **game.ts**：ルールとゲームで、ドラッグ＆ドロップは含みません：チェックを考慮した合法手、キャスリング、アンパッサン、プロモーション、駒不足による引き分け、棋譜表記、元に戻す。`onDrop` での着手が新しい局面を作り、オーバーレイは動いた駒に着地します。
+
+## 手に持った駒
+
+**PieceOverlay.vue** は駒の `overlay` コンポーネントです。すべてのオーバーレイが受け取る props を読み、その下のマスにドロップしたら何が起きるかを伝えます：拒否されたマスの上（`over` があり、`accepted` が false）では駒が赤くなって理由を示し、駒を取る手の上では標的と、何を取るかを表示します。ドロップが決まると（`status: 'dropping'`）ヒントは消え、駒は落ち着きます。
+
+```ts [PieceOverlay.vue]
+const props = defineProps<{
+  active: Active;
+  over: Over | null;
+  accepted: boolean;
+  status: DnDStatus;
+}>();
+
+const hint = computed(() => {
+  const square = props.over ? String(props.over.id) : null;
+  if (props.status !== 'dragging' || !square || square === piece.value.square) return null;
+  if (props.accepted) {
+    const taken = game.takes(piece.value.id, square);
+    return taken ? { type: 'capture', text: `Takes ${NAMES[taken.kind]}` } : null;
+  }
+  // "Pinned", "King in check", "Not a legal move"
+  return { type: 'refused', text: game.whyNot(piece.value.id, square) };
+});
+```
+
+`Board.vue` は、駒が来たマスからその下のマスへの矢印を、`useDnD()` の `active` と `over` から描きます。プロバイダーの `haptics` は、タッチドラッグが合法なマスに乗ったときとドロップが拒否されたときに振動し、`index.vue` の `announcements` は同じ理由を読み上げます：「f7, pinned」。
+
+## プロモーション：答えを待つドロップ
+
+最終段の上では、手に持ったポーンが成る駒を表示します：マス自身の `overlay`（`PromotionOverlay.vue`）が駒のオーバーレイの代わりになります。離すと、マスの `onBeforeDrop` が Promise を返し、その隣にあるページの通常の要素 **PromotionPicker.vue** がどの駒にするかを尋ねている間、オーバーレイはマスの上で待ちます。駒を選ぶと `'accept'`、Escape か Cancel は `'reject'`（ポーンは元の位置に戻ります）、Keep dragging は `'continue'` と答えます：ポーンは再びポインターに追従し、次のクリックでドロップされて、もう一度尋ねます。
+
+```ts [Square.vue]
+makeDroppable(el, {
+  id: props.square,
+  accept: ({ active }) => game.canMove(active.id, props.square),
+  // Shown instead of the piece's overlay while a pawn is over the last rank.
+  overlay: computed(() =>
+    held.value?.kind === 'P' && isLastRank(props.square) ? PromotionOverlay : undefined,
+  ),
+  // A promise: the drop waits on the square until the picker answers.
+  onBeforeDrop: ({ active }) =>
+    game.promotes(active.id, props.square) ? game.askPromotion(props.square) : 'accept',
+  onDrop: ({ active }) => game.move(String(active.id), props.square),
+});
+```
+
+ドロップターゲットの `onBeforeDrop` は通常のドラッグイベントを受け取り、`accept` がドラッグを受け入れたときにだけ問い合わされます。並べ替え可能なリストの `onBeforeDrop` は、ドロップの `result` を含むリストの `SortableDropEvent` を受け取ります。ターゲットの `overlay` は、着地のために `onDrop` の後にもう一度読み取られます：そのため、ゲーム（その時点でポーンはクイーンになっています）ではなく、持ち上げた時点のポーン（`active.data`）を確認しています。
+
+## ボット、リプレイ、キャスリング：コードが再生するドラッグ
+
+**autoplay.ts** は `@vue-dnd-kit/actions` で手を指します：ボットの手（`bot.ts`、貪欲法のもの）、**Replay** の手、そしてあなたのものも含むすべてのキャスリングでのルークの移動です。どれも本物のドラッグです：持ち上げられ、1 フレームずつ盤の上を滑り、マスの `accept` と `onDrop` を通ってドロップされ、あなたのドラッグと同じように読み上げられ、アニメーションします。スクリプトによるプロモーションは成る駒を指定するので、ピッカーは開きません。Escape はほかのドラッグと同じく、スクリプトのドラッグもキャンセルします。
+
+```ts [autoplay.ts]
+const { startDrag } = useDnDActions();
+
+const drag = startDrag(id); // from the piece's center
+for (let frame = 1; frame <= FRAMES; frame++) {
+  const t = easeOut(frame / FRAMES);
+  const point = { x: start.x + (end.x - start.x) * t, y: start.y + (end.y - start.y) * t };
+  if (!(await drag.moveTo(point))) return false; // cancelled meanwhile (Escape)
+}
+return drag.drop(); // true once it has landed, false if the square refused it
+```
+
+キャスリングは、手で指すときと同じく 2 手で再生されます：キングが 2 筋動き、次にそのルークがキングを越えてドラッグされるので、ルークが瞬間移動することはありません。
+
+## 駒取り、元に戻す、新しいゲーム
+
+取られた駒はその側の **Tray.vue** に入ります：`animate` のためだけに使われる並べ替え可能なリストです（`disabled` で、そこでは何もドラッグしません）。その `enter` は関数です：新しい駒は取られたマスから飛んできて、ほかの駒は場所を空けます。
+
+```ts [Tray.vue]
+makeSortableList(tray, {
+  items: () => props.pieces,
+  getKey: (piece) => `taken-${piece.id}`,
+  disabled: true,
+  animate: { enter: flyIn, leave: false },
+});
+```
+
+Undo と New game はドラッグなしで局面を変えるので、**glide.ts** がそれらを手作業でアニメーションします（FLIP）：すべての駒が、マスの上でもトレイの中でも、元の位置から今の位置へ飛びます。ボットとの対局では、Undo はあなたの手とボットの応手をまとめて取り消します。
+
+さらに読む：[ドロップの判断](https://zizigy.github.io/docs/guides/drop-decisions) · [オーバーレイ](https://zizigy.github.io/docs/guides/overlay#targets-that-change-the-overlay) · [プログラムによるドラッグ](https://zizigy.github.io/docs/guides/sensors#programmatic-drags) · [データの変化：`animate`](https://zizigy.github.io/docs/guides/animations#data-changes-animate) · [アクセシビリティ](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

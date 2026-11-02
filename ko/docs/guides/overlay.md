@@ -1,0 +1,706 @@
+---
+title: "오버레이"
+description: "드래그하는 동안 포인터를 따라가는 것. 기본 클론과 그 스타일링, 드래그에 따라 바뀌는 오버레이 컴포넌트, 여러 항목 한꺼번에, 크기, 그리고 렌더링 위치."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/overlay"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+드래그하는 동안 박스 하나가 포인터를 따라갑니다. 이것이 **오버레이**입니다. 드래그 중인 요소 자체는
+안착할 자리로서 제자리에 남습니다. 드롭하면 오버레이가 그 자리로 날아가 사라집니다.
+
+오버레이는 컴포넌트 밖, `body`로 텔레포트됩니다. 기본적으로 드래그 중인 요소의 클론을 보여 줍니다.
+
+<example height="22rem" hint="행에 값을 입력하고 체크한 뒤 그립으로 드래그하세요. 복사본은 값과 차트를 그대로 유지합니다" name="overlay">
+
+
+
+</example>
+
+## 기본 클론
+
+클론은 무엇이든 움직이기 전, 집을 때 만들어집니다. 요소의 깊은 복사본입니다.
+
+- 폼 값과 `<canvas>` 픽셀이 복사됩니다.
+- 요소가 리스트 밖에서 잃게 될 계산된 스타일은 인라인으로 들어갑니다. 상속된 글꼴과 색상, 조상을
+통해 적용되는 스타일(`.list li { … }`), 표 셀의 너비 같은 것입니다. 표의 행은 별도의 표로 감싸서
+옵니다.
+- `id`와 `data-dnd-*` 속성은 제거되고, 클론은 `aria-hidden`입니다.
+- UI 키트(Vuetify, Quasar, PrimeVue, Naive UI)의 물결 효과 등 누르기 효과는 빠집니다.
+
+위 표에서 값을 입력한 행은 텍스트, 금액, 체크, 차트와 함께 옮겨지며, 실제 셀의 너비를 유지하는 셀로
+된 별도의 표에 담깁니다.
+
+함께 옮겨지면 안 되는 다른 것에는 **`data-dnd-no-clone`**을 표시하세요. 메뉴 버튼, 툴팁, 선택 표시
+같은 것입니다. 각 행의 제거 버튼은 남습니다.
+
+```vue [ExpenseRow.vue]
+<tr ref="el" class="row">
+  …
+  <td><button type="button" aria-label="Remove" data-dnd-no-clone @click="emit('remove')">×</button></td>
+</tr>
+```
+
+### 배경은 추측하지 않습니다
+
+클론은 요소를 있는 그대로 보여 줍니다. 리스트가 배경을 칠해서 자체 배경이 없는 행(흰 `<ul>` 안의
+`<li>`, `v-list-item`, 표의 행)은 **비쳐 보이는** 클론이 됩니다. CSS로 리스트의 배경을 주세요.
+여기서는 셀에 줍니다.
+
+```vue [ExpenseRow.vue]
+<style scoped>
+[data-dnd-overlay] .row td {
+  background: color-mix(in srgb, currentColor 4%, Canvas);
+}
+</style>
+```
+
+클론은 Vue의 스코프 속성을 포함해 요소의 클래스와 속성을 그대로 유지하므로, 이 규칙은 전역
+스타일시트뿐 아니라 행의 scoped 스타일에서도 동작합니다. 다른 방법은 행 자체에 배경을 주는 것입니다.
+떠 있도록 만든 아이콘과 타일은 의도적으로 투명하게 남습니다.
+
+## 박스 스타일링
+
+박스는 `data-dnd-overlay`가 있는 요소입니다. `position: fixed`이고, 맨 위에 있으며
+(`z-index: 9999`), `pointer-events: none`과 `inert`이고, 속성 값이 지금 무엇을 하는지 알려 줍니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        data-dnd-overlay
+      </code>
+    </th>
+    
+    <th>
+      시점
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        "dragging"
+      </code>
+    </td>
+    
+    <td>
+      포인터를 따라갑니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        "dropping"
+      </code>
+    </td>
+    
+    <td>
+      자리에 안착하거나, 원래 자리로 돌아가거나, 비동기 <code>
+        onBeforeDrop
+      </code>
+      
+      을 기다립니다.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+드래그하는 동안 들어 올린 모습을 주고, 안착하면 사라지게 합니다.
+
+```css
+[data-dnd-overlay='dragging'] .row td {
+  box-shadow: 0 14px 20px -16px rgb(0 0 0 / 0.7);
+}
+```
+
+박스는 `transform`으로 움직이고 크기를 `width`와 `height`로 받습니다. 박스가 아니라 그 안의 내용을
+스타일링하세요. 클론은 박스를 채우며, 루트에 `width: 100%`, `height: 100%`, `transform: none`이
+설정됩니다. 회전과 확대는 `rotate`와 `scale` 속성으로 하세요. 트랜지션과 키프레임 모두 이 속성을
+애니메이션합니다. 레시피는 [애니메이션](https://zizigy.github.io/docs/guides/animations)에 있습니다.
+
+## 오버레이 컴포넌트
+
+클론이 아닌 다른 것을 보여 주려면 컴포넌트를 넘기세요. 컴포넌트는 박스 안에 렌더링되고 드래그를
+props로 받으며, 이 props는 드래그하는 동안 바뀝니다. 드래그가 어디에 있는지, 그곳이 드래그를
+받는지, 드롭이 복사인지, 그리고 드롭 자체입니다.
+
+<example height="26.5rem" hint="티켓을 컬럼 위로 드래그하세요. Done은 승인된 티켓을 받아 도장을 찍습니다. Alt를 누르면 복사합니다" name="overlay-live">
+
+
+
+</example>
+
+```vue [TicketOverlay.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import type { DnDStatus, DragItem, DragMode, Over } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[]; over: Over | null; accepted: boolean; status: DnDStatus; mode: DragMode }>();
+const ticket = computed(() => props.items[0]?.item as Ticket);
+
+const state = computed(() => {
+  if (props.status === 'dropping') return props.over ? 'landed' : 'back'; // a cancel flies back
+  if (!props.over) return 'free';
+  return props.accepted ? 'ok' : 'refused';
+});
+</script>
+
+<template>
+  <!-- Fills the overlay box, which takes the size of the slot. -->
+  <div class="ticket-overlay" :data-state="state">
+    {{ ticket.title }}
+    <span v-if="mode === 'copy'" class="copy">+ copy</span>
+  </div>
+</template>
+
+<style scoped>
+.ticket-overlay { width: 100%; height: 100%; }
+.ticket-overlay[data-state='refused'] { background: color-mix(in srgb, #ef4444 8%, Canvas); }
+</style>
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Prop
+    </th>
+    
+    <th>
+      담고 있는 것
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        active
+      </code>
+    </td>
+    
+    <td>
+      드래그(<code>
+        id
+      </code>
+      
+      , <code>
+        ids
+      </code>
+      
+      , <code>
+        data
+      </code>
+      
+      , <code>
+        type
+      </code>
+      
+      , …).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        items
+      </code>
+    </td>
+    
+    <td>
+      드래그 중인 모든 항목, 집은 항목이 처음: <code>
+        { id, item, data, type }
+      </code>
+      
+      . 정렬 가능한 드래그에서 <code>
+        item
+      </code>
+      
+      은 리스트의 항목입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        over
+      </code>
+    </td>
+    
+    <td>
+      드래그 아래의 대상. 드롭이 안착하는 동안에는 안착하는 대상. 아무것도 없는 곳 위에서, 그리고 거부되거나 취소된 드래그가 돌아가는 동안에는 <code>
+        null
+      </code>
+      
+      . 정렬 가능한 리스트의 <code>
+        over.id
+      </code>
+      
+      는 리스트의 <code>
+        id
+      </code>
+      
+      입니다. 위의 컬럼은 자기 이름을 씁니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        accepted
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        over
+      </code>
+      
+      가 드래그를 받는지. 받지 않으면 오버레이를 빨갛게 물들이세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        status
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'dragging'
+      </code>
+      
+      , 안착하는 동안에는 <code>
+        'dropping'
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        mode
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'move'
+      </code>
+      
+      , <code>
+        'copy'
+      </code>
+      
+      (<code>
+        clone
+      </code>
+      
+      이 있는 리스트에서 Alt를 누르고 드래그하거나 팔레트에서 드래그), <code>
+        'swap'
+      </code>
+      
+      , <code>
+        'insert'
+      </code>
+      
+      (일반 draggable이 리스트로 들어감).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        to
+      </code>
+    </td>
+    
+    <td>
+      지금 드롭하면 항목이 놓일 곳: <code>
+        { list, index }
+      </code>
+      
+      , 트리에서는 <code>
+        parentKey
+      </code>
+      
+      와 <code>
+        depth
+      </code>
+      
+      도. 어떤 리스트에도 놓지 않을 때는 <code>
+        null
+      </code>
+      
+      . 예를 들어 일반 대상 위. <a href="#where-the-drop-would-go-to">
+        드롭이 갈 곳
+      </a>
+      
+      을 참고하세요.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+props의 타입은 `OverlayProps`이며, 읽는 것만 선언하면 됩니다. 드래그되는 대상에 컴포넌트를 넘기세요.
+
+```ts
+import TicketOverlay from './TicketOverlay.vue';
+
+makeSortableList(listRef, { items: tickets, overlay: TicketOverlay });   // every item of the list
+makeSortableItem(el, { item: () => props.ticket, overlay: TicketOverlay }); // this item
+makeDraggable(el, { id: 'chip', overlay: TicketOverlay });                // a plain draggable
+```
+
+컴포넌트는 그대로 넘기거나, 바꾸려면 `shallowRef`에 담아 넘기거나(드래그 중에도 됩니다. 오버레이가
+바로 바뀝니다), 함수로 넘길 수 있습니다. Vue는 함수를 함수형 컴포넌트로 받아들입니다. TSX에서는
+`overlay: (props) => <TicketOverlay {...props} compact />`처럼 씁니다. 깊은 `ref`나 `reactive`에는
+절대 넣지 마세요. Vue가 컴포넌트를 반응형으로 만들고 경고합니다.
+
+오버레이 컴포넌트의 루트는 박스를 채워야 합니다(`width: 100%; height: 100%`). 박스는 자리의 크기를
+받고 드롭할 때 그 크기를 애니메이션합니다. 루트에 고정 크기를 주면 박스 안에서 그 크기가 유지됩니다.
+
+## 프로바이더의 `#overlay` 슬롯
+
+자체 컴포넌트가 없는 모든 드래그에는 프로바이더의 슬롯이 오버레이를 렌더링합니다. 앱 루트 옆에 한
+번 정의하면 앱의 모든 리스트와 draggable이 이를 씁니다. 여기서 메모는 자체 고스트를 받고, 사진은
+클론으로 돌아갑니다.
+
+<example height="26rem" hint="메모를 드래그한 뒤 사진을 드래그해 보세요" name="overlay-slot">
+
+
+
+</example>
+
+```vue [App.vue]
+<DnDProvider>
+  <RouterView />
+  <template #overlay="{ items, status }">
+    <NoteGhost v-if="items[0]?.type.includes('note')" :items="items" :status="status" />
+  </template>
+</DnDProvider>
+```
+
+슬롯은 오버레이 컴포넌트와 같은 props를 받습니다. 아무것도 렌더링하지 않으면(위의 `v-if`) 드래그는
+클론을 씁니다. 드래그는 `type`으로 구별하세요. 정렬 가능한 항목의 타입은 직접 지정하지
+않는 한(`makeSortableItem(el, { type })`) 그룹 이름입니다.
+
+## 오버레이를 바꾸는 대상
+
+드롭 대상은 자신이 받는 드래그가 위에 있는 동안 오버레이가 무엇을 보여 줄지 정할 수 있습니다.
+`makeDroppable`은 `overlay`를 받습니다. 리스트와 트리는 `overOverlay`를 받는데, 그들의 `overlay`는
+자기 항목을 위한 것이기 때문입니다. 폴더 위에서는 드래그 중인 메시지의 칩이 드롭이 할 일을 보여 주는
+모습으로 바뀝니다.
+
+<example height="34rem" hint="메시지 두 개를 체크하고, 하나를 Archive 위로 드래그한 뒤 놓으세요" name="overlay-folders">
+
+
+
+</example>
+
+```ts [Folder.vue]
+makeDroppable(el, {
+  id: () => props.folder.id,
+  data: () => props.folder,
+  overlay: MovePill,
+  onDrop: (event) => emit('move', event.active.ids),
+});
+```
+
+대상의 컴포넌트는 다른 오버레이 컴포넌트와 같은 props를 받고(`over`도 그중 하나입니다), 드래그
+자체의 오버레이(그 컴포넌트, 프로바이더의 슬롯, 또는 클론)를 기본 슬롯으로 받습니다. `MovePill`은
+슬롯을 빼므로 칩을 대체합니다.
+
+```vue [MovePill.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import type { DragItem, Over } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[]; over: Over | null }>();
+// The folder under the drag: its `data`.
+const folder = computed(() => props.over?.data as Folder | undefined);
+</script>
+
+<template>
+  <!-- Fills the box like any overlay component. -->
+  <div class="pill-box">
+    <span v-if="folder" class="pill">Move {{ items.length }} to {{ folder.name }}</span>
+  </div>
+</template>
+```
+
+`<slot />`을 렌더링하면 드래그 자체의 오버레이를 유지한 채 감쌀 수 있습니다. 위
+[오버레이 컴포넌트](#overlay-components)의 보드에서 Done이 하는 일이 바로 그것입니다. Done 위에서
+승인된 티켓은 자기 오버레이를 유지하고, Done이 그 위에 도장을 찍으며, 다른 컬럼에서 온 티켓은 드롭될
+때 색종이가 터집니다.
+
+```ts [Column.vue]
+makeSortableList(listRef, {
+  items: tickets,
+  group: { name: 'release', put },
+  overlay: TicketOverlay, // the tickets' own, in every column
+  overOverlay: strict ? DoneOverlay : undefined, // Done's, around it
+});
+```
+
+```vue [DoneOverlay.vue]
+<template>
+  <div class="done">
+    <slot /> <!-- TicketOverlay -->
+    <span class="stamp">Shipped</span>
+    <span v-if="status === 'dropping' && arrives" class="confetti">…</span>
+  </div>
+</template>
+```
+
+- 대상이 드래그를 받는 동안에만 보이고, 드롭이 그 대상에 안착하는 동안에도 남습니다. 대상을
+벗어나면 드래그 자체의 오버레이가 돌아옵니다.
+- 바뀔 때는 크로스페이드됩니다. 방식은 프로바이더의 `overlayTransition`이 정합니다. `false`는 바로
+바꾸고, 객체는 내용을 감싸는 `<Transition>`의 props입니다(`name`, `mode`, GSAP이나 motion용 JS
+훅). `mode: 'out-in'`이 없으면 잠깐 둘 다 보입니다. `.<name>-leave-active`에서 떠나는 쪽에
+`position: absolute`를 주세요.
+- 드롭은 색종이를 기다립니다. 안착하는 동안 오버레이 안에서 실행되는 CSS 애니메이션과 트랜지션은
+끝까지 재생되며, 최대 2초입니다.
+- `overlay: false`인 드래그는 어떤 대상 위에서도 오버레이가 없습니다.
+
+폴더는 또한 필을 자기만의 방식으로, 폴더 아이콘 안으로 안착시킵니다. 대상도 `dropAnimation`을
+가질 수 있습니다. [애니메이션](https://zizigy.github.io/docs/guides/animations#per-item-and-per-target)을 참고하세요.
+
+## 드롭이 갈 곳: `to`
+
+`to`는 지금 드롭하면 항목이 어디에 놓일지를 오버레이에 알려 줍니다. 드롭 이벤트의 `to`가 알려 줄
+것과 같습니다. 리스트와 그 안의 인덱스, 트리에서는 부모와 깊이입니다. 자리가 움직이면 바뀝니다. 이
+사이트 메뉴의 페이지는 어느 섹션의 몇 번째 행으로 들어갈지 알려 줍니다.
+
+<example height="27rem" hint="페이지를 섹션 위로 드래그한 다음, 옆으로 움직여 깊이를 바꿔 보세요" name="overlay-move-path">
+
+
+
+</example>
+
+```vue [MoveOverlay.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import type { DragItem, DropDestination } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[]; to: DropDestination | null }>();
+const page = computed(() => props.items[0]!.item as MenuNode);
+// `parentKey` is the section the page would go into, `null` at the top level.
+const where = computed(() => (props.to ? pathOf(menu.value, props.to.parentKey) : null));
+</script>
+
+<template>
+  <div class="move">
+    <div class="row">{{ page.title }}</div>
+    <p v-if="to && where" class="where">Move to <b>{{ where }}</b>, row {{ to.index + 1 }}</p>
+  </div>
+</template>
+```
+
+모든 대상 밖에서도 `to`는 여전히 자리의 위치입니다. 기본적으로 그곳에서 드롭하면 항목은 자리가 있는
+곳에 남습니다(`dropOutside: 'placeholder'`). 드롭이 항목을 어떤 리스트에도 놓지 않을 때는 `null`입니다.
+일반 대상 위, 항목을 거부하는 리스트 위, `dropOutside: 'cancel'`이나 `'remove'`일 때의 대상 밖이
+그렇습니다.
+
+## 우선순위
+
+각 드래그에는 해당하는 첫 번째 것이 쓰입니다.
+
+1. 드롭 대상의 `overlay`(리스트나 트리는 `overOverlay`). 드래그가 그 위에 있고 대상이 드래그를
+받는 동안입니다. 그렇지 않았다면 보였을 것이 그 기본 슬롯이 됩니다.
+2. 항목 자체의 `overlay`(`makeSortableItem`, `makeDraggable`).
+3. 그 리스트나 트리의 `overlay`.
+4. 프로바이더의 `#overlay` 슬롯. 단, 아무것도 렌더링하지 않으면 제외.
+5. 기본 클론. 멀티 드래그에서는 클론의 열이나 더미입니다.
+[멀티 드래그](https://zizigy.github.io/docs/guides/multi-drag#the-default-overlay)를 참고하세요.
+
+드래그에 오버레이가 아예 있는지(`overlay: false`)는 드래그가 시작될 때 정해집니다. 어떤 컴포넌트를
+보여 줄지는 실시간으로 읽습니다. 드래그 중에 바꾼 ref가 컴포넌트를 바꾸고, 자기 오버레이가 있는
+대상에 들어가거나 나올 때도 바뀝니다.
+
+## `DragPreview`: 레이아웃 안의 클론
+
+`DragPreview`는 드래그 중인 항목 하나에 대해 라이브러리가 만든 클론을 렌더링합니다. 오버레이
+컴포넌트는 이를 여러 개 배치하거나, 하나에 틀을 씌울 수 있습니다. 책을 클릭해 고른 뒤 하나를
+드래그해 보세요. 오버레이가 실제 클론을 부채꼴로 펼칩니다.
+
+<example height="24rem" hint="골라 둔 책 세 권 중 하나를 드래그하세요. 다른 책을 클릭해 고를 수도 있습니다" name="overlay-fan">
+
+
+
+</example>
+
+```vue [FanOverlay.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import { DragPreview, type DragItem } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[] }>();
+const fan = computed(() =>
+  props.items.slice(0, 4).map((entry, index) => ({
+    entry,
+    angle: index === 0 ? 0 : (index % 2 ? -1 : 1) * Math.ceil(index / 2) * 10,
+  })),
+);
+</script>
+
+<template>
+  <div class="fan">
+    <div v-for="{ entry, angle } in fan" :key="entry.id" class="card" :style="{ transform: `rotate(${angle}deg)` }">
+      <DragPreview :id="entry.id" class="face" :style="{ width: '100%', height: '100%' }">
+        <div class="blank" /> <!-- an item without a clone -->
+      </DragPreview>
+    </div>
+    <span v-if="items.length > 1" class="count">{{ items.length }}</span>
+  </div>
+</template>
+```
+
+- 클론은 집은 항목과, 드롭 순서상 그 옆의 다른 항목들에 대해 프로바이더의 `overlayPreviews`만큼
+존재합니다(기본값 5, `'all'`이면 전부). 집을 때 렌더링되어 있는 경우에 한합니다. 그 밖의 항목에는 `DragPreview`가 기본 슬롯을 렌더링합니다.
+- 미리보기는 집을 때의 항목 크기를 가지며, 이 크기는 인라인으로 지정됩니다. 위처럼 그대로
+전달되는 `style`로 크기를 정하세요(클래스로는 덮어쓸 수 없습니다).
+- 정렬 가능한 멀티 드래그(`multiple: 'group'` 또는 `'gaps'`)에서는 드롭할 때 각 미리보기가 자기
+항목의 자리에 안착합니다. 래퍼는 `rotate` 속성이 아니라 `transform`으로 회전하세요. 안착하는 동안
+원래대로 돌아갑니다. 항목의 모양(모서리, 그림자)은 `class="face"`처럼 미리보기 자체에 주세요.
+래퍼는 박스 안에 남습니다.
+
+[멀티 드래그 가이드](https://zizigy.github.io/docs/guides/multi-drag#a-custom-overlay-for-several-items)에는 클론 대신 개수와
+제목을 보여 주는 오버레이가 있습니다.
+
+## 크기: `overlayFit`
+
+크기가 다른 리스트 위에서는 박스가 안착할 자리의 크기를 받습니다. 이는 프로바이더의 `overlayFit`으로
+바꿉니다. [DnDProvider 페이지](https://zizigy.github.io/docs/api/dnd-provider)에 좁은 리스트와 넓은 리스트로 된 데모가
+있습니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        overlayFit
+      </code>
+      
+      (프로바이더)
+    </th>
+    
+    <th>
+      박스는
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'slot'
+      </code>
+      
+      (기본값)
+    </td>
+    
+    <td>
+      안착할 자리의 크기로 부드럽게 바뀝니다. 넓은 리스트 위에서는 넓어집니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'source'
+      </code>
+    </td>
+    
+    <td>
+      드래그 중인 요소의 크기를 유지합니다.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`'slot'`에서는 포인터를 중심으로 박스 크기가 바뀌며, 포인터는 박스 안의 같은 비율 위치에 머뭅니다.
+내용은 절대 확대·축소되지 않고 새 크기에 맞춰 다시 배치되므로, 그 데모의 작업처럼 flex 행은 어떤 너비에서도
+제대로 보입니다. 가는 선처럼 항목보다 훨씬 작게 스타일링한 자리는 그 축 방향으로 박스를 줄이지
+않습니다.
+
+드롭은 두 설정 모두에서 같습니다. 박스는 안착할 요소로 날아가 **그 요소의** 크기로 애니메이션되고,
+내용은 그동안 다시 배치됩니다. 항목이 두 리스트에서 다르게 보이면(팔레트의 작은 칩, 보드의 완전한
+카드), 원본의 클론이 대상의 크기로 다시 배치되어 그곳에서 찌그러지거나 늘어나 보일 수 있습니다. 이를
+바로잡는 방법은 두 가지입니다.
+
+- 위의 작업 행처럼 항목에 **두 크기 모두에서 동작하는 레이아웃**을 주거나, 안착할 수 있는 모든
+리스트에서 같은 크기를 주세요.
+- 오버레이 컴포넌트에서 **대상의 모양**을 렌더링하세요. 컴포넌트는 `over`를 받으므로 위에 있는
+리스트의 모양으로 바꿀 수 있고, 어떤 크기에서도 박스를 채웁니다.
+
+## 렌더링 위치: `overlayTo`
+
+프로바이더는 오버레이를 `body`로 텔레포트합니다. `showModal()`로 연 모달 `<dialog>`는 `body`의 모든
+것보다 위인 top layer에 있으므로, 그곳의 오버레이는 다이얼로그 아래에 가려집니다. `overlayTo`가
+다이얼로그 안의 선택자나 요소를 가리키게 하세요.
+[DnDProvider 페이지](https://zizigy.github.io/docs/api/dnd-provider#where-the-overlay-renders)에 이 설정이 있을 때와 없을 때를
+비교해 볼 수 있는 다이얼로그가 있습니다.
+
+```vue [index.vue]
+<script setup lang="ts">
+const dialog = useTemplateRef<HTMLDialogElement>('dialog');
+const open = ref(false);
+// While the dialog is open, the overlay renders inside it.
+const overlayTo = computed(() => (open.value ? '#columns-dialog' : 'body'));
+
+const show = () => {
+  dialog.value?.showModal();
+  open.value = true;
+};
+</script>
+
+<template>
+  <DnDProvider :overlay-to="overlayTo">
+    <button type="button" @click="show">Edit columns</button>
+    <dialog id="columns-dialog" ref="dialog" @close="open = false">
+      <ColumnList v-model:columns="columns" />
+    </dialog>
+  </DnDProvider>
+</template>
+```
+
+- 프로바이더가 마운트된 뒤 오버레이를 렌더링할 때 대상이 페이지에 있어야 합니다. 닫힌
+`<dialog>`도 숨겨져 있을 뿐 페이지에 있습니다. 닫혀 있는 동안에는 `body`로 되돌려 다른 드래그의
+오버레이가 보이게 하세요.
+- 박스는 `position: fixed`입니다. 대상이나 그 조상에 `transform`, `filter`, `contain`이 있으면 뷰포트
+대신 그 요소가 박스의 기준이 되므로, 다이얼로그에는 쓰지 마세요.
+- 클론의 스타일은 표시되는 위치에 맞춰 계산됩니다. 섀도 루트에서는 `overlayTo`가 그 안을 가리키게
+하면 클론이 섀도 루트의 스타일을 유지합니다.
+
+## 오버레이 없이
+
+`makeDraggable(el, { overlay: false })`에는 박스가 전혀 없습니다. 반환된 `transform`으로 요소 자체가
+움직입니다.
+
+```ts
+const { transform } = makeDraggable(el, { overlay: false });
+const style = computed(() =>
+  transform.value ? { translate: `${transform.value.x}px ${transform.value.y}px` } : undefined,
+);
+```
+
+[드래그 앤 드롭](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay)을 참고하세요. 박스가 있는 드래그가
+안착하는 방식은 그 `dropAnimation`이 정합니다. 드롭 대상의 것, 항목의 것(또는 그 리스트의 것),
+또는 프로바이더의 것입니다.
+[애니메이션](https://zizigy.github.io/docs/guides/animations#the-drop)을 참고하세요.
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

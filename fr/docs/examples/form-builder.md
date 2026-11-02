@@ -1,0 +1,354 @@
+---
+title: "Constructeur de formulaires"
+description: "Un constructeur de formulaires fait avec Nuxt UI — des champs glissés depuis une palette, placés côte à côte en rangées, modifiés dans un panneau, puis remplis dans un aperçu en direct avec validation et exportés en code Vue."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/form-builder"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="44rem" hint="Faites glisser un champ dans le formulaire, à côté d'un autre pour faire des colonnes" name="form-builder" title="Constructeur de formulaires">
+
+
+
+</example>
+
+Chaque contrôle ici est un composant Nuxt UI : les champs du formulaire (`UInput`, `USelect`,
+`URadioGroup`, `UInputRating`, `UFileUpload`…), les panneaux qui les entourent, le `UForm` de
+l'aperçu. Vue DnD Kit les déplace. Passez la démo en plein écran : la palette, le formulaire et
+les réglages se placent alors côte à côte.
+
+## Ce qu'il faut regarder
+
+- **PaletteGroup.vue** : une section de la palette est une liste triable qui ne donne que des
+copies : `group: { name: 'fields', pull: 'clone', put: false }` et `sort: false`. Ses items sont
+des champs comme ceux du formulaire : une copie glissée dans une rangée est donc un champ comme
+les autres ; `clone` lui donne une clé à elle. Un clic (ou <kbd value="Enter">
+
+
+
+</kbd>
+
+) ajoute le champ
+sans glissement.
+- **FormRow.vue** : une rangée est deux choses à la fois, comme une colonne de kanban : un item
+de la liste des rangées du formulaire, glissé par sa poignée, et une liste de trois champs au
+plus dans le groupe de la palette. Son `put` refuse un quatrième : au-dessus d'une rangée pleine,
+le champ en main devient rouge et dit pourquoi, et un dépôt à cet endroit est annulé.
+- **NewRowZone.vue** : déposez un champ dans l'espace entre deux rangées, ou sous la dernière, et
+il obtient une rangée à lui. Ces endroits sont aussi des listes : des listes vides du même
+groupe, dont les ids disent où va la nouvelle rangée.
+- **FieldCard.vue** : les rangées sont en mode indicateur (`placeholder: 'indicator'`) : rien ne
+bouge pendant qu'un champ est glissé ; une ligne à côté d'un champ montre où il ira. Dans un
+constructeur étroit, les champs d'une rangée s'empilent, et la ligne va au-dessus ou en dessous.
+- **Trash.vue** : pendant qu'un champ du formulaire est glissé, la palette devient une
+corbeille : une simple cible de dépôt qui n'accepte que les champs du formulaire
+(`accept: 'fields'`, le nom de leur groupe) et les retire avec `event.source.remove()`.
+- **OptionList.vue** : les options d'une liste déroulante ou d'un choix multiple sont une liste
+triable à part entière dans le panneau des réglages, glissées par leurs poignées pour que leur
+texte reste modifiable.
+- **form.ts** : le formulaire, et le seul code qui le modifie. Les listes le lisent et ne
+l'écrivent jamais : Undo et Redo voient donc chaque changement, dépôts compris.
+
+## Une rangée de champs est une liste dans une liste
+
+Les rangées du formulaire et les champs de chaque rangée sont des listes de deux groupes, `rows`
+et `fields`. Un glissement n'entre jamais que dans les listes de son propre groupe : un champ
+n'atterrit jamais parmi les rangées, ni une rangée dans une autre rangée, quelle que soit leur
+imbrication.
+
+```ts [FormRow.vue]
+// The row is an item of the form's rows, dragged by its grip...
+makeSortableItem(el, { item: () => props.row, handle: grip });
+
+// ...and a list of up to three fields side by side, in the group of the palette.
+const { items, isOver, isAccepting } = makeSortableList(list, {
+  id: rowList(props.row.id),
+  items: () => props.row.fields,
+  group: { name: 'fields', put: ({ keys }) => props.row.fields.length + keys.length <= MAX_COLUMNS },
+  strategy: () => (props.stacked ? 'vertical' : 'horizontal'),
+  placeholder: 'indicator',
+  overlay: FieldOverlay,
+  clone: cloneField, // Alt-drag copies a field
+  animate: true,
+  onDrop: form.drop,
+});
+```
+
+Une nouvelle rangée a besoin d'un endroit où être déposée. Chaque rangée porte une bande sur
+l'espace au-dessus d'elle, et l'espace sous la dernière rangée est un endroit de plus de ce genre :
+une liste vide du groupe `fields`, qui n'affiche jamais d'item. Au-dessus d'une bande, la liste
+est `isOver`, et la bande dessine sa ligne. Les bandes ne prennent le pointeur que pendant qu'un
+glissement est en cours (`html[data-dnd-dragging]`) : elles ne gênent donc jamais un clic :
+
+```vue [NewRowZone.vue]
+<script setup lang="ts">
+const NONE: readonly Field[] = [];
+const { isOver, isAccepting } = makeSortableList(el, {
+  id: newRowList(props.before), // 'new:<row id>', or 'new:end'
+  items: () => NONE,
+  group: 'fields',
+  placeholder: 'indicator',
+  // A band across the page: up and down are the keys that cross it, to the next list.
+  strategy: 'horizontal',
+  onDrop: form.drop,
+});
+</script>
+
+<template>
+  <div
+    ref="el"
+    class="pointer-events-none absolute inset-x-0 -top-[18px] z-10 h-6 in-data-[dnd-dragging]:pointer-events-auto"
+  >
+    <span class="… bg-primary" :class="isOver ? 'opacity-100' : 'opacity-0'" />
+  </div>
+</template>
+```
+
+Le clavier trouve aussi les bandes. Un glissement au clavier passe de liste en liste selon leur
+place sur la page, avec les flèches en travers d'une liste : haut et bas pour les rangées, qui
+sont horizontales, et pour les bandes, horizontales elles aussi. <kbd value="ArrowUp">
+
+
+
+</kbd>
+
+ et
+<kbd value="ArrowDown">
+
+
+
+</kbd>
+
+ visitent donc tour à tour les rangées et les espaces entre elles.
+
+## Un store, un Undo : des listes qui n'écrivent jamais
+
+Chaque liste du constructeur reçoit ses items d'un getter : la bibliothèque ne les écrit donc
+jamais (une [liste contrôlée](https://zizigy.github.io/docs/guides/shared-lists#controlled-lists)). Leur `onDrop` est
+`form.drop` : il annule l'écriture et passe au formulaire `event.result`, les nouveaux tableaux de
+chaque liste que le dépôt modifie. Les ids des listes disent ce qu'est chaque tableau : les champs
+d'une rangée, l'ordre des rangées, ou une rangée à créer.
+
+```ts [form.ts]
+function apply(result: ReadonlyMap<Key, unknown[]>) {
+  commit(() => {
+    const created: [before: string, fields: Field[]][] = [];
+    for (const [list, items] of result) {
+      const [type, id] = String(list).split(':') as [string, string];
+      if (list === ROWS) state.rows = items as Row[];
+      else if (type === 'row') state.rows.find((row) => row.id === id)!.fields = items as Field[];
+      else if (type === 'new' && items.length) created.push([id, items as Field[]]);
+    }
+    for (const [before, items] of created) {
+      const index = state.rows.findIndex((row) => row.id === before);
+      state.rows.splice(index < 0 ? state.rows.length : index, 0, row(...items));
+    }
+  });
+}
+
+/** `onDrop` of every list: applies the drop, and selects a field that was just added. */
+function drop(event: SortableDropEvent<unknown>) {
+  event.preventDefault();
+  apply(event.result);
+  if (event.mode === 'copy') selectedId.value = (event.items[0] as Field).id;
+  forgetGone();
+}
+```
+
+`commit` sauvegarde un instantané du formulaire pour Undo, fait le changement, et retire les
+rangées qu'un déplacement a laissées vides, tout cela avant que le dépôt n'atterrisse : l'overlay
+vole donc là où le champ se trouve vraiment. La corbeille prend le même chemin :
+`event.source.remove()` exécute l'`onDrop` de la rangée sans le champ (`to.index` vaut `-1`). La
+saisie dans les réglages passe aussi par `commit`, et les frappes dans un même réglage partagent
+une clé : un libellé tapé lettre par lettre est une seule étape d'Undo.
+
+## Le champ en main
+
+La palette et les rangées partagent un même composant d'overlay. Il affiche la copie que fait la
+bibliothèque de ce qui est glissé (`DragPreview` : une pastille depuis la palette, le champ entier
+depuis le formulaire, son contrôle Nuxt UI compris) dans un cadre, avec un badge pour ce que ferait
+un dépôt : copier (<kbd value="Alt">
+
+
+
+</kbd>
+
+), supprimer au-dessus de la corbeille, rien au-dessus d'une
+rangée pleine.
+
+```vue [FieldOverlay.vue]
+<script setup lang="ts">
+const props = defineProps<{ items: DragItem[]; over: Over | null; accepted: boolean; status: DnDStatus; mode: DragMode }>();
+
+const entry = computed(() => props.items[0]!);
+const state = computed(() => {
+  if (props.status === 'dropping') return 'landing';
+  if (props.over?.id === TRASH) return 'delete';
+  // A row that refuses the field: it is full.
+  if (props.over && !props.accepted) return 'full';
+  // Palette fields are copies too, but they say nothing: adding is what they do.
+  if (props.mode === 'copy' && !entry.value.type.includes('new-field')) return 'copy';
+  return 'move';
+});
+</script>
+
+<template>
+  <!-- LOOKS: lifted and tilted, red when refused, smaller over the trash, flat as it lands. -->
+  <div class="relative size-full rounded-md bg-default ring-2 …" :class="LOOKS[state]">
+    <DragPreview :id="entry.id" class="rounded-md" :style="{ width: '100%', height: '100%' }" />
+    <UBadge v-if="badge" :label="badge.label" :icon="badge.icon" :color="badge.color" size="sm" />
+  </div>
+</template>
+```
+
+Les items de la palette ont un `type` à eux, `'new-field'` : l'overlay les distingue grâce à lui,
+et la corbeille, qui accepte `'fields'`, ne les prend pas.
+
+## Avec Nuxt UI
+
+La documentation est une application Nuxt avec le module `@nuxt/ui`, et l'auto-import des
+composants de Nuxt atteint aussi les exemples : ces fichiers utilisent `<UInput>`, `<UFormField>`
+ou `<UTabs>` sans les importer, comme le fait un projet Nuxt UI. Une application Vue avec le
+plugin Vite de Nuxt UI les auto-importe de la même façon ; sans lui, importez chacun :
+`import UButton from '@nuxt/ui/components/Button.vue'`. Les types viennent de `@nuxt/ui`
+(`import type { FormSubmitEvent } from '@nuxt/ui'`).
+
+- **Pendant la construction, les champs sont des images.** `FieldView.vue` rend un champ de la même
+façon sur le canevas et dans l'aperçu : un `UFormField` autour de son contrôle. Sur le canevas,
+il se trouve dans un élément `inert` : un appui sur un champ de saisie démarre donc un glissement
+au lieu de la saisie, et <kbd value="Tab">
+
+
+
+</kbd>
+
+ saute les champs de saisie. La barre d'outils de la
+carte (un `UFieldGroup` de boutons avec infobulles) reste hors de la copie de l'overlay grâce à
+`data-dnd-no-clone`.
+- **Les états sont des variantes Tailwind.** La bibliothèque marque ses états avec des attributs,
+que Tailwind lit comme des variantes : `data-[dnd-placeholder]:outline-dashed` sur le champ en
+cours de déplacement, `in-data-[dnd-overlay]:bg-default` sur une rangée en main,
+`in-data-[dnd-dragging]:pointer-events-auto` sur les bandes. Les couleurs sont les couleurs
+sémantiques de Nuxt UI (`bg-default`, `ring-primary`, `text-error`) : les modes clair et sombre
+n'ont besoin de rien de plus.
+- **L'aperçu est un vrai UForm.** `schema.ts` crée un schéma Zod à partir des champs, et `UForm`
+valide les réponses avec : `name` relie chaque `UFormField` à sa règle, et les messages
+s'affichent sous les champs. Envoyez le formulaire pour voir ce qu'il soumet.
+- **L'export** écrit le même formulaire sous forme d'un composant à part : des contrôles Nuxt UI,
+un schéma Zod, un état `reactive`, et les rangées sous forme de grilles qui s'empilent sur
+téléphone.
+- **La mise en page suit la largeur du constructeur** (`useElementSize`), pas celle de la fenêtre :
+trois panneaux en plein écran ; sur la page, les réglages prennent la place de la palette ; plus
+étroit, la palette devient une bande de pastilles au-dessus du formulaire et les réglages un
+panneau par-dessus. Les container queries (`@lg:`) font le reste.
+
+<note>
+
+Le bouton StackBlitz ouvre les fichiers dans un projet Vite simple, qui n'a pas Nuxt UI. Pour faire
+tourner cet exemple, copiez le dossier dans une application Nuxt avec le module `@nuxt/ui` et
+`zod`, et rendez `index.vue` dans une page.
+
+</note>
+
+## Clavier et lecteurs d'écran
+
+Allez sur un champ avec Tab et appuyez sur <kbd value="Space">
+
+
+
+</kbd>
+
+ pour le saisir.
+<kbd value="ArrowLeft">
+
+
+
+</kbd>
+
+ et <kbd value="ArrowRight">
+
+
+
+</kbd>
+
+ le déplacent le long de sa rangée,
+<kbd value="ArrowUp">
+
+
+
+</kbd>
+
+ et <kbd value="ArrowDown">
+
+
+
+</kbd>
+
+ vers les autres rangées et vers les espaces entre
+elles (une nouvelle rangée), <kbd value="Space">
+
+
+
+</kbd>
+
+ le dépose, <kbd value="Escape">
+
+
+
+</kbd>
+
+ le remet en
+place. Le provider ne prend que Espace pour les glissements
+(`keyboard: { keys: { start: ['Space'], drop: ['Space'] } }`), ce qui laisse <kbd value="Enter">
+
+
+
+</kbd>
+
+
+pour ouvrir les réglages d'un champ. <kbd value="Delete">
+
+
+
+</kbd>
+
+ supprime un champ,
+<kbd value="Ctrl">
+
+
+
+</kbd>
+
+ <kbd value="D">
+
+
+
+</kbd>
+
+ le duplique, <kbd value="Ctrl">
+
+
+
+</kbd>
+
+ <kbd value="Z">
+
+
+
+</kbd>
+
+ annule.
+
+Les `announcements` du provider parlent avec les mots du constructeur : "Work email: row 2, column
+2 of 2", "New date field: a new row above row 3". `form.describe` transforme la position que donne
+la bibliothèque (un id de liste et un index) en ces mots.
+
+En savoir plus : [Listes qui partagent des items](https://zizigy.github.io/docs/guides/shared-lists) ·
+[Une ligne d'insertion](https://zizigy.github.io/docs/guides/sortable-lists#an-insertion-line) ·
+[L'overlay](https://zizigy.github.io/docs/guides/overlay) ·
+[Style : Tailwind et kits d'UI](https://zizigy.github.io/docs/guides/styling#tailwind-css) ·
+[Accessibilité](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

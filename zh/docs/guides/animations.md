@@ -1,0 +1,628 @@
+---
+title: "动画"
+description: "排序时项会滑动，放置时落到自己的位置上，数据变化也可以有动画。逐个调整它们，用 CSS 为浮层、空位和列表添加动画，或者引入 motion 或 GSAP。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/animations"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+有三样东西会自动产生动画：排序时滑动的项、放置时落位的浮层，以及开启后的、非拖拽引起的数据变化。它们都接受相同的值，可以设置在 provider 上，或更靠近它所动画的对象的地方：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      选项
+    </th>
+    
+    <th>
+      位置
+    </th>
+    
+    <th>
+      默认值
+    </th>
+    
+    <th>
+      动画的内容
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        animation
+      </code>
+    </td>
+    
+    <td>
+      provider、列表、树
+    </td>
+    
+    <td>
+      开启，200 ms
+    </td>
+    
+    <td>
+      排序时、放置时和取消时，项滑到新位置。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        dropAnimation
+      </code>
+    </td>
+    
+    <td>
+      provider、可拖拽元素、可排序项、列表、树（放置目标上为 <code>
+        overDropAnimation
+      </code>
+      
+      ）
+    </td>
+    
+    <td>
+      开启，250 ms
+    </td>
+    
+    <td>
+      浮层落到它的位置上，或取消时飞回原处。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        animateChanges
+      </code>
+    </td>
+    
+    <td>
+      provider、列表、树
+    </td>
+    
+    <td>
+      <strong>
+        关闭
+      </strong>
+    </td>
+    
+    <td>
+      非拖拽引起的数据变化：项被添加、删除、移动或过滤，树的行被显示或隐藏。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+每一项可以取 `true`（默认时间）、`false`（关闭）、`{ duration, easing }`，或一个由你自己实现动画的函数：
+
+```vue
+<DnDProvider
+  :animation="{ duration: 180, easing: 'cubic-bezier(.2, .8, .2, 1)' }"
+  :drop-animation="{ duration: 300 }"
+  animate-changes
+>
+```
+
+列表或树自己的 `animation` 和 `animateChanges` 优先于 provider 的；`dropAnimation` 见[按项和按目标](#per-item-and-per-target)。其余的动效由你决定：浮层、空位和列表都是带有 [data 属性和 ref](https://zizigy.github.io/docs/guides/styling) 的元素，可以用 CSS 或动画库让它们动起来。
+
+## 排序
+
+拖拽时，列表的草稿重新排序，项滑到新的位置。下面这手牌的列表同时使用两个选项：选一个 `animation` 再给牌排序，选一个 `dropAnimation` 再松开一张牌。
+
+<example height="24rem" hint="选择时间设置，给牌排序，把一张牌拖出桌面松开" name="anim-sort">
+
+
+
+</example>
+
+```ts [Hand.vue]
+const springy: LayoutAnimation = ({ element, from, to, reducedMotion }) => {
+  if (reducedMotion) return;
+  return element.animate(
+    [{ translate: `${from.left - to.left}px ${from.top - to.top}px` }, { translate: '0 0' }],
+    { duration: 500, easing: 'cubic-bezier(.34, 1.56, .64, 1)' },
+  );
+};
+
+const animation = shallowRef<LayoutAnimation>(true); // true, { duration: 600 }, springy or false
+const dropAnimation = shallowRef<DropAnimation>(true); // true, { duration: 700 }, toss or false
+
+const { items } = makeSortableList(table, {
+  items: cards,
+  strategy: 'horizontal',
+  dropOutside: 'cancel', // let go off the table: the card flies back
+  animation,
+  dropAnimation,
+});
+```
+
+它是作用于 CSS `translate` 属性的 FLIP，通过 Web Animations API 实现。`translate` 能与你的任何 `transform` 组合，所以虚拟列表对行的定位不受影响。如果项在动画结束前再次移动，下一段动画会从它当前显示的位置开始。放置和取消时，项也由同一个动画移动。
+
+列表的 `animation` 接受值或 ref，每次移动时读取：如上所示，用 ref 就能切换它。在这里传入的函数是一个动画，而不是 getter。
+
+<warning>
+
+不要用 `<TransitionGroup>` 包裹可排序项：每次移动都会被动画两次。对于非拖拽引起的变化，开启 [`animateChanges`](#data-changes-animatechanges)。
+
+</warning>
+
+## 放置
+
+放置时，浮层从你松开的地方飞到项的位置上；取消时，飞回项开始的地方。在上面的那手牌中选择一个 `dropAnimation`，然后把一张牌拖出桌面并松开：放置被取消，它飞回原处。`toss` 是一个自定义函数：
+
+```ts [Hand.vue]
+/** The overlay arcs to its slot, as if tossed. */
+const toss: DropAnimation = ({ overlay, from, to, reducedMotion }) => {
+  if (reducedMotion) return;
+  // No visible slot to land on: fade out where it is.
+  if (!to) return overlay.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' });
+  const place = (x: number, y: number) => `translate3d(${x}px, ${y}px, 0)`;
+  const rise = Math.min(120, Math.hypot(to.left - from.left, to.top - from.top) / 2);
+  return overlay.animate(
+    [
+      { transform: place(from.left, from.top), width: `${from.width}px`, height: `${from.height}px` },
+      { transform: place((from.left + to.left) / 2, Math.min(from.top, to.top) - rise), offset: 0.45 },
+      { transform: place(to.left, to.top), width: `${to.width}px`, height: `${to.height}px` },
+    ],
+    { duration: 550, easing: 'ease-in-out', fill: 'forwards' },
+  );
+};
+```
+
+这手牌把它交给自己的列表。放在 provider 上时，它负责每一次拖拽的落位：
+
+```vue
+<DnDProvider :drop-animation="toss">
+```
+
+- 盒子以它的位置（`transform`）和尺寸（`width`、`height`）落位：内容按位置的尺寸重新布局，永远不会被缩放。
+- 如果放置后项没有可见的位置（被滚出视野，或被放进文件夹或回收区），`to` 为 `null`。此时默认动画会让浮层淡出，缩小进它被放入的区域（`into`），或在原地淡出。
+- 在多项拖拽中，其他项的克隆会自行落到各自的位置上；`dropAnimation` 是函数时，它们使用默认时间。放进区域时，它们一个接一个进去，盒子在它们之后进去（见[文件和文件夹](https://zizigy.github.io/docs/guides/multi-drag#into-a-folder)）。
+- `dropAnimation` 在每次放置时读取：用 ref 就能为下一次放置切换它，就像那手牌那样；绑定到 ref 的 provider prop 也可以。
+- 落位时滚动页面不会让它跑偏。盒子是 `position: fixed`，所以它通过自己的 CSS `translate` 跟随它要落到的东西（位置、区域，否则是它被放下时所在的目标），叠加在动画移动的 `transform` 之上。在你自己的动画里，像上面那样为 `transform` 添加动画，而不是 `translate`。
+- 下一次拖拽不会等待：每次放置都在自己的盒子里落位，同时新的拖拽照常进行。在正在落位的盒子上按下，就能在半空中接住它，拖拽从它所在的位置继续。`onDragSettle` 告诉你一次拖拽的浮层何时落定：下面的垃圾桶就在那时合上盖子。
+
+拖拽时，浮层还会取它将落入的位置的尺寸（`overlayFit: 'slot'`，默认值），所以放置很少需要改变尺寸。见[浮层](https://zizigy.github.io/docs/guides/overlay#size-overlayfit)。
+
+### 按项和按目标
+
+provider 的 `dropAnimation` 是默认值。可拖拽元素、可排序项或列表（为它的项）可以带上自己的，而放置目标对落入它的东西拥有最终决定权：`makeDroppable(el, { overDropAnimation })`、列表或树的 `overDropAnimation`。对于每次放置，取第一个已设置的：
+
+1. 目标的（取消时没有）。
+2. 被拖拽项自己的。
+3. 它所在列表的。
+4. provider 的。
+
+下面的购物车、花瓶和货架各设置了一个。货架让它的商品弹跳着落位，花瓶有自己的缓慢落位，购物车则把放到它上面的东西收进它的图标里：商品仍留在货架上，所以它在货架上的位置不是落位的地方。货架下方会亮起每次拖拽所用的那一个。
+
+<example height="24rem" hint="先给杯子排序，再给花瓶排序；然后把任意一个放进购物车" name="anim-cart">
+
+
+
+</example>
+
+```ts [Shop.vue]
+// 3. The list's, for its items without one of their own.
+makeSortableList(shelf, {
+  items: products,
+  strategy: 'horizontal',
+  dropAnimation: { duration: 450, easing: 'cubic-bezier(.34, 1.56, .64, 1)' },
+});
+```
+
+```ts [Product.vue]
+// 2. The item's own: it wins over its list's.
+makeSortableItem(el, {
+  item: () => props.product,
+  dropAnimation: props.product.fragile ? { duration: 1100, easing: 'ease-in-out' } : undefined,
+});
+```
+
+```ts [Cart.vue]
+// 1. The target's: it wins over both.
+const intoCart: DropAnimation = ({ overlay, from, reducedMotion }) => {
+  const end = icon.value?.getBoundingClientRect();
+  if (!end || reducedMotion) return;
+  // Into the icon, shrinking: the box scales around its top left corner.
+  const scale = end.height / from.height;
+  const animation = overlay.animate(
+    [
+      { transform: `translate3d(${from.left}px, ${from.top}px, 0)` },
+      {
+        transform: `translate3d(${end.left + (end.width - from.width * scale) / 2}px, ${end.top}px, 0) scale(${scale})`,
+        opacity: 0,
+      },
+    ],
+    { duration: 450, easing: 'cubic-bezier(.55, 0, .75, .2)', fill: 'forwards' },
+  );
+  animation.finished.then(() => landed.value++, () => {}); // the icon bounces
+  return animation;
+};
+
+makeDroppable(el, { id: 'cart', overDropAnimation: intoCart, onDrop: … });
+```
+
+`false` 也算已设置：带有 `overDropAnimation: false` 的目标会让浮层停在放下的地方。函数会以 `over` 获得目标，所以一个函数就能区别对待不同的目标。
+
+### 内容自己的落位
+
+放置还会等待它开始时浮层内部正在运行的动画：浮层组件在 `status: 'dropping'` 时启动的 CSS 动画和过渡。在垃圾桶上方，照片会皱成一团；放下后，它被扔进垃圾桶，等它进去了，放置才结束：
+
+<example height="27rem" hint="把一张照片拖进垃圾桶；Undo 可以把它找回来" name="anim-trash">
+
+
+
+</example>
+
+```ts [TrashBin.vue]
+makeDroppable(el, {
+  id: 'trash',
+  // The overlay reads it as `over.data`: it aims the photo at the bin's mouth.
+  data: () => ({ bin: bin.value }),
+  overOverlay: Crumple,
+  // The box stays where it was let go: its content does the landing.
+  overDropAnimation: false,
+  onDrop: (event) => emit('drop', event), // the gallery calls `event.source?.remove()`
+});
+
+// Its landing is over: the photo is in, the lid shuts.
+useDnDMonitor({
+  onDragSettle: (event) => {
+    if ('dropped' in event && event.over?.id === 'trash') shut.value++;
+  },
+});
+```
+
+```vue [Crumple.vue]
+<template>
+  <div class="crumple">
+    <!-- `fall` is set at the drop: `--dx` and `--dy`, from the photo to the bin in `over.data`. -->
+    <div class="paper" :class="{ falling: fall }" :style="fall">
+      <slot />
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.paper { clip-path: polygon(…); rotate: -8deg; scale: 0.7; }
+.paper.falling { animation: fall 0.55s forwards; }
+@keyframes fall {
+  to { translate: var(--dx) var(--dy); rotate: -120deg; scale: 0.12; opacity: 0; }
+}
+</style>
+```
+
+已经结束的动画和无限循环的动画不算在内，放置最多等待两秒。
+
+## 数据变化：`animateChanges`
+
+拖动一个色块，然后打乱、添加和删除一些。拖拽默认有动画；按钮引起的变化有动画，是因为网格开启了 `animateChanges`。
+
+<example height="22.75rem" hint="拖动、打乱、添加、删除" name="animate">
+
+
+
+</example>
+
+```ts
+makeSortableList(listRef, { items: swatches, animateChanges: true });
+```
+
+`animateChanges` 默认关闭，它为不经拖拽改变你的数组的操作添加动画：排序、打乱、在同一分组的列表之间移动、添加、删除或过滤掉某个项。在树中，它还涵盖节点展开和折叠时显示或隐藏的行。`<DnDProvider animate-changes>` 为每个列表和树开启它。
+
+它的各个部分可以逐一调整：
+
+```ts
+animateChanges: { duration: 250, move: true, enter: true, leave: { duration: 150 } },
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      部分
+    </th>
+    
+    <th>
+      默认行为
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        move
+      </code>
+    </td>
+    
+    <td>
+      位置改变的项会滑动，与 <code>
+        animation
+      </code>
+      
+       一样。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        enter
+      </code>
+    </td>
+    
+    <td>
+      新出现的项在原地淡入。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        leave
+      </code>
+    </td>
+    
+    <td>
+      离开的项的一个副本在它原来的位置淡出，并稍微缩小。它被标记为 <code>
+        data-dnd-leaving
+      </code>
+      
+      ，动画结束后被移除。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`duration` 和 `easing` 适用于每个部分；每个部分可以取 `true`、选项、`false` 或函数。只有可见区域附近的项才有动画，所以虚拟列表尚未挂载的行会被跳过。该选项在 `items` 变化时读取，所以 ref 可以切换它，就像演示中的开关那样。
+
+## 浮层：抬起、倾斜、落定
+
+浮层盒子会表明它正在做什么：跟随指针时为 `data-dnd-overlay="dragging"`，落位时为 `"dropping"`。盒子由库来移动和设置尺寸。在盒子里面，`data-dnd-overlay-content` 承载浮层显示的全部内容（一个克隆或一整叠），动画由你来加。拿起一位候选人：浮层抬起并倾斜；松开：它在落位时重新放平。
+
+<example height="24.5rem" hint="拿起一位候选人，拖到 Hired，然后松开" name="anim-container">
+
+
+
+</example>
+
+```vue [index.vue]
+<template>
+  <DnDProvider overlay-class="pipeline-hand">…</DnDProvider>
+</template>
+
+<!-- Not scoped: the overlay's content element is the library's, outside this component. -->
+<style>
+.pipeline-hand {
+  transition:
+    rotate 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+    scale 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+[data-dnd-overlay='dragging'] > .pipeline-hand {
+  rotate: 3deg;
+  scale: 1.05;
+}
+
+/* Where the lift starts: the box appears already `dragging`. */
+@starting-style {
+  [data-dnd-overlay='dragging'] > .pipeline-hand {
+    rotate: 0deg;
+    scale: 1;
+  }
+}
+</style>
+```
+
+- `overlay-class` 把你的类加到这个 provider 的浮层内容上：当前拖拽的，以及仍在落位的。Tailwind 也可以用（`starting:` 写出的就是 `@starting-style`）。
+- 过渡需要一个起点，而盒子出现时就已经是 `dragging`：`@starting-style` 为抬起提供了“之前”的状态。盒子变为 `dropping` 时，过渡反向运行，放置会等它结束。
+- 内容本身也以同样的方式添加动画，在它自己的组件中：[看板](https://zizigy.github.io/docs/examples/board)中手里的卡片和它的列在被拿起时会倾斜（`[data-dnd-overlay='dragging'] .column` 配合 `@starting-style`）。关键帧也可以：它们从状态开始时播放。
+- **浮层组件**以 prop 的形式获得 `status`：它的过渡可以跟随它。[provider 插槽演示](https://zizigy.github.io/docs/guides/overlay#the-providers-overlay-slot)中的便签在 `status` 变为 `'dropping'` 时，通过 `transition: rotate 0.25s` 摆正。
+- 不要动盒子本身（`[data-dnd-overlay]`）：给它加过渡会让它落后于指针，而且它的 `transform` 和尺寸由库来写入。
+
+## 空位与列表
+
+被拖拽的元素留在它的列表中，作为它将落入的**位置**，并被标记为 `data-dnd-placeholder`。列表也知道拖拽的情况：有它们接收的拖拽在进行时为 `isAccepting`，拖拽位于它们上方时为 `isOver`。在上面的招聘流程中，你拿起一位候选人时每个泳道都做好准备，卡片下方的那个高亮，它的计数跳动一下，空位打开并开始“呼吸”。
+
+```vue [Lane.vue]
+<script setup lang="ts">
+const { items, isOver, isAccepting } = makeSortableList(list, {
+  id: props.lane.id,
+  items: toRef(props.lane, 'people'),
+  group: 'pipeline',
+  dropzone: zone,
+});
+</script>
+
+<template>
+  <section ref="zone" class="lane" :class="{ ready: isAccepting, over: isOver }">
+    <h3>
+      {{ lane.title }}
+      <!-- A new element for every count: its animation plays on each change. -->
+      <span :key="items.length" class="count">{{ items.length }}</span>
+    </h3>
+    <ul ref="list">…</ul>
+  </section>
+</template>
+
+<style scoped>
+.lane { transition: background-color 0.25s, box-shadow 0.25s; }
+.lane.ready { box-shadow: inset 0 0 0 1px color-mix(in srgb, #42b883 35%, transparent); }
+.lane.over { background: color-mix(in srgb, #42b883 8%, transparent); box-shadow: inset 0 0 0 1.5px #42b883; }
+.count { animation: bump 0.3s ease-out; }
+</style>
+```
+
+```css [Candidate.vue]
+/* The slot opens where it appears, then breathes until the card lands. */
+.candidate[data-dnd-placeholder] {
+  animation: open 0.2s ease-out, breathe 1.2s ease-in-out 0.2s infinite;
+}
+```
+
+- `items` 是草稿：空位一进入泳道，它的 `length` 就把卡片计算在内，所以拖拽时计数就会变化。
+- 移到另一个列表的空位在那里是一个新元素，所以它的关键帧会再次播放。
+- 列表本身会在空位进入和离开时平滑地变大和缩小，它们周围的内容也一样（`animateSize`，默认开启；设为 `false` 则直接跳变）。尺寸就交给它：拖拽进行时你去改变列表的大小，会移动指针下方的目标。光晕、轮廓、颜色和 `scale` 是安全的。
+
+## 自定义动画
+
+每个选项也都接受函数。它接收一个上下文，启动动画，并返回它的 `Animation`、一个在动画结束时完成的 promise，或什么都不返回。拖拽在放置动画结束时结束，离开的副本在它的动画结束时被移除，但两者都不会在 `options.duration`（放置为 250 ms，其他为 200 ms）之后再等待超过一秒。
+
+```ts
+// animation, animateChanges.move: an item moved from `from` to `to`
+({ key, element, from, to, options, reason, signal, reducedMotion }) => Animation | Promise | void
+// dropAnimation: `to` is null when there is no visible slot; `into` is the zone it went into
+({ overlay, from, to, into, reason, active, options, reducedMotion }) => …
+// animateChanges.enter: the element is already in place
+({ key, element, to, options, reducedMotion }) => …
+// animateChanges.leave: `element` is a copy where the item was, removed when you finish
+({ key, element, from, options, reducedMotion }) => …
+```
+
+`reason` 说明原因：移动为 `'drag'` 或 `'change'`，浮层为 `'drop'` 或 `'cancel'`。`options` 包含该选项的时间设置，所以函数可以遵循你在旁边设置的 `duration`。
+
+三条规则让自定义动画与库保持同步：
+
+- **为 translate 添加动画**，从 `from - to` 到零，而不是 `transform`。它能与虚拟列表或你的 CSS 给行设置的 transform 组合，拖拽测量项时也不会把它算进去。
+- **遵循 signal。** 项在动画结束前再次移动时，它会中止。立即停止你的动画并清除它的样式：紧接着就会测量布局。返回的 `Animation` 会被自动取消。
+- **落到位置上时，用位置和尺寸**（`width`、`height`），不要用 `scale`：浮层的内容会按位置的尺寸重新布局。没有可落入的位置时，缩小是可以的：默认动画会把浮层缩小进区域（`into`），上面的购物车则缩小进它的图标。
+
+### motion
+
+下面的彩旗串基于 [motion](https://motion.dev/docs/vue) 运行：小旗和放置通过 provider 的函数实现弹簧效果，浮层组件随指针的速度摆动。
+
+<example height="17rem" hint="快速左右拖动一面小旗，然后松开" name="anim-motion">
+
+
+
+</example>
+
+```vue [index.vue]
+<script setup lang="ts">
+import { animate } from 'motion-v';
+import { DnDProvider, type DropAnimationContext, type LayoutAnimationContext } from '@vue-dnd-kit/core';
+
+const spring = { type: 'spring', duration: 0.5, bounce: 0.3 } as const;
+
+const move = ({ element, from, to, signal, reducedMotion }: LayoutAnimationContext) => {
+  if (reducedMotion) return;
+  const controls = animate(element, { translate: [`${from.left - to.left}px ${from.top - to.top}px`, '0px 0px'] }, spring);
+  signal.addEventListener('abort', () => {
+    controls.stop();
+    element.style.translate = '';
+  });
+  return controls.finished;
+};
+
+const drop = ({ overlay, from, to, reducedMotion }: DropAnimationContext) => {
+  if (reducedMotion) return;
+  if (!to) return animate(overlay, { opacity: 0 }, { duration: 0.18 }).finished;
+  return animate(
+    overlay,
+    { x: [from.left, to.left], y: [from.top, to.top], width: [from.width, to.width], height: [from.height, to.height] },
+    spring,
+  ).finished;
+};
+</script>
+
+<template>
+  <DnDProvider :animation="move" :drop-animation="drop">
+    <Garland />
+  </DnDProvider>
+</template>
+```
+
+浮层组件在 provider 之下渲染，所以可以在其中使用 `useDnD()`。它通过一个 motion value 跟随指针：
+
+```vue [FlagOverlay.vue]
+<script setup lang="ts">
+import { motion, useMotionValue, useReducedMotion, useSpring, useTransform, useVelocity } from 'motion-v';
+import { useDnD, type DnDStatus, type DragItem } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[]; status: DnDStatus }>();
+
+const { pointer } = useDnD();
+const x = useMotionValue(pointer.value?.x ?? 0);
+watch(() => pointer.value?.x, (value) => value !== undefined && x.set(value));
+const swing = useSpring(useTransform(useVelocity(x), [-1500, 0, 1500], [-25, 0, 25]), { stiffness: 300, damping: 14 });
+const calm = useReducedMotion();
+</script>
+
+<template>
+  <!-- Held by its top edge: `transform-origin: 50% 0` in its CSS. -->
+  <motion.div
+    class="flag-overlay"
+    :style="{ rotate: calm ? 0 : swing }"
+    :animate="{ scale: status === 'dropping' || calm ? 1 : 1.1 }"
+  >
+    …
+  </motion.div>
+</template>
+```
+
+### GSAP
+
+```ts [gsap-animations.ts]
+import gsap from 'gsap';
+import type {
+  DropAnimationContext,
+  EnterAnimationContext,
+  LayoutAnimationContext,
+  LeaveAnimationContext,
+  Rect,
+} from '@vue-dnd-kit/core';
+
+const move = ({ element, from, to, signal, reducedMotion }: LayoutAnimationContext) => {
+  if (reducedMotion) return;
+  const tween = gsap.fromTo(
+    element,
+    { translate: `${from.left - to.left}px ${from.top - to.top}px` },
+    { translate: '0px 0px', duration: 0.4, ease: 'power3.out' },
+  );
+  signal.addEventListener('abort', () => tween.revert());
+  return tween.then();
+};
+
+const box = (rect: Rect) => ({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
+
+const drop = ({ overlay, from, to, reducedMotion }: DropAnimationContext) => {
+  if (reducedMotion) return;
+  if (!to) return gsap.to(overlay, { opacity: 0, duration: 0.2 }).then();
+  return gsap.fromTo(overlay, box(from), { ...box(to), duration: 0.45, ease: 'back.out(1.2)' }).then();
+};
+
+const enter = ({ element, reducedMotion }: EnterAnimationContext) =>
+  gsap.from(element, reducedMotion ? { opacity: 0, duration: 0.2 } : { opacity: 0, scale: 0.85, duration: 0.35 }).then();
+
+const leave = ({ element, reducedMotion }: LeaveAnimationContext) =>
+  gsap.to(element, reducedMotion ? { opacity: 0, duration: 0.2 } : { opacity: 0, scale: 0.85, duration: 0.25 }).then();
+
+export const gsapAnimations = { animation: move, dropAnimation: drop, animateChanges: { move, enter, leave } };
+```
+
+```vue
+<DnDProvider v-bind="gsapAnimations">
+```
+
+完整的选项类型见[动画](https://zizigy.github.io/docs/api/animations)。
+
+## 减少动态效果
+
+在 `prefers-reduced-motion: reduce` 下，库自己的动画不会运行：项和浮层直接到达它们的位置，浮层也不会在不同位置尺寸之间平滑过渡。你的函数总会运行，并带有 `reducedMotion: true`，所以由它们决定：跳过动效，或像上面的示例那样保留一个短暂的淡入淡出。
+
+你的 CSS 由你自己把关。把抬起、倾斜和脉动放进 `@media (prefers-reduced-motion: no-preference)` 中，就像本页的演示那样，而把颜色变化留在外面：它们表明放置会去往哪里。
+
+## 不是由库引起的布局变化
+
+当拖拽期间有别的东西移动了行——虚拟化器重新测量、图片加载完成——在变化渲染之前调用列表的 `captureLayout()`。它在行当前的位置测量它们，并在下一次渲染后以动画把它们移到新位置。在拖拽之外它什么都不做。见[虚拟列表](https://zizigy.github.io/docs/guides/virtual-lists)。
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

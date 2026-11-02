@@ -1,0 +1,628 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="/vue-dnd-kit/__sitemap__/style.xsl"?>
+<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh</loc>
+        <xhtml:link rel="alternate" hreflang="en-US" href="https://zizigy.github.io/vue-dnd-kit" />
+        <xhtml:link rel="alternate" hreflang="ru-RU" href="https://zizigy.github.io/vue-dnd-kit/ru" />
+        <xhtml:link rel="alternate" hreflang="zh-CN" href="https://zizigy.github.io/vue-dnd-kit/zh" />
+        <xhtml:link rel="alternate" hreflang="ja-JP" href="https://zizigy.github.io/vue-dnd-kit/ja" />
+        <xhtml:link rel="alternate" hreflang="ko-KR" href="https://zizigy.github.io/vue-dnd-kit/ko" />
+        <xhtml:link rel="alternate" hreflang="es-ES" href="https://zizigy.github.io/vue-dnd-kit/es" />
+        <xhtml:link rel="alternate" hreflang="pt-BR" href="https://zizigy.github.io/vue-dnd-kit/pt" />
+        <xhtml:link rel="alternate" hreflang="de-DE" href="https://zizigy.github.io/vue-dnd-kit/de" />
+        <xhtml:link rel="alternate" hreflang="fr-FR" href="https://zizigy.github.io/vue-dnd-kit/fr" />
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://zizigy.github.io/vue-dnd-kit" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/changelog</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/changelog" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/changelog" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/changelog" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/changelog" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/changelog" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/changelog" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/changelog" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/changelog" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/changelog" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/changelog" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/examples</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/examples" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/examples" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/examples" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/examples" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/examples" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/examples" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/examples" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/examples" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/api/animations</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/animations" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/animations" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/api/animations" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/api/animations" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/api/animations" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/api/animations" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/api/animations" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/api/animations" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/api/animations" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/api/animations" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/api/dnd-provider</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/dnd-provider" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/dnd-provider" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/api/dnd-provider" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/api/dnd-provider" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/api/dnd-provider" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/api/dnd-provider" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/api/dnd-provider" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/api/dnd-provider" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/api/dnd-provider" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/api/dnd-provider" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/api/drag-preview</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/drag-preview" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/drag-preview" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/api/drag-preview" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/api/drag-preview" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/api/drag-preview" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/api/drag-preview" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/api/drag-preview" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/api/drag-preview" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/api/drag-preview" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/api/drag-preview" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/api/events</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/events" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/events" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/api/events" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/api/events" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/api/events" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/api/events" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/api/events" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/api/events" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/api/events" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/api/events" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-drag-area</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/make-drag-area" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/make-drag-area" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/api/make-drag-area" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-drag-area" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/api/make-drag-area" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/api/make-drag-area" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/api/make-drag-area" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/api/make-drag-area" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/api/make-drag-area" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/api/make-drag-area" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-draggable</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/make-draggable" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/make-draggable" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/api/make-draggable" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-draggable" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/api/make-draggable" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/api/make-draggable" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/api/make-draggable" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/api/make-draggable" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/api/make-draggable" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/api/make-draggable" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-droppable</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/make-droppable" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/make-droppable" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/api/make-droppable" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-droppable" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/api/make-droppable" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/api/make-droppable" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/api/make-droppable" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/api/make-droppable" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/api/make-droppable" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/api/make-droppable" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-selection-area</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/make-selection-area" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/make-selection-area" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/api/make-selection-area" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-selection-area" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/api/make-selection-area" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/api/make-selection-area" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/api/make-selection-area" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/api/make-selection-area" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/api/make-selection-area" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/api/make-selection-area" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-sortable-item</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/make-sortable-item" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/make-sortable-item" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/api/make-sortable-item" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-sortable-item" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/api/make-sortable-item" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/api/make-sortable-item" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/api/make-sortable-item" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/api/make-sortable-item" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/api/make-sortable-item" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/api/make-sortable-item" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-sortable-list</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/make-sortable-list" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/make-sortable-list" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/api/make-sortable-list" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-sortable-list" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/api/make-sortable-list" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/api/make-sortable-list" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/api/make-sortable-list" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/api/make-sortable-list" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/api/make-sortable-list" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/api/make-sortable-list" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-sortable-tree</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/make-sortable-tree" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/make-sortable-tree" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/api/make-sortable-tree" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-sortable-tree" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/api/make-sortable-tree" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/api/make-sortable-tree" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/api/make-sortable-tree" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/api/make-sortable-tree" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/api/make-sortable-tree" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/api/make-sortable-tree" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/api/modifiers</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/modifiers" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/modifiers" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/api/modifiers" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/api/modifiers" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/api/modifiers" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/api/modifiers" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/api/modifiers" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/api/modifiers" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/api/modifiers" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/api/modifiers" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/api/sensors</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/sensors" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/sensors" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/api/sensors" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/api/sensors" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/api/sensors" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/api/sensors" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/api/sensors" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/api/sensors" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/api/sensors" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/api/sensors" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/api/types</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/types" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/types" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/api/types" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/api/types" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/api/types" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/api/types" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/api/types" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/api/types" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/api/types" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/api/types" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/api/use-dnd</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/use-dnd" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/api/use-dnd" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/api/use-dnd" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/api/use-dnd" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/api/use-dnd" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/api/use-dnd" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/api/use-dnd" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/api/use-dnd" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/api/use-dnd" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/api/use-dnd" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/changelog/v3-0-0-beta-1</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/changelog/v3-0-0-beta-1" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/changelog/v3-0-0-beta-1" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/changelog/v3-0-0-beta-1" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/changelog/v3-0-0-beta-1" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/changelog/v3-0-0-beta-1" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/changelog/v3-0-0-beta-1" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/changelog/v3-0-0-beta-1" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/changelog/v3-0-0-beta-1" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/changelog/v3-0-0-beta-1" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/changelog/v3-0-0-beta-1" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/changelog/v3-0-0-beta-2</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/changelog/v3-0-0-beta-2" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/changelog/v3-0-0-beta-2" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/changelog/v3-0-0-beta-2" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/changelog/v3-0-0-beta-2" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/changelog/v3-0-0-beta-2" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/changelog/v3-0-0-beta-2" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/changelog/v3-0-0-beta-2" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/changelog/v3-0-0-beta-2" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/changelog/v3-0-0-beta-2" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/changelog/v3-0-0-beta-2" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/block-editor</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/block-editor" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/block-editor" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/block-editor" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/block-editor" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/block-editor" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/block-editor" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/examples/block-editor" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/block-editor" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/examples/block-editor" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/block-editor" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/board</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/board" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/board" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/board" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/board" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/board" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/board" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/examples/board" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/board" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/examples/board" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/board" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/calendar</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/calendar" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/calendar" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/calendar" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/calendar" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/calendar" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/calendar" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/examples/calendar" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/calendar" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/examples/calendar" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/calendar" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/chess</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/chess" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/chess" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/chess" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/chess" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/chess" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/chess" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/examples/chess" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/chess" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/examples/chess" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/chess" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/design-canvas</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/design-canvas" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/design-canvas" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/design-canvas" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/design-canvas" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/design-canvas" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/design-canvas" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/examples/design-canvas" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/design-canvas" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/examples/design-canvas" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/design-canvas" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/file-manager</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/file-manager" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/file-manager" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/file-manager" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/file-manager" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/file-manager" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/file-manager" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/examples/file-manager" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/file-manager" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/examples/file-manager" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/file-manager" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/form-builder</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/form-builder" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/form-builder" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/form-builder" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/form-builder" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/form-builder" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/form-builder" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/examples/form-builder" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/form-builder" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/examples/form-builder" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/form-builder" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/page-builder</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/page-builder" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/page-builder" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/page-builder" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/page-builder" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/page-builder" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/page-builder" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/examples/page-builder" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/page-builder" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/examples/page-builder" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/page-builder" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/getting-started/installation</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/getting-started/installation" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/getting-started/installation" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/getting-started/installation" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/getting-started/installation" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/getting-started/installation" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/getting-started/installation" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/getting-started/installation" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/getting-started/installation" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/getting-started/installation" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/getting-started/installation" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/getting-started/introduction</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/getting-started/introduction" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/getting-started/introduction" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/getting-started/introduction" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/getting-started/introduction" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/getting-started/introduction" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/getting-started/introduction" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/getting-started/introduction" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/getting-started/introduction" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/getting-started/introduction" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/getting-started/introduction" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/getting-started/migrating-from-v2</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/getting-started/migrating-from-v2" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/getting-started/migrating-from-v2" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/getting-started/migrating-from-v2" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/getting-started/migrating-from-v2" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/getting-started/migrating-from-v2" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/getting-started/migrating-from-v2" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/getting-started/migrating-from-v2" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/getting-started/migrating-from-v2" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/getting-started/migrating-from-v2" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/getting-started/migrating-from-v2" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/getting-started/quick-start</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/getting-started/quick-start" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/getting-started/quick-start" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/getting-started/quick-start" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/getting-started/quick-start" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/getting-started/quick-start" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/getting-started/quick-start" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/getting-started/quick-start" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/getting-started/quick-start" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/getting-started/quick-start" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/getting-started/quick-start" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/accessibility</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/accessibility" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/accessibility" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/accessibility" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/accessibility" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/accessibility" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/accessibility" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/guides/accessibility" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/accessibility" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/guides/accessibility" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/accessibility" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/animations</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/animations" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/animations" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/animations" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/animations" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/animations" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/animations" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/guides/animations" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/animations" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/guides/animations" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/animations" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/constraints</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/constraints" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/constraints" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/constraints" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/constraints" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/constraints" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/constraints" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/guides/constraints" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/constraints" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/guides/constraints" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/constraints" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/devtools</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/devtools" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/devtools" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/devtools" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/devtools" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/devtools" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/devtools" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/guides/devtools" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/devtools" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/guides/devtools" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/devtools" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/drag-and-drop</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/drag-and-drop" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/drag-and-drop" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/drag-and-drop" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/drag-and-drop" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/drag-and-drop" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/drag-and-drop" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/guides/drag-and-drop" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/drag-and-drop" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/guides/drag-and-drop" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/drag-and-drop" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/drop-decisions</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/drop-decisions" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/drop-decisions" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/drop-decisions" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/drop-decisions" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/drop-decisions" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/drop-decisions" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/guides/drop-decisions" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/drop-decisions" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/guides/drop-decisions" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/drop-decisions" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/multi-drag</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/multi-drag" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/multi-drag" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/multi-drag" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/multi-drag" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/multi-drag" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/multi-drag" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/guides/multi-drag" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/multi-drag" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/guides/multi-drag" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/multi-drag" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/native</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/native" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/native" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/native" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/native" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/native" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/native" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/guides/native" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/native" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/guides/native" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/native" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/overlay</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/overlay" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/overlay" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/overlay" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/overlay" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/overlay" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/overlay" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/guides/overlay" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/overlay" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/guides/overlay" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/overlay" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/provider</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/provider" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/provider" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/provider" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/provider" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/provider" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/provider" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/guides/provider" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/provider" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/guides/provider" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/provider" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/sensors</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/sensors" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/sensors" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/sensors" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/sensors" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/sensors" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/sensors" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/guides/sensors" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/sensors" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/guides/sensors" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/sensors" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/shared-lists</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/shared-lists" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/shared-lists" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/shared-lists" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/shared-lists" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/shared-lists" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/shared-lists" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/guides/shared-lists" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/shared-lists" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/guides/shared-lists" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/shared-lists" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/sortable-lists</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/sortable-lists" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/sortable-lists" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/sortable-lists" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/sortable-lists" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/sortable-lists" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/sortable-lists" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/guides/sortable-lists" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/sortable-lists" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/guides/sortable-lists" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/sortable-lists" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/styling</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/styling" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/styling" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/styling" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/styling" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/styling" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/styling" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/guides/styling" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/styling" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/guides/styling" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/styling" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/trees</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/trees" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/trees" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/trees" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/trees" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/trees" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/trees" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/guides/trees" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/trees" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/guides/trees" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/trees" hreflang="fr-FR" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/virtual-lists</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/virtual-lists" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/guides/virtual-lists" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/virtual-lists" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/virtual-lists" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/virtual-lists" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/virtual-lists" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/guides/virtual-lists" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/virtual-lists" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/guides/virtual-lists" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/virtual-lists" hreflang="fr-FR" />
+    </url>
+</urlset>
+<!-- XML Sitemap generated by @nuxtjs/sitemap v9.1.0 at 2026-11-02T01:07:12.121Z -->

@@ -1,0 +1,182 @@
+---
+title: "Tableau de projet"
+description: "Un tableau produit dans l'esprit de Linear et Trello — des colonnes que vous réordonnez, des limites WIP, une question avant Done, la sélection multiple avec une barre de sélection, des filtres à travers lesquels les glissements fonctionnent, une corbeille avec Undo, et un panneau de carte dont les boutons Status jouent de vrais glissements."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/board"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="40rem" hint="Faites glisser cartes et colonnes ; cliquez sur une carte pour l'ouvrir, Ctrl/Cmd-clic pour la sélectionner" name="board" title="Tableau de projet">
+
+
+
+</example>
+
+## Ce qu'il faut regarder
+
+- **Board.vue** : les colonnes forment leur propre liste triable horizontale (`strategy: 'horizontal'`, `axis: 'x'`), et chaque colonne est un item triable qu'on fait glisser par son
+en-tête (`handle`). Agrandi, le tableau remplit l'écran ; sur un téléphone, il défile sur le côté.
+- **Column.vue** : les cartes de toutes les colonnes forment un seul `group`, avec les règles de
+la colonne : sa limite WIP, la question avant Done, et les filtres. La jauge de son en-tête
+allume les cartes qu'un glissement y ferait entrer.
+- **Card.vue** : un item triable de `type: 'card'`, si bien que la corbeille accepte les cartes
+et pas les colonnes. Un clic l'ouvre, Ctrl/Cmd-clic la sélectionne (`selected`) ; au clavier,
+Espace la saisit, Entrée l'ouvre et X la sélectionne.
+- **store.ts** : les données et les règles du tableau, sans aucun glisser-déposer, fournies
+au-dessus du `DnDProvider` pour que l'overlay les lise aussi.
+
+## Les règles d'une colonne
+
+Chaque colonne passe quatre règles à sa liste. `put` voit toutes les cartes d'un multi-drag à la
+fois : la colonne les accepte toutes si elles tiennent sous sa limite, ou aucune. Au-dessus d'une
+colonne pleine, l'emplacement reste là où le glissement a commencé, la colonne devient rouge et
+les cartes en main disent pourquoi. `onBeforeDrop` pose une question avant que des cartes
+n'entrent dans Done, et `animate` fait glisser les cartes qui arrivent et partent sans glissement :
+un filtre, Add card, Undo.
+
+```ts [Column.vue]
+const { items, isOver, isAccepting } = makeSortableList(list, {
+  id: props.column.id,
+  items: () => props.column.cards.filter(board.matches),
+  group: { name: 'cards', put: ({ keys }) => board.fits(props.column, keys) },
+  overlay: CardOverlay,
+  animate: true,
+  onBeforeDrop: (event) => (props.column.confirm && !event.sameList ? board.ask(event.items) : 'accept'),
+  onDrop: (event) => {
+    event.preventDefault();
+    board.apply(event);
+  },
+});
+```
+
+## Des filtres, et des dépôts que le tableau applique
+
+La recherche et les personnes de la barre d'outils filtrent les cartes, et chaque glissement
+continue de fonctionner sur ce qui est affiché. Chaque liste lit sa colonne via un getter, filtrée,
+si bien que la bibliothèque ne l'écrit jamais : `onDrop` appelle `preventDefault()` et passe au
+tableau `e.result`, les nouvelles cartes filtrées de chaque colonne que le dépôt a modifiée. Le
+tableau les remet aux places qu'avaient les cartes affichées, et les cartes que les filtres
+masquent restent où elles étaient.
+
+```ts [store.ts]
+const merge = (all: Card[], shown: Card[]) => {
+  const queue = [...shown];
+  const merged: Card[] = [];
+  for (const entry of all) {
+    if (!matches(entry)) merged.push(entry);
+    else if (queue.length) merged.push(queue.shift()!);
+  }
+  // Cards that came in from another column and found no place left: at the end.
+  return [...merged, ...queue];
+};
+```
+
+## Les cartes en main
+
+**CardOverlay.vue** est l'`overlay` des cartes. La carte saisie se soulève et s'incline, le reste
+d'une sélection est posé dessous, construit à partir de clones `DragPreview` tournés par le
+`transform` de leurs enveloppes, et un compteur est posé par-dessus. Sous les cartes, une
+indication dit ce que ferait le relâchement, d'après l'`over` et l'`accepted` de l'overlay :
+*Move 2 cards to In review*, *Complete*, *Delete*, ou *In review is full · 2 max*. Déposé dans une
+colonne, chaque clone atterrit sur son propre emplacement ; au-dessus de la corbeille, la pile
+rétrécit, et une fois déposées, les cartes y entrent l'une après l'autre.
+
+```ts [CardOverlay.vue]
+const hint = computed(() => {
+  if (props.status !== 'dragging' || !props.over) return null;
+  const many = props.items.length > 1 ? ` ${props.items.length} cards` : '';
+  if (props.over.id === 'trash') return { tone: 'danger', icon: 'trash', text: `Delete${many}` };
+  const column = board.column(props.over.id);
+  if (!column) return null;
+  if (!props.accepted) return { tone: 'danger', icon: 'limit', text: `${column.title} is full · ${column.limit} max` };
+  if (board.find(props.items[0]!.id)?.column.id === column.id) return null;
+  if (column.confirm) return { tone: 'done', column, text: `Complete${many}` };
+  return { tone: '', column, text: `Move${many} to ${column.title}` };
+});
+```
+
+Une colonne glissée par son en-tête est le clone par défaut, incliné avec la propriété `rotate`
+tant que `data-dnd-overlay` vaut `dragging`.
+
+## Done demande d'abord
+
+Un dépôt dans Done renvoie une promesse depuis `onBeforeDrop` : les cartes attendent là où elles
+ont été relâchées pendant que **ConfirmDialog.vue** pose la question. *Move to Done* répond
+`'accept'`, Cancel et Échap `'reject'` (les cartes reviennent à leur place), et *Keep dragging*`'continue'` : les cartes suivent de nouveau le pointeur, et le clic suivant les dépose. Une fois
+les cartes arrivées (`onDragSettle`), leur coche apparaît dans Done et la progression du sprint
+avance.
+
+```ts [Board.vue]
+useDnDMonitor({
+  onDragSettle: (event) => {
+    const target = event.over ? board.column(event.over.id) : undefined;
+    if ('dropped' in event && target?.confirm && event.source?.list !== target.id) board.complete(event.accepted);
+  },
+});
+```
+
+## Plusieurs cartes, la corbeille et Undo
+
+Les cartes sélectionnées voyagent ensemble : faites-en glisser une, et chaque carte sélectionnée
+suit, depuis n'importe quelle colonne. La barre de sélection les déplace, les supprime, ou vide la
+sélection (Échap aussi). **Trash.vue** est une simple cible de dépôt qui n'accepte que les
+cartes ; elle les supprime du tableau, comme le font les boutons Delete, pour que la notification
+puisse remettre chacune là où elle était.
+
+```ts [Trash.vue]
+makeDroppable(el, {
+  id: 'trash',
+  accept: 'card',
+  onDrop: (event) => {
+    board.remove(event.active.ids);
+    selection.delete(...event.active.ids);
+  },
+});
+```
+
+## Déplacer sans glisser
+
+Le panneau d'une carte a des boutons Status, et la barre de sélection a un bouton par colonne. Ils
+déplacent les cartes avec `@vue-dnd-kit/actions` : `moveItem` joue un vrai glissement au clavier
+de la carte, et une carte sélectionnée emmène la sélection. Il est annoncé et animé comme les
+vôtres, et la limite de la colonne et la question de Done s'y appliquent comme à n'importe quel
+glissement.
+
+```ts [store.ts]
+export function useMove() {
+  const board = inject(BOARD)!;
+  const { moveItem } = useDnDActions();
+  return (ids: Key[], target: Column) => {
+    if (!board.fits(target, ids)) return board.notify(`${target.title} is full: ${target.limit} cards at most`);
+    void moveItem(ids[0]!, { list: target.id });
+  };
+}
+```
+
+## Clavier et lecteurs d'écran
+
+Seul Espace saisit une carte : Entrée reste libre pour l'ouvrir ; les instructions le disent. Les
+flèches déplacent une carte d'emplacement en emplacement, et en travers vers la colonne suivante
+qui l'accepte : une colonne pleine est sautée, et au-delà de la dernière colonne, l'appui suivant
+emmène la carte jusqu'à la corbeille. Les annonces nomment les cartes et les colonnes au lieu des
+ids : *"Picked up VDK-45, Haptics on Android tablets. Todo, position 6 of 6."*,
+*"In review is full: its limit is 2 cards."*
+
+```vue [index.vue]
+<DnDProvider
+  :keyboard="{ keys: { start: ['Space'] } }"
+  screen-reader-instructions="Space picks up a card or a column, the arrow keys move it, Space drops it, Escape cancels. Enter opens a card, X selects it."
+  :announcements="announcements"
+  :haptics="{ enter: true, refuse: true }"
+>
+```
+
+En savoir plus : [Listes qui partagent des items](https://zizigy.github.io/docs/guides/shared-lists#controlled-lists) ·
+[Décider d'un dépôt](https://zizigy.github.io/docs/guides/drop-decisions) · [Multi-drag](https://zizigy.github.io/docs/guides/multi-drag) ·
+[L'overlay](https://zizigy.github.io/docs/guides/overlay#dragpreview-the-clone-in-your-layout) ·
+[Glissements programmatiques](https://zizigy.github.io/docs/guides/sensors#programmatic-drags) ·
+[Accessibilité](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

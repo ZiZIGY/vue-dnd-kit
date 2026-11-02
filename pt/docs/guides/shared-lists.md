@@ -1,0 +1,396 @@
+---
+title: "Listas que compartilham itens"
+description: "Listas de um mesmo grupo movem, copiam e trocam itens — a coluna inteira recebe drops, pull e put decidem o que entra e o que sai, paletas copiam, e listas controladas aplicam cada drop a uma store com histórico de desfazer."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/shared-lists"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="31rem" hint="Mova histórias entre as listas; desligue e ligue a área de drop" name="sprint-planning">
+
+
+
+</example>
+
+## Um grupo
+
+Listas com o mesmo nome de `group` trocam itens. Por padrão, cada lista é um grupo só seu.
+
+```vue [Column.vue]
+<script setup lang="ts">
+import { toRef, useTemplateRef } from 'vue';
+import { makeSortableList } from '@vue-dnd-kit/core';
+import StoryCard from './StoryCard.vue';
+
+type Story = { id: string; title: string; points: number };
+const props = defineProps<{ column: { id: string; title: string; stories: Story[] } }>();
+
+const list = useTemplateRef<HTMLElement>('list');
+const { items, isOver } = makeSortableList(list, {
+  id: props.column.id,                     // names the list in drop events
+  items: toRef(props.column, 'stories'),   // a writable ref into the reactive column
+  group: 'planning',                       // same name: stories move between these lists
+});
+</script>
+
+<template>
+  <section :class="{ over: isOver }">
+    <h3>{{ column.title }}</h3>
+    <ul ref="list">
+      <StoryCard v-for="story in items" :key="story.id" :story="story" />
+    </ul>
+  </section>
+</template>
+```
+
+```vue [index.vue]
+<script setup lang="ts">
+import { reactive } from 'vue';
+import Column from './Column.vue';
+
+const columns = reactive([
+  { id: 'backlog', title: 'Backlog', stories: [{ id: 's1', title: 'Saved searches', points: 5 }] },
+  { id: 'sprint', title: 'Sprint 14', stories: [] },
+]);
+</script>
+
+<template>
+  <Column v-for="column in columns" :key="column.id" :column="column" />
+</template>
+```
+
+- Aqui cada coluna é um componente, como as colunas costumam ser. Um componente também pode criar
+várias listas, um Todo e um Done fixos lado a lado: cada cartão entra na lista cujo elemento o
+contém.
+- `toRef(props.column, 'stories')` é gravável porque o pai passa um objeto reativo. O drop
+grava os dois arrays, o que a história deixou e o em que ela entrou, e os pontos das duas
+colunas acompanham.
+- `id` aparece nos eventos de drop como `from.list` e `to.list`, e é a chave de `e.result`, os
+novos arrays de cada lista que o drop altera. `id` e `group` são lidos uma vez só.
+- As keys precisam ser únicas no grupo inteiro.
+
+O `onDrop` de uma lista roda para os drops **nela**. Um movimento de `backlog` para `sprint`
+chama o `onDrop` da lista `sprint`, e o `e.result` dele contém os novos arrays das duas listas.
+
+## A coluna inteira recebe drops: `dropzone`
+
+Uma lista curta em uma coluna alta deixa espaço vazio abaixo do último card. Com `dropzone`,
+outro elemento recebe os drops pela lista: aqui, a coluna inteira. Uma história solta abaixo da
+última pousa no fim. As histórias continuam no `<ul>`; só a área que recebe drops cresce. A demo
+contorna essa área enquanto você arrasta: desligue-a, e só a própria lista recebe a história.
+
+```ts [Column.vue]
+const zone = useTemplateRef<HTMLElement>('zone');
+const { items } = makeSortableList(list, {
+  items: toRef(props.column, 'stories'),
+  group: 'planning',
+  dropzone: zone,   // or a getter: () => (wholeColumn.value ? zone.value : undefined)
+});
+```
+
+<tip>
+
+Sem um `dropzone`, uma lista vazia ainda precisa de um tamanho para receber drops: dê a ela um
+`min-height`.
+
+</tip>
+
+## O que entra e o que sai: `pull` e `put`
+
+`group` também aceita um objeto. `pull` diz o que pode sair de uma lista, `put` o que pode entrar:
+
+<example height="36rem" hint="Arraste arquivos entre as listas: cada uma diz se os aceita, e por que não" name="group-rules">
+
+
+
+</example>
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Opção
+    </th>
+    
+    <th>
+      Valores
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        pull
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        true
+      </code>
+      
+       (padrão): os itens podem sair. <code>
+        false
+      </code>
+      
+      : não podem. <code>
+        'clone'
+      </code>
+      
+      : saem cópias, os itens ficam.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        put
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        true
+      </code>
+      
+       (padrão): os itens podem entrar. <code>
+        false
+      </code>
+      
+      : nada entra. Uma função: você decide a cada arraste.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+```ts [index.vue]
+// Inbox: gives, takes nothing.
+group: { name: 'files', pull: true, put: false }
+
+// Templates: gives copies, takes nothing, keeps its order.
+group: { name: 'files', pull: 'clone', put: false }, sort: false
+
+// Images: takes images only.
+group: { name: 'files', put: ({ types }) => types.every((type) => type === 'image') }
+```
+
+Uma função `put` recebe `{ keys, items, types, from, to }`: as keys e os itens arrastados, os
+tipos deles, a lista de onde vêm (`null` para draggables simples) e esta lista. `types` são as
+opções `type` dos itens arrastados (`makeSortableItem(el, { item, type })`); itens sem tipo
+contam como o nome do grupo. Movimentos dentro de uma lista são sempre permitidos: a Inbox ainda
+ordena os próprios arquivos.
+
+Sobre uma lista que recusa o arraste, a posição volta para onde o arraste começou, então as
+listas mostram o que um drop faria: nada. Um drop ali é cancelado e o item volta ao lugar. O
+`isAccepting` da lista é `false` durante um arraste assim, e o `isOver` continua `true` sobre
+ela: é assim que cada lista da demo sabe o que dizer.
+
+A posição também volta para casa sobre um alvo de drop próprio fora das listas, como uma lixeira:
+o drop ali é do alvo, e as listas mantêm o item, a não ser que o `onDrop` dele o retire
+(`event.source.remove()`). Alvos dentro das listas (um drop dentro de um item) e em volta delas
+(um painel que contém as listas) deixam a posição onde está.
+
+```ts [RuleList.vue]
+const { items, isOver, isAccepting } = makeSortableList(el, { … });
+const { active } = useDnD();
+const verdict = computed(() => (active.value ? (isAccepting.value ? 'takes' : 'refuses') : null));
+```
+
+### Limites
+
+Uma lista que comporta no máximo três arquivos, a Shortlist:
+
+```ts [index.vue]
+const shortlist = reactive({
+  files: [/* … */],
+  group: { name: 'files', put: ({ keys }: SortablePutContext) => shortlist.files.length + keys.length <= 3 },
+});
+```
+
+Ela lê os próprios itens quando um arraste pergunta. Encha-a, e ela recusa o próximo arquivo,
+com o motivo no cabeçalho.
+
+Quando vários itens selecionados de tipos diferentes são arrastados, `acceptMode` diz se
+`'all'` (padrão) ou `'some'` deles precisam passar no `put`. Com `'some'`, os que passam pousam e
+os outros voltam ao lugar. Veja [multi-drag](https://zizigy.github.io/docs/guides/multi-drag#taking-only-some).
+
+## Copiar: paletas e a tecla Alt
+
+<example height="26rem" hint="Arraste da paleta; arrastar com Alt copia; solte fora do painel Page para remover" name="palette">
+
+
+
+</example>
+
+```ts [Palette.vue]
+makeSortableList(list, {
+  items: templates,
+  group: { name: 'blocks', pull: 'clone', put: false },  // copies go out, nothing comes in
+  sort: false,                                           // its own order stays
+  clone: (block) => ({ ...block, id: crypto.randomUUID() }),
+});
+```
+
+```ts [Sheet.vue]
+makeSortableList(list, {
+  items: blocks,
+  group: 'blocks',
+  clone: (block) => ({ ...block, id: crypto.randomUUID() }),  // for Alt-drags
+  dropOutside: 'remove',                                      // drag off the Page panel to delete
+});
+```
+
+- `pull: 'clone'` copia todo arraste que sai da lista. O original fica, e a cópia viaja e pousa.
+- Segurar <kbd value="Alt">
+
+
+
+</kbd>
+
+ durante o arraste também copia, de qualquer lista com uma função
+`clone`: é ela que faz a cópia. Mude a tecla com o `copyModifier` do provider, ou desligue com
+`null`.
+- De qualquer forma, a lista de onde o item vem precisa de `clone`. Ele precisa retornar a cópia
+com uma **key nova**. Sem `clone`, nada é copiado.
+- O evento de drop tem `mode: 'copy'`, e `e.items` são as cópias. Um componente de overlay também
+recebe `mode`, para mostrar um "+" ao copiar (veja [o overlay](https://zizigy.github.io/docs/guides/overlay)).
+
+## Trocar de lugar entre listas
+
+Duas listas de um mesmo grupo que têm `behavior: 'swap'` trocam itens entre si: o item arrastado
+ocupa o lugar daquele sob o ponteiro, e este vai para a lista do item arrastado. Ele precisa ter
+permissão para sair da sua lista (`pull: true`) e para entrar na outra (`put`). O rodízio de
+plantão em [listas ordenáveis](https://zizigy.github.io/docs/guides/sortable-lists#swap-instead-of-shift) troca itens
+entre as suas duas colunas.
+
+## Draggables simples
+
+Uma lista recebe itens arrastados com `makeDraggable` (um chip, um modelo, um arquivo de uma
+árvore) quando tem `createItem`. `group.put` também decide sobre eles, com `from: null`. Veja
+[draggables simples em uma lista](https://zizigy.github.io/docs/guides/drag-and-drop#plain-draggables-into-a-list).
+
+## Soltar fora
+
+O que acontece quando um arraste termina fora de qualquer alvo é definido pelo `dropOutside` da
+lista:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        dropOutside
+      </code>
+    </th>
+    
+    <th>
+      Os itens
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'placeholder'
+      </code>
+      
+       (padrão)
+    </td>
+    
+    <td>
+      Pousam onde a posição foi mostrada pela última vez.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'cancel'
+      </code>
+    </td>
+    
+    <td>
+      Voltam ao lugar. O padrão com <code>
+        placeholder: 'indicator'
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'remove'
+      </code>
+    </td>
+    
+    <td>
+      Saem da lista: arraste para fora para excluir. A folha da demo da paleta faz isso.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`'remove'` consulta primeiro o `onBeforeDrop` da lista. Depois, o `onDrop` da lista roda com
+`to.index === -1`, e `e.result` contém a lista sem os itens. Uma lixeira que recebe drops funciona
+do mesmo jeito: veja [lixeiras](https://zizigy.github.io/docs/guides/drag-and-drop#trash-zones).
+
+## Listas controladas
+
+As listas podem ler uma store que não é delas: Pinia, estado do servidor, dados imutáveis. Passe
+`items` como getter (ou um `computed`, ou um ref somente leitura): a biblioteca nunca grava nele.
+Chame `e.preventDefault()` no `onDrop` e aplique `e.result` você mesmo:
+
+<example height="26rem" hint="Mova convidados entre as mesas, depois desfaça, um movimento por vez" name="seating-undo">
+
+
+
+</example>
+
+```ts [Table.vue]
+const { items } = makeSortableList(list, {
+  id: props.id,
+  items: () => props.seating.state.tables[props.id]!,   // read-only
+  group: 'seating',
+  onDrop: (e) => {
+    e.preventDefault();                                   // no write
+    props.seating.apply(e.result, `${e.items[0]?.name} → ${props.title}`);
+  },
+});
+```
+
+```ts [store.ts]
+const apply = (result: ReadonlyMap<Key, Guest[]>, label: string) => {
+  const before = [...result.keys()].map((id): [Key, Guest[]] => [id, state.tables[id]!]);
+  for (const [id, guests] of result) state.tables[id] = guests;
+  state.history.unshift({ label, before });
+};
+
+const undo = () => {
+  const last = state.history.shift();
+  for (const [id, guests] of last?.before ?? []) state.tables[id] = guests;
+};
+```
+
+- `e.result` associa cada lista que o drop altera ao seu novo array: as duas mesas depois de um
+movimento, uma depois de uma reordenação. São arrays novos, então a store pode guardar os
+antigos para desfazer.
+- O rascunho segue a store: aplique `result` no `onDrop` (ou antes de um `onBeforeDrop`
+assíncrono resolver), e o overlay pousa na nova ordem.
+- `preventDefault()` pula a gravação em todas as listas de `result`. Sem aplicar em lugar nenhum,
+as listas ficam como estavam e os itens voltam ao lugar.
+- Os builds de desenvolvimento avisam quando o drop de uma lista somente leitura fica a cargo da
+biblioteca: nada mudaria.
+
+Para salvar em um servidor antes de o drop pousar, ou para perguntar ao usuário primeiro, veja
+[decidindo um drop](https://zizigy.github.io/docs/guides/drop-decisions). Todas as opções de lista estão na
+[API do makeSortableList](https://zizigy.github.io/docs/api/make-sortable-list).
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

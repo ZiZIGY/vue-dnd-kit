@@ -1,0 +1,423 @@
+---
+title: "Listas virtuales"
+description: "Ordena miles de filas con TanStack Virtual o con useVirtualList de VueUse — dale el borrador al virtualizador, usa el id como clave de las filas y mantén montada la fila arrastrada."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/es/docs/guides/virtual-lists"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+La ordenación se basa en los datos: el borrador `items` es un array nuevo en cada reordenación,
+las filas tienen como clave su ítem y las animaciones solo necesitan las filas montadas. Así que
+cualquier virtualizador que renderice a partir de un array funciona — dale el borrador en lugar de
+tu array.
+
+<example height="32.5rem" hint="10 000 filas, unas pocas en el DOM: arrastra una, o desplázate mientras arrastras" name="virtual-list">
+
+
+
+</example>
+
+## Las reglas
+
+1. Dale al virtualizador el **borrador items**, no tu array de origen.
+2. **Usa la clave del ítem como clave de las filas**, nunca el índice. Los ejemplos oficiales de
+TanStack y VueUse usan el índice; cámbialo.
+3. Pasa los ids a `makeSortableItem` como **getter**, `{ id: () => props.item.id }`: el
+virtualizador puede darle otro ítem a un componente de fila.
+4. Guarda los arrays grandes en un **shallowRef**. La biblioteca nunca recorre tus datos en
+profundidad.
+5. Mantén el placeholder del mismo tamaño que la fila: oculta su contenido, no lo colapses.
+6. Usa un overscan de al menos 5 filas (VueUse: al menos 1), para que las filas estén montadas
+antes de que llegue el desplazamiento automático.
+7. No animes `height`, `margin` ni `padding` de las filas, y no pongas `will-change` en el
+contenedor desplazable.
+
+## VueUse useVirtualList
+
+La demo de arriba. Todas las filas tienen la misma altura, y el cálculo de VueUse sigue siendo
+O(1):
+
+```vue [TaskList.vue]
+<script setup lang="ts">
+import { shallowRef, useTemplateRef } from 'vue';
+import { useVirtualList } from '@vueuse/core';
+import { makeSortableList } from '@vue-dnd-kit/core';
+
+const ROW = 44;
+const tasks = shallowRef(makeTasks(10_000));
+
+// The outer element is the sortable list: `containerProps` owns the scroller's ref.
+const listRef = useTemplateRef<HTMLElement>('list');
+const { items } = makeSortableList(listRef, { items: tasks });
+
+// Fed with the draft `items`, so the rows move while you drag.
+const { list, containerProps, wrapperProps } = useVirtualList(items, { itemHeight: ROW, overscan: 8 });
+</script>
+
+<template>
+  <div ref="list">
+    <div v-bind="containerProps" style="height: 308px">
+      <div v-bind="wrapperProps">
+        <!-- Keyed by id, not by index as in VueUse's docs. -->
+        <Row v-for="{ data } in list" :key="data.id" :task="data" :height="ROW" />
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+- `itemHeight` es la altura real de la fila, bordes incluidos. No pongas márgenes entre filas:
+VueUse no los cuenta.
+- La lista ordenable es el elemento exterior, porque `containerProps` vincula su propia `ref` al
+contenedor desplazable. El desplazamiento automático encuentra igualmente ese contenedor:
+desplaza los contenedores que hay bajo el puntero.
+- VueUse no puede mantener una fila montada: la fila arrastrada se desmonta cuando la desplazas
+fuera de la vista. No pasa nada, consulta [Qué sigue montado](#what-stays-mounted).
+
+## TanStack Virtual
+
+TanStack mide cada fila, así que las filas pueden ser tan altas como su contenido. También puede
+mantener montada la fila arrastrada por mucho que te desplaces:
+
+<example height="34.5rem" hint="Arrastra una nota justo debajo de la lista y mantenla: la fila arrastrada queda fijada" name="virtual-tanstack">
+
+
+
+</example>
+
+```vue [NoteList.vue]
+<script setup lang="ts">
+import { computed, shallowRef, useTemplateRef } from 'vue';
+import { defaultRangeExtractor, useVirtualizer, type Range } from '@tanstack/vue-virtual';
+import { makeSortableList } from '@vue-dnd-kit/core';
+
+const notes = shallowRef(makeNotes(5_000));
+
+// The scroller is the sortable list: the library sorts it and auto-scrolls it.
+const scrollRef = useTemplateRef<HTMLElement>('scroll');
+const { items, activeIndex, captureLayout } = makeSortableList(scrollRef, { items: notes });
+
+// One computed that reads the draft once: TanStack memoizes the measurements and the range
+// on `getItemKey` and `rangeExtractor`, so they must be new functions after every reorder.
+const virtualizer = useVirtualizer(
+  computed(() => {
+    const arr = items.value;
+    const pin = activeIndex.value;
+    return {
+      count: arr.length,
+      getScrollElement: () => scrollRef.value,
+      estimateSize: () => 92,
+      overscan: 6,
+      getItemKey: (index: number) => arr[index]!.id,
+      // The dragged row stays mounted, however far you scroll from it.
+      rangeExtractor: (range: Range) => {
+        const indexes = defaultRangeExtractor(range);
+        return pin < 0 || indexes.includes(pin) ? indexes : [...indexes, pin].sort((a, b) => a - b);
+      },
+      // Measurements land after the library's animation pass: animate them too.
+      onChange: () => captureLayout(),
+    };
+  }),
+);
+const rows = computed(() => virtualizer.value.getVirtualItems());
+const measure = (el: unknown) => virtualizer.value.measureElement(el as HTMLElement | null);
+</script>
+
+<template>
+  <div ref="scroll" style="height: 340px; overflow: auto; contain: strict">
+    <div :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
+      <div
+        v-for="row in rows"
+        :key="(row.key as string)"
+        :ref="measure"
+        :data-index="row.index"
+        :style="{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${row.start}px)` }"
+      >
+        <NoteRow :note="items[row.index]!" />
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+Qué hace cada pieza:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Pieza
+    </th>
+    
+    <th>
+      Por qué
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        count
+      </code>
+      
+       y <code>
+        getItemKey
+      </code>
+      
+       a partir de <code>
+        items
+      </code>
+    </td>
+    
+    <td>
+      El virtualizador renderiza el borrador, así que las filas se mueven mientras arrastras.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      Un solo <code>
+        computed
+      </code>
+      
+       alrededor de las opciones
+    </td>
+    
+    <td>
+      <code>
+        getItemKey
+      </code>
+      
+       y <code>
+        rangeExtractor
+      </code>
+      
+       deben ser funciones nuevas tras cada reordenación, o TanStack conserva las medidas y el rango anteriores.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        measureElement
+      </code>
+      
+       con <code>
+        data-index
+      </code>
+    </td>
+    
+    <td>
+      Cada fila se mide al renderizarse: <code>
+        estimateSize
+      </code>
+      
+       es solo una primera estimación.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        rangeExtractor
+      </code>
+      
+       con <code>
+        activeIndex
+      </code>
+    </td>
+    
+    <td>
+      Añade la fila arrastrada al rango renderizado cuando sale de él al desplazarse. <code>
+        activeIndex
+      </code>
+      
+       es <code>
+        -1
+      </code>
+      
+       cuando no se arrastra ninguna fila de esta lista.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onChange: () => captureLayout()
+      </code>
+    </td>
+    
+    <td>
+      Una nueva medición mueve filas después de que la biblioteca haya animado una reordenación. <code>
+        captureLayout()
+      </code>
+      
+       anima también ese movimiento. Fuera de un arrastre no hace nada.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+¿Cuándo sale la fila arrastrada del rango? Su hueco sigue al puntero mientras el puntero está
+sobre la lista. Lleva el puntero justo debajo de la lista y mantenlo ahí: el desplazamiento
+automático continúa, el hueco se queda donde estaba y pronto queda muy por encima de las filas en
+pantalla. La fijación lo mantiene montado, para que el drop aterrice en un elemento real. Una
+lista con `placeholder: 'indicator'` mantiene la fila arrastrada en su sitio durante todo el
+arrastre, así que ahí importa todavía más.
+
+- Fijar requiere filas posicionadas una a una, en absoluto, como arriba. Un virtualizador que
+renderiza un único bloque con padding no puede añadir una fila lejana.
+- El componente de fila pasa su id como getter: `makeSortableItem(el, { id: () => props.note.id })`.
+- Mantén el `anchorTo: 'start'` de TanStack, el valor por defecto. Con `lanes`, usa
+`@tanstack/virtual-core` 3.19 o posterior (`@tanstack/vue-virtual` lo instala).
+
+## Columnas kanban virtuales
+
+Cada columna es su propia lista ordenable y su propio virtualizador, y las listas comparten un
+`group`. Tres columnas de 1000 tarjetas renderizan unas pocas decenas:
+
+<example height="34rem" hint="Mueve una tarjeta entre columnas de 1000 tarjetas" name="virtual-kanban">
+
+
+
+</example>
+
+Una tarjeta que llega de otra columna todavía no tiene medida en esta columna. Estímala con el
+tamaño real de la tarjeta arrastrada, `activeSize`, leído en el mismo computed:
+
+```ts [Column.vue]
+const { items, activeIndex, activeSize, captureLayout } = makeSortableList(scrollRef, {
+  id: props.column.id,
+  items: props.column.cards, // a shallowRef per column
+  group: 'board',
+});
+
+const virtualizer = useVirtualizer(
+  computed(() => {
+    const arr = items.value;
+    const pin = activeIndex.value;
+    const size = activeSize.value;
+    return {
+      count: arr.length,
+      getScrollElement: () => scrollRef.value,
+      // A card coming from another column gets its real height before it is measured.
+      estimateSize: (index: number) => (index === pin && size ? size.height + GAP : 72),
+      // …getItemKey, rangeExtractor and onChange as above
+    };
+  }),
+);
+```
+
+- Da a cada columna sus datos como un `shallowRef`: la lista escribe en él sus drops, y 1000
+tarjetas no reciben proxies profundos.
+- `activeSize` es el tamaño del elemento arrastrado al inicio del arrastre. Suma lo que tu hueco
+pone alrededor de la tarjeta: aquí el espacio de debajo (`GAP`) es el padding del hueco, así que
+el virtualizador también lo mide.
+- La cabecera cuenta `items.length`, el borrador: cambia en el momento en que una tarjeta entra o
+sale.
+
+## Qué sigue montado
+
+La fila arrastrada puede desmontarse mientras arrastras: salió del rango al desplazarse, o el
+virtualizador recicló su componente. El arrastre sobrevive. El overlay sigue mostrando el ítem, la
+selección se conserva por id y el ítem aterriza donde lo pone el borrador. Las animaciones solo
+tocan las filas montadas.
+
+Cuando el virtualizador lo permita, mantén de todos modos montada la fila arrastrada, como hace la
+receta de TanStack con `rangeExtractor`. La lista te dice qué fila es:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Devuelto por la lista
+    </th>
+    
+    <th>
+      Para qué sirve
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        items
+      </code>
+    </td>
+    
+    <td>
+      El borrador: dáselo al virtualizador.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeIndex
+      </code>
+    </td>
+    
+    <td>
+      El índice de la fila que hay que mantener montada en el borrador de esta lista, <code>
+        -1
+      </code>
+      
+       cuando no está aquí.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeKey
+      </code>
+    </td>
+    
+    <td>
+      La clave de esa fila, <code>
+        null
+      </code>
+      
+       cuando no está aquí.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeSize
+      </code>
+    </td>
+    
+    <td>
+      El tamaño de la fila arrastrada al inicio del arrastre: estima con él una fila entrante.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        captureLayout()
+      </code>
+    </td>
+    
+    <td>
+      Llámalo justo antes de un cambio de maquetación que no hizo la biblioteca (una nueva medición). Anima las filas desde donde estaban. Fuera de un arrastre no hace nada.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+## Árboles
+
+`makeSortableTree` devuelve un `items` plano con las filas visibles, así que un árbol se
+virtualiza como una lista: con `node.key` como clave, y con `activeIndex` y `activeKey` indicando
+la fila que hay que mantener montada. Consulta [Árboles](https://zizigy.github.io/docs/guides/trees).
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

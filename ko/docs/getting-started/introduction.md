@@ -1,0 +1,227 @@
+---
+title: "소개"
+description: "Vue DnD Kit은 Vue 3용 드래그 앤 드롭입니다. 정렬 가능한 리스트, 칸반 보드, 트리, 멀티 드래그, 드롭 영역을 애니메이션과 접근성까지 기본으로 제공합니다."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/getting-started/introduction"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+Vue DnD Kit은 Vue 3용 드래그 앤 드롭입니다. 정렬 가능한 리스트, 칸반 보드, 트리, 멀티 드래그,
+복사, 드롭 영역을 지원하며, 애니메이션과 키보드 조작, 스크린 리더 안내를 기본으로 제공합니다.
+마크업은 직접 작성한 그대로 씁니다.
+
+<example height="27rem" hint="방문지를 다른 날로 옮겨 보세요. 아래 칩에 다른 동작이 적혀 있습니다" name="at-a-glance" title="한눈에 보기">
+
+
+
+</example>
+
+이 가운데 데모가 직접 구현한 것은 없습니다. 리스트는 실시간으로 순서가 바뀌고, 컬럼끼리 방문지를
+주고받으며(`group` 하나), 선택 항목은 함께 움직이고(`selected`), <kbd value="Alt">
+
+
+
+</kbd>
+
+를 누르면
+이동이 복사가 되며(`clone`), 키보드로는 이 모든 것을 자리 단위로 할 수 있습니다. 데모는 방문지를
+렌더링하고 옵션 몇 개를 넘길 뿐입니다.
+
+## Vue DnD Kit이란
+
+**컴포저블** 모음과 **프로바이더** 컴포넌트 하나입니다. 요소는 직접 렌더링하고, 그 템플릿 ref를
+컴포저블에 넘기면 됩니다. 나머지는 라이브러리가 처리합니다. 포인터, 터치, 키보드 입력, 대상 찾기,
+순서 변경, 애니메이션, 자동 스크롤, 그리고 무슨 일이 일어났는지 스크린 리더에 알리는 일까지
+맡습니다.
+
+```vue [Day.vue]
+<script setup lang="ts">
+const listRef = useTemplateRef<HTMLElement>('list');
+// `items` is the draft: it reorders while you drag. On drop, `day.stops` gets the new order.
+const { items } = makeSortableList(listRef, { items: toRef(props.day, 'stops'), group: 'trip' });
+</script>
+
+<template>
+  <ul ref="list">
+    <StopCard v-for="stop in items" :key="stop.id" :stop="stop" />
+  </ul>
+</template>
+```
+
+라이브러리가 직접 렌더링하는 것은 떠다니는 **오버레이** 하나뿐입니다. 기본값은 드래그 중인 요소의
+클론입니다. 마크업과 스타일은 그대로 여러분의 것입니다. 라이브러리는 ARIA 속성과, 드래그 상태를
+스타일링할 `data-dnd-*` 속성 몇 개를 더할 뿐입니다.
+
+## 제공하는 기능
+
+- 드래그하는 동안 실시간으로 순서가 바뀌는 **정렬 가능한 리스트와 그리드**. 세로, 가로, 그리드
+배치를 모두 지원합니다.
+- **항목을 공유하는 리스트**: 칸반 보드, 복사본을 내주는 팔레트, 자리 맞바꾸기, 무엇이 어디로 갈
+수 있는지 정하는 규칙.
+- **트리**: 옆으로 드래그하거나 행 위에 머무르는 방식으로 중첩하며, 깊이 제한과 규칙을 둘 수
+있습니다.
+- 직접 만든 선택(Ctrl/Cmd-클릭, 선택 사각형)으로 하는 **멀티 드래그**: 선택한 블록이 함께
+움직입니다.
+- **드롭 영역**: 받아들일 항목을 정하는 규칙, 그리고 직접 확인하거나 거부하거나 적용하는 드롭.
+- **기본 애니메이션**: 항목은 새 자리로 미끄러지듯 이동하고, 드롭한 항목은 제자리에 안착하며,
+취소하면 원래 자리로 돌아갑니다.
+- **접근성**: 자리 단위로 움직이는 키보드 드래그, 실시간 안내, ARIA 속성.
+- TanStack Virtual이나 VueUse를 쓰는 **가상 리스트**: 수천 개의 행.
+- **센서와 액션**: 직접 만든 입력 장치, 그리고 코드로 실행하는 드래그.
+- **DevTools**: 모든 리스트의 실시간 맵, 조이스틱, 드래그마다 남는 로그를 보여 주는 탭.
+
+## 무엇이 다른가
+
+- **드롭할 때까지 데이터에는 손대지 않습니다.** 배열의 *초안*을 렌더링합니다. 드래그하는 동안에는
+초안만 움직이고, 드롭하면 라이브러리가 새 순서를 ref에 기록하거나, 직접 적용하도록 `e.result`를
+넘겨줍니다(스토어, 서버, 실행 취소).
+- **래퍼 컴포넌트가 없습니다.** 행은 ref와 호출 하나를 더한 여러분의 요소이므로, UI 키트(Nuxt UI,
+Vuetify, 직접 만든 것)의 컴포넌트를 그대로 드래그할 수 있습니다.
+- **기본으로 애니메이션되지만, 방해하지 않습니다.** 순서 변경, 안착, 취소가 기본으로
+애니메이션됩니다. 끄거나, 조정하거나, GSAP나 motion에 맡길 수 있습니다.
+- **키보드는 뒷전이 아닙니다.** 모든 드래그를 <kbd value="Space">
+
+
+
+</kbd>
+
+와 화살표 키로 할 수 있고, 이동은
+안내되며, 포커스는 원래 있던 곳으로 돌아옵니다.
+- **앱 전체에 프로바이더 하나.** 영역이 페이지 일부에 자체 규칙(축, 경계, 그리드, 더 긴 누르기)을
+주므로, 중첩된 기능에 중첩된 프로바이더가 필요 없습니다.
+- **입력을 바꿔 끼울 수 있습니다.** 포인터와 키보드는 센서입니다. 게임패드나 음성 명령용 센서를
+직접 작성하거나, `@vue-dnd-kit/actions`로 코드에서 항목을 옮기세요.
+
+## 구성 요소
+
+<table>
+<thead>
+  <tr>
+    <th>
+      구성 요소
+    </th>
+    
+    <th>
+      하는 일
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        DnDProvider
+      </code>
+    </td>
+    
+    <td>
+      드래그를 관리합니다. 입력, 오버레이, 선택, 자동 스크롤, 안내 문구.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeSortableList
+      </code>
+      
+       / <code>
+        makeSortableItem
+      </code>
+    </td>
+    
+    <td>
+      순서가 바뀌는 리스트와 그 행.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeSortableTree
+      </code>
+    </td>
+    
+    <td>
+      깊이와 함께 평평하게 렌더링되는 트리.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeDraggable
+      </code>
+      
+       / <code>
+        makeDroppable
+      </code>
+    </td>
+    
+    <td>
+      자유로운 드래그와 드롭 영역.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeDragArea
+      </code>
+    </td>
+    
+    <td>
+      페이지 일부에 적용하는 규칙: 축, 경계, 스냅, 자동 스크롤, 활성화.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeSelectionArea
+      </code>
+    </td>
+    
+    <td>
+      사각형 선택.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        useDnD
+      </code>
+      
+       / <code>
+        useDnDMonitor
+      </code>
+    </td>
+    
+    <td>
+      프로바이더 아래 어디서든 쓰는 드래그 상태와 이벤트.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+<tip>
+
+v2에서 넘어오셨다면, API가 바뀌었습니다. `useDnDProvider`는 `useDnD`가 되었고, `makeConstraintArea`와
+`makeAutoScroll`은 `makeDragArea`로 합쳐졌습니다. 정렬 가능한 리스트는 이제 기본으로 들어 있습니다.
+
+</tip>
+
+## 요구 사항
+
+- Vue **3.5** 이상.
+- 최신 브라우저: Chrome과 Edge 104+, Safari 15.4+, Firefox 104+.
+- SSR과 Nuxt에서 동작합니다. 오버레이와 라이브 리전은 클라이언트에서 마운트됩니다.
+
+다음 단계: [설치](https://zizigy.github.io/docs/getting-started/installation)한 다음, [빠른 시작](https://zizigy.github.io/docs/getting-started/quick-start)에서
+첫 리스트를 만들어 보세요.
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

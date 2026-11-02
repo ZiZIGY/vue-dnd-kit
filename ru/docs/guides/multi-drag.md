@@ -1,0 +1,652 @@
+---
+title: "Мульти-драг и выделение"
+description: "Выделяйте несколько элементов кликами или рамкой и перетаскивайте их вместе — блоком, оставляя пропуски или стопкой в оверлее, — принимайте при броске только часть и показывайте их в собственном оверлее."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/multi-drag"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+Выделите несколько файлов, затем перетащите один из них: остальные поедут следом.
+Переключайте `multiple`, чтобы увидеть, что они делают по пути, и раскладку, чтобы увидеть
+оверлей сетки.
+
+<example height="35rem" hint="Кликайте по файлам, с Ctrl/Cmd или Shift, затем перетащите один; переключите режим" name="multi-modes">
+
+
+
+</example>
+
+## Выделение
+
+Каждый провайдер хранит одно выделение: реактивный набор id. Драг **выделенного** элемента
+перетаскивает все выделенные элементы, взятый первым. Драг невыделенного элемента
+перетаскивает только его.
+
+Библиотека не решает, как люди выделяют: правила кликов — ваши. Сама она выделение тоже
+никогда не сбрасывает, и выделение переживает размонтирование, например строк, которые
+переиспользует виртуальный список.
+
+### Клики: Ctrl/Cmd и Shift
+
+Каждый сортируемый элемент и перетаскиваемый элемент возвращает `selected` — записываемый ref,
+связанный с выделением. Привяжите его к классу, к чекбоксу (`v-model="selected"`) или
+задавайте в обработчике клика:
+
+```vue [FileItem.vue]
+<script setup lang="ts">
+const { selected } = makeSortableItem(el, { item: () => props.file });
+</script>
+
+<template>
+  <li ref="el" class="file" :class="{ selected }" @click="emit('pick', $event)">…</li>
+</template>
+```
+
+Правилами владеет список в демо: клик выделяет один файл, Ctrl/Cmd-клик добавляет или убирает
+один, Shift-клик выделяет диапазон от последнего кликнутого файла:
+
+```ts [Files.vue]
+const { selection } = useDnD();
+let anchor: string | null = null;
+
+const pick = (id: string, event: MouseEvent) => {
+  const ids = items.value.map((file) => file.id);
+  if (event.shiftKey && anchor) {
+    const [a, b] = [ids.indexOf(anchor), ids.indexOf(id)];
+    selection.set(ids.slice(Math.min(a, b), Math.max(a, b) + 1));
+    return;
+  }
+  if (event.ctrlKey || event.metaKey) selection.toggle(id);
+  else selection.set([id]);
+  anchor = id;
+};
+```
+
+Клик, которым заканчивается драг, не доходит до `@click`, поэтому бросок никогда случайно не
+меняет выделение. Для действий с элементом используйте `@click`, а не `pointerup`.
+
+### Откуда угодно: `useDnD().selection`
+
+```ts
+import { useDnD, useDnDMonitor } from '@vue-dnd-kit/core';
+
+const { selection } = useDnD();
+
+selection.has('a');               // is it selected?
+selection.add('a', 'b');          // select
+selection.delete('a');            // deselect
+selection.toggle('a');            // flip it, or force it: toggle('a', true)
+selection.set(['a', 'c']);        // exactly these
+selection.clear();
+selection.ids;                    // a reactive ReadonlySet<Key>
+
+// Clear it after every drop, if your UI wants that:
+useDnDMonitor({ onDragEnd: () => selection.clear() });
+```
+
+Выделение хранится по id, поэтому может содержать элементы нескольких списков, а также
+обычные перетаскиваемые элементы: драг берёт каждый выделенный элемент под провайдером.
+
+## Выделение рамкой
+
+`makeSelectionArea` превращает элемент в область, где нажатие на пустое место рисует рамку, а
+элементы, которые она пересекает, выделяются. На этом рабочем столе обведите рамкой несколько
+иконок, затем перетащите одну из них:
+
+<example height="29rem" hint="Нарисуйте рамку на пустом месте рабочего стола, затем перетащите выделенную иконку" name="multi-select">
+
+
+
+</example>
+
+```vue [Desktop.vue]
+<script setup lang="ts">
+const desktop = useTemplateRef<HTMLElement>('desktop');
+const { isSelecting, style } = makeSelectionArea(desktop);
+</script>
+
+<template>
+  <!-- The area needs a position: the band is placed inside it. -->
+  <div ref="desktop" class="desktop">
+    <DesktopIcon v-for="icon in icons" :key="icon.id" :icon="icon" />
+    <div v-if="isSelecting" class="band" :style="style" />
+  </div>
+</template>
+
+<style scoped>
+.desktop { position: relative; height: 236px; }
+.band { border: 1px solid #42b883; background: color-mix(in srgb, #42b883 15%, transparent); }
+</style>
+```
+
+- Рамку рендерите вы: `style` размещает её относительно содержимого области.
+- Области нужно **нестатическое позиционирование** (`relative` подойдёт), иначе рамка
+окажется в другом месте.
+- Рамка начинается только с самой области, поэтому делайте область большой: всю панель, с
+пространством вокруг элементов, а не тесную обёртку.
+- Нажатие на элемент перетаскивает его. Кнопки, поля и полоса прокрутки области сохраняют
+свои нажатия.
+- Рамка остаётся привязанной к содержимому, пока прокручивается область или страница.
+<kbd value="Escape">
+
+
+
+</kbd>
+
+ отменяет её и восстанавливает выделение.
+- Пока рисуется рамка, `useDnD().status` равен `'selecting'`: строка под рабочим столом его
+читает.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Опция
+    </th>
+    
+    <th>
+      Что делает
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        strategy
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'toggle'
+      </code>
+      
+       (по умолчанию): элементы, которые пересекает рамка, переключаются. <code>
+        'select'
+      </code>
+      
+      : выделенными оказываются только элементы внутри рамки, так что клик по пустому месту снимает выделение с элементов области.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        modifier
+      </code>
+    </td>
+    
+    <td>
+      Клавиши, которые нужно удерживать, чтобы рисовать: <code>
+        { keys: ['Shift'], method: 'every' }
+      </code>
+      
+       (или <code>
+        'some'
+      </code>
+      
+      ).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        accept
+      </code>
+    </td>
+    
+    <td>
+      Какие перетаскиваемые элементы выделяет рамка — <a href="/docs/guides/drag-and-drop#which-drags-a-target-takes">
+        правило accept
+      </a>
+      
+      , сверяемое с их <code>
+        type
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      Рамки нет; включение отменяет текущую.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onSelected(ids)
+      </code>
+    </td>
+    
+    <td>
+      Вызывается, когда рамка завершается, с выделением.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        selection
+      </code>
+    </td>
+    
+    <td>
+      Собственный <code>
+        Ref<Set<Key>>
+      </code>
+      
+       вместо выделения провайдера.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`strategy`, `modifier` и `disabled` принимают значение, ref или геттер и читаются, когда
+нажатие начинает рамку. Если области вложены друг в друга, нажатие забирает самая внутренняя.
+На странице [API makeSelectionArea](https://zizigy.github.io/docs/api/make-selection-area) их можно переключать вживую.
+
+### Перемещение в том виде, как они лежат
+
+Иконки — обычные перетаскиваемые элементы (`makeDraggable`), у каждой своя иконка в `data`.
+Их оверлей — собственный компонент демо: он раскладывает `DragPreview` каждой перетаскиваемой
+иконки так, как иконки лежат на рабочем столе, вокруг взятой. Иконки ждут на месте,
+приглушённые по `isDragging`, который остаётся `true`, пока их копии не приземлятся.
+
+```vue [Formation.vue]
+<script setup lang="ts">
+const props = defineProps<{ items: DragItem[] }>();
+
+const placed = computed(() => {
+  const grabbed = props.items[0]!.data as Icon;
+  return props.items.map(({ id, data }) => {
+    const icon = data as Icon;
+    return { id, left: `${icon.x - grabbed.x}px`, top: `${icon.y - grabbed.y}px` };
+  });
+});
+</script>
+
+<template>
+  <div class="formation">
+    <DragPreview v-for="{ id, left, top } in placed" :id="id" :key="id" class="copy" :style="{ left, top }" />
+  </div>
+</template>
+```
+
+```ts [DesktopIcon.vue]
+const { isDragging, selected } = makeDraggable(el, { id, data: () => props.icon, overlay: Formation });
+```
+
+Бросок принимает рабочий стол. Его `position` — место, где отпустили взятую иконку, в
+координатах рабочего стола: иконка встаёт туда, а остальные сдвигаются на столько же. Затем
+каждая копия приземляется на свою иконку на её новом месте. При броске за пределы рабочего
+стола копии летят обратно к иконкам.
+
+```ts [Desktop.vue]
+makeDroppable(desktop, {
+  id: 'desktop',
+  onDrop: ({ active, position }) => {
+    const grabbed = icons.value.find((icon) => icon.id === active.id)!;
+    const shift = { x: position!.x - grabbed.x, y: position!.y - grabbed.y };
+    for (const icon of icons.value) {
+      if (!active.ids.includes(icon.id)) continue;
+      icon.x += shift.x; // the demo also keeps each icon on the desktop
+      icon.y += shift.y;
+    }
+  },
+});
+```
+
+По умолчанию при захвате клон снимается максимум для 5 элементов: `overlay-previews="all"`
+провайдера снимает его для каждой выделенной иконки.
+
+### В папку
+
+В этом окне рамка выделяет файлы, а папки их принимают. Оверлей — стандартный: стопка
+выбранных файлов. После броска в папку они уходят в неё один за другим, взятый — последним, и
+папка сглатывает. При отмене каждый летит обратно к своему файлу. Кликните по папке, чтобы
+открыть её, и перетащите файлы обратно в Home в строке пути.
+
+<example height="33rem" hint="Обведите рамкой несколько файлов, перетащите их на папку" name="multi-finder">
+
+
+
+</example>
+
+```vue [index.vue]
+<!-- Every picked file gets a clone at pickup: they all go in. -->
+<DnDProvider overlay-previews="all">
+  <Finder />
+</DnDProvider>
+```
+
+```ts [FolderTile.vue]
+makeDroppable(el, {
+  id: () => props.folder.id,
+  accept: 'file',
+  onDrop: (event) => emit('move', event.active.ids),
+});
+
+// The files are in: the folder gulps.
+useDnDMonitor({
+  onDragSettle: (event) => {
+    if ('dropped' in event && event.over?.id === props.folder.id) gulps.value++;
+  },
+});
+```
+
+Вот и всё: с броском файлы уходят из окна, так что приземлиться им негде, кроме как в папке, а
+стандартная анимация броска отправляет мульти-драг в зону по одному элементу за другим.
+`overlayPreviews` задаёт, сколько элементов получают клон при захвате (по умолчанию 5). Летит
+каждый клон: в зону, на свой слот или обратно к своему элементу.
+
+Папка — это кнопка: на кнопках и полях рамка никогда не начинается, поэтому клик её открывает.
+
+## Как двигаются остальные элементы: `multiple`
+
+Список, в котором начинается мульти-драг, решает, что делают остальные выделенные элементы,
+пока он идёт. Переключите его в первом демо на этой странице:
+
+```ts
+makeSortableList(listRef, { items: files, multiple: 'gaps' });
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        multiple
+      </code>
+    </th>
+    
+    <th>
+      Во время драга
+    </th>
+    
+    <th>
+      Оверлей
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'group'
+      </code>
+      
+       (по умолчанию)
+    </td>
+    
+    <td>
+      Остальные элементы покидают свои места и едут вместе со взятым одним блоком слотов, так что список уже показывает результат броска.
+    </td>
+    
+    <td>
+      Колонка перетаскиваемых элементов вдоль списка (не больше <code>
+        overlayPreviews
+      </code>
+      
+      ).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'gaps'
+      </code>
+    </td>
+    
+    <td>
+      Остальные остаются на местах, помеченные <code>
+        data-dnd-dragging
+      </code>
+      
+      , до броска.
+    </td>
+    
+    <td>
+      Та же колонка.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'stack'
+      </code>
+    </td>
+    
+    <td>
+      Остальные влетают в оверлей.
+    </td>
+    
+    <td>
+      Взятый элемент со счётчиком.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+При броске элементы приземляются вместе на целевой индекс, в том порядке, в котором были. В
+`'group'` и `'gaps'` каждый элемент оверлея летит в свой слот. Опция читается, когда драг
+начинается, поэтому её переключают ref или геттер.
+
+Над целью, которая не список, например над корзиной или плейлистом, или над списком, который
+отклоняет драг, блок `'group'` распадается: каждый элемент снова показан на своём месте, так,
+как его оставит бросок туда, а блок собирается снова, как только указатель окажется над списком.
+
+Оформите элементы, оставшиеся на местах в `'gaps'`, по умолчанию приглушённые:
+
+```css
+.file[data-dnd-dragging] {
+  opacity: 0.35;
+}
+```
+
+### Оверлей по умолчанию
+
+В `'group'` и `'gaps'` оверлей — колонка перетаскиваемых элементов в том виде, в каком они
+приземлятся: взятый под указателем, остальные до и после него в порядке броска (ряд в
+горизонтальных списках). Он показывает столько, сколько задаёт `overlayPreviews` провайдера
+(по умолчанию 5, `'all'` — все отрендеренные). Те, что сверх этого, считаются там, где они
+есть: `+N` в начале колонки для элементов, которые приземлятся перед показанными, `+N` в конце —
+для тех, что после.
+
+В сетках колонка из целых ячеек закрыла бы страницу, поэтому оверлей — стопка: до трёх
+элементов веером позади взятого, с общим счётчиком сверху. Переключите демо на Grid, чтобы
+это увидеть.
+
+Обычные перетаскиваемые элементы (`makeDraggable`) тоже дают стопку, как файлы выше. Каждый
+клон в оверлее приземляется сам: на свой слот после броска в список, на свой элемент там, где
+его оставил бросок (обратно на место после отмены), а в зону, куда идёт бросок, когда элементы
+исчезли со страницы, — один за другим, блок последним.
+
+## Принять только часть
+
+`onBeforeDrop` списка может принять часть мульти-драга: верните ключи, которые он берёт, и
+остальные полетят обратно туда, откуда пришли. Он может быть асинхронным и спросить: оверлей
+ждёт там, где его отпустили, пока не придёт ответ. Здесь Scheduled хочет посты с обложкой. Если
+среди брошенных есть пост без неё, список спрашивает: добавить недостающие обложки и взять
+все, взять только готовые посты или ни одного:
+
+<example height="28.5rem" hint="Перетащите три выбранных черновика в Scheduled, затем ответьте" name="multi-transfer">
+
+
+
+</example>
+
+```ts [PostList.vue]
+const { items } = makeSortableList(list, {
+  id: props.id,
+  items: posts,
+  group: 'blog',
+  onBeforeDrop: async (event) => {
+    const missing = event.items.filter((post) => post.cover === null);
+    if (!props.ask || event.sameList || !missing.length) return true;
+    const choice = await props.ask(missing, event.items.length - missing.length); // the question under the lists
+    if (choice === 'cover') missing.forEach((post) => (post.cover = pickCover()));
+    if (choice === 'ready') return event.keys.filter((_, index) => event.items[index]!.cover !== null);
+    return choice === 'cover'; // all of them, or none: they fly back
+  },
+});
+```
+
+- `event.keys` — перетаскиваемые ключи, а `event.items[i]` — элемент для `event.keys[i]`.
+- После ответа `onDrop` получает `accepted` и `rejected`, а `event.result` содержит списки в
+том виде, в каком их оставляет частичный бросок.
+- Пока бросок ждёт, списки продолжают показывать каждый перетаскиваемый пост там, где он
+приземлился бы: решает ответ. Для правила, которому не нужен вопрос, `group.put` решает ещё
+при наведении (см. [смешанные типы](#mixed-types) ниже). Подробнее — в
+[решении о броске](https://zizigy.github.io/docs/guides/drop-decisions).
+
+### Лимит
+
+На этой доске у In progress и Review есть лимит карточек. Заполненная колонка не принимает
+ничего: её `group.put` отказывает, и стопка над ней краснеет. Колонка, где есть место для части
+выбранных карточек, берёт столько, сколько помещается, а остальные летят обратно. Оверлей
+колонки говорит об этом ещё до броска.
+
+<example height="31rem" hint="Отметьте три карточки в To do, протащите одну над Review, затем над In progress" name="multi-wip">
+
+
+
+</example>
+
+```ts [WipColumn.vue]
+const room = (keys: Key[]) => limit - column.cards.filter((card) => !keys.includes(card.id)).length;
+
+makeSortableList(list, {
+  items: cards,
+  group: { name: 'board', put: ({ keys, from, to }) => from === to || room(keys) > 0 },
+  multiple: 'stack',
+  overlay: CardPile, // red where `accepted` is false
+  overOverlay: fit,
+  onBeforeDrop: (event) => {
+    if (event.sameList) return true;
+    const free = room(event.keys);
+    return free >= event.keys.length || event.keys.slice(0, free);
+  },
+});
+```
+
+`fit` — функция, а функцию Vue принимает как функциональный компонент. Она передаёт
+`FitBadge` то, что знает только колонка, — сколько в ней места, — а стопку передаёт дальше
+как слот бейджа.
+
+```ts
+const fit: FunctionalComponent<OverlayProps> = (overlay, { slots }) =>
+  h(FitBadge, { count: overlay.items.length, room: room(overlay.items.map((item) => item.id)), limit }, slots);
+```
+
+### Смешанные типы
+
+Список может отклонить часть элементов и по типу, ещё до броска. С `acceptMode: 'some'``group.put` спрашивается для каждого элемента отдельно: список принимает драг, когда подходит
+хотя бы один элемент, а остальные при броске летят обратно. С `'all'` (по умолчанию) должен
+подойти каждый элемент.
+
+```ts
+makeSortableList(gallery, {
+  items: photos,
+  group: { name: 'files', put: ({ types }) => types.includes('image') },
+  acceptMode: 'some',
+});
+```
+
+Обычные цели тоже принимают `acceptMode`. См.
+[списки с общими элементами](https://zizigy.github.io/docs/guides/shared-lists#limits) и
+[drag and drop](https://zizigy.github.io/docs/guides/drag-and-drop#which-drags-a-target-takes).
+
+## Свой оверлей для нескольких элементов
+
+Компоненты оверлея и слот `#overlay` провайдера получают `items`: все перетаскиваемые
+элементы, взятый первым. Покажите сводку вместо самих элементов: здесь — счётчик, тему
+первого письма и то, что сделает бросок.
+
+<example height="26rem" hint="Перетащите отмеченные письма в Archive или Trash, или перетащите одно" name="multi-summary">
+
+
+
+</example>
+
+```vue [MailOverlay.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import type { DragItem, Over } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[]; over: Over | null }>();
+
+const first = computed(() => props.items[0]?.item as Mail);
+const count = computed(() => props.items.length);
+// What the drop does, from the `data` of the zone under it.
+const zone = computed(() => props.over?.data as { verb: string; danger?: boolean } | undefined);
+const action = computed(() => {
+  const noun = count.value === 1 ? 'conversation' : 'conversations';
+  return `${zone.value?.verb ?? 'Move'} ${count.value} ${noun}`;
+});
+</script>
+
+<template>
+  <!-- The box keeps the row's size; the summary hangs off its middle, by the pointer. -->
+  <div class="box">
+    <div class="summary" :class="{ stack: count > 1, danger: zone?.danger }">
+      <span class="count">{{ count }}</span>
+      <strong>{{ action }}</strong>
+      <small>{{ first.subject }}{{ count > 1 ? ` and ${count - 1} more` : '' }}</small>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.box { position: relative; width: 100%; height: 100%; }
+.summary { position: absolute; top: calc(50% + 10px); left: calc(50% + 10px); width: 230px; }
+</style>
+```
+
+```ts [Mailbox.vue]
+// The box is centered on the pointer, so the summary hangs off the pointer and leaves
+// the zone under it in sight.
+const { items } = makeSortableList(list, { items: mails, overlay: MailOverlay, modifiers: [snapCenterToCursor] });
+
+// A zone takes the mails out of the inbox; its `data` tells the overlay what it does.
+makeDroppable(archive, {
+  id: 'Archive',
+  data: { verb: 'Archive' },
+  onDrop: (event) => {
+    event.source?.remove();
+    selection.clear();
+  },
+});
+```
+
+Чтобы выложить сами элементы, рендерите их клоны через `DragPreview`, как делает
+[рабочий стол](#moving-them-as-they-lie) выше;
+[руководство по оверлею](https://zizigy.github.io/docs/guides/overlay#dragpreview-the-clone-in-your-layout)
+раскладывает веером стопку книг. Клоны снимаются при захвате для взятого элемента и других
+рядом с ним в порядке броска, столько, сколько задаёт `overlayPreviews`; для любого другого
+элемента `DragPreview` рендерит свой слот по умолчанию. При броске каждое превью приземляется
+на свой элемент.
+
+## Деревья
+
+В дереве выделенные узлы перемещаются одним блоком, каждый со своим поддеревом, в порядке
+документа. Выделенный узел внутри другого выделенного едет в поддереве своего родителя. См.
+[деревья](https://zizigy.github.io/docs/guides/trees).
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

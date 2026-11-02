@@ -1,0 +1,1 @@
+:is(body:has(>.stage-expanded) #teleports>*,body:has(>.stage-expanded)>:not(#__nuxt,#teleports,.stage-expanded,[data-dnd-overlay],[data-dnd-ghost])){z-index:70!important}

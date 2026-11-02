@@ -1,0 +1,416 @@
+---
+title: "Virtual lists"
+description: "Sort thousands of rows with TanStack Virtual or VueUse's useVirtualList — feed the virtualizer the draft, key rows by id, and keep the dragged row mounted."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/docs/guides/virtual-lists"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+Sorting is data-driven: the draft `items` is a new array on every reorder, rows are keyed by item,
+and the animations only need the rows that are mounted. So any virtualizer that renders from an
+array works — feed it the draft instead of your array.
+
+<example height="32.5rem" hint="10,000 rows, a handful in the DOM: drag one, or scroll while you drag" name="virtual-list">
+
+
+
+</example>
+
+## The rules
+
+1. Give the virtualizer the **draft items**, not your source array.
+2. **Key rows by the item's key**, never by index. The official TanStack and VueUse examples key by
+index; change that.
+3. Pass ids to `makeSortableItem` as a **getter**, `{ id: () => props.item.id }`: the virtualizer
+may hand a row component another item.
+4. Hold big arrays in a **shallowRef**. The library never deep-traverses your data.
+5. Keep the placeholder the same size as the row: hide its content, don't collapse it.
+6. Overscan at least 5 rows (VueUse: at least 1), so rows are mounted before auto-scroll reaches
+them.
+7. Don't animate rows' `height`, `margin` or `padding`, and don't put `will-change` on the
+scroller.
+
+## VueUse useVirtualList
+
+The demo above. Every row has the same height, and VueUse's math stays O(1):
+
+```vue [TaskList.vue]
+<script setup lang="ts">
+import { shallowRef, useTemplateRef } from 'vue';
+import { useVirtualList } from '@vueuse/core';
+import { makeSortableList } from '@vue-dnd-kit/core';
+
+const ROW = 44;
+const tasks = shallowRef(makeTasks(10_000));
+
+// The outer element is the sortable list: `containerProps` owns the scroller's ref.
+const listRef = useTemplateRef<HTMLElement>('list');
+const { items } = makeSortableList(listRef, { items: tasks });
+
+// Fed with the draft `items`, so the rows move while you drag.
+const { list, containerProps, wrapperProps } = useVirtualList(items, { itemHeight: ROW, overscan: 8 });
+</script>
+
+<template>
+  <div ref="list">
+    <div v-bind="containerProps" style="height: 308px">
+      <div v-bind="wrapperProps">
+        <!-- Keyed by id, not by index as in VueUse's docs. -->
+        <Row v-for="{ data } in list" :key="data.id" :task="data" :height="ROW" />
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+- `itemHeight` is the row's real height, borders included. Put no margins between rows: VueUse
+doesn't count them.
+- The sortable list is the outer element, because `containerProps` binds its own `ref` to the
+scroller. Auto-scroll still finds the scroller: it scrolls the containers under the pointer.
+- VueUse can't keep a row mounted: the dragged row unmounts when you scroll it away. That's fine,
+see [What stays mounted](#what-stays-mounted).
+
+## TanStack Virtual
+
+TanStack measures every row, so rows can be as tall as their content. It can also keep the dragged
+row mounted however far you scroll from it:
+
+<example height="34.5rem" hint="Drag a note just below the list and hold: the dragged row stays pinned" name="virtual-tanstack">
+
+
+
+</example>
+
+```vue [NoteList.vue]
+<script setup lang="ts">
+import { computed, shallowRef, useTemplateRef } from 'vue';
+import { defaultRangeExtractor, useVirtualizer, type Range } from '@tanstack/vue-virtual';
+import { makeSortableList } from '@vue-dnd-kit/core';
+
+const notes = shallowRef(makeNotes(5_000));
+
+// The scroller is the sortable list: the library sorts it and auto-scrolls it.
+const scrollRef = useTemplateRef<HTMLElement>('scroll');
+const { items, activeIndex, captureLayout } = makeSortableList(scrollRef, { items: notes });
+
+// One computed that reads the draft once: TanStack memoizes the measurements and the range
+// on `getItemKey` and `rangeExtractor`, so they must be new functions after every reorder.
+const virtualizer = useVirtualizer(
+  computed(() => {
+    const arr = items.value;
+    const pin = activeIndex.value;
+    return {
+      count: arr.length,
+      getScrollElement: () => scrollRef.value,
+      estimateSize: () => 92,
+      overscan: 6,
+      getItemKey: (index: number) => arr[index]!.id,
+      // The dragged row stays mounted, however far you scroll from it.
+      rangeExtractor: (range: Range) => {
+        const indexes = defaultRangeExtractor(range);
+        return pin < 0 || indexes.includes(pin) ? indexes : [...indexes, pin].sort((a, b) => a - b);
+      },
+      // Measurements land after the library's animation pass: animate them too.
+      onChange: () => captureLayout(),
+    };
+  }),
+);
+const rows = computed(() => virtualizer.value.getVirtualItems());
+const measure = (el: unknown) => virtualizer.value.measureElement(el as HTMLElement | null);
+</script>
+
+<template>
+  <div ref="scroll" style="height: 340px; overflow: auto; contain: strict">
+    <div :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
+      <div
+        v-for="row in rows"
+        :key="(row.key as string)"
+        :ref="measure"
+        :data-index="row.index"
+        :style="{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${row.start}px)` }"
+      >
+        <NoteRow :note="items[row.index]!" />
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+What each piece does:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Piece
+    </th>
+    
+    <th>
+      Why
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        count
+      </code>
+      
+       and <code>
+        getItemKey
+      </code>
+      
+       from <code>
+        items
+      </code>
+    </td>
+    
+    <td>
+      The virtualizer renders the draft, so rows move while you drag.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      One <code>
+        computed
+      </code>
+      
+       around the options
+    </td>
+    
+    <td>
+      <code>
+        getItemKey
+      </code>
+      
+       and <code>
+        rangeExtractor
+      </code>
+      
+       must be new functions after each reorder, or TanStack keeps the old measurements and range.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        measureElement
+      </code>
+      
+       with <code>
+        data-index
+      </code>
+    </td>
+    
+    <td>
+      Each row is measured as it renders: <code>
+        estimateSize
+      </code>
+      
+       is only a first guess.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        rangeExtractor
+      </code>
+      
+       with <code>
+        activeIndex
+      </code>
+    </td>
+    
+    <td>
+      Adds the dragged row to the rendered range when it scrolls out of it. <code>
+        activeIndex
+      </code>
+      
+       is <code>
+        -1
+      </code>
+      
+       when no row of this list is dragged.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onChange: () => captureLayout()
+      </code>
+    </td>
+    
+    <td>
+      A re-measure moves rows after the library has animated a reorder. <code>
+        captureLayout()
+      </code>
+      
+       animates that move too. Outside a drag it does nothing.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+When does the dragged row leave the range? Its slot follows the pointer while the pointer is over
+the list. Move the pointer just below the list and hold it there: auto-scroll goes on, the slot
+stays where it was, and soon it is far above the rows on screen. The pin keeps it mounted, so the
+drop lands on a real element. A list with `placeholder: 'indicator'` keeps the dragged row in place
+for the whole drag, so there it matters even more.
+
+- Pinning needs rows positioned one by one, absolutely, as above. A virtualizer that renders one
+padded block can't add a row far away.
+- The row component passes its id as a getter: `makeSortableItem(el, { id: () => props.note.id })`.
+- Keep TanStack's `anchorTo: 'start'`, the default. With `lanes`, use `@tanstack/virtual-core` 3.19
+or newer (`@tanstack/vue-virtual` installs it).
+
+## Virtual kanban columns
+
+Each column is its own sortable list and its own virtualizer, and the lists share a `group`. Three
+columns of 1,000 cards render a few dozen:
+
+<example height="34rem" hint="Move a card between columns of 1,000 cards" name="virtual-kanban">
+
+
+
+</example>
+
+A card coming in from another column has no measurement in this column yet. Estimate it at the
+dragged card's real size, `activeSize`, read in the same computed:
+
+```ts [Column.vue]
+const { items, activeIndex, activeSize, captureLayout } = makeSortableList(scrollRef, {
+  id: props.column.id,
+  items: props.column.cards, // a shallowRef per column
+  group: 'board',
+});
+
+const virtualizer = useVirtualizer(
+  computed(() => {
+    const arr = items.value;
+    const pin = activeIndex.value;
+    const size = activeSize.value;
+    return {
+      count: arr.length,
+      getScrollElement: () => scrollRef.value,
+      // A card coming from another column gets its real height before it is measured.
+      estimateSize: (index: number) => (index === pin && size ? size.height + GAP : 72),
+      // …getItemKey, rangeExtractor and onChange as above
+    };
+  }),
+);
+```
+
+- Give each column its data as a `shallowRef`: the list writes its drops into it, and 1,000 cards
+get no deep proxies.
+- `activeSize` is the size of the dragged element at the start of the drag. Add what your slot puts
+around the card: here the gap under it (`GAP`) is the slot's padding, so the virtualizer measures
+it too.
+- The header counts `items.length`, the draft: it changes the moment a card enters or leaves.
+
+## What stays mounted
+
+The dragged row may unmount while you drag: it scrolled out of range, or the virtualizer recycled
+its component. The drag survives it. The overlay keeps showing the item, the selection is kept by
+id, and the item lands where the draft puts it. Animations only touch the rows that are mounted.
+
+Where the virtualizer can, keep the dragged row mounted anyway, as the TanStack recipe does with
+`rangeExtractor`. The list tells you which row that is:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Returned by the list
+    </th>
+    
+    <th>
+      What it is for
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        items
+      </code>
+    </td>
+    
+    <td>
+      The draft: feed it to the virtualizer.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeIndex
+      </code>
+    </td>
+    
+    <td>
+      The index of the row to keep mounted in this list's draft, <code>
+        -1
+      </code>
+      
+       when it isn't here.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeKey
+      </code>
+    </td>
+    
+    <td>
+      The key of that row, <code>
+        null
+      </code>
+      
+       when it isn't here.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeSize
+      </code>
+    </td>
+    
+    <td>
+      The size of the dragged row at the start of the drag: estimate an incoming row with it.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        captureLayout()
+      </code>
+    </td>
+    
+    <td>
+      Call it right before a layout change the library didn't make (a re-measure). It animates the rows from where they were. Outside a drag it does nothing.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+## Trees
+
+`makeSortableTree` returns a flat `items` of the visible rows, so a tree virtualizes like a list:
+keyed by `node.key`, with `activeIndex` and `activeKey` naming the row to keep mounted. See
+[Trees](https://zizigy.github.io/docs/guides/trees).
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

@@ -1,0 +1,779 @@
+---
+title: "스타일링"
+description: "드래그의 모든 상태를 스타일링합니다. 일반 CSS를 위한 data 속성, 클래스를 위한 ref, 받거나 거부하는 대상, 드래그 중의 오버레이와 페이지, 기본 스타일, Tailwind와 UI 키트까지."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/styling"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+라이브러리는 거의 아무것도 스타일링하지 않습니다. 드래그의 각 상태는 두 가지 방법으로 전달됩니다.
+일반 CSS를 위한 `data-dnd-*` 속성, 그리고 클래스와 조건부 마크업을 위해 컴포저블이 반환하는 ref입니다.
+스택에 맞는 쪽을 쓰거나 둘 다 쓰세요.
+
+## data 속성
+
+아래 행에는 상태 클래스가 전혀 없습니다. 모든 모양은 속성에서 옵니다. 패널은 페이지의 속성이 생기고
+사라지는 대로 나열합니다. <kbd value="Ctrl">
+
+
+
+</kbd>
+
+이나 <kbd value="Meta">
+
+
+
+</kbd>
+
+로 행 두 개를 선택해 드래그하면
+멀티 드래그의 나머지 항목도 나타납니다.
+
+<example height="25rem" hint="행을 드래그한 뒤, Ctrl/⌘-클릭으로 두 개를 골라 드래그해 보세요" name="dnd-attributes">
+
+
+
+</example>
+
+<table>
+<thead>
+  <tr>
+    <th>
+      속성
+    </th>
+    
+    <th>
+      위치
+    </th>
+    
+    <th>
+      시점
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        data-dnd-placeholder
+      </code>
+    </td>
+    
+    <td>
+      정렬 가능한 항목
+    </td>
+    
+    <td>
+      드래그 중인 항목이 안착할 자리일 때. 드래그가 <a href="/docs/guides/drag-and-drop#drop-into-a-sortable-item">
+        항목 안의 드롭 대상
+      </a>
+      
+       위에 있는 동안에는 <code>
+        "into"
+      </code>
+      
+      : 드롭은 그 대상으로 가고, 자리는 위치만 지킵니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        data-dnd-dragging
+      </code>
+    </td>
+    
+    <td>
+      정렬 가능한 항목
+    </td>
+    
+    <td>
+      드래그되지만 제자리에 남을 때: <code>
+        'gaps'
+      </code>
+      
+       모드에서 멀티 드래그의 나머지 항목.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        data-dnd-dragging="pointer"
+      </code>
+      
+       또는 <code>
+        "keyboard"
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        <html>
+      </code>
+    </td>
+    
+    <td>
+      드래그 내내.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        data-dnd-overlay="dragging"
+      </code>
+      
+       또는 <code>
+        "dropping"
+      </code>
+    </td>
+    
+    <td>
+      오버레이 박스
+    </td>
+    
+    <td>
+      항상. 안착하는 동안과 비동기 <code>
+        onBeforeDrop
+      </code>
+      
+      을 기다리는 동안은 <code>
+        dropping
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        data-dnd-overlay-content
+      </code>
+    </td>
+    
+    <td>
+      오버레이의 콘텐츠
+    </td>
+    
+    <td>
+      항상. 박스를 채우고 보여 줄 내용을 담는 요소. 직접 애니메이션하면 되며, 프로바이더의 <code>
+        overlayClass
+      </code>
+      
+      가 붙습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        data-dnd-leaving
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        animate
+      </code>
+      
+      가 남긴 복사본
+    </td>
+    
+    <td>
+      사라진 항목이 서서히 사라지는 동안.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        data-dnd-no-clone
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        직접 설정
+      </strong>
+    </td>
+    
+    <td>
+      요소를 오버레이 복사본에서 뺍니다: 툴팁, 메뉴, 배지.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+```css [TaskRow.vue]
+/* The slot a dragged row will land in: a striped gap. */
+.row[data-dnd-placeholder] {
+  opacity: 1;
+  background: repeating-linear-gradient(-45deg, color-mix(in srgb, #42b883 16%, transparent) 0 6px, transparent 6px 12px);
+}
+
+.row[data-dnd-placeholder] > * {
+  visibility: hidden;   /* an empty slot of the row's exact size */
+}
+
+/* Selected rows left in place by a multi-drag (`multiple: 'gaps'`). */
+.row[data-dnd-dragging] {
+  opacity: 0.4;
+}
+
+/* The copy in the overlay, while it travels. */
+[data-dnd-overlay='dragging'] .row {
+  box-shadow: 0 0 0 1.5px #42b883, 0 14px 24px -10px rgb(0 0 0 / 0.55);
+}
+```
+
+```vue [TaskRow.vue]
+<li ref="el" class="row" :aria-selected="selected">
+  <span class="title">{{ task.title }}</span>
+  <button type="button" data-dnd-no-clone @click.stop="task.done = !task.done">✓</button>
+</li>
+```
+
+- 오버레이 안의 행 복사본은 Vue의 스코프 속성을 포함해 클래스와 속성을 유지하므로, 행 자체의
+`<style scoped>`에서 `[data-dnd-overlay] .row`가 동작합니다. 복사본에는 자체 `data-dnd-*` 표시가
+없습니다. 자리의 복사본은 자리가 아닙니다.
+- 선택에는 속성이 없습니다. `selected` ref를 속성(위의 `aria-selected`)에 반영하거나 클래스를 쓰세요.
+- 일반 draggable과 드롭 대상(`makeDraggable`, `makeDroppable`)은 `data-dnd-*` 상태 속성을 받지
+않습니다. ref로 스타일링하세요.
+
+## 반환되는 ref
+
+같은 상태를 ref로 받고, 리스트와 대상에만 있는 상태도 받습니다. 아래의 각 행과 리스트는 지금 참인
+ref를 출력하며, 클래스도 그 ref에서 옵니다. Icebox는 긴급 작업을 거부합니다. 하나를 그 위로 드래그해
+보세요.
+
+<example height="24rem" hint="작업을 다른 리스트로 드래그하세요. Ctrl/⌘-클릭으로 여러 개를 선택합니다" name="dnd-refs">
+
+
+
+</example>
+
+```vue [RefRow.vue]
+<script setup lang="ts">
+const { isDragging, isPlaceholder, selected } = makeSortableItem(el, { item: () => props.task });
+</script>
+
+<template>
+  <li ref="el" class="row" :class="{ placeholder: isPlaceholder, dragging: isDragging, selected }">…</li>
+</template>
+
+<style scoped>
+.row.selected { box-shadow: 0 0 0 1.5px #3b82f6; }
+.row.placeholder { opacity: 1; box-shadow: inset 0 0 0 1.5px #42b883; }   /* beats the default 40% */
+.row.placeholder .title { visibility: hidden; }
+</style>
+```
+
+```vue [RefList.vue]
+<script setup lang="ts">
+const { items, isOver, isAccepting } = makeSortableList(el, { items, group });
+</script>
+
+<template>
+  <section :class="{ accepting: isAccepting, over: isOver && isAccepting, refused: isOver && !isAccepting }">…</section>
+</template>
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      컴포저블
+    </th>
+    
+    <th>
+      상태
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        makeSortableItem
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        isDragging
+      </code>
+      
+      , <code>
+        isPlaceholder
+      </code>
+      
+      , <code>
+        selected
+      </code>
+      
+      , <code>
+        indicator
+      </code>
+      
+      , <code>
+        index
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeSortableList
+      </code>
+      
+      , <code>
+        makeSortableTree
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        isOver
+      </code>
+      
+      , <code>
+        isAccepting
+      </code>
+      
+      , <code>
+        indicator
+      </code>
+      
+      , <code>
+        activeKey
+      </code>
+      
+      , <code>
+        activeIndex
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeDraggable
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        isDragging
+      </code>
+      
+      , <code>
+        selected
+      </code>
+      
+      , <code>
+        transform
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeDroppable
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        isOver
+      </code>
+      
+      , <code>
+        isAccepting
+      </code>
+      
+      , <code>
+        placement
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeDragArea
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        isDragging
+      </code>
+      
+      , <code>
+        isAutoScrolling
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        useDnD()
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        status
+      </code>
+      
+      , <code>
+        active
+      </code>
+      
+      , <code>
+        over
+      </code>
+      
+      , <code>
+        pointer
+      </code>
+      
+      , <code>
+        activation.progress
+      </code>
+      
+      , <code>
+        isAutoScrolling
+      </code>
+    </td>
+  </tr>
+</tbody>
+</table>
+
+- `isPlaceholder`: 이 요소가 드래그 중인 항목이 안착할 자리입니다. `'group'` 모드의 멀티 드래그에서는
+함께 이동하는 항목의 자리도 플레이스홀더입니다.
+- `isDragging`: 항목이 드래그에 포함됩니다. 멀티 드래그에서는 드래그 중인 모든 항목입니다.
+- `isAccepting`: 무언가를 드래그하는 중이고 이 대상이 그것을 받습니다. 드롭할 수 있는 곳을
+강조하세요.
+- `isOver`: 드래그가 이 대상 위에 있습니다. 받든 안 받든 마찬가지입니다. `isOver && !isAccepting`은
+거부이므로 표시하세요.
+- `indicator`: [인디케이터 모드](https://zizigy.github.io/docs/guides/sortable-lists#an-insertion-line)에서 드롭 선이 들어갈
+위치.
+- `activation.progress`: 터치 길게 누르기나 `delay`가 진행되는 동안 0에서 1까지. 링을 채우는 데
+쓰세요.
+
+## 드롭 대상: 받기와 거부
+
+드래그 중에 대상은 네 가지 모습을 가집니다. 드래그를 받음, 받으면서 포인터가 위에 있음, 거부함,
+거부하면서 포인터가 위에 있음. 네 가지 모두 보여 주고, 드래그 중인 항목에도 표시하세요.
+
+<example height="23rem" hint="색을 팔레트 위로 드래그하세요. 맞는 팔레트는 받아들이고, 나머지는 아닙니다" name="drop-highlights">
+
+
+
+</example>
+
+```ts [Palette.vue]
+const { isOver, isAccepting } = makeDroppable(el, { accept: props.tone, onDrop });
+
+const { active } = useDnD();
+const state = computed(() => {
+  if (!active.value) return '';
+  if (isOver.value) return isAccepting.value ? 'over' : 'refused';
+  return isAccepting.value ? 'accepting' : 'refusing';
+});
+```
+
+```css [Palette.vue]
+.palette.accepting { border-style: dashed; border-color: #42b883; }          /* an invitation */
+.palette.over { border-color: #42b883; background: color-mix(in srgb, #42b883 14%, Canvas); }
+.palette.refusing { opacity: 0.45; }                                          /* out of the way */
+.palette.refused { border-color: #f43f5e; animation: shake 0.3s; }            /* a drop here is cancelled */
+```
+
+드래그 중인 색상 견본은 프로바이더의 `#overlay` 슬롯입니다. 슬롯은 `over`와 `accepted`를 받으며,
+드래그를 거부하는 대상 위에서 `accepted`는 `false`입니다.
+
+```vue [index.vue]
+<template #overlay="{ active, over, accepted }">
+  <div
+    class="lifted"
+    :class="{ yes: over && accepted, no: over && !accepted }"
+    :style="{ background: (active.data as { color: string }).color }"
+  >
+    <span v-if="over" class="badge">{{ accepted ? '+' : '✕' }}</span>
+  </div>
+</template>
+```
+
+오버레이 밖에서는 `useDnD().over.value?.accepted`가 같은 것을 알려 줍니다. 오버레이 컴포넌트는
+[오버레이](https://zizigy.github.io/docs/guides/overlay)에서 자세히 다룹니다.
+
+## 오버레이와 페이지
+
+나머지 드래그 상태는 두 속성이 다룹니다. 오버레이 박스의 `data-dnd-overlay`, 그리고 `<html>`의
+`data-dnd-dragging`(`"pointer"` 또는 `"keyboard"`)입니다. 메모 위의 바는 후자를 읽고 어떤 키가
+동작하는지 알려 줍니다. 느린 저장을 켜 보세요. 오버레이는 `onBeforeDrop`이 resolve될 때까지 놓은
+자리에서 `dropping` 상태로 머물며 이를 보여 줍니다.
+
+<example height="27rem" hint="메모를 마우스로, 그다음 키보드로 드래그하세요. 느린 저장을 켜 보세요" name="overlay-theme">
+
+
+
+</example>
+
+```css [index.vue]
+.bar .pointer,
+.bar .keyboard,
+html[data-dnd-dragging] .bar .idle { display: none; }
+
+html[data-dnd-dragging='pointer'] .bar .pointer,
+html[data-dnd-dragging='keyboard'] .bar .keyboard { display: inline; }
+```
+
+```css [StickyNote.vue]
+[data-dnd-overlay='dragging'] .note {
+  box-shadow: 0 0 0 2px #42b883, 0 22px 30px -14px rgb(0 0 0 / 0.6);
+}
+
+/* Landing, and waiting for the save. */
+[data-dnd-overlay='dropping'] .note { opacity: 0.85; }
+[data-dnd-overlay='dropping'] .saving { display: flex; }
+```
+
+- `dropping`은 안착과 비동기 `onBeforeDrop`의 대기를 모두 포함합니다. 기다리는 동안 `<html>`은 드래그
+모드에서 벗어납니다. 페이지의 커서와 텍스트 선택이 돌아오므로 확인 다이얼로그가 평소처럼
+동작합니다.
+- 박스 **안의** 내용을 스타일링하세요. 박스 자체는 라이브러리가 `transform`으로 움직이고 `width`와
+`height`로 크기를 정합니다. 그 콘텐츠 요소인 `[data-dnd-overlay-content]`는 박스를 채우며 자유롭게
+다룰 수 있습니다. 오버레이 전체를 들어 올리고 기울이는 것은 여기서 하세요
+([애니메이션](https://zizigy.github.io/docs/guides/animations#the-overlay-lift-tilt-settle) 참고).
+- 복사본의 루트에는 `transform: none`이 인라인으로 있습니다. 회전이나 확대는 `rotate`와 `scale`로
+하세요. 트랜지션과 키프레임 모두 동작합니다.
+[애니메이션](https://zizigy.github.io/docs/guides/animations#the-overlay-lift-tilt-settle)을 참고하세요.
+- 복사본은 요소를 있는 그대로 보여 주며 배경을 추측하지 않습니다. 리스트가 배경을 칠하는 행(흰
+`<ul>` 안의 `<li>`, 표의 행)에는 배경이 필요합니다: `[data-dnd-overlay] .row { background: Canvas; }`.
+- 복사본은 요소가 상속받던 사용자 정의 속성(테마 색상, `--tw-*`)을 지닌 `<div>` 안에 놓이므로, 오버레이
+안에서도 그 속성이 적용되고 복사본 자체의 규칙(`in-data-[dnd-overlay]:ring-2`)도 여전히 그보다
+우선합니다. 복사본은 박스 안의 깊이가 아니라 클래스로 선택하세요.
+
+## 기본 스타일
+
+프로바이더는 문서마다 한 번 몇 가지 규칙을 주입합니다. 규칙은 `:where()`로 감싸져 명시도가 0이므로,
+직접 작성한 어떤 규칙이든 우선합니다.
+
+```css
+:where([data-dnd-placeholder]) { opacity: 0.4; }
+:where([data-dnd-dragging]:not(html)) { opacity: 0.4; }
+:where(html[data-dnd-dragging]), :where(html[data-dnd-dragging] *) {
+  user-select: none !important;
+  overflow-anchor: none !important;
+}
+:where(html[data-dnd-dragging='pointer']), :where(html[data-dnd-dragging='pointer'] *) {
+  cursor: var(--dnd-cursor, grabbing) !important;
+  -webkit-touch-callout: none !important;
+}
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      규칙
+    </th>
+    
+    <th>
+      이유
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      자리의 불투명도 40%
+    </td>
+    
+    <td>
+      CSS가 전혀 없어도 리스트가 제대로 보이도록. 위의 모든 데모가 이를 덮어씁니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      남겨진 항목의 불투명도 40%
+    </td>
+    
+    <td>
+      같은 이유로, <code>
+        'gaps'
+      </code>
+      
+       모드의 멀티 드래그용.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        user-select
+      </code>
+      
+       없음
+    </td>
+    
+    <td>
+      드래그가 지나가는 텍스트를 선택하지 않습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        overflow-anchor
+      </code>
+      
+       없음
+    </td>
+    
+    <td>
+      움직이는 행을 보이게 하려고 페이지가 스크롤되지 않습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      드래그 커서
+    </td>
+    
+    <td>
+      포인터 드래그 중에는 어디서나. 기본은 <code>
+        grabbing
+      </code>
+      
+      이지만, 집은 요소에 자체 커서가 있으면 다릅니다. 크기 조절 핸들의 <code>
+        ns-resize
+      </code>
+      
+      , <code>
+        move
+      </code>
+      
+      , 이미지는 드래그 내내 자기 커서를 유지합니다(<code>
+        grab
+      </code>
+      
+      , <code>
+        pointer
+      </code>
+      
+       등은 그대로 <code>
+        grabbing
+      </code>
+      
+      으로 바뀝니다). draggable 항목의 <code>
+        cursor: grab
+      </code>
+      
+      은 직접 추가하세요. 다른 기본값을 쓰려면 <code>
+        <html>
+      </code>
+      
+      에 <code>
+        --dnd-cursor
+      </code>
+      
+      를 설정하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      터치 콜아웃 없음
+    </td>
+    
+    <td>
+      iOS가 길게 누를 때 링크 메뉴를 열지 않습니다.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+프로바이더에 `:default-styles="false"`를 주면 이 규칙을 넣지 않습니다. 라이브러리는 여전히 `<html>`을
+표시하고, 드래그가 시작될 때 텍스트 선택을 지우고 드래그가 끝날 때까지 새 선택을 막습니다. CSS만 사라집니다. 규칙은 이를 원하는
+첫 번째 프로바이더가 한 번 주입하고 계속 남으므로, 페이지의 모든 프로바이더에서 끄세요.
+
+```vue
+<DnDProvider :default-styles="false">
+```
+
+## Tailwind CSS
+
+속성은 변형(variant)으로 동작합니다. 요소 자체에는 `data-[…]`, 조상에는 임의 변형을 쓰세요.
+
+```vue [TaskRow.vue]
+<li
+  ref="el"
+  class="rounded-lg bg-white shadow-sm
+         data-[dnd-placeholder]:bg-transparent data-[dnd-placeholder]:opacity-100
+         data-[dnd-placeholder]:outline-dashed
+         [[data-dnd-overlay=dragging]_&]:shadow-xl"
+  :class="{ 'ring-2 ring-emerald-500': selected }"
+>
+```
+
+```vue [Hint.vue]
+<p class="hidden [html[data-dnd-dragging=keyboard]_&]:block">Arrows move · Space drops</p>
+```
+
+<note>
+
+라이브러리의 모양(40% 불투명도)은 다른 어떤 레이어보다 먼저 선언된 자체 캐스케이드 레이어
+`vue-dnd-kit`에 있습니다. Tailwind v4의 유틸리티와 이를 기반으로 한 UI 키트도 레이어에 있고 그
+레이어가 나중에 오므로, `!` 없이도 우선합니다. 레이어 밖의 CSS는 어차피 우선합니다.
+
+</note>
+
+Tailwind v4에서는 `in-data-[dnd-overlay=dragging]:shadow-xl`로 조상 변형을 더 짧게 쓸 수 있습니다.
+
+<warning>
+
+Vue의 scoped CSS에서 `:global()`은 선택자 전체를 가져갑니다. `:global(html[data-dnd-dragging]) .hint`는
+`html[data-dnd-dragging]`만으로 컴파일되어 페이지를 숨깁니다. 조상은 `:global()` 없이
+`html[data-dnd-dragging] .hint`로 쓰세요. Vue는 마지막 부분에만 스코프를 붙입니다.
+
+</warning>
+
+## UI 키트
+
+- 컴포저블은 요소뿐 아니라 컴포넌트도 받습니다. 키트의 카드나 리스트 항목에 `useTemplateRef`를 쓰면
+동작하며, 라이브러리는 그 루트 요소를 읽습니다.
+- 키트에 자체 props가 있으면 상태를 거기에 넘기고(`:active="selected"`,
+`:color="isOver ? 'primary' : undefined"`), 나머지는 클래스로 넘기세요.
+- 키트의 리스트 항목은 자체 배경이 없고 리스트가 칠하는 경우가 많습니다. 그러면 오버레이의 복사본이
+비쳐 보이므로 배경을 주세요.```css
+[data-dnd-overlay] .v-list-item { background: rgb(var(--v-theme-surface)); }
+```
+- 복사본에서는 Vuetify, Quasar, PrimeVue, Naive UI의 누르기 물결 효과가 빠집니다. 함께 옮겨지면
+안 되는 다른 것(툴팁, 메뉴 버튼)에는 `data-dnd-no-clone`을 표시하세요.
+
+## 하지 말아야 할 것
+
+- 정렬 가능한 항목의 `transform`이나 `translate`에 CSS `transition`을 걸지 마세요. 라이브러리가 직접
+애니메이션하며, 측정하는 동안 그런 트랜지션을 취소합니다.
+- 정렬 가능한 항목을 `<TransitionGroup>`으로 감싸지 마세요. 이동이 두 번 애니메이션됩니다. 리스트의
+`animate`를 쓰세요.
+- [가상 리스트](/docs/guides/virtual-lists)에서 행의 `height`, `margin`, `padding`을 애니메이션하지
+마세요.
+- 드래그 주변에 추가한 트랜지션은 `prefers-reduced-motion: reduce`에서 멈추세요. 라이브러리는 자기
+것을 이미 멈춥니다.
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

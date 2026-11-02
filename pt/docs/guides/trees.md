@@ -1,0 +1,660 @@
+---
+title: "Árvores"
+description: "Sumários, menus, organogramas e backlogs com makeSortableTree — renderizados de forma plana com profundidades, aninhados arrastando para o lado ou passando sobre uma linha, com regras, nós recolhidos, uma linha de inserção e listas no mesmo grupo."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/trees"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+Uma árvore é uma lista ordenável cujas linhas têm profundidades. Arraste uma seção para a
+esquerda ou para a direita para mudar o nível dela, ou segure-a sobre o meio de outra seção para
+soltá-la dentro dela. Os números acompanham o arraste.
+
+<example height="45.5rem" hint="Arraste uma seção para o lado, ou troque o modo de aninhamento" name="tree-outline">
+
+
+
+</example>
+
+## Renderizada de forma plana
+
+`makeSortableTree` recebe os seus dados aninhados e retorna os nós visíveis como uma **lista
+plana**, em ordem, cada um com a sua `depth`. Você renderiza essa lista e indenta as linhas você
+mesmo. Todas as linhas continuam irmãs em um único contêiner, então elas deslizam e são animadas
+como as linhas de uma lista.
+
+```vue [Outline.vue]
+<script setup lang="ts">
+import { ref, useTemplateRef } from 'vue';
+import { makeSortableTree } from '@vue-dnd-kit/core';
+import Heading from './Heading.vue';
+
+interface Section { id: string; title: string; children?: Section[] }
+
+const outline = ref<Section[]>([
+  { id: 'start', title: 'Getting started', children: [{ id: 'install', title: 'Installation' }] },
+  { id: 'faq', title: 'FAQ' },
+]);
+
+const root = useTemplateRef<HTMLElement>('root');
+const { items, projected } = makeSortableTree(root, {
+  items: outline,     // the root nodes: a writable ref takes every drop
+  indentation: 24,    // px per level: match the rows' indentation
+  maxDepth: 2,
+});
+</script>
+
+<template>
+  <ol ref="root">
+    <Heading v-for="node in items" :key="node.key" :node="node" />
+  </ol>
+</template>
+```
+
+```vue [Heading.vue]
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import { makeSortableItem, type FlatNode } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ node: FlatNode<{ id: string; title: string }> }>();
+const el = useTemplateRef<HTMLElement>('el');
+makeSortableItem(el, { id: () => props.node.key });
+</script>
+
+<template>
+  <li ref="el" :style="{ marginInlineStart: `${node.depth * 24}px` }">{{ node.item.title }}</li>
+</template>
+```
+
+As linhas usam `makeSortableItem`, como as linhas de uma lista. Indente-as com margin, não com
+padding: assim é a própria linha que se move com a profundidade. O overlay pega a largura da
+posição e pousa no nível dela, e uma mudança de profundidade desliza como qualquer outro
+movimento. Um padding indentaria só o que está dentro da linha, e o overlay, uma cópia da linha
+feita ao pegar, manteria o nível em que o arraste começou. `items` contém `FlatNode`s:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Campo de <code>
+        FlatNode
+      </code>
+    </th>
+    
+    <th>
+      O que contém
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        key
+      </code>
+    </td>
+    
+    <td>
+      A key do nó (<code>
+        getKey
+      </code>
+      
+      , padrão <code>
+        node.id
+      </code>
+      
+      ). Use-a no <code>
+        :key
+      </code>
+      
+       e no <code>
+        id
+      </code>
+      
+       da linha.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        item
+      </code>
+    </td>
+    
+    <td>
+      O seu nó.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        depth
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        0
+      </code>
+      
+       para as raízes. A profundidade do nó arrastado é onde ele <strong>
+        pousaria
+      </strong>
+      
+      , então a posição dele indenta ao vivo.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        parentKey
+      </code>
+    </td>
+    
+    <td>
+      A key do pai, <code>
+        null
+      </code>
+      
+       para as raízes.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        index
+      </code>
+    </td>
+    
+    <td>
+      O índice entre os irmãos.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        hasChildren
+      </code>
+      
+      , <code>
+        collapsed
+      </code>
+    </td>
+    
+    <td>
+      Para um botão de expandir.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Como `items` é o rascunho, tudo o que você calcula a partir dele acompanha o arraste: a demo
+numera as seções a partir de `items`, então "2.1" vira "3.1" enquanto você move. `projected` é
+onde o nó arrastado pousaria, `{ depth, parentKey }`, ou `null` enquanto ele não está sobre esta
+árvore.
+
+Os filhos são lidos de `node.children` e gravados ali. Dados com outro formato usam
+`getChildren` e `setChildren`; o [organograma](#rules) abaixo os guarda em `members`:
+
+```ts
+makeSortableTree(root, {
+  items: org,
+  getChildren: (member) => member.members,
+  setChildren: (member, members) => { member.members = members; },
+});
+```
+
+## Aninhamento
+
+Um arraste muda a profundidade de dois jeitos, ambos ligados por padrão:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        nesting
+      </code>
+    </th>
+    
+    <th>
+      A profundidade vem de…
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'offset'
+      </code>
+    </td>
+    
+    <td>
+      Arrastar para o lado: cada <code>
+        indentation
+      </code>
+      
+       pixels para a esquerda ou para a direita é um nível acima ou abaixo, até onde as linhas em volta da posição permitem.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'hover'
+      </code>
+    </td>
+    
+    <td>
+      Segurar o arraste sobre o meio de uma linha: o drop vai para dentro dela, como o primeiro filho.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'both'
+      </code>
+    </td>
+    
+    <td>
+      Qualquer um dos dois. O padrão.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Defina `indentation` como o que as suas linhas acrescentam por nível (`24` por padrão), para que
+a posição siga o ponteiro: na demo, mude para `40` e arraste para o lado. Só com `'hover'`, um
+arraste para o lado mantém o nível, e só o meio de uma linha aninha. As duas opções aceitam um
+ref ou um getter e valem para o próximo arraste.
+
+Com `axis: 'y'` (ou `restrictToVerticalAxis`), o arraste não pode ir para o lado, mas as linhas
+ainda aninham passando sobre elas.
+
+## Regras
+
+Engineering aceita pessoas e times; Leadership está trancado; nada vai mais fundo que um time
+dentro de um time. Abra e feche os times: as linhas que eles mostram e escondem entram e saem
+deslizando.
+
+<example height="41rem" hint="Mova pessoas entre times; experimente Leadership e um terceiro nível" name="tree-org">
+
+
+
+</example>
+
+```ts [OrgTree.vue]
+const { items } = makeSortableTree(root, {
+  items: org,
+  getChildren: (member) => member.members,
+  setChildren: (member, members) => { member.members = members; },
+  // Only teams take members, and a locked team takes no one.
+  canNest: (_member, team) => team.kind === 'team' && !team.locked,
+  maxDepth: 2,
+  collapsed,
+  animate: true,
+});
+```
+
+```ts [OrgRow.vue]
+// A locked row doesn't drag (and says so with `aria-disabled`).
+makeSortableItem(el, { id: () => props.node.key, disabled: () => !!props.node.item.locked });
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Opção
+    </th>
+    
+    <th>
+      Limita
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        canNest(node, parent)
+      </code>
+    </td>
+    
+    <td>
+      Se <code>
+        node
+      </code>
+      
+       pode ficar sob <code>
+        parent
+      </code>
+      
+      . Um multi-drag pergunta para cada nó arrastado. As raízes são sempre permitidas.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        maxDepth
+      </code>
+    </td>
+    
+    <td>
+      A profundidade máxima permitida, sendo as raízes <code>
+        0
+      </code>
+      
+      . Os descendentes do nó arrastado contam: um time com membros não vai mais fundo que <code>
+        maxDepth - 1
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      Em uma linha: ela não é arrastada. Na árvore: nada é arrastado dela nem solto nela.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        group.put
+      </code>
+    </td>
+    
+    <td>
+      Se a árvore aceita itens de outras listas e árvores.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+    </td>
+    
+    <td>
+      Qualquer outra coisa, decidida no drop: veja <a href="/docs/guides/drop-decisions">
+        decidindo um drop
+      </a>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Quando uma regra recusa uma profundidade, a posição assume a maior profundidade que passa:
+arraste Noor para baixo de Raj e para a direita, e a posição fica no nível de cima, já que
+Leadership está trancado e Raj é uma pessoa. Onde nenhuma profundidade passa, a posição não vai
+para lá. Cópias e nós de `createItem` também seguem `canNest` e `maxDepth`.
+
+### Nós recolhidos
+
+`collapsed` é um `Set` de keys cujos filhos estão escondidos, como ref ou getter. Os filhos deles
+não estão em `items`; `node.collapsed` e `node.hasChildren` controlam o botão:
+
+```ts
+const collapsed = ref(new Set<Key>());
+const toggle = (key: Key) => (collapsed.value.has(key) ? collapsed.value.delete(key) : collapsed.value.add(key));
+```
+
+Um nó arrastado leva toda a sua subárvore junto, recolhida ou não. Com `animate: true`, as linhas
+que um nó mostra ou esconde ao abrir ou fechar entram e saem animadas, assim como as mudanças nos
+dados que nenhum arraste fez.
+
+## Uma linha de inserção
+
+Arraste um modelo da esquerda para o menu, ou mova um item: o menu fica parado e uma linha mostra
+para onde vai o drop, começando no nível em que ele pousa. Sobre o meio de uma página ou de um
+grupo, é o próprio item que se acende.
+
+<example height="31rem" hint="Arraste um modelo para o menu, ou mova um item para o lado" name="tree-menu">
+
+
+
+</example>
+
+Com `placeholder: 'indicator'`, a árvore não se mexe enquanto você arrasta. Cada linha lê o seu
+`indicator` e desenha a linha de inserção:
+
+```vue [MenuRow.vue]
+<script setup lang="ts">
+import { computed, useTemplateRef } from 'vue';
+import { makeSortableItem, type FlatNode } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ node: FlatNode<MenuItem>; indent: number }>();
+const el = useTemplateRef<HTMLElement>('el');
+const { indicator } = makeSortableItem(el, { id: () => props.node.key });
+
+// 'inside': the drop goes into this row. Otherwise a line before or after it.
+const inside = computed(() => indicator.value?.side === 'inside');
+const line = computed(() => {
+  const value = indicator.value;
+  if (!value || value.side === 'inside') return null;
+  // From the level the drop lands at, measured from this row's own level.
+  return { side: value.side, left: `${((value.depth ?? 0) - props.node.depth) * props.indent}px` };
+});
+</script>
+
+<template>
+  <div ref="el" class="item" :class="{ inside }" :style="{ marginLeft: `${node.depth * indent}px` }">
+    {{ node.item.title }}
+    <span v-if="line" class="line" :class="line.side" :style="{ left: line.left }" />
+  </div>
+</template>
+
+<style scoped>
+.item { position: relative; }
+.item.inside { box-shadow: 0 0 0 1.5px #42b883; }
+.line { position: absolute; right: 0; height: 2px; background: #42b883; }
+.line.before { top: -3px; }
+.line.after { bottom: -3px; }
+</style>
+```
+
+Em árvores, `indicator` acrescenta `depth` e `parentKey`: o nível e o pai que os nós soltos
+recebem. Arrastar para o lado move a linha de inserção entre os níveis, e o teclado também a
+move. Neste modo, um drop fora da árvore cancela.
+
+Os modelos são draggables simples (`makeDraggable`) com `data`. A árvore os transforma em novos
+nós com `createItem`, na posição e na profundidade da linha de inserção:
+
+```ts [MenuTree.vue]
+let created = 0;
+makeSortableTree(root, {
+  items: menu,
+  placeholder: 'indicator',
+  maxDepth: 1,
+  canNest: (_item, parent) => parent.kind !== 'link',
+  createItem: (active) => {
+    const template = active.data as { title: string; kind: MenuItem['kind'] };
+    return { id: `new-${++created}`, title: `New ${template.title.toLowerCase()}`, kind: template.kind };
+  },
+});
+```
+
+A barra acima do menu renderiza `menu`, os dados salvos, não `items`: ela só muda no drop.
+
+## Árvores e listas em um mesmo grupo
+
+Uma história movida para o backlog guarda as suas tarefas, fora de vista, e as traz de volta ao
+roadmap. Segure <kbd value="Alt">
+
+
+
+</kbd>
+
+ ao arrastar para fora do roadmap para copiar em vez de mover.
+
+<example height="29.5rem" hint="Mova Saved cards para o backlog e de volta; Alt copia" name="tree-backlog">
+
+
+
+</example>
+
+Uma árvore e uma lista com o mesmo `group` trocam nós, como duas listas fazem. Um nó guarda a
+sua subárvore aonde quer que vá: a lista só não a mostra. O mesmo componente de linha serve aos
+dois, já que `makeSortableItem({ item })` recebe a key da lista ou da árvore que é dona da linha.
+
+As cópias funcionam como nas listas (`clone`, `pull: 'clone'`, a tecla de cópia), mas `clone`
+precisa retornar a cópia **com toda a sua subárvore**, e cada nó dela precisa de uma key nova:
+
+```ts [Roadmap.vue]
+let copies = 0;
+const copy = (work: Work): Work => ({ ...work, id: `${work.id}-copy-${++copies}`, children: work.children?.map(copy) });
+
+makeSortableTree(root, {
+  items: roadmap,
+  group: 'work',
+  canNest: (work, parent) => RANK[parent.kind] < RANK[work.kind],
+  maxDepth: 2,
+  clone: copy,
+});
+```
+
+Veja [listas que compartilham itens](https://zizigy.github.io/docs/guides/shared-lists) sobre grupos, cópia e
+`createItem`.
+
+## O drop
+
+O evento de drop da árvore é o de uma lista, com `parentKey` acrescentado a `from` e `to`:
+
+```ts
+makeSortableTree(root, {
+  items: outline,
+  onDrop: (e) => {
+    console.log(e.keys, e.from.parentKey, '→', e.to.parentKey, e.to.index);
+  },
+});
+```
+
+`to.index` é a posição entre os novos irmãos, contada depois que o nó deixou o lugar antigo. No
+drop, a biblioteca dá aos nós alterados os novos filhos (`setChildren`) e grava um novo array de
+raízes no seu ref.
+
+`e.result.get(treeId)` é a nova árvore como um novo array de raízes: os nós nos caminhos
+alterados são cópias, as subárvores intactas são compartilhadas, e os seus nós ficam como estão.
+Para uma store ou dados imutáveis, passe um getter, chame `e.preventDefault()` e salve `e.result`
+(veja [decidindo um drop](https://zizigy.github.io/docs/guides/drop-decisions#stores-and-servers-controlled-lists)). As
+cópias são feitas com `withChildren(node, children)`, por padrão `{ ...node }` com os novos
+filhos; passe a sua própria função para instâncias de classes.
+
+## Teclado e multi-drag
+
+Foque uma linha, pressione <kbd value="Space">
+
+
+
+</kbd>
+
+, e então:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Tecla
+    </th>
+    
+    <th>
+      Move o nó
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <kbd value="ArrowUp">
+        
+      </kbd>
+      
+       / <kbd value="ArrowDown">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      Para a posição acima ou abaixo, uma linha por vez.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="ArrowRight">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      Um nível mais fundo, sob a linha de cima, onde as regras permitem.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="ArrowLeft">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      Um nível acima, para fora do pai.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="Space">
+        
+      </kbd>
+      
+       / <kbd value="Escape">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      Solta o nó / devolve-o ao lugar.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+No modo indicador, as setas movem a linha de inserção em vez do nó. A partir de uma lista ou de
+um modelo ao lado da árvore, uma seta em direção à árvore traz o item para dentro, no nível da
+linha antes da qual ele entra.
+
+Os nós selecionados se movem juntos como um bloco, cada um com a sua subárvore, na ordem do
+documento. Um nó selecionado dentro de outro selecionado vai junto na subárvore do pai. Veja
+[multi-drag](https://zizigy.github.io/docs/guides/multi-drag).
+
+Todas as opções estão na [API do makeSortableTree](https://zizigy.github.io/docs/api/make-sortable-tree). Para árvores
+com milhares de linhas, veja [listas virtuais](https://zizigy.github.io/docs/guides/virtual-lists).
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

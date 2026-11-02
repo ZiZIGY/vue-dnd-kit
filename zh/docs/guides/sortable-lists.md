@@ -1,0 +1,649 @@
+---
+title: "可排序列表"
+description: "拖拽时重新排序的列表、标签栏和网格——makeSortableList 渲染草稿，makeSortableItem 创建行，放置时新顺序写入你的 ref。另有手柄、插入线和交换。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/sortable-lists"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="25rem" hint="按住抓手拖拽图层：面板立即移动，画板在放置时更新" name="layers-panel">
+
+
+
+</example>
+
+## 列表和它的行
+
+可排序列表需要两个组件：列表，以及它的行。
+
+```vue [LayersPanel.vue]
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import { makeSortableList } from '@vue-dnd-kit/core';
+import LayerRow from './LayerRow.vue';
+
+const layers = defineModel<Layer[]>({ required: true });
+const list = useTemplateRef<HTMLElement>('list');
+const { items } = makeSortableList(list, { items: layers });
+</script>
+
+<template>
+  <ul ref="list">
+    <LayerRow v-for="layer in items" :key="layer.id" :layer="layer" />
+  </ul>
+</template>
+```
+
+```vue [LayerRow.vue]
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import { makeSortableItem } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ layer: Layer }>();
+const el = useTemplateRef<HTMLElement>('el');
+makeSortableItem(el, { item: () => props.layer });
+</script>
+
+<template>
+  <li ref="el">{{ layer.name }}</li>
+</template>
+```
+
+行会注册到渲染它的那个列表中。一个组件可以创建多个列表（两列、列表中的列表）：每一行加入元素包含它的那个列表，列表嵌套时加入最内层的列表。
+
+## 草稿
+
+`makeSortableList` 返回 `items`，它是你的数组的一份**草稿**。拖拽时，草稿实时重新排序：被拖拽的行占据新的位置，其他行滑开让路。在放置之前，你的数组不会改变。放置时，库把新顺序写入其中。
+
+上面的图层面板同时展示了两者：面板渲染 `items`，拖拽时随之移动；画板读取 `layers`，也就是数组本身，只有在你松开时才重新叠放。
+
+- 渲染 `items`，而不是你的数组。如果渲染你的数组，放置之前什么都不会动。
+- 写入发生在列表的 `onDrop` 之后。在 `onDrop` 中，你的数组仍是旧顺序，`e.result` 是新顺序。
+- `layers` 是普通的 ref（这里是 `defineModel`，写入时会触发 `update:modelValue`），所以应用的其他部分会像看到任何其他变化一样看到它。
+
+```ts
+makeSortableList(list, {
+  items: layers,
+  onDrop: (e) => {
+    console.log(e.from.index, '→', e.to.index, e.result.get(e.to.list));
+  },
+});
+```
+
+<tip>
+
+使用 store、服务端状态或不可变数据？传入 getter 或 `computed`，而不是 ref。库不会写入只读的数据源：调用 `e.preventDefault()`，然后自己应用 `e.result`。见[受控列表](https://zizigy.github.io/docs/guides/shared-lists#controlled-lists)。
+
+</tip>
+
+## Key
+
+行按它们的数据作为 key，从不按索引或自动生成的 id。默认 key 是 `item.id`，对于字符串和数字则是项本身。
+
+```ts
+// LayersPanel.vue: your items have another key
+makeSortableList(list, { items: layers, getKey: (layer) => layer.uuid });
+
+// LayerRow.vue: `item` is keyed with the list's getKey…
+makeSortableItem(el, { item: () => props.layer });
+// …or pass the key yourself
+makeSortableItem(el, { id: () => props.layer.uuid });
+```
+
+- 在 `v-for` 中使用相同的 key：`:key="layer.uuid"`。使用 `:key="index"` 时，会有错误的行产生动画，行的状态也会在行之间跳动。
+- key 在所有相互交换项的列表中必须唯一。
+- 以 getter 形式传入 `item` 和 `id`，这样行的 props 变化时它也能保持同步。
+
+## 手柄
+
+默认情况下，整行都能开始拖拽，但其中的按钮、输入框和其他控件除外：图层的眼睛和锁仍是普通按钮。传入 `handle`，就只能通过某一部分拖拽：
+
+```vue [LayerRow.vue]
+<script setup lang="ts">
+makeSortableItem(el, { item: () => props.layer, handle: '.grip' });
+</script>
+
+<template>
+  <li ref="el">
+    <button type="button" class="grip" :aria-label="`Move ${layer.name}`">⠿</button>
+    {{ layer.name }}
+  </li>
+</template>
+```
+
+- `handle` 是项内部的一个选择器，或一个元素 ref。
+- 鼠标拖拽从手柄立即开始，无需通常的 4 px。按下后不移动仍然是点击：手柄可以在 `click` 时打开菜单。
+- 手柄获得拖拽的属性（`role`、`tabindex`、`aria-*`），键盘拖拽也从它开始。
+
+把手柄做成带 `aria-label` 的 `<button type="button">`：它本身就可以获得焦点，屏幕阅读器会播报它的标签。只带图标的 `<span>` 也能用（库会给它加上 `tabindex="0"` 和 `role="button"`），但它没有有意义的名称。
+
+<note>
+
+触摸拖拽在 200 ms 长按之后才开始，这样页面仍能滚动。要从手柄立即开始拖拽，给手柄加上 `touch-action: none`，并给项设置 `activation: { touch: { distance: 4 } }`。
+
+</note>
+
+## 策略
+
+`strategy` 说明列表的布局方式，这样各行能以正确的方式让出空间：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        strategy
+      </code>
+    </th>
+    
+    <th>
+      适用于
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'vertical'
+      </code>
+      
+      （默认）
+    </td>
+    
+    <td>
+      一列行。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'horizontal'
+      </code>
+    </td>
+    
+    <td>
+      单独一行：标签页、标签、时间线。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'grid'
+      </code>
+    </td>
+    
+    <td>
+      CSS 网格和换行的 flex 行，项的尺寸也可以各不相同。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+一排标签页就是一个横向列表：
+
+<example height="23rem" hint="拖动标签页；关闭一个，或打开一个新的" name="browser-tabs">
+
+
+
+</example>
+
+```ts [Browser.vue]
+const { items } = makeSortableList(strip, {
+  items: tabs,
+  strategy: 'horizontal',
+  axis: 'x',        // the tabs stay on their row
+  animate: true,    // the buttons open and close tabs: slide the others then too
+});
+```
+
+标签页的关闭按钮在可拖拽的标签页内部照常工作，结束拖拽的那次点击不会选中标签页。拖拽时各行会自己滑动；`animate` 为非拖拽引起的变化添加同样的效果，这里就是按钮引起的变化（见[动画](https://zizigy.github.io/docs/guides/animations)）。
+
+网格在两个维度上排序，图块可以是任意尺寸：
+
+<example height="31rem" hint="拖动一张照片，大的那张也可以" name="photo-grid">
+
+
+
+</example>
+
+```ts [PhotoGrid.vue]
+const { items } = makeSortableList(grid, { items: photos, strategy: 'grid' });
+```
+
+```css
+.grid { display: grid; grid-template-columns: repeat(4, 76px); grid-auto-rows: 76px; grid-auto-flow: dense; }
+.wide { grid-column: span 2; }
+.tall { grid-row: span 2; }
+```
+
+`grid-auto-flow: dense` 让大图块移动时网格保持紧凑。没有它，网格会在放不下图块的地方留下空洞，并多出一行。
+
+## 锁定轴
+
+```ts
+makeSortableList(list, { items: layers, axis: 'y' });
+```
+
+`axis: 'y'` 让拖拽保持在竖直轴上，`'x'` 则保持在水平轴上：上面的图层和标签页就用了它。项自己的 `axis` 优先于它所在列表的。要同时把拖拽限制在列表内，加上 `restrictToParent` 修饰器。更多内容见[约束](https://zizigy.github.io/docs/guides/constraints)。
+
+## 为空位设置样式
+
+被拖拽的行留在列表中，作为它将落入的位置，并获得 `data-dnd-placeholder`。默认样式把它淡化到 40%，优先级为零，所以你的任何规则都会胜出：
+
+```css [LayerRow.vue]
+.layer[data-dnd-placeholder] {
+  opacity: 1;
+  box-shadow: inset 0 0 0 1.5px #42b883;
+}
+
+.layer[data-dnd-placeholder] > * {
+  visibility: hidden;   /* an empty slot of the row's exact size */
+}
+```
+
+`makeSortableItem` 以 ref 的形式返回同样的状态，外加几个：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      返回值
+    </th>
+    
+    <th>
+      是什么
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        isPlaceholder
+      </code>
+    </td>
+    
+    <td>
+      这一行是被拖拽项将落入的位置。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isDragging
+      </code>
+    </td>
+    
+    <td>
+      这一行正被拖拽（多项拖拽时，每个被拖拽的行都是）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        index
+      </code>
+    </td>
+    
+    <td>
+      它在草稿中的索引：拖拽时会变化。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        selected
+      </code>
+    </td>
+    
+    <td>
+      可写，绑定到 provider 的选中集合。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        indicator
+      </code>
+    </td>
+    
+    <td>
+      在<a href="#an-insertion-line">
+        指示器模式
+      </a>
+      
+      下，插入线的位置。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+列表返回 `isOver` 和 `isAccepting` 用于自身的高亮，还返回 `activeKey` 和 `activeIndex`，即被拖拽的项及其在本列表草稿中的位置。所有状态及其实时演示见[样式](https://zizigy.github.io/docs/guides/styling)。
+
+## 关闭功能
+
+<table>
+<thead>
+  <tr>
+    <th>
+      选项
+    </th>
+    
+    <th>
+      阻止什么
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      项上的 <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      此项不能被拖拽。其他项仍能越过它移动：锁定上面的一个图层，然后把另一个图层拖过它。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      列表上的 <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      不能从中拖出，也不能放入其中。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      列表上的 <code>
+        sort: false
+      </code>
+    </td>
+    
+    <td>
+      它的项不能在内部重新排序，但仍可以离开它：面板，见<a href="/docs/guides/shared-lists#what-goes-in-and-out-pull-and-put">
+        共享项的列表
+      </a>
+      
+      。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+它们都接受 getter 或 ref，并在下一次拖拽时生效：
+
+```ts [LayerRow.vue]
+makeSortableItem(el, { item: () => props.layer, handle: '.grip', disabled: () => props.layer.locked });
+```
+
+无论其他行怎样，都必须固定在最前或最后的行根本不是项：把它渲染在列表之外。面板的 Background 图层就位于 `<ul>` 之下。
+
+## 只显示部分项
+
+搜索框、标签：`filter` 只显示它返回 `true` 的项，拖拽在这些项之间排序。其余项留在你的数组中，位置不变：
+
+<example height="27rem" hint="选一个标签或搜索，然后拖拽一个任务：数组中隐藏的项保持原位" name="filtered-list">
+
+
+
+</example>
+
+```ts [Backlog.vue]
+const query = ref('');
+const tag = ref<Tag | null>(null);
+
+const { items } = makeSortableList(list, {
+  items: tasks,
+  filter: (task) => (!tag.value || task.tag === tag.value) && task.title.includes(query.value),
+});
+```
+
+- `items` 包含匹配的项：照常渲染它。过滤是响应式的：在搜索框中输入会立刻更新列表。
+- 放置会写入整个数组。每个隐藏项紧跟在它原先跟随的那个显示项之后；如果那一项正是被移动的项，它就跟在之前最近的、没有移动的项之后。
+- `e.to.index` 和列表的 `activeIndex` 按显示的项计数。`e.result` 包含整个数组，包括隐藏项。
+
+<note>
+
+过滤数组的 `computed` 作为 `items` 传入也可以，但它是只读的：你得自己应用 `e.result`，并算出隐藏项该放在哪里。`filter` 把这两件事都做了。
+
+</note>
+
+## 插入线
+
+使用 `placeholder: 'indicator'` 时，拖拽期间列表保持不动，由一条线显示放置的位置。这条线由你来画：
+
+<example height="27rem" hint="拖动一个 issue：一条线显示它会放到哪里" name="issue-table">
+
+
+
+</example>
+
+```ts [IssueTable.vue]
+const { items, indicator } = makeSortableList(body, { items: issues, placeholder: 'indicator' });
+```
+
+```vue [IssueRow.vue]
+<script setup lang="ts">
+const { indicator } = makeSortableItem(el, { item: () => props.issue });
+</script>
+
+<template>
+  <div ref="el" class="row" :class="indicator && `drop-${indicator.side}`">…</div>
+</template>
+
+<style scoped>
+.row.drop-before::before { content: ''; position: absolute; top: -1.5px; left: 6px; right: 6px; height: 2px; background: #42b883; }
+.row.drop-after::before { content: ''; position: absolute; bottom: -1.5px; left: 6px; right: 6px; height: 2px; background: #42b883; }
+</style>
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        indicator
+      </code>
+      
+       字段
+    </th>
+    
+    <th>
+      内容
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        list
+      </code>
+    </td>
+    
+    <td>
+      放置进入的列表。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        index
+      </code>
+    </td>
+    
+    <td>
+      在渲染出的列表中的插入索引。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        key
+      </code>
+    </td>
+    
+    <td>
+      插入线所依附的项；在空列表中为 <code>
+        null
+      </code>
+      
+      （此时在列表上画线）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        side
+      </code>
+    </td>
+    
+    <td>
+      在该项的 <code>
+        'before'
+      </code>
+      
+       或 <code>
+        'after'
+      </code>
+      
+      ；在<a href="#swap-instead-of-shift">
+        交换
+      </a>
+      
+      的列表中为 <code>
+        'swap'
+      </code>
+      
+      。树还会加上 <code>
+        'inside'
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        depth
+      </code>
+      
+      、<code>
+        parentKey
+      </code>
+    </td>
+    
+    <td>
+      仅限树：放置落到哪里。见<a href="/docs/guides/trees#an-insertion-line">
+        树
+      </a>
+      
+      。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+- 插入线位于某个列表中时，该列表的 `indicator` 有值（表格会把它打印出来）；插入线依附于某个项时，该项的 `indicator` 有值。
+- 被拖拽的行留在原处，被标记为占位：把它淡化。
+- 键盘也会移动插入线。
+- 在此模式下，放到所有目标之外会取消（`dropOutside: 'cancel'`），因为列表从未显示过别的顺序。
+- 浮层会遮住它下方那一行的一部分。让它稍微透明一点，插入线就能透出来：`[data-dnd-overlay] .row { opacity: 0.85 }`。
+
+## 交换而非平移
+
+使用 `behavior: 'swap'` 时，被拖拽的项与它下方的项交换位置，其他项保持不动：
+
+<example height="29rem" hint="交换两个人，跨列也可以；试试 On drop" name="on-call">
+
+
+
+</example>
+
+```ts [Rotation.vue]
+const { items } = makeSortableList(list, {
+  id: props.column.id,
+  items: toRef(props.column, 'people'),
+  group: 'rotation',
+  behavior: 'swap',
+  placeholder: () => props.placeholder,   // 'item' (live) or 'indicator' (on drop)
+  onDrop: (e) => {
+    if (e.partner) emit('swap', `${e.items[0]?.name} ⇄ ${e.partner.item.name}`);
+  },
+});
+```
+
+- **实时**（`placeholder: 'item'`，默认）：拖拽时就显示交换。移回去或移出列表会撤销它。
+- **放置时**（`placeholder: 'indicator'`）：放置之前什么都不动。指示器标记放置时要交换的那个项，`side: 'swap'`：给该项加上轮廓，而不是画一条线。方向键在项之间移动这个标记；回到被拖拽的项上时，标记消失。
+
+```vue [PersonCell.vue]
+<li ref="el" :class="{ target: indicator?.side === 'swap' }">…</li>
+```
+
+放置事件带有 `mode: 'swap'` 和 `partner`，即与之交换的那个项：它的 `key`、`item`，以及它自己的 `from` 和 `to`。同一分组的两个列表都设置了 `behavior: 'swap'` 时，它们之间可以互相交换，就像这两列一样。此时悬停的项会移到另一个列表中，所以它必须被允许移出（`group.pull`）和移入（`group.put`）：见[共享项的列表](https://zizigy.github.io/docs/guides/shared-lists)。多项拖拽会排序而不是交换。
+
+## 键盘
+
+让一行或它的手柄获得焦点，按 <kbd value="Space">
+
+
+
+</kbd>
+
+ 或 <kbd value="Enter">
+
+
+
+</kbd>
+
+ 拿起它。沿列表方向的方向键每次移动一个位置，在网格中上下键会移到下一行，垂直于列表方向的方向键会把它移到同一分组的下一个列表。越过列表末尾后，方向键会继续进入该方向上的下一个列表（上下堆叠的列表），没有列表时则进入那里的放置目标，例如回收区。再按 <kbd value="Space">
+
+
+
+</kbd>
+
+ 或 <kbd value="Enter">
+
+
+
+</kbd>
+
+ 放下，按 <kbd value="Escape">
+
+
+
+</kbd>
+
+ 放回原处。本页的每个演示都是这样工作的。屏幕阅读器的文本见[无障碍](https://zizigy.github.io/docs/guides/accessibility)。
+
+## 动画
+
+拖拽时各行滑到新位置，放下的行落到它的位置上。行进入和离开时，列表本身会变大或缩小到新的尺寸（`animateSize`）。这是默认开启的，不需要任何代码。不要用 `<TransitionGroup>` 包裹行：移动会被动画两次。也不要给行的 `transform` 加 CSS `transition`。对于非拖拽引起的变化（添加、删除、打乱），开启列表的 `animate` 选项，就像标签页那样。见[动画](https://zizigy.github.io/docs/guides/animations)。
+
+完整的选项列表见 [makeSortableList](https://zizigy.github.io/docs/api/make-sortable-list) 和 [makeSortableItem](https://zizigy.github.io/docs/api/make-sortable-item) API。
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

@@ -1,0 +1,173 @@
+---
+title: "ブロックエディター"
+description: "Notion 風のページ。ハンドルでドラッグし横方向にネストするブロック、複数をまとめて動かす選択枠、「/」メニューやサイドバーからドラッグして出す新しいブロック、Alt でコピー、そしてそのすべてに使える Undo。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/block-editor"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="40rem" hint="⋮⋮ をドラッグしてブロックを動かし、横に動かしてネストしてみましょう。/ を入力すると新しいブロックです" name="block-editor" title="ブロックエディター">
+
+
+
+</example>
+
+各ブロックには、余白にハンドル（⋮⋮）と「+」があります。どのブロックにも入力できます：Enter で次のブロックを始め、Tab でネストし、「/」で新しいブロックのメニューを開き、Markdown も使えます（「## 」、「- 」、「<span>
+
+
+
+</span>
+
+ 」）。余白に枠を描いて複数のブロックを選択し、まとめてドラッグしてみましょう。フレームを展開すると、幅の広い画面では追加するブロックとページのアウトラインがそれぞれのサイドバーに表示されます。
+
+## 注目ポイント
+
+- **Page.vue**：ページは 1 つの並べ替え可能なツリーで、`placeholder: 'indicator'` を使っています：ドラッグ中もページは動かず、ブロックがどこにどの階層で着地するかをラインが示します。ブロックを囲むシートがその `dropzone` なので、最後のブロックの下でドロップすると末尾に着地します。
+- **BlockRow.vue**：1 つのブロック。ドラッグするのはハンドルだけなので（`handle`）、テキストは編集も選択もできるままです。ハンドルはボタンです：クリックでブロックを選択してそのメニューを開き、Space でキーボード用にブロックを持ち上げます。
+- **BlockText.vue** と **Editable.vue**：エディターのキー操作を持つ、ただの `contenteditable` のテキスト。入力は DOM からモデルへ流れ、モデルが DOM に戻るのはほかの何か（Undo、結合）がモデルを変えたときだけなので、キャレットが飛ぶことはありません。
+- **editor.ts**：ドキュメントとそれに対するすべての編集で、ドラッグ＆ドロップは含みません：分割、結合、インデント、複製、変換、そしてドロップも入力も同じように取り消せる履歴。
+
+## 横にドラッグしてネストする
+
+```ts [Page.vue]
+const { items } = makeSortableTree(root, {
+  id: 'page',
+  items: editor.blocks,
+  group: 'blocks',
+  placeholder: 'indicator',
+  nesting: 'offset',        // sideways: every 24px is a level
+  indentation: INDENT,
+  maxDepth: MAX_DEPTH,
+  canNest: (_block, parent) => !!KINDS[parent.kind].nests,
+  collapsed: editor.collapsed,
+  clone: copyBlock,         // Alt-drag copies a block with what is nested in it
+  createItem: (active) => createBlock((active.data as { kind: BlockKind }).kind),
+  animate: true,
+  overOverlay: BlockGhost,
+  dropzone: sheet,
+  onDrop, // see Undo, below
+});
+```
+
+`nesting: 'offset'` は、階層をドラッグの横方向のオフセットだけから決めます：ドキュメントエディターと同じく、段落の中央にホバーしてもその中にはドロップされません。`canNest` は、どのブロックがネストしたブロックを受け入れるかを決め（段落、リスト、To-do、トグル、引用、コールアウト。見出し、コード、画像は受け入れません）、上のブロックが拒否した場合、ラインは条件を満たす最も深い階層に留まります。閉じたトグル（`collapsed`）もブロックを受け入れます：その下で 1 階層内側にあるラインは、ブロックをトグルの中の先頭に入れます。
+
+各行は自分の `indicator` から、ドロップが着地する階層に合わせてラインを描きます。番号付きリストは `items` から数えるので、「2.」や「a.」はドロップや Tab のたびに追従します。`animate: true` は、ドラッグ以外による変化（Enter、Tab、Delete、Undo、トグルの開閉）もスライドやフェードで表示します。
+
+```ts [BlockRow.vue]
+const { indicator, selected } = makeSortableItem(el, {
+  id: () => props.node.key,
+  handle: '.handle',
+  // A mouse press on a handle drags at once; after 4px instead, a click stays a click.
+  activation: { mouse: { distance: 4 } },
+  // Enter opens the block's menu; Space picks the block up.
+  canDrag: (event) => !('key' in event && event.key === 'Enter'),
+});
+
+const line = computed(() => {
+  const at = indicator.value;
+  if (!at || at.side === 'inside') return null;
+  return { side: at.side, left: `${((at.depth ?? 0) - props.node.depth) * props.indent}px` };
+});
+```
+
+## 複数を選択する
+
+ページは選択エリアです：余白から描いた枠が触れたブロックを選択します。`strategy: 'select'` で空いた余白をクリックすると選択が解除され、`accept` は枠の対象をブロックに限ります。ハンドルをクリックするとそのブロックが選択され、Shift クリックで範囲を、Ctrl/Cmd クリックでもう 1 つを選択します。テキスト中で Escape を押すと、そのブロックが選択されます。そして：
+
+```ts [Page.vue]
+const { isSelecting, style } = makeSelectionArea(scroller, {
+  strategy: 'select',
+  accept: 'blocks',                     // the rows' type: their group's name
+  disabled: () => menu.value !== null,  // a press closes the menu first
+});
+```
+
+選択したブロックの 1 つをドラッグすると、ほかのブロックもついてきます：ツリーはそれらを、それぞれのネストした中身とともに、読む順に 1 つのかたまりとして動かします。Delete で削除し、Ctrl/Cmd+D で複製し、ハンドルのメニューで別の種類に変換します。矢印キーはハンドルからハンドルへ移り、Shift で選択に加えます。
+
+## メニューからの新しいブロック
+
+余白の「+」とブロック内の「/」は同じメニューを開きます。クリックすると下にブロックを追加します。各項目は通常のドラッグ可能な要素でもあり、ツリーの `createItem` が、ドロップされた場所でそれを新しいブロックに変えます。幅の広い画面のサイドバーにも同じ項目が並び、そこでは Space でキーボード用に持ち上げられます：ページに向かう矢印キーで取り込まれます。
+
+```ts [InsertOption.vue]
+makeDraggable(el, {
+  id: () => `new-${props.kind}${props.option ? '-option' : ''}`,
+  type: 'new-block',
+  data: () => ({ kind: props.kind }),
+  attributes: () => !props.option, // in the menu, an option of its listbox
+});
+```
+
+項目が運ばれている間、メニューはフェードアウトして行き先のページが見えるようになり、新しいブロックが着地すると閉じます。
+
+```ts [Page.vue]
+useDnDMonitor({
+  onDragStart: ({ active }) => (lifted.value = !!popover.value?.contains(active.element)),
+  onDragSettle: () => {
+    if (!lifted.value) return;
+    lifted.value = false;
+    menu.value = null;
+  },
+});
+```
+
+## ドロップで何が起きるか
+
+**BlockGhost.vue** はツリーの `overOverlay` です：ドラッグがページの上にある間、ドラッグ自身のオーバーレイ（`<slot />`。ブロックか項目のクローン）を件数とメモで包みます。`to.parentKey` はドロップが入るブロックを示し、`mode` はコピーのときにそれを伝えます。
+
+```vue [BlockGhost.vue]
+<script setup lang="ts">
+const props = defineProps<{ items: DragItem[]; mode: DragMode; to: DropDestination | null }>();
+
+// A new block: a kind dragged from the menu or the sidebar, by its `type`.
+const adding = computed(() => props.items[0]?.type.includes('new-block'));
+
+const note = computed(() => {
+  const verb = props.mode === 'copy' ? 'Copy' : adding.value ? 'Add' : null;
+  const parent = props.to?.parentKey == null ? undefined : editor.get(String(props.to.parentKey));
+  if (!parent) return verb; // a plain move at the page's top level needs no words
+  return `${verb ? `${verb} into` : 'Into'} “${parent.text}”`; // "Copy into “Open questions”"
+});
+</script>
+
+<template>
+  <div class="ghost">
+    <slot />
+    <span v-if="items.length > 1" class="count">{{ items.length }}</span>
+    <span v-if="note" class="note">{{ note }}</span>
+  </div>
+</template>
+```
+
+## Undo
+
+ツリーは各ドロップを書き込み可能な ref である `editor.blocks` に書き込みます。その `onDrop` は書き込みの直前に実行されるので、ページを元の状態のまま記録し、Undo でドロップを取り消せます。ほかのすべての編集も同じように自分を記録します。1 つのブロックに入力したキー入力は 1 つのステップになります。
+
+```ts [Page.vue]
+onDrop: (event) => {
+  editor.record(); // the library writes the drop after this: Undo takes it back
+  const first = event.items[0]!.id;
+  if (event.mode === 'insert') editor.focus(first, 'start');
+  else editor.focusHandle(first);
+},
+```
+
+```ts [editor.ts]
+/** Called before every change: the state it changes goes on the undo stack. */
+const record = () => {
+  past.value = [...past.value.slice(-99), capture()];
+  future.value = [];
+  typing = null;
+};
+```
+
+履歴は id 付きのブロックのコピーを持つので、Undo と Redo をまたいでもブロックは自分の行と選択を保ちます。ドロップの後、新しいブロックはキャレットを受け取り、移動したブロックはハンドルにフォーカスを渡します：行がページ内で移動するとフォーカスが外れるため、ハンドルからショートカットを使い続けられるようにしています。
+
+## キーボードとスクリーンリーダー
+
+テキスト中で Escape を押すと、ブロックが選択され、そのハンドルにフォーカスが移ります。そこから Space で持ち上げ、矢印キーでラインを動かし（左右は 1 階層外へ・内へ）、Space でドロップします。Enter でメニューを開き、Delete で削除します。プロバイダーの `announcements` はブロックを種類とテキストで読み上げ（「Picked up to-do list “Freeze the API”」）、トップバーのステータス行はボタンとショートカットが何をしたかを読み上げます。
+
+さらに読む：[ツリー](https://zizigy.github.io/docs/guides/trees) · [マルチドラッグと選択](https://zizigy.github.io/docs/guides/multi-drag#rubber-band-selection) · [通常のドラッグ可能な要素をリストへ](https://zizigy.github.io/docs/guides/drag-and-drop#plain-draggables-into-a-list) · [オーバーレイを変えるターゲット](https://zizigy.github.io/docs/guides/overlay#targets-that-change-the-overlay) · [押下がドラッグになるとき](https://zizigy.github.io/docs/guides/provider#when-a-press-becomes-a-drag) · [アクセシビリティ](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

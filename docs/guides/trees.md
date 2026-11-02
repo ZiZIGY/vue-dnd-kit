@@ -1,0 +1,660 @@
+---
+title: "Trees"
+description: "Outlines, menus, org charts and backlogs with makeSortableTree — rendered flat with depths, nested by dragging sideways or hovering a row, with rules, collapsed nodes, an insertion line and lists in the same group."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/docs/guides/trees"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+A tree is a sortable list whose rows have depths. Drag a section left or right to change
+its level, or hold it over the middle of another section to drop it inside. The numbers
+follow the drag.
+
+<example height="45.5rem" hint="Drag a section sideways, or switch the nesting mode" name="tree-outline">
+
+
+
+</example>
+
+## Rendered flat
+
+`makeSortableTree` takes your nested data and returns the visible nodes as a **flat list**,
+in order, each with its `depth`. You render that list and indent the rows yourself. Every
+row stays a sibling in one container, so rows slide and animate like the rows of a list.
+
+```vue [Outline.vue]
+<script setup lang="ts">
+import { ref, useTemplateRef } from 'vue';
+import { makeSortableTree } from '@vue-dnd-kit/core';
+import Heading from './Heading.vue';
+
+interface Section { id: string; title: string; children?: Section[] }
+
+const outline = ref<Section[]>([
+  { id: 'start', title: 'Getting started', children: [{ id: 'install', title: 'Installation' }] },
+  { id: 'faq', title: 'FAQ' },
+]);
+
+const root = useTemplateRef<HTMLElement>('root');
+const { items, projected } = makeSortableTree(root, {
+  items: outline,     // the root nodes: a writable ref takes every drop
+  indentation: 24,    // px per level: match the rows' indentation
+  maxDepth: 2,
+});
+</script>
+
+<template>
+  <ol ref="root">
+    <Heading v-for="node in items" :key="node.key" :node="node" />
+  </ol>
+</template>
+```
+
+```vue [Heading.vue]
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import { makeSortableItem, type FlatNode } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ node: FlatNode<{ id: string; title: string }> }>();
+const el = useTemplateRef<HTMLElement>('el');
+makeSortableItem(el, { id: () => props.node.key });
+</script>
+
+<template>
+  <li ref="el" :style="{ marginInlineStart: `${node.depth * 24}px` }">{{ node.item.title }}</li>
+</template>
+```
+
+Rows use `makeSortableItem`, like the rows of a list. Indent them with a margin, not a
+padding: the row itself then moves with its depth. The overlay takes the slot's width and
+lands on its level, and a change of depth slides like any other move. A padding would
+indent only what is inside the row, and the overlay, a copy of the row at pickup, would
+keep the level the drag started at. `items` holds `FlatNode`s:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        FlatNode
+      </code>
+      
+       field
+    </th>
+    
+    <th>
+      What it holds
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        key
+      </code>
+    </td>
+    
+    <td>
+      The node's key (<code>
+        getKey
+      </code>
+      
+      , default <code>
+        node.id
+      </code>
+      
+      ). Use it for <code>
+        :key
+      </code>
+      
+       and the row's <code>
+        id
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        item
+      </code>
+    </td>
+    
+    <td>
+      Your node.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        depth
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        0
+      </code>
+      
+       for roots. The dragged node's depth is where it <strong>
+        would
+      </strong>
+      
+       land, so its slot indents live.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        parentKey
+      </code>
+    </td>
+    
+    <td>
+      The parent's key, <code>
+        null
+      </code>
+      
+       for roots.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        index
+      </code>
+    </td>
+    
+    <td>
+      The index among its siblings.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        hasChildren
+      </code>
+      
+      , <code>
+        collapsed
+      </code>
+    </td>
+    
+    <td>
+      For an expand button.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Since `items` is the draft, anything you compute from it follows the drag: the demo
+numbers its sections from `items`, so "2.1" becomes "3.1" while you move. `projected` is
+where the dragged node would land, `{ depth, parentKey }`, or `null` while it isn't over
+this tree.
+
+Children are read from `node.children` and written there. Data with another shape takes
+`getChildren` and `setChildren`; the [org chart](#rules) below keeps them in `members`:
+
+```ts
+makeSortableTree(root, {
+  items: org,
+  getChildren: (member) => member.members,
+  setChildren: (member, members) => { member.members = members; },
+});
+```
+
+## Nesting
+
+A drag changes the depth in two ways, both on by default:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        nesting
+      </code>
+    </th>
+    
+    <th>
+      The depth comes from…
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'offset'
+      </code>
+    </td>
+    
+    <td>
+      Dragging sideways: every <code>
+        indentation
+      </code>
+      
+       pixels left or right is a level up or down, as far as the rows around the slot allow.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'hover'
+      </code>
+    </td>
+    
+    <td>
+      Holding the drag over the middle of a row: the drop goes inside it, as its first child.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'both'
+      </code>
+    </td>
+    
+    <td>
+      Either. The default.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Set `indentation` to what your rows add per level (`24` by default), so the slot follows
+the pointer: in the demo, switch to `40` and drag sideways. With `'hover'` alone, a
+sideways drag keeps the level, and only a row's middle nests. Both options take a ref or
+a getter and apply to the next drag.
+
+With `axis: 'y'` (or `restrictToVerticalAxis`), the drag can't move sideways, but rows
+still nest by hovering.
+
+## Rules
+
+Engineering takes people and teams; Leadership is locked; nothing goes deeper than a team
+in a team. Open and close the teams: the rows they show and hide slide in and out.
+
+<example height="41rem" hint="Move people between teams; try Leadership and a third level" name="tree-org">
+
+
+
+</example>
+
+```ts [OrgTree.vue]
+const { items } = makeSortableTree(root, {
+  items: org,
+  getChildren: (member) => member.members,
+  setChildren: (member, members) => { member.members = members; },
+  // Only teams take members, and a locked team takes no one.
+  canNest: (_member, team) => team.kind === 'team' && !team.locked,
+  maxDepth: 2,
+  collapsed,
+  animateChanges: true,
+});
+```
+
+```ts [OrgRow.vue]
+// A locked row doesn't drag (and says so with `aria-disabled`).
+makeSortableItem(el, { id: () => props.node.key, disabled: () => !!props.node.item.locked });
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Option
+    </th>
+    
+    <th>
+      Limits
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        canNest(node, parent)
+      </code>
+    </td>
+    
+    <td>
+      Whether <code>
+        node
+      </code>
+      
+       may go under <code>
+        parent
+      </code>
+      
+      . A multi-drag asks for every dragged node. Roots are always allowed.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        maxDepth
+      </code>
+    </td>
+    
+    <td>
+      The deepest depth allowed, roots being <code>
+        0
+      </code>
+      
+      . The dragged node's descendants count: a team with members goes no deeper than <code>
+        maxDepth - 1
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      On a row: it doesn't drag. On the tree: nothing drags from it or drops into it.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        group.put
+      </code>
+    </td>
+    
+    <td>
+      Whether the tree takes items from other lists and trees at all.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+    </td>
+    
+    <td>
+      Anything else, decided on drop: see <a href="/docs/guides/drop-decisions">
+        deciding a drop
+      </a>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
+
+When a rule refuses a depth, the slot takes the deepest depth that passes: drag Noor below
+Raj and to the right, and the slot stays at the top level, since Leadership is locked and
+Raj is a person. Where no depth passes, the slot doesn't move there. Copies and nodes from
+`createItem` follow `canNest` and `maxDepth` too.
+
+### Collapsed nodes
+
+`collapsed` is a `Set` of keys whose children are hidden, as a ref or a getter. Their
+children aren't in `items`; `node.collapsed` and `node.hasChildren` drive the button:
+
+```ts
+const collapsed = ref(new Set<Key>());
+const toggle = (key: Key) => (collapsed.value.has(key) ? collapsed.value.delete(key) : collapsed.value.add(key));
+```
+
+A dragged node takes its whole subtree along, collapsed or not. With `animateChanges: true`, the
+rows a node shows or hides as it opens or closes animate in and out, and so do changes to
+the data that no drag made.
+
+## An insertion line
+
+Drag a template from the left into the menu, or move an item: the menu stays still and a
+line shows where the drop goes, starting at the level it lands at. Over the middle of a
+page or group, the row lights up instead.
+
+<example height="31rem" hint="Drag a template into the menu, or move an item sideways" name="tree-menu">
+
+
+
+</example>
+
+With `placeholder: 'indicator'`, the tree doesn't move while you drag. Each row reads its
+`indicator` and draws the line:
+
+```vue [MenuRow.vue]
+<script setup lang="ts">
+import { computed, useTemplateRef } from 'vue';
+import { makeSortableItem, type FlatNode } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ node: FlatNode<MenuItem>; indent: number }>();
+const el = useTemplateRef<HTMLElement>('el');
+const { indicator } = makeSortableItem(el, { id: () => props.node.key });
+
+// 'inside': the drop goes into this row. Otherwise a line before or after it.
+const inside = computed(() => indicator.value?.side === 'inside');
+const line = computed(() => {
+  const value = indicator.value;
+  if (!value || value.side === 'inside') return null;
+  // From the level the drop lands at, measured from this row's own level.
+  return { side: value.side, left: `${((value.depth ?? 0) - props.node.depth) * props.indent}px` };
+});
+</script>
+
+<template>
+  <div ref="el" class="item" :class="{ inside }" :style="{ marginLeft: `${node.depth * indent}px` }">
+    {{ node.item.title }}
+    <span v-if="line" class="line" :class="line.side" :style="{ left: line.left }" />
+  </div>
+</template>
+
+<style scoped>
+.item { position: relative; }
+.item.inside { box-shadow: 0 0 0 1.5px #42b883; }
+.line { position: absolute; right: 0; height: 2px; background: #42b883; }
+.line.before { top: -3px; }
+.line.after { bottom: -3px; }
+</style>
+```
+
+`indicator` adds `depth` and `parentKey` in trees: the level and the parent the dropped
+nodes get. Dragging sideways moves the line between levels, and the keyboard moves the line
+too. In this mode, a drop outside the tree cancels.
+
+The templates are plain draggables (`makeDraggable`) with `data`. The tree turns them into
+new nodes with `createItem`, at the line's position and depth:
+
+```ts [MenuTree.vue]
+let created = 0;
+makeSortableTree(root, {
+  items: menu,
+  placeholder: 'indicator',
+  maxDepth: 1,
+  canNest: (_item, parent) => parent.kind !== 'link',
+  createItem: (active) => {
+    const template = active.data as { title: string; kind: MenuItem['kind'] };
+    return { id: `new-${++created}`, title: `New ${template.title.toLowerCase()}`, kind: template.kind };
+  },
+});
+```
+
+The bar above the menu renders `menu`, the saved data, not `items`: it changes on drop
+only.
+
+## Trees and lists in one group
+
+A story moved into the backlog keeps its tasks, out of sight, and brings them back to the
+roadmap. Hold <kbd value="Alt">
+
+
+
+</kbd>
+
+ while dragging out of the roadmap to copy instead.
+
+<example height="29.5rem" hint="Move Saved cards to the backlog and back; Alt copies" name="tree-backlog">
+
+
+
+</example>
+
+A tree and a list with the same `group` exchange nodes, as two lists do. A node keeps its
+subtree wherever it goes: the list just doesn't show it. The same row component serves
+both, since `makeSortableItem({ item })` is keyed by whichever list or tree owns the row.
+
+Copies work as in lists (`clone`, `pull: 'clone'`, the copy key), but `clone` must return
+the copy **with its whole subtree**, and every node in it needs a new key:
+
+```ts [Roadmap.vue]
+let copies = 0;
+const copy = (work: Work): Work => ({ ...work, id: `${work.id}-copy-${++copies}`, children: work.children?.map(copy) });
+
+makeSortableTree(root, {
+  items: roadmap,
+  group: 'work',
+  canNest: (work, parent) => RANK[parent.kind] < RANK[work.kind],
+  maxDepth: 2,
+  clone: copy,
+});
+```
+
+See [lists that share items](https://zizigy.github.io/docs/guides/shared-lists) for groups, copying and
+`createItem`.
+
+## The drop
+
+The tree's drop event is a list's, with `parentKey` added to `from` and `to`:
+
+```ts
+makeSortableTree(root, {
+  items: outline,
+  onDrop: (e) => {
+    console.log(e.keys, e.from.parentKey, '→', e.to.parentKey, e.to.index);
+  },
+});
+```
+
+`to.index` is the position among the new siblings, counted after the node left its old
+place. On drop, the library gives the changed nodes their new children (`setChildren`) and
+writes a new root array into your ref.
+
+`e.result.get(treeId)` is the new tree as a new root array: the nodes on the changed paths
+are copies, untouched subtrees are shared, and your nodes stay as they are. For a store or
+immutable data, pass a getter, call `e.preventDefault()` and save `e.result` (see
+[deciding a drop](https://zizigy.github.io/docs/guides/drop-decisions#stores-and-servers-controlled-lists)). Copies
+are made with `withChildren(node, children)`, by default `{ ...node }` with the new
+children; pass your own for class instances.
+
+## Keyboard and multi-drag
+
+Focus a row, press <kbd value="Space">
+
+
+
+</kbd>
+
+, then:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Key
+    </th>
+    
+    <th>
+      Moves the node
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <kbd value="ArrowUp">
+        
+      </kbd>
+      
+       / <kbd value="ArrowDown">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      To the slot above or below, one row at a time.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="ArrowRight">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      A level deeper, under the row above, where the rules allow it.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="ArrowLeft">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      A level up, out of its parent.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="Space">
+        
+      </kbd>
+      
+       / <kbd value="Escape">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      Drops it / puts it back.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+In indicator mode the arrows move the line instead. From a list or a template next to the
+tree, an arrow toward the tree takes the item in, level with the row it goes before.
+
+Selected nodes move together as one block, each with its subtree, in document order. A
+selected node inside another selected one rides along in its parent's subtree. See
+[multi-drag](https://zizigy.github.io/docs/guides/multi-drag).
+
+All options are in the [makeSortableTree API](https://zizigy.github.io/docs/api/make-sortable-tree). For trees
+with thousands of rows, see [virtual lists](https://zizigy.github.io/docs/guides/virtual-lists).
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

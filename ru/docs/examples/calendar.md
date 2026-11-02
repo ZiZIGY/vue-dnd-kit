@@ -1,0 +1,200 @@
+---
+title: "Календарь на неделю"
+description: "Планировщик недели — события перемещаются между днями и четвертями часа, растягиваются за края, рисуются на свободном времени, становятся событиями на весь день, планируются из списка задач, с отменой."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/calendar"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="44rem" hint="Перенесите или растяните событие, или нарисуйте новое на свободном времени" name="calendar" title="Календарь на неделю">
+
+
+
+</example>
+
+## На что обратить внимание
+
+- **EventBlock.vue**: событие в часах — обычный перетаскиваемый элемент, чей оверлей,
+**EventOverlay.vue**, говорит, куда оно приземлится: «Wed 10:30 – 11:15». Пересекающиеся
+события встают рядом (`layoutDay` в `placement.ts`).
+- **Edge.vue**: верхний и нижний края события — отдельные перетаскиваемые элементы. Потяните
+за один, и событие растягивается, по четверти часа за раз.
+- **DayColumn.vue**: часы каждого дня — цель, а под её событиями тоже лежит перетаскиваемый
+элемент: нажмите на свободное время и потяните, чтобы нарисовать новое событие, затем введите
+его название.
+- **AllDayCell.vue** и **Tasks.vue**: бросьте событие в ячейку дня «весь день», и оно теряет
+время; бросьте его в список задач, и оно теряет день. Задачи (**EventChip.vue**)
+перетаскиваются в неделю и сохраняют свою длительность.
+- **Week.vue**: область перетаскивания часов и их собственный модификатор, перемещения с
+клавиатуры, линия текущего времени.
+- **calendar.ts**: события и история отмены. Каждое изменение проходит через одну функцию, а
+уведомление предлагает его отменить.
+
+Разверните пример: когда хватает места, боковая панель показывает месяц, календари, которые
+можно показать или скрыть, и задачи списком. На телефоне неделя превращается в три дня, а
+перетаскивает долгое нажатие.
+
+## Один ответ для каждого броска
+
+Что сделал бы бросок, спрашивают в четырёх местах: надпись оверлея, призрак, который задача
+показывает в дне под ней, то, что слышат скринридеры, и сам бросок. Все они вызывают `placeOf`,
+поэтому никогда не расходятся. Каждая цель несёт в своём `data`, что она такое, а `position` —
+место перетаскиваемого блока внутри неё: его верх и есть время.
+
+```ts [placement.ts]
+export function placeOf(event: CalendarEvent, over: Over | null, position: Coordinates | null): Place | null {
+  const target = over?.accepted ? (over.data as Target) : null;
+  if (!target) return null;
+  if (target.kind === 'tasks') return { day: null, start: null };
+  if (target.kind === 'all-day') return { day: target.day, start: null };
+  if (!position) return null;
+  return { day: target.day, start: clamp(minutesAt(position.y), 0, DAY_MINUTES - event.duration) };
+}
+```
+
+Оверлей читает его вживую, из `useDnD().position`, и сохраняет последний ответ, пока
+приземляется:
+
+```ts [EventOverlay.vue]
+const { position } = useDnD();
+const place = shallowRef(placeOf(event.value, props.over, position.value));
+watchEffect(() => {
+  if (props.status === 'dragging') place.value = placeOf(event.value, props.over, position.value);
+});
+```
+
+Событие сохраняет свой id, `data` и оверлей, где бы оно ни было: блок в часах, чип на весь день
+или среди задач. Брошенное в другое место, оно рендерится другим компонентом, и оверлей всё
+равно приземляется на новый элемент.
+
+## Собственный модификатор часов
+
+`makeDragArea` даёт драгам, которые начинаются в часах (событие, край, свободное время),
+собственный модификатор. Над днями блок двигается на целые дни — столько, сколько пересёк
+указатель, — так что событие рядом с другим сохраняет своё место в дне; его верх привязывается
+к четвертям часа того дня, в котором он начался. `containerRect` — этот день там, где он сейчас:
+он следует за прокруткой, и привязка держится, пока часы автоскроллятся под драгом.
+
+```ts [Week.vue]
+const snapToWeek: Modifier = ({ transform, overlayRect, containerRect, origin }) => {
+  const days = grid.value?.getBoundingClientRect();
+  if (!days || !containerRect) return transform;
+  const width = days.width / props.days.length;
+  const column = (x: number) => Math.floor((x - days.left) / width);
+  const pointer = origin.x + transform.x;
+  const x = pointer < days.left || pointer >= days.right ? transform.x : (column(pointer) - column(origin.x)) * width;
+  const top = overlayRect.top - containerRect.top;
+  return { x, y: transform.y + Math.round(top / STEP_PX) * STEP_PX - top };
+};
+
+makeDragArea(grid, { modifiers: [snapToWeek], autoScroll: { threshold: 0.12 } });
+```
+
+`autoScroll` области сужает край, который прокручивает часы, для каждого драга над ними: строка
+«весь день» прямо над ними остаётся легко достижимой. Задачи и события на весь день начинаются
+вне области и двигаются свободно; день под ними показывает призрак там, где они приземлятся.
+
+## Растягивание: край — это перетаскиваемый элемент
+
+Край лежит внутри элемента своего события, а нажатие перетаскивает ближайший перетаскиваемый
+элемент — край. У него нет оверлея, он двигается только вверх и вниз и остаётся в видимых часах.
+
+```ts [Edge.vue]
+makeDraggable(el, {
+  id: () => `${props.event.id}-${props.edge}`,
+  type: 'edge',
+  data: (): DragData => ({ kind: 'edge', event: props.event, edge: props.edge }),
+  overlay: false,
+  axis: 'y',
+  modifiers: [restrictToFirstScrollableAncestor],
+  attributes: false, // no tab stop: Shift + arrows change the end of a focused event
+});
+```
+
+Сам край не двигается. Вместо этого растёт событие — от того места в дне, где находится край,
+прочитанного из `position` так же, как его прочитает бросок:
+
+```ts [EventBlock.vue]
+const time = computed(() =>
+  resizing.value && position.value
+    ? resizeTo(props.event, resizing.value, position.value)
+    : { start: props.event.start!, duration: props.event.duration },
+);
+```
+
+## Рисование на свободном времени
+
+Под событиями у каждого дня есть дорожка, и эта дорожка — перетаскиваемый элемент без оверлея.
+Она никогда не двигается: насколько ушёл её блок (`position`), настолько указатель ушёл от
+нажатия, с привязкой к четвертям часа от области. День показывает новое событие по мере
+рисования, а бросок его создаёт.
+
+```ts [DayColumn.vue]
+makeDraggable(lane, {
+  id: () => `new-${props.day}`,
+  type: 'new',
+  data: (): DragData => ({ kind: 'new', day: props.day, from: from.value }),
+  overlay: false,
+  axis: 'y',
+  attributes: false, // the New event button is the keyboard's way
+});
+```
+
+`accept` дня — функция: он принимает любое событие и только собственные края и дорожки. Ячейки
+«весь день» и список задач принимают `'event'`, строку, поэтому типы `edge` и `new` там
+отклоняются без единой строки кода. Бросок — один обработчик:
+
+```ts [DayColumn.vue]
+onDrop: ({ active, over, position }) => {
+  const data = active.data as DragData;
+  if (!position) return;
+  if (data.kind === 'event') {
+    const place = placeOf(data.event, over, position);
+    if (place) calendar.place(data.event.id, place);
+  } else if (data.kind === 'edge') {
+    calendar.resize(data.event.id, resizeTo(data.event, data.edge, position));
+  } else {
+    const { start, duration } = rangeOf(data.from, data.from + position.y);
+    calendar.create(props.day, start, duration);
+  }
+},
+```
+
+## Клавиатура
+
+Перейдите табом к событию, возьмите его клавишей Space: монитор недели отвечает на стрелки,
+`getKeyboardCoordinates`, следующей четвертью часа (с Shift — часом) или следующим днём.
+Перетаскивание с клавиатуры не автоскроллит, поэтому у края видимых часов стрелка вместо этого
+прокручивает их. Задачи и события на весь день прыгают от цели к цели
+(`keyboard: 'droppables'`), пока не окажутся над часами.
+
+```ts [Week.vue]
+useDnDMonitor({
+  getKeyboardCoordinates: (key, { pointer, direction }) => {
+    // …only over the hours
+    const dy = direction.y * STEP_PX * (key.shiftKey ? 4 : 1);
+    const next = { x: pointer.x + direction.x * (grid.value.offsetWidth / props.days.length), y: pointer.y + dy };
+    if (canScroll && (next.y < view.top + HOUR_PX || next.y > view.bottom - HOUR_PX)) {
+      hours.scrollTop += dy;
+      return { x: next.x, y: pointer.y };
+    }
+    return next;
+  },
+});
+```
+
+`announcements` провайдера в `index.vue` говорят, что взято и как это двигать; неделя
+произносит время по мере того, как его меняют стрелки («Tuesday, 10:30 to 11:15»), а
+уведомление — что изменил бросок. На событии в фокусе Delete удаляет его, а Ctrl+Z отменяет
+любое изменение.
+
+Подробнее: [свой модификатор](https://zizigy.github.io/docs/guides/constraints#your-own-modifier) ·
+[правила для части страницы](https://zizigy.github.io/docs/guides/constraints#rules-for-a-part-of-the-page) ·
+[оставить там, где бросили](https://zizigy.github.io/docs/guides/drag-and-drop#leave-it-where-it-was-dropped) ·
+[без оверлея](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay) ·
+[компоненты оверлея](https://zizigy.github.io/docs/guides/overlay#overlay-components) ·
+[доступность](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

@@ -1,0 +1,234 @@
+---
+title: "디자인 캔버스"
+description: "Figma 같은 에디터. 확대·축소되는 캔버스 위의 프레임과 레이어, 스마트 가이드, 선택 사각형, Alt로 복제, 그리고 디자인의 트리 그 자체인 레이어 패널."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/design-canvas"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="43rem" hint="레이어를 다른 프레임으로 드래그하세요. 사각형을 그리거나 Shift-클릭하고, Alt를 누른 채 복사본을 드롭할 수 있습니다" name="design-canvas" title="디자인 캔버스">
+
+
+
+</example>
+
+## 살펴볼 점
+
+- **`Shape.vue`**와 **Artboard.vue**: 모든 레이어는 일반 draggable이고, 프레임은 이름 부분
+(`handle`)으로 드래그하며 안의 레이어도 함께 움직입니다. Figma처럼 누르는 즉시 선택되므로, 드래그가
+가져가는 것은 프로바이더의 선택입니다. 선택된 여러 레이어 중 하나를 누르면 모두 움직입니다.
+- **useLayerDrop.ts**: 캔버스와 모든 프레임은 똑같이 동작하는 드롭 대상입니다. 프레임 위에서 놓은
+레이어는 그 프레임 안으로 들어가고, 캔버스 위에서 놓으면 프레임 밖으로 나옵니다.
+<kbd value="Alt">
+
+
+
+</kbd>
+
+를 누르고 있으면 대신 복사본이 안착하고, 레이어는 원래 자리에 남습니다.
+- **LayersPanel.vue**: 패널은 디자인 자체에 대한 `makeSortableTree`입니다. 행의 순서가 쌓임
+순서이고, 행을 프레임 안으로 드롭하면 레이어가 그 프레임으로 옮겨집니다.
+- **Canvas.vue**: 스마트 가이드는 데모가 직접 만든 모디파이어입니다. `makeSelectionArea`가 선택
+사각형을 그리고, `makeDragArea`가 캔버스에서 시작하는 모든 드래그에 규칙을 줍니다.
+- **editor.ts**, **geometry.ts**, **design.ts**: 디자인, 그 기록, 보기, 그리고 스냅과 정렬
+계산으로, 드래그 앤 드롭은 전혀 없습니다.
+
+## 확대 배율로 그리기
+
+캔버스는 CSS `scale()` 없이 확대·축소합니다. 모든 레이어는 크기에 확대 배율을 곱한 크기로, 화면
+픽셀 단위로 배치됩니다. 그래서 라이브러리가 측정하는 것이 곧 화면에 보이는 것이고, 드롭 대상, 선택
+사각형, 오버레이 안의 클론에 특별한 처리가 필요 없습니다. 캔버스 안의 세계는 팬으로만,
+`translate()`로 움직입니다.
+
+```ts [Shape.vue]
+const style = computed(() => {
+  const { zoom } = editor.view;
+  const { x, y, width, height } = props.shape;
+  return { left: `${x * zoom}px`, top: `${y * zoom}px`, width: `${width * zoom}px`, height: `${height * zoom}px` };
+});
+```
+
+휠로 팬과 확대·축소(<kbd value="Ctrl">
+
+
+
+</kbd>
+
+ 또는 핀치)를 하고, <kbd value="Space">
+
+
+
+</kbd>
+
+를 누른 채 드래그하기,
+손 도구, 모서리의 버튼으로도 할 수 있습니다. 크기 조절 핸들과 마찬가지로 평범한 포인터 이벤트와 휠
+이벤트입니다. Space가 손 도구이므로, 레이어를 집는 것은 <kbd value="Enter">
+
+
+
+</kbd>
+
+뿐입니다(프로바이더의
+`keyboard.keys`).
+
+## 프레임 사이로 레이어 옮기기
+
+레이어는 자체 오버레이 `DragGroup.vue`가 있는 일반 draggable입니다. 오버레이는 드래그 중인 레이어를
+놓인 모양 그대로 배치합니다. 각 레이어의 `DragPreview`(집을 때 만든 클론)를 레이어의 `data`를 바탕으로
+그려진 자리에 놓습니다. 클론이 움직이는 동안 <kbd value="Alt">
+
+
+
+</kbd>
+
+를 누르고 있지 않으면 레이어 자체는
+자리를 비켜 줍니다.
+
+```ts [Shape.vue]
+const { isDragging, selected } = makeDraggable(el, {
+  id: () => props.shape.id,
+  type: 'layer',
+  data: () => editor.dragData(props.shape), // { layer, left, top }
+  overlay: DragGroup,
+});
+```
+
+드롭할 때 `position`은 집은 레이어의 모서리를 대상 안에서 놓은 위치를 화면 픽셀로 나타낸 값입니다.
+이를 확대 배율로 나누면 그 레이어가 세계 안에서 얼마나 움직였는지 알 수 있고, 드래그한 모든 레이어가
+그만큼 프레임 안으로, 또는 캔버스 위로 옮겨집니다.
+
+```ts [useLayerDrop.ts]
+const corner = target ? editor.boxOf(target) : { x: -view.x / view.zoom, y: -view.y / view.zoom };
+const toWorld = (x: number, y: number) => ({ x: corner.x + x / view.zoom, y: corner.y + y / view.zoom });
+
+const from = editor.boxOf(grabbed); // the layer of `active.id`
+const to = toWorld(position.x, position.y);
+editor.move(active.ids, { x: to.x - from.x, y: to.y - from.y }, target, editor.altHeld.value);
+```
+
+프레임은 레이어를 받고 프레임은 받지 않습니다. 프레임을 옮기는 드래그는 다른 프레임(`disabled`, 실시간으로
+읽음)을 지나쳐 캔버스로 갑니다. 레이어는 클론을 놓은 바로 그 자리에 나타나므로 대상은
+`dropAnimation: false`입니다. 툴바의 도구도 일반 draggable입니다. 프레임에 드롭하면 드롭 지점을
+중심으로 레이어를 프레임에 추가하고, 클릭하면 보기의 가운데에 추가합니다.
+
+```ts [Artboard.vue]
+makeDroppable(body, {
+  id: () => props.frame.id,
+  accept: 'layer',
+  disabled: () => !!active.value?.items.some((item) => item.type.includes('frame')),
+  dropAnimation: false,
+  onDrop: useLayerDrop(() => props.frame),
+});
+```
+
+## 스마트 가이드
+
+`smartGuides`는 모디파이어입니다. 드래그의 오프셋을 받아 드래그 중인 레이어가 세계 안의 어디에 올지
+계산하고, 화면에서 6픽셀 안에 있는 다른 레이어의 가장 가까운 가장자리나 중심으로 끌어당깁니다.
+오버레이, 그 아래의 대상, 드롭이 모두 이를 따릅니다. 모니터가 드래그의 `delta`(모디파이어를 거친
+오프셋)로 분홍색 선과 거리를 그립니다.
+
+```ts [Canvas.vue]
+const smartGuides: Modifier = ({ transform, active }) => {
+  const moving = editor.boundsOf(active.ids);
+  if (!moving) return transform; // a tool from the toolbar
+  const { zoom } = view;
+  const box = offsetBox(moving, transform.x / zoom, transform.y / zoom);
+  const targets = editor.snapTargets(active.ids);
+  return {
+    x: transform.x + snapBox(box, targets, 'x', SNAP / zoom) * zoom,
+    y: transform.y + snapBox(box, targets, 'y', SNAP / zoom) * zoom,
+  };
+};
+
+// Every drag that starts on the canvas, frames and layers alike, gets the guides.
+makeDragArea(viewport, { modifiers: [smartGuides], disabled: panning });
+```
+
+크기 조절 핸들도 같은 선에 스냅하고 같은 가이드를 그립니다.
+
+## 선택하기
+
+빈 캔버스에 그린 선택 사각형은 프레임과 프레임에 속하지 않은 레이어를 선택하고, 프레임 안에 그리면 그
+프레임의 레이어를 선택합니다. 둘 다 `makeSelectionArea`입니다. 가장 안쪽 영역이 누르기를 받고, 그
+안의 draggable을 맡습니다. <kbd value="Shift">
+
+
+
+</kbd>
+
+는 선택에 더합니다(`strategy: 'toggle'`).
+
+```ts [Artboard.vue]
+const { isSelecting, style: band } = makeSelectionArea(body, {
+  strategy: () => (editor.shiftHeld.value ? 'toggle' : 'select'),
+  disabled: editor.panning,
+});
+```
+
+에디터는 프레임과 그 안의 레이어를 함께 선택하지 않습니다. 드래그하면 그 레이어가 두 번 움직이기
+때문입니다. 선택 사각형은 시작할 때 포인터를 캡처하므로, 프레임의 빈 곳을 클릭해도 프레임에 전달되지
+않습니다. `Artboard.vue`는 그곳에서 누른 자리 그대로 놓았을 때 프레임을 선택합니다.
+
+## 레이어 패널
+
+트리의 항목은 디자인 그 자체입니다. `children`이 있는 프레임이며, 맨 위 행이 맨 앞입니다.
+`canNest`는 프레임이 레이어를 받게 하고, 프레임은 최상위에 머물게 합니다. 레이어의 id는 캔버스의
+draggable 것이므로 행은 자체 key(`row:…`)를 가집니다. 선택은 캔버스의 것이므로 행은 그 레이어와 함께
+강조됩니다.
+
+```ts [LayersPanel.vue]
+makeSortableTree(tree, {
+  items: editor.layers,
+  getKey: (layer) => `row:${layer.id}`,
+  canNest: (layer, parent) => parent.kind === 'frame' && layer.kind !== 'frame',
+  maxDepth: 1,
+  animate: true,
+  onDrop: ({ items, from, to }) => {
+    // Positions count from the frame's corner: a layer changing frames takes the
+    // difference, so it stays where it is on the canvas.
+  },
+});
+```
+
+`onDrop`은 트리가 기록되기 전에 실행되므로, 에디터는 각 레이어가 어느 프레임에서 왔는지 아직 알고
+있으며, 실행 취소를 위해 디자인을 저장합니다. 레이어를 덮지 않는 프레임으로 옮긴 레이어는 잘려서 보이지
+않게 되므로, 대신 프레임 가운데로 갑니다. `animate` 덕분에 캔버스에서의 변경과 실행 취소에도 행이
+미끄러집니다. 행에는 타입이 있으므로(`type: 'row'`), 레이어와 도구를 받는 캔버스와 프레임은 행을
+거부합니다.
+
+## 키보드
+
+Tab으로 레이어에 가서(그 레이어가 선택됩니다) <kbd value="Enter">
+
+
+
+</kbd>
+
+로 집고, 화살표 키로 10픽셀
+(<kbd value="Shift">
+
+
+
+</kbd>
+
+를 누르면 40) 옮기고, <kbd value="Enter">
+
+
+
+</kbd>
+
+로 그 아래 프레임에 드롭합니다. 드래그
+중이 아니면 화살표 키는 선택을 1픽셀씩 옮깁니다. 도구도 같은 방식으로 집으며, 그 화살표 키는 캔버스와
+프레임 사이를 건너뜁니다(`keyboard: 'droppables'`). 다른 단축키는 아무것도 선택하지 않았을 때 Design
+패널에 나옵니다.
+
+더 읽어 보기: [드래그 앤 드롭](https://zizigy.github.io/docs/guides/drag-and-drop#leave-it-where-it-was-dropped) ·
+[직접 만든 모디파이어](https://zizigy.github.io/docs/guides/constraints#your-own-modifier) ·
+[페이지 일부를 위한 규칙](https://zizigy.github.io/docs/guides/constraints#rules-for-a-part-of-the-page) ·
+[사각형 선택](https://zizigy.github.io/docs/guides/multi-drag#rubber-band-selection) ·
+[트리](https://zizigy.github.io/docs/guides/trees)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

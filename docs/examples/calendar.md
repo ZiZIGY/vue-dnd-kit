@@ -1,0 +1,196 @@
+---
+title: "Week calendar"
+description: "A week planner — events moved across days and quarters of an hour, stretched by their edges, drawn on empty time, made all day, planned from a task list, with undo."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/docs/examples/calendar"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="44rem" hint="Move or stretch an event, or draw one on empty time" name="calendar" title="Week calendar">
+
+
+
+</example>
+
+## What to look at
+
+- **EventBlock.vue**: an event in the hours is a plain draggable whose overlay,
+**EventOverlay.vue**, says where it would land: "Wed 10:30 – 11:15". Overlapping events go side
+by side (`layoutDay` in `placement.ts`).
+- **Edge.vue**: the top and bottom edges of an event are draggables of their own. Drag one and
+the event stretches, a quarter of an hour at a time.
+- **DayColumn.vue**: each day's hours are a drop target, and under its events lies a draggable
+too: press empty time and drag to draw a new event, then type its title.
+- **AllDayCell.vue** and **Tasks.vue**: drop an event on a day's all-day cell and it loses its
+time; drop it on the task list and it loses its day. Tasks (**EventChip.vue**) drag into the
+week, and keep their length.
+- **Week.vue**: the drag area of the hours and their own modifier, the keyboard moves, the line
+of the current time.
+- **calendar.ts**: the events and an undo history. Every change goes through one function, and
+the toast offers to take it back.
+
+Expand the example: with room for it, a side panel shows the month, the calendars to show or hide,
+and the tasks as a list. On a phone the week becomes three days, and a long press drags.
+
+## One answer for every drop
+
+What a drop would do is asked in four places: the overlay's label, the ghost a task shows in the
+day under it, what screen readers hear, and the drop itself. They all call `placeOf`, so they
+never disagree. Each drop target carries what it is in its `data`, and `position` is where the
+dragged box is inside it: its top is the time.
+
+```ts [placement.ts]
+export function placeOf(event: CalendarEvent, over: Over | null, position: Coordinates | null): Place | null {
+  const target = over?.accepted ? (over.data as Target) : null;
+  if (!target) return null;
+  if (target.kind === 'tasks') return { day: null, start: null };
+  if (target.kind === 'all-day') return { day: target.day, start: null };
+  if (!position) return null;
+  return { day: target.day, start: clamp(minutesAt(position.y), 0, DAY_MINUTES - event.duration) };
+}
+```
+
+The overlay reads it live, from `useDnD().position`, and keeps its last answer while it lands:
+
+```ts [EventOverlay.vue]
+const { position } = useDnD();
+const place = shallowRef(placeOf(event.value, props.over, position.value));
+watchEffect(() => {
+  if (props.status === 'dragging') place.value = placeOf(event.value, props.over, position.value);
+});
+```
+
+An event keeps its id, its `data` and its overlay wherever it is: a block in the hours, a chip all
+day or among the tasks. Dropped somewhere else, it is rendered by another component, and the
+overlay lands on the new element all the same.
+
+## The hours' own modifier
+
+`makeDragArea` gives the drags that start in the hours (an event, an edge, empty time) a modifier
+of their own. Over the days, the box moves by whole days, as many as the pointer crossed, so an
+event beside another keeps its place in the day; its top snaps to the quarters of an hour of the
+day it started in. `containerRect` is that day where it is now: it follows the scroll, and the
+snapping holds while the hours auto-scroll under a drag.
+
+```ts [Week.vue]
+const snapToWeek: Modifier = ({ transform, overlayRect, containerRect, origin }) => {
+  const days = grid.value?.getBoundingClientRect();
+  if (!days || !containerRect) return transform;
+  const width = days.width / props.days.length;
+  const column = (x: number) => Math.floor((x - days.left) / width);
+  const pointer = origin.x + transform.x;
+  const x = pointer < days.left || pointer >= days.right ? transform.x : (column(pointer) - column(origin.x)) * width;
+  const top = overlayRect.top - containerRect.top;
+  return { x, y: transform.y + Math.round(top / STEP_PX) * STEP_PX - top };
+};
+
+makeDragArea(grid, { modifiers: [snapToWeek], autoScroll: { threshold: 0.12 } });
+```
+
+The area's `autoScroll` narrows the edge that scrolls the hours, for every drag over them: the
+all-day row right above stays easy to reach. Tasks and all-day events start outside the area and
+move freely; the day under them shows a ghost where they would land.
+
+## Stretching: an edge is a draggable
+
+An edge lies inside its event's element, and a press drags the closest draggable: the edge. It has
+no overlay, moves up and down only, and stays in the hours in view.
+
+```ts [Edge.vue]
+makeDraggable(el, {
+  id: () => `${props.event.id}-${props.edge}`,
+  type: 'edge',
+  data: (): DragData => ({ kind: 'edge', event: props.event, edge: props.edge }),
+  overlay: false,
+  axis: 'y',
+  modifiers: [restrictToFirstScrollableAncestor],
+  attributes: false, // no tab stop: Shift + arrows change the end of a focused event
+});
+```
+
+The edge itself doesn't move. The event grows instead, from where the edge is in the day, read
+from `position` as the drop will read it:
+
+```ts [EventBlock.vue]
+const time = computed(() =>
+  resizing.value && position.value
+    ? resizeTo(props.event, resizing.value, position.value)
+    : { start: props.event.start!, duration: props.event.duration },
+);
+```
+
+## Drawing on empty time
+
+Under the events, each day has a lane, and the lane is a draggable without an overlay. It never
+moves: how far its box went (`position`) is how far the pointer went from the press, snapped to
+quarters of an hour by the area. The day shows the new event as it is drawn, and its drop creates
+it.
+
+```ts [DayColumn.vue]
+makeDraggable(lane, {
+  id: () => `new-${props.day}`,
+  type: 'new',
+  data: (): DragData => ({ kind: 'new', day: props.day, from: from.value }),
+  overlay: false,
+  axis: 'y',
+  attributes: false, // the New event button is the keyboard's way
+});
+```
+
+The day's `accept` is a function: it takes any event, and only its own edges and lanes. The
+all-day cells and the task list take `'event'`, a string, so the `edge` and `new` types are
+refused there without a line of code. The drop is one handler:
+
+```ts [DayColumn.vue]
+onDrop: ({ active, over, position }) => {
+  const data = active.data as DragData;
+  if (!position) return;
+  if (data.kind === 'event') {
+    const place = placeOf(data.event, over, position);
+    if (place) calendar.place(data.event.id, place);
+  } else if (data.kind === 'edge') {
+    calendar.resize(data.event.id, resizeTo(data.event, data.edge, position));
+  } else {
+    const { start, duration } = rangeOf(data.from, data.from + position.y);
+    calendar.create(props.day, start, duration);
+  }
+},
+```
+
+## The keyboard
+
+Tab to an event, pick it up with Space: the week's monitor answers the arrows,
+`getKeyboardCoordinates`, with the next quarter of an hour (with Shift, an hour) or the next day.
+Keyboard drags don't auto-scroll, so near an end of the hours in view the arrow scrolls them
+instead. Tasks and all-day events jump from target to target (`keyboardMode: 'droppables'`) until they
+are over the hours.
+
+```ts [Week.vue]
+useDnDMonitor({
+  getKeyboardCoordinates: (key, { pointer, direction }) => {
+    // …only over the hours
+    const dy = direction.y * STEP_PX * (key.shiftKey ? 4 : 1);
+    const next = { x: pointer.x + direction.x * (grid.value.offsetWidth / props.days.length), y: pointer.y + dy };
+    if (canScroll && (next.y < view.top + HOUR_PX || next.y > view.bottom - HOUR_PX)) {
+      hours.scrollTop += dy;
+      return { x: next.x, y: pointer.y };
+    }
+    return next;
+  },
+});
+```
+
+The provider's `announcements` in `index.vue` say what was picked up and how to move it; the week
+speaks the time as the arrows change it ("Tuesday, 10:30 to 11:15"), and the toast what a drop
+changed. On a focused event, Delete removes it, and Ctrl+Z undoes any change.
+
+Read more: [Your own modifier](https://zizigy.github.io/docs/guides/constraints#your-own-modifier) ·
+[Rules for a part of the page](https://zizigy.github.io/docs/guides/constraints#rules-for-a-part-of-the-page) ·
+[Leave it where it was dropped](https://zizigy.github.io/docs/guides/drag-and-drop#leave-it-where-it-was-dropped) ·
+[Without an overlay](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay) ·
+[Overlay components](https://zizigy.github.io/docs/guides/overlay#overlay-components) ·
+[Accessibility](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

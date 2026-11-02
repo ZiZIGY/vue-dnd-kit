@@ -1,0 +1,50 @@
+---
+title: "makeSortableItem"
+description: "정렬 가능한 리스트나 트리의 행을 등록합니다. 행은 드래그되고, 자리를 내주고, 제자리에 안착합니다."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/api/make-sortable-item"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+```ts
+function makeSortableItem<TData = unknown>(
+  target: MaybeElementRef,
+  options: SortableItemOptions<TData>,
+): SortableItemReturn;
+```
+
+```ts
+const el = useTemplateRef<HTMLElement>('el');
+const { isPlaceholder, index } = makeSortableItem(el, { item: () => props.task, handle: '.grip' });
+```
+
+리스트 요소 안에서 렌더링되는 행 컴포넌트에서 호출하세요(한 컴포넌트에서 만든 여러 리스트 중에서는
+자신을 감싼 가장 안쪽 리스트에 들어갑니다). 행은 `item`(리스트의 `getKey`로 key를
+정하며, 기본값은 `item.id`) 또는 `id`로 식별합니다. [정렬 가능한 리스트](https://zizigy.github.io/docs/guides/sortable-lists)를
+참고하세요.
+
+<example height="24rem" hint="그립으로 행을 드래그하세요. 체크박스는 그대로 동작합니다" name="todo-list">
+
+
+
+</example>
+
+## 옵션
+
+<api-table name="SortableItemOptions">
+
+
+
+</api-table>
+
+## 반환값
+
+<api-table name="SortableItemReturn">
+
+
+
+</api-table>
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

@@ -1,0 +1,239 @@
+---
+title: "Canvas de design"
+description: "Um editor no estilo Figma — frames e camadas em um canvas com zoom, guias inteligentes, seleção por retângulo, Alt para duplicar e um painel de camadas que é a árvore do design."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/design-canvas"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="43rem" hint="Arraste uma camada para o outro frame; desenhe um retângulo, use Shift-clique, segure Alt para soltar cópias" name="design-canvas" title="Canvas de design">
+
+
+
+</example>
+
+## O que observar
+
+- **Shape.vue** e **Artboard.vue**: toda camada é um draggable simples, e um frame é
+arrastado pelo nome (`handle`), com as suas camadas dentro dele. Uma pressão seleciona na hora,
+como no Figma, então a seleção do provider é o que um arraste leva: pressione uma de várias
+camadas selecionadas e todas se movem.
+- **useLayerDrop.ts**: o canvas e todo frame são alvos de drop que funcionam do mesmo jeito. Uma
+camada solta sobre um frame entra nele; sobre o canvas, sai dele. Segure <kbd value="Alt">
+
+
+
+</kbd>
+
+ e, em
+vez disso, pousam cópias, e as camadas ficam onde estavam.
+- **LayersPanel.vue**: o painel é `makeSortableTree` sobre o próprio design. A ordem das linhas é
+a ordem de empilhamento, e soltar uma linha dentro de um frame move a camada para esse frame.
+- **Canvas.vue**: as guias inteligentes são um modificador da própria demo; `makeSelectionArea`
+desenha o retângulo de seleção, e `makeDragArea` dá a todo arraste que começa no canvas as suas
+regras.
+- **editor.ts**, **geometry.ts** e **design.ts**: o design, o seu histórico, a visualização
+e a matemática de encaixar e alinhar, sem nenhum arrastar e soltar neles.
+
+## Desenhado no zoom
+
+O canvas dá zoom sem `scale()` do CSS: toda camada é disposta no seu tamanho vezes o zoom, em
+pixels de tela. O que a biblioteca mede é então o que está na tela, então os alvos de drop, o
+retângulo de seleção e os clones no overlay não precisam de nada especial. O mundo dentro do canvas
+é movido só pelo pan, com `translate()`.
+
+```ts [Shape.vue]
+const style = computed(() => {
+  const { zoom } = editor.view;
+  const { x, y, width, height } = props.shape;
+  return { left: `${x * zoom}px`, top: `${y * zoom}px`, width: `${width * zoom}px`, height: `${height * zoom}px` };
+});
+```
+
+A roda do mouse faz pan e zoom (<kbd value="Ctrl">
+
+
+
+</kbd>
+
+ ou uma pinça), assim como arrastar com
+<kbd value="Space">
+
+
+
+</kbd>
+
+, a ferramenta de mão e os botões no canto: eventos de ponteiro e de roda
+simples, como as alças de redimensionar. Como Space é a mão, uma camada é pega só com
+<kbd value="Enter">
+
+
+
+</kbd>
+
+ (o `keyboard.keys` do provider).
+
+## Mover camadas entre frames
+
+Uma camada é um draggable simples com um overlay próprio, `DragGroup.vue`. Ele dispõe as camadas
+arrastadas como elas estão: um `DragPreview` (o clone feito ao pegar) de cada uma, posicionado a
+partir do `data` da sua camada, onde ela é desenhada. As próprias camadas saem de cena enquanto os
+clones delas se movem, a menos que <kbd value="Alt">
+
+
+
+</kbd>
+
+ esteja segurado.
+
+```ts [Shape.vue]
+const { isDragging, selected } = makeDraggable(el, {
+  id: () => props.shape.id,
+  type: 'layer',
+  data: () => editor.dragData(props.shape), // { layer, left, top }
+  overlay: DragGroup,
+});
+```
+
+No drop, `position` é onde o canto da camada pega foi solto dentro do alvo, em pixels de tela.
+Dividido pelo zoom, ele diz quanto essa camada andou no mundo, e toda camada arrastada se move a
+mesma distância, para dentro do frame ou para o canvas:
+
+```ts [useLayerDrop.ts]
+const corner = target ? editor.boxOf(target) : { x: -view.x / view.zoom, y: -view.y / view.zoom };
+const toWorld = (x: number, y: number) => ({ x: corner.x + x / view.zoom, y: corner.y + y / view.zoom });
+
+const from = editor.boxOf(grabbed); // the layer of `active.id`
+const to = toWorld(position.x, position.y);
+editor.move(active.ids, { x: to.x - from.x, y: to.y - from.y }, target, editor.altHeld.value);
+```
+
+Um frame aceita camadas, não frames: um arraste que leva um frame passa sobre os outros frames
+(`disabled`, lido ao vivo) até o canvas. Os alvos têm `dropAnimation: false`, já que as camadas
+aparecem exatamente onde os clones delas foram soltos. As ferramentas da barra também são
+draggables simples: soltas em um frame, adicionam a sua camada dentro dele, centralizada no ponto
+do drop; clicadas, no meio da visualização.
+
+```ts [Artboard.vue]
+makeDroppable(body, {
+  id: () => props.frame.id,
+  accept: 'layer',
+  disabled: () => !!active.value?.items.some((item) => item.type.includes('frame')),
+  dropAnimation: false,
+  onDrop: useLayerDrop(() => props.frame),
+});
+```
+
+## Guias inteligentes
+
+`smartGuides` é um modificador: ele recebe o deslocamento do arraste, calcula onde as camadas
+arrastadas estariam no mundo, e as puxa para a borda ou o centro mais próximo de outra camada a até
+6 pixels de tela. O overlay, o alvo sob ele e o drop acompanham. Um monitor desenha as linhas cor
+de rosa e as distâncias a partir do `delta` do arraste, o deslocamento depois dos modificadores.
+
+```ts [Canvas.vue]
+const smartGuides: Modifier = ({ transform, active }) => {
+  const moving = editor.boundsOf(active.ids);
+  if (!moving) return transform; // a tool from the toolbar
+  const { zoom } = view;
+  const box = offsetBox(moving, transform.x / zoom, transform.y / zoom);
+  const targets = editor.snapTargets(active.ids);
+  return {
+    x: transform.x + snapBox(box, targets, 'x', SNAP / zoom) * zoom,
+    y: transform.y + snapBox(box, targets, 'y', SNAP / zoom) * zoom,
+  };
+};
+
+// Every drag that starts on the canvas, frames and layers alike, gets the guides.
+makeDragArea(viewport, { modifiers: [smartGuides], disabled: panning });
+```
+
+As alças de redimensionar encaixam com as mesmas linhas e desenham as mesmas guias.
+
+## Selecionar
+
+Um retângulo desenhado no canvas vazio seleciona frames e camadas soltas; desenhado dentro de um
+frame, as camadas do frame. Os dois são `makeSelectionArea`: a área mais interna recebe a pressão,
+e é dona dos draggables dentro dela. <kbd value="Shift">
+
+
+
+</kbd>
+
+ adiciona à seleção
+(`strategy: 'toggle'`).
+
+```ts [Artboard.vue]
+const { isSelecting, style: band } = makeSelectionArea(body, {
+  strategy: () => (editor.shiftHeld.value ? 'toggle' : 'select'),
+  disabled: editor.panning,
+});
+```
+
+O editor nunca seleciona um frame junto com uma camada dentro dele: arrastada, a camada se moveria
+duas vezes. Um retângulo captura o ponteiro quando começa, então um clique no espaço vazio de um
+frame nunca chega ao frame: `Artboard.vue` seleciona o frame quando uma pressão ali é solta onde
+começou.
+
+## O painel de camadas
+
+Os itens da árvore são o design: frames com os seus `children`, a linha de cima na frente.
+`canNest` deixa os frames aceitarem camadas e mantém os frames no nível de cima. As linhas têm keys
+próprias (`row:…`), já que os ids das camadas pertencem aos draggables delas no canvas; a seleção é
+a do canvas, então uma linha acende junto com a sua camada.
+
+```ts [LayersPanel.vue]
+makeSortableTree(tree, {
+  items: editor.layers,
+  getKey: (layer) => `row:${layer.id}`,
+  canNest: (layer, parent) => parent.kind === 'frame' && layer.kind !== 'frame',
+  maxDepth: 1,
+  animate: true,
+  onDrop: ({ items, from, to }) => {
+    // Positions count from the frame's corner: a layer changing frames takes the
+    // difference, so it stays where it is on the canvas.
+  },
+});
+```
+
+`onDrop` roda antes de a árvore ser escrita, então o editor ainda sabe de que frame cada camada
+vem, e salva o design para o desfazer. Uma camada movida para um frame que não a cobre seria
+recortada para fora da vista: em vez disso, ela vai para o meio do frame. Com `animate`, as linhas
+deslizam também nas mudanças feitas no canvas e pelo desfazer. Uma linha tem tipo
+(`type: 'row'`), então o canvas e os frames, que aceitam camadas e ferramentas, a recusam.
+
+## Teclado
+
+Chegue a uma camada com Tab (ela fica selecionada), depois <kbd value="Enter">
+
+
+
+</kbd>
+
+ a pega, as setas a
+movem 10 pixels (<kbd value="Shift">
+
+
+
+</kbd>
+
+: 40), e <kbd value="Enter">
+
+
+
+</kbd>
+
+ a solta no frame sob ela. Sem
+arraste, as setas empurram a seleção um pixel. Uma ferramenta é pega do mesmo jeito, e as setas
+dela pulam entre o canvas e os frames (`keyboard: 'droppables'`). Os outros atalhos estão listados
+no painel Design quando nada está selecionado.
+
+Leia mais: [Arrastar e soltar](https://zizigy.github.io/docs/guides/drag-and-drop#leave-it-where-it-was-dropped) ·
+[Um modificador seu](https://zizigy.github.io/docs/guides/constraints#your-own-modifier) ·
+[Regras para uma parte da página](https://zizigy.github.io/docs/guides/constraints#rules-for-a-part-of-the-page) ·
+[Seleção por retângulo](https://zizigy.github.io/docs/guides/multi-drag#rubber-band-selection) ·
+[Árvores](https://zizigy.github.io/docs/guides/trees)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

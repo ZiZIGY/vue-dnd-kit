@@ -1,0 +1,147 @@
+---
+title: "Échecs"
+description: "Un échiquier — les coups légaux s'allument, la pièce en main dit pourquoi une case est refusée, un pion demande ce qu'il devient, et un bot répond avec de vrais glissements."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/chess"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="36rem" hint="Faites glisser une pièce blanche, ou Tab et Espace ; le bot joue les noirs" name="chess" title="Échecs">
+
+
+
+</example>
+
+## Ce qu'il faut regarder
+
+- **Square.vue** : chacune des 64 cases est une cible de dépôt dont l'`accept` est une fonction.
+Elle est interrogée pendant qu'une pièce est glissée : la case n'accepte donc que les coups
+légaux de cette pièce ; un dépôt ailleurs est refusé et la pièce revient à sa place. Les cases
+légales s'allument grâce à `isAccepting` : aucun état propre au jeu ne suit le glissement.
+- **Piece.vue** : un élément déplaçable simple, `disabled` quand ce n'est pas au tour de son camp.
+`keyboard: 'droppables'` fait sauter les flèches entre les cases qui acceptent la pièce : ses
+coups légaux, rien d'autre. `snapCenterToCursor` garde la pièce centrée sous le pointeur, et un
+toucher fait glisser tout de suite (`activation`). `canDrag` vous tient à l'écart des pièces du
+bot et de l'échiquier pendant que le code joue, sans rien désactiver : les glissements lancés
+par le code n'ont pas d'événement d'entrée, `canDrag` n'est donc pas interrogé pour eux.
+- **chess.ts** et **game.ts** : les règles et la partie, sans aucun glisser-déposer : coups
+légaux avec échec, roque, prise en passant, promotion, nulles par manque de matériel, la
+notation, l'annulation. Un coup dans `onDrop` crée une nouvelle position, et l'overlay atterrit
+sur la pièce déplacée.
+
+## La pièce en main
+
+**PieceOverlay.vue** est le composant `overlay` des pièces. Il lit les props que reçoit tout
+overlay et dit ce que ferait un dépôt sur la case en dessous : au-dessus d'une case refusée (`over`
+renseigné, `accepted` à false), la pièce devient rouge et donne la raison ; au-dessus d'une prise,
+elle montre une cible et ce qu'elle prend. Une fois le dépôt décidé (`status: 'dropping'`),
+l'indication disparaît et la pièce se pose.
+
+```ts [PieceOverlay.vue]
+const props = defineProps<{
+  active: Active;
+  over: Over | null;
+  accepted: boolean;
+  status: DnDStatus;
+}>();
+
+const hint = computed(() => {
+  const square = props.over ? String(props.over.id) : null;
+  if (props.status !== 'dragging' || !square || square === piece.value.square) return null;
+  if (props.accepted) {
+    const taken = game.takes(piece.value.id, square);
+    return taken ? { type: 'capture', text: `Takes ${NAMES[taken.kind]}` } : null;
+  }
+  // "Pinned", "King in check", "Not a legal move"
+  return { type: 'refused', text: game.whyNot(piece.value.id, square) };
+});
+```
+
+`Board.vue` dessine une flèche de la case d'où vient la pièce jusqu'à la case en dessous, d'après
+l'`active` et l'`over` de `useDnD()`. Les `haptics` du provider font vibrer un glissement tactile
+sur une case légale et quand un dépôt est refusé ; les `announcements` dans `index.vue` énoncent
+les mêmes raisons : "f7, pinned".
+
+## La promotion : un dépôt qui attend une réponse
+
+Au-dessus de la dernière rangée, un pion en main montre la pièce qu'il devient : l'`overlay` propre
+à la case (`PromotionOverlay.vue`) prend la place de celui de la pièce. Au relâchement,
+l'`onBeforeDrop` de la case renvoie une promesse, et l'overlay attend sur la case pendant que
+**PromotionPicker.vue**, un simple élément de la page juste à côté, demande quelle pièce. Une
+pièce répond `'accept'`, Échap ou Cancel `'reject'` (le pion revient à sa place), et Keep
+dragging `'continue'` : le pion suit de nouveau le pointeur, et le clic suivant le dépose et pose
+de nouveau la question.
+
+```ts [Square.vue]
+makeDroppable(el, {
+  id: props.square,
+  accept: ({ active }) => game.canMove(active.id, props.square),
+  // Shown instead of the piece's overlay while a pawn is over the last rank.
+  overlay: computed(() =>
+    held.value?.kind === 'P' && isLastRank(props.square) ? PromotionOverlay : undefined,
+  ),
+  // A promise: the drop waits on the square until the picker answers.
+  onBeforeDrop: ({ active }) =>
+    game.promotes(active.id, props.square) ? game.askPromotion(props.square) : 'accept',
+  onDrop: ({ active }) => game.move(String(active.id), props.square),
+});
+```
+
+L'`onBeforeDrop` d'une cible de dépôt reçoit l'événement de glissement simple et n'est interrogé
+que si son `accept` a accepté le glissement ; celui d'une liste triable reçoit le
+`SortableDropEvent` de la liste, avec le `result` du dépôt. L'`overlay` de la cible est relu une
+fois de plus après `onDrop`, pour l'atterrissage : il vérifie le pion tel qu'il a été saisi
+(`active.data`), pas la partie, où c'est déjà une dame.
+
+## Le bot, les replays et le roque : des glissements joués par le code
+
+**autoplay.ts** joue des coups avec `@vue-dnd-kit/actions` : ceux du bot (`bot.ts`, un bot
+glouton), ceux de **Replay**, et le pas de la tour de chaque roque, les vôtres compris. Chacun est
+un vrai glissement : saisi, glissé au-dessus de l'échiquier image par image, déposé via l'`accept`
+et l'`onDrop` de la case, annoncé et animé comme les vôtres. Une promotion scriptée apporte sa
+pièce avec elle : le sélecteur ne s'ouvre donc pas ; Échap annule un glissement scripté comme
+n'importe quel autre.
+
+```ts [autoplay.ts]
+const { startDrag } = useDnDActions();
+
+const drag = startDrag(id); // from the piece's center
+for (let frame = 1; frame <= FRAMES; frame++) {
+  const t = easeOut(frame / FRAMES);
+  const point = { x: start.x + (end.x - start.x) * t, y: start.y + (end.y - start.y) * t };
+  if (!(await drag.moveTo(point))) return false; // cancelled meanwhile (Escape)
+}
+return drag.drop(); // true once it has landed, false if the square refused it
+```
+
+Le roque se joue en deux coups, comme à la main : le roi avance de deux colonnes, puis sa tour est
+glissée par-dessus lui, si bien que la tour ne saute jamais.
+
+## Les prises, l'annulation et une nouvelle partie
+
+Les pièces prises vont dans le **Tray.vue** de leur camp : une liste triable utilisée pour son
+seul `animate` (`disabled`, rien ne s'y fait glisser). Son `enter` est une fonction : une nouvelle
+pièce arrive en volant depuis la case où elle a été prise, et les autres lui font de la place.
+
+```ts [Tray.vue]
+makeSortableList(tray, {
+  items: () => props.pieces,
+  getKey: (piece) => `taken-${piece.id}`,
+  disabled: true,
+  animate: { enter: flyIn, leave: false },
+});
+```
+
+Undo et New game changent la position sans glissement : **glide.ts** les anime donc à la main
+(FLIP) : chaque pièce vole de l'endroit où elle était, sur une case ou dans un plateau, jusqu'à
+celui où elle est maintenant. Contre le bot, Undo annule votre coup avec sa réponse.
+
+En savoir plus : [Décider d'un dépôt](https://zizigy.github.io/docs/guides/drop-decisions) ·
+[L'overlay](https://zizigy.github.io/docs/guides/overlay#targets-that-change-the-overlay) ·
+[Glissements programmatiques](https://zizigy.github.io/docs/guides/sensors#programmatic-drags) ·
+[Changements de données : `animate`](https://zizigy.github.io/docs/guides/animations#data-changes-animate) ·
+[Accessibilité](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

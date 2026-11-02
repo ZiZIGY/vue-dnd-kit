@@ -1,0 +1,716 @@
+---
+title: "DevTools"
+description: "Vue DevTools와 Nuxt DevTools의 Vue DnD Kit 탭. 실시간 미니맵, 실제로 드래그하는 조이스틱, 실시간 옵션 편집, 모든 드래그의 로그."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/devtools"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+`@vue-dnd-kit/devtools`는 Vue DevTools(`vite-plugin-vue-devtools`)와 Nuxt DevTools에 **Vue DnD Kit**
+탭을 추가합니다. 이 탭은 페이지의 모든 리스트, 트리, 드롭 대상을 실시간 미니맵으로 보여 주고, 조이스틱으로
+어떤 항목이든 드래그하고, 앱이 실행되는 동안 옵션을 편집하고, 각 드래그가 한 일을 기록합니다. 개발
+중에만 동작하며, 프로덕션 빌드에는 아무것도 포함되지 않습니다.
+
+탭은 개발 서버가 앱 옆에서 제공하는 별도의 페이지이므로, 이 문서 안에서는 실행할 수 없습니다. 세
+단계로 설정합니다.
+
+## 설치
+
+### 1. 패키지 추가
+
+```bash
+npm i -D @vue-dnd-kit/devtools @vue-dnd-kit/actions
+```
+
+`@vue-dnd-kit/actions`는 peer dependency입니다. 탭의 이동이 이 패키지를 거칩니다. npm 7+와 pnpm은
+알아서 설치하고, Yarn 1에서는 직접 추가하세요.
+
+### 2. 플러그인 추가
+
+<code-group>
+
+```ts [vite.config.ts]
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import vueDevTools from 'vite-plugin-vue-devtools';
+import { vueDnDKitDevtools } from '@vue-dnd-kit/devtools/vite';
+
+export default defineConfig({
+  // Next to the Vue DevTools plugin: the tab joins its sidebar.
+  plugins: [vueDevTools(), vueDnDKitDevtools(), vue()],
+});
+```
+
+```ts [nuxt.config.ts]
+export default defineNuxtConfig({
+  // With @vue-dnd-kit/devtools installed, the tab appears in development.
+  modules: ['@vue-dnd-kit/nuxt'],
+});
+```
+
+</code-group>
+
+Vite에서 플러그인은 개발 서버(`vite serve`)에서 세 가지 일을 합니다. 탭을
+`/__vue-dnd-kit-devtools/`(`base` 아래)에서 제공하고, Vue DevTools에 추가하며, 앱이 시작되기 전에
+페이지가 탭에 보고하도록 합니다. `app.use()`는 필요 없고, 빌드에는 영향이 없습니다.
+
+Nuxt에서는 `@vue-dnd-kit/nuxt` 모듈이 패키지를 찾아 탭을 제공하고, Nuxt DevTools에 추가하며, 클라이언트
+플러그인으로 페이지 쪽을 설치합니다. `vueDndKit: { devtools: false }`로 끕니다.
+
+### 3. 개발 모드로 앱 실행
+
+평소처럼 개발 서버를 시작하고(`vite`, `nuxt dev`) 앱을 여세요. 탭이 준비됩니다. 페이지의 모든
+프로바이더가 어느 앱에서 렌더링되든 탭에 나타납니다.
+
+### 플러그인 없이
+
+직접 만든 개발 서버나, Vite가 `index.html`로 제공하지 않는 페이지(SSR 구성)에서는 페이지 쪽을 직접
+설치하세요.
+
+```ts [main.ts]
+import { createApp } from 'vue';
+import { DnDDevtools } from '@vue-dnd-kit/devtools';
+import App from './App.vue';
+
+const app = createApp(App);
+app.use(DnDDevtools); // before mount: providers set up earlier aren't seen
+app.mount('#app');
+```
+
+또는 진입 파일에서 `@vue-dnd-kit/devtools/auto`를 가장 먼저 import하세요. 플러그인이 탭만 제공하고
+페이지 쪽은 직접 설치할 때는 `vueDnDKitDevtools({ inject: false })`를 쓰세요.
+`@vue-dnd-kit/devtools/vite`의 `serveTab()`이 탭을 제공하는 미들웨어입니다.
+
+<note>
+
+프로덕션 빌드에서 `app.use(DnDDevtools)`와 `auto` import는 거의 아무것도 남지 않습니다. 모든 진입점이
+먼저 `process.env.NODE_ENV`를 확인하고, 번들러가 나머지를 제거합니다. 서버에서는 아무것도 하지
+않습니다.
+
+</note>
+
+## 탭 열기
+
+- **Vue DevTools**: <kbd value="Alt">
+
+
+
+</kbd>
+
+ + <kbd value="Shift">
+
+
+
+</kbd>
+
+ + <kbd value="D">
+
+
+
+</kbd>
+
+ 또는 페이지 아래쪽의 Vue
+버튼, 그다음 **Vue DnD Kit** 탭.
+- **Nuxt DevTools**: <kbd value="Alt">
+
+
+
+</kbd>
+
+ + <kbd value="Shift">
+
+
+
+</kbd>
+
+ + <kbd value="D">
+
+
+
+</kbd>
+
+ 또는 Nuxt 버튼, 그다음
+**Vue DnD Kit**(사이드바나 그 더보기 메뉴에 있습니다).
+- **별도 창**: 개발 서버의 `http://localhost:5173/__vue-dnd-kit-devtools/`를 열거나 탭의 ⧉ 버튼을
+누르세요. 보조 모니터에서 편리합니다. 여러 페이지가 열려 있으면 위쪽의 선택 상자에서 지켜볼
+페이지를 고릅니다.
+
+<warning>
+
+탭은 같은 창의 백그라운드 브라우저 탭이 아니라 별도 창에 두세요. 페이지가 계속 보여야 하며, 숨겨진
+페이지는 드래그를 취소합니다.
+
+</warning>
+
+## 탭 한눈에 보기
+
+<table>
+<thead>
+  <tr>
+    <th>
+      부분
+    </th>
+    
+    <th>
+      담고 있는 것
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      상단 바
+    </td>
+    
+    <td>
+      지금 드래그가 하는 일(<code>
+        dragging card-3 → done (accepts)
+      </code>
+      
+      ), 지켜보는 페이지, <strong>
+        ⌖ Pick
+      </strong>
+      
+      , 편집한 옵션 수와 초기화, ⧉(별도 창), 테마.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      왼쪽: 레지스트리
+    </td>
+    
+    <td>
+      모든 프로바이더를 트리로: 그 리스트, 트리, 드롭 대상, draggable. **☰**로 보이거나 숨깁니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      가운데: <strong>
+        Map
+      </strong>
+      
+      과 <strong>
+        Log
+      </strong>
+    </td>
+    
+    <td>
+      페이지의 실시간 미니맵 또는 드래그 로그.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      오른쪽: <strong>
+        Drive
+      </strong>
+      
+      , <strong>
+        Options
+      </strong>
+      
+      , <strong>
+        State
+      </strong>
+    </td>
+    
+    <td>
+      조이스틱과 이동 버튼, 선택한 노드의 옵션, 그리고 프로바이더가 그 노드에 대해 아는 것.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+레지스트리에서 노드를 고르거나 맵에서 항목을 고르면, 오른쪽이 그것을 따라갑니다.
+
+## 미니맵
+
+리스트, 트리, 드롭 대상마다 실시간 카드가 있고, 항목의 복사본이 실제 위치에 놓입니다. 페이지의 CSS가
+적용된, 오버레이가 보여 줄 것과 같은 클론입니다. 드래그 중에는 다음을 표시합니다.
+
+- 드래그를 **받는**(파란색) 또는 **거부하는**(빨간색) 리스트와 대상
+- 플레이스홀더, 그리고 포인터 아래의 대상
+- 포인터, 오버레이의 박스, `placeholder: 'indicator'` 리스트의 삽입선
+
+클릭하면 항목을 고르고 페이지에서 강조하며, 더블 클릭하면 페이지가 그 항목으로 스크롤됩니다. 드롭이
+예상한 곳으로 가지 않을 때 맵을 쓰세요. 어느 리스트가 드래그를 받는지 한눈에 보여 줍니다.
+
+## Drive: 조이스틱
+
+항목을 고르세요. 맵이나 레지스트리에서, 또는 **⌖ Pick**으로 고를 수 있습니다. **⌖ Pick**은 페이지의
+draggable에 대한 다음 누르기를 동작시키지 않고 가로챕니다. 그다음 조이스틱의 손잡이를 미세요. 항목이
+집혀 그 방향으로 움직이며, 손잡이가 중심에서 멀수록 빨라집니다. 놓으면 멈추고, **Drop**과
+**Cancel**로 드래그를 끝냅니다.
+
+[센서 API](https://zizigy.github.io/docs/guides/sensors#a-sensor-of-your-own)로 만든 `devtools`라는 센서의 실제 포인터
+드래그입니다. 리스트는 그 아래에서 정렬되고, 컨테이너는 가장자리에서 자동 스크롤되며, `onBeforeDrop`과
+`onDrop`은 다른 드래그처럼 실행됩니다. 비활성화된 항목은 집히지 않습니다. 페이지에서 시작한 키보드
+드래그도 조종할 수 있습니다.
+
+정렬 가능한 리스트의 항목에는 버튼도 있습니다. 위로, 아래로, 처음으로, 끝으로, 그룹의 다른 리스트로.
+각각 [`moveItem`](https://zizigy.github.io/docs/guides/sensors#programmatic-drags)의 키보드 드래그 한 번입니다. 조이스틱
+아래에는 오버레이가 보여 주는 것의 큰 복사본이 있습니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      탭 안에서의 키
+    </th>
+    
+    <th>
+      동작
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      화살표 키 또는 <kbd value="W">
+        
+      </kbd>
+      
+       <kbd value="A">
+        
+      </kbd>
+      
+       <kbd value="S">
+        
+      </kbd>
+      
+       <kbd value="D">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      손잡이를 그 방향으로 절반만큼 밉니다. <kbd value="Shift">
+        
+      </kbd>
+      
+      를 누르면 끝까지
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="G">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      고른 항목을 집습니다
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="Space">
+        
+      </kbd>
+      
+       / <kbd value="Enter">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      드롭
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="Escape">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      취소
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="P">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      페이지에서 고르기
+    </td>
+  </tr>
+</tbody>
+</table>
+
+## 옵션
+
+콜백이 아닌 모든 옵션은 앱이 실행되는 동안 편집할 수 있습니다. 노드를 고르고 **Options**를 여세요.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      노드
+    </th>
+    
+    <th>
+      옵션
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      프로바이더
+    </td>
+    
+    <td>
+      <code>
+        overlayFit
+      </code>
+      
+      , <code>
+        autoScroll
+      </code>
+      
+      , <code>
+        collision
+      </code>
+      
+      , <code>
+        modifiers
+      </code>
+      
+      (라이브러리의 것, 이름으로), <code>
+        animation
+      </code>
+      
+      , <code>
+        dropAnimation
+      </code>
+      
+      , <code>
+        animate
+      </code>
+      
+      , <code>
+        activation
+      </code>
+      
+      , <code>
+        keyboard
+      </code>
+      
+      , <code>
+        haptics
+      </code>
+      
+      , <code>
+        copyModifier
+      </code>
+      
+      …
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      리스트
+    </td>
+    
+    <td>
+      <code>
+        disabled
+      </code>
+      
+      , <code>
+        strategy
+      </code>
+      
+      , <code>
+        placeholder
+      </code>
+      
+      , <code>
+        behavior
+      </code>
+      
+      , <code>
+        multiple
+      </code>
+      
+      , <code>
+        sort
+      </code>
+      
+      , <code>
+        dropOutside
+      </code>
+      
+      , <code>
+        acceptMode
+      </code>
+      
+      , <code>
+        animation
+      </code>
+      
+      , <code>
+        animate
+      </code>
+      
+      , <code>
+        autoScroll
+      </code>
+      
+      , <code>
+        modifiers
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      트리
+    </td>
+    
+    <td>
+      <code>
+        placeholder
+      </code>
+      
+      , <code>
+        indentation
+      </code>
+      
+      , <code>
+        nesting
+      </code>
+      
+      , <code>
+        maxDepth
+      </code>
+      
+      …
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      드롭 대상
+    </td>
+    
+    <td>
+      <code>
+        disabled
+      </code>
+      
+      , <code>
+        priority
+      </code>
+      
+      , <code>
+        accept
+      </code>
+      
+      , <code>
+        acceptMode
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      항목
+    </td>
+    
+    <td>
+      <code>
+        disabled
+      </code>
+      
+      , <code>
+        keyboard
+      </code>
+      
+      , <code>
+        activation
+      </code>
+    </td>
+  </tr>
+</tbody>
+</table>
+
+편집은 즉시, 이 페이지에만 적용되며 코드에는 절대 기록되지 않습니다. 라이브러리는 옵션을 읽는 곳에서
+새 값을 읽습니다. 편집은 초기화하거나(옵션별 ↺, 또는 상단 바의 초기화), 프로바이더가 언마운트되거나,
+페이지를 새로 고칠 때까지 유지됩니다. 편집한 옵션 옆에는 코드의 값이 표시됩니다. 편집이 적용된 동안
+마운트되는 항목(가상 리스트의 행)도 편집을 받습니다.
+
+## 상태
+
+고른 노드에 대해 각 프로바이더가 아는 것:
+
+- **드래그 세션**: 상태, 활성 id, 항목, 센서, 대상과 그 수락 여부, 포인터, 오버레이, 정렬 그룹의
+세션과 삽입선
+- **리스트**: 순서와 초안. **트리**: 행
+- **항목**: 타입, 데이터, 위치. **드롭 대상**: 규칙
+
+항목은 이벤트 없이 마운트되고 언마운트되므로, 레지스트리는 1초 안에 따라잡습니다.
+
+## 로그
+
+드래그마다 띠 하나가 순서대로 표시됩니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      항목
+    </th>
+    
+    <th>
+      알려 주는 것
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        drag start
+      </code>
+    </td>
+    
+    <td>
+      id, 센서와 터치 여부, 출발한 리스트.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        over
+      </code>
+      
+      , <code>
+        left
+      </code>
+    </td>
+    
+    <td>
+      들어가고 나온 각 대상과 그 수락 여부.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        release
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+      이 결정하는 동안, 놓은 위치의 대상.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+    </td>
+    
+    <td>
+      판정: 수락, 일부 수락, 훅에 의한 거부, 대상의 <code>
+        accept
+      </code>
+      
+      에 의한 거부, 그리고 훅에 걸린 시간.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        drop
+      </code>
+    </td>
+    
+    <td>
+      대상. 정렬 가능한 리스트라면 이동, <code>
+        e.result
+      </code>
+      
+      , <code>
+        preventDefault()
+      </code>
+      
+       호출 여부.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        cancel
+      </code>
+    </td>
+    
+    <td>
+      이유: 취소(Escape, <code>
+        cancel()
+      </code>
+      
+      ), 훅에 의한 거부, 대상의 <code>
+        accept
+      </code>
+      
+      에 의한 거부.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+그 밖에 `auto-scroll on`과 `off`, `announcement` 문구(기본으로 숨김), 그리고 드래그 밖의
+`animate`(드래그가 아닌 리스트 항목 변경)도 있습니다. 항목을 클릭하면 데이터를 볼 수 있습니다. 나중에
+연 탭도 그때까지의 드래그를 받습니다.
+
+## 드롭 디버깅, 단계별로
+
+카드가 컬럼에 들어가지 않습니다. 탭을 연 채로:
+
+1. 직접, 또는 손이 탭을 다룰 수 있도록 **Drive**로 **재현하세요**.
+2. 카드가 컬럼 위에 있는 동안 **맵을 보세요**. 빨간색이면 리스트가 카드를 거부하는 것이니 그
+리스트의 `group`(`put`)이나 대상의 `accept`를 확인하세요. 파란색이면 받는 것이고, 문제는 그
+뒤에 있습니다.
+3. 그 드래그의 **로그를 읽으세요**. `onBeforeDrop`이 누가 거부했는지 알려 줍니다. 훅인지, 대상의
+`accept`인지. 드롭은 완료됐는데 데이터가 바뀌지 않았다면, `drop` 항목이 `preventDefault()`가
+호출되었는지와 `e.result`에 무엇이 있었는지 알려 줍니다. 제어 리스트는 이를 직접 적용해야 합니다.
+4. **Options**에서 **수정을 실시간으로 시험하세요**. 더 느슨한 `acceptMode`, 다른 `collision`,
+`placeholder: 'indicator'` 같은 것입니다. 그다음 효과가 있는 것을 코드에 반영하세요.
+
+## 동작 방식
+
+프로바이더는 페이지 쪽이 설치한 훅에 보고합니다. 탭이 페이지를 지켜보기 전까지는 기록만 됩니다.
+그다음 페이지는 모니터처럼 듣고, 탭이 보여 주는 것을 보냅니다. 드래그 중에는 40 ms마다, 그 밖에는
+1초에 두 번 보내며, 몇 초 동안 지켜보는 탭이 없으면 멈춥니다. 탭은 페이지 출처의 `BroadcastChannel`로
+페이지와 통신합니다. 요청한 것(드래그, 선택, 옵션 재정의) 말고는 아무것도 바꾸지 않습니다.
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

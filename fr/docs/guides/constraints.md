@@ -1,0 +1,698 @@
+---
+title: "Axes, limites et grilles"
+description: "Verrouillez les glissements sur un axe, gardez-les dans une boîte, alignez-les sur une grille ou sur vos propres repères — pour un item, une liste ou toute une partie de la page."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/constraints"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+Un glissement peut être tenu sur un axe, gardé dans une boîte, aligné sur une grille, ou infléchi
+par une règle à vous. Ces règles sont des **modificateurs** : ils ajustent le décalage du
+glissement à chaque frame. Posez-les sur un élément déplaçable, sur une liste ou sur une partie
+de la page, et l'overlay, les cibles de dépôt et le dépôt les suivent tous.
+
+## Verrouiller un axe
+
+Les clips d'une timeline glissent le long de leur piste. Désactivez le verrouillage, et ils
+peuvent aussi changer de piste.
+
+<example height="22rem" hint="Faites glisser un clip ; désactivez le verrouillage et faites-le glisser sur l'autre piste" name="axis-timeline">
+
+
+
+</example>
+
+```ts [TimelineClip.vue]
+const { isDragging } = makeDraggable(el, {
+  id: () => props.clip.id,
+  axis: () => (props.locked ? 'x' : undefined),
+});
+```
+
+`axis: 'x'` ne déplace qu'horizontalement, `'y'` que verticalement. `makeDraggable`,
+`makeSortableList`, `makeSortableTree`, `makeSortableItem` et `makeDragArea` l'acceptent tous :
+
+```ts
+makeSortableList(listRef, { items: tracks, axis: 'y' });
+```
+
+- Le verrouillage s'exécute **après tous les modificateurs** : il tient donc quoi qu'ils fassent.
+Un alignement ou une limite ne peut pas faire sortir l'item de sa ligne.
+- La ligne est dans le contenu, pas à l'écran : elle se déplace avec la liste (ou le parent)
+où le glissement a commencé. Faites défiler la page en plein glissement et l'item reste sur
+sa ligne.
+- L'`axis` propre à un item l'emporte sur celui de sa liste ou de son arbre, et celui d'un
+élément déplaçable (ou de sa liste) l'emporte sur celui de sa zone de glissement.
+- Il est lu quand un glissement commence : un getter peut donc le basculer, comme ci-dessus.
+- Un arbre verrouillé sur `'y'` s'imbrique toujours : la profondeur vient alors du survol du
+milieu d'une ligne.
+
+<tip>
+
+Préférez `axis` aux modificateurs `restrictToVerticalAxis` et `restrictToHorizontalAxis`. Ils font
+la même chose, mais en tant que modificateurs ordinaires, ils s'exécutent au milieu de la chaîne,
+et un modificateur placé après eux (une grille qui aligne les deux axes) peut de nouveau faire
+sortir l'item de l'axe.
+
+</tip>
+
+## Modificateurs
+
+Un modificateur ajuste le décalage du glissement à chaque frame. Son résultat déplace l'overlay
+**et** constitue le point où les cibles sont cherchées : une liste se trie donc selon la position
+verrouillée, limitée ou alignée, et la `position` du dépôt est l'endroit où la boîte a fini.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Modificateur
+    </th>
+    
+    <th>
+      Ce qu'il fait
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        restrictToParent
+      </code>
+    </td>
+    
+    <td>
+      Garde l'overlay dans le conteneur où le glissement a commencé : la liste triable, ou l'élément parent d'un élément déplaçable simple.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        restrictToElement(target)
+      </code>
+    </td>
+    
+    <td>
+      Garde l'overlay dans un élément : une ref de template, un getter ou l'élément lui-même.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        restrictToWindowEdges
+      </code>
+    </td>
+    
+    <td>
+      Garde l'overlay dans la fenêtre.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        restrictToFirstScrollableAncestor
+      </code>
+    </td>
+    
+    <td>
+      Garde l'overlay dans le premier ancêtre défilant de l'élément glissé.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        snapToGrid(size)
+      </code>
+    </td>
+    
+    <td>
+      Aligne l'overlay sur une grille (voir plus bas).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        snapCenterToCursor
+      </code>
+    </td>
+    
+    <td>
+      Centre l'overlay sous le pointeur au lieu de garder le décalage de saisie.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        restrictToVerticalAxis
+      </code>
+    </td>
+    
+    <td>
+      Ne se déplace que verticalement. Préférez <code>
+        axis: 'y'
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        restrictToHorizontalAxis
+      </code>
+    </td>
+    
+    <td>
+      Ne se déplace qu'horizontalement. Préférez <code>
+        axis: 'x'
+      </code>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`modifiers` est une option du provider, des zones de glissement, des listes et des arbres, ainsi
+que des éléments déplaçables et des items triables. Toutes, sauf celle du provider, acceptent
+aussi une ref ou un getter, lus quand le glissement commence.
+
+### Le garder à l'intérieur
+
+La vignette de votre propre caméra dans un appel vidéo reste sur l'écran. Changez de limite et
+faites-la glisser loin au-dehors :
+
+<example height="29rem" hint="Faites glisser votre vignette hors de l'écran avec chaque limite" name="bounds-pip">
+
+
+
+</example>
+
+```ts [SelfView.vue]
+const { isDragging } = makeDraggable(el, {
+  id: 'self-view',
+  modifiers: () => props.modifiers, // [restrictToParent], [restrictToWindowEdges] or []
+});
+```
+
+- `restrictToParent` la retient sur l'écran, son élément parent. Pour un item triable, le
+« parent » est sa liste, où que la liste se trouve dans le DOM.
+- `restrictToWindowEdges` la laisse quitter l'écran, mais pas la fenêtre. Déposée hors de
+l'écran, elle n'est sur aucune cible de dépôt : elle revient donc à sa place.
+- Sans limite, elle va n'importe où.
+
+Une limite garde l'**overlay** à l'intérieur, à la taille qu'il a : avec `overlayFit: 'slot'`,
+une boîte qui grandit au-dessus d'une liste d'items plus larges est gardée à l'intérieur à sa
+nouvelle taille.
+
+### Aligner sur une grille
+
+Les nœuds d'un diagramme de flux s'alignent sur la grille du canevas. Changez la taille des
+cellules et le glissement en douceur :
+
+<example height="29rem" hint="Faites glisser un nœud ; changez la grille et le lissage" name="snap-canvas">
+
+
+
+</example>
+
+```ts [FlowNode.vue]
+const { isDragging } = makeDraggable(el, {
+  id: () => props.node.id,
+  modifiers: () => [snapToGrid({ x: props.grid, y: props.grid, smooth: props.smooth })],
+});
+```
+
+`snapToGrid(24)` aligne les deux axes sur des cellules de 24 px. Un objet permet d'en régler
+davantage :
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Option
+    </th>
+    
+    <th>
+      Signification
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        x
+      </code>
+      
+      , <code>
+        y
+      </code>
+    </td>
+    
+    <td>
+      La taille de la cellule en pixels, par axe. Omettez-en un pour n'aligner que l'autre : <code>
+        { y: 15 }
+      </code>
+      
+       aligne un événement sur les quarts d'heure et le laisse se déplacer librement d'un jour à l'autre.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        origin
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'container'
+      </code>
+      
+       (par défaut) : le coin supérieur gauche de l'overlay se pose sur des lignes de grille tracées depuis le coin supérieur gauche du conteneur — la liste triable, ou le parent d'un élément déplaçable simple. <code>
+        'delta'
+      </code>
+      
+       : c'est le décalage lui-même qui est arrondi, si bien qu'un item parti hors de la grille y reste et se déplace par cellules entières depuis l'endroit où il était. Choisissez-le pour des items placés n'importe où (un canevas libre) qui doivent garder leur propre alignement.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        smooth
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        true
+      </code>
+      
+       ou <code>
+        { duration, easing }
+      </code>
+      
+       : l'overlay glisse en douceur d'une cellule à l'autre (80 ms par défaut). Les cibles utilisent tout de suite la position alignée.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Avec `origin: 'container'`, tracez la grille depuis la border box du conteneur : le canevas
+ci-dessus a son cadre en `box-shadow`, pas en `border`, si bien que ses lignes commencent tout au
+bord.
+
+### Votre propre modificateur
+
+Les boîtes d'une diapositive sautent sur les bords et les centres des autres quand elles s'en
+approchent, et des repères roses montrent les lignes sur lesquelles elles se posent :
+
+<example height="26rem" hint="Faites glisser une boîte à côté d'une autre, ou au milieu de la diapositive" name="magnet-guides">
+
+
+
+</example>
+
+```ts [Slide.vue]
+import type { Modifier } from '@vue-dnd-kit/core';
+
+/** Near a line, the box jumps onto it. */
+const magnet: Modifier = ({ transform, overlayRect, containerRect, active }) => {
+  if (!containerRect) return transform;
+  const id = String(active.id);
+  const left = overlayRect.left - containerRect.left;
+  const top = overlayRect.top - containerRect.top;
+  return {
+    x: transform.x + pull(left, overlayRect.width, lines(id, 'x')),
+    y: transform.y + pull(top, overlayRect.height, lines(id, 'y')),
+  };
+};
+
+// In order: the magnet pulls, then the slide's edges hold.
+const modifiers = [magnet, restrictToParent];
+```
+
+Un modificateur reçoit `transform`, le décalage depuis le début du glissement tel que l'ont
+laissé les modificateurs précédents, et en renvoie un nouveau. Il reçoit aussi ce dont il peut
+avoir besoin pour le calculer :
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Argument
+    </th>
+    
+    <th>
+      Ce que c'est
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        transform
+      </code>
+    </td>
+    
+    <td>
+      Le décalage jusqu'ici.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        overlayRect
+      </code>
+    </td>
+    
+    <td>
+      La boîte de l'overlay déplacée de <code>
+        transform
+      </code>
+      
+      , à la taille qu'elle a maintenant.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeRect
+      </code>
+    </td>
+    
+    <td>
+      L'élément glissé au début du glissement.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        containerRect
+      </code>
+    </td>
+    
+    <td>
+      Le conteneur où le glissement a commencé (la liste triable, ou l'élément parent), là où il est maintenant : il suit le défilement.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        windowRect
+      </code>
+    </td>
+    
+    <td>
+      La fenêtre.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        origin
+      </code>
+    </td>
+    
+    <td>
+      Le pointeur au début du glissement.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        active
+      </code>
+      
+      , <code>
+        over
+      </code>
+    </td>
+    
+    <td>
+      Le glissement et la cible en dessous.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Les modificateurs s'exécutent à chaque frame : gardez-les rapides et sans effets de bord. Les
+repères ci-dessus sont dessinés à partir du `delta` du glissement dans l'`onDragMove` d'un
+moniteur, qui est le décalage après tous les modificateurs. Les types se trouvent dans
+[Modificateurs](https://zizigy.github.io/docs/api/modifiers).
+
+## L'ordre
+
+Les modificateurs venant de plusieurs endroits s'exécutent l'un après l'autre, chacun à partir du
+résultat du précédent :
+
+1. les `modifiers` du provider ;
+2. les `modifiers` de la zone de glissement où le glissement a commencé ;
+3. les `modifiers` propres à l'item glissé ou, s'il n'en a pas, ceux de sa liste ou de son
+arbre ;
+4. le `restrictToArea` de la zone de glissement ;
+5. le verrouillage d'`axis`.
+
+Dans un même tableau, ils s'exécutent dans l'ordre : placez donc les alignements et les aimants
+avant les limites. Une limite en dernier garde la boîte à l'intérieur quoi qu'aient fait les
+autres. La diapositive ci-dessus exécute `[magnet, restrictToParent]` ; dans l'autre sens,
+l'aimant pourrait tirer une boîte retenue au bord de la diapositive de quelques pixels au-delà.
+
+Les `modifiers` d'un item **remplacent** ceux de sa liste ; ils ne s'y ajoutent pas. Les limites
+de la zone viennent après les alignements des étapes 1 à 3 : un item aligné reste donc à
+l'intérieur, et le verrouillage d'axe vient tout à la fin.
+
+## Les listes limitées gardent leurs extrémités
+
+Un panneau de calques : les lignes ne se déplacent que vers le haut et le bas, et ne quittent
+jamais le panneau. Faites glisser la ligne du haut tout en bas :
+
+<example height="26rem" hint="Faites glisser Heading en bas, au-delà du bord du panneau" name="bounded-layers">
+
+
+
+</example>
+
+```ts [Layers.vue]
+const { items } = makeSortableList(list, { items: layers, axis: 'y', modifiers: [restrictToParent] });
+```
+
+Une limite retient l'overlay au bord de la boîte pendant que le pointeur continue. Dès que le
+pointeur a quitté l'overlay le long de l'axe de la liste, la liste se trie plutôt selon le
+pointeur : la première et la dernière place restent ainsi accessibles, quelle que soit la façon
+dont vous tenez l'item. Les grilles continuent de se trier selon l'overlay : retenu au bord, il
+couvre déjà la cellule du bord.
+
+## Des règles pour une partie de la page
+
+Deux zones, deux jeux de règles. Les stickers de Layout s'alignent sur sa grille et ne peuvent
+pas en sortir ; les stickers de Sketch vont n'importe où, y compris dans Layout. Un glissement
+garde les règles de la zone où il a commencé, et la zone dont les règles s'appliquent s'éclaire.
+
+<example height="25rem" hint="Faites glisser un sticker dans Layout, puis un autre de Sketch vers Layout" name="drag-areas">
+
+
+
+</example>
+
+```vue [DragArea.vue]
+<script setup lang="ts">
+const area = useTemplateRef<HTMLElement>('area');
+const { isDragging } = makeDragArea(area, {
+  modifiers: () => (props.strict ? [snapToGrid(24)] : []),
+  restrictToArea: () => props.strict,
+});
+</script>
+
+<template>
+  <div ref="area" class="area" :class="{ busy: isDragging }">
+    <Sticker v-for="sticker in stickers" :key="sticker.id" :sticker="sticker" />
+  </div>
+</template>
+```
+
+`makeDragArea` fixe des règles pour les glissements qui **commencent à l'intérieur** de son
+élément — éléments déplaçables simples comme items triables, qui n'ont alors besoin d'aucune
+règle à eux. Gardez un seul `DnDProvider` pour toute l'application, et donnez à un tableau, un
+canevas ou un fil sa propre zone.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Option
+    </th>
+    
+    <th>
+      Ce qu'elle fait
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        axis
+      </code>
+    </td>
+    
+    <td>
+      Verrouille les glissements sur un axe. L'<code>
+        axis
+      </code>
+      
+       propre à un élément déplaçable, ou celui de sa liste, l'emporte.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        modifiers
+      </code>
+    </td>
+    
+    <td>
+      S'exécutent après ceux du provider et avant ceux de l'élément déplaçable.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        restrictToArea
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        true
+      </code>
+      
+       : les glissements restent dans l'élément de la zone.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        autoScroll
+      </code>
+    </td>
+    
+    <td>
+      Le défilement automatique du conteneur défilant de la zone (l'élément, ou son ancêtre défilant le plus proche). <code>
+        false
+      </code>
+      
+       le désactive à cet endroit.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activation
+      </code>
+    </td>
+    
+    <td>
+      L'<a href="/docs/guides/sensors#activation-constraints">
+        activation
+      </a>
+      
+       par type de pointeur, comme un appui tactile plus long dans un fil qui défile. Celle de l'élément déplaçable l'emporte ; celle du provider vient en dernier.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      Aucun glissement ne démarre dans la zone, ni dans les zones qu'elle contient. Ses éléments déplaçables indiquent <code>
+        aria-disabled
+      </code>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Chaque option accepte une valeur, une ref ou un getter, lus quand un appui ou un glissement
+commence. La zone renvoie `isDragging` (un glissement qui a commencé ici est en cours, comme le
+montre le cadre éclairé ci-dessus) et `isAutoScrolling` (le défilement automatique fait défiler
+son conteneur). Référence complète : [makeDragArea](https://zizigy.github.io/docs/api/make-drag-area).
+
+### Comment les zones se combinent
+
+- Un glissement suit la zone où il **a commencé**, même après en être sorti. Passer au-dessus
+d'une zone ne change rien, sauf son `autoScroll` : celui-ci s'applique à chaque glissement qui
+fait défiler son conteneur.
+- Les zones imbriquées ne fusionnent pas : la plus proche l'emporte. `disabled` est l'exception,
+et il est hérité : une zone désactivée désactive aussi les zones qu'elle contient.
+- La détection de collision, les touches du clavier et les annonces restent à l'échelle du
+provider.
+
+<note>
+
+Pourquoi pas un second `DnDProvider` autour du tableau ? Les providers sont indépendants : un
+glissement ne passe jamais de l'un à l'autre, et les items du tableau ne pourraient donc jamais en
+sortir. N'imbriquez un provider que quand une partie de la page a besoin de ses propres réglages
+à l'échelle du provider et que ses items y restent. Voir [Le provider](https://zizigy.github.io/docs/guides/provider).
+
+</note>
+
+## Le laisser là où il est déposé
+
+La timeline, l'appel, l'diagramme de flux, la diapositive et les zones ci-dessus gardent tous
+chaque item là où il a été déposé. Chaque événement de glissement transporte `position` : le coin
+supérieur gauche de la boîte glissée à l'intérieur de la cible, depuis le bord de son padding et
+défilement compris — le `left` et le `top` qui placent un item positionné en absolu exactement à
+cet endroit. Elle est calculée après les modificateurs : un nœud aligné atterrit donc sur la
+grille.
+
+```ts [Flowchart.vue]
+makeDroppable(canvas, { id: 'canvas' });
+useDnDMonitor({
+  onDragEnd({ active, over, position }) {
+    const node = nodes.value.find((item) => item.id === active.id);
+    if (!node || over?.id !== 'canvas' || !position) return;
+    node.x = Math.round(position.x);
+    node.y = Math.round(position.y);
+  },
+});
+```
+
+Plus de détails sur le glissement libre et les cibles de dépôt dans
+[Glisser-déposer](https://zizigy.github.io/docs/guides/drag-and-drop).
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

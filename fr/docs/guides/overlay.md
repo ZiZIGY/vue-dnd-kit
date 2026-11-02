@@ -1,0 +1,724 @@
+---
+title: "L'overlay"
+description: "Ce qui suit le pointeur pendant le glissement — le clone par défaut et comment le styliser, des composants d'overlay qui changent pendant le glissement, plusieurs items à la fois, sa taille et l'endroit où il est rendu."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/overlay"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+Pendant le glissement, une boîte suit le pointeur : l'**overlay**. L'élément glissé lui-même
+reste là où il était, comme l'emplacement où il va atterrir. Au dépôt, l'overlay vole jusqu'à
+cet emplacement et disparaît.
+
+L'overlay est téléporté dans `body`, en dehors de vos composants. Par défaut, il affiche un
+clone de l'élément glissé.
+
+<example height="22rem" hint="Tapez du texte dans une ligne, cochez-la, puis faites-la glisser par sa poignée : la copie garde les valeurs et le graphique" name="overlay">
+
+
+
+</example>
+
+## Le clone par défaut
+
+Le clone est pris à la saisie, avant que quoi que ce soit ne bouge. C'est une copie profonde de
+l'élément :
+
+- Les valeurs des formulaires et les pixels des `<canvas>` sont copiés.
+- Les styles calculés que l'élément perdrait en dehors de sa liste sont mis en ligne : polices
+et couleurs héritées, styles qui s'appliquent via les ancêtres (`.list li { … }`), largeurs
+des cellules de tableau. Une ligne de tableau arrive enveloppée dans un tableau à elle.
+- Les `id` et les attributs `data-dnd-*` sont retirés, et le clone est `aria-hidden`.
+- Les ondulations et autres effets d'appui des kits d'UI (Vuetify, Quasar, PrimeVue, Naive UI)
+sont laissés de côté.
+
+Dans le tableau ci-dessus, une ligne dans laquelle vous avez tapé voyage avec son texte, son
+montant, sa coche et son graphique, dans un tableau à elle dont les cellules gardent les largeurs
+des vraies.
+
+Marquez tout ce qui ne doit pas voyager avec **data-dnd-no-clone** : un bouton de menu, une
+infobulle, une marque de sélection. Le bouton de suppression de chaque ligne reste en arrière :
+
+```vue [ExpenseRow.vue]
+<tr ref="el" class="row">
+  …
+  <td><button type="button" aria-label="Remove" data-dnd-no-clone @click="emit('remove')">×</button></td>
+</tr>
+```
+
+### Les fonds ne sont pas devinés
+
+Le clone montre l'élément tel qu'il est. Une ligne qui n'a pas de fond à elle, parce que sa
+liste le peint (un `<li>` dans un `<ul>` blanc, un `v-list-item`, une ligne de tableau), donne
+un clone **transparent**. Donnez-lui le fond de la liste en CSS, ici sur les cellules :
+
+```vue [ExpenseRow.vue]
+<style scoped>
+[data-dnd-overlay] .row td {
+  background: color-mix(in srgb, currentColor 4%, Canvas);
+}
+</style>
+```
+
+Le clone garde les classes et les attributs de l'élément, y compris l'attribut de scope de Vue :
+la règle fonctionne donc dans le style scoped de la ligne comme dans une feuille de style
+globale. L'autre solution est un fond sur la ligne elle-même. Les icônes et les tuiles faites
+pour flotter restent transparentes exprès.
+
+## Styliser la boîte
+
+La boîte est l'élément qui porte `data-dnd-overlay`. Elle est en `position: fixed`, au-dessus
+de tout (`z-index: 9999`), en `pointer-events: none` et `inert`, et sa valeur indique ce qu'elle
+est en train de faire :
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        data-dnd-overlay
+      </code>
+    </th>
+    
+    <th>
+      Quand
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        "dragging"
+      </code>
+    </td>
+    
+    <td>
+      Elle suit le pointeur.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        "dropping"
+      </code>
+    </td>
+    
+    <td>
+      Elle atterrit sur son emplacement, revient à sa place, ou attend un <code>
+        onBeforeDrop
+      </code>
+      
+       asynchrone.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Un aspect soulevé pendant le glissement, qui disparaît à l'atterrissage :
+
+```css
+[data-dnd-overlay='dragging'] .row td {
+  box-shadow: 0 14px 20px -16px rgb(0 0 0 / 0.7);
+}
+```
+
+La boîte se déplace avec `transform` et reçoit sa taille en `width` et `height` : stylisez ce
+qu'elle contient, pas la boîte. Le clone la remplit, avec `width: 100%`, `height: 100%` et
+`transform: none` posés sur sa racine : faites-le tourner ou grandir avec les propriétés `rotate` et
+`scale`, que les transitions comme les keyframes animent. Des recettes dans les
+[animations](https://zizigy.github.io/docs/guides/animations).
+
+## Composants d'overlay
+
+Pour afficher autre chose que le clone, passez un composant. Il est rendu dans la boîte et
+reçoit le glissement en props, qui changent pendant le glissement : où se trouve le glissement,
+si cet endroit l'accepte, si le dépôt copie, et le dépôt lui-même.
+
+<example height="26.5rem" hint="Faites glisser un ticket au-dessus des colonnes : Done accepte les tickets approuvés et les tamponne ; maintenez Alt pour copier" name="overlay-live">
+
+
+
+</example>
+
+```vue [TicketOverlay.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import type { DnDStatus, DragItem, DragMode, Over } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[]; over: Over | null; accepted: boolean; status: DnDStatus; mode: DragMode }>();
+const ticket = computed(() => props.items[0]?.item as Ticket);
+
+const state = computed(() => {
+  if (props.status === 'dropping') return props.over ? 'landed' : 'back'; // a cancel flies back
+  if (!props.over) return 'free';
+  return props.accepted ? 'ok' : 'refused';
+});
+</script>
+
+<template>
+  <!-- Fills the overlay box, which takes the size of the slot. -->
+  <div class="ticket-overlay" :data-state="state">
+    {{ ticket.title }}
+    <span v-if="mode === 'copy'" class="copy">+ copy</span>
+  </div>
+</template>
+
+<style scoped>
+.ticket-overlay { width: 100%; height: 100%; }
+.ticket-overlay[data-state='refused'] { background: color-mix(in srgb, #ef4444 8%, Canvas); }
+</style>
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Prop
+    </th>
+    
+    <th>
+      Ce qu'elle contient
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        active
+      </code>
+    </td>
+    
+    <td>
+      Le glissement (<code>
+        id
+      </code>
+      
+      , <code>
+        ids
+      </code>
+      
+      , <code>
+        data
+      </code>
+      
+      , <code>
+        type
+      </code>
+      
+      , …).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        items
+      </code>
+    </td>
+    
+    <td>
+      Tous les items glissés, en commençant par celui qui a été saisi : <code>
+        { id, item, data, type }
+      </code>
+      
+      . <code>
+        item
+      </code>
+      
+       est l'item de la liste pour les glissements triables.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        over
+      </code>
+    </td>
+    
+    <td>
+      La cible sous le glissement ; pendant qu'un dépôt atterrit, la cible sur laquelle il atterrit. <code>
+        null
+      </code>
+      
+       au-dessus de rien et pendant qu'un glissement refusé ou annulé revient à sa place. L'<code>
+        over.id
+      </code>
+      
+       d'une liste triable est l'<code>
+        id
+      </code>
+      
+       de la liste : les colonnes ci-dessus utilisent leurs noms.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        accepted
+      </code>
+    </td>
+    
+    <td>
+      Si <code>
+        over
+      </code>
+      
+       accepte le glissement : teintez l'overlay en rouge quand ce n'est pas le cas.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        status
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'dragging'
+      </code>
+      
+      , puis <code>
+        'dropping'
+      </code>
+      
+       pendant l'atterrissage.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        mode
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'move'
+      </code>
+      
+      , <code>
+        'copy'
+      </code>
+      
+       (Alt maintenu pendant un glissement depuis une liste avec <code>
+        clone
+      </code>
+      
+      , ou un glissement depuis une palette), <code>
+        'swap'
+      </code>
+      
+      , ou <code>
+        'insert'
+      </code>
+      
+       (un élément déplaçable simple qui entre dans une liste).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        to
+      </code>
+    </td>
+    
+    <td>
+      L'endroit où un dépôt mettrait les items maintenant : <code>
+        { list, index }
+      </code>
+      
+      , et dans un arbre aussi <code>
+        parentKey
+      </code>
+      
+       et <code>
+        depth
+      </code>
+      
+      . <code>
+        null
+      </code>
+      
+       quand il ne les mettrait dans aucune liste, par exemple au-dessus d'une cible simple. Voir <a href="#where-the-drop-would-go-to">
+        où irait le dépôt
+      </a>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Les props sont des `OverlayProps` ; ne déclarez que celles que vous lisez. Passez le composant à
+ce qui est glissé :
+
+```ts
+import TicketOverlay from './TicketOverlay.vue';
+
+makeSortableList(listRef, { items: tickets, overlay: TicketOverlay });   // every item of the list
+makeSortableItem(el, { item: () => props.ticket, overlay: TicketOverlay }); // this item
+makeDraggable(el, { id: 'chip', overlay: TicketOverlay });                // a plain draggable
+```
+
+Un composant peut être passé tel quel, dans un `shallowRef` pour pouvoir le changer (même en plein
+glissement : l'overlay change aussitôt), ou sous forme de fonction, que Vue traite comme un
+composant fonctionnel : `overlay: (props) => <TicketOverlay {...props} compact />` en TSX. Ne le
+mettez jamais dans une `ref` profonde ni dans un `reactive` : Vue rendrait le composant réactif
+et afficherait un avertissement.
+
+La racine d'un composant d'overlay doit remplir la boîte (`width: 100%; height: 100%`) : la
+boîte prend la taille de l'emplacement et l'anime au dépôt. Une taille fixe sur la racine garde
+au contraire cette taille à l'intérieur de la boîte.
+
+## Le slot `#overlay` du provider
+
+Pour chaque glissement qui n'a pas son propre composant, le slot du provider rend l'overlay.
+Définissez-le une fois, à côté de la racine de votre application, et chaque liste et chaque
+élément déplaçable de l'application en profite. Ici, les notes ont leur propre fantôme, et les
+photos se rabattent sur le clone :
+
+<example height="26rem" hint="Faites glisser une note, puis une photo" name="overlay-slot">
+
+
+
+</example>
+
+```vue [App.vue]
+<DnDProvider>
+  <RouterView />
+  <template #overlay="{ items, status }">
+    <NoteGhost v-if="items[0]?.type.includes('note')" :items="items" :status="status" />
+  </template>
+</DnDProvider>
+```
+
+Le slot reçoit les mêmes props qu'un composant d'overlay. Quand il ne rend rien (le `v-if`
+ci-dessus), le glissement se rabat sur le clone. Distinguez les glissements par leur `type` : le
+type d'un item triable est le nom de son groupe, sauf s'il définit le sien
+(`makeSortableItem(el, { type })`).
+
+## Cibles qui changent l'overlay
+
+Une cible de dépôt peut dire ce que montre l'overlay pendant qu'un glissement qu'elle accepte la
+survole. `makeDroppable` accepte un `overlay` ; les listes et les arbres acceptent un
+`overOverlay`, car leur `overlay` sert à leurs propres items. Au-dessus d'un dossier, la pastille
+des messages glissés se transforme en ce que fera le dépôt :
+
+<example height="34rem" hint="Cochez deux messages, faites-en glisser un au-dessus d'Archive et relâchez" name="overlay-folders">
+
+
+
+</example>
+
+```ts [Folder.vue]
+makeDroppable(el, {
+  id: () => props.folder.id,
+  data: () => props.folder,
+  overlay: MovePill,
+  onDrop: (event) => emit('move', event.active.ids),
+});
+```
+
+Le composant de la cible reçoit les mêmes props que n'importe quel composant d'overlay, dont
+`over`, et l'overlay propre au glissement (son composant, le slot du provider ou le clone) comme
+slot par défaut. `MovePill` laisse le slot de côté, et remplace donc la pastille :
+
+```vue [MovePill.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import type { DragItem, Over } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[]; over: Over | null }>();
+// The folder under the drag: its `data`.
+const folder = computed(() => props.over?.data as Folder | undefined);
+</script>
+
+<template>
+  <!-- Fills the box like any overlay component. -->
+  <div class="pill-box">
+    <span v-if="folder" class="pill">Move {{ items.length }} to {{ folder.name }}</span>
+  </div>
+</template>
+```
+
+Rendez `<slot />` pour garder l'overlay propre au glissement et l'envelopper. C'est ce que fait
+Done dans le tableau des [composants d'overlay](#overlay-components) ci-dessus : au-dessus de
+Done, un ticket approuvé garde son propre overlay, Done le tamponne, et un ticket venu d'une
+autre colonne reçoit des confettis quand il est déposé.
+
+```ts [Column.vue]
+makeSortableList(listRef, {
+  items: tickets,
+  group: { name: 'release', put },
+  overlay: TicketOverlay, // the tickets' own, in every column
+  overOverlay: strict ? DoneOverlay : undefined, // Done's, around it
+});
+```
+
+```vue [DoneOverlay.vue]
+<template>
+  <div class="done">
+    <slot /> <!-- TicketOverlay -->
+    <span class="stamp">Shipped</span>
+    <span v-if="status === 'dropping' && arrives" class="confetti">…</span>
+  </div>
+</template>
+```
+
+- Il ne s'affiche que tant que la cible accepte le glissement, et reste pendant que le dépôt
+atterrit sur elle. Quitter la cible ramène l'overlay propre au glissement.
+- Le changement se fait en fondu enchaîné. L'`overlayTransition` du provider en décide : `false`
+change aussitôt, un objet donne les props d'une `<Transition>` autour du contenu (`name`,
+`mode`, hooks JS pour GSAP ou motion). Sans `mode: 'out-in'`, les deux s'affichent un instant :
+donnez à celui qui part `position: absolute` dans `.<name>-leave-active`.
+- Le dépôt attend les confettis : les animations et transitions CSS qui tournent dans l'overlay
+pendant qu'il atterrit vont jusqu'au bout, pendant deux secondes au plus.
+- Un glissement avec `overlay: false` n'a d'overlay au-dessus d'aucune cible.
+
+Les dossiers font aussi atterrir la pilule à leur façon, dans l'icône du dossier : une cible peut
+aussi avoir une `dropAnimation`. Voir les [animations](https://zizigy.github.io/docs/guides/animations#per-item-and-per-target).
+
+## Où irait le dépôt : `to`
+
+`to` indique à un overlay où un dépôt mettrait les items maintenant, comme le dira le `to` de
+l'événement de dépôt : la liste et l'index dans celle-ci, et dans un arbre le parent et la
+profondeur. Il change à mesure que l'emplacement se déplace. Une page de ce menu de site indique
+dans quelle section elle irait, et à quelle ligne :
+
+<example height="27rem" hint="Faites glisser une page au-dessus des sections, puis sur le côté pour changer sa profondeur" name="overlay-move-path">
+
+
+
+</example>
+
+```vue [MoveOverlay.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import type { DragItem, DropDestination } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[]; to: DropDestination | null }>();
+const page = computed(() => props.items[0]!.item as MenuNode);
+// `parentKey` is the section the page would go into, `null` at the top level.
+const where = computed(() => (props.to ? pathOf(menu.value, props.to.parentKey) : null));
+</script>
+
+<template>
+  <div class="move">
+    <div class="row">{{ page.title }}</div>
+    <p v-if="to && where" class="where">Move to <b>{{ where }}</b>, row {{ to.index + 1 }}</p>
+  </div>
+</template>
+```
+
+En dehors de toute cible, `to` reste la place de l'emplacement : par défaut, un dépôt à cet endroit
+laisse les items là où se trouve l'emplacement (`dropOutside: 'placeholder'`). Il vaut `null`
+quand le dépôt ne les mettrait dans aucune liste : au-dessus d'une cible simple, au-dessus d'une
+liste qui les refuse, à l'extérieur avec `dropOutside: 'cancel'` ou `'remove'`.
+
+## Ce qui l'emporte
+
+Pour chaque glissement, le premier qui s'applique :
+
+1. L'`overlay` de la cible de dépôt (l'`overOverlay` d'une liste ou d'un arbre), tant que le
+glissement la survole et qu'elle l'accepte. Ce qui s'afficherait sinon est son slot par défaut.
+2. L'`overlay` propre à l'item (`makeSortableItem`, `makeDraggable`).
+3. L'`overlay` de sa liste ou de son arbre.
+4. Le slot `#overlay` du provider, sauf s'il ne rend rien.
+5. Le clone par défaut. Dans un multi-drag, une colonne ou une pile de clones : voir le
+[multi-drag](https://zizigy.github.io/docs/guides/multi-drag#the-default-overlay).
+
+Le fait qu'un glissement ait un overlay ou non (`overlay: false`) est décidé à son début. Le
+composant affiché est lu en direct : une ref changée en plein glissement le remplace, tout comme
+le fait d'entrer dans une cible qui a son propre overlay ou d'en sortir.
+
+## `DragPreview` : le clone dans votre mise en page
+
+`DragPreview` rend le clone de la bibliothèque pour un item glissé. Un composant d'overlay peut
+en disposer plusieurs, ou en encadrer un. Cliquez sur des livres pour les choisir, puis faites-en
+glisser un : l'overlay déploie les vrais clones en éventail.
+
+<example height="24rem" hint="Faites glisser l'un des trois livres choisis ; cliquez sur des livres pour en choisir d'autres" name="overlay-fan">
+
+
+
+</example>
+
+```vue [FanOverlay.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import { DragPreview, type DragItem } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[] }>();
+const fan = computed(() =>
+  props.items.slice(0, 4).map((entry, index) => ({
+    entry,
+    angle: index === 0 ? 0 : (index % 2 ? -1 : 1) * Math.ceil(index / 2) * 10,
+  })),
+);
+</script>
+
+<template>
+  <div class="fan">
+    <div v-for="{ entry, angle } in fan" :key="entry.id" class="card" :style="{ transform: `rotate(${angle}deg)` }">
+      <DragPreview :id="entry.id" class="face" :style="{ width: '100%', height: '100%' }">
+        <div class="blank" /> <!-- an item without a clone -->
+      </DragPreview>
+    </div>
+    <span v-if="items.length > 1" class="count">{{ items.length }}</span>
+  </div>
+</template>
+```
+
+- Des clones existent pour l'item saisi et les autres à côté de lui dans l'ordre du dépôt,
+autant que l'indique l'option `overlayPreviews` du provider (5 par défaut, `'all'` pour tous),
+s'ils sont rendus au moment de la saisie. Pour tout autre item, `DragPreview` rend son
+slot par défaut.
+- Un aperçu a la taille de son item au moment de la saisie, posée en ligne. Dimensionnez-le avec
+`style`, qui est transmis (une classe ne peut pas la remplacer), comme ci-dessus.
+- Dans un multi-drag triable (`multiple: 'group'` ou `'gaps'`), chaque aperçu atterrit au dépôt
+sur l'emplacement de son propre item. Faites pivoter ses enveloppes avec `transform` (pas la
+propriété `rotate`) : l'atterrissage l'annule en chemin. Mettez l'apparence de l'item (coins,
+ombre) sur l'aperçu lui-même, comme le fait `class="face"` : les enveloppes restent dans la
+boîte.
+
+Le [guide du multi-drag](https://zizigy.github.io/docs/guides/multi-drag#a-custom-overlay-for-several-items) a un
+overlay qui affiche un compteur et les titres au lieu des clones.
+
+## Taille : `overlayFit`
+
+Au-dessus d'une liste aux tailles différentes, la boîte prend la taille de l'emplacement où elle
+va atterrir. L'`overlayFit` du provider le change ; la [page DnDProvider](https://zizigy.github.io/docs/api/dnd-provider)
+a une démo avec une liste étroite et une liste large.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        overlayFit
+      </code>
+      
+       (provider)
+    </th>
+    
+    <th>
+      La boîte
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'slot'
+      </code>
+      
+       (par défaut)
+    </td>
+    
+    <td>
+      Prend la taille de l'emplacement où elle va atterrir, en s'y ajustant en douceur. Au-dessus de la liste large, elle s'élargit.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'source'
+      </code>
+    </td>
+    
+    <td>
+      Garde la taille de l'élément glissé.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Avec `'slot'`, la boîte se redimensionne autour du pointeur, qui reste à la même fraction de la
+boîte. Le contenu n'est jamais mis à l'échelle : il se remet en page à la nouvelle taille, si
+bien qu'une rangée flex comme les tâches de cette démo a l'air juste à n'importe quelle largeur. Un
+emplacement stylé beaucoup plus petit que l'item, comme une fine ligne, ne rétrécit pas la boîte
+sur cet axe.
+
+Un dépôt fait la même chose avec l'un ou l'autre réglage : la boîte vole jusqu'à l'élément
+d'arrivée et s'anime vers **sa** taille, et le contenu se remet en page en chemin. Quand un item
+a un aspect différent dans deux listes (une puce compacte dans une palette, une carte complète
+sur un tableau), le clone de la source se remet en page à la taille de la cible, et peut y
+paraître écrasé ou étiré. Deux façons de garder un bon rendu :
+
+- Donnez à l'item une **mise en page qui fonctionne aux deux tailles**, comme les lignes de
+tâches, ou la même taille dans chaque liste où il peut atterrir.
+- Rendez l'**aspect de la cible** dans un composant d'overlay. Il reçoit `over` : il peut donc
+prendre l'aspect de la liste qu'il survole, et il remplit la boîte à n'importe quelle taille.
+
+## Où il est rendu : `overlayTo`
+
+Le provider téléporte l'overlay dans `body`. Un `<dialog>` modal (ouvert avec `showModal()`) se
+trouve sur la top layer, au-dessus de tout ce qui est dans `body` : un overlay à cet endroit
+serait donc caché en dessous. Pointez `overlayTo` vers un sélecteur ou un élément à l'intérieur
+du dialog. La [page DnDProvider](https://zizigy.github.io/docs/api/dnd-provider#where-the-overlay-renders) a un dialog
+pour l'essayer avec et sans :
+
+```vue [index.vue]
+<script setup lang="ts">
+const dialog = useTemplateRef<HTMLDialogElement>('dialog');
+const open = ref(false);
+// While the dialog is open, the overlay renders inside it.
+const overlayTo = computed(() => (open.value ? '#columns-dialog' : 'body'));
+
+const show = () => {
+  dialog.value?.showModal();
+  open.value = true;
+};
+</script>
+
+<template>
+  <DnDProvider :overlay-to="overlayTo">
+    <button type="button" @click="show">Edit columns</button>
+    <dialog id="columns-dialog" ref="dialog" @close="open = false">
+      <ColumnList v-model:columns="columns" />
+    </dialog>
+  </DnDProvider>
+</template>
+```
+
+- La cible doit se trouver dans la page quand le provider rend l'overlay, après son montage. Un
+`<dialog>` fermé s'y trouve : il est seulement masqué. Revenez à `body` tant qu'il est fermé,
+pour que l'overlay des autres glissements s'affiche.
+- La boîte est en `position: fixed`. Un `transform`, un `filter` ou un `contain` sur la cible ou
+ses ancêtres en fait le cadre de la boîte au lieu du viewport : évitez-les donc sur le dialog.
+- Les styles du clone sont calculés pour l'endroit où il est affiché : dans un shadow root,
+pointez `overlayTo` à l'intérieur et le clone garde les styles du shadow root.
+
+## Pas d'overlay
+
+`makeDraggable(el, { overlay: false })` n'a pas de boîte du tout : l'élément lui-même se déplace,
+grâce au `transform` renvoyé.
+
+```ts
+const { transform } = makeDraggable(el, { overlay: false });
+const style = computed(() =>
+  transform.value ? { translate: `${transform.value.x}px ${transform.value.y}px` } : undefined,
+);
+```
+
+Voir le [glisser-déposer](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay). La façon dont atterrit
+un glissement avec une boîte dépend de sa `dropAnimation` : celle de la cible de dépôt, celle de
+l'item (ou de sa liste) ou celle du provider. Voir les [animations](https://zizigy.github.io/docs/guides/animations#the-drop).
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

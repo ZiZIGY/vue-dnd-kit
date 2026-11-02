@@ -1,0 +1,628 @@
+---
+title: "アニメーション"
+description: "並べ替え中はアイテムがスライドし、ドロップは枠に着地し、データの変化もアニメーションできます。それぞれを調整し、オーバーレイ・枠・リストを CSS でアニメーションしたり、motion や GSAP を使ったりできます。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/animations"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+自動でアニメーションするものは 3 つあります：並べ替え中にスライドするアイテム、ドロップ時に着地するオーバーレイ、そしてオンにした場合の、ドラッグ以外によるデータの変化です。どれも同じ値を、プロバイダー、またはアニメーションする対象により近い場所で受け取ります。
+
+<table>
+<thead>
+  <tr>
+    <th>
+      オプション
+    </th>
+    
+    <th>
+      指定先
+    </th>
+    
+    <th>
+      デフォルト
+    </th>
+    
+    <th>
+      アニメーションするもの
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        animation
+      </code>
+    </td>
+    
+    <td>
+      プロバイダー、リスト、ツリー
+    </td>
+    
+    <td>
+      オン、200 ms
+    </td>
+    
+    <td>
+      並べ替え中、ドロップ時、キャンセル時に新しい位置へスライドするアイテム。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        dropAnimation
+      </code>
+    </td>
+    
+    <td>
+      プロバイダー、ドラッグ可能な要素、並べ替え可能なアイテム、リスト、ツリー（ドロップターゲットでは <code>
+        overDropAnimation
+      </code>
+      
+      ）
+    </td>
+    
+    <td>
+      オン、250 ms
+    </td>
+    
+    <td>
+      枠へ着地する、またはキャンセル時に元の位置へ戻るオーバーレイ。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        animateChanges
+      </code>
+    </td>
+    
+    <td>
+      プロバイダー、リスト、ツリー
+    </td>
+    
+    <td>
+      <strong>
+        オフ
+      </strong>
+    </td>
+    
+    <td>
+      ドラッグ以外によるデータの変化：追加・削除・移動・フィルターされたアイテム、表示・非表示になるツリーの行。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+それぞれ `true`（デフォルトのタイミング）、`false`（オフ）、`{ duration, easing }`、または自分でアニメーションする関数を受け取ります。
+
+```vue
+<DnDProvider
+  :animation="{ duration: 180, easing: 'cubic-bezier(.2, .8, .2, 1)' }"
+  :drop-animation="{ duration: 300 }"
+  animate-changes
+>
+```
+
+リストやツリー自身の `animation` と `animateChanges` は、プロバイダーのものより優先されます。`dropAnimation` については[アイテムごと、ターゲットごと](#per-item-and-per-target)を参照してください。それ以外の動きはあなた次第です。オーバーレイ、枠、リストは [data 属性と ref](https://zizigy.github.io/docs/guides/styling) を持つ要素なので、CSS やアニメーションライブラリで動かせます。
+
+## 並べ替え
+
+ドラッグ中、リストのドラフトが並べ替わり、アイテムが新しい位置へスライドします。下の手札は、そのリストで両方のオプションを受け取ります：`animation` を選んでカードを並べ替え、`dropAnimation` を選んでカードを離してみましょう。
+
+<example height="24rem" hint="タイミングを選び、カードを並べ替え、1 枚をテーブルの外で離してみましょう" name="anim-sort">
+
+
+
+</example>
+
+```ts [Hand.vue]
+const springy: LayoutAnimation = ({ element, from, to, reducedMotion }) => {
+  if (reducedMotion) return;
+  return element.animate(
+    [{ translate: `${from.left - to.left}px ${from.top - to.top}px` }, { translate: '0 0' }],
+    { duration: 500, easing: 'cubic-bezier(.34, 1.56, .64, 1)' },
+  );
+};
+
+const animation = shallowRef<LayoutAnimation>(true); // true, { duration: 600 }, springy or false
+const dropAnimation = shallowRef<DropAnimation>(true); // true, { duration: 700 }, toss or false
+
+const { items } = makeSortableList(table, {
+  items: cards,
+  strategy: 'horizontal',
+  dropOutside: 'cancel', // let go off the table: the card flies back
+  animation,
+  dropAnimation,
+});
+```
+
+これは CSS の `translate` プロパティに対する FLIP で、Web Animations API を通じて行われます。`translate` はあなたのどんな `transform` とも合成されるので、仮想リストの行の配置は崩れません。アニメーションが終わる前にアイテムが再び動くと、次のアニメーションは表示されている位置から始まります。ドロップ時とキャンセル時も、同じアニメーションでアイテムが動きます。
+
+リストの `animation` は値または ref を受け取り、移動のたびに読み取られます。上のように ref で切り替えられます。ここに渡す関数はゲッターではなく、アニメーションです。
+
+<warning>
+
+並べ替え可能なアイテムを `<TransitionGroup>` で囲まないでください。すべての移動が二重にアニメーションします。ドラッグ以外による変化には [`animateChanges`](#data-changes-animatechanges) をオンにしてください。
+
+</warning>
+
+## ドロップ
+
+ドロップ時、オーバーレイは離した場所からアイテムの枠へ、キャンセル時はアイテムが始まった場所へ飛んでいきます。上の手札で `dropAnimation` を選び、カードをテーブルの外へドラッグして離してみましょう。ドロップはキャンセルされ、カードは元の位置に戻ります。`toss` は独自の関数です。
+
+```ts [Hand.vue]
+/** The overlay arcs to its slot, as if tossed. */
+const toss: DropAnimation = ({ overlay, from, to, reducedMotion }) => {
+  if (reducedMotion) return;
+  // No visible slot to land on: fade out where it is.
+  if (!to) return overlay.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' });
+  const place = (x: number, y: number) => `translate3d(${x}px, ${y}px, 0)`;
+  const rise = Math.min(120, Math.hypot(to.left - from.left, to.top - from.top) / 2);
+  return overlay.animate(
+    [
+      { transform: place(from.left, from.top), width: `${from.width}px`, height: `${from.height}px` },
+      { transform: place((from.left + to.left) / 2, Math.min(from.top, to.top) - rise), offset: 0.45 },
+      { transform: place(to.left, to.top), width: `${to.width}px`, height: `${to.height}px` },
+    ],
+    { duration: 550, easing: 'ease-in-out', fill: 'forwards' },
+  );
+};
+```
+
+手札はこれを自分のリストに渡しています。プロバイダーに渡すと、すべてのドラッグがこれで着地します。
+
+```vue
+<DnDProvider :drop-animation="toss">
+```
+
+- ボックスは位置（`transform`）とサイズ（`width`、`height`）で着地します。中身は枠のサイズで再レイアウトされ、拡大縮小されることはありません。
+- ドロップ後にアイテムの見える枠がない場合（スクロールで見えなくなった、フォルダーやゴミ箱ゾーンにドロップされた）、`to` は `null` です。そのときデフォルトではオーバーレイをフェードアウトさせ、ドロップされたゾーン（`into`）の中へ縮めるか、その場で消します。
+- マルチドラッグでは、ほかのアイテムのクローンはそれぞれの枠に自動で着地します。`dropAnimation` が関数のときは、デフォルトのタイミングを使います。ゾーンへは 1 つずつ順に入り、ボックスはその後に入ります（[ファイルとフォルダー](https://zizigy.github.io/docs/guides/multi-drag#into-a-folder)を参照）。
+- `dropAnimation` はドロップのたびに読み取られます：手札のように ref で次のドロップから切り替えられ、ref にバインドしたプロバイダーの prop でも同じです。
+- 着地中にスクロールしても、行き先がずれることはありません。ボックスは `position: fixed` なので、着地先（枠、ゾーン、なければドロップされたターゲット）に CSS の `translate` で追従し、それがアニメーションの動かす `transform` に重なります。独自のアニメーションでは、上の例のように `translate` ではなく `transform` をアニメーションしてください。
+- 次のドラッグは待ちません：新しいドラッグが実行されている間も、各ドロップはそれぞれ自分のボックスで着地します。着地中のボックスを押すと、飛んでいる途中で捕まえられ、ドラッグはその位置から続きます。ドラッグのオーバーレイが落ち着いたことは `onDragSettle` が知らせます：下のゴミ箱はそのときにふたを閉じます。
+
+オーバーレイはドラッグ中にも着地する枠のサイズを取るので（`overlayFit: 'slot'`、デフォルト）、ドロップでサイズ変更が必要になることはまれです。[オーバーレイ](https://zizigy.github.io/docs/guides/overlay#size-overlayfit)を参照してください。
+
+### アイテムごと、ターゲットごと
+
+プロバイダーの `dropAnimation` がデフォルトです。ドラッグ可能な要素、並べ替え可能なアイテム、リスト（そのアイテム用）は独自のものを持てます。そしてドロップターゲットは、自分に着地するものについて最終的な決定権を持てます：`makeDroppable(el, { overDropAnimation })`、リストやツリーの `overDropAnimation`。各ドロップについて、最初に設定されているものが使われます。
+
+1. ターゲットのもの（キャンセル時はなし）。
+2. ドラッグされたアイテム自身のもの。
+3. そのリストのもの。
+4. プロバイダーのもの。
+
+下では、カート、花瓶、棚がそれぞれ 1 つずつ設定しています。棚は商品を弾むように着地させ、花瓶は独自のゆっくりした着地を持ち、カートは自分にドロップされたものをアイコンの中へ取り込みます：商品は棚に残るので、棚にあるその枠は着地先になりません。棚の下では、各ドラッグの着地に使われたものが点灯します。
+
+<example height="24rem" hint="マグを並べ替え、次に花瓶を並べ替えてから、どちらかをカートにドロップしてみましょう" name="anim-cart">
+
+
+
+</example>
+
+```ts [Shop.vue]
+// 3. The list's, for its items without one of their own.
+makeSortableList(shelf, {
+  items: products,
+  strategy: 'horizontal',
+  dropAnimation: { duration: 450, easing: 'cubic-bezier(.34, 1.56, .64, 1)' },
+});
+```
+
+```ts [Product.vue]
+// 2. The item's own: it wins over its list's.
+makeSortableItem(el, {
+  item: () => props.product,
+  dropAnimation: props.product.fragile ? { duration: 1100, easing: 'ease-in-out' } : undefined,
+});
+```
+
+```ts [Cart.vue]
+// 1. The target's: it wins over both.
+const intoCart: DropAnimation = ({ overlay, from, reducedMotion }) => {
+  const end = icon.value?.getBoundingClientRect();
+  if (!end || reducedMotion) return;
+  // Into the icon, shrinking: the box scales around its top left corner.
+  const scale = end.height / from.height;
+  const animation = overlay.animate(
+    [
+      { transform: `translate3d(${from.left}px, ${from.top}px, 0)` },
+      {
+        transform: `translate3d(${end.left + (end.width - from.width * scale) / 2}px, ${end.top}px, 0) scale(${scale})`,
+        opacity: 0,
+      },
+    ],
+    { duration: 450, easing: 'cubic-bezier(.55, 0, .75, .2)', fill: 'forwards' },
+  );
+  animation.finished.then(() => landed.value++, () => {}); // the icon bounces
+  return animation;
+};
+
+makeDroppable(el, { id: 'cart', overDropAnimation: intoCart, onDrop: … });
+```
+
+`false` も設定済みとみなされます：`overDropAnimation: false` のターゲットは、オーバーレイをドロップされた場所に留めます。関数はターゲットを `over` として受け取るので、1 つの関数でターゲットごとに扱いを変えられます。
+
+### コンテンツ自身の着地
+
+ドロップは、開始時にオーバーレイの中で実行中のアニメーションも待ちます：オーバーレイコンポーネントが `status: 'dropping'` で開始する CSS アニメーションとトランジションです。ゴミ箱の上では写真がくしゃくしゃに丸まり、ドロップされるとゴミ箱に投げ込まれ、入った時点でドロップが終わります。
+
+<example height="27rem" hint="写真をゴミ箱にドラッグしてみましょう。Undo で元に戻せます" name="anim-trash">
+
+
+
+</example>
+
+```ts [TrashBin.vue]
+makeDroppable(el, {
+  id: 'trash',
+  // The overlay reads it as `over.data`: it aims the photo at the bin's mouth.
+  data: () => ({ bin: bin.value }),
+  overOverlay: Crumple,
+  // The box stays where it was let go: its content does the landing.
+  overDropAnimation: false,
+  onDrop: (event) => emit('drop', event), // the gallery calls `event.source?.remove()`
+});
+
+// Its landing is over: the photo is in, the lid shuts.
+useDnDMonitor({
+  onDragSettle: (event) => {
+    if ('dropped' in event && event.over?.id === 'trash') shut.value++;
+  },
+});
+```
+
+```vue [Crumple.vue]
+<template>
+  <div class="crumple">
+    <!-- `fall` is set at the drop: `--dx` and `--dy`, from the photo to the bin in `over.data`. -->
+    <div class="paper" :class="{ falling: fall }" :style="fall">
+      <slot />
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.paper { clip-path: polygon(…); rotate: -8deg; scale: 0.7; }
+.paper.falling { animation: fall 0.55s forwards; }
+@keyframes fall {
+  to { translate: var(--dx) var(--dy); rotate: -120deg; scale: 0.12; opacity: 0; }
+}
+</style>
+```
+
+終了済みのアニメーションと無限ループは数に入らず、ドロップが待つのは最大 2 秒です。
+
+## データの変化：`animateChanges`
+
+タイルをドラッグしてから、シャッフルしたり、追加・削除したりしてみましょう。ドラッグはデフォルトでアニメーションします。ボタンによる変化がアニメーションするのは、グリッドが `animateChanges` をオンにしているからです。
+
+<example height="22.75rem" hint="ドラッグ、シャッフル、追加、削除を試してみましょう" name="animate">
+
+
+
+</example>
+
+```ts
+makeSortableList(listRef, { items: swatches, animateChanges: true });
+```
+
+デフォルトでオフの `animateChanges` は、ドラッグなしで配列を変えるものをアニメーションします：ソート、シャッフル、同じグループのリスト間での移動、アイテムの追加・削除・フィルター。ツリーでは、ノードの展開・折りたたみで表示・非表示になる行も対象です。`<DnDProvider animate-changes>` で、すべてのリストとツリーでオンになります。
+
+その各部分は個別に調整できます。
+
+```ts
+animateChanges: { duration: 250, move: true, enter: true, leave: { duration: 150 } },
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      部分
+    </th>
+    
+    <th>
+      デフォルトの動き
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        move
+      </code>
+    </td>
+    
+    <td>
+      位置が変わったアイテムが、<code>
+        animation
+      </code>
+      
+       と同じようにスライドします。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        enter
+      </code>
+    </td>
+    
+    <td>
+      現れたアイテムがその場でフェードインします。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        leave
+      </code>
+    </td>
+    
+    <td>
+      去ったアイテムのコピーが元の場所で少し縮みながらフェードアウトします。<code>
+        data-dnd-leaving
+      </code>
+      
+       が付き、終わると取り除かれます。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`duration` と `easing` はすべての部分に適用され、各部分は `true`、オプション、`false`、関数を受け取ります。アニメーションするのは表示領域の近くにあるアイテムだけなので、仮想リストがマウントしていない行はスキップされます。このオプションは `items` が変わったときに読み取られるので、デモのトグルのように ref で切り替えられます。
+
+## オーバーレイ：持ち上げ、傾け、落ち着かせる
+
+オーバーレイのボックスは何をしているかを示します：ポインターに追従している間は `data-dnd-overlay="dragging"`、着地中は `"dropping"` です。ボックスを動かし、サイズを設定するのはライブラリです。その中の `data-dnd-overlay-content` が、クローン 1 つでもスタック全体でも、オーバーレイに表示されるものすべてを包んでいて、こちらは自由にアニメーションできます。候補者を持ち上げるとオーバーレイが浮いて傾き、離すと着地しながら平らに戻ります。
+
+<example height="24.5rem" hint="候補者を持ち上げ、Hired へドラッグして離してみましょう" name="anim-container">
+
+
+
+</example>
+
+```vue [index.vue]
+<template>
+  <DnDProvider overlay-class="pipeline-hand">…</DnDProvider>
+</template>
+
+<!-- Not scoped: the overlay's content element is the library's, outside this component. -->
+<style>
+.pipeline-hand {
+  transition:
+    rotate 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+    scale 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+[data-dnd-overlay='dragging'] > .pipeline-hand {
+  rotate: 3deg;
+  scale: 1.05;
+}
+
+/* Where the lift starts: the box appears already `dragging`. */
+@starting-style {
+  [data-dnd-overlay='dragging'] > .pipeline-hand {
+    rotate: 0deg;
+    scale: 1;
+  }
+}
+</style>
+```
+
+- `overlay-class` は、このプロバイダーのオーバーレイコンテンツにクラスを付けます：現在のドラッグのものと、まだ着地中のものです。Tailwind でも使えます（`starting:` が `@starting-style` を書き出します）。
+- トランジションには開始点が必要ですが、ボックスは最初から `dragging` の状態で現れます：`@starting-style` が持ち上げの「前」を与えます。ボックスが `dropping` になるとトランジションが逆向きに再生され、ドロップはその終了を待ちます。
+- 中身もそれ自身のコンポーネントの中で同じようにアニメーションできます：[ボード](https://zizigy.github.io/docs/examples/board)では、手に持ったカードとカラムが持ち上げられると傾きます（`[data-dnd-overlay='dragging'] .column` と `@starting-style`）。キーフレームも使えます：状態の開始から再生されます。
+- **オーバーレイコンポーネント**は `status` を prop として受け取るので、そのトランジションは `status` に追従できます。[プロバイダーのスロットのデモ](https://zizigy.github.io/docs/guides/overlay#the-providers-overlay-slot)のメモは、`status` が `'dropping'` になると `transition: rotate 0.25s` でまっすぐに戻ります。
+- ボックス自体（`[data-dnd-overlay]`）には触れないでください：トランジションを付けるとポインターから遅れますし、その `transform` とサイズはライブラリが書き込みます。
+
+## 枠とリスト
+
+ドラッグされた要素は、着地する**枠**としてリストに残り、`data-dnd-placeholder` が付きます。リストもドラッグについて知っています：受け入れるドラッグが実行中なら `isAccepting`、ドラッグが上にあれば `isOver` です。上のパイプラインでは、候補者を持ち上げるとすべてのレーンが準備状態になり、カードの下のレーンが強調表示され、件数が跳ね、枠が開いて呼吸するように動きます。
+
+```vue [Lane.vue]
+<script setup lang="ts">
+const { items, isOver, isAccepting } = makeSortableList(list, {
+  id: props.lane.id,
+  items: toRef(props.lane, 'people'),
+  group: 'pipeline',
+  dropzone: zone,
+});
+</script>
+
+<template>
+  <section ref="zone" class="lane" :class="{ ready: isAccepting, over: isOver }">
+    <h3>
+      {{ lane.title }}
+      <!-- A new element for every count: its animation plays on each change. -->
+      <span :key="items.length" class="count">{{ items.length }}</span>
+    </h3>
+    <ul ref="list">…</ul>
+  </section>
+</template>
+
+<style scoped>
+.lane { transition: background-color 0.25s, box-shadow 0.25s; }
+.lane.ready { box-shadow: inset 0 0 0 1px color-mix(in srgb, #42b883 35%, transparent); }
+.lane.over { background: color-mix(in srgb, #42b883 8%, transparent); box-shadow: inset 0 0 0 1.5px #42b883; }
+.count { animation: bump 0.3s ease-out; }
+</style>
+```
+
+```css [Candidate.vue]
+/* The slot opens where it appears, then breathes until the card lands. */
+.candidate[data-dnd-placeholder] {
+  animation: open 0.2s ease-out, breathe 1.2s ease-in-out 0.2s infinite;
+}
+```
+
+- `items` はドラフトです。枠がレーンに入った時点で `length` がカードを数に入れるので、ドラッグ中に件数が変わります。
+- 別のリストへ移った枠はそこでは新しい要素なので、キーフレームが再び再生されます。
+- リスト自体も、枠が入ったり出たりするのに合わせて滑らかに大きくなったり小さくなったりし、その周りも同様です（`animateSize`、デフォルトで有効。`false` にすると一気に変わります）。サイズはこれに任せてください：ドラッグ中にリストのサイズを自分で変えると、ポインターの下のターゲットが動いてしまいます。グロー、アウトライン、色、`scale` は安全です。
+
+## 独自のアニメーション
+
+どのオプションも関数を受け取ります。関数はコンテキストを受け取り、アニメーションを開始して、その `Animation`、終了時に確定する Promise、または何も返しません。ドラッグはドロップのアニメーションが終わると終了し、去るアイテムのコピーはそのアニメーションが終わると取り除かれますが、どちらも `options.duration`（ドロップは 250 ms、それ以外は 200 ms）から 1 秒を超えて待つことはありません。
+
+```ts
+// animation, animateChanges.move: an item moved from `from` to `to`
+({ key, element, from, to, options, reason, signal, reducedMotion }) => Animation | Promise | void
+// dropAnimation: `to` is null when there is no visible slot; `into` is the zone it went into
+({ overlay, from, to, into, reason, active, options, reducedMotion }) => …
+// animateChanges.enter: the element is already in place
+({ key, element, to, options, reducedMotion }) => …
+// animateChanges.leave: `element` is a copy where the item was, removed when you finish
+({ key, element, from, options, reducedMotion }) => …
+```
+
+`reason` は理由を示します：移動なら `'drag'` か `'change'`、オーバーレイなら `'drop'` か `'cancel'` です。`options` にはオプションのタイミングが入っているので、関数は隣で設定した `duration` に従えます。
+
+独自のアニメーションをライブラリと同期させるための 3 つのルール：
+
+- `transform` ではなく **translate をアニメーションしてください**。`from - to` から 0 へ動かします。仮想リストや CSS が行に付けた transform と合成でき、ドラッグはそれを除いてアイテムを測定します。
+- **signal に従ってください。** アニメーションが終わる前にアイテムが再び動くと中止されます。アニメーションをすぐに止め、そのスタイルを消してください。直後にレイアウトが測定されます。返した `Animation` は自動でキャンセルされます。
+- **枠への着地は位置とサイズ**（`width`、`height`）で行い、`scale` は使わないでください：オーバーレイの中身は枠のサイズで再レイアウトされます。着地する枠がない場合は、縮めても構いません：デフォルトはオーバーレイをゾーン（`into`）の中へ縮め、上のカートはアイコンの中へ縮めます。
+
+### motion
+
+下のガーランドは [motion](https://motion.dev/docs/vue) で動いています。旗とドロップはプロバイダーの関数を通じてスプリングで動き、オーバーレイコンポーネントはポインターの速度に合わせて揺れます。
+
+<example height="17rem" hint="旗を左右にすばやくドラッグしてから離してみましょう" name="anim-motion">
+
+
+
+</example>
+
+```vue [index.vue]
+<script setup lang="ts">
+import { animate } from 'motion-v';
+import { DnDProvider, type DropAnimationContext, type LayoutAnimationContext } from '@vue-dnd-kit/core';
+
+const spring = { type: 'spring', duration: 0.5, bounce: 0.3 } as const;
+
+const move = ({ element, from, to, signal, reducedMotion }: LayoutAnimationContext) => {
+  if (reducedMotion) return;
+  const controls = animate(element, { translate: [`${from.left - to.left}px ${from.top - to.top}px`, '0px 0px'] }, spring);
+  signal.addEventListener('abort', () => {
+    controls.stop();
+    element.style.translate = '';
+  });
+  return controls.finished;
+};
+
+const drop = ({ overlay, from, to, reducedMotion }: DropAnimationContext) => {
+  if (reducedMotion) return;
+  if (!to) return animate(overlay, { opacity: 0 }, { duration: 0.18 }).finished;
+  return animate(
+    overlay,
+    { x: [from.left, to.left], y: [from.top, to.top], width: [from.width, to.width], height: [from.height, to.height] },
+    spring,
+  ).finished;
+};
+</script>
+
+<template>
+  <DnDProvider :animation="move" :drop-animation="drop">
+    <Garland />
+  </DnDProvider>
+</template>
+```
+
+オーバーレイコンポーネントはプロバイダーの配下で描画されるので、その中で `useDnD()` が使えます。motion value を通じてポインターに追従します。
+
+```vue [FlagOverlay.vue]
+<script setup lang="ts">
+import { motion, useMotionValue, useReducedMotion, useSpring, useTransform, useVelocity } from 'motion-v';
+import { useDnD, type DnDStatus, type DragItem } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[]; status: DnDStatus }>();
+
+const { pointer } = useDnD();
+const x = useMotionValue(pointer.value?.x ?? 0);
+watch(() => pointer.value?.x, (value) => value !== undefined && x.set(value));
+const swing = useSpring(useTransform(useVelocity(x), [-1500, 0, 1500], [-25, 0, 25]), { stiffness: 300, damping: 14 });
+const calm = useReducedMotion();
+</script>
+
+<template>
+  <!-- Held by its top edge: `transform-origin: 50% 0` in its CSS. -->
+  <motion.div
+    class="flag-overlay"
+    :style="{ rotate: calm ? 0 : swing }"
+    :animate="{ scale: status === 'dropping' || calm ? 1 : 1.1 }"
+  >
+    …
+  </motion.div>
+</template>
+```
+
+### GSAP
+
+```ts [gsap-animations.ts]
+import gsap from 'gsap';
+import type {
+  DropAnimationContext,
+  EnterAnimationContext,
+  LayoutAnimationContext,
+  LeaveAnimationContext,
+  Rect,
+} from '@vue-dnd-kit/core';
+
+const move = ({ element, from, to, signal, reducedMotion }: LayoutAnimationContext) => {
+  if (reducedMotion) return;
+  const tween = gsap.fromTo(
+    element,
+    { translate: `${from.left - to.left}px ${from.top - to.top}px` },
+    { translate: '0px 0px', duration: 0.4, ease: 'power3.out' },
+  );
+  signal.addEventListener('abort', () => tween.revert());
+  return tween.then();
+};
+
+const box = (rect: Rect) => ({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
+
+const drop = ({ overlay, from, to, reducedMotion }: DropAnimationContext) => {
+  if (reducedMotion) return;
+  if (!to) return gsap.to(overlay, { opacity: 0, duration: 0.2 }).then();
+  return gsap.fromTo(overlay, box(from), { ...box(to), duration: 0.45, ease: 'back.out(1.2)' }).then();
+};
+
+const enter = ({ element, reducedMotion }: EnterAnimationContext) =>
+  gsap.from(element, reducedMotion ? { opacity: 0, duration: 0.2 } : { opacity: 0, scale: 0.85, duration: 0.35 }).then();
+
+const leave = ({ element, reducedMotion }: LeaveAnimationContext) =>
+  gsap.to(element, reducedMotion ? { opacity: 0, duration: 0.2 } : { opacity: 0, scale: 0.85, duration: 0.25 }).then();
+
+export const gsapAnimations = { animation: move, dropAnimation: drop, animateChanges: { move, enter, leave } };
+```
+
+```vue
+<DnDProvider v-bind="gsapAnimations">
+```
+
+オプションの完全な型は[アニメーション](https://zizigy.github.io/docs/api/animations)にあります。
+
+## モーションの軽減
+
+`prefers-reduced-motion: reduce` では、ライブラリ自身のアニメーションは実行されません。アイテムとオーバーレイはすぐに所定の位置へ移り、オーバーレイが枠のサイズの間を滑らかに変化することもありません。あなたの関数は常に `reducedMotion: true` とともに実行されるので、判断は関数に任されます：動きを省くか、上のレシピのように短いフェードを残すかです。
+
+CSS はあなた自身が対処してください。このページのデモのように、持ち上げ、傾き、脈動は `@media (prefers-reduced-motion: no-preference)` の中に置き、色の変化はその外に置きます。色の変化はドロップ先を伝えるものだからです。
+
+## ライブラリによらないレイアウトの変化
+
+ドラッグ中にほかの何かが行を動かすとき——仮想化ライブラリの再測定、画像の読み込み——変化が描画される直前にリストの `captureLayout()` を呼んでください。現在の位置で行を測定し、次の描画の後で新しい位置へアニメーションします。ドラッグ中でなければ何もしません。[仮想リスト](https://zizigy.github.io/docs/guides/virtual-lists)を参照してください。
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

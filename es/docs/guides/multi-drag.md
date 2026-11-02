@@ -1,0 +1,659 @@
+---
+title: "Multi-drag y selección"
+description: "Selecciona varios ítems con clics o con un rectángulo de selección y arrástralos juntos — como un bloque, dejando huecos o apilados en el overlay —, acepta solo algunos al soltar y muéstralos en un overlay propio."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/es/docs/guides/multi-drag"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+Selecciona unos cuantos archivos y arrastra uno de ellos: los demás lo acompañan. Cambia
+`multiple` para ver qué hacen por el camino, y la disposición para ver el overlay de una
+cuadrícula.
+
+<example height="35rem" hint="Haz clic, Ctrl/Cmd-clic o Mayús-clic en los archivos y arrastra uno; cambia el modo" name="multi-modes">
+
+
+
+</example>
+
+## La selección
+
+Cada provider guarda una selección: un conjunto reactivo de ids. Arrastrar un ítem
+**seleccionado** arrastra todos los ítems seleccionados, empezando por el que se agarró. Arrastrar
+un ítem que no está seleccionado arrastra solo ese ítem.
+
+La biblioteca no decide cómo se selecciona: las reglas de los clics son tuyas. Tampoco vacía
+nunca la selección por su cuenta, y la selección sobrevive a los desmontajes, como los de las
+filas que recicla una lista virtual.
+
+### Clics: Ctrl/Cmd y Mayús
+
+Cada ítem ordenable y cada elemento arrastrable devuelve `selected`, una ref modificable ligada a
+la selección. Vincúlala a una clase, a una casilla (`v-model="selected"`) o cámbiala en un
+manejador de clic:
+
+```vue [FileItem.vue]
+<script setup lang="ts">
+const { selected } = makeSortableItem(el, { item: () => props.file });
+</script>
+
+<template>
+  <li ref="el" class="file" :class="{ selected }" @click="emit('pick', $event)">…</li>
+</template>
+```
+
+La lista de la demo pone las reglas: un clic selecciona un archivo, Ctrl/Cmd-clic añade o quita
+uno, Mayús-clic selecciona el tramo desde el último archivo pulsado:
+
+```ts [Files.vue]
+const { selection } = useDnD();
+let anchor: string | null = null;
+
+const pick = (id: string, event: MouseEvent) => {
+  const ids = items.value.map((file) => file.id);
+  if (event.shiftKey && anchor) {
+    const [a, b] = [ids.indexOf(anchor), ids.indexOf(id)];
+    selection.set(ids.slice(Math.min(a, b), Math.max(a, b) + 1));
+    return;
+  }
+  if (event.ctrlKey || event.metaKey) selection.toggle(id);
+  else selection.set([id]);
+  anchor = id;
+};
+```
+
+El clic que termina un arrastre no llega a `@click`, así que un drop nunca cambia la selección
+por accidente. Usa `@click`, no `pointerup`, para las acciones de los ítems.
+
+### Desde cualquier sitio: `useDnD().selection`
+
+```ts
+import { useDnD, useDnDMonitor } from '@vue-dnd-kit/core';
+
+const { selection } = useDnD();
+
+selection.has('a');               // is it selected?
+selection.add('a', 'b');          // select
+selection.delete('a');            // deselect
+selection.toggle('a');            // flip it, or force it: toggle('a', true)
+selection.set(['a', 'c']);        // exactly these
+selection.clear();
+selection.ids;                    // a reactive ReadonlySet<Key>
+
+// Clear it after every drop, if your UI wants that:
+useDnDMonitor({ onDragEnd: () => selection.clear() });
+```
+
+La selección se indexa por id, así que puede contener ítems de varias listas y también
+elementos arrastrables simples: un arrastre se lleva todos los ítems seleccionados bajo el
+provider.
+
+## Rectángulo de selección
+
+`makeSelectionArea` convierte un elemento en un área donde una pulsación en el espacio vacío
+dibuja un rectángulo, y los ítems que cruza quedan seleccionados. En este escritorio, dibuja un
+rectángulo alrededor de unos iconos y arrastra uno de ellos:
+
+<example height="29rem" hint="Dibuja un rectángulo en el escritorio vacío y arrastra un icono seleccionado" name="multi-select">
+
+
+
+</example>
+
+```vue [Desktop.vue]
+<script setup lang="ts">
+const desktop = useTemplateRef<HTMLElement>('desktop');
+const { isSelecting, style } = makeSelectionArea(desktop);
+</script>
+
+<template>
+  <!-- The area needs a position: the band is placed inside it. -->
+  <div ref="desktop" class="desktop">
+    <DesktopIcon v-for="icon in icons" :key="icon.id" :icon="icon" />
+    <div v-if="isSelecting" class="band" :style="style" />
+  </div>
+</template>
+
+<style scoped>
+.desktop { position: relative; height: 236px; }
+.band { border: 1px solid #42b883; background: color-mix(in srgb, #42b883 15%, transparent); }
+</style>
+```
+
+- El rectángulo lo renderizas tú: `style` lo coloca, relativo al contenido del área.
+- El área necesita una **posición no estática** (`relative` sirve), o el rectángulo acaba en otro
+sitio.
+- Un rectángulo solo empieza desde la propia área, así que hazla grande: todo el panel, con
+espacio alrededor de los ítems, no un envoltorio ajustado.
+- Una pulsación sobre un ítem lo arrastra. Los botones, los campos y la barra de desplazamiento
+del área conservan sus pulsaciones.
+- El rectángulo sigue anclado al contenido mientras el área o la página se desplazan.
+<kbd value="Escape">
+
+
+
+</kbd>
+
+ lo cancela y restaura la selección.
+- `useDnD().status` es `'selecting'` mientras se dibuja un rectángulo: la línea de debajo del
+escritorio lo lee.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Opción
+    </th>
+    
+    <th>
+      Qué hace
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        strategy
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'toggle'
+      </code>
+      
+       (por defecto): los ítems que cruza el rectángulo cambian de estado. <code>
+        'select'
+      </code>
+      
+      : solo los ítems dentro del rectángulo acaban seleccionados, así que un clic en el espacio vacío deselecciona los ítems del área.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        modifier
+      </code>
+    </td>
+    
+    <td>
+      Teclas que hay que mantener para dibujar: <code>
+        { keys: ['Shift'], method: 'every' }
+      </code>
+      
+       (o <code>
+        'some'
+      </code>
+      
+      ).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        accept
+      </code>
+    </td>
+    
+    <td>
+      Qué elementos arrastrables selecciona el rectángulo, una <a href="/docs/guides/drag-and-drop#which-drags-a-target-takes">
+        regla de aceptación
+      </a>
+      
+       comparada con su <code>
+        type
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      Sin rectángulo; activarlo cancela el que esté en curso.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onSelected(ids)
+      </code>
+    </td>
+    
+    <td>
+      Se llama cuando termina un rectángulo, con la selección.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        selection
+      </code>
+    </td>
+    
+    <td>
+      Un <code>
+        Ref<Set<Key>>
+      </code>
+      
+       propio en lugar de la selección del provider.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`strategy`, `modifier` y `disabled` aceptan un valor, una ref o un getter, que se leen cuando una
+pulsación empieza un rectángulo. Con áreas dentro de áreas, la más interior se queda la
+pulsación. La página de la [API de makeSelectionArea](https://zizigy.github.io/docs/api/make-selection-area) las cambia en
+vivo.
+
+### Moverlos tal como están
+
+Los iconos son elementos arrastrables simples (`makeDraggable`), cada uno con su icono como
+`data`. Su overlay es un componente propio de la demo: coloca un `DragPreview` de cada icono
+arrastrado tal como están los iconos en el escritorio, alrededor del agarrado. Los iconos esperan
+en su sitio, atenuados por `isDragging`, que sigue siendo `true` hasta que sus copias han
+aterrizado.
+
+```vue [Formation.vue]
+<script setup lang="ts">
+const props = defineProps<{ items: DragItem[] }>();
+
+const placed = computed(() => {
+  const grabbed = props.items[0]!.data as Icon;
+  return props.items.map(({ id, data }) => {
+    const icon = data as Icon;
+    return { id, left: `${icon.x - grabbed.x}px`, top: `${icon.y - grabbed.y}px` };
+  });
+});
+</script>
+
+<template>
+  <div class="formation">
+    <DragPreview v-for="{ id, left, top } in placed" :id="id" :key="id" class="copy" :style="{ left, top }" />
+  </div>
+</template>
+```
+
+```ts [DesktopIcon.vue]
+const { isDragging, selected } = makeDraggable(el, { id, data: () => props.icon, overlay: Formation });
+```
+
+El escritorio recibe el drop. Su `position` es donde se soltó el icono agarrado, en las
+coordenadas del escritorio: el icono va ahí, y los demás se mueven lo mismo. Luego cada copia
+aterriza sobre su propio icono en su nuevo sitio. Si se sueltan fuera del escritorio, las copias
+vuelven a los iconos.
+
+```ts [Desktop.vue]
+makeDroppable(desktop, {
+  id: 'desktop',
+  onDrop: ({ active, position }) => {
+    const grabbed = icons.value.find((icon) => icon.id === active.id)!;
+    const shift = { x: position!.x - grabbed.x, y: position!.y - grabbed.y };
+    for (const icon of icons.value) {
+      if (!active.ids.includes(icon.id)) continue;
+      icon.x += shift.x; // the demo also keeps each icon on the desktop
+      icon.y += shift.y;
+    }
+  },
+});
+```
+
+Por defecto, al agarrar se toma un clon de 5 ítems como máximo: `overlay-previews="all"` en el
+provider toma uno para cada icono seleccionado.
+
+### Dentro de una carpeta
+
+En esta ventana, el rectángulo selecciona archivos, y las carpetas los aceptan. El overlay es
+el de por defecto: un montón con los archivos elegidos. Al soltarlos en una carpeta, entran uno
+tras otro, el agarrado el último, y la carpeta se los traga. Si se cancela, cada uno vuelve
+volando a su archivo. Haz clic en una carpeta para abrirla, y arrastra archivos de vuelta a Home
+en la ruta.
+
+<example height="33rem" hint="Dibuja un rectángulo alrededor de unos archivos y arrástralos sobre una carpeta" name="multi-finder">
+
+
+
+</example>
+
+```vue [index.vue]
+<!-- Every picked file gets a clone at pickup: they all go in. -->
+<DnDProvider overlay-previews="all">
+  <Finder />
+</DnDProvider>
+```
+
+```ts [FolderTile.vue]
+makeDroppable(el, {
+  id: () => props.folder.id,
+  accept: 'file',
+  onDrop: (event) => emit('move', event.active.ids),
+});
+
+// The files are in: the folder gulps.
+useDnDMonitor({
+  onDragSettle: (event) => {
+    if ('dropped' in event && event.over?.id === props.folder.id) gulps.value++;
+  },
+});
+```
+
+Eso es todo: los archivos salen de la ventana con el drop, así que no tienen otro sitio donde
+aterrizar que la carpeta, y la animación al soltar por defecto mete un multi-drag en una zona
+un ítem tras otro. `overlayPreviews` dice cuántos ítems reciben un clon al agarrar (5 por
+defecto). Todos los clones vuelan: a la zona, a su hueco o de vuelta a su ítem.
+
+La carpeta es un botón: un rectángulo nunca empieza sobre botones ni campos, así que un clic la
+abre.
+
+## Cómo se mueven los demás ítems: `multiple`
+
+La lista donde empieza un multi-drag decide qué hacen los demás ítems seleccionados mientras
+dura. Cámbialo en la primera demo de esta página:
+
+```ts
+makeSortableList(listRef, { items: files, multiple: 'gaps' });
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        multiple
+      </code>
+    </th>
+    
+    <th>
+      Durante el arrastre
+    </th>
+    
+    <th>
+      El overlay
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'group'
+      </code>
+      
+       (por defecto)
+    </td>
+    
+    <td>
+      Los demás ítems dejan su sitio y viajan con el agarrado como un solo bloque de huecos, así que la lista ya muestra el resultado del drop.
+    </td>
+    
+    <td>
+      Una columna de los ítems arrastrados, en el sentido de la lista (hasta <code>
+        overlayPreviews
+      </code>
+      
+      ).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'gaps'
+      </code>
+    </td>
+    
+    <td>
+      Los demás se quedan donde están, marcados con <code>
+        data-dnd-dragging
+      </code>
+      
+      , hasta el drop.
+    </td>
+    
+    <td>
+      La misma columna.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'stack'
+      </code>
+    </td>
+    
+    <td>
+      Los demás vuelan al overlay.
+    </td>
+    
+    <td>
+      El ítem agarrado con un contador.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Al soltar, los ítems aterrizan juntos en el índice de destino, en el orden que tenían. En
+`'group'` y `'gaps'`, cada ítem del overlay vuela a su propio hueco. La opción se lee cuando
+empieza un arrastre, así que una ref o un getter la cambia.
+
+Sobre un destino de drop que no es una lista, como una papelera o una playlist, o sobre una lista
+que rechaza el arrastre, un bloque `'group'` se deshace: cada ítem vuelve a mostrarse en su propio
+sitio, tal como lo dejaría un drop ahí, y el bloque se vuelve a formar en cuanto se pasa por
+encima de una lista.
+
+Da estilo a los ítems que se quedan atrás en `'gaps'`, atenuados por defecto:
+
+```css
+.file[data-dnd-dragging] {
+  opacity: 0.35;
+}
+```
+
+### El overlay por defecto
+
+En `'group'` y `'gaps'`, el overlay es una columna de los ítems arrastrados tal como aterrizarán:
+el agarrado bajo el puntero y los demás antes y después de él en el orden del drop (una fila en
+las listas horizontales). Muestra tantos como indique el `overlayPreviews` del provider (5 por
+defecto, `'all'` para todos los renderizados). Los que pasan de ahí se cuentan donde están: `+N`
+al principio de la columna para los ítems que aterrizan antes de los mostrados, `+N` al final
+para los de después.
+
+En las cuadrículas, una columna de celdas enteras taparía la página, así que el overlay es un
+montón: hasta tres ítems abiertos en abanico detrás del agarrado, con el total encima. Cambia la
+demo a Grid para verlo.
+
+Los elementos arrastrables simples (`makeDraggable`) también forman un montón, como hacen los
+archivos de arriba. Cada clon del overlay aterriza por su cuenta: en su hueco tras un drop en una
+lista, sobre su ítem dondequiera que lo haya dejado el drop (de vuelta en su sitio tras una
+cancelación), y dentro de la zona en la que entra un drop cuando los ítems ya no están en la
+página, uno tras otro, la caja la última.
+
+## Aceptar solo algunos
+
+El `onBeforeDrop` de una lista puede aceptar parte de un multi-drag: devuelve las claves que
+acepta, y los demás vuelven de donde vinieron. Puede ser asíncrono y preguntar: el overlay espera
+donde se soltó hasta que llega la respuesta. Aquí Scheduled quiere publicaciones con portada. Si
+se suelta con una que no la tiene, pregunta si añadir las portadas que faltan y aceptarlas todas,
+aceptar solo las publicaciones listas, o ninguna:
+
+<example height="28.5rem" hint="Arrastra los tres borradores elegidos a Scheduled y luego responde" name="multi-transfer">
+
+
+
+</example>
+
+```ts [PostList.vue]
+const { items } = makeSortableList(list, {
+  id: props.id,
+  items: posts,
+  group: 'blog',
+  onBeforeDrop: async (event) => {
+    const missing = event.items.filter((post) => post.cover === null);
+    if (!props.ask || event.sameList || !missing.length) return true;
+    const choice = await props.ask(missing, event.items.length - missing.length); // the question under the lists
+    if (choice === 'cover') missing.forEach((post) => (post.cover = pickCover()));
+    if (choice === 'ready') return event.keys.filter((_, index) => event.items[index]!.cover !== null);
+    return choice === 'cover'; // all of them, or none: they fly back
+  },
+});
+```
+
+- `event.keys` son las claves arrastradas, y `event.items[i]` es el ítem de `event.keys[i]`.
+- Tras la respuesta, `onDrop` recibe `accepted` y `rejected`, y `event.result` contiene las listas
+tal como las deja el drop parcial.
+- Mientras el drop espera, las listas siguen mostrando cada publicación arrastrada donde
+aterrizaría: la respuesta decide. Para una regla que no necesita pregunta, `group.put` decide
+mientras pasas por encima (consulta [tipos mezclados](#mixed-types) más abajo). Más en
+[decidir un drop](https://zizigy.github.io/docs/guides/drop-decisions).
+
+### Un límite
+
+En este tablero, In progress y Review tienen un límite de tarjetas. Una columna llena no acepta
+nada: su `group.put` lo rechaza, y el montón se vuelve rojo sobre ella. Una columna con espacio
+para algunas de las tarjetas elegidas acepta tantas como quepan, y las demás vuelven a su sitio.
+El overlay de la columna lo dice antes del drop.
+
+<example height="31rem" hint="Marca tres tarjetas en To do y arrastra una sobre Review, luego sobre In progress" name="multi-wip">
+
+
+
+</example>
+
+```ts [WipColumn.vue]
+const room = (keys: Key[]) => limit - column.cards.filter((card) => !keys.includes(card.id)).length;
+
+makeSortableList(list, {
+  items: cards,
+  group: { name: 'board', put: ({ keys, from, to }) => from === to || room(keys) > 0 },
+  multiple: 'stack',
+  overlay: CardPile, // red where `accepted` is false
+  overOverlay: fit,
+  onBeforeDrop: (event) => {
+    if (event.sameList) return true;
+    const free = room(event.keys);
+    return free >= event.keys.length || event.keys.slice(0, free);
+  },
+});
+```
+
+`fit` es una función, que Vue toma como un componente funcional. Le pasa a `FitBadge` lo que
+solo sabe la columna, su espacio libre, y le pasa el montón como slot del badge.
+
+```ts
+const fit: FunctionalComponent<OverlayProps> = (overlay, { slots }) =>
+  h(FitBadge, { count: overlay.items.length, room: room(overlay.items.map((item) => item.id)), limit }, slots);
+```
+
+### Tipos mezclados
+
+Una lista también puede rechazar algunos ítems por su tipo, antes del drop. Con
+`acceptMode: 'some'`, se pregunta a `group.put` por cada ítem por separado: la lista acepta el
+arrastre cuando encaja al menos un ítem, y el resto vuelve a su sitio al soltar. Con `'all'` (el
+valor por defecto), todos los ítems deben encajar.
+
+```ts
+makeSortableList(gallery, {
+  items: photos,
+  group: { name: 'files', put: ({ types }) => types.includes('image') },
+  acceptMode: 'some',
+});
+```
+
+Los destinos de drop simples también aceptan `acceptMode`. Consulta
+[listas que comparten ítems](https://zizigy.github.io/docs/guides/shared-lists#limits) y
+[arrastrar y soltar](https://zizigy.github.io/docs/guides/drag-and-drop#which-drags-a-target-takes).
+
+## Un overlay propio para varios ítems
+
+Los componentes de overlay y el slot `#overlay` del provider reciben `items`: todos los ítems
+arrastrados, empezando por el agarrado. Muestra un resumen en lugar de los propios ítems: aquí un
+contador, el primer asunto y lo que hará el drop.
+
+<example height="26rem" hint="Arrastra los correos marcados a Archive o Trash, o arrastra uno solo" name="multi-summary">
+
+
+
+</example>
+
+```vue [MailOverlay.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import type { DragItem, Over } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[]; over: Over | null }>();
+
+const first = computed(() => props.items[0]?.item as Mail);
+const count = computed(() => props.items.length);
+// What the drop does, from the `data` of the zone under it.
+const zone = computed(() => props.over?.data as { verb: string; danger?: boolean } | undefined);
+const action = computed(() => {
+  const noun = count.value === 1 ? 'conversation' : 'conversations';
+  return `${zone.value?.verb ?? 'Move'} ${count.value} ${noun}`;
+});
+</script>
+
+<template>
+  <!-- The box keeps the row's size; the summary hangs off its middle, by the pointer. -->
+  <div class="box">
+    <div class="summary" :class="{ stack: count > 1, danger: zone?.danger }">
+      <span class="count">{{ count }}</span>
+      <strong>{{ action }}</strong>
+      <small>{{ first.subject }}{{ count > 1 ? ` and ${count - 1} more` : '' }}</small>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.box { position: relative; width: 100%; height: 100%; }
+.summary { position: absolute; top: calc(50% + 10px); left: calc(50% + 10px); width: 230px; }
+</style>
+```
+
+```ts [Mailbox.vue]
+// The box is centered on the pointer, so the summary hangs off the pointer and leaves
+// the zone under it in sight.
+const { items } = makeSortableList(list, { items: mails, overlay: MailOverlay, modifiers: [snapCenterToCursor] });
+
+// A zone takes the mails out of the inbox; its `data` tells the overlay what it does.
+makeDroppable(archive, {
+  id: 'Archive',
+  data: { verb: 'Archive' },
+  onDrop: (event) => {
+    event.source?.remove();
+    selection.clear();
+  },
+});
+```
+
+Para disponer los ítems reales en su lugar, renderiza sus clones con `DragPreview`, como hace el
+[escritorio](#moving-them-as-they-lie) de arriba; la
+[guía del overlay](https://zizigy.github.io/docs/guides/overlay#dragpreview-the-clone-in-your-layout) abre en abanico un
+montón de libros. Los clones se toman al agarrar, para el ítem agarrado y los demás junto a él
+en el orden del drop, tantos como indique `overlayPreviews`; para cualquier otro ítem,
+`DragPreview` renderiza su slot por defecto. Al soltar, cada vista previa aterriza sobre su propio
+ítem.
+
+## Árboles
+
+En un árbol, los nodos seleccionados se mueven como un solo bloque, cada uno con su subárbol, en
+el orden del documento. Un nodo seleccionado dentro de otro seleccionado viaja dentro del
+subárbol de su padre. Consulta [árboles](https://zizigy.github.io/docs/guides/trees).
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

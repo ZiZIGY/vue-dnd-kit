@@ -1,0 +1,969 @@
+---
+title: "传感器与程序化拖拽"
+description: "输入如何变成拖拽——指针和键盘传感器、激活约束、canDrag、自定义传感器，以及用 @vue-dnd-kit/actions 编写脚本驱动的拖拽。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/sensors"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+传感器把输入变成拖拽。它只告诉 provider“从这里拖拽这个项”，然后告诉它输入移动到了哪里，以及是放下了还是取消了。其余的都由 provider 完成，对每个传感器都一样：一次一个拖拽、拒绝禁用的项、激活约束、排序、自动滚动、播报、:kbd{value="Escape"} 以及整个放置过程。
+
+## 内置传感器
+
+<table>
+<thead>
+  <tr>
+    <th>
+      传感器
+    </th>
+    
+    <th>
+      输入
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        pointerSensor
+      </code>
+    </td>
+    
+    <td>
+      通过 Pointer Events 处理鼠标、触摸和触控笔。它会捕获指针，防止页面在触摸拖拽时选中文本或滚动，并吞掉拖拽之后的那次点击。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        keyboardSensor
+      </code>
+    </td>
+    
+    <td>
+      <kbd value="Space">
+        
+      </kbd>
+      
+       和 <kbd value="Enter">
+        
+      </kbd>
+      
+       拿起和放下，方向键移动，:kbd{value="Escape"} 取消——任何拖拽都可以，指针拖拽也一样。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+两者默认都会运行。provider 的 `sensors` 会替换这个列表：
+
+```vue
+<DnDProvider :sensors="[pointerSensor, keyboardSensor, joystick.sensor]">
+```
+
+要关闭键盘拖拽，优先使用 `:keyboard="false"`，而不是去掉 `keyboardSensor`：键盘传感器同时也负责用 <kbd value="Escape">
+
+
+
+</kbd>
+
+ 取消任何拖拽。它的按键可以用 `keyboard.keys` 重新绑定（见[无障碍](https://zizigy.github.io/docs/guides/accessibility#the-keyboard)）。
+
+## 激活约束
+
+按下不会立刻开始拖拽：它会等待激活约束满足，这样点击仍然是点击，滑动仍然可以滚动页面。切换这个列表的规则，然后按住一行：
+
+<example height="34.5rem" hint="按住一行直到圆环闭合，或切换规则" name="activation-modes">
+
+
+
+</example>
+
+约束有三个字段：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      字段
+    </th>
+    
+    <th>
+      拖拽开始于……
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        distance
+      </code>
+    </td>
+    
+    <td>
+      指针移动了这么多 px 之后。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        delay
+      </code>
+    </td>
+    
+    <td>
+      按下持续了这么多 ms 之后。同时设置了 <code>
+        distance
+      </code>
+      
+       时，取先满足的那个。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        tolerance
+      </code>
+    </td>
+    
+    <td>
+      与 <code>
+        delay
+      </code>
+      
+       配合：等待期间指针可以移动多远。超出时按下放弃，让页面可以滚动。没有 <code>
+        distance
+      </code>
+      
+       时默认为 5 px。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+没有自定义约束时，每种指针类型都有自己的默认值：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      指针
+    </th>
+    
+    <th>
+      默认值
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      鼠标
+    </td>
+    
+    <td>
+      移动 4 px 之后。在 <code>
+        handle
+      </code>
+      
+       上按下时立即开始，除非设置了鼠标约束。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      触控笔
+    </td>
+    
+    <td>
+      移动 4 px 之后。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      触摸
+    </td>
+    
+    <td>
+      按下 200 ms 之后。在此之前移动超过 5 px 会放弃，改为滚动页面。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+### 在哪里设置
+
+按指针类型——`mouse`、`touch`、`pen`——设置在 provider、拖拽区域或项上。对于每种类型，项自己的优先，然后是它所在区域的，最后是 provider 的：
+
+```vue
+<DnDProvider :activation="{ mouse: { distance: 8 }, touch: { delay: 250, tolerance: 5 } }">
+```
+
+```ts
+// Inbox.vue: the rules of every drag that starts inside the panel.
+makeDragArea(panel, { activation: () => MODES[mode.value].activation });
+
+// One item: a longer press by touch, the area's rule for the mouse.
+makeSortableItem(el, { item: () => props.task, activation: { touch: { delay: 400, tolerance: 8 } } });
+```
+
+这些选项在按下开始时读取，所以 getter 或 ref 可以实时切换它们，就像演示那样。键盘拖拽立即开始。[自定义传感器](#a-sensor-of-your-own)可以要求它自己的约束，或某种指针类型所配置的约束。
+
+### 长按圆环
+
+按下等待期间，`useDnD().status` 为 `'activating'`，`activation.progress` 从 0 走到 1——使用 `delay` 时按时间，使用 `distance` 时按移动的距离。演示在按下的位置画出一个圆环：
+
+```vue [Inbox.vue]
+<script setup lang="ts">
+const { status, activation } = useDnD();
+</script>
+
+<template>
+  <svg v-if="status === 'activating'" class="ring" viewBox="0 0 40 40">
+    <circle cx="20" cy="20" r="17" pathLength="1" :stroke-dasharray="`${activation.progress.value} 1`" />
+  </svg>
+</template>
+```
+
+给圆环设置 `pointer-events: none`：它位于指针下方，而拖拽要对那里的东西做命中测试。放弃的按下——移动超出了 `tolerance`，或松开得太早——会让 `status` 直接回到 `'idle'`。
+
+### 手柄立即开始
+
+有 `handle` 时，只有手柄能开始拖拽，在它上面按下鼠标会立即开始拖拽：抓住抓手这个动作已经没有需要区分的了。在按下的地方松开仍然是点击，所以抓手可以在 `click` 时打开菜单（指针只在移动后才会被捕获）。触摸仍会等待长按，除非手柄无法滚动页面。给手柄加上 `touch-action: none`，并给项设置一个较短的距离：
+
+```ts [Message.vue]
+makeSortableItem(el, {
+  item: () => props.chat,
+  handle: '.grip',
+  // The grip has `touch-action: none`: a touch on it can't scroll, so it drags after 4 px.
+  activation: { touch: { distance: 4 } },
+});
+```
+
+在项、它所在区域或 provider 上设置的鼠标约束，同样适用于手柄。像演示那样把抓手做成 `<button>`：它能获得焦点，所以键盘拖拽也能从它开始。
+
+## 只允许部分按下
+
+`canDrag` 是可拖拽元素和可排序项上的又一道关卡。它接收输入事件，并针对这次按下回答 `true` 或 `false`。这里指针拖拽需要按住 <kbd value="Shift">
+
+
+
+</kbd>
+
+；键盘照常拖拽：
+
+<example height="28rem" hint="按住和不按 Shift 分别拖动一行；勾选复选框，选择负责人" name="can-drag">
+
+
+
+</example>
+
+```ts [Task.vue]
+makeSortableItem(el, {
+  item: () => props.task,
+  // Never: the row is locked (and says so to screen readers with aria-disabled).
+  disabled: () => !!props.task.locked,
+  // Per press: pointer drags only with Shift held; the keyboard as usual.
+  canDrag: (event) => {
+    if (!props.shiftOnly || event instanceof KeyboardEvent || event.shiftKey) return true;
+    emit('refused');
+    return false;
+  },
+});
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      选项
+    </th>
+    
+    <th>
+      询问时机
+    </th>
+    
+    <th>
+      用途
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      实时，并设置为 <code>
+        aria-disabled
+      </code>
+    </td>
+    
+    <td>
+      完全不能移动的项：被锁定的、只读的。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        canDrag
+      </code>
+    </td>
+    
+    <td>
+      每次按下询问一次，带上它的事件
+    </td>
+    
+    <td>
+      关于输入的规则：按住某个键、某个按钮、某种指针类型。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        handle
+      </code>
+    </td>
+    
+    <td>
+      按下的位置
+    </td>
+    
+    <td>
+      只能从某一部分开始拖拽的项。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`canDrag` 在激活约束之前、随 `pointerdown` 或 `keydown` 被询问。指针类型是它可以制定的又一条规则：
+
+```ts
+// Mouse and pen drag; a touch on the row always scrolls the page.
+canDrag: (event) => !(event instanceof PointerEvent && event.pointerType === 'touch'),
+```
+
+可交互的子元素——按钮、输入框、复选框、可编辑字段——永远不会开始指针拖拽，所以它们在可拖拽元素内部照常工作，就像演示中的复选框和负责人菜单那样。有 `handle` 时，只有手柄能开始拖拽。
+
+## 自定义传感器
+
+游戏手柄、屏幕摇杆、语音命令：任何能指向一个项并移动的东西都可以驱动拖拽。这个游戏手柄就是一个传感器。在一个英雄上方按住 <kbd value="A">
+
+
+
+</kbd>
+
+ 拿起它，用方向键操控，再按 <kbd value="A">
+
+
+
+</kbd>
+
+ 放下，按 <kbd value="B">
+
+
+
+</kbd>
+
+ 取消。鼠标和键盘在它旁边仍然可用：
+
+<example height="30rem" hint="在一个英雄上方按住 A，然后按住一个方向：英雄在列表中移动" name="joystick">
+
+
+
+</example>
+
+`defineSensor` 给传感器一个名称和一个 `setup`，`setup` 接收 provider 一侧的接口，每个 provider 调用一次：
+
+```ts [joystick.ts]
+const sensor = defineSensor({
+  name: 'joystick',
+  // Once per provider, in the browser. The cleanup runs when the provider unmounts.
+  setup(ctx) {
+    context = ctx;
+    return () => {
+      context = null;
+      drag = null;
+    };
+  },
+});
+```
+
+按下时用 `activate()` 向 provider 请求一次拖拽。目标会像真正的按下一样被检查：它必须是此 provider 的可拖拽元素、没有被禁用，并且不是其中的按钮：
+
+```ts [joystick.ts]
+/** A goes down: drops a running drag, or starts a hold over what is under the cursor. */
+const press = () => {
+  if (drag?.state === 'dragging') return void drag.drop();
+  const at = point();
+  const target = document.elementFromPoint(at.x, at.y);
+  if (!target || !context) return;
+  drag = context.activate({
+    target, // checked like a real press: a draggable of this provider, not disabled
+    point: at,
+    type: 'pointer', // follows points: lists sort under it, containers auto-scroll
+    activation: { delay: 300 }, // `useDnD().activation.progress` runs meanwhile
+    onEnd: (ended) => {
+      if (drag === ended) drag = null;
+    },
+  }); // null: nothing to drag there
+};
+```
+
+然后拖拽随方向键移动，A 或 B 结束它：
+
+```ts [joystick.ts]
+const move = (dx: number, dy: number) => {
+  cursor.value = { x: cursor.value.x + dx, y: cursor.value.y + dy }; // clamped in the demo
+  drag?.move(point()); // pending: checks the tolerance; dragging: moves
+};
+
+const release = () => {
+  if (drag?.state === 'pending') drag.cancel(); // A let go before the hold is over
+};
+
+const cancel = () => drag?.cancel();
+```
+
+像演示那样把传感器加到 provider 的 `sensors` 中，或用 `useSensor(joystick.sensor)` 让它在某个组件存续期间运行。点使用视口坐标：演示把它的光标保存在舞台的坐标中，这样光标会随页面滚动，并在 `point()` 中进行转换。
+
+### 传感器能拿到什么
+
+`setup(context)` 接收 provider 一侧的接口：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      成员
+    </th>
+    
+    <th>
+      是什么
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        props
+      </code>
+    </td>
+    
+    <td>
+      provider 的 props（<code>
+        activation
+      </code>
+      
+      、<code>
+        keyboard
+      </code>
+      
+      ……）。在需要时读取：它们可能会变化。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        status
+      </code>
+    </td>
+    
+    <td>
+      provider 的拖拽状态，无论是哪个传感器在运行拖拽。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        drag
+      </code>
+    </td>
+    
+    <td>
+      provider 当前的拖拽，等待中或进行中，无论由哪个传感器启动。没有时为 <code>
+        null
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activate(options)
+      </code>
+    </td>
+    
+    <td>
+      请求一次拖拽。返回 <code>
+        SensorDrag
+      </code>
+      
+      ，不能开始拖拽时返回 <code>
+        null
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        cancel()
+      </code>
+    </td>
+    
+    <td>
+      取消 provider 的拖拽或等待中的按下。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`activate()` 接受：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      选项
+    </th>
+    
+    <th>
+      含义
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        target
+      </code>
+    </td>
+    
+    <td>
+      输入落在哪里：可拖拽元素内部的一个元素，或一个可拖拽元素的 id。元素会像真正的按下一样被检查（手柄、不是可交互的子元素）；id 会跳过这些检查。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        point
+      </code>
+    </td>
+    
+    <td>
+      拖拽开始的位置，使用视口坐标。默认：可拖拽元素的中心。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        type
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'pointer'
+      </code>
+      
+      （默认）：跟随点、对目标做命中测试、自动滚动。<code>
+        'keyboard'
+      </code>
+      
+      ：按项移动、把目标滚动到可见范围、结束时归还焦点。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activation
+      </code>
+    </td>
+    
+    <td>
+      一个约束（<code>
+        { delay: 300 }
+      </code>
+      
+      ），或一种指针类型（<code>
+        'touch'
+      </code>
+      
+      ），以使用为其配置的约束。默认：无，拖拽立即开始。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        event
+      </code>
+    </td>
+    
+    <td>
+      输入事件，会交给项的 <code>
+        canDrag
+      </code>
+      
+      （没有它时不会询问 <code>
+        canDrag
+      </code>
+      
+      ）。触摸的 <code>
+        pointerType
+      </code>
+      
+       会让它成为触摸拖拽（触感反馈）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onStart(drag)
+      </code>
+    </td>
+    
+    <td>
+      拖拽在激活之后开始了。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onEnd(drag)
+      </code>
+    </td>
+    
+    <td>
+      拖拽结束了：被中止、放下或取消——无论由谁触发。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onResume(drag)
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+       返回了 <code>
+        'continue'
+      </code>
+      
+      ：拖拽继续，<code>
+        move
+      </code>
+      
+      、<code>
+        drop
+      </code>
+      
+       和 <code>
+        cancel
+      </code>
+      
+       再次生效。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+它返回的 `SensorDrag`：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      成员
+    </th>
+    
+    <th>
+      作用
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        id
+      </code>
+      
+      、<code>
+        type
+      </code>
+    </td>
+    
+    <td>
+      被拖拽项的 id，以及 <code>
+        'pointer'
+      </code>
+      
+       或 <code>
+        'keyboard'
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        state
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'pending'
+      </code>
+      
+      （等待激活）、<code>
+        'dragging'
+      </code>
+      
+      ，然后是 <code>
+        'ended'
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        started
+      </code>
+    </td>
+    
+    <td>
+      拖拽已经开始，即使之后已经结束。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        move(point)
+      </code>
+    </td>
+    
+    <td>
+      输入移动了。等待期间检查 tolerance；拖拽期间移动拖拽。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        step(direction)
+      </code>
+    </td>
+    
+    <td>
+      键盘拖拽：按一次方向键的步进，<code>
+        'up' | 'down' | 'left' | 'right'
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        place({ list, index })
+      </code>
+    </td>
+    
+    <td>
+      把项放到可排序列表的某个位置，与键盘移动一样。没有列表在那里接收它时，结果为 <code>
+        false
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        drop()
+      </code>
+    </td>
+    
+    <td>
+      放下。放置完成并落位后，结果为 <code>
+        true
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        cancel()
+      </code>
+    </td>
+    
+    <td>
+      取消：项飞回原处，或放弃等待中的按下。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+已不再适用的调用——结束之后的移动、第二次 `drop()`——会被忽略。完整类型：[传感器](https://zizigy.github.io/docs/api/sensors)。
+
+<tip>
+
+要包装一个内置传感器，用你自己的上下文运行它的 `setup`。用 `Object.create(context, { activate: { value: myActivate } })` 创建这个上下文，而不是用展开运算符，这样实时的 getter（`status`、`drag`、`props`）才能继续工作。
+
+</tip>
+
+## 程序化拖拽
+
+`@vue-dnd-kit/actions` 通过代码移动项：“上移”按钮、菜单、键盘快捷键、撤销、新手引导、测试。它基于公开的传感器 API 构建，它的拖拽是真正的拖拽：会被播报、带有动画，经过 `onBeforeDrop`、`onDrop`、`e.result` 和 `preventDefault()`，并遵循 provider 的规则（一次一个拖拽、禁用的项、`accept` 和 `group.put`）。
+
+<example height="31.5rem" hint="悬停在一首曲目上显示箭头，打乱顺序，或播放脚本化的拖拽" name="actions">
+
+
+
+</example>
+
+```bash
+npm i @vue-dnd-kit/actions
+```
+
+### moveItem：一次调用，一次移动
+
+```ts
+import { useDnDActions } from '@vue-dnd-kit/actions';
+
+const { moveItem } = useDnDActions(); // in setup, under a provider
+
+await moveItem('card-1', { index: 0 }); // to the top of its list
+await moveItem('card-1', { list: 'done' }); // to the end of another list
+await moveItem('card-1', { list: 'done', index: 2 }); // to a place in another list
+```
+
+- `list` 是可排序列表的 `id`。不传时，项留在它所在的列表中。
+- `index` 是项最终所在的位置，不把项本身计算在内，并被限制在列表范围内。不传时，项移到末尾。
+- 放置完成时结果为 `true`；项没有被渲染或被禁用、没有列表在那里接收它，或放置被拒绝时为 `false`。
+- 调用会排队：每次调用都会等到 provider 空闲，所以快速的第二次点击不会丢失。演示中的打乱就是连续五次调用。
+- 它以键盘拖拽的方式运行，所以会被播报，焦点也保持在项上。
+- 仅限列表：树中的位置还有深度。
+
+带移动按钮的行见[无障碍](https://zizigy.github.io/docs/guides/accessibility#moving-without-dragging)。
+
+### startDrag：脚本化的拖拽
+
+```ts
+const { startDrag } = useDnDActions();
+
+const drag = startDrag('card-1'); // null when it can't start now
+if (drag) {
+  await drag.moveTo(document.querySelector('#trash')!); // onto an element
+  await drag.moveTo({ x: 400, y: 120 }); // to a point, in viewport coordinates
+  await drag.moveTo({ list: 'done', index: 2 }); // to a list position
+  await drag.drop(); // true when the drop went through; or drag.cancel()
+}
+```
+
+`moveTo` 在移动渲染完成后完成，`drop` 在放置落位后完成。演示中的“Play a scripted drag”用一小步一小步的 `moveTo` 把最后一首曲目滑上去，然后把它放在最顶部。`startDrag(id, { from: { x, y } })` 会从某个点而不是项的中心拿起它。
+
+### 把拖拽交给键盘
+
+`startDrag(id, { type: 'keyboard' })` 以键盘拖拽的方式拿起项。你的代码可以用 `await drag.step('down')` 移动它，也可以把它交给用户：键盘传感器驱动每一个键盘拖拽，无论是谁启动的。这样就能做出一个“移动”菜单项：
+
+<example height="26rem" hint="打开一行的菜单：使用方向键，或把它移到另一周" name="move-menu">
+
+
+
+</example>
+
+```ts [Row.vue]
+const { moveItem, startDrag } = useDnDActions();
+
+// One move in one call: picked up, put there and dropped, announced and animated.
+const toOther = () => moveItem(props.task.id, { list: props.other.id, index: 0 });
+// A keyboard drag, handed to the arrow keys: Space or Enter drops, Escape cancels.
+const withKeys = () => {
+  el.value?.focus();
+  startDrag(props.task.id, { type: 'keyboard' });
+};
+```
+
+方向键按位置移动这一行，:kbd{value="ArrowLeft"} 和 <kbd value="ArrowRight">
+
+
+
+</kbd>
+
+ 把它移到另一周（这两个列表共享一个 `group`）。拖拽结束时，焦点回到这一行。当 `useDnD().active.value?.sensor` 为 `'keyboard'` 时，看板下方的按键提示会高亮。
+
+### 在组件之外
+
+`useDnDActions()` 在上方的 provider 中运行一个名为 `actions` 的传感器。要从 store 或测试工具驱动 provider，或使用你自己的名称，在你自己运行的传感器中创建 actions：
+
+```ts
+import { defineSensor } from '@vue-dnd-kit/core';
+import { createDnDActions, type DnDActions } from '@vue-dnd-kit/actions';
+
+export let tour: DnDActions | undefined;
+export const tourSensor = defineSensor({
+  name: 'tour',
+  setup: (context) => void (tour = createDnDActions(context)),
+});
+```
+
+```vue
+<DnDProvider :sensors="[pointerSensor, keyboardSensor, tourSensor]">
+```
+
+然后就可以在任何地方调用 `await tour?.moveItem('card-1', { list: 'done' })`。在服务端渲染期间不会发生任何拖拽：`moveItem` 的结果为 `false`，`startDrag` 返回 `null`。
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

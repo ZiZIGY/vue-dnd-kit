@@ -1,0 +1,654 @@
+---
+title: "트리"
+description: "makeSortableTree로 만드는 목차, 메뉴, 조직도, 백로그. 깊이와 함께 평평하게 렌더링되고, 옆으로 드래그하거나 행 위에 머물러 중첩하며, 규칙, 접힌 노드, 삽입선, 같은 그룹의 리스트를 지원합니다."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/trees"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+트리는 행에 깊이가 있는 정렬 가능한 리스트입니다. 섹션을 왼쪽이나 오른쪽으로 드래그해 수준을
+바꾸거나, 다른 섹션의 가운데에 잠시 머물러 그 안에 드롭하세요. 번호가 드래그를 따라 바뀝니다.
+
+<example height="45.5rem" hint="섹션을 옆으로 드래그하거나 중첩 방식을 바꿔 보세요" name="tree-outline">
+
+
+
+</example>
+
+## 평평하게 렌더링하기
+
+`makeSortableTree`는 중첩된 데이터를 받아 보이는 노드를 순서대로 각자의 `depth`와 함께 **평평한
+리스트**로 반환합니다. 이 리스트를 렌더링하고 행의 들여쓰기는 직접 하세요. 모든 행이 한 컨테이너
+안의 형제로 남으므로, 행은 리스트의 행처럼 미끄러지고 애니메이션됩니다.
+
+```vue [Outline.vue]
+<script setup lang="ts">
+import { ref, useTemplateRef } from 'vue';
+import { makeSortableTree } from '@vue-dnd-kit/core';
+import Heading from './Heading.vue';
+
+interface Section { id: string; title: string; children?: Section[] }
+
+const outline = ref<Section[]>([
+  { id: 'start', title: 'Getting started', children: [{ id: 'install', title: 'Installation' }] },
+  { id: 'faq', title: 'FAQ' },
+]);
+
+const root = useTemplateRef<HTMLElement>('root');
+const { items, projected } = makeSortableTree(root, {
+  items: outline,     // the root nodes: a writable ref takes every drop
+  indentation: 24,    // px per level: match the rows' indentation
+  maxDepth: 2,
+});
+</script>
+
+<template>
+  <ol ref="root">
+    <Heading v-for="node in items" :key="node.key" :node="node" />
+  </ol>
+</template>
+```
+
+```vue [Heading.vue]
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import { makeSortableItem, type FlatNode } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ node: FlatNode<{ id: string; title: string }> }>();
+const el = useTemplateRef<HTMLElement>('el');
+makeSortableItem(el, { id: () => props.node.key });
+</script>
+
+<template>
+  <li ref="el" :style="{ marginInlineStart: `${node.depth * 24}px` }">{{ node.item.title }}</li>
+</template>
+```
+
+행은 리스트의 행처럼 `makeSortableItem`을 씁니다. 들여쓰기는 padding이 아니라 margin으로
+하세요. 그래야 행 자체가 깊이에 따라 움직입니다. 오버레이는 자리의 너비를 받아 그 수준에
+안착하고, 깊이가 바뀌는 것도 다른 이동처럼 미끄러집니다. padding은 행 안의 내용만 들여쓰므로,
+집을 때 만든 행의 복사본인 오버레이는 드래그를 시작한 수준에 그대로 남습니다. `items`에는
+`FlatNode`가 들어 있습니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        FlatNode
+      </code>
+      
+       필드
+    </th>
+    
+    <th>
+      담고 있는 것
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        key
+      </code>
+    </td>
+    
+    <td>
+      노드의 key(<code>
+        getKey
+      </code>
+      
+      , 기본값 <code>
+        node.id
+      </code>
+      
+      ). <code>
+        :key
+      </code>
+      
+      와 행의 <code>
+        id
+      </code>
+      
+      에 쓰세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        item
+      </code>
+    </td>
+    
+    <td>
+      원본 노드.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        depth
+      </code>
+    </td>
+    
+    <td>
+      루트는 <code>
+        0
+      </code>
+      
+      . 드래그 중인 노드의 깊이는 안착<strong>
+        할
+      </strong>
+      
+       위치이므로, 그 자리는 실시간으로 들여쓰기됩니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        parentKey
+      </code>
+    </td>
+    
+    <td>
+      부모의 key. 루트는 <code>
+        null
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        index
+      </code>
+    </td>
+    
+    <td>
+      형제 사이에서의 인덱스.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        hasChildren
+      </code>
+      
+      , <code>
+        collapsed
+      </code>
+    </td>
+    
+    <td>
+      펼치기 버튼용.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`items`는 초안이므로 여기서 계산한 값은 모두 드래그를 따라갑니다. 데모는 `items`로 섹션 번호를
+매기므로, 옮기는 동안 "2.1"이 "3.1"이 됩니다. `projected`는 드래그 중인 노드가 안착할 위치인
+`{ depth, parentKey }`이며, 노드가 이 트리 위에 없으면 `null`입니다.
+
+자식은 `node.children`에서 읽고 거기에 기록합니다. 형태가 다른 데이터에는 `getChildren`과
+`setChildren`을 쓰세요. 아래의 [조직도](#rules)는 자식을 `members`에 둡니다.
+
+```ts
+makeSortableTree(root, {
+  items: org,
+  getChildren: (member) => member.members,
+  setChildren: (member, members) => { member.members = members; },
+});
+```
+
+## 중첩
+
+드래그는 두 가지 방법으로 깊이를 바꾸며, 둘 다 기본으로 켜져 있습니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        nesting
+      </code>
+    </th>
+    
+    <th>
+      깊이를 정하는 것…
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'offset'
+      </code>
+    </td>
+    
+    <td>
+      옆으로 드래그하기: 왼쪽이나 오른쪽으로 <code>
+        indentation
+      </code>
+      
+       픽셀마다 한 단계씩 올라가거나 내려가며, 자리 주변의 행이 허용하는 만큼까지입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'hover'
+      </code>
+    </td>
+    
+    <td>
+      행 가운데에 드래그를 잠시 머무르기: 드롭이 그 행 안의 첫 번째 자식으로 들어갑니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'both'
+      </code>
+    </td>
+    
+    <td>
+      둘 다. 기본값입니다.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`indentation`을 행이 단계마다 들여쓰는 값(기본값 `24`)으로 맞춰야 자리가 포인터를 따라갑니다.
+데모에서 `40`으로 바꾸고 옆으로 드래그해 보세요. `'hover'`만 쓰면 옆으로 드래그해도 수준은
+그대로이고, 행의 가운데에서만 중첩됩니다. 두 옵션 모두 ref나 getter를 받으며, 다음 드래그부터
+적용됩니다.
+
+`axis: 'y'`(또는 `restrictToVerticalAxis`)를 쓰면 드래그가 옆으로 움직일 수 없지만, 행 위에
+머무르는 방식으로는 여전히 중첩됩니다.
+
+## 규칙
+
+Engineering은 사람과 팀을 받고, Leadership은 잠겨 있으며, 팀 안의 팀보다 깊이 들어갈 수는
+없습니다. 팀을 열고 닫아 보세요. 팀이 보여 주고 숨기는 행이 미끄러지듯 나타나고 사라집니다.
+
+<example height="41rem" hint="팀 사이에서 사람을 옮기세요. Leadership과 세 번째 단계도 시험해 보세요" name="tree-org">
+
+
+
+</example>
+
+```ts [OrgTree.vue]
+const { items } = makeSortableTree(root, {
+  items: org,
+  getChildren: (member) => member.members,
+  setChildren: (member, members) => { member.members = members; },
+  // Only teams take members, and a locked team takes no one.
+  canNest: (_member, team) => team.kind === 'team' && !team.locked,
+  maxDepth: 2,
+  collapsed,
+  animate: true,
+});
+```
+
+```ts [OrgRow.vue]
+// A locked row doesn't drag (and says so with `aria-disabled`).
+makeSortableItem(el, { id: () => props.node.key, disabled: () => !!props.node.item.locked });
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      옵션
+    </th>
+    
+    <th>
+      제한하는 것
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        canNest(node, parent)
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        node
+      </code>
+      
+      가 <code>
+        parent
+      </code>
+      
+       아래로 갈 수 있는지. 멀티 드래그에서는 드래그 중인 노드마다 묻습니다. 루트는 항상 허용됩니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        maxDepth
+      </code>
+    </td>
+    
+    <td>
+      허용되는 가장 깊은 깊이(루트가 <code>
+        0
+      </code>
+      
+      ). 드래그 중인 노드의 자손도 셉니다. 멤버가 있는 팀은 <code>
+        maxDepth - 1
+      </code>
+      
+      보다 깊이 들어가지 못합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      행에 두면 그 행은 드래그되지 않습니다. 트리에 두면 트리에서 드래그하거나 트리로 드롭할 수 없습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        group.put
+      </code>
+    </td>
+    
+    <td>
+      트리가 다른 리스트나 트리의 항목을 아예 받는지.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+    </td>
+    
+    <td>
+      그 밖의 모든 것을 드롭할 때 결정합니다. <a href="/docs/guides/drop-decisions">
+        드롭 결정하기
+      </a>
+      
+      를 참고하세요.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+규칙이 어떤 깊이를 거부하면 자리는 통과하는 가장 깊은 깊이를 택합니다. Noor를 Raj 아래 오른쪽으로
+드래그하면, Leadership은 잠겨 있고 Raj는 사람이므로 자리는 최상위 수준에 머뭅니다. 통과하는 깊이가
+하나도 없는 곳으로는 자리가 움직이지 않습니다. 복사본과 `createItem`으로 만든 노드도 `canNest`와
+`maxDepth`를 따릅니다.
+
+### 접힌 노드
+
+`collapsed`는 자식이 숨겨진 key의 `Set`이며, ref나 getter로 넘깁니다. 그 자식은 `items`에 없고,
+버튼은 `node.collapsed`와 `node.hasChildren`으로 제어합니다.
+
+```ts
+const collapsed = ref(new Set<Key>());
+const toggle = (key: Key) => (collapsed.value.has(key) ? collapsed.value.delete(key) : collapsed.value.add(key));
+```
+
+드래그 중인 노드는 접혀 있든 아니든 하위 트리 전체를 데리고 갑니다. `animate: true`를 쓰면 노드가
+열리고 닫힐 때 보여 주고 숨기는 행이 애니메이션되며 나타나고 사라지고, 드래그가 아닌 데이터 변경도
+마찬가지입니다.
+
+## 삽입선
+
+왼쪽의 템플릿을 메뉴로 드래그하거나 항목을 옮겨 보세요. 메뉴는 그대로 있고, 선이 드롭될 위치를
+안착할 수준부터 보여 줍니다. 페이지나 그룹의 가운데 위에서는 대신 그 행이 강조됩니다.
+
+<example height="31rem" hint="템플릿을 메뉴로 드래그하거나 항목을 옆으로 옮겨 보세요" name="tree-menu">
+
+
+
+</example>
+
+`placeholder: 'indicator'`를 쓰면 드래그하는 동안 트리가 움직이지 않습니다. 각 행이 자기
+`indicator`를 읽어 선을 그립니다.
+
+```vue [MenuRow.vue]
+<script setup lang="ts">
+import { computed, useTemplateRef } from 'vue';
+import { makeSortableItem, type FlatNode } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ node: FlatNode<MenuItem>; indent: number }>();
+const el = useTemplateRef<HTMLElement>('el');
+const { indicator } = makeSortableItem(el, { id: () => props.node.key });
+
+// 'inside': the drop goes into this row. Otherwise a line before or after it.
+const inside = computed(() => indicator.value?.side === 'inside');
+const line = computed(() => {
+  const value = indicator.value;
+  if (!value || value.side === 'inside') return null;
+  // From the level the drop lands at, measured from this row's own level.
+  return { side: value.side, left: `${((value.depth ?? 0) - props.node.depth) * props.indent}px` };
+});
+</script>
+
+<template>
+  <div ref="el" class="item" :class="{ inside }" :style="{ marginLeft: `${node.depth * indent}px` }">
+    {{ node.item.title }}
+    <span v-if="line" class="line" :class="line.side" :style="{ left: line.left }" />
+  </div>
+</template>
+
+<style scoped>
+.item { position: relative; }
+.item.inside { box-shadow: 0 0 0 1.5px #42b883; }
+.line { position: absolute; right: 0; height: 2px; background: #42b883; }
+.line.before { top: -3px; }
+.line.after { bottom: -3px; }
+</style>
+```
+
+트리에서 `indicator`에는 `depth`와 `parentKey`가 추가됩니다. 드롭된 노드가 받을 수준과 부모입니다.
+옆으로 드래그하면 선이 수준 사이를 오가고, 키보드로도 선을 움직일 수 있습니다. 이 모드에서는 트리
+밖에 드롭하면 취소됩니다.
+
+템플릿은 `data`를 가진 일반 draggable(`makeDraggable`)입니다. 트리는 `createItem`으로 이를 선의
+위치와 깊이에 새 노드로 만듭니다.
+
+```ts [MenuTree.vue]
+let created = 0;
+makeSortableTree(root, {
+  items: menu,
+  placeholder: 'indicator',
+  maxDepth: 1,
+  canNest: (_item, parent) => parent.kind !== 'link',
+  createItem: (active) => {
+    const template = active.data as { title: string; kind: MenuItem['kind'] };
+    return { id: `new-${++created}`, title: `New ${template.title.toLowerCase()}`, kind: template.kind };
+  },
+});
+```
+
+메뉴 위의 바는 `items`가 아니라 저장된 데이터인 `menu`를 렌더링하므로, 드롭할 때만 바뀝니다.
+
+## 한 그룹의 트리와 리스트
+
+백로그로 옮긴 스토리는 작업을 눈에 보이지 않게 간직했다가 로드맵으로 다시 가져옵니다. 로드맵에서
+드래그해 나갈 때 <kbd value="Alt">
+
+
+
+</kbd>
+
+를 누르고 있으면 옮기는 대신 복사합니다.
+
+<example height="29.5rem" hint="Saved cards를 백로그로 옮겼다가 되돌려 보세요. Alt를 누르면 복사합니다" name="tree-backlog">
+
+
+
+</example>
+
+같은 `group`의 트리와 리스트는 두 리스트처럼 노드를 주고받습니다. 노드는 어디로 가든 하위 트리를
+간직합니다. 리스트가 그것을 보여 주지 않을 뿐입니다. `makeSortableItem({ item })`은 그 행을 가진
+리스트나 트리 어느 쪽의 key로든 식별되므로, 같은 행 컴포넌트를 양쪽에 쓸 수 있습니다.
+
+복사는 리스트와 똑같이 동작하지만(`clone`, `pull: 'clone'`, 복사 키), `clone`은 **하위 트리 전체를
+포함한** 복사본을 반환해야 하고, 그 안의 모든 노드에 새 key가 필요합니다.
+
+```ts [Roadmap.vue]
+let copies = 0;
+const copy = (work: Work): Work => ({ ...work, id: `${work.id}-copy-${++copies}`, children: work.children?.map(copy) });
+
+makeSortableTree(root, {
+  items: roadmap,
+  group: 'work',
+  canNest: (work, parent) => RANK[parent.kind] < RANK[work.kind],
+  maxDepth: 2,
+  clone: copy,
+});
+```
+
+그룹, 복사, `createItem`은 [항목을 공유하는 리스트](https://zizigy.github.io/docs/guides/shared-lists)를 참고하세요.
+
+## 드롭
+
+트리의 드롭 이벤트는 리스트의 드롭 이벤트에 `from`과 `to`의 `parentKey`가 추가된 것입니다.
+
+```ts
+makeSortableTree(root, {
+  items: outline,
+  onDrop: (e) => {
+    console.log(e.keys, e.from.parentKey, '→', e.to.parentKey, e.to.index);
+  },
+});
+```
+
+`to.index`는 새 형제 사이에서의 위치로, 노드가 이전 자리를 떠난 뒤를 기준으로 셉니다. 드롭하면
+라이브러리가 바뀐 노드에 새 자식을 주고(`setChildren`) 새 루트 배열을 ref에 기록합니다.
+
+`e.result.get(treeId)`는 새 루트 배열로 표현한 새 트리입니다. 바뀐 경로의 노드는 복사본이고,
+변경되지 않은 하위 트리는 공유되며, 원본 노드는 그대로 남습니다. 스토어나 불변 데이터에는 getter를
+넘기고, `e.preventDefault()`를 호출한 뒤 `e.result`를 저장하세요
+([드롭 결정하기](https://zizigy.github.io/docs/guides/drop-decisions#stores-and-servers-controlled-lists) 참고). 복사본은
+`withChildren(node, children)`으로 만들며, 기본값은 새 자식을 가진 `{ ...node }`입니다. 클래스
+인스턴스에는 직접 만든 함수를 넘기세요.
+
+## 키보드와 멀티 드래그
+
+행에 포커스를 두고 <kbd value="Space">
+
+
+
+</kbd>
+
+를 누른 뒤:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      키
+    </th>
+    
+    <th>
+      노드를 옮기는 곳
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <kbd value="ArrowUp">
+        
+      </kbd>
+      
+       / <kbd value="ArrowDown">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      위나 아래 자리로, 한 행씩.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="ArrowRight">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      규칙이 허용하는 경우 한 단계 더 깊이, 위 행의 아래로.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="ArrowLeft">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      한 단계 위로, 부모 밖으로.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="Space">
+        
+      </kbd>
+      
+       / <kbd value="Escape">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      드롭합니다 / 되돌립니다.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+인디케이터 모드에서는 화살표 키가 노드 대신 선을 움직입니다. 트리 옆의 리스트나 템플릿에서 트리
+쪽으로 화살표 키를 누르면, 항목이 트리 안으로 들어가 그 앞에 들어갈 행과 같은 수준에 놓입니다.
+
+선택된 노드는 문서 순서대로, 각자의 하위 트리와 함께 한 블록으로 움직입니다. 다른 선택된 노드 안에
+있는 선택된 노드는 부모의 하위 트리에 실려 함께 갑니다. [멀티 드래그](https://zizigy.github.io/docs/guides/multi-drag)를
+참고하세요.
+
+모든 옵션은 [makeSortableTree API](https://zizigy.github.io/docs/api/make-sortable-tree)에 있습니다. 행이 수천 개인 트리는
+[가상 리스트](https://zizigy.github.io/docs/guides/virtual-lists)를 참고하세요.
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

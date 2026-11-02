@@ -1,0 +1,422 @@
+---
+title: "Virtuelle Listen"
+description: "Sortiere Tausende von Zeilen mit TanStack Virtual oder useVirtualList von VueUse – gib dem Virtualizer den Entwurf, gib Zeilen ihre ID als Schlüssel und halte die gezogene Zeile gemountet."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/de/docs/guides/virtual-lists"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+Sortieren ist datengetrieben: Der Entwurf `items` ist bei jeder Neuordnung ein neues Array, Zeilen
+werden über ihr Element identifiziert, und die Animationen brauchen nur die Zeilen, die gemountet
+sind. Also funktioniert jeder Virtualizer, der aus einem Array rendert – gib ihm den Entwurf statt
+deines Arrays.
+
+<example height="32.5rem" hint="10.000 Zeilen, eine Handvoll im DOM: Ziehe eine oder scrolle beim Ziehen" name="virtual-list">
+
+
+
+</example>
+
+## Die Regeln
+
+1. Gib dem Virtualizer den **Entwurf items**, nicht dein Quell-Array.
+2. **Schlüssel Zeilen über den Schlüssel des Elements**, nie über den Index. Die offiziellen
+Beispiele von TanStack und VueUse nehmen den Index als Schlüssel; ändere das.
+3. Übergib IDs an `makeSortableItem` als **Getter**, `{ id: () => props.item.id }`: Der
+Virtualizer kann einer Zeilenkomponente ein anderes Element geben.
+4. Halte große Arrays in einem **shallowRef**. Die Bibliothek durchläuft deine Daten nie tief.
+5. Halte den Platzhalter so groß wie die Zeile: Verbirg seinen Inhalt, lass ihn nicht
+zusammenfallen.
+6. Rendere mindestens 5 Zeilen über den sichtbaren Bereich hinaus (Overscan; VueUse: mindestens 1),
+damit Zeilen gemountet sind, bevor Auto-Scroll sie erreicht.
+7. Animiere nicht `height`, `margin` oder `padding` der Zeilen und setz kein `will-change` auf den
+Scroller.
+
+## VueUse useVirtualList
+
+Die Demo oben. Jede Zeile hat dieselbe Höhe, und die Rechnung von VueUse bleibt O(1):
+
+```vue [TaskList.vue]
+<script setup lang="ts">
+import { shallowRef, useTemplateRef } from 'vue';
+import { useVirtualList } from '@vueuse/core';
+import { makeSortableList } from '@vue-dnd-kit/core';
+
+const ROW = 44;
+const tasks = shallowRef(makeTasks(10_000));
+
+// The outer element is the sortable list: `containerProps` owns the scroller's ref.
+const listRef = useTemplateRef<HTMLElement>('list');
+const { items } = makeSortableList(listRef, { items: tasks });
+
+// Fed with the draft `items`, so the rows move while you drag.
+const { list, containerProps, wrapperProps } = useVirtualList(items, { itemHeight: ROW, overscan: 8 });
+</script>
+
+<template>
+  <div ref="list">
+    <div v-bind="containerProps" style="height: 308px">
+      <div v-bind="wrapperProps">
+        <!-- Keyed by id, not by index as in VueUse's docs. -->
+        <Row v-for="{ data } in list" :key="data.id" :task="data" :height="ROW" />
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+- `itemHeight` ist die echte Höhe der Zeile, Rahmen eingeschlossen. Setz keine Margins zwischen
+Zeilen: VueUse zählt sie nicht mit.
+- Die sortierbare Liste ist das äußere Element, weil `containerProps` sein eigenes `ref` an den
+Scroller bindet. Auto-Scroll findet den Scroller trotzdem: Es scrollt die Container unter dem
+Zeiger.
+- VueUse kann eine Zeile nicht gemountet halten: Die gezogene Zeile wird unmountet, wenn du sie
+wegscrollst. Das ist in Ordnung, siehe [Was gemountet bleibt](#what-stays-mounted).
+
+## TanStack Virtual
+
+TanStack misst jede Zeile, Zeilen können also so hoch sein wie ihr Inhalt. Es kann außerdem die
+gezogene Zeile gemountet halten, egal wie weit du von ihr wegscrollst:
+
+<example height="34.5rem" hint="Ziehe eine Notiz knapp unter die Liste und halte sie dort: Die gezogene Zeile bleibt angeheftet" name="virtual-tanstack">
+
+
+
+</example>
+
+```vue [NoteList.vue]
+<script setup lang="ts">
+import { computed, shallowRef, useTemplateRef } from 'vue';
+import { defaultRangeExtractor, useVirtualizer, type Range } from '@tanstack/vue-virtual';
+import { makeSortableList } from '@vue-dnd-kit/core';
+
+const notes = shallowRef(makeNotes(5_000));
+
+// The scroller is the sortable list: the library sorts it and auto-scrolls it.
+const scrollRef = useTemplateRef<HTMLElement>('scroll');
+const { items, activeIndex, captureLayout } = makeSortableList(scrollRef, { items: notes });
+
+// One computed that reads the draft once: TanStack memoizes the measurements and the range
+// on `getItemKey` and `rangeExtractor`, so they must be new functions after every reorder.
+const virtualizer = useVirtualizer(
+  computed(() => {
+    const arr = items.value;
+    const pin = activeIndex.value;
+    return {
+      count: arr.length,
+      getScrollElement: () => scrollRef.value,
+      estimateSize: () => 92,
+      overscan: 6,
+      getItemKey: (index: number) => arr[index]!.id,
+      // The dragged row stays mounted, however far you scroll from it.
+      rangeExtractor: (range: Range) => {
+        const indexes = defaultRangeExtractor(range);
+        return pin < 0 || indexes.includes(pin) ? indexes : [...indexes, pin].sort((a, b) => a - b);
+      },
+      // Measurements land after the library's animation pass: animate them too.
+      onChange: () => captureLayout(),
+    };
+  }),
+);
+const rows = computed(() => virtualizer.value.getVirtualItems());
+const measure = (el: unknown) => virtualizer.value.measureElement(el as HTMLElement | null);
+</script>
+
+<template>
+  <div ref="scroll" style="height: 340px; overflow: auto; contain: strict">
+    <div :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
+      <div
+        v-for="row in rows"
+        :key="(row.key as string)"
+        :ref="measure"
+        :data-index="row.index"
+        :style="{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${row.start}px)` }"
+      >
+        <NoteRow :note="items[row.index]!" />
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+Was jedes Teil tut:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Teil
+    </th>
+    
+    <th>
+      Warum
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        count
+      </code>
+      
+       und <code>
+        getItemKey
+      </code>
+      
+       aus <code>
+        items
+      </code>
+    </td>
+    
+    <td>
+      Der Virtualizer rendert den Entwurf, also bewegen sich Zeilen beim Ziehen.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      Ein <code>
+        computed
+      </code>
+      
+       um die Optionen
+    </td>
+    
+    <td>
+      <code>
+        getItemKey
+      </code>
+      
+       und <code>
+        rangeExtractor
+      </code>
+      
+       müssen nach jeder Neuordnung neue Funktionen sein, sonst behält TanStack die alten Messungen und den alten Bereich.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        measureElement
+      </code>
+      
+       mit <code>
+        data-index
+      </code>
+    </td>
+    
+    <td>
+      Jede Zeile wird beim Rendern gemessen: <code>
+        estimateSize
+      </code>
+      
+       ist nur eine erste Schätzung.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        rangeExtractor
+      </code>
+      
+       mit <code>
+        activeIndex
+      </code>
+    </td>
+    
+    <td>
+      Fügt die gezogene Zeile dem gerenderten Bereich hinzu, wenn sie aus ihm herausscrollt. <code>
+        activeIndex
+      </code>
+      
+       ist <code>
+        -1
+      </code>
+      
+      , wenn keine Zeile dieser Liste gezogen wird.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onChange: () => captureLayout()
+      </code>
+    </td>
+    
+    <td>
+      Ein Neumessen verschiebt Zeilen, nachdem die Bibliothek eine Neuordnung animiert hat. <code>
+        captureLayout()
+      </code>
+      
+       animiert auch diese Bewegung. Außerhalb eines Drags tut es nichts.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Wann verlässt die gezogene Zeile den Bereich? Ihr Slot folgt dem Zeiger, solange der Zeiger über
+der Liste ist. Bewege den Zeiger knapp unter die Liste und halte ihn dort: Auto-Scroll läuft
+weiter, der Slot bleibt, wo er war, und bald liegt er weit über den Zeilen auf dem Bildschirm. Das
+Anheften hält ihn gemountet, also landet der Drop auf einem echten Element. Eine Liste mit
+`placeholder: 'indicator'` hält die gezogene Zeile während des ganzen Drags an ihrem Platz, dort
+ist es also noch wichtiger.
+
+- Anheften braucht Zeilen, die einzeln und absolut positioniert sind, wie oben. Ein Virtualizer,
+der einen gepolsterten Block rendert, kann keine weit entfernte Zeile hinzufügen.
+- Die Zeilenkomponente übergibt ihre ID als Getter:
+`makeSortableItem(el, { id: () => props.note.id })`.
+- Behalte bei TanStack `anchorTo: 'start'`, den Standard. Nimm mit `lanes``@tanstack/virtual-core` 3.19 oder neuer (`@tanstack/vue-virtual` installiert es).
+
+## Virtuelle Kanban-Spalten
+
+Jede Spalte ist eine eigene sortierbare Liste mit eigenem Virtualizer, und die Listen teilen sich
+eine `group`. Drei Spalten mit je 1.000 Karten rendern ein paar Dutzend:
+
+<example height="34rem" hint="Verschiebe eine Karte zwischen Spalten mit 1.000 Karten" name="virtual-kanban">
+
+
+
+</example>
+
+Eine Karte, die aus einer anderen Spalte hereinkommt, hat in dieser Spalte noch keine Messung.
+Schätze sie auf die echte Größe der gezogenen Karte, `activeSize`, gelesen im selben Computed:
+
+```ts [Column.vue]
+const { items, activeIndex, activeSize, captureLayout } = makeSortableList(scrollRef, {
+  id: props.column.id,
+  items: props.column.cards, // a shallowRef per column
+  group: 'board',
+});
+
+const virtualizer = useVirtualizer(
+  computed(() => {
+    const arr = items.value;
+    const pin = activeIndex.value;
+    const size = activeSize.value;
+    return {
+      count: arr.length,
+      getScrollElement: () => scrollRef.value,
+      // A card coming from another column gets its real height before it is measured.
+      estimateSize: (index: number) => (index === pin && size ? size.height + GAP : 72),
+      // …getItemKey, rangeExtractor and onChange as above
+    };
+  }),
+);
+```
+
+- Gib jeder Spalte ihre Daten als `shallowRef`: Die Liste schreibt ihre Drops hinein, und 1.000
+Karten bekommen keine tiefen Proxys.
+- `activeSize` ist die Größe des gezogenen Elements zu Beginn des Drags. Rechne hinzu, was dein Slot
+um die Karte legt: Hier ist der Abstand darunter (`GAP`) das Padding des Slots, also misst der
+Virtualizer ihn mit.
+- Die Kopfzeile zählt `items.length`, den Entwurf: Sie ändert sich in dem Moment, in dem eine Karte
+hereinkommt oder geht.
+
+## Was gemountet bleibt
+
+Die gezogene Zeile kann während des Ziehens unmountet werden: Sie ist aus dem Bereich gescrollt,
+oder der Virtualizer hat ihre Komponente recycelt. Der Drag übersteht das. Das Overlay zeigt das
+Element weiter, die Auswahl wird über die ID gehalten, und das Element landet dort, wo der Entwurf
+es hinsetzt. Animationen betreffen nur die Zeilen, die gemountet sind.
+
+Wo der Virtualizer es kann, halte die gezogene Zeile trotzdem gemountet, wie es das
+TanStack-Rezept mit `rangeExtractor` tut. Die Liste sagt dir, welche Zeile das ist:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Von der Liste zurückgegeben
+    </th>
+    
+    <th>
+      Wofür es ist
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        items
+      </code>
+    </td>
+    
+    <td>
+      Der Entwurf: Gib ihn dem Virtualizer.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeIndex
+      </code>
+    </td>
+    
+    <td>
+      Der Index der Zeile, die im Entwurf dieser Liste gemountet bleiben soll, <code>
+        -1
+      </code>
+      
+      , wenn sie nicht hier ist.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeKey
+      </code>
+    </td>
+    
+    <td>
+      Der Schlüssel dieser Zeile, <code>
+        null
+      </code>
+      
+      , wenn sie nicht hier ist.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeSize
+      </code>
+    </td>
+    
+    <td>
+      Die Größe der gezogenen Zeile zu Beginn des Drags: Schätze damit eine hereinkommende Zeile.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        captureLayout()
+      </code>
+    </td>
+    
+    <td>
+      Ruf es direkt vor einer Layoutänderung auf, die nicht von der Bibliothek kommt (ein Neumessen). Es animiert die Zeilen von dort, wo sie waren. Außerhalb eines Drags tut es nichts.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+## Bäume
+
+`makeSortableTree` gibt ein flaches `items` der sichtbaren Zeilen zurück, ein Baum wird also wie
+eine Liste virtualisiert: mit `node.key` als Schlüssel, und `activeIndex` und `activeKey` nennen
+die Zeile, die gemountet bleiben soll. Siehe [Bäume](https://zizigy.github.io/docs/guides/trees).
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

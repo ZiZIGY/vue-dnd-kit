@@ -1,0 +1,642 @@
+---
+title: "멀티 드래그와 선택"
+description: "클릭이나 선택 사각형으로 여러 항목을 선택해 함께 드래그합니다. 한 블록으로, 빈자리를 남기며, 또는 오버레이에 쌓아서 옮기고, 드롭할 때 일부만 받고, 직접 만든 오버레이로 보여 줍니다."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/multi-drag"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+파일 몇 개를 선택한 뒤 그중 하나를 드래그해 보세요. 나머지도 함께 옵니다. `multiple`을 바꾸면
+나머지 항목이 이동 중에 어떻게 움직이는지, 레이아웃을 바꾸면 그리드의 오버레이를 볼 수 있습니다.
+
+<example height="35rem" hint="파일을 클릭, Ctrl/Cmd-클릭, Shift-클릭한 뒤 하나를 드래그하세요. 모드를 바꿔 보세요" name="multi-modes">
+
+
+
+</example>
+
+## 선택
+
+프로바이더마다 선택 하나, 즉 반응형 id 집합을 가집니다. **선택된** 항목을 드래그하면 선택된 모든
+항목이 드래그되며, 집은 항목이 처음입니다. 선택되지 않은 항목을 드래그하면 그 항목만 드래그됩니다.
+
+사람들이 어떻게 선택하는지는 라이브러리가 정하지 않습니다. 클릭 규칙은 직접 정하세요. 라이브러리는
+선택을 스스로 해제하지도 않으며, 가상 리스트가 재활용하는 행처럼 언마운트되어도 선택은 유지됩니다.
+
+### 클릭: Ctrl/Cmd와 Shift
+
+모든 정렬 가능한 항목과 draggable은 선택에 연결된 쓰기 가능한 ref인 `selected`를 반환합니다.
+클래스나 체크박스(`v-model="selected"`)에 바인딩하거나 클릭 핸들러에서 설정하세요.
+
+```vue [FileItem.vue]
+<script setup lang="ts">
+const { selected } = makeSortableItem(el, { item: () => props.file });
+</script>
+
+<template>
+  <li ref="el" class="file" :class="{ selected }" @click="emit('pick', $event)">…</li>
+</template>
+```
+
+데모에서는 리스트가 규칙을 가집니다. 클릭은 파일 하나를 선택하고, Ctrl/Cmd-클릭은 하나를 추가하거나
+빼고, Shift-클릭은 마지막으로 클릭한 파일부터 연속으로 선택합니다.
+
+```ts [Files.vue]
+const { selection } = useDnD();
+let anchor: string | null = null;
+
+const pick = (id: string, event: MouseEvent) => {
+  const ids = items.value.map((file) => file.id);
+  if (event.shiftKey && anchor) {
+    const [a, b] = [ids.indexOf(anchor), ids.indexOf(id)];
+    selection.set(ids.slice(Math.min(a, b), Math.max(a, b) + 1));
+    return;
+  }
+  if (event.ctrlKey || event.metaKey) selection.toggle(id);
+  else selection.set([id]);
+  anchor = id;
+};
+```
+
+드래그를 끝내는 클릭은 `@click`에 전달되지 않으므로, 드롭이 실수로 선택을 바꾸는 일은 없습니다.
+항목 동작에는 `pointerup`이 아니라 `@click`을 쓰세요.
+
+### 어디서든: `useDnD().selection`
+
+```ts
+import { useDnD, useDnDMonitor } from '@vue-dnd-kit/core';
+
+const { selection } = useDnD();
+
+selection.has('a');               // is it selected?
+selection.add('a', 'b');          // select
+selection.delete('a');            // deselect
+selection.toggle('a');            // flip it, or force it: toggle('a', true)
+selection.set(['a', 'c']);        // exactly these
+selection.clear();
+selection.ids;                    // a reactive ReadonlySet<Key>
+
+// Clear it after every drop, if your UI wants that:
+useDnDMonitor({ onDragEnd: () => selection.clear() });
+```
+
+선택은 id로 식별되므로 여러 리스트의 항목과 일반 draggable도 담을 수 있습니다. 드래그는 프로바이더
+아래의 선택된 모든 항목을 가져갑니다.
+
+## 사각형 선택
+
+`makeSelectionArea`는 요소를 영역으로 만들어, 빈 공간을 누르면 선택 사각형이 그려지고 사각형이
+지나는 항목이 선택되게 합니다. 이 바탕화면에서 아이콘 몇 개를 사각형으로 둘러싼 뒤 그중 하나를
+드래그해 보세요.
+
+<example height="29rem" hint="빈 바탕화면에 사각형을 그린 뒤 선택된 아이콘을 드래그하세요" name="multi-select">
+
+
+
+</example>
+
+```vue [Desktop.vue]
+<script setup lang="ts">
+const desktop = useTemplateRef<HTMLElement>('desktop');
+const { isSelecting, style } = makeSelectionArea(desktop);
+</script>
+
+<template>
+  <!-- The area needs a position: the band is placed inside it. -->
+  <div ref="desktop" class="desktop">
+    <DesktopIcon v-for="icon in icons" :key="icon.id" :icon="icon" />
+    <div v-if="isSelecting" class="band" :style="style" />
+  </div>
+</template>
+
+<style scoped>
+.desktop { position: relative; height: 236px; }
+.band { border: 1px solid #42b883; background: color-mix(in srgb, #42b883 15%, transparent); }
+</style>
+```
+
+- 사각형은 직접 렌더링합니다. `style`이 영역의 콘텐츠를 기준으로 위치를 잡습니다.
+- 영역에는 **static이 아닌 position**이 필요합니다(`relative`면 됩니다). 그렇지 않으면 사각형이
+엉뚱한 곳에 그려집니다.
+- 사각형은 영역 자체에서만 시작하므로 영역을 넓게 잡으세요. 항목에 꼭 맞는 래퍼가 아니라, 항목
+주변에 여백이 있는 패널 전체로요.
+- 항목을 누르면 그 항목이 드래그됩니다. 버튼, 입력 필드, 영역의 스크롤바는 자신의 누르기를 그대로
+받습니다.
+- 영역이나 페이지가 스크롤되는 동안에도 사각형은 콘텐츠에 고정됩니다. <kbd value="Escape">
+
+
+
+</kbd>
+
+는
+사각형을 취소하고 선택을 되돌립니다.
+- 사각형을 그리는 동안 `useDnD().status`는 `'selecting'`입니다. 바탕화면 아래의 줄이 이를 읽습니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      옵션
+    </th>
+    
+    <th>
+      하는 일
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        strategy
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'toggle'
+      </code>
+      
+      (기본값): 사각형이 지나는 항목의 선택이 뒤집힙니다. <code>
+        'select'
+      </code>
+      
+      : 사각형 안의 항목만 선택된 상태로 남으므로, 빈 공간을 클릭하면 영역의 항목 선택이 해제됩니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        modifier
+      </code>
+    </td>
+    
+    <td>
+      그리려면 누르고 있어야 하는 키: <code>
+        { keys: ['Shift'], method: 'every' }
+      </code>
+      
+      (또는 <code>
+        'some'
+      </code>
+      
+      ).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        accept
+      </code>
+    </td>
+    
+    <td>
+      사각형이 선택하는 draggable. <code>
+        type
+      </code>
+      
+      과 비교하는 <a href="/docs/guides/drag-and-drop#which-drags-a-target-takes">
+        accept 규칙
+      </a>
+      
+      입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      사각형을 그리지 않습니다. 켜면 그리고 있던 사각형이 취소됩니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onSelected(ids)
+      </code>
+    </td>
+    
+    <td>
+      사각형이 끝날 때 선택과 함께 호출됩니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        selection
+      </code>
+    </td>
+    
+    <td>
+      프로바이더의 선택 대신 쓰는 직접 만든 <code>
+        Ref<Set<Key>>
+      </code>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`strategy`, `modifier`, `disabled`는 값, ref, getter를 받으며, 누르기가 사각형을 시작할 때 읽습니다.
+영역 안에 영역이 있으면 가장 안쪽 영역이 누르기를 받습니다.
+[makeSelectionArea API](https://zizigy.github.io/docs/api/make-selection-area) 페이지에서 이 옵션들을 실시간으로 바꿔 볼 수
+있습니다.
+
+### 놓인 모양 그대로 옮기기
+
+아이콘은 일반 draggable(`makeDraggable`)이며, 각자 자기 아이콘을 `data`로 가집니다. 오버레이는
+데모가 직접 만든 컴포넌트로, 드래그 중인 모든 아이콘의 `DragPreview`를 집은 아이콘을 중심으로
+바탕화면에 놓인 모양 그대로 배치합니다. 아이콘은 제자리에서 기다리며 `isDragging`으로 흐려지고,
+`isDragging`은 복사본이 안착할 때까지 `true`로 남습니다.
+
+```vue [Formation.vue]
+<script setup lang="ts">
+const props = defineProps<{ items: DragItem[] }>();
+
+const placed = computed(() => {
+  const grabbed = props.items[0]!.data as Icon;
+  return props.items.map(({ id, data }) => {
+    const icon = data as Icon;
+    return { id, left: `${icon.x - grabbed.x}px`, top: `${icon.y - grabbed.y}px` };
+  });
+});
+</script>
+
+<template>
+  <div class="formation">
+    <DragPreview v-for="{ id, left, top } in placed" :id="id" :key="id" class="copy" :style="{ left, top }" />
+  </div>
+</template>
+```
+
+```ts [DesktopIcon.vue]
+const { isDragging, selected } = makeDraggable(el, { id, data: () => props.icon, overlay: Formation });
+```
+
+드롭은 바탕화면이 받습니다. `position`은 집은 아이콘을 놓은 위치를 바탕화면 좌표로 나타낸 값입니다.
+그 아이콘은 그곳으로 가고, 나머지도 같은 거리만큼 옮겨집니다. 그다음 각 복사본이 새 자리에 있는 자기
+아이콘 위에 안착합니다. 바탕화면 밖에 놓으면 복사본은 아이콘으로 돌아갑니다.
+
+```ts [Desktop.vue]
+makeDroppable(desktop, {
+  id: 'desktop',
+  onDrop: ({ active, position }) => {
+    const grabbed = icons.value.find((icon) => icon.id === active.id)!;
+    const shift = { x: position!.x - grabbed.x, y: position!.y - grabbed.y };
+    for (const icon of icons.value) {
+      if (!active.ids.includes(icon.id)) continue;
+      icon.x += shift.x; // the demo also keeps each icon on the desktop
+      icon.y += shift.y;
+    }
+  },
+});
+```
+
+집을 때 클론은 기본적으로 최대 5개 항목까지만 만들어집니다. 프로바이더의 `overlay-previews="all"`은
+선택된 모든 아이콘의 클론을 만듭니다.
+
+### 폴더로
+
+이 창에서는 선택 사각형으로 파일을 선택하고, 폴더가 파일을 받습니다. 오버레이는 기본 오버레이,
+즉 고른 파일의 더미입니다. 폴더에 드롭하면 파일이 하나씩 차례로 들어가고 집은 파일이 마지막에
+들어가며, 폴더가 꿀꺽 삼킵니다. 취소하면 각 파일이 자기 파일로 돌아갑니다. 폴더를 클릭하면 열리고,
+경로의 Home으로 파일을 다시 드래그할 수 있습니다.
+
+<example height="33rem" hint="파일 몇 개를 사각형으로 둘러싼 뒤 폴더 위로 드래그하세요" name="multi-finder">
+
+
+
+</example>
+
+```vue [index.vue]
+<!-- Every picked file gets a clone at pickup: they all go in. -->
+<DnDProvider overlay-previews="all">
+  <Finder />
+</DnDProvider>
+```
+
+```ts [FolderTile.vue]
+makeDroppable(el, {
+  id: () => props.folder.id,
+  accept: 'file',
+  onDrop: (event) => emit('move', event.active.ids),
+});
+
+// The files are in: the folder gulps.
+useDnDMonitor({
+  onDragSettle: (event) => {
+    if ('dropped' in event && event.over?.id === props.folder.id) gulps.value++;
+  },
+});
+```
+
+이것이 전부입니다. 파일은 드롭과 함께 창에서 사라지므로 폴더 말고는 안착할 곳이 없고, 기본 드롭
+애니메이션은 멀티 드래그를 영역 안으로 한 항목씩 차례로 보냅니다. `overlayPreviews`는 집을 때 클론을
+받는 항목 수를 정합니다(기본값 5). 모든 클론이 날아갑니다. 영역 안으로, 자기 자리로, 또는 자기
+항목으로 돌아갑니다.
+
+폴더는 버튼입니다. 사각형은 버튼과 입력 필드에서는 시작하지 않으므로, 클릭하면 폴더가 열립니다.
+
+## 나머지 항목의 움직임: `multiple`
+
+멀티 드래그가 시작된 리스트가, 드래그하는 동안 선택된 나머지 항목이 어떻게 움직일지 정합니다. 이
+페이지의 첫 데모에서 바꿔 보세요.
+
+```ts
+makeSortableList(listRef, { items: files, multiple: 'gaps' });
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        multiple
+      </code>
+    </th>
+    
+    <th>
+      드래그하는 동안
+    </th>
+    
+    <th>
+      오버레이
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'group'
+      </code>
+      
+      (기본값)
+    </td>
+    
+    <td>
+      나머지 항목이 자리를 떠나 집은 항목과 함께 하나의 자리 블록으로 이동하므로, 리스트는 이미 드롭 결과를 보여 줍니다.
+    </td>
+    
+    <td>
+      리스트 방향으로 늘어선, 드래그 중인 항목의 열(최대 <code>
+        overlayPreviews
+      </code>
+      
+      개).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'gaps'
+      </code>
+    </td>
+    
+    <td>
+      나머지는 드롭할 때까지 <code>
+        data-dnd-dragging
+      </code>
+      
+      으로 표시된 채 제자리에 남습니다.
+    </td>
+    
+    <td>
+      같은 열.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'stack'
+      </code>
+    </td>
+    
+    <td>
+      나머지는 오버레이 안으로 날아갑니다.
+    </td>
+    
+    <td>
+      개수와 함께 표시된 집은 항목.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+드롭하면 항목들은 원래 순서대로 대상 인덱스에 함께 안착합니다. `'group'`과 `'gaps'`에서는
+오버레이의 각 항목이 자기 자리로 날아갑니다. 이 옵션은 드래그가 시작될 때 읽으므로, ref나 getter로
+바꿀 수 있습니다.
+
+리스트가 아닌 드롭 대상(휴지통이나 플레이리스트 등) 위, 또는 드래그를 거부하는 리스트 위에서는
+`'group'` 블록이 흩어집니다. 그곳에 드롭하면 그렇게 되듯 각 항목이 다시 자기 자리에 보이고, 리스트
+위로 오면 블록이 다시 만들어집니다.
+
+`'gaps'`에서 남겨진 항목은 기본적으로 흐려집니다. 원하는 대로 스타일링하세요.
+
+```css
+.file[data-dnd-dragging] {
+  opacity: 0.35;
+}
+```
+
+### 기본 오버레이
+
+`'group'`과 `'gaps'`에서 오버레이는 드래그 중인 항목이 안착할 모습대로 늘어선 열입니다. 집은 항목이
+포인터 아래에 있고, 나머지는 드롭 순서대로 그 앞뒤에 놓입니다(가로 리스트에서는 행). 프로바이더의
+`overlayPreviews`만큼 보여 줍니다(기본값 5, `'all'`이면 렌더링된 항목 전부). 그보다 많은 항목은
+그 자리에서 셉니다. 보이는 항목보다 앞에 안착하는 항목은
+열의 시작에 `+N`, 뒤에 안착하는 항목은 끝에 `+N`으로 표시됩니다.
+
+그리드에서는 셀 전체로 된 열이 페이지를 덮어 버리므로, 오버레이는 더미 모양입니다. 집은 항목
+뒤로 최대 세 개 항목이 부채꼴로 펼쳐지고, 전체 개수가 맨 위에 표시됩니다. 데모를 Grid로 바꿔 보세요.
+
+일반 draggable(`makeDraggable`)도 위의 파일처럼 더미를 만듭니다. 오버레이의 각 클론은 각자
+안착합니다. 리스트에 드롭하면 자기 자리로, 드롭이 항목을 남겨 둔 곳에 있는 자기 항목으로(취소하면
+원래 자리로), 그리고 항목이 페이지에서 사라지면 드롭이 들어가는 영역으로 하나씩 차례로 들어가며
+박스는 마지막에 들어갑니다.
+
+## 일부만 받기
+
+리스트의 `onBeforeDrop`은 멀티 드래그의 일부만 받을 수 있습니다. 받을 key를 반환하면 나머지는 원래
+있던 곳으로 돌아갑니다. `onBeforeDrop`은 비동기일 수 있고, 사용자에게 물어볼 수도 있습니다. 답이 올
+때까지 오버레이는 놓은 자리에서 기다립니다. 여기서 Scheduled는 커버가 있는 게시물을 원합니다. 커버가
+없는 게시물이 섞인 채 드롭하면, 빠진 커버를 추가해 모두 받을지, 준비된 게시물만 받을지, 아무것도 받지
+않을지 묻습니다.
+
+<example height="28.5rem" hint="골라 둔 초안 세 개를 Scheduled로 드래그한 뒤 답하세요" name="multi-transfer">
+
+
+
+</example>
+
+```ts [PostList.vue]
+const { items } = makeSortableList(list, {
+  id: props.id,
+  items: posts,
+  group: 'blog',
+  onBeforeDrop: async (event) => {
+    const missing = event.items.filter((post) => post.cover === null);
+    if (!props.ask || event.sameList || !missing.length) return true;
+    const choice = await props.ask(missing, event.items.length - missing.length); // the question under the lists
+    if (choice === 'cover') missing.forEach((post) => (post.cover = pickCover()));
+    if (choice === 'ready') return event.keys.filter((_, index) => event.items[index]!.cover !== null);
+    return choice === 'cover'; // all of them, or none: they fly back
+  },
+});
+```
+
+- `event.keys`는 드래그 중인 key이고, `event.items[i]`는 `event.keys[i]`의 항목입니다.
+- 답이 나온 뒤 `onDrop`은 `accepted`와 `rejected`를 받고, `event.result`에는 부분 드롭이 남긴
+리스트가 들어 있습니다.
+- 드롭이 기다리는 동안 리스트는 드래그 중인 모든 게시물을 안착할 자리에 계속 보여 줍니다. 결정은 답이
+합니다. 물어볼 필요가 없는 규칙이라면 `group.put`이 위에 있는 동안 결정합니다(아래
+[섞인 타입](#mixed-types) 참고). 자세한 내용은 [드롭 결정하기](https://zizigy.github.io/docs/guides/drop-decisions)에
+있습니다.
+
+### 한도
+
+이 보드에서는 In progress와 Review에 카드 수 한도가 있습니다. 꽉 찬 컬럼은 아무것도 받지 않습니다.
+그 컬럼의 `group.put`이 거부하고, 그 위에서는 더미가 빨갛게 변합니다. 고른 카드 중 일부를 받을 자리가
+있는 컬럼은 들어가는 만큼만 받고, 나머지는 원래 자리로 돌아갑니다. 그 컬럼의 오버레이가 드롭 전에
+이를 알려 줍니다.
+
+<example height="31rem" hint="To do에서 카드 세 장을 체크하고, 한 장을 Review 위로, 이어서 In progress 위로 드래그하세요" name="multi-wip">
+
+
+
+</example>
+
+```ts [WipColumn.vue]
+const room = (keys: Key[]) => limit - column.cards.filter((card) => !keys.includes(card.id)).length;
+
+makeSortableList(list, {
+  items: cards,
+  group: { name: 'board', put: ({ keys, from, to }) => from === to || room(keys) > 0 },
+  multiple: 'stack',
+  overlay: CardPile, // red where `accepted` is false
+  overOverlay: fit,
+  onBeforeDrop: (event) => {
+    if (event.sameList) return true;
+    const free = room(event.keys);
+    return free >= event.keys.length || event.keys.slice(0, free);
+  },
+});
+```
+
+`fit`은 함수이며, Vue는 함수를 함수형 컴포넌트로 받아들입니다. `fit`은 컬럼만 아는 정보인 남은
+자리를 `FitBadge`에 넘기고, 더미는 배지의 슬롯으로 그대로 넘겨 줍니다.
+
+```ts
+const fit: FunctionalComponent<OverlayProps> = (overlay, { slots }) =>
+  h(FitBadge, { count: overlay.items.length, room: room(overlay.items.map((item) => item.id)), limit }, slots);
+```
+
+### 섞인 타입
+
+리스트는 드롭 전에 타입으로 일부 항목을 거부할 수도 있습니다. `acceptMode: 'some'`이면 `group.put`을
+항목마다 따로 묻습니다. 하나라도 맞으면 리스트가 드래그를 받고, 나머지는 드롭할 때 원래 자리로
+돌아갑니다. `'all'`(기본값)이면 모든 항목이 맞아야 합니다.
+
+```ts
+makeSortableList(gallery, {
+  items: photos,
+  group: { name: 'files', put: ({ types }) => types.includes('image') },
+  acceptMode: 'some',
+});
+```
+
+일반 드롭 대상도 `acceptMode`를 받습니다.
+[항목을 공유하는 리스트](https://zizigy.github.io/docs/guides/shared-lists#limits)와
+[드래그 앤 드롭](https://zizigy.github.io/docs/guides/drag-and-drop#which-drags-a-target-takes)을 참고하세요.
+
+## 여러 항목을 위한 커스텀 오버레이
+
+오버레이 컴포넌트와 프로바이더의 `#overlay` 슬롯은 `items`, 즉 드래그 중인 모든 항목을 받으며,
+집은 항목이 처음입니다. 항목 자체 대신 요약을 보여 주세요. 여기서는 개수, 첫 번째 제목, 드롭했을 때
+일어날 일입니다.
+
+<example height="26rem" hint="체크한 메일을 Archive나 Trash로 드래그하거나, 하나만 드래그해 보세요" name="multi-summary">
+
+
+
+</example>
+
+```vue [MailOverlay.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import type { DragItem, Over } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[]; over: Over | null }>();
+
+const first = computed(() => props.items[0]?.item as Mail);
+const count = computed(() => props.items.length);
+// What the drop does, from the `data` of the zone under it.
+const zone = computed(() => props.over?.data as { verb: string; danger?: boolean } | undefined);
+const action = computed(() => {
+  const noun = count.value === 1 ? 'conversation' : 'conversations';
+  return `${zone.value?.verb ?? 'Move'} ${count.value} ${noun}`;
+});
+</script>
+
+<template>
+  <!-- The box keeps the row's size; the summary hangs off its middle, by the pointer. -->
+  <div class="box">
+    <div class="summary" :class="{ stack: count > 1, danger: zone?.danger }">
+      <span class="count">{{ count }}</span>
+      <strong>{{ action }}</strong>
+      <small>{{ first.subject }}{{ count > 1 ? ` and ${count - 1} more` : '' }}</small>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.box { position: relative; width: 100%; height: 100%; }
+.summary { position: absolute; top: calc(50% + 10px); left: calc(50% + 10px); width: 230px; }
+</style>
+```
+
+```ts [Mailbox.vue]
+// The box is centered on the pointer, so the summary hangs off the pointer and leaves
+// the zone under it in sight.
+const { items } = makeSortableList(list, { items: mails, overlay: MailOverlay, modifiers: [snapCenterToCursor] });
+
+// A zone takes the mails out of the inbox; its `data` tells the overlay what it does.
+makeDroppable(archive, {
+  id: 'Archive',
+  data: { verb: 'Archive' },
+  onDrop: (event) => {
+    event.source?.remove();
+    selection.clear();
+  },
+});
+```
+
+실제 항목을 배치하려면 위의 [바탕화면](#moving-them-as-they-lie)처럼 `DragPreview`로 클론을
+렌더링하세요. [오버레이 가이드](https://zizigy.github.io/docs/guides/overlay#dragpreview-the-clone-in-your-layout)에서는 책
+더미를 부채꼴로 펼칩니다. 클론은 집을 때 집은 항목과, 드롭 순서상 그 옆의 다른 항목들에 대해
+`overlayPreviews`만큼 만들어집니다. 그 밖의 항목에는 `DragPreview`가 기본 슬롯을 렌더링합니다.
+드롭할 때 각 미리보기는 자기 항목 위에 안착합니다.
+
+## 트리
+
+트리에서는 선택된 노드가 문서 순서대로, 각자의 하위 트리와 함께 한 블록으로 움직입니다. 다른
+선택된 노드 안에 있는 선택된 노드는 부모의 하위 트리에 실려 함께 갑니다. [트리](https://zizigy.github.io/docs/guides/trees)를
+참고하세요.
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

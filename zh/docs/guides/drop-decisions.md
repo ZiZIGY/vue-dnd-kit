@@ -1,0 +1,572 @@
+---
+title: "决定放置"
+description: "接受、拒绝或推迟一次放置——拖拽中或松开时的规则、多项拖拽的一部分、对话框、必须先同意的服务器、行使否决权的监听器，以及放到所有目标之外的情况。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/drop-decisions"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+把一张卡片拖进 **Done**。放置会等待你的回答：移动卡片、继续把它拖到别处，或取消。
+
+<example height="25rem" hint="把一张卡片拖进 Done" name="drop-confirm">
+
+
+
+</example>
+
+## onBeforeDrop
+
+```ts
+makeSortableList(listRef, {
+  items: tasks,
+  onBeforeDrop: (e) => (e.items.some((task) => task.locked) ? 'reject' : 'accept'),
+});
+```
+
+列表、树、放置目标（`makeDroppable`）和监听器（`useDnDMonitor`）都接受 `onBeforeDrop`。它在拖拽被松开时、任何东西改变之前运行，它的返回值决定结果：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      返回值
+    </th>
+    
+    <th>
+      结果
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'accept'
+      </code>
+      
+      、<code>
+        true
+      </code>
+      
+       或不返回
+    </td>
+    
+    <td>
+      放置完成。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'reject'
+      </code>
+      
+       或 <code>
+        false
+      </code>
+    </td>
+    
+    <td>
+      不放置：项飞回原处。抛出错误也会拒绝。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      key 数组
+    </td>
+    
+    <td>
+      只有这些项被放置；其余的飞回原处。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'continue'
+      </code>
+    </td>
+    
+    <td>
+      不放置，拖拽继续。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      以上任意值的 promise
+    </td>
+    
+    <td>
+      浮层在松开的地方等待，直到 promise 完成。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+列表和树传入 `SortableDropEvent`：`keys`、`items`、`from`、`to`、`mode`、`sameList` 和 `result`，即这次放置所改变的每个列表的新数组。放置目标和监听器收到通用的 `DnDEvent`：`active`、`over`、`position` 和 `source`。见[事件](https://zizigy.github.io/docs/api/events)。
+
+## 拖拽中的规则，或松开时的规则
+
+Email 和 Chat 都只接收不超过 10 MB 的附件。把 **demo.mov** 分别拖到两者上方：Email 在悬停时就拒绝它，Chat 接收它，但在你松开时把它送回去。
+
+<example height="27rem" hint="把一个超过 10 MB 的文件分别拖进每个地方" name="drop-rules">
+
+
+
+</example>
+
+```ts [Column.vue]
+// Asked while dragging: a refused drag never enters the list.
+group: { name: 'attachments', put: ({ items }) => fits(items as Attachment[]) },
+
+// Asked on release: the drag enters the list, then flies back.
+onBeforeDrop: (e) => (fits(e.items) ? 'accept' : 'reject'),
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      
+    </th>
+    
+    <th>
+      <code>
+        group.put
+      </code>
+      
+      （或目标的 <code>
+        accept
+      </code>
+      
+      ）
+    </th>
+    
+    <th>
+      <code>
+        onBeforeDrop
+      </code>
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      询问时机
+    </td>
+    
+    <td>
+      拖拽中，拖拽一到达列表就询问。
+    </td>
+    
+    <td>
+      拖拽被松开时，询问一次。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      用户看到
+    </td>
+    
+    <td>
+      列表立即拒绝：不会打开空位，<code>
+        isAccepting
+      </code>
+      
+       为 <code>
+        false
+      </code>
+      
+      ，<code>
+        over.accepted
+      </code>
+      
+       为 <code>
+        false
+      </code>
+      
+      。
+    </td>
+    
+    <td>
+      空位照常打开；松开时项飞回原处。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      知道什么
+    </td>
+    
+    <td>
+      拖拽的是什么：<code>
+        keys
+      </code>
+      
+      、<code>
+        items
+      </code>
+      
+      、<code>
+        types
+      </code>
+      
+      、<code>
+        from
+      </code>
+      
+      、<code>
+        to
+      </code>
+      
+      。
+    </td>
+    
+    <td>
+      整个放置：<code>
+        to.index
+      </code>
+      
+      、<code>
+        sameList
+      </code>
+      
+      、<code>
+        mode
+      </code>
+      
+      、<code>
+        result
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      能做什么
+    </td>
+    
+    <td>
+      回答是或否。
+    </td>
+    
+    <td>
+      等待 promise、接受部分 key、让拖拽继续。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+仅凭项本身就能知道的规则（类型、标记、数量）用 `group.put`：用户在松开之前就能知道结果。取决于位置、用户的回答或服务器回答的规则用 `onBeforeDrop`。目标自己的规则优先：在拒绝该拖拽的列表或目标上方，放置会被取消，它的 `onBeforeDrop` 不会被询问。
+
+### 接受部分项
+
+有些规则只能在松开时向服务器核实。这个工作坊的名额也会被其他人预订：松开时，列表向服务器询问还剩多少名额，然后从拖进来的人中接受相应的人数。勾选几个人，把他们一起拖进去。
+
+<example height="28.5rem" hint="勾选三个人，把其中一个拖进工作坊" name="drop-partial">
+
+
+
+</example>
+
+```ts [Column.vue]
+makeSortableList(list, {
+  items: toRef(props.column, 'people'),
+  group: 'workshop',
+  // Some keys: those land, the others fly back to where they came from.
+  onBeforeDrop: async (e) => {
+    const { free } = await seatsLeft(props.column.people.length); // the overlay waits
+    return e.keys.slice(0, free);
+  },
+  onDrop: (e) => {
+    selection.delete(...e.accepted); // the ones sent back stay selected
+    notice.value = `${e.accepted.length} booked, ${e.rejected.length} back to the waiting list`;
+  },
+});
+```
+
+在[多项拖拽](https://zizigy.github.io/docs/guides/multi-drag)中，你返回的 key 对应的项一起落位，其余的飞回原位。随后 `onDrop` 在 `e.accepted` 和 `e.rejected` 中看到它们，它的 `e.result` 就是最终结果。空数组表示什么都不接受：放置被拒绝。
+
+## 继续拖拽：'continue'
+
+`'continue'` 取消的是放置，而不是拖拽。在上面的对话框中选择 **Keep dragging**：项从它所在的位置继续留在手中，页面回到拖拽模式，用户可以接着拖。
+
+- 使用鼠标或触控笔时，项在不按住按键的情况下跟随指针。下一次松开——也就是一次点击——会放下它，这次点击永远不会传到下方的页面。
+- 使用触摸时，手指落下的地方会重新拿起项；抬起手指就放下它。
+- 键盘拖拽继续进行：方向键移动项，:kbd{value="Space"} 或 <kbd value="Enter">
+
+
+
+</kbd>
+
+ 放下它。
+- <kbd value="Escape">
+
+
+
+</kbd>
+
+ 取消它，与任何拖拽一样。
+- 下一次放置会再次询问 `onBeforeDrop`。
+
+监听器会收到 `onDragResume`，屏幕阅读器会播报项没有被放下、仍在移动（用 provider 的 `announcements.onDragResume` 覆盖该文本）。
+
+```ts
+useDnDMonitor({
+  onDragResume() {
+    hint.value = 'Still dragging: click to drop, Esc to cancel';
+  },
+});
+```
+
+## 询问用户
+
+`onBeforeDrop` 可以返回 promise。打开一个对话框，用用户选择的按钮来完成 promise：
+
+```ts [Column.vue]
+const { items } = makeSortableList(list, {
+  id: props.column.id,
+  items: toRef(props.column, 'tasks'),
+  group: 'release',
+  onBeforeDrop: (e) => (props.column.confirm && !e.sameList ? props.ask(e) : 'accept'),
+});
+```
+
+```ts [Board.vue]
+type Answer = 'accept' | 'continue' | 'reject';
+const question = shallowRef<{ title: string; resolve: (answer: Answer) => void } | null>(null);
+
+/** Opens the dialog: `onBeforeDrop` waits for the button the user picks. */
+const ask = (e: SortableDropEvent<Task>) =>
+  new Promise<Answer>((resolve) => {
+    question.value = { title: e.items[0]!.title, resolve };
+  });
+```
+
+promise 等待期间：
+
+- 浮层在松开的地方等待，并被标记为 `data-dnd-overlay="dropping"`；
+- `useDnD()` 保持松开时的状态，`status` 为 `'dropping'`；
+- 页面退出拖拽模式：光标和文本选择恢复，所以对话框照常工作；
+- 不能开始其他拖拽。
+
+<tip>
+
+用 `showModal()` 打开的模态 `<dialog>` 位于顶层，在等待中的浮层之上。像示例那样，把它的 `cancel` 事件（:kbd{value="Escape"}）转换为 `'reject'`。
+
+</tip>
+
+## 钩子的顺序
+
+给便签重新排序，把一张扔进垃圾桶，然后切换某个回答再做一次。面板按运行顺序列出上一次放置的钩子。
+
+<example height="27.5rem" hint="移动一张便签或把它扔进垃圾桶，然后把某个回答切换为 reject 或 continue" name="drop-hooks">
+
+
+
+</example>
+
+1. 依次运行每个 `useDnDMonitor` 的 `onBeforeDrop`。`'reject'` 或 `'continue'` 会结束询问；key 会缩小放置的范围。
+2. 目标的 `onBeforeDrop`：项进入的列表或树，或放置目标。
+3. 只运行目标的 `onDrop`：项离开去往另一个列表时，被离开的列表不会被询问，它的新数组在目标的 `e.result` 中。项被移除时（回收区、`dropOutside: 'remove'`），会运行它们所在列表的 `onDrop`，`to.index` 为 `-1`。
+4. 默认写入：这次放置改变的每个列表获得它的新数组。
+5. provider 的 `onDragEnd`（`@drag-end`）和监听器的 `onDragEnd`。然后浮层落位，`onDragSettle`（`@drag-settle`）告知它已落位。
+
+被拒绝的放置则会直接跳到 `onDragCancel`（`@drag-cancel`），项飞回原处。`'continue'` 也会结束询问，并触发 `onDragResume`：拖拽继续进行，下一次放置会重新询问。
+
+监听器在目标之前做决定，所以否决永远不会出现在列表已经应用了自己的放置之后。这让监听器成为制定适用于整个应用每次放置的规则的地方：
+
+```ts [Monitor.vue]
+const { syncing } = useSync();
+
+// Read-only while syncing: every drop under the provider flies back.
+useDnDMonitor({
+  onBeforeDrop: () => (syncing.value ? 'reject' : 'accept'),
+});
+```
+
+## onDrop：在写入之前通知
+
+```ts
+makeSortableList(listRef, {
+  items: tasks,
+  onDrop: (e) => {
+    // `tasks` still holds the old order, `e.result` the new one.
+    console.log(e.keys, e.from, e.to, e.result.get(e.to.list));
+  },
+});
+```
+
+列表的 `onDrop` 在放置被接受后同步运行，紧接在列表写入之前。要在写入之后执行操作，使用 provider 的 `@drag-end` 或 `useDnDMonitor({ onDragEnd })`。在普通放置目标上，`onDrop` 是你修改数据的地方：库不会替它移动任何东西。
+
+## store 与服务器：受控列表
+
+```ts
+const store = useBoardStore();
+const { items } = makeSortableList(listRef, {
+  id: 'todo',
+  group: 'board',
+  items: () => store.lists.todo, // a getter: read-only
+  onDrop: (e) => {
+    e.preventDefault();
+    for (const [listId, next] of e.result) store.setList(listId, next);
+  },
+});
+```
+
+库只把放置写入可写的 ref。getter、`computed` 或 `readonly` ref 永远不会被写入：调用 `e.preventDefault()`，然后自己应用 `e.result`——它按列表 id 包含这次放置所改变的每个列表的新数组。`preventDefault()` 会跳过对所有这些列表的写入，因为只写入其中一部分会丢失或重复项。如果只读列表的放置被留给库来处理，开发构建会发出警告。
+
+### 先保存到服务器
+
+在服务器**不稳定**（每隔一个请求就失败一次）或**宕机**时移动一张卡片。请求进行期间，卡片带着一个徽标等待，然后落位，失败时则飞回原处。
+
+<example height="31.5rem" hint="移动卡片，然后把服务器切换为 flaky 或 down" name="drop-server">
+
+
+
+</example>
+
+```ts [Column.vue]
+const { items } = makeSortableList(list, {
+  id: props.id,
+  // A getter: the library never writes it. The drop is applied below, once saved.
+  items: () => board[props.id]!,
+  group: 'sprint',
+  onBeforeDrop: async (e) => {
+    e.preventDefault();
+    try {
+      await saveMove(e.keys, e.to);
+    } catch {
+      return 'reject'; // nothing applied: the card flies back
+    }
+    for (const [id, tasks] of e.result) board[id] = tasks; // lands in its new place
+    return 'accept';
+  },
+});
+```
+
+在 promise 完成之前应用 `e.result`，浮层就会按新顺序落位。请求失败时，什么都不应用并返回拒绝：项飞回原处，监听器收到 `onDragCancel`。
+
+徽标来自 provider 的 `#overlay` 插槽，它渲染每次拖拽的浮层。`DragPreview` 显示卡片通常的副本，请求进行期间徽标叠在它上面：
+
+```vue [index.vue]
+<DnDProvider>
+  <Board />
+  <template #overlay="{ active }">
+    <div class="carried">
+      <DragPreview :id="active.id" />
+      <span v-if="saving" class="saving">Saving…</span>
+    </div>
+  </template>
+</DnDProvider>
+```
+
+## 放到所有目标之外
+
+在每种模式下，把一个应用拖出程序坞并松开。
+
+<example height="24.5rem" hint="把一个应用拖出程序坞并松开" name="drop-outside">
+
+
+
+</example>
+
+```ts [Dock.vue]
+const { items } = makeSortableList(dock, {
+  items: apps,
+  strategy: 'horizontal',
+  dropOutside: () => props.dropOutside,
+  // Called on the list the items leave, with `to.index` -1, when they are removed.
+  onDrop: (e) => {
+    if (e.to.index === -1) notice.value = `Removed ${e.items.map((app) => app.name).join(', ')}`;
+  },
+});
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        dropOutside
+      </code>
+    </th>
+    
+    <th>
+      放到所有目标之外时……
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'placeholder'
+      </code>
+    </td>
+    
+    <td>
+      落到占位所在的地方：列表最后显示的位置。默认值。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'cancel'
+      </code>
+    </td>
+    
+    <td>
+      被取消：项飞回原处。<code>
+        placeholder: 'indicator'
+      </code>
+      
+       时的默认值。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'remove'
+      </code>
+    </td>
+    
+    <td>
+      把项从它们的列表中移除。会先询问列表的 <code>
+        onBeforeDrop
+      </code>
+      
+      ，它的 <code>
+        onDrop
+      </code>
+      
+       收到的 <code>
+        to.index
+      </code>
+      
+       为 <code>
+        -1
+      </code>
+      
+      。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+它在放置时读取，所以 ref 或 getter 可以切换它。回收区有意做的也是同样的事：`makeDroppable(trash, { onDrop: (e) => e.source?.remove() })`。见[拖放](https://zizigy.github.io/docs/guides/drag-and-drop)。
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

@@ -1,0 +1,1 @@
+import{k as e}from"./DZo3dYLJ.js";import{bt as t}from"./BwbPlliA.js";var n=e({__name:`[name]`,setup(e){throw t({statusCode:404,statusMessage:`Page not found`,fatal:!0})}});export{n as default};

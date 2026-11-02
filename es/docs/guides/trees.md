@@ -1,0 +1,663 @@
+---
+title: "Árboles"
+description: "Esquemas, menús, organigramas y backlogs con makeSortableTree — renderizados en plano con profundidades, anidados arrastrando hacia un lado o pasando por encima de una fila, con reglas, nodos plegados, una línea de inserción y listas en el mismo grupo."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/es/docs/guides/trees"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+Un árbol es una lista ordenable cuyas filas tienen profundidad. Arrastra una sección a la
+izquierda o a la derecha para cambiar su nivel, o mantenla sobre el centro de otra sección para
+soltarla dentro. Los números siguen al arrastre.
+
+<example height="45.5rem" hint="Arrastra una sección hacia un lado o cambia el modo de anidamiento" name="tree-outline">
+
+
+
+</example>
+
+## Renderizado en plano
+
+`makeSortableTree` recibe tus datos anidados y devuelve los nodos visibles como una **lista
+plana**, en orden, cada uno con su `depth`. Tú renderizas esa lista y sangras las filas. Todas
+las filas son hermanas dentro de un mismo contenedor, así que se deslizan y se animan como las
+filas de una lista.
+
+```vue [Outline.vue]
+<script setup lang="ts">
+import { ref, useTemplateRef } from 'vue';
+import { makeSortableTree } from '@vue-dnd-kit/core';
+import Heading from './Heading.vue';
+
+interface Section { id: string; title: string; children?: Section[] }
+
+const outline = ref<Section[]>([
+  { id: 'start', title: 'Getting started', children: [{ id: 'install', title: 'Installation' }] },
+  { id: 'faq', title: 'FAQ' },
+]);
+
+const root = useTemplateRef<HTMLElement>('root');
+const { items, projected } = makeSortableTree(root, {
+  items: outline,     // the root nodes: a writable ref takes every drop
+  indentation: 24,    // px per level: match the rows' indentation
+  maxDepth: 2,
+});
+</script>
+
+<template>
+  <ol ref="root">
+    <Heading v-for="node in items" :key="node.key" :node="node" />
+  </ol>
+</template>
+```
+
+```vue [Heading.vue]
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import { makeSortableItem, type FlatNode } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ node: FlatNode<{ id: string; title: string }> }>();
+const el = useTemplateRef<HTMLElement>('el');
+makeSortableItem(el, { id: () => props.node.key });
+</script>
+
+<template>
+  <li ref="el" :style="{ marginInlineStart: `${node.depth * 24}px` }">{{ node.item.title }}</li>
+</template>
+```
+
+Las filas usan `makeSortableItem`, como las de una lista. Sángralas con un margen, no con un
+padding: así es la propia fila la que se mueve con su profundidad. El overlay toma el ancho del
+hueco y aterriza en su nivel, y un cambio de profundidad se desliza como cualquier otro
+movimiento. Un padding solo sangraría lo que hay dentro de la fila, y el overlay, una copia de
+la fila hecha al agarrar, conservaría el nivel en el que empezó el arrastre. `items` contiene
+`FlatNode`:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Campo de <code>
+        FlatNode
+      </code>
+    </th>
+    
+    <th>
+      Qué contiene
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        key
+      </code>
+    </td>
+    
+    <td>
+      La clave del nodo (<code>
+        getKey
+      </code>
+      
+      , por defecto <code>
+        node.id
+      </code>
+      
+      ). Úsala para <code>
+        :key
+      </code>
+      
+       y para el <code>
+        id
+      </code>
+      
+       de la fila.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        item
+      </code>
+    </td>
+    
+    <td>
+      Tu nodo.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        depth
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        0
+      </code>
+      
+       para las raíces. La profundidad del nodo arrastrado es donde <strong>
+        aterrizaría
+      </strong>
+      
+      , así que su hueco se sangra en vivo.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        parentKey
+      </code>
+    </td>
+    
+    <td>
+      La clave del padre, <code>
+        null
+      </code>
+      
+       para las raíces.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        index
+      </code>
+    </td>
+    
+    <td>
+      El índice entre sus hermanos.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        hasChildren
+      </code>
+      
+      , <code>
+        collapsed
+      </code>
+    </td>
+    
+    <td>
+      Para un botón de desplegar.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Como `items` es el borrador, todo lo que calcules a partir de él sigue al arrastre: la demo numera
+sus secciones a partir de `items`, así que «2.1» pasa a «3.1» mientras mueves. `projected` es
+donde aterrizaría el nodo arrastrado, `{ depth, parentKey }`, o `null` mientras no está sobre este
+árbol.
+
+Los hijos se leen de `node.children` y se escriben ahí. Los datos con otra forma usan
+`getChildren` y `setChildren`; el [organigrama](#rules) de abajo los guarda en `members`:
+
+```ts
+makeSortableTree(root, {
+  items: org,
+  getChildren: (member) => member.members,
+  setChildren: (member, members) => { member.members = members; },
+});
+```
+
+## Anidamiento
+
+Un arrastre cambia la profundidad de dos formas, ambas activadas por defecto:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        nesting
+      </code>
+    </th>
+    
+    <th>
+      La profundidad sale de…
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'offset'
+      </code>
+    </td>
+    
+    <td>
+      Arrastrar hacia un lado: cada <code>
+        indentation
+      </code>
+      
+       píxeles a la izquierda o a la derecha sube o baja un nivel, hasta donde lo permitan las filas que rodean el hueco.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'hover'
+      </code>
+    </td>
+    
+    <td>
+      Mantener el arrastre sobre el centro de una fila: el drop va dentro de ella, como su primer hijo.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'both'
+      </code>
+    </td>
+    
+    <td>
+      Cualquiera de las dos. El valor por defecto.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Ajusta `indentation` a lo que tus filas añaden por nivel (`24` por defecto), para que el hueco
+siga al puntero: en la demo, cambia a `40` y arrastra hacia un lado. Con `'hover'` solo, un
+arrastre lateral mantiene el nivel y solo el centro de una fila anida. Las dos opciones aceptan
+una ref o un getter y se aplican al siguiente arrastre.
+
+Con `axis: 'y'` (o `restrictToVerticalAxis`), el arrastre no puede moverse hacia los lados, pero
+las filas siguen anidándose al pasar por encima.
+
+## Reglas
+
+Engineering acepta personas y equipos; Leadership está bloqueado; nada baja más allá de un equipo
+dentro de un equipo. Abre y cierra los equipos: las filas que muestran y ocultan entran y salen
+deslizándose.
+
+<example height="41rem" hint="Mueve personas entre equipos; prueba con Leadership y un tercer nivel" name="tree-org">
+
+
+
+</example>
+
+```ts [OrgTree.vue]
+const { items } = makeSortableTree(root, {
+  items: org,
+  getChildren: (member) => member.members,
+  setChildren: (member, members) => { member.members = members; },
+  // Only teams take members, and a locked team takes no one.
+  canNest: (_member, team) => team.kind === 'team' && !team.locked,
+  maxDepth: 2,
+  collapsed,
+  animate: true,
+});
+```
+
+```ts [OrgRow.vue]
+// A locked row doesn't drag (and says so with `aria-disabled`).
+makeSortableItem(el, { id: () => props.node.key, disabled: () => !!props.node.item.locked });
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Opción
+    </th>
+    
+    <th>
+      Limita
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        canNest(node, parent)
+      </code>
+    </td>
+    
+    <td>
+      Si <code>
+        node
+      </code>
+      
+       puede ir bajo <code>
+        parent
+      </code>
+      
+      . Un multi-drag pregunta por cada nodo arrastrado. Las raíces siempre están permitidas.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        maxDepth
+      </code>
+    </td>
+    
+    <td>
+      La profundidad máxima permitida, siendo <code>
+        0
+      </code>
+      
+       las raíces. Los descendientes del nodo arrastrado cuentan: un equipo con miembros no baja más allá de <code>
+        maxDepth - 1
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      En una fila: no se arrastra. En el árbol: nada sale de él arrastrándose ni se suelta en él.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        group.put
+      </code>
+    </td>
+    
+    <td>
+      Si el árbol acepta o no ítems de otras listas y árboles.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+    </td>
+    
+    <td>
+      Todo lo demás, decidido al soltar: consulta <a href="/docs/guides/drop-decisions">
+        decidir un drop
+      </a>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Cuando una regla rechaza una profundidad, el hueco toma la profundidad más honda que la cumple:
+arrastra a Noor debajo de Raj y hacia la derecha, y el hueco se queda en el primer nivel, porque
+Leadership está bloqueado y Raj es una persona. Donde no pasa ninguna profundidad, el hueco no se
+mueve ahí. Las copias y los nodos de `createItem` también respetan `canNest` y `maxDepth`.
+
+### Nodos plegados
+
+`collapsed` es un `Set` de claves cuyos hijos están ocultos, como ref o como getter. Sus hijos no
+están en `items`; `node.collapsed` y `node.hasChildren` controlan el botón:
+
+```ts
+const collapsed = ref(new Set<Key>());
+const toggle = (key: Key) => (collapsed.value.has(key) ? collapsed.value.delete(key) : collapsed.value.add(key));
+```
+
+Un nodo arrastrado se lleva todo su subárbol, plegado o no. Con `animate: true`, las filas que un
+nodo muestra u oculta al abrirse o cerrarse se animan al entrar y salir, y lo mismo pasa con los
+cambios de datos que no hizo ningún arrastre.
+
+## Una línea de inserción
+
+Arrastra una plantilla desde la izquierda al menú, o mueve un ítem: el menú se queda quieto y una
+línea muestra adónde va el drop, empezando en el nivel en el que aterriza. Sobre el centro de una
+página o de un grupo, se ilumina la fila.
+
+<example height="31rem" hint="Arrastra una plantilla al menú o mueve un ítem hacia un lado" name="tree-menu">
+
+
+
+</example>
+
+Con `placeholder: 'indicator'`, el árbol no se mueve mientras arrastras. Cada fila lee su
+`indicator` y dibuja la línea:
+
+```vue [MenuRow.vue]
+<script setup lang="ts">
+import { computed, useTemplateRef } from 'vue';
+import { makeSortableItem, type FlatNode } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ node: FlatNode<MenuItem>; indent: number }>();
+const el = useTemplateRef<HTMLElement>('el');
+const { indicator } = makeSortableItem(el, { id: () => props.node.key });
+
+// 'inside': the drop goes into this row. Otherwise a line before or after it.
+const inside = computed(() => indicator.value?.side === 'inside');
+const line = computed(() => {
+  const value = indicator.value;
+  if (!value || value.side === 'inside') return null;
+  // From the level the drop lands at, measured from this row's own level.
+  return { side: value.side, left: `${((value.depth ?? 0) - props.node.depth) * props.indent}px` };
+});
+</script>
+
+<template>
+  <div ref="el" class="item" :class="{ inside }" :style="{ marginLeft: `${node.depth * indent}px` }">
+    {{ node.item.title }}
+    <span v-if="line" class="line" :class="line.side" :style="{ left: line.left }" />
+  </div>
+</template>
+
+<style scoped>
+.item { position: relative; }
+.item.inside { box-shadow: 0 0 0 1.5px #42b883; }
+.line { position: absolute; right: 0; height: 2px; background: #42b883; }
+.line.before { top: -3px; }
+.line.after { bottom: -3px; }
+</style>
+```
+
+En los árboles, `indicator` añade `depth` y `parentKey`: el nivel y el padre que reciben los
+nodos soltados. Arrastrar hacia un lado mueve la línea entre niveles, y el teclado también la
+mueve. En este modo, un drop fuera del árbol cancela.
+
+Las plantillas son elementos arrastrables simples (`makeDraggable`) con `data`. El árbol las
+convierte en nodos nuevos con `createItem`, en la posición y la profundidad de la línea:
+
+```ts [MenuTree.vue]
+let created = 0;
+makeSortableTree(root, {
+  items: menu,
+  placeholder: 'indicator',
+  maxDepth: 1,
+  canNest: (_item, parent) => parent.kind !== 'link',
+  createItem: (active) => {
+    const template = active.data as { title: string; kind: MenuItem['kind'] };
+    return { id: `new-${++created}`, title: `New ${template.title.toLowerCase()}`, kind: template.kind };
+  },
+});
+```
+
+La barra que hay encima del menú renderiza `menu`, los datos guardados, no `items`: solo cambia
+al soltar.
+
+## Árboles y listas en un mismo grupo
+
+Una historia que se mueve al backlog conserva sus tareas, fuera de la vista, y las trae de vuelta
+al roadmap. Mantén <kbd value="Alt">
+
+
+
+</kbd>
+
+ al arrastrar fuera del roadmap para copiar en su lugar.
+
+<example height="29.5rem" hint="Mueve Saved cards al backlog y de vuelta; Alt copia" name="tree-backlog">
+
+
+
+</example>
+
+Un árbol y una lista con el mismo `group` intercambian nodos, igual que dos listas. Un nodo
+conserva su subárbol vaya donde vaya: la lista simplemente no lo muestra. El mismo componente de
+fila sirve para ambos, ya que `makeSortableItem({ item })` obtiene su clave de la lista o el
+árbol al que pertenece la fila.
+
+Las copias funcionan como en las listas (`clone`, `pull: 'clone'`, la tecla de copia), pero
+`clone` debe devolver la copia **con todo su subárbol**, y cada nodo que contiene necesita una
+clave nueva:
+
+```ts [Roadmap.vue]
+let copies = 0;
+const copy = (work: Work): Work => ({ ...work, id: `${work.id}-copy-${++copies}`, children: work.children?.map(copy) });
+
+makeSortableTree(root, {
+  items: roadmap,
+  group: 'work',
+  canNest: (work, parent) => RANK[parent.kind] < RANK[work.kind],
+  maxDepth: 2,
+  clone: copy,
+});
+```
+
+Consulta [listas que comparten ítems](https://zizigy.github.io/docs/guides/shared-lists) para los grupos, la copia y
+`createItem`.
+
+## El drop
+
+El evento de drop del árbol es el de una lista, con `parentKey` añadido a `from` y `to`:
+
+```ts
+makeSortableTree(root, {
+  items: outline,
+  onDrop: (e) => {
+    console.log(e.keys, e.from.parentKey, '→', e.to.parentKey, e.to.index);
+  },
+});
+```
+
+`to.index` es la posición entre los nuevos hermanos, contada después de que el nodo deje su sitio
+anterior. Al soltar, la biblioteca da a los nodos modificados sus nuevos hijos (`setChildren`) y
+escribe un nuevo array de raíces en tu ref.
+
+`e.result.get(treeId)` es el nuevo árbol como un nuevo array de raíces: los nodos de las rutas
+modificadas son copias, los subárboles intactos se comparten y tus nodos se quedan como están.
+Para un store o datos inmutables, pasa un getter, llama a `e.preventDefault()` y guarda
+`e.result` (consulta [decidir un drop](https://zizigy.github.io/docs/guides/drop-decisions#stores-and-servers-controlled-lists)).
+Las copias se hacen con `withChildren(node, children)`, por defecto `{ ...node }` con los nuevos
+hijos; pasa la tuya para instancias de clases.
+
+## Teclado y multi-drag
+
+Pon el foco en una fila, pulsa <kbd value="Space">
+
+
+
+</kbd>
+
+ y luego:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Tecla
+    </th>
+    
+    <th>
+      Mueve el nodo
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <kbd value="ArrowUp">
+        
+      </kbd>
+      
+       / <kbd value="ArrowDown">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      Al hueco de arriba o de abajo, una fila cada vez.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="ArrowRight">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      Un nivel más adentro, bajo la fila de arriba, donde las reglas lo permitan.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="ArrowLeft">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      Un nivel más arriba, fuera de su padre.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="Space">
+        
+      </kbd>
+      
+       / <kbd value="Escape">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      Lo suelta / lo devuelve a su sitio.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+En modo indicador, las flechas mueven la línea en su lugar. Desde una lista o una plantilla junto
+al árbol, una flecha hacia el árbol mete el ítem en él, al nivel de la fila delante de la que va.
+
+Los nodos seleccionados se mueven juntos como un solo bloque, cada uno con su subárbol, en el
+orden del documento. Un nodo seleccionado dentro de otro seleccionado viaja dentro del subárbol de
+su padre. Consulta [multi-drag](https://zizigy.github.io/docs/guides/multi-drag).
+
+Todas las opciones están en la [API de makeSortableTree](https://zizigy.github.io/docs/api/make-sortable-tree). Para
+árboles con miles de filas, consulta [listas virtuales](https://zizigy.github.io/docs/guides/virtual-lists).
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

@@ -1,0 +1,158 @@
+---
+title: "周日历"
+description: "一个周计划工具——在各天和各个刻钟之间移动日程，拖动边缘拉伸，在空白时间上画出新日程，改为全天日程，从任务列表安排日程，并且可以撤销。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/calendar"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="44rem" hint="移动或拉伸一个日程，或在空白时间上画出一个" name="calendar" title="周日历">
+
+
+
+</example>
+
+## 看点
+
+- **EventBlock.vue**：时间格中的日程是一个普通可拖拽元素，它的浮层 **EventOverlay.vue** 会说明它将落在哪里：“Wed 10:30 – 11:15”。重叠的日程并排显示（`placement.ts` 中的 `layoutDay`）。
+- **Edge.vue**：日程的上下边缘本身就是可拖拽元素。拖动其中一个，日程就会拉伸，每次一刻钟。
+- **DayColumn.vue**：每一天的时间格是一个放置目标，日程下方还有一个可拖拽元素：在空白时间上按下并拖动即可画出一个新日程，然后输入它的标题。
+- **AllDayCell.vue** 和 **Tasks.vue**：把日程放到某一天的全天格中，它就失去具体时间；放到任务列表中，它就失去日期。任务（**EventChip.vue**）可以拖进这一周，并保留它们的时长。
+- **Week.vue**：时间格的拖拽区域和它们自己的修饰器、键盘移动、当前时间线。
+- **calendar.ts**：日程和撤销历史。每次改动都经过同一个函数，提示消息会提供撤销。
+
+展开这个示例：空间足够时，侧边面板会显示月历、可显示或隐藏的日历，以及列表形式的任务。在手机上，一周变成三天，长按即可拖拽。
+
+## 每次放置都是同一个答案
+
+放置会做什么，在四个地方被询问：浮层的标签、任务在它下方那一天显示的虚影、屏幕阅读器听到的内容，以及放置本身。它们都调用 `placeOf`，所以结果永远一致。每个放置目标在它的 `data` 中说明自己是什么，`position` 是被拖拽的盒子在目标内部的位置：盒子的顶部就是时间。
+
+```ts [placement.ts]
+export function placeOf(event: CalendarEvent, over: Over | null, position: Coordinates | null): Place | null {
+  const target = over?.accepted ? (over.data as Target) : null;
+  if (!target) return null;
+  if (target.kind === 'tasks') return { day: null, start: null };
+  if (target.kind === 'all-day') return { day: target.day, start: null };
+  if (!position) return null;
+  return { day: target.day, start: clamp(minutesAt(position.y), 0, DAY_MINUTES - event.duration) };
+}
+```
+
+浮层从 `useDnD().position` 实时读取它，并在落位期间保留最后一次的答案：
+
+```ts [EventOverlay.vue]
+const { position } = useDnD();
+const place = shallowRef(placeOf(event.value, props.over, position.value));
+watchEffect(() => {
+  if (props.status === 'dragging') place.value = placeOf(event.value, props.over, position.value);
+});
+```
+
+日程无论在哪里都保留它的 id、`data` 和浮层：时间格中的一个块、全天格中或任务中的一个小标签。放到别处时，它由另一个组件渲染，浮层照样落到新元素上。
+
+## 时间格自己的修饰器
+
+`makeDragArea` 给从时间格开始的拖拽（日程、边缘、空白时间）一个自己的修饰器。在各天上方，盒子按整天移动，指针越过几天就移动几天，所以与另一个日程并排的日程会保持它在当天中的位置；它的顶部吸附到它开始时那一天的刻钟上。`containerRect` 就是那一天当前所在的位置：它跟随滚动，所以时间格在拖拽下自动滚动时，吸附依然有效。
+
+```ts [Week.vue]
+const snapToWeek: Modifier = ({ transform, overlayRect, containerRect, origin }) => {
+  const days = grid.value?.getBoundingClientRect();
+  if (!days || !containerRect) return transform;
+  const width = days.width / props.days.length;
+  const column = (x: number) => Math.floor((x - days.left) / width);
+  const pointer = origin.x + transform.x;
+  const x = pointer < days.left || pointer >= days.right ? transform.x : (column(pointer) - column(origin.x)) * width;
+  const top = overlayRect.top - containerRect.top;
+  return { x, y: transform.y + Math.round(top / STEP_PX) * STEP_PX - top };
+};
+
+makeDragArea(grid, { modifiers: [snapToWeek], autoScroll: { threshold: 0.12 } });
+```
+
+区域的 `autoScroll` 让滚动时间格的边缘变窄，对时间格上方的每次拖拽都有效：正上方的全天行仍然容易够到。任务和全天日程从区域之外开始，自由移动；它们下方的那一天会在它们将落位的地方显示虚影。
+
+## 拉伸：边缘是一个可拖拽元素
+
+边缘位于日程的元素内部，按下时拖动的是最近的可拖拽元素：边缘。它没有浮层，只能上下移动，并且停留在可见的时间格之内。
+
+```ts [Edge.vue]
+makeDraggable(el, {
+  id: () => `${props.event.id}-${props.edge}`,
+  type: 'edge',
+  data: (): DragData => ({ kind: 'edge', event: props.event, edge: props.edge }),
+  overlay: false,
+  axis: 'y',
+  modifiers: [restrictToFirstScrollableAncestor],
+  attributes: false, // no tab stop: Shift + arrows change the end of a focused event
+});
+```
+
+边缘本身不移动。取而代之的是日程从边缘在当天中的位置开始变长，这个位置从 `position` 读取，与放置时的读取方式相同：
+
+```ts [EventBlock.vue]
+const time = computed(() =>
+  resizing.value && position.value
+    ? resizeTo(props.event, resizing.value, position.value)
+    : { start: props.event.start!, duration: props.event.duration },
+);
+```
+
+## 在空白时间上画
+
+在日程下方，每一天都有一条通道，这条通道是一个没有浮层的可拖拽元素。它从不移动：它的盒子移动了多远（`position`），就是指针从按下处移动了多远，并由区域吸附到刻钟。这一天会在画的过程中显示新日程，它的放置会创建这个日程。
+
+```ts [DayColumn.vue]
+makeDraggable(lane, {
+  id: () => `new-${props.day}`,
+  type: 'new',
+  data: (): DragData => ({ kind: 'new', day: props.day, from: from.value }),
+  overlay: false,
+  axis: 'y',
+  attributes: false, // the New event button is the keyboard's way
+});
+```
+
+这一天的 `accept` 是一个函数：它接收任何日程，但只接收自己的边缘和通道。全天格和任务列表接收字符串 `'event'`，所以 `edge` 和 `new` 类型在那里会被拒绝，不需要写一行代码。放置由一个处理函数完成：
+
+```ts [DayColumn.vue]
+onDrop: ({ active, over, position }) => {
+  const data = active.data as DragData;
+  if (!position) return;
+  if (data.kind === 'event') {
+    const place = placeOf(data.event, over, position);
+    if (place) calendar.place(data.event.id, place);
+  } else if (data.kind === 'edge') {
+    calendar.resize(data.event.id, resizeTo(data.event, data.edge, position));
+  } else {
+    const { start, duration } = rangeOf(data.from, data.from + position.y);
+    calendar.create(props.day, start, duration);
+  }
+},
+```
+
+## 键盘
+
+用 Tab 移到一个日程上，按 Space 拿起它：这一周的监听器通过 `getKeyboardCoordinates` 响应方向键，给出下一个刻钟（按住 Shift 时为一小时）或下一天。键盘拖拽不会自动滚动，所以靠近可见时间格的两端时，方向键会改为滚动时间格。任务和全天日程在目标之间跳转（`keyboard: 'droppables'`），直到位于时间格上方。
+
+```ts [Week.vue]
+useDnDMonitor({
+  getKeyboardCoordinates: (key, { pointer, direction }) => {
+    // …only over the hours
+    const dy = direction.y * STEP_PX * (key.shiftKey ? 4 : 1);
+    const next = { x: pointer.x + direction.x * (grid.value.offsetWidth / props.days.length), y: pointer.y + dy };
+    if (canScroll && (next.y < view.top + HOUR_PX || next.y > view.bottom - HOUR_PX)) {
+      hours.scrollTop += dy;
+      return { x: next.x, y: pointer.y };
+    }
+    return next;
+  },
+});
+```
+
+`index.vue` 中 provider 的 `announcements` 说明拿起了什么以及如何移动它；方向键改变时间时，这一周会说出时间（“Tuesday, 10:30 to 11:15”），提示消息则说明放置改变了什么。在获得焦点的日程上，Delete 删除它，Ctrl+Z 撤销任何改动。
+
+延伸阅读：[自定义修饰器](https://zizigy.github.io/docs/guides/constraints#your-own-modifier) · [页面某一部分的规则](https://zizigy.github.io/docs/guides/constraints#rules-for-a-part-of-the-page) · [放在哪就留在哪](https://zizigy.github.io/docs/guides/drag-and-drop#leave-it-where-it-was-dropped) · [不使用浮层](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay) · [浮层组件](https://zizigy.github.io/docs/guides/overlay#overlay-components) · [无障碍](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

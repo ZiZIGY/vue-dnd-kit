@@ -1,0 +1,264 @@
+---
+title: "Construtor de páginas"
+description: "Uma landing page montada com arrastar e soltar — seções de uma paleta que viram a coisa real sobre a página, elementos movidos entre colunas, uma árvore de camadas sobre os mesmos dados, edição inline, larguras de dispositivo e desfazer."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/page-builder"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="45rem" hint="Arraste uma seção ou um elemento para a página; clique duas vezes em um texto para editá-lo" name="page-builder" title="Construtor de páginas">
+
+
+
+</example>
+
+Expanda o quadro para a tela cheia: a paleta fica à esquerda, as camadas à direita, e a página
+ocupa o espaço entre elas. Mais estreito, elas dividem uma gaveta aberta pela barra superior.
+
+## O que observar
+
+- **Canvas.vue**: a página é uma lista ordenável de seções com `placeholder: 'indicator'`. Ela
+fica parada enquanto uma seção viaja, e uma linha entre duas seções diz para onde ela vai:
+deslocar seções de 500px para abrir caminho a cada posição faria a página inteira tremer.
+`dropzone` passa o drop para o canvas inteiro, então uma seção solta ao lado ou abaixo da página
+ainda pousa.
+- **ColumnList.vue**: toda coluna de toda seção é uma lista do grupo `blocks`. Os elementos se
+movem entre colunas e seções e são ordenados ao vivo: a página mostra o resultado enquanto você
+arrasta. Cada coluna é um componente próprio, e as colunas são listas dentro dos itens de outra
+lista.
+- **Palette.vue**: os templates de seção são uma lista do grupo da página com `pull: 'clone'`,
+`put: false` e `sort: false`: ela distribui cópias e não aceita nada de volta. Os elementos
+abaixo deles (**ElementChip.vue**) são draggables simples, e uma coluna cria o bloco com
+`createItem`.
+- **Layers.vue**: a mesma página como uma árvore ordenável, sobre os mesmos dados. Uma linha
+movida ali se move na página, e vice-versa.
+- **builder.ts**: a página, a seleção, o dispositivo e o histórico. Os drops escrevem a página
+através das listas; os botões da barra de ferramentas e os atalhos a mudam aqui. Cada mudança é
+um passo de desfazer.
+
+## Uma seção na mão é a seção real
+
+**SectionGhost.vue** é o overlay tanto das seções da página quanto dos templates da paleta.
+Sobre a página (`to.list` é a lista da página), ele renderiza a própria seção, na largura da
+página, reduzida sob o ponteiro. Quando o drop está decidido (`status: 'dropping'`), ela volta à
+escala 1 enquanto a caixa voa para o lugar da seção: ela pousa exatamente sobre ele. O drop espera
+essa transição, então nada pula no final.
+
+```vue [SectionGhost.vue]
+<script setup lang="ts">
+const props = defineProps<{ items: DragItem[]; status: DnDStatus; to: DropDestination | null }>();
+const section = computed(() => props.items[0]!.item as Section);
+const fromPalette = computed(() => !find(section.value.id));
+const onPage = computed(() => props.to?.list === PAGE);
+
+const look = computed(() => {
+  if (fromPalette.value && !onPage.value) return 'card'; // still the palette's card
+  return props.status === 'dropping' ? 'landing' : 'ghost';
+});
+</script>
+
+<template>
+  <DragPreview v-if="look === 'card'" :id="items[0]!.id" :style="{ width: '100%', height: '100%' }" />
+  <div v-else class="replica" :class="look" :style="{ width: `${pageWidth}px`, '--shrink': shrink }">
+    <SectionView :section="section" />
+  </div>
+</template>
+
+<style scoped>
+.replica { transform-origin: 0 0; scale: var(--shrink); transition: scale 0.25s ease; }
+.replica.landing { scale: 1; }
+</style>
+```
+
+Longe da página, um template continua sendo o que era na paleta: `DragPreview` mostra a cópia que
+a biblioteca fez do card dele. O lugar da seção na página é a posição: enquanto você arrasta, ela
+espera ali, esmaecida; solta, o novo lugar dela fica vazio até o overlay pousar nele.
+
+```css [PageSection.vue]
+.page-section[data-dnd-placeholder] { opacity: 0; }
+html[data-dnd-dragging] .page-section[data-dnd-placeholder] { opacity: 0.35; }
+```
+
+Cada seção desenha a linha a partir do seu próprio `indicator`, e diz o que o drop faz: *Move
+Features here*, ou *Add Pricing here* para um template.
+
+## Elementos: nas cores da seção em que entram
+
+Os blocos são arrastados pelo corpo inteiro; uma seção, pelo grip da sua etiqueta, já que o corpo
+dela é conteúdo para clicar e arrastar. **BlockGhost.vue**, o overlay dos blocos e dos chips, lê
+de `to` a coluna em que entraria e assume as cores da seção dela: um botão sobre o rodapé escuro
+fica claro antes de você soltar. A caixa tem o tamanho da posição do bloco ali (`overlayFit: 'slot'`, o padrão), e o bloco se dispõe nela como vai ficar depois do drop.
+
+```ts [BlockGhost.vue]
+// The column it would go into (`to.list` is the column's id): its section's tone.
+const look = computed(() => {
+  const at = props.to && find(String(props.to.list));
+  return at ? { ...TONES[SECTIONS[at.section.kind].tone], ...typeScale(pageWidth.value) } : null;
+});
+```
+
+Um chip da paleta é um draggable simples que carrega o seu tipo. Cada coluna cria um bloco a
+partir dele, e o novo bloco fica na coluna, renderizado pelo template da própria coluna, até você
+soltar ou seguir em frente:
+
+```ts [ColumnList.vue]
+makeSortableList(list, {
+  id: props.column.id,
+  items: blocks,
+  group: 'blocks',
+  overlay: BlockGhost,
+  createItem: (active) => {
+    const kind = (active.data as ChipData | undefined)?.kind;
+    return kind ? createBlock(BLOCKS[kind].spec) : undefined;
+  },
+});
+```
+
+`blocks` é um `computed` gravável sobre `props.column.blocks` em vez de `toRef`: o desfazer coloca
+objetos novos na página, e a coluna precisa acompanhá-los.
+
+## Templates: cópias saem, nada entra
+
+```ts [Palette.vue]
+makeSortableList(list, {
+  id: 'templates',
+  items: templates,
+  group: { name: 'sections', pull: 'clone', put: false },
+  sort: false,
+  clone: (template) => createSection(template.kind), // new ids all the way down
+  overlay: SectionGhost,
+});
+```
+
+Os templates são seções de verdade, então os cards deles as mostram (com zoom reduzido) e o
+overlay pode renderizá-las. Um clique em um card, ou <kbd value="Enter">
+
+
+
+</kbd>
+
+, adiciona a seção depois
+da selecionada: a página pode ser construída sem arrastar nada.
+
+## Camadas: a mesma página como uma árvore
+
+```ts [Layers.vue]
+makeSortableTree(tree, {
+  id: LAYERS,
+  items: sections as Ref<LayerNode[]>,
+  // Keys of their own: the canvas's lists already drag these ids.
+  getKey: (node) => `layer-${node.id}`,
+  getChildren: (node) => (isSection(node) ? node.columns : isColumn(node) ? node.blocks : undefined),
+  setChildren: (node, children) => { … },
+  // Blocks go into columns, nothing into blocks, sections stay at the top.
+  canNest: (node, parent) => levelOf(node) === levelOf(parent) + 1,
+  maxDepth: 2,
+  placeholder: 'indicator',
+  // A tree takes any row at its top level: a block let go there flies back.
+  onBeforeDrop: (event) => (event.to.parentKey !== null || event.items.every(isSection) ? 'accept' : 'reject'),
+});
+```
+
+As keys são compartilhadas por todo o provider, então as linhas recebem keys próprias. As colunas
+também são linhas, `disabled`: elas aceitam blocos e ficam onde estão. Onde um bloco não pode ir,
+entre duas seções, a linha dele fica vermelha. Passar o ponteiro sobre uma linha contorna o seu nó
+na página; selecionar um nó na página abre a seção dele aqui e rola a linha dele até ficar visível.
+
+## Editar no lugar, e o teclado
+
+Um bloco é arrastado de qualquer ponto dele, então os textos dele não são editáveis até você
+clicar duas vezes nele: então eles ficam `contenteditable`, e `canDrag` recusa os arrastes para
+que uma pressão posicione o cursor. **EditableText.vue** escreve o DOM a partir do model só
+enquanto o texto não está sendo editado, então o cursor nunca pula, e o desfazer continua
+aparecendo.
+
+O provider guarda <kbd value="Space">
+
+
+
+</kbd>
+
+ para os arrastes e deixa <kbd value="Enter">
+
+
+
+</kbd>
+
+ para o editor:
+
+```vue [index.vue]
+<DnDProvider
+  :keyboard="{ keys: { start: ['Space'], drop: ['Space', 'Enter'], cancel: ['Escape'] } }"
+  :announcements="announcements"
+  :screen-reader-instructions="instructions"
+>
+```
+
+Chegue a um bloco com Tab: <kbd value="Space">
+
+
+
+</kbd>
+
+ o pega e as setas o movem pela coluna dele e para
+as próximas; <kbd value="Enter">
+
+
+
+</kbd>
+
+ o edita. Uma seção se move pelo grip do mesmo jeito, ou pelas
+setas da sua barra de ferramentas. <kbd value="Ctrl">
+
+
+
+</kbd>
+
+ <kbd value="Z">
+
+
+
+</kbd>
+
+ desfaz,
+<kbd value="Delete">
+
+
+
+</kbd>
+
+ remove, <kbd value="Ctrl">
+
+
+
+</kbd>
+
+ <kbd value="D">
+
+
+
+</kbd>
+
+ duplica. Os leitores de tela
+ouvem "the Hero section, position 3 of 7 on the page" em vez de ids.
+
+## Desfazer, e mudanças sem arraste
+
+Todo drop é um passo do histórico: um monitor salva a página depois que as listas a escreveram.
+
+```ts [Builder.vue]
+useDnDMonitor({ onDragEnd: () => builder.commit() });
+```
+
+O desfazer coloca um snapshot de volta. As listas têm `animate` ligado, então o que o snapshot
+moveu desliza até lá, assim como as seções que a barra de ferramentas move para cima e para baixo;
+as seções adicionadas aparecem esmaecendo e as apagadas somem.
+
+Leia mais: [Listas ordenáveis](https://zizigy.github.io/docs/guides/sortable-lists#an-insertion-line) ·
+[Listas que compartilham itens](https://zizigy.github.io/docs/guides/shared-lists) · [Árvores](https://zizigy.github.io/docs/guides/trees) ·
+[O overlay](https://zizigy.github.io/docs/guides/overlay) · [Animações](https://zizigy.github.io/docs/guides/animations) ·
+[Acessibilidade](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

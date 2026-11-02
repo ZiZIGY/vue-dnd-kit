@@ -1,0 +1,173 @@
+---
+title: "块编辑器"
+description: "一个类似 Notion 的页面——块通过手柄拖动、横向拖动即可嵌套，选框一次移动多个块，新块可以从“/”菜单或侧边栏拖出，按住 Alt 复制，而且这一切都能 Undo。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/block-editor"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="40rem" hint="拖动 ⋮⋮ 移动块，横向拖动可以嵌套；输入 / 添加新块" name="block-editor" title="块编辑器">
+
+
+
+</example>
+
+每个块的页边都有一个手柄（⋮⋮）和一个“+”。在任意块中输入：Enter 开始下一个块，Tab 把它嵌套，“/”打开新块菜单，Markdown 也能用（“## ”“- ”“<span>
+
+
+
+</span>
+
+ ”）。在页边画一个选框可以选中多个块，然后把它们一起拖动。展开这个框架：在宽屏上，可添加的块和页面大纲会各自拥有侧边栏。
+
+## 看点
+
+- **Page.vue**：页面是一棵可排序树，使用 `placeholder: 'indicator'`：拖拽时页面保持不动，由一条线显示块将落在哪里、在哪一层级。块周围的纸面是它的 `dropzone`，所以在最后一个块下方放置会落到末尾。
+- **BlockRow.vue**：一个块。只有它的手柄能拖拽（`handle`），所以文本仍可编辑、可选择。手柄是一个按钮：单击会选中这个块并打开它的菜单，Space 让键盘拿起这个块。
+- **BlockText.vue** 和 **Editable.vue**：普通的 `contenteditable` 文本，带有编辑器的按键。输入的内容从 DOM 进入模型；只有在别的东西改变了模型时（Undo、合并），模型才会写回 DOM，所以光标从不跳动。
+- **editor.ts**：文档以及对它的每一次编辑，其中没有任何拖放代码：拆分、合并、缩进、复制、转换类型，以及一份同样能撤销放置和输入的历史。
+
+## 横向拖动来嵌套
+
+```ts [Page.vue]
+const { items } = makeSortableTree(root, {
+  id: 'page',
+  items: editor.blocks,
+  group: 'blocks',
+  placeholder: 'indicator',
+  nesting: 'offset',        // sideways: every 24px is a level
+  indentation: INDENT,
+  maxDepth: MAX_DEPTH,
+  canNest: (_block, parent) => !!KINDS[parent.kind].nests,
+  collapsed: editor.collapsed,
+  clone: copyBlock,         // Alt-drag copies a block with what is nested in it
+  createItem: (active) => createBlock((active.data as { kind: BlockKind }).kind),
+  animate: true,
+  overOverlay: BlockGhost,
+  dropzone: sheet,
+  onDrop, // see Undo, below
+});
+```
+
+`nesting: 'offset'` 只根据拖拽的横向偏移确定层级：悬停在段落中间并不会放进段落里，就像在文档编辑器中一样。`canNest` 规定哪些块可以接收嵌套块（段落、列表、待办、折叠块、引用、标注；标题、代码和图片不行），当上方的块拒绝时，线会停在最深的允许层级。关闭的折叠块（`collapsed`）仍然接收块：在它下方缩进一级的线会把块放进它里面，作为第一个。
+
+每一行根据自己的 `indicator`、按放置落入的层级画出插入线。编号列表根据 `items` 计数，所以“2.”和“a.”会随每次放置和每次 Tab 更新。`animate: true` 让不经拖拽的变化也滑动和淡入淡出：Enter、Tab、Delete、Undo、折叠块展开。
+
+```ts [BlockRow.vue]
+const { indicator, selected } = makeSortableItem(el, {
+  id: () => props.node.key,
+  handle: '.handle',
+  // A mouse press on a handle drags at once; after 4px instead, a click stays a click.
+  activation: { mouse: { distance: 4 } },
+  // Enter opens the block's menu; Space picks the block up.
+  canDrag: (event) => !('key' in event && event.key === 'Enter'),
+});
+
+const line = computed(() => {
+  const at = indicator.value;
+  if (!at || at.side === 'inside') return null;
+  return { side: at.side, left: `${((at.depth ?? 0) - props.node.depth) * props.indent}px` };
+});
+```
+
+## 选中多个
+
+页面是一个选择区域：从页边画出的选框会选中它碰到的块。`strategy: 'select'` 让单击空白页边时清除选中集合，`accept` 让选框只选块。单击手柄会选中它的块，Shift 单击选中一段连续的块，Ctrl/Cmd 单击再加选一个；在文本中按 Escape 会选中它所在的块。然后：
+
+```ts [Page.vue]
+const { isSelecting, style } = makeSelectionArea(scroller, {
+  strategy: 'select',
+  accept: 'blocks',                     // the rows' type: their group's name
+  disabled: () => menu.value !== null,  // a press closes the menu first
+});
+```
+
+拖动一个选中的块，其他选中的块会跟上：树把它们作为连续的一段移动，每个块都带着嵌套在它里面的内容，按阅读顺序排列。Delete 删除它们，Ctrl/Cmd+D 复制它们，手柄菜单可以把它们转换成另一种类型。方向键在手柄之间移动，Shift 扩展选中集合。
+
+## 从菜单添加新块
+
+页边的“+”和块中的“/”打开同一个菜单。单击会在下方添加该块；每个选项同时也是一个普通可拖拽元素，树的 `createItem` 会在它被放下的地方把它变成新块。宽屏的侧边栏列出同样的选项，在那里 Space 可以用键盘拿起一个：朝页面方向按方向键就会把它接收进页面。
+
+```ts [InsertOption.vue]
+makeDraggable(el, {
+  id: () => `new-${props.kind}${props.option ? '-option' : ''}`,
+  type: 'new-block',
+  data: () => ({ kind: props.kind }),
+  attributes: () => !props.option, // in the menu, an option of its listbox
+});
+```
+
+选项被拖动期间，菜单会淡出，让页面显示它将去往哪里；新块落位后，菜单关闭：
+
+```ts [Page.vue]
+useDnDMonitor({
+  onDragStart: ({ active }) => (lifted.value = !!popover.value?.contains(active.element)),
+  onDragSettle: () => {
+    if (!lifted.value) return;
+    lifted.value = false;
+    menu.value = null;
+  },
+});
+```
+
+## 放置会做什么
+
+**BlockGhost.vue** 是树的 `overOverlay`：拖拽位于页面上方时，它用一个计数和一条说明包裹拖拽自己的浮层（`<slot />`，即块或选项的克隆）。`to.parentKey` 指出放置会进入哪个块，`mode` 说明何时是复制。
+
+```vue [BlockGhost.vue]
+<script setup lang="ts">
+const props = defineProps<{ items: DragItem[]; mode: DragMode; to: DropDestination | null }>();
+
+// A new block: a kind dragged from the menu or the sidebar, by its `type`.
+const adding = computed(() => props.items[0]?.type.includes('new-block'));
+
+const note = computed(() => {
+  const verb = props.mode === 'copy' ? 'Copy' : adding.value ? 'Add' : null;
+  const parent = props.to?.parentKey == null ? undefined : editor.get(String(props.to.parentKey));
+  if (!parent) return verb; // a plain move at the page's top level needs no words
+  return `${verb ? `${verb} into` : 'Into'} “${parent.text}”`; // "Copy into “Open questions”"
+});
+</script>
+
+<template>
+  <div class="ghost">
+    <slot />
+    <span v-if="items.length > 1" class="count">{{ items.length }}</span>
+    <span v-if="note" class="note">{{ note }}</span>
+  </div>
+</template>
+```
+
+## Undo
+
+树把每次放置写入 `editor.blocks`，这是一个可写的 ref。它的 `onDrop` 恰好在写入之前运行，所以会记录页面原来的样子，Undo 就能撤销这次放置。其他每次编辑也以同样的方式记录自己；在一个块中连续输入的按键算作一步。
+
+```ts [Page.vue]
+onDrop: (event) => {
+  editor.record(); // the library writes the drop after this: Undo takes it back
+  const first = event.items[0]!.id;
+  if (event.mode === 'insert') editor.focus(first, 'start');
+  else editor.focusHandle(first);
+},
+```
+
+```ts [editor.ts]
+/** Called before every change: the state it changes goes on the undo stack. */
+const record = () => {
+  past.value = [...past.value.slice(-99), capture()];
+  future.value = [];
+  typing = null;
+};
+```
+
+历史保存带有 id 的块副本，所以经过 Undo 和 Redo 后，块仍保留它的行和选中状态。放置之后，新块获得光标，被移动的块把焦点交给它的手柄：它的行在页面中移动了位置，这会让焦点丢失，而快捷键可以从手柄继续使用。
+
+## 键盘和屏幕阅读器
+
+在文本中按 Escape 会选中这个块并聚焦它的手柄。在那里，Space 拿起它，方向键移动插入线（左右键：向外或向内一级），Space 放下它；Enter 打开它的菜单，Delete 删除它。provider 的 `announcements` 用块的类型和文本来称呼块（“Picked up to-do list “Freeze the API””），顶栏的状态行会说出按钮和快捷键做了什么。
+
+延伸阅读：[树](https://zizigy.github.io/docs/guides/trees) · [多项拖拽与选择](https://zizigy.github.io/docs/guides/multi-drag#rubber-band-selection) · [把普通可拖拽元素拖进列表](https://zizigy.github.io/docs/guides/drag-and-drop#plain-draggables-into-a-list) · [改变浮层的目标](https://zizigy.github.io/docs/guides/overlay#targets-that-change-the-overlay) · [按下何时变成拖拽](https://zizigy.github.io/docs/guides/provider#when-a-press-becomes-a-drag) · [无障碍](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

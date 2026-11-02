@@ -1,0 +1,222 @@
+---
+title: "Éditeur de blocs"
+description: "Une page à la Notion — des blocs glissés par leurs poignées et imbriqués sur le côté, un rectangle de sélection qui en déplace plusieurs à la fois, de nouveaux blocs tirés d'un menu « / » ou d'une barre latérale, des copies avec Alt, et Undo pour tout cela."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/block-editor"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="40rem" hint="Faites glisser ⋮⋮ pour déplacer un bloc, sur le côté pour l'imbriquer ; tapez / pour de nouveaux blocs" name="block-editor" title="Éditeur de blocs">
+
+
+
+</example>
+
+Chaque bloc a une poignée (⋮⋮) et un « + » dans la marge. Tapez dans n'importe quel bloc : Entrée
+commence le suivant, Tab l'imbrique, « / » ouvre le menu des nouveaux blocs, et le Markdown
+fonctionne ("## ", "- ", "<span>
+
+
+
+</span>
+
+ "). Tracez un rectangle dans la marge pour sélectionner plusieurs
+blocs, puis faites-les glisser ensemble. Agrandissez le cadre : sur un écran large, les blocs à
+ajouter et le plan de la page ont chacun leur barre latérale.
+
+## Ce qu'il faut regarder
+
+- **Page.vue** : la page est un seul arbre triable, avec `placeholder: 'indicator'` : la page
+reste immobile pendant le glissement, et une ligne montre où les blocs atterrissent et à quel
+niveau. La feuille autour des blocs est sa `dropzone` : un dépôt sous le dernier bloc atterrit à
+la fin.
+- **BlockRow.vue** : un bloc. Seule sa poignée le fait glisser (`handle`) : le texte reste
+modifiable et sélectionnable. La poignée est un bouton : un clic sélectionne le bloc et ouvre son
+menu, Espace saisit le bloc pour le clavier.
+- **BlockText.vue** et **Editable.vue** : du texte `contenteditable` simple avec les touches
+d'un éditeur. La saisie va du DOM vers le modèle ; le modèle ne retourne dans le DOM que quand
+autre chose l'a changé (Undo, une fusion) : le curseur ne saute donc jamais.
+- **editor.ts** : le document et chaque modification, sans aucun glisser-déposer : scinder,
+fusionner, indenter, dupliquer, transformer, et un historique qui annule aussi bien les dépôts que
+la saisie.
+
+## Imbriquer en glissant sur le côté
+
+```ts [Page.vue]
+const { items } = makeSortableTree(root, {
+  id: 'page',
+  items: editor.blocks,
+  group: 'blocks',
+  placeholder: 'indicator',
+  nesting: 'offset',        // sideways: every 24px is a level
+  indentation: INDENT,
+  maxDepth: MAX_DEPTH,
+  canNest: (_block, parent) => !!KINDS[parent.kind].nests,
+  collapsed: editor.collapsed,
+  clone: copyBlock,         // Alt-drag copies a block with what is nested in it
+  createItem: (active) => createBlock((active.data as { kind: BlockKind }).kind),
+  animate: true,
+  overOverlay: BlockGhost,
+  dropzone: sheet,
+  onDrop, // see Undo, below
+});
+```
+
+`nesting: 'offset'` prend le niveau uniquement dans le décalage latéral du glissement : survoler le
+milieu d'un paragraphe ne dépose pas dedans, comme dans un éditeur de documents. `canNest` dit
+quels blocs acceptent des blocs imbriqués (paragraphes, listes, to-dos, toggles, citations,
+encadrés ; pas les titres, le code ni les images), et quand le bloc du dessus refuse, la ligne
+reste au niveau le plus profond qui passe. Un toggle fermé (`collapsed`) accepte quand même des
+blocs : une ligne un niveau plus à l'intérieur sous lui les met dedans, en premier.
+
+Chaque ligne dessine le trait d'après son `indicator`, au niveau où le dépôt atterrit. Les listes
+numérotées comptent à partir de `items` : "2." et "a." suivent donc chaque dépôt et chaque Tab.
+`animate: true` fait aussi glisser et s'estomper les changements qu'aucun glissement ne fait :
+Entrée, Tab, Suppr, Undo, un toggle qui s'ouvre.
+
+```ts [BlockRow.vue]
+const { indicator, selected } = makeSortableItem(el, {
+  id: () => props.node.key,
+  handle: '.handle',
+  // A mouse press on a handle drags at once; after 4px instead, a click stays a click.
+  activation: { mouse: { distance: 4 } },
+  // Enter opens the block's menu; Space picks the block up.
+  canDrag: (event) => !('key' in event && event.key === 'Enter'),
+});
+
+const line = computed(() => {
+  const at = indicator.value;
+  if (!at || at.side === 'inside') return null;
+  return { side: at.side, left: `${((at.depth ?? 0) - props.node.depth) * props.indent}px` };
+});
+```
+
+## En sélectionner plusieurs
+
+La page est une zone de sélection : un rectangle tracé depuis ses marges sélectionne les blocs qu'il
+touche. `strategy: 'select'` fait qu'un clic dans la marge vide vide la sélection, et `accept`
+limite le rectangle aux blocs. Un clic sur une poignée sélectionne son bloc, Maj-clic une série de
+blocs, Ctrl/Cmd-clic un de plus ; Échap dans un texte sélectionne son bloc. Ensuite :
+
+```ts [Page.vue]
+const { isSelecting, style } = makeSelectionArea(scroller, {
+  strategy: 'select',
+  accept: 'blocks',                     // the rows' type: their group's name
+  disabled: () => menu.value !== null,  // a press closes the menu first
+});
+```
+
+Faites glisser un bloc sélectionné et les autres suivent : l'arbre les déplace comme une seule
+série, chacun avec ce qui y est imbriqué, dans l'ordre de lecture. Suppr les supprime, Ctrl/Cmd+D
+les duplique, et le menu de la poignée les transforme en un autre type. Les flèches vont de poignée
+en poignée, Maj ajoute à la sélection.
+
+## De nouveaux blocs depuis un menu
+
+« + » dans la marge et « / » dans un bloc ouvrent le même menu. Un clic ajoute le bloc en dessous ;
+chaque option est aussi un élément déplaçable simple, que le `createItem` de l'arbre transforme en
+nouveau bloc là où il est déposé. La barre latérale des écrans larges liste les mêmes options, et
+là, Espace en saisit une pour le clavier : une flèche vers la page l'y fait entrer.
+
+```ts [InsertOption.vue]
+makeDraggable(el, {
+  id: () => `new-${props.kind}${props.option ? '-option' : ''}`,
+  type: 'new-block',
+  data: () => ({ kind: props.kind }),
+  attributes: () => !props.option, // in the menu, an option of its listbox
+});
+```
+
+Pendant qu'une option voyage, le menu s'estompe pour que la page montre où elle va, et il se ferme
+une fois que le nouveau bloc a atterri :
+
+```ts [Page.vue]
+useDnDMonitor({
+  onDragStart: ({ active }) => (lifted.value = !!popover.value?.contains(active.element)),
+  onDragSettle: () => {
+    if (!lifted.value) return;
+    lifted.value = false;
+    menu.value = null;
+  },
+});
+```
+
+## Ce que fera le dépôt
+
+**BlockGhost.vue** est l'`overOverlay` de l'arbre : pendant qu'un glissement est au-dessus de la
+page, il enveloppe l'overlay propre au glissement (`<slot />`, le clone des blocs ou de l'option)
+avec un compteur et une note. `to.parentKey` désigne le bloc dans lequel irait le dépôt, et `mode`
+dit quand il copie.
+
+```vue [BlockGhost.vue]
+<script setup lang="ts">
+const props = defineProps<{ items: DragItem[]; mode: DragMode; to: DropDestination | null }>();
+
+// A new block: a kind dragged from the menu or the sidebar, by its `type`.
+const adding = computed(() => props.items[0]?.type.includes('new-block'));
+
+const note = computed(() => {
+  const verb = props.mode === 'copy' ? 'Copy' : adding.value ? 'Add' : null;
+  const parent = props.to?.parentKey == null ? undefined : editor.get(String(props.to.parentKey));
+  if (!parent) return verb; // a plain move at the page's top level needs no words
+  return `${verb ? `${verb} into` : 'Into'} “${parent.text}”`; // "Copy into “Open questions”"
+});
+</script>
+
+<template>
+  <div class="ghost">
+    <slot />
+    <span v-if="items.length > 1" class="count">{{ items.length }}</span>
+    <span v-if="note" class="note">{{ note }}</span>
+  </div>
+</template>
+```
+
+## Undo
+
+L'arbre écrit chaque dépôt dans `editor.blocks`, une ref modifiable. Son `onDrop` s'exécute juste
+avant cette écriture : il enregistre donc la page telle qu'elle était, et Undo annule le dépôt.
+Toutes les autres modifications s'enregistrent de la même façon ; les frappes tapées dans un même
+bloc forment une seule étape.
+
+```ts [Page.vue]
+onDrop: (event) => {
+  editor.record(); // the library writes the drop after this: Undo takes it back
+  const first = event.items[0]!.id;
+  if (event.mode === 'insert') editor.focus(first, 'start');
+  else editor.focusHandle(first);
+},
+```
+
+```ts [editor.ts]
+/** Called before every change: the state it changes goes on the undo stack. */
+const record = () => {
+  past.value = [...past.value.slice(-99), capture()];
+  future.value = [];
+  typing = null;
+};
+```
+
+L'historique contient des copies des blocs avec leurs ids : un bloc garde donc sa ligne et sa
+sélection à travers Undo et Redo. Après un dépôt, un nouveau bloc prend le curseur, et un bloc
+déplacé donne le focus à sa poignée : sa ligne a bougé dans la page, ce qui fait perdre le focus,
+et les raccourcis continuent de fonctionner depuis la poignée.
+
+## Clavier et lecteurs d'écran
+
+Échap dans un texte sélectionne le bloc et donne le focus à sa poignée. De là, Espace le saisit, les
+flèches déplacent la ligne (gauche et droite : un niveau vers l'extérieur ou l'intérieur), Espace
+le dépose ; Entrée ouvre son menu, Suppr le supprime. Les `announcements` du provider désignent
+les blocs par leur type et leur texte ("Picked up to-do list “Freeze the API”"), et la ligne
+d'état de la barre du haut dit ce que font les boutons et les raccourcis.
+
+En savoir plus : [Arbres](https://zizigy.github.io/docs/guides/trees) ·
+[Multi-drag et sélection](https://zizigy.github.io/docs/guides/multi-drag#rubber-band-selection) ·
+[Des éléments déplaçables simples dans une liste](https://zizigy.github.io/docs/guides/drag-and-drop#plain-draggables-into-a-list) ·
+[Cibles qui changent l'overlay](https://zizigy.github.io/docs/guides/overlay#targets-that-change-the-overlay) ·
+[Quand un appui devient un glissement](https://zizigy.github.io/docs/guides/provider#when-a-press-becomes-a-drag) ·
+[Accessibilité](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

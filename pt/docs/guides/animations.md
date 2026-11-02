@@ -1,0 +1,716 @@
+---
+title: "Animações"
+description: "Os itens deslizam enquanto você ordena, o drop pousa na sua posição, e as mudanças nos dados também podem ser animadas. Ajuste cada uma, anime o overlay, a posição e as listas com CSS, ou traga o motion ou o GSAP."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/animations"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+Três coisas são animadas sozinhas: os itens deslizando enquanto você ordena, o overlay pousando
+no drop e, quando você liga, as mudanças nos seus dados que nenhum arraste fez. Cada uma aceita os
+mesmos valores, no provider ou mais perto do que ela anima:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Opção
+    </th>
+    
+    <th>
+      Onde
+    </th>
+    
+    <th>
+      Padrão
+    </th>
+    
+    <th>
+      O que anima
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        animation
+      </code>
+    </td>
+    
+    <td>
+      provider, lista, árvore
+    </td>
+    
+    <td>
+      ligado, 200 ms
+    </td>
+    
+    <td>
+      Os itens deslizando para os novos lugares enquanto você ordena, no drop e no cancelamento.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        dropAnimation
+      </code>
+    </td>
+    
+    <td>
+      provider, draggable, item, lista, árvore (<code>
+        overDropAnimation
+      </code>
+      
+       em um alvo de drop)
+    </td>
+    
+    <td>
+      ligado, 250 ms
+    </td>
+    
+    <td>
+      O overlay pousando na sua posição, ou voltando ao lugar no cancelamento.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        animateChanges
+      </code>
+    </td>
+    
+    <td>
+      provider, lista, árvore
+    </td>
+    
+    <td>
+      <strong>
+        desligado
+      </strong>
+    </td>
+    
+    <td>
+      Mudanças nos seus dados que nenhum arraste fez: itens adicionados, removidos, movidos ou filtrados, linhas de árvore mostradas ou escondidas.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Cada uma aceita `true` (o tempo padrão), `false` (desligado), `{ duration, easing }`, ou uma
+função que faz a animação você mesmo:
+
+```vue
+<DnDProvider
+  :animation="{ duration: 180, easing: 'cubic-bezier(.2, .8, .2, 1)' }"
+  :drop-animation="{ duration: 300 }"
+  animate-changes
+>
+```
+
+O `animation` e o `animateChanges` próprios de uma lista ou de uma árvore vencem os do provider; para o
+`dropAnimation`, veja [por item e por alvo](#per-item-and-per-target). O resto do movimento é seu:
+o overlay, a posição e as listas são elementos com
+[atributos data e refs](https://zizigy.github.io/docs/guides/styling), e CSS ou uma biblioteca de animação os move.
+
+## Ordenação
+
+Enquanto você arrasta, o rascunho da lista se reordena e os itens deslizam para os novos lugares.
+A mão abaixo usa as duas opções na sua lista: escolha um `animation` e ordene as cartas, escolha
+um `dropAnimation` e solte uma.
+
+<example height="24rem" hint="Escolha os tempos, ordene as cartas, solte uma fora da mesa" name="anim-sort">
+
+
+
+</example>
+
+```ts [Hand.vue]
+const springy: LayoutAnimation = ({ element, from, to, reducedMotion }) => {
+  if (reducedMotion) return;
+  return element.animate(
+    [{ translate: `${from.left - to.left}px ${from.top - to.top}px` }, { translate: '0 0' }],
+    { duration: 500, easing: 'cubic-bezier(.34, 1.56, .64, 1)' },
+  );
+};
+
+const animation = shallowRef<LayoutAnimation>(true); // true, { duration: 600 }, springy or false
+const dropAnimation = shallowRef<DropAnimation>(true); // true, { duration: 700 }, toss or false
+
+const { items } = makeSortableList(table, {
+  items: cards,
+  strategy: 'horizontal',
+  dropOutside: 'cancel', // let go off the table: the card flies back
+  animation,
+  dropAnimation,
+});
+```
+
+É FLIP na propriedade CSS `translate`, pela Web Animations API. `translate` se compõe com qualquer
+`transform` seu, então o posicionamento das linhas de uma lista virtual fica intacto. Quando um
+item se move de novo antes de a animação dele terminar, a próxima começa de onde ele está sendo
+mostrado. A mesma animação move os itens no drop e no cancelamento.
+
+O `animation` da lista aceita um valor ou um ref, lido a cada movimento: um ref o troca, como
+acima. Uma função ali é uma animação, não um getter.
+
+<warning>
+
+Não envolva itens ordenáveis em `<TransitionGroup>`: todo movimento seria animado duas vezes. Para
+mudanças que nenhum arraste fez, ligue o [`animateChanges`](#data-changes-animatechanges).
+
+</warning>
+
+## O drop
+
+No drop, o overlay voa de onde você soltou até a posição do item; no cancelamento, de volta para
+onde o item começou. Na mão acima, escolha um `dropAnimation`, depois arraste uma carta para fora
+da mesa e solte: o drop é cancelado, e ela volta ao lugar. `toss` é uma função própria:
+
+```ts [Hand.vue]
+/** The overlay arcs to its slot, as if tossed. */
+const toss: DropAnimation = ({ overlay, from, to, reducedMotion }) => {
+  if (reducedMotion) return;
+  // No visible slot to land on: fade out where it is.
+  if (!to) return overlay.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' });
+  const place = (x: number, y: number) => `translate3d(${x}px, ${y}px, 0)`;
+  const rise = Math.min(120, Math.hypot(to.left - from.left, to.top - from.top) / 2);
+  return overlay.animate(
+    [
+      { transform: place(from.left, from.top), width: `${from.width}px`, height: `${from.height}px` },
+      { transform: place((from.left + to.left) / 2, Math.min(from.top, to.top) - rise), offset: 0.45 },
+      { transform: place(to.left, to.top), width: `${to.width}px`, height: `${to.height}px` },
+    ],
+    { duration: 550, easing: 'ease-in-out', fill: 'forwards' },
+  );
+};
+```
+
+A mão a passa para a sua lista. No provider, ela pousa todo arraste:
+
+```vue
+<DnDProvider :drop-animation="toss">
+```
+
+- A caixa pousa com a sua posição (`transform`) e o seu tamanho (`width`, `height`): o conteúdo se
+reorganiza no tamanho da posição, nunca é escalado.
+- Quando o item não tem uma posição visível depois do drop (rolou para fora da vista, ou foi solto
+em uma pasta ou em uma lixeira), `to` é `null`. O padrão então esmaece o overlay, encolhendo-o
+para dentro da zona em que foi solto (`into`), ou no lugar.
+- Em um multi-drag, os clones dos outros itens pousam nas suas próprias posições sozinhos, com o
+tempo padrão quando `dropAnimation` é uma função. Para dentro de uma zona, eles entram um depois
+do outro, e a caixa depois deles (veja [os arquivos e as pastas](https://zizigy.github.io/docs/guides/multi-drag#into-a-folder)).
+- `dropAnimation` é lido a cada drop: um ref o troca para o próximo, como na mão, e uma prop do
+provider ligada a um ref também.
+- Rolar enquanto ele pousa não o desvia. A caixa é `position: fixed`, então ela acompanha o lugar
+onde pousa (a posição, a zona, senão o alvo em que foi solta) com o seu `translate` de CSS, somado
+ao `transform` que a animação move. Na sua, anime `transform`, como acima, e não `translate`.
+- O próximo arraste não espera: cada drop pousa em uma caixa própria enquanto novos arrastes
+acontecem. Uma pressão sobre uma caixa que está pousando a pega em pleno voo, e o arraste continua
+de onde ela está. `onDragSettle` avisa quando o overlay de um arraste chegou ao seu lugar: é aí
+que a lixeira abaixo fecha a tampa.
+
+O overlay também assume o tamanho da posição em que vai pousar enquanto você arrasta
+(`overlayFit: 'slot'`, o padrão), então um drop raramente precisa redimensionar. Veja
+[o overlay](https://zizigy.github.io/docs/guides/overlay#size-overlayfit).
+
+### Por item e por alvo
+
+O `dropAnimation` do provider é o padrão. Um draggable, um item ordenável ou uma lista (para os
+seus itens) podem trazer o seu próprio, e um alvo de drop pode dar a palavra final sobre o que pousa
+nele: `makeDroppable(el, { overDropAnimation })`, o `overDropAnimation` de uma lista ou árvore. Para
+cada drop, o primeiro que estiver definido:
+
+1. O do alvo (nenhum no cancelamento).
+2. O do próprio item arrastado.
+3. O da lista dele.
+4. O do provider.
+
+Abaixo, o carrinho, o vaso e a prateleira definem um cada. A prateleira pousa os seus produtos com
+um pulo, o vaso tem um pouso lento próprio, e o carrinho leva para dentro do seu ícone o que é
+solto nele: o produto fica na prateleira, então a posição dele ali não é lugar para pousar.
+Embaixo da prateleira, acende aquele com que cada arraste pousa.
+
+<example height="24rem" hint="Ordene a caneca, depois o vaso; depois solte qualquer um no carrinho" name="anim-cart">
+
+
+
+</example>
+
+```ts [Shop.vue]
+// 3. The list's, for its items without one of their own.
+makeSortableList(shelf, {
+  items: products,
+  strategy: 'horizontal',
+  dropAnimation: { duration: 450, easing: 'cubic-bezier(.34, 1.56, .64, 1)' },
+});
+```
+
+```ts [Product.vue]
+// 2. The item's own: it wins over its list's.
+makeSortableItem(el, {
+  item: () => props.product,
+  dropAnimation: props.product.fragile ? { duration: 1100, easing: 'ease-in-out' } : undefined,
+});
+```
+
+```ts [Cart.vue]
+// 1. The target's: it wins over both.
+const intoCart: DropAnimation = ({ overlay, from, reducedMotion }) => {
+  const end = icon.value?.getBoundingClientRect();
+  if (!end || reducedMotion) return;
+  // Into the icon, shrinking: the box scales around its top left corner.
+  const scale = end.height / from.height;
+  const animation = overlay.animate(
+    [
+      { transform: `translate3d(${from.left}px, ${from.top}px, 0)` },
+      {
+        transform: `translate3d(${end.left + (end.width - from.width * scale) / 2}px, ${end.top}px, 0) scale(${scale})`,
+        opacity: 0,
+      },
+    ],
+    { duration: 450, easing: 'cubic-bezier(.55, 0, .75, .2)', fill: 'forwards' },
+  );
+  animation.finished.then(() => landed.value++, () => {}); // the icon bounces
+  return animation;
+};
+
+makeDroppable(el, { id: 'cart', overDropAnimation: intoCart, onDrop: … });
+```
+
+`false` conta como definido: um alvo com `overDropAnimation: false` mantém o overlay onde ele foi
+solto. A função recebe o alvo como `over`, então uma única função pode tratar cada alvo de um jeito.
+
+### O pouso do próprio conteúdo
+
+O drop também espera as animações dentro do overlay que estão rodando quando ele começa: animações
+e transições CSS que um componente de overlay inicia em `status: 'dropping'`. Sobre a lixeira, uma
+foto se amassa; solta, ela é jogada na lixeira, e o drop termina quando ela está dentro:
+
+<example height="27rem" hint="Arraste uma foto para a lixeira; Undo a traz de volta" name="anim-trash">
+
+
+
+</example>
+
+```ts [TrashBin.vue]
+makeDroppable(el, {
+  id: 'trash',
+  // The overlay reads it as `over.data`: it aims the photo at the bin's mouth.
+  data: () => ({ bin: bin.value }),
+  overOverlay: Crumple,
+  // The box stays where it was let go: its content does the landing.
+  overDropAnimation: false,
+  onDrop: (event) => emit('drop', event), // the gallery calls `event.source?.remove()`
+});
+
+// Its landing is over: the photo is in, the lid shuts.
+useDnDMonitor({
+  onDragSettle: (event) => {
+    if ('dropped' in event && event.over?.id === 'trash') shut.value++;
+  },
+});
+```
+
+```vue [Crumple.vue]
+<template>
+  <div class="crumple">
+    <!-- `fall` is set at the drop: `--dx` and `--dy`, from the photo to the bin in `over.data`. -->
+    <div class="paper" :class="{ falling: fall }" :style="fall">
+      <slot />
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.paper { clip-path: polygon(…); rotate: -8deg; scale: 0.7; }
+.paper.falling { animation: fall 0.55s forwards; }
+@keyframes fall {
+  to { translate: var(--dx) var(--dy); rotate: -120deg; scale: 0.12; opacity: 0; }
+}
+</style>
+```
+
+Animações já terminadas e loops infinitos não contam, e o drop espera no máximo dois segundos.
+
+## Mudanças nos dados: `animateChanges`
+
+Arraste um bloco, depois embaralhe, adicione e remova alguns. O arraste é animado por padrão; as
+mudanças dos botões são animadas porque a grade liga o `animateChanges`.
+
+<example height="22.75rem" hint="Arraste, embaralhe, adicione, remova" name="animate">
+
+
+
+</example>
+
+```ts
+makeSortableList(listRef, { items: swatches, animateChanges: true });
+```
+
+Desligado por padrão, `animateChanges` anima o que muda o seu array sem um arraste: uma ordenação, um
+embaralhamento, um movimento entre listas de um mesmo grupo, um item adicionado, removido ou
+filtrado. Em uma árvore, ele também cobre as linhas que um nó mostra ou esconde ao expandir e
+recolher. `<DnDProvider animate-changes>` o liga para todas as listas e árvores.
+
+As partes dele podem ser ajustadas uma a uma:
+
+```ts
+animateChanges: { duration: 250, move: true, enter: true, leave: { duration: 150 } },
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Parte
+    </th>
+    
+    <th>
+      Por padrão
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        move
+      </code>
+    </td>
+    
+    <td>
+      Os itens que mudaram de lugar deslizam, como com <code>
+        animation
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        enter
+      </code>
+    </td>
+    
+    <td>
+      Os itens que apareceram surgem aos poucos onde estão.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        leave
+      </code>
+    </td>
+    
+    <td>
+      Uma cópia do item que saiu desaparece aos poucos onde ele estava, encolhendo um pouco. Ela é marcada com <code>
+        data-dnd-leaving
+      </code>
+      
+       e removida quando termina.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`duration` e `easing` valem para todas as partes; cada parte aceita `true`, opções, `false` ou uma
+função. Só os itens perto da área visível são animados, então as linhas que uma lista virtual não
+montou são puladas. A opção é lida quando `items` muda, então um ref pode trocá-la, como faz a
+chave da demo.
+
+## O overlay: erguer, inclinar, assentar
+
+A caixa do overlay diz o que ela está fazendo: `data-dnd-overlay="dragging"` enquanto segue o
+ponteiro, `"dropping"` enquanto pousa. A biblioteca move e dimensiona a caixa. Dentro dela,
+`data-dnd-overlay-content` contém tudo o que o overlay mostra, um clone ou uma pilha inteira, e
+animá-lo fica por sua conta. Pegue um candidato: o overlay se ergue e se inclina; solte: ele volta
+a ficar reto enquanto pousa.
+
+<example height="24.5rem" hint="Pegue um candidato, arraste-o para Hired, solte" name="anim-container">
+
+
+
+</example>
+
+```vue [index.vue]
+<template>
+  <DnDProvider overlay-class="pipeline-hand">…</DnDProvider>
+</template>
+
+<!-- Not scoped: the overlay's content element is the library's, outside this component. -->
+<style>
+.pipeline-hand {
+  transition:
+    rotate 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+    scale 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+[data-dnd-overlay='dragging'] > .pipeline-hand {
+  rotate: 3deg;
+  scale: 1.05;
+}
+
+/* Where the lift starts: the box appears already `dragging`. */
+@starting-style {
+  [data-dnd-overlay='dragging'] > .pipeline-hand {
+    rotate: 0deg;
+    scale: 1;
+  }
+}
+</style>
+```
+
+- `overlay-class` coloca as suas classes no conteúdo do overlay deste provider: o do arraste e os
+que ainda estão pousando. O Tailwind também aceita (`starting:` escreve `@starting-style`).
+- Uma transição precisa de um começo, e a caixa já aparece `dragging`: `@starting-style` dá ao
+erguer o seu "antes". Quando a caixa passa a `dropping`, a transição volta, e o drop espera que
+ela termine.
+- O próprio conteúdo se anima do mesmo jeito, no seu próprio componente: no
+[quadro](https://zizigy.github.io/docs/examples/board), o card na mão e as colunas se inclinam quando são pegos
+(`[data-dnd-overlay='dragging'] .column` com `@starting-style`). Keyframes também funcionam:
+eles tocam desde o início do estado.
+- Um **componente de overlay** recebe `status` como prop: as transições dele podem segui-lo. A nota
+da [demo do slot do provider](https://zizigy.github.io/docs/guides/overlay#the-providers-overlay-slot) se endireita com
+`transition: rotate 0.25s` quando `status` passa a ser `'dropping'`.
+- Deixe a própria caixa (`[data-dnd-overlay]`) em paz: uma transição nela ficaria atrás do
+ponteiro, e a biblioteca escreve o `transform` e o tamanho dela.
+
+## A posição e as listas
+
+O elemento arrastado fica na sua lista como a **posição** em que vai pousar, marcado com
+`data-dnd-placeholder`. As listas dele também sabem do arraste: `isAccepting` enquanto corre um
+arraste que elas aceitam, `isOver` enquanto ele está sobre elas. No pipeline acima, todas as raias
+se preparam quando você pega um candidato, a que está sob o card se acende, a contagem dela pula,
+e a posição se abre e respira.
+
+```vue [Lane.vue]
+<script setup lang="ts">
+const { items, isOver, isAccepting } = makeSortableList(list, {
+  id: props.lane.id,
+  items: toRef(props.lane, 'people'),
+  group: 'pipeline',
+  dropzone: zone,
+});
+</script>
+
+<template>
+  <section ref="zone" class="lane" :class="{ ready: isAccepting, over: isOver }">
+    <h3>
+      {{ lane.title }}
+      <!-- A new element for every count: its animation plays on each change. -->
+      <span :key="items.length" class="count">{{ items.length }}</span>
+    </h3>
+    <ul ref="list">…</ul>
+  </section>
+</template>
+
+<style scoped>
+.lane { transition: background-color 0.25s, box-shadow 0.25s; }
+.lane.ready { box-shadow: inset 0 0 0 1px color-mix(in srgb, #42b883 35%, transparent); }
+.lane.over { background: color-mix(in srgb, #42b883 8%, transparent); box-shadow: inset 0 0 0 1.5px #42b883; }
+.count { animation: bump 0.3s ease-out; }
+</style>
+```
+
+```css [Candidate.vue]
+/* The slot opens where it appears, then breathes until the card lands. */
+.candidate[data-dnd-placeholder] {
+  animation: open 0.2s ease-out, breathe 1.2s ease-in-out 0.2s infinite;
+}
+```
+
+- `items` é o rascunho: o `length` dele conta o card assim que a posição dele entra na raia, então
+a contagem muda enquanto você arrasta.
+- Uma posição que vai para outra lista é um elemento novo ali, então os keyframes dela tocam de
+novo.
+- As próprias listas crescem e encolhem suavemente quando uma posição entra e sai, e o que está ao
+redor delas também (`animateSize`, ligado por padrão; `false` as faz pular). Deixe os tamanhos
+delas por conta disso: uma lista que você redimensiona durante um arraste move os alvos sob o
+ponteiro. Brilhos, contornos, cores e `scale` são seguros.
+
+## As suas próprias animações
+
+Cada opção também aceita uma função. Ela recebe um contexto, inicia a animação e retorna a
+`Animation` dela, uma promise que se resolve quando ela termina, ou nada. O arraste termina quando
+a animação de drop termina, e uma cópia que sai é removida quando a animação dela termina, mas
+nenhum dos dois espera mais de um segundo além de `options.duration` (250 ms para o drop, 200 ms
+para as outras).
+
+```ts
+// animation, animateChanges.move: an item moved from `from` to `to`
+({ key, element, from, to, options, reason, signal, reducedMotion }) => Animation | Promise | void
+// dropAnimation: `to` is null when there is no visible slot; `into` is the zone it went into
+({ overlay, from, to, into, reason, active, options, reducedMotion }) => …
+// animateChanges.enter: the element is already in place
+({ key, element, to, options, reducedMotion }) => …
+// animateChanges.leave: `element` is a copy where the item was, removed when you finish
+({ key, element, from, options, reducedMotion }) => …
+```
+
+`reason` diz o porquê: `'drag'` ou `'change'` para um movimento, `'drop'` ou `'cancel'` para o
+overlay. `options` contém o tempo da opção, então uma função pode seguir a `duration` que você
+definiu ao lado dela.
+
+Três regras mantêm as animações personalizadas em sintonia com a biblioteca:
+
+- **Anime translate** de `from - to` até zero, não `transform`. Ele se compõe com os transforms
+que as listas virtuais ou o seu CSS colocam nas linhas, e os arrastes medem os itens sem ele.
+- **Respeite o signal.** Ele aborta quando o item se move de novo antes de a animação terminar.
+Pare a sua animação e limpe os estilos dela na hora: o layout é medido logo em seguida. Uma
+`Animation` retornada é cancelada por você.
+- **Pouse em uma posição com posição e tamanho** (`width`, `height`), não com `scale`: o conteúdo
+do overlay se reorganiza no tamanho da posição. Onde não há posição em que pousar, encolher não
+tem problema: o padrão encolhe o overlay para dentro da zona (`into`), e o carrinho acima, para
+dentro do seu ícone.
+
+### motion
+
+A guirlanda abaixo roda com o [motion](https://motion.dev/docs/vue): as bandeirinhas e o drop usam
+molas pelas funções do provider, e o componente de overlay balança com a velocidade do ponteiro.
+
+<example height="17rem" hint="Arraste uma bandeirinha rápido de um lado para o outro, depois solte" name="anim-motion">
+
+
+
+</example>
+
+```vue [index.vue]
+<script setup lang="ts">
+import { animate } from 'motion-v';
+import { DnDProvider, type DropAnimationContext, type LayoutAnimationContext } from '@vue-dnd-kit/core';
+
+const spring = { type: 'spring', duration: 0.5, bounce: 0.3 } as const;
+
+const move = ({ element, from, to, signal, reducedMotion }: LayoutAnimationContext) => {
+  if (reducedMotion) return;
+  const controls = animate(element, { translate: [`${from.left - to.left}px ${from.top - to.top}px`, '0px 0px'] }, spring);
+  signal.addEventListener('abort', () => {
+    controls.stop();
+    element.style.translate = '';
+  });
+  return controls.finished;
+};
+
+const drop = ({ overlay, from, to, reducedMotion }: DropAnimationContext) => {
+  if (reducedMotion) return;
+  if (!to) return animate(overlay, { opacity: 0 }, { duration: 0.18 }).finished;
+  return animate(
+    overlay,
+    { x: [from.left, to.left], y: [from.top, to.top], width: [from.width, to.width], height: [from.height, to.height] },
+    spring,
+  ).finished;
+};
+</script>
+
+<template>
+  <DnDProvider :animation="move" :drop-animation="drop">
+    <Garland />
+  </DnDProvider>
+</template>
+```
+
+O componente de overlay é renderizado sob o provider, então `useDnD()` funciona nele. Ele segue o
+ponteiro por meio de um motion value:
+
+```vue [FlagOverlay.vue]
+<script setup lang="ts">
+import { motion, useMotionValue, useReducedMotion, useSpring, useTransform, useVelocity } from 'motion-v';
+import { useDnD, type DnDStatus, type DragItem } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[]; status: DnDStatus }>();
+
+const { pointer } = useDnD();
+const x = useMotionValue(pointer.value?.x ?? 0);
+watch(() => pointer.value?.x, (value) => value !== undefined && x.set(value));
+const swing = useSpring(useTransform(useVelocity(x), [-1500, 0, 1500], [-25, 0, 25]), { stiffness: 300, damping: 14 });
+const calm = useReducedMotion();
+</script>
+
+<template>
+  <!-- Held by its top edge: `transform-origin: 50% 0` in its CSS. -->
+  <motion.div
+    class="flag-overlay"
+    :style="{ rotate: calm ? 0 : swing }"
+    :animate="{ scale: status === 'dropping' || calm ? 1 : 1.1 }"
+  >
+    …
+  </motion.div>
+</template>
+```
+
+### GSAP
+
+```ts [gsap-animations.ts]
+import gsap from 'gsap';
+import type {
+  DropAnimationContext,
+  EnterAnimationContext,
+  LayoutAnimationContext,
+  LeaveAnimationContext,
+  Rect,
+} from '@vue-dnd-kit/core';
+
+const move = ({ element, from, to, signal, reducedMotion }: LayoutAnimationContext) => {
+  if (reducedMotion) return;
+  const tween = gsap.fromTo(
+    element,
+    { translate: `${from.left - to.left}px ${from.top - to.top}px` },
+    { translate: '0px 0px', duration: 0.4, ease: 'power3.out' },
+  );
+  signal.addEventListener('abort', () => tween.revert());
+  return tween.then();
+};
+
+const box = (rect: Rect) => ({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
+
+const drop = ({ overlay, from, to, reducedMotion }: DropAnimationContext) => {
+  if (reducedMotion) return;
+  if (!to) return gsap.to(overlay, { opacity: 0, duration: 0.2 }).then();
+  return gsap.fromTo(overlay, box(from), { ...box(to), duration: 0.45, ease: 'back.out(1.2)' }).then();
+};
+
+const enter = ({ element, reducedMotion }: EnterAnimationContext) =>
+  gsap.from(element, reducedMotion ? { opacity: 0, duration: 0.2 } : { opacity: 0, scale: 0.85, duration: 0.35 }).then();
+
+const leave = ({ element, reducedMotion }: LeaveAnimationContext) =>
+  gsap.to(element, reducedMotion ? { opacity: 0, duration: 0.2 } : { opacity: 0, scale: 0.85, duration: 0.25 }).then();
+
+export const gsapAnimations = { animation: move, dropAnimation: drop, animateChanges: { move, enter, leave } };
+```
+
+```vue
+<DnDProvider v-bind="gsapAnimations">
+```
+
+Os tipos completos das opções estão em [Animações](https://zizigy.github.io/docs/api/animations).
+
+## Movimento reduzido
+
+Com `prefers-reduced-motion: reduce`, as animações da própria biblioteca não rodam: os itens e o
+overlay vão direto para os seus lugares, e o overlay não desliza entre tamanhos de posição. As
+suas funções sempre rodam, com `reducedMotion: true`, então elas decidem: pular o movimento, ou
+manter um esmaecimento curto, como fazem as receitas acima.
+
+Proteger o seu CSS fica por sua conta. Coloque os efeitos de erguer, inclinar e pulsar em
+`@media (prefers-reduced-motion: no-preference)`, como fazem as demos desta página, e deixe as
+mudanças de cor de fora: elas dizem para onde vai um drop.
+
+## Mudanças de layout que a biblioteca não causou
+
+Quando outra coisa move as linhas durante um arraste — um virtualizador medindo de novo, uma imagem
+carregando —, chame o `captureLayout()` da lista logo antes de a mudança ser renderizada. Ele mede
+as linhas onde estão e as anima até os novos lugares depois da próxima renderização. Fora de um
+arraste, ele não faz nada. Veja [Listas virtuais](https://zizigy.github.io/docs/guides/virtual-lists).
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

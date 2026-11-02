@@ -1,0 +1,959 @@
+---
+title: "センサーとプログラムによるドラッグ"
+description: "入力がどのようにドラッグになるか——ポインターとキーボードのセンサー、アクティベーション制約、canDrag、独自のセンサー、@vue-dnd-kit/actions でスクリプトするドラッグ。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/sensors"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+センサーは入力をドラッグに変換します。センサーがプロバイダーに伝えるのは「このアイテムをここからドラッグする」ということと、その後の入力の移動先、そしてドロップしたかキャンセルしたかだけです。残りはプロバイダーが、どのセンサーに対しても同じように行います：一度に 1 つのドラッグ、無効なアイテムの拒否、アクティベーション制約、並べ替え、自動スクロール、読み上げ、:kbd{value="Escape"}、そしてドロップ全体です。
+
+## 組み込みのセンサー
+
+<table>
+<thead>
+  <tr>
+    <th>
+      センサー
+    </th>
+    
+    <th>
+      入力
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        pointerSensor
+      </code>
+    </td>
+    
+    <td>
+      Pointer Events を通じたマウス、タッチ、ペン。ポインターをキャプチャーし、タッチドラッグ中にページがテキストを選択したりスクロールしたりするのを防ぎ、ドラッグの後に続くクリックを握りつぶします。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        keyboardSensor
+      </code>
+    </td>
+    
+    <td>
+      <kbd value="Space">
+        
+      </kbd>
+      
+       と <kbd value="Enter">
+        
+      </kbd>
+      
+       で持ち上げてドロップし、矢印キーで動かし、:kbd{value="Escape"} でキャンセルします——どのドラッグでも、ポインタードラッグでも。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+どちらもデフォルトで動作します。プロバイダーの `sensors` はこの一覧を置き換えます。
+
+```vue
+<DnDProvider :sensors="[pointerSensor, keyboardSensor, joystick.sensor]">
+```
+
+キーボードドラッグをオフにするには、`keyboardSensor` を外すより `:keyboard="false"` を使ってください。キーボードセンサーは、:kbd{value="Escape"} であらゆるドラッグをキャンセルする役割も担っています。キーは `keyboard.keys` で割り当て直せます（[アクセシビリティ](https://zizigy.github.io/docs/guides/accessibility#the-keyboard)を参照）。
+
+## アクティベーション制約
+
+押してもすぐにはドラッグになりません。アクティベーション制約を待つので、クリックはクリックのままで、スワイプでもページをスクロールできます。このリストのルールを切り替えて、行を押してみましょう。
+
+<example height="34.5rem" hint="リングが閉じるまで行を押し続けるか、ルールを切り替えてみましょう" name="activation-modes">
+
+
+
+</example>
+
+制約には 3 つのフィールドがあります。
+
+<table>
+<thead>
+  <tr>
+    <th>
+      フィールド
+    </th>
+    
+    <th>
+      ドラッグが始まるのは…
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        distance
+      </code>
+    </td>
+    
+    <td>
+      ポインターがその px 数だけ動いたとき。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        delay
+      </code>
+    </td>
+    
+    <td>
+      押下がその ms 数だけ続いたとき。<code>
+        distance
+      </code>
+      
+       もあれば、先に満たされたほう。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        tolerance
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        delay
+      </code>
+      
+       と組み合わせて：その間にポインターが動いてよい距離。それを超えると押下は中止され、ページをスクロールできます。<code>
+        distance
+      </code>
+      
+       がなければデフォルトは 5 px。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+独自の制約がなければ、ポインターの種類ごとにデフォルトがあります。
+
+<table>
+<thead>
+  <tr>
+    <th>
+      ポインター
+    </th>
+    
+    <th>
+      デフォルト
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      マウス
+    </td>
+    
+    <td>
+      4 px 動いた後。<code>
+        handle
+      </code>
+      
+       の上で押した場合は、マウスの制約が設定されていない限りすぐに。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      ペン
+    </td>
+    
+    <td>
+      4 px 動いた後。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      タッチ
+    </td>
+    
+    <td>
+      200 ms 押した後。その前に 5 px より大きく動くと中止され、代わりにページがスクロールします。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+### 設定する場所
+
+ポインターの種類——`mouse`、`touch`、`pen`——ごとに、プロバイダー、ドラッグエリア、アイテムで設定します。種類ごとに、アイテム自身のものが優先され、次にそのエリアのもの、次にプロバイダーのものです。
+
+```vue
+<DnDProvider :activation="{ mouse: { distance: 8 }, touch: { delay: 250, tolerance: 5 } }">
+```
+
+```ts
+// Inbox.vue: the rules of every drag that starts inside the panel.
+makeDragArea(panel, { activation: () => MODES[mode.value].activation });
+
+// One item: a longer press by touch, the area's rule for the mouse.
+makeSortableItem(el, { item: () => props.task, activation: { touch: { delay: 400, tolerance: 8 } } });
+```
+
+オプションは押下の開始時に読み取られるので、デモのように、ゲッターや ref でその場で切り替えられます。キーボードドラッグはすぐに始まります。[独自のセンサー](#a-sensor-of-your-own)は、自身の制約か、ポインターの種類に設定された制約を求められます。
+
+### 長押しのリング
+
+押下が待っている間、`useDnD().status` は `'activating'` で、`activation.progress` は 0 から 1 まで進みます——`delay` では時間に、`distance` では動いた距離に応じて。デモは押下が始まった場所にリングを描きます。
+
+```vue [Inbox.vue]
+<script setup lang="ts">
+const { status, activation } = useDnD();
+</script>
+
+<template>
+  <svg v-if="status === 'activating'" class="ring" viewBox="0 0 40 40">
+    <circle cx="20" cy="20" r="17" pathLength="1" :stroke-dasharray="`${activation.progress.value} 1`" />
+  </svg>
+</template>
+```
+
+リングには `pointer-events: none` を付けてください。リングはポインターの下にあり、ドラッグはそこにあるものをヒットテストするからです。中止された押下——`tolerance` を超えて動いた、または早く離しすぎた——では、`status` はそのまま `'idle'` に戻ります。
+
+### ハンドルはすぐに始まる
+
+`handle` を指定すると、ドラッグを始められるのはハンドルだけになり、その上でのマウスの押下はすぐにドラッグになります。グリップを掴む操作には、区別すべきものがないからです。押した場所で離した押下はクリックのままなので、グリップは `click` でメニューを開けます（ポインターがキャプチャされるのは、動き始めてからです）。タッチは、ハンドルでページをスクロールできない場合を除き、長押しを待ちます。ハンドルに `touch-action: none` を、アイテムに短い距離を指定してください。
+
+```ts [Message.vue]
+makeSortableItem(el, {
+  item: () => props.chat,
+  handle: '.grip',
+  // The grip has `touch-action: none`: a touch on it can't scroll, so it drags after 4 px.
+  activation: { touch: { distance: 4 } },
+});
+```
+
+アイテム、そのエリア、プロバイダーに設定したマウスの制約は、ハンドルにも適用されます。デモのように、グリップは `<button>` にしてください：フォーカスを受け取るので、キーボードドラッグもそこから始まります。
+
+## 一部の押下だけ
+
+`canDrag` は、ドラッグ可能な要素と並べ替え可能なアイテムに対するもう 1 つの関門です。入力イベントを受け取り、その押下について `true` か `false` を答えます。ここでは、ポインタードラッグには <kbd value="Shift">
+
+
+
+</kbd>
+
+ が必要で、キーボードはいつもどおりドラッグします。
+
+<example height="28rem" hint="Shift を押した場合と押さない場合で行をドラッグし、チェックを入れたり担当者を選んだりしてみましょう" name="can-drag">
+
+
+
+</example>
+
+```ts [Task.vue]
+makeSortableItem(el, {
+  item: () => props.task,
+  // Never: the row is locked (and says so to screen readers with aria-disabled).
+  disabled: () => !!props.task.locked,
+  // Per press: pointer drags only with Shift held; the keyboard as usual.
+  canDrag: (event) => {
+    if (!props.shiftOnly || event instanceof KeyboardEvent || event.shiftKey) return true;
+    emit('refused');
+    return false;
+  },
+});
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      オプション
+    </th>
+    
+    <th>
+      問い合わせのタイミング
+    </th>
+    
+    <th>
+      用途
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      常時。<code>
+        aria-disabled
+      </code>
+      
+       として設定されます
+    </td>
+    
+    <td>
+      まったく動かせないアイテム：ロックされたもの、読み取り専用のもの。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        canDrag
+      </code>
+    </td>
+    
+    <td>
+      押下ごとに 1 回、そのイベントとともに
+    </td>
+    
+    <td>
+      入力に関するルール：押しているキー、ボタン、ポインターの種類。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        handle
+      </code>
+    </td>
+    
+    <td>
+      押下した場所
+    </td>
+    
+    <td>
+      一部分からしかドラッグを始めないアイテム。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`canDrag` はアクティベーション制約の前に、`pointerdown` または `keydown` とともに問い合わされます。ポインターの種類も、ルールにできるものの 1 つです。
+
+```ts
+// Mouse and pen drag; a touch on the row always scrolls the page.
+canDrag: (event) => !(event instanceof PointerEvent && event.pointerType === 'touch'),
+```
+
+操作可能な子要素——ボタン、入力欄、チェックボックス、編集可能なフィールド——はポインタードラッグを決して開始しないので、デモのチェックボックスや担当者メニューのように、ドラッグ可能な要素の中でも動作します。`handle` を指定した場合は、ハンドルだけがドラッグを開始します。
+
+## 独自のセンサー
+
+ゲームパッド、画面上のジョイスティック、音声コマンド：アイテムを指して動かせるものなら、何でもドラッグを操作できます。このゲームパッドはセンサーです。ヒーローの上で <kbd value="A">
+
+
+
+</kbd>
+
+ を押し続けて持ち上げ、パッドで操作し、もう一度 <kbd value="A">
+
+
+
+</kbd>
+
+ でドロップ、:kbd{value="B"} でキャンセルします。マウスとキーボードもその隣でそのまま使えます。
+
+<example height="30rem" hint="ヒーローの上で A を押し続け、矢印を押し続けてみましょう。ヒーローがリストの中を動きます" name="joystick">
+
+
+
+</example>
+
+`defineSensor` はセンサーに名前と `setup` を与えます。`setup` はプロバイダーごとに一度、プロバイダー側のインターフェースを受け取ります。
+
+```ts [joystick.ts]
+const sensor = defineSensor({
+  name: 'joystick',
+  // Once per provider, in the browser. The cleanup runs when the provider unmounts.
+  setup(ctx) {
+    context = ctx;
+    return () => {
+      context = null;
+      drag = null;
+    };
+  },
+});
+```
+
+押下は `activate()` でプロバイダーにドラッグを求めます。ターゲットは実際の押下と同じようにチェックされます：このプロバイダーのドラッグ可能な要素であり、無効ではなく、その中のボタンでもないことが必要です。
+
+```ts [joystick.ts]
+/** A goes down: drops a running drag, or starts a hold over what is under the cursor. */
+const press = () => {
+  if (drag?.state === 'dragging') return void drag.drop();
+  const at = point();
+  const target = document.elementFromPoint(at.x, at.y);
+  if (!target || !context) return;
+  drag = context.activate({
+    target, // checked like a real press: a draggable of this provider, not disabled
+    point: at,
+    type: 'pointer', // follows points: lists sort under it, containers auto-scroll
+    activation: { delay: 300 }, // `useDnD().activation.progress` runs meanwhile
+    onEnd: (ended) => {
+      if (drag === ended) drag = null;
+    },
+  }); // null: nothing to drag there
+};
+```
+
+あとはパッドでドラッグが動き、A か B で終わります。
+
+```ts [joystick.ts]
+const move = (dx: number, dy: number) => {
+  cursor.value = { x: cursor.value.x + dx, y: cursor.value.y + dy }; // clamped in the demo
+  drag?.move(point()); // pending: checks the tolerance; dragging: moves
+};
+
+const release = () => {
+  if (drag?.state === 'pending') drag.cancel(); // A let go before the hold is over
+};
+
+const cancel = () => drag?.cancel();
+```
+
+デモのようにセンサーをプロバイダーの `sensors` に追加するか、`useSensor(joystick.sensor)` でコンポーネントが存在する間だけ動かしてください。点はビューポート座標です。デモはカーソルをステージの座標で保持してページと一緒にスクロールさせ、`point()` で変換しています。
+
+### センサーが受け取るもの
+
+`setup(context)` はプロバイダー側のインターフェースを受け取ります。
+
+<table>
+<thead>
+  <tr>
+    <th>
+      メンバー
+    </th>
+    
+    <th>
+      内容
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        props
+      </code>
+    </td>
+    
+    <td>
+      プロバイダーの props（<code>
+        activation
+      </code>
+      
+      、<code>
+        keyboard
+      </code>
+      
+      …）。変わることがあるので、必要なときに読み取ってください。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        status
+      </code>
+    </td>
+    
+    <td>
+      どのセンサーがドラッグを実行しているかに関係なく、プロバイダーのドラッグの状態。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        drag
+      </code>
+    </td>
+    
+    <td>
+      どのセンサーが始めたかに関係なく、プロバイダーの現在のドラッグ（待機中または実行中）。なければ <code>
+        null
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activate(options)
+      </code>
+    </td>
+    
+    <td>
+      ドラッグを求めます。<code>
+        SensorDrag
+      </code>
+      
+       を返し、ドラッグを開始できない場合は <code>
+        null
+      </code>
+      
+       を返します。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        cancel()
+      </code>
+    </td>
+    
+    <td>
+      プロバイダーのドラッグ、または待機中の押下をキャンセルします。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`activate()` が受け取るもの：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      オプション
+    </th>
+    
+    <th>
+      意味
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        target
+      </code>
+    </td>
+    
+    <td>
+      入力が当たった場所：ドラッグ可能な要素の中の要素、またはドラッグ可能な要素の id。要素は実際の押下と同じようにチェックされます（ハンドル、操作可能な子要素ではないこと）。id ではチェックを省略します。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        point
+      </code>
+    </td>
+    
+    <td>
+      ドラッグが始まる場所。ビューポート座標。デフォルトはドラッグ可能な要素の中心。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        type
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'pointer'
+      </code>
+      
+      （デフォルト）：点に追従し、ターゲットをヒットテストし、自動スクロールします。<code>
+        'keyboard'
+      </code>
+      
+      ：アイテム単位で動き、ターゲットを表示し、最後にフォーカスを戻します。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activation
+      </code>
+    </td>
+    
+    <td>
+      制約（<code>
+        { delay: 300 }
+      </code>
+      
+      ）、または設定済みの制約を使うためのポインターの種類（<code>
+        'touch'
+      </code>
+      
+      ）。デフォルトはなしで、ドラッグはすぐに始まります。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        event
+      </code>
+    </td>
+    
+    <td>
+      入力イベント。アイテムの <code>
+        canDrag
+      </code>
+      
+       に渡されます（なければ <code>
+        canDrag
+      </code>
+      
+       には問い合わせません）。<code>
+        pointerType
+      </code>
+      
+       がタッチなら、タッチドラッグ（触覚フィードバック）になります。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onStart(drag)
+      </code>
+    </td>
+    
+    <td>
+      アクティベーションの後、ドラッグが始まった。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onEnd(drag)
+      </code>
+    </td>
+    
+    <td>
+      ドラッグが終わった：中止、ドロップ、キャンセル——誰によるものでも。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onResume(drag)
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+       が <code>
+        'continue'
+      </code>
+      
+       を返した：ドラッグが続き、<code>
+        move
+      </code>
+      
+      、<code>
+        drop
+      </code>
+      
+      、<code>
+        cancel
+      </code>
+      
+       が再び有効になります。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+返される `SensorDrag`：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      メンバー
+    </th>
+    
+    <th>
+      役割
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        id
+      </code>
+      
+      、<code>
+        type
+      </code>
+    </td>
+    
+    <td>
+      ドラッグ中のアイテムの id と、<code>
+        'pointer'
+      </code>
+      
+       または <code>
+        'keyboard'
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        state
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'pending'
+      </code>
+      
+      （アクティベーション待ち）、<code>
+        'dragging'
+      </code>
+      
+      、そして <code>
+        'ended'
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        started
+      </code>
+    </td>
+    
+    <td>
+      ドラッグが始まった。その後終わっていても。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        move(point)
+      </code>
+    </td>
+    
+    <td>
+      入力が動いた。待機中は tolerance をチェックし、ドラッグ中はドラッグを動かします。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        step(direction)
+      </code>
+    </td>
+    
+    <td>
+      キーボードドラッグ：矢印キー 1 回分のステップ、<code>
+        'up' | 'down' | 'left' | 'right'
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        place({ list, index })
+      </code>
+    </td>
+    
+    <td>
+      キーボードでの移動と同じように、アイテムを並べ替え可能なリストの位置に置きます。そこで受け入れるリストがなければ <code>
+        false
+      </code>
+      
+       で解決します。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        drop()
+      </code>
+    </td>
+    
+    <td>
+      ドロップします。ドロップが成立すると、着地した後に <code>
+        true
+      </code>
+      
+       で解決します。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        cancel()
+      </code>
+    </td>
+    
+    <td>
+      キャンセルします：アイテムは元の位置に戻るか、待機中の押下は破棄されます。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+もう当てはまらない呼び出し——終了後の移動、2 回目の `drop()`——は無視されます。完全な型：[センサー](https://zizigy.github.io/docs/api/sensors)。
+
+<tip>
+
+組み込みのセンサーをラップするには、独自のコンテキストでその `setup` を実行してください。コンテキストはスプレッドではなく `Object.create(context, { activate: { value: myActivate } })` で作ると、ライブなゲッター（`status`、`drag`、`props`）が動作し続けます。
+
+</tip>
+
+## プログラムによるドラッグ
+
+`@vue-dnd-kit/actions` はコードからアイテムを動かします：「上へ移動」ボタン、メニュー、キーボードショートカット、元に戻す、オンボーディングツアー、テスト。公開のセンサー API の上に作られていて、そのドラッグは本物です：読み上げられ、アニメーションし、`onBeforeDrop`、`onDrop`、`e.result`、`preventDefault()` を通り、プロバイダーのルール（一度に 1 つのドラッグ、無効なアイテム、`accept` と `group.put`）に従います。
+
+<example height="31.5rem" hint="トラックにホバーして矢印を出すか、シャッフルするか、スクリプトのドラッグを再生してみましょう" name="actions">
+
+
+
+</example>
+
+```bash
+npm i @vue-dnd-kit/actions
+```
+
+### moveItem：1 回の呼び出しで 1 回の移動
+
+```ts
+import { useDnDActions } from '@vue-dnd-kit/actions';
+
+const { moveItem } = useDnDActions(); // in setup, under a provider
+
+await moveItem('card-1', { index: 0 }); // to the top of its list
+await moveItem('card-1', { list: 'done' }); // to the end of another list
+await moveItem('card-1', { list: 'done', index: 2 }); // to a place in another list
+```
+
+- `list` は並べ替え可能なリストの `id` です。省略すると、アイテムは自分のリストにとどまります。
+- `index` はアイテムが最終的に入る位置で、アイテム自身を除いて数え、リストの範囲に丸められます。省略すると、アイテムは末尾へ移ります。
+- ドロップが成立すれば `true` で、アイテムが描画されていない・無効である、そこで受け入れるリストがない、ドロップが拒否された場合は `false` で解決します。
+- 呼び出しはキューに入ります。それぞれプロバイダーがアイドルになるまで待つので、すばやい 2 回目のクリックも失われません。デモのシャッフルは 5 回の連続した呼び出しです。
+- キーボードドラッグとして実行されるので、読み上げられ、フォーカスはアイテムにとどまります。
+- リスト専用です：ツリーの位置には深さもあるためです。
+
+移動ボタン付きの行については[アクセシビリティ](https://zizigy.github.io/docs/guides/accessibility#moving-without-dragging)を参照してください。
+
+### startDrag：スクリプトによるドラッグ
+
+```ts
+const { startDrag } = useDnDActions();
+
+const drag = startDrag('card-1'); // null when it can't start now
+if (drag) {
+  await drag.moveTo(document.querySelector('#trash')!); // onto an element
+  await drag.moveTo({ x: 400, y: 120 }); // to a point, in viewport coordinates
+  await drag.moveTo({ list: 'done', index: 2 }); // to a list position
+  await drag.drop(); // true when the drop went through; or drag.cancel()
+}
+```
+
+`moveTo` は移動が描画されると、`drop` はドロップが着地すると解決します。デモの「Play a scripted drag」は、最後のトラックを小さな `moveTo` のステップで滑らせるように上げていき、一番上でドロップします。`startDrag(id, { from: { x, y } })` は、アイテムの中心ではなく指定した点で持ち上げます。
+
+### ドラッグをキーボードに渡す
+
+`startDrag(id, { type: 'keyboard' })` はアイテムをキーボードドラッグとして持ち上げます。コードから `await drag.step('down')` で動かすことも、ユーザーに任せることもできます。キーボードセンサーは、誰が始めたかに関係なく、すべてのキーボードドラッグを操作します。これで「移動」メニューの項目が作れます。
+
+<example height="26rem" hint="行のメニューを開いてみましょう。矢印キーで動かすか、別の週へ送れます" name="move-menu">
+
+
+
+</example>
+
+```ts [Row.vue]
+const { moveItem, startDrag } = useDnDActions();
+
+// One move in one call: picked up, put there and dropped, announced and animated.
+const toOther = () => moveItem(props.task.id, { list: props.other.id, index: 0 });
+// A keyboard drag, handed to the arrow keys: Space or Enter drops, Escape cancels.
+const withKeys = () => {
+  el.value?.focus();
+  startDrag(props.task.id, { type: 'keyboard' });
+};
+```
+
+矢印キーで行が枠ごとに動き、:kbd{value="ArrowLeft"} と <kbd value="ArrowRight">
+
+
+
+</kbd>
+
+ で別の週へ移ります（リストは `group` を共有しています）。ドラッグが終わると、フォーカスは行に戻ります。ボードの下のキーのヒントは、`useDnD().active.value?.sensor` が `'keyboard'` の間、強調表示されます。
+
+### コンポーネントの外から
+
+`useDnDActions()` は、上にあるプロバイダーで `actions` という名前のセンサーを 1 つ動かします。ストアやテストハーネスから、あるいは独自の名前でプロバイダーを操作するには、自分で動かすセンサーの中で actions を作成してください。
+
+```ts
+import { defineSensor } from '@vue-dnd-kit/core';
+import { createDnDActions, type DnDActions } from '@vue-dnd-kit/actions';
+
+export let tour: DnDActions | undefined;
+export const tourSensor = defineSensor({
+  name: 'tour',
+  setup: (context) => void (tour = createDnDActions(context)),
+});
+```
+
+```vue
+<DnDProvider :sensors="[pointerSensor, keyboardSensor, tourSensor]">
+```
+
+あとは `await tour?.moveItem('card-1', { list: 'done' })` をどこからでも呼べます。サーバーレンダリング中は何もドラッグされません：`moveItem` は `false` で解決し、`startDrag` は `null` を返します。
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

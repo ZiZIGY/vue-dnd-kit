@@ -1,0 +1,422 @@
+---
+title: "Listes virtuelles"
+description: "Triez des milliers de lignes avec TanStack Virtual ou le useVirtualList de VueUse — donnez le brouillon au virtualiseur, utilisez l'id des lignes comme clé, et gardez la ligne glissée montée."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/virtual-lists"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+Le tri est piloté par les données : le brouillon `items` est un nouveau tableau à chaque
+réordonnancement, les lignes ont pour clé leur item, et les animations n'ont besoin que des
+lignes montées. N'importe quel virtualiseur qui rend à partir d'un tableau fonctionne donc —
+donnez-lui le brouillon au lieu de votre tableau.
+
+<example height="32.5rem" hint="10 000 lignes, une poignée dans le DOM : faites-en glisser une, ou faites défiler pendant le glissement" name="virtual-list">
+
+
+
+</example>
+
+## Les règles
+
+1. Donnez au virtualiseur le **brouillon items**, pas votre tableau source.
+2. **Utilisez la clé de l'item comme clé des lignes**, jamais l'index. Les exemples officiels de
+TanStack et de VueUse utilisent l'index ; changez cela.
+3. Passez les ids à `makeSortableItem` sous forme de **getter**, `{ id: () => props.item.id }` :
+le virtualiseur peut confier un autre item à un composant de ligne.
+4. Gardez les gros tableaux dans un **shallowRef**. La bibliothèque ne parcourt jamais vos
+données en profondeur.
+5. Gardez au placeholder la même taille que la ligne : masquez son contenu, ne le réduisez pas.
+6. Prévoyez un overscan d'au moins 5 lignes (VueUse : au moins 1), pour que les lignes soient
+montées avant que le défilement automatique ne les atteigne.
+7. N'animez pas la `height`, la `margin` ou le `padding` des lignes, et ne mettez pas de
+`will-change` sur le conteneur défilant.
+
+## VueUse useVirtualList
+
+La démo ci-dessus. Toutes les lignes ont la même hauteur, et le calcul de VueUse reste en O(1) :
+
+```vue [TaskList.vue]
+<script setup lang="ts">
+import { shallowRef, useTemplateRef } from 'vue';
+import { useVirtualList } from '@vueuse/core';
+import { makeSortableList } from '@vue-dnd-kit/core';
+
+const ROW = 44;
+const tasks = shallowRef(makeTasks(10_000));
+
+// The outer element is the sortable list: `containerProps` owns the scroller's ref.
+const listRef = useTemplateRef<HTMLElement>('list');
+const { items } = makeSortableList(listRef, { items: tasks });
+
+// Fed with the draft `items`, so the rows move while you drag.
+const { list, containerProps, wrapperProps } = useVirtualList(items, { itemHeight: ROW, overscan: 8 });
+</script>
+
+<template>
+  <div ref="list">
+    <div v-bind="containerProps" style="height: 308px">
+      <div v-bind="wrapperProps">
+        <!-- Keyed by id, not by index as in VueUse's docs. -->
+        <Row v-for="{ data } in list" :key="data.id" :task="data" :height="ROW" />
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+- `itemHeight` est la hauteur réelle de la ligne, bordures comprises. Ne mettez pas de marges
+entre les lignes : VueUse ne les compte pas.
+- La liste triable est l'élément extérieur, parce que `containerProps` lie sa propre `ref` au
+conteneur défilant. Le défilement automatique trouve quand même ce conteneur : il fait défiler
+les conteneurs sous le pointeur.
+- VueUse ne peut pas garder une ligne montée : la ligne glissée est démontée quand vous la faites
+défiler hors de vue. Ce n'est pas un problème, voir [Ce qui reste monté](#what-stays-mounted).
+
+## TanStack Virtual
+
+TanStack mesure chaque ligne : les lignes peuvent donc être aussi hautes que leur contenu. Il peut
+aussi garder la ligne glissée montée, aussi loin que vous fassiez défiler :
+
+<example height="34.5rem" hint="Faites glisser une note juste sous la liste et maintenez : la ligne glissée reste épinglée" name="virtual-tanstack">
+
+
+
+</example>
+
+```vue [NoteList.vue]
+<script setup lang="ts">
+import { computed, shallowRef, useTemplateRef } from 'vue';
+import { defaultRangeExtractor, useVirtualizer, type Range } from '@tanstack/vue-virtual';
+import { makeSortableList } from '@vue-dnd-kit/core';
+
+const notes = shallowRef(makeNotes(5_000));
+
+// The scroller is the sortable list: the library sorts it and auto-scrolls it.
+const scrollRef = useTemplateRef<HTMLElement>('scroll');
+const { items, activeIndex, captureLayout } = makeSortableList(scrollRef, { items: notes });
+
+// One computed that reads the draft once: TanStack memoizes the measurements and the range
+// on `getItemKey` and `rangeExtractor`, so they must be new functions after every reorder.
+const virtualizer = useVirtualizer(
+  computed(() => {
+    const arr = items.value;
+    const pin = activeIndex.value;
+    return {
+      count: arr.length,
+      getScrollElement: () => scrollRef.value,
+      estimateSize: () => 92,
+      overscan: 6,
+      getItemKey: (index: number) => arr[index]!.id,
+      // The dragged row stays mounted, however far you scroll from it.
+      rangeExtractor: (range: Range) => {
+        const indexes = defaultRangeExtractor(range);
+        return pin < 0 || indexes.includes(pin) ? indexes : [...indexes, pin].sort((a, b) => a - b);
+      },
+      // Measurements land after the library's animation pass: animate them too.
+      onChange: () => captureLayout(),
+    };
+  }),
+);
+const rows = computed(() => virtualizer.value.getVirtualItems());
+const measure = (el: unknown) => virtualizer.value.measureElement(el as HTMLElement | null);
+</script>
+
+<template>
+  <div ref="scroll" style="height: 340px; overflow: auto; contain: strict">
+    <div :style="{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }">
+      <div
+        v-for="row in rows"
+        :key="(row.key as string)"
+        :ref="measure"
+        :data-index="row.index"
+        :style="{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${row.start}px)` }"
+      >
+        <NoteRow :note="items[row.index]!" />
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+Ce que fait chaque morceau :
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Morceau
+    </th>
+    
+    <th>
+      Pourquoi
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        count
+      </code>
+      
+       et <code>
+        getItemKey
+      </code>
+      
+       à partir de <code>
+        items
+      </code>
+    </td>
+    
+    <td>
+      Le virtualiseur rend le brouillon : les lignes bougent donc pendant le glissement.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      Un seul <code>
+        computed
+      </code>
+      
+       autour des options
+    </td>
+    
+    <td>
+      <code>
+        getItemKey
+      </code>
+      
+       et <code>
+        rangeExtractor
+      </code>
+      
+       doivent être de nouvelles fonctions après chaque réordonnancement, sinon TanStack garde les anciennes mesures et l'ancienne plage.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        measureElement
+      </code>
+      
+       avec <code>
+        data-index
+      </code>
+    </td>
+    
+    <td>
+      Chaque ligne est mesurée au moment où elle est rendue : <code>
+        estimateSize
+      </code>
+      
+       n'est qu'une première estimation.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        rangeExtractor
+      </code>
+      
+       avec <code>
+        activeIndex
+      </code>
+    </td>
+    
+    <td>
+      Ajoute la ligne glissée à la plage rendue quand elle en sort en défilant. <code>
+        activeIndex
+      </code>
+      
+       vaut <code>
+        -1
+      </code>
+      
+       quand aucune ligne de cette liste n'est glissée.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onChange: () => captureLayout()
+      </code>
+    </td>
+    
+    <td>
+      Une nouvelle mesure déplace des lignes après que la bibliothèque a animé un réordonnancement. <code>
+        captureLayout()
+      </code>
+      
+       anime aussi ce déplacement. En dehors d'un glissement, il ne fait rien.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Quand la ligne glissée quitte-t-elle la plage ? Son emplacement suit le pointeur tant que le
+pointeur est au-dessus de la liste. Placez le pointeur juste sous la liste et maintenez-le là : le
+défilement automatique continue, l'emplacement reste là où il était, et il se retrouve vite loin
+au-dessus des lignes à l'écran. L'épinglage le garde monté, pour que le dépôt atterrisse sur un
+vrai élément. Une liste avec `placeholder: 'indicator'` garde la ligne glissée en place pendant
+tout le glissement : c'est donc encore plus important dans ce cas.
+
+- L'épinglage demande des lignes positionnées une à une, en absolu, comme ci-dessus. Un
+virtualiseur qui rend un seul bloc avec du padding ne peut pas ajouter une ligne éloignée.
+- Le composant de ligne passe son id sous forme de getter :
+`makeSortableItem(el, { id: () => props.note.id })`.
+- Gardez l'`anchorTo: 'start'` de TanStack, la valeur par défaut. Avec `lanes`, utilisez
+`@tanstack/virtual-core` 3.19 ou plus récent (`@tanstack/vue-virtual` l'installe).
+
+## Colonnes kanban virtuelles
+
+Chaque colonne est sa propre liste triable et son propre virtualiseur, et les listes partagent un
+`group`. Trois colonnes de 1 000 cartes en rendent quelques dizaines :
+
+<example height="34rem" hint="Déplacez une carte entre des colonnes de 1 000 cartes" name="virtual-kanban">
+
+
+
+</example>
+
+Une carte qui arrive d'une autre colonne n'a pas encore de mesure dans cette colonne. Estimez-la
+à la taille réelle de la carte glissée, `activeSize`, lue dans le même computed :
+
+```ts [Column.vue]
+const { items, activeIndex, activeSize, captureLayout } = makeSortableList(scrollRef, {
+  id: props.column.id,
+  items: props.column.cards, // a shallowRef per column
+  group: 'board',
+});
+
+const virtualizer = useVirtualizer(
+  computed(() => {
+    const arr = items.value;
+    const pin = activeIndex.value;
+    const size = activeSize.value;
+    return {
+      count: arr.length,
+      getScrollElement: () => scrollRef.value,
+      // A card coming from another column gets its real height before it is measured.
+      estimateSize: (index: number) => (index === pin && size ? size.height + GAP : 72),
+      // …getItemKey, rangeExtractor and onChange as above
+    };
+  }),
+);
+```
+
+- Donnez à chaque colonne ses données sous forme de `shallowRef` : la liste y écrit ses dépôts,
+et 1 000 cartes ne reçoivent aucun proxy profond.
+- `activeSize` est la taille de l'élément glissé au début du glissement. Ajoutez ce que votre
+emplacement met autour de la carte : ici, l'espace en dessous (`GAP`) est le padding de
+l'emplacement, que le virtualiseur mesure donc aussi.
+- L'en-tête compte `items.length`, le brouillon : il change dès qu'une carte entre ou sort.
+
+## Ce qui reste monté
+
+La ligne glissée peut être démontée pendant le glissement : elle est sortie de la plage en
+défilant, ou le virtualiseur a recyclé son composant. Le glissement y survit. L'overlay continue
+d'afficher l'item, la sélection est gardée par id, et l'item atterrit là où le brouillon le place.
+Les animations ne touchent que les lignes montées.
+
+Quand le virtualiseur le permet, gardez quand même la ligne glissée montée, comme le fait la
+recette TanStack avec `rangeExtractor`. La liste vous dit de quelle ligne il s'agit :
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Renvoyé par la liste
+    </th>
+    
+    <th>
+      À quoi il sert
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        items
+      </code>
+    </td>
+    
+    <td>
+      Le brouillon : donnez-le au virtualiseur.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeIndex
+      </code>
+    </td>
+    
+    <td>
+      L'index de la ligne à garder montée dans le brouillon de cette liste, <code>
+        -1
+      </code>
+      
+       quand elle n'y est pas.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeKey
+      </code>
+    </td>
+    
+    <td>
+      La clé de cette ligne, <code>
+        null
+      </code>
+      
+       quand elle n'y est pas.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activeSize
+      </code>
+    </td>
+    
+    <td>
+      La taille de la ligne glissée au début du glissement : estimez-en une ligne entrante.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        captureLayout()
+      </code>
+    </td>
+    
+    <td>
+      Appelez-la juste avant un changement de mise en page que la bibliothèque n'a pas fait (une nouvelle mesure). Elle anime les lignes depuis l'endroit où elles étaient. En dehors d'un glissement, elle ne fait rien.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+## Arbres
+
+`makeSortableTree` renvoie un `items` à plat des lignes visibles : un arbre se virtualise donc
+comme une liste, avec `node.key` comme clé, et `activeIndex` et `activeKey` qui désignent la
+ligne à garder montée. Voir les [arbres](https://zizigy.github.io/docs/guides/trees).
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

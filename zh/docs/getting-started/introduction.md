@@ -1,0 +1,197 @@
+---
+title: "简介"
+description: "Vue DnD Kit 是为 Vue 3 打造的拖放库——可排序列表、看板、树、多项拖拽和放置区，开箱即带动画与无障碍支持。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/getting-started/introduction"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+Vue DnD Kit 是为 Vue 3 打造的拖放库。可排序列表、看板、树、多项拖拽、复制和放置区——开箱即带动画、支持键盘并向屏幕阅读器播报，全部使用你自己的标记。
+
+<example height="27rem" hint="在不同日期之间移动行程站点；下方的标签列出了其他手势" name="at-a-glance" title="一览">
+
+
+
+</example>
+
+这些都不是演示自己写的代码：列表实时重新排序，各列交换站点（一个 `group`），选中的项一起移动（`selected`），:kbd{value="Alt"} 把移动变成复制（`clone`），键盘也能按位置完成所有这些操作。演示只负责渲染站点并传入几个选项。
+
+## 它是什么
+
+一组**组合式函数**加上一个 **provider** 组件。你渲染自己的元素，把它们的模板引用交给组合式函数，剩下的交给库来处理：指针、触摸和键盘输入，查找目标，重新排序，动画，自动滚动，以及告诉屏幕阅读器发生了什么。
+
+```vue [Day.vue]
+<script setup lang="ts">
+const listRef = useTemplateRef<HTMLElement>('list');
+// `items` is the draft: it reorders while you drag. On drop, `day.stops` gets the new order.
+const { items } = makeSortableList(listRef, { items: toRef(props.day, 'stops'), group: 'trip' });
+</script>
+
+<template>
+  <ul ref="list">
+    <StopCard v-for="stop in items" :key="stop.id" :stop="stop" />
+  </ul>
+</template>
+```
+
+除了一个浮动的**浮层**之外，它自己什么都不渲染——浮层默认是被拖拽元素的克隆。你的标记和样式仍然是你的：库只添加 ARIA 属性，以及几个用于为拖拽状态设置样式的 `data-dnd-*` 属性。
+
+## 你能得到什么
+
+- **可排序的列表和网格**，拖拽时实时重新排序，可以是竖直、水平或网格布局。
+- **共享项的列表**：看板、分发副本的面板、交换，以及规定什么能去哪里的规则。
+- **树**：通过横向拖动或悬停在某一行上来嵌套，支持深度限制和规则。
+- **多项拖拽**，使用你自己的选择方式（Ctrl/Cmd 单击、框选）：整组项一起移动。
+- **放置区**，支持接收规则，以及由你确认、拒绝或自己应用的放置。
+- **默认带动画**：项滑动到新位置，放置时落到它的位置上，取消时飞回原处。
+- **无障碍**：键盘按位置逐个拖拽、实时播报、ARIA 属性。
+- **虚拟列表**，使用 TanStack Virtual 或 VueUse：成千上万行。
+- **传感器与 actions**：你自己的输入设备，以及由代码编写脚本的拖拽。
+- **DevTools**：一个标签页，带有每个列表的实时地图、摇杆和每次拖拽的日志。
+
+## 有何不同
+
+- **在放置之前，你的数据始终是你的。** 你渲染数组的*草稿*。拖拽时只有草稿在移动；放置时，库把新顺序写入你的 ref，或者把 `e.result` 交给你自己应用（store、服务器、撤销）。
+- **没有包装组件。** 行就是你自己的元素，只需一个 ref 和一次调用，所以 UI 库的组件（Nuxt UI、Vuetify、你自己的）可以原样拖拽。
+- **默认带动画，但从不碍事。** 重新排序、落位和取消开箱即有动画；可以关闭、调整，或交给 GSAP 或 motion。
+- **键盘不是事后补上的。** 每一次拖拽都可以用 <kbd value="Space">
+
+
+
+</kbd>
+
+ 和方向键完成，移动会被播报，焦点会回到原来的位置。
+- **整个应用一个 provider。** 区域为页面的各个部分提供它们自己的规则（轴、边界、网格、更长的按下时间），所以嵌套的功能不需要嵌套的 provider。
+- **输入是可插拔的。** 指针和键盘都是传感器；可以为游戏手柄或语音命令编写你自己的传感器，或用 `@vue-dnd-kit/actions` 通过代码移动项。
+
+## 各部分如何配合
+
+<table>
+<thead>
+  <tr>
+    <th>
+      部分
+    </th>
+    
+    <th>
+      作用
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        DnDProvider
+      </code>
+    </td>
+    
+    <td>
+      掌管拖拽：输入、浮层、选中集合、自动滚动、播报。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeSortableList
+      </code>
+      
+       / <code>
+        makeSortableItem
+      </code>
+    </td>
+    
+    <td>
+      可重新排序的列表，以及它的行。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeSortableTree
+      </code>
+    </td>
+    
+    <td>
+      以带深度的扁平形式渲染的树。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeDraggable
+      </code>
+      
+       / <code>
+        makeDroppable
+      </code>
+    </td>
+    
+    <td>
+      自由拖拽和放置区。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeDragArea
+      </code>
+    </td>
+    
+    <td>
+      页面某一部分的规则：轴、边界、吸附、自动滚动、激活。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeSelectionArea
+      </code>
+    </td>
+    
+    <td>
+      框选。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        useDnD
+      </code>
+      
+       / <code>
+        useDnDMonitor
+      </code>
+    </td>
+    
+    <td>
+      拖拽状态及其事件，在 provider 之下的任何地方都可使用。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+<tip>
+
+从 v2 迁移过来？API 有变化：`useDnDProvider` 变成了 `useDnD`，`makeConstraintArea` 和 `makeAutoScroll` 合并成了 `makeDragArea`。可排序列表现在是内置的。
+
+</tip>
+
+## 环境要求
+
+- Vue **3.5** 或更高版本。
+- 现代浏览器：Chrome 和 Edge 104+、Safari 15.4+、Firefox 104+。
+- 支持 SSR 和 Nuxt：浮层和实时区域只在客户端挂载。
+
+下一步：[安装它](https://zizigy.github.io/docs/getting-started/installation)，然后在[快速上手](https://zizigy.github.io/docs/getting-started/quick-start)中构建第一个列表。
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

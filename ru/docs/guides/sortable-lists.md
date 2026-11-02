@@ -1,0 +1,722 @@
+---
+title: "Сортируемые списки"
+description: "Списки, полосы вкладок и сетки, которые перестраиваются во время драга — makeSortableList рендерит черновик, makeSortableItem делает строки, а бросок записывает новый порядок в ваш ref. Ручки, линия вставки, обмен местами."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/sortable-lists"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="25rem" hint="Перетащите слой за ручку: панель двигается сразу, монтажная область — при броске" name="layers-panel">
+
+
+
+</example>
+
+## Список и его строки
+
+Сортируемому списку нужны два компонента: список и его строка.
+
+```vue [LayersPanel.vue]
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import { makeSortableList } from '@vue-dnd-kit/core';
+import LayerRow from './LayerRow.vue';
+
+const layers = defineModel<Layer[]>({ required: true });
+const list = useTemplateRef<HTMLElement>('list');
+const { items } = makeSortableList(list, { items: layers });
+</script>
+
+<template>
+  <ul ref="list">
+    <LayerRow v-for="layer in items" :key="layer.id" :layer="layer" />
+  </ul>
+</template>
+```
+
+```vue [LayerRow.vue]
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import { makeSortableItem } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ layer: Layer }>();
+const el = useTemplateRef<HTMLElement>('el');
+makeSortableItem(el, { item: () => props.layer });
+</script>
+
+<template>
+  <li ref="el">{{ layer.name }}</li>
+</template>
+```
+
+Строка регистрируется в списке, внутри которого она отрендерена. Компонент может создать
+несколько списков (две колонки, список внутри списка): каждая строка входит в тот, чей элемент
+её содержит, а у вложенных списков — в самый внутренний.
+
+## Черновик
+
+`makeSortableList` возвращает `items` — **черновик** вашего массива. Пока вы перетаскиваете,
+черновик перестраивается вживую: перетаскиваемая строка занимает новый слот, а остальные
+отъезжают в сторону. Ваш массив не меняется до броска. Тогда библиотека записывает в него
+новый порядок.
+
+Панель слоёв выше показывает и то, и другое: панель рендерит `items` и двигается во время
+драга; монтажная область читает `layers`, сам массив, и меняет порядок слоёв, только когда вы
+отпускаете.
+
+- Рендерите `items`, а не свой массив. Если рендерить свой массив, до броска ничего не
+двигается.
+- Запись происходит после `onDrop` списка. В `onDrop` ваш массив ещё содержит старый
+порядок, а `e.result` — новый.
+- `layers` — обычный ref (здесь `defineModel`, и запись эмитит `update:modelValue`), поэтому
+остальное приложение видит изменение, как любое другое.
+
+```ts
+makeSortableList(list, {
+  items: layers,
+  onDrop: (e) => {
+    console.log(e.from.index, '→', e.to.index, e.result.get(e.to.list));
+  },
+});
+```
+
+<tip>
+
+Стор, серверное состояние или иммутабельные данные? Передайте геттер или `computed` вместо
+ref. Библиотека не пишет в источник только для чтения: вызовите `e.preventDefault()` и
+примените `e.result` сами. См. [управляемые списки](https://zizigy.github.io/docs/guides/shared-lists#controlled-lists).
+
+</tip>
+
+## Ключи
+
+Строки идентифицируются по своим данным, а не по индексу и не по автоматическому id. По
+умолчанию ключ — `item.id`, а для строк и чисел — сам элемент.
+
+```ts
+// LayersPanel.vue: your items have another key
+makeSortableList(list, { items: layers, getKey: (layer) => layer.uuid });
+
+// LayerRow.vue: `item` is keyed with the list's getKey…
+makeSortableItem(el, { item: () => props.layer });
+// …or pass the key yourself
+makeSortableItem(el, { id: () => props.layer.uuid });
+```
+
+- Используйте тот же ключ в `v-for`: `:key="layer.uuid"`. С `:key="index"` анимируются не те
+строки, и их состояние перескакивает между строками.
+- Ключи должны быть уникальны среди всех списков, которые обмениваются элементами.
+- Передавайте `item` и `id` геттерами, чтобы строка оставалась синхронной при изменении
+пропсов.
+
+## Ручки
+
+По умолчанию драг начинается со всей строки, кроме кнопок, полей ввода и других элементов
+управления в ней: глаз и замок слоя остаются обычными кнопками. Передайте `handle`, чтобы
+перетаскивать только за одну часть:
+
+```vue [LayerRow.vue]
+<script setup lang="ts">
+makeSortableItem(el, { item: () => props.layer, handle: '.grip' });
+</script>
+
+<template>
+  <li ref="el">
+    <button type="button" class="grip" :aria-label="`Move ${layer.name}`">⠿</button>
+    {{ layer.name }}
+  </li>
+</template>
+```
+
+- `handle` — селектор внутри элемента или ref на элемент.
+- Драг мышью начинается с ручки сразу, без обычных 4 px. Нажатие без движения остаётся
+кликом: ручка может открывать меню по `click`.
+- Ручка получает атрибуты драга (`role`, `tabindex`, `aria-*`), и перетаскивание с клавиатуры
+начинается с неё.
+
+Сделайте ручку элементом `<button type="button">` с `aria-label`: она фокусируется сама по
+себе, а скринридеры озвучивают её подпись. Голый `<span>` с иконкой тоже работает (библиотека
+даёт ему `tabindex="0"` и `role="button"`), но у него нет осмысленного имени.
+
+<note>
+
+Драг касанием начинается после долгого нажатия в 200 ms, чтобы страница могла
+прокручиваться. Чтобы перетаскивать за ручку сразу, дайте ручке `touch-action: none`, а
+элементу — `activation: { touch: { distance: 4 } }`.
+
+</note>
+
+## Стратегии
+
+`strategy` говорит, как устроен список, чтобы строки освобождали место правильно:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        strategy
+      </code>
+    </th>
+    
+    <th>
+      Для
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'vertical'
+      </code>
+      
+       (по умолчанию)
+    </td>
+    
+    <td>
+      Колонка строк.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'horizontal'
+      </code>
+    </td>
+    
+    <td>
+      Один ряд: вкладки, чипы, таймлайн.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'grid'
+      </code>
+    </td>
+    
+    <td>
+      CSS-сетки и переносящиеся flex-ряды, в том числе с элементами разного размера.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Ряд вкладок — горизонтальный список:
+
+<example height="23rem" hint="Перетаскивайте вкладки; закройте одну или откройте новую" name="browser-tabs">
+
+
+
+</example>
+
+```ts [Browser.vue]
+const { items } = makeSortableList(strip, {
+  items: tabs,
+  strategy: 'horizontal',
+  axis: 'x',        // the tabs stay on their row
+  animate: true,    // the buttons open and close tabs: slide the others then too
+});
+```
+
+Кнопка закрытия вкладки продолжает работать внутри перетаскиваемой вкладки, а клик, которым
+заканчивается драг, не выбирает вкладку. Во время драга строки скользят сами; `animate`
+добавляет то же для изменений, сделанных не драгом, здесь — кнопками (см.
+[анимации](https://zizigy.github.io/docs/guides/animations)).
+
+Сетка сортируется в двух измерениях, с плитками любого размера:
+
+<example height="31rem" hint="Перетащите фото, в том числе большое" name="photo-grid">
+
+
+
+</example>
+
+```ts [PhotoGrid.vue]
+const { items } = makeSortableList(grid, { items: photos, strategy: 'grid' });
+```
+
+```css
+.grid { display: grid; grid-template-columns: repeat(4, 76px); grid-auto-rows: 76px; grid-auto-flow: dense; }
+.wide { grid-column: span 2; }
+.tall { grid-row: span 2; }
+```
+
+`grid-auto-flow: dense` держит сетку плотной, когда двигается большая плитка. Без него сетка
+оставляет дыры там, где плитка больше не помещается, и вырастает на ряд.
+
+## Фиксация оси
+
+```ts
+makeSortableList(list, { items: layers, axis: 'y' });
+```
+
+`axis: 'y'` держит драг на вертикальной оси, `'x'` — на горизонтальной: слои и вкладки выше
+так и делают. Собственный `axis` элемента важнее, чем у его списка. Чтобы ещё и удерживать
+драг внутри списка, добавьте модификатор `restrictToParent`. Подробнее — в
+[ограничениях](https://zizigy.github.io/docs/guides/constraints).
+
+## Стилизация слота
+
+Перетаскиваемая строка остаётся в списке как слот, в который она приземлится, и получает
+`data-dnd-placeholder`. Стиль по умолчанию снижает её непрозрачность до 40 % с нулевой
+специфичностью, так что любое ваше правило побеждает:
+
+```css [LayerRow.vue]
+.layer[data-dnd-placeholder] {
+  opacity: 1;
+  box-shadow: inset 0 0 0 1.5px #42b883;
+}
+
+.layer[data-dnd-placeholder] > * {
+  visibility: hidden;   /* an empty slot of the row's exact size */
+}
+```
+
+`makeSortableItem` возвращает то же состояние в виде ref, и ещё кое-что:
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Возвращает
+    </th>
+    
+    <th>
+      Что это
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        isPlaceholder
+      </code>
+    </td>
+    
+    <td>
+      Эта строка — слот, в который приземлится перетаскиваемый элемент.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isDragging
+      </code>
+    </td>
+    
+    <td>
+      Эта строка перетаскивается (каждая перетаскиваемая строка при мульти-драге).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        index
+      </code>
+    </td>
+    
+    <td>
+      Её индекс в черновике: он меняется во время драга.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        selected
+      </code>
+    </td>
+    
+    <td>
+      Записываемый, связан с выделением провайдера.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        indicator
+      </code>
+    </td>
+    
+    <td>
+      В <a href="#an-insertion-line">
+        режиме индикатора
+      </a>
+      
+       — где проходит линия.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Список возвращает `isOver` и `isAccepting` для собственной подсветки, а также `activeKey` и
+`activeIndex` — перетаскиваемый элемент и его место в черновике этого списка. Все состояния,
+с живыми демо, — в [стилизации](https://zizigy.github.io/docs/guides/styling).
+
+## Отключение
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Опция
+    </th>
+    
+    <th>
+      Что она запрещает
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+      
+       на элементе
+    </td>
+    
+    <td>
+      Этот элемент нельзя перетащить. Остальные всё равно проходят мимо него: заблокируйте слой выше, затем перетащите через него другой.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+      
+       на списке
+    </td>
+    
+    <td>
+      Никаких драгов из него и бросков в него.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        sort: false
+      </code>
+      
+       на списке
+    </td>
+    
+    <td>
+      Его элементы нельзя переставлять внутри него, но можно вынести: палитра, см. <a href="/docs/guides/shared-lists#what-goes-in-and-out-pull-and-put">
+        списки с общими элементами
+      </a>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
+
+Все они принимают геттер или ref и применяются к следующему драгу:
+
+```ts [LayerRow.vue]
+makeSortableItem(el, { item: () => props.layer, handle: '.grip', disabled: () => props.layer.locked });
+```
+
+Строка, которая должна оставаться первой или последней, что бы ни делали остальные, вообще не
+элемент: рендерите её вне списка. Слой Background в панели стоит под `<ul>`.
+
+## Показать часть элементов
+
+Поле поиска, тег: `filter` показывает элементы, для которых возвращает `true`, и драг
+сортирует среди них. Остальные остаются в вашем массиве, на своих местах:
+
+<example height="27rem" hint="Выберите тег или введите поиск, затем перетащите задачу: массив сохраняет скрытые на своих местах" name="filtered-list">
+
+
+
+</example>
+
+```ts [Backlog.vue]
+const query = ref('');
+const tag = ref<Tag | null>(null);
+
+const { items } = makeSortableList(list, {
+  items: tasks,
+  filter: (task) => (!tag.value || task.tag === tag.value) && task.title.includes(query.value),
+});
+```
+
+- `items` содержит подходящие элементы: рендерите его как обычно. Фильтр реактивный: ввод в
+поле поиска сразу обновляет список.
+- Бросок записывает весь массив. Каждый скрытый элемент остаётся сразу после показанного
+элемента, за которым шёл; если двигался именно тот, скрытый остаётся после ближайшего
+предыдущего, который не двигался.
+- `e.to.index` и `activeIndex` списка считают показанные элементы. `e.result` содержит весь
+массив, включая скрытые элементы.
+
+<note>
+
+`computed`, который фильтрует ваш массив и передаётся как `items`, тоже работает, но он только
+для чтения: `e.result` пришлось бы применять самим и самим решать, куда идут скрытые
+элементы. `filter` делает и то и другое.
+
+</note>
+
+## Линия вставки
+
+С `placeholder: 'indicator'` список во время драга стоит на месте, а линия показывает, куда
+попадёт бросок. Линию рисуете вы:
+
+<example height="27rem" hint="Перетащите задачу: линия показывает, куда она встанет" name="issue-table">
+
+
+
+</example>
+
+```ts [IssueTable.vue]
+const { items, indicator } = makeSortableList(body, { items: issues, placeholder: 'indicator' });
+```
+
+```vue [IssueRow.vue]
+<script setup lang="ts">
+const { indicator } = makeSortableItem(el, { item: () => props.issue });
+</script>
+
+<template>
+  <div ref="el" class="row" :class="indicator && `drop-${indicator.side}`">…</div>
+</template>
+
+<style scoped>
+.row.drop-before::before { content: ''; position: absolute; top: -1.5px; left: 6px; right: 6px; height: 2px; background: #42b883; }
+.row.drop-after::before { content: ''; position: absolute; bottom: -1.5px; left: 6px; right: 6px; height: 2px; background: #42b883; }
+</style>
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Поле <code>
+        indicator
+      </code>
+    </th>
+    
+    <th>
+      Что в нём
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        list
+      </code>
+    </td>
+    
+    <td>
+      Список, в который попадает бросок.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        index
+      </code>
+    </td>
+    
+    <td>
+      Индекс вставки в списке в том виде, как он отрендерен.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        key
+      </code>
+    </td>
+    
+    <td>
+      Элемент, к которому привязана линия; <code>
+        null
+      </code>
+      
+       в пустом списке (тогда рисуйте её в списке).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        side
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'before'
+      </code>
+      
+       или <code>
+        'after'
+      </code>
+      
+       этого элемента; <code>
+        'swap'
+      </code>
+      
+       в списке, который <a href="#swap-instead-of-shift">
+        меняет местами
+      </a>
+      
+      . Деревья добавляют <code>
+        'inside'
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        depth
+      </code>
+      
+      , <code>
+        parentKey
+      </code>
+    </td>
+    
+    <td>
+      Только в деревьях: куда приземляется бросок. См. <a href="/docs/guides/trees#an-insertion-line">
+        деревья
+      </a>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
+
+- `indicator` списка задан, пока линия в этом списке (таблица его выводит), а `indicator`
+элемента — пока линия привязана к этому элементу.
+- Перетаскиваемая строка остаётся на месте, помеченная как плейсхолдер: приглушите её.
+- Клавиатура тоже двигает линию.
+- Бросок вне всех целей в этом режиме отменяется (`dropOutside: 'cancel'`), ведь список так и
+не показал другой порядок.
+- Оверлей закрывает часть строки под собой. Сделайте его чуть прозрачным, и линия будет
+просвечивать: `[data-dnd-overlay] .row { opacity: 0.85 }`.
+
+## Обмен местами вместо сдвига
+
+С `behavior: 'swap'` перетаскиваемый элемент меняется местами с тем, что под ним, а остальные
+стоят на месте:
+
+<example height="29rem" hint="Поменяйте местами двух людей, в том числе между колонками; попробуйте On drop" name="on-call">
+
+
+
+</example>
+
+```ts [Rotation.vue]
+const { items } = makeSortableList(list, {
+  id: props.column.id,
+  items: toRef(props.column, 'people'),
+  group: 'rotation',
+  behavior: 'swap',
+  placeholder: () => props.placeholder,   // 'item' (live) or 'indicator' (on drop)
+  onDrop: (e) => {
+    if (e.partner) emit('swap', `${e.items[0]?.name} ⇄ ${e.partner.item.name}`);
+  },
+});
+```
+
+- **Вживую** (`placeholder: 'item'`, по умолчанию): обмен виден во время драга. Если вернуться
+назад или уйти со списка, он отменяется.
+- **При броске** (`placeholder: 'indicator'`): до броска ничего не двигается. Индикатор
+отмечает элемент, с которым бросок поменяет местами, `side: 'swap'`: обведите этот элемент
+вместо того, чтобы рисовать линию. Стрелки двигают отметку от элемента к элементу; на
+самом перетаскиваемом элементе её нет.
+
+```vue [PersonCell.vue]
+<li ref="el" :class="{ target: indicator?.side === 'swap' }">…</li>
+```
+
+У события броска есть `mode: 'swap'` и `partner` — элемент, с которым произошёл обмен: его
+`key`, `item` и его собственные `from` и `to`. Два списка одной группы меняются элементами
+между собой, когда у обоих `behavior: 'swap'`, как у двух колонок. Элемент под драгом тогда
+переходит в другой список, поэтому его должно быть можно вынести (`group.pull`) и внести
+(`group.put`): см. [списки с общими элементами](https://zizigy.github.io/docs/guides/shared-lists). Мульти-драг
+сортирует, а не меняет местами.
+
+## Клавиатура
+
+Поставьте фокус на строку или её ручку и нажмите <kbd value="Space">
+
+
+
+</kbd>
+
+ или <kbd value="Enter">
+
+
+
+</kbd>
+
+,
+чтобы взять её. Стрелки вдоль списка двигают её на один слот, в сетках вверх и вниз — на
+следующий ряд, а стрелки поперёк списка переносят её в следующий список её группы. За концом
+списка стрелка ведёт дальше, в следующий список в ту сторону (списки друг над другом), а если
+его нет — на цель в той стороне, например зону удаления. Нажмите
+<kbd value="Space">
+
+
+
+</kbd>
+
+ или <kbd value="Enter">
+
+
+
+</kbd>
+
+ ещё раз, чтобы бросить, или <kbd value="Escape">
+
+
+
+</kbd>
+
+,
+чтобы вернуть на место. Так работает каждое демо на этой странице. Тексты для скринридеров —
+в [доступности](https://zizigy.github.io/docs/guides/accessibility).
+
+## Анимации
+
+Во время драга строки скользят на новые места, а брошенная строка приземляется в свой слот.
+Сам список растёт или сжимается до нового размера, когда строки входят и уходят
+(`animateSize`). Это включено по умолчанию и не требует кода. Не оборачивайте строки в `<TransitionGroup>`:
+перемещения анимировались бы дважды. Не ставьте и CSS `transition` на `transform` строк. Для
+изменений, сделанных не драгом (добавление, удаление, перемешивание), включите опцию
+`animate` списка, как у вкладок. См. [анимации](https://zizigy.github.io/docs/guides/animations).
+
+Полный список опций — в API [makeSortableList](https://zizigy.github.io/docs/api/make-sortable-list) и
+[makeSortableItem](https://zizigy.github.io/docs/api/make-sortable-item).
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

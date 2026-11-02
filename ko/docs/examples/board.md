@@ -1,0 +1,175 @@
+---
+title: "프로젝트 보드"
+description: "Linear와 Trello 같은 프로덕트 보드. 순서를 바꿀 수 있는 컬럼, WIP 제한, Done 전의 확인, 선택 바가 있는 다중 선택, 드래그가 그대로 동작하는 필터, 실행 취소가 있는 휴지통, 그리고 Status 버튼이 실제 드래그를 재생하는 카드 패널."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/board"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="40rem" hint="카드와 컬럼을 드래그하세요. 카드를 클릭하면 열리고, Ctrl/Cmd-클릭하면 선택됩니다" name="board" title="프로젝트 보드">
+
+
+
+</example>
+
+## 살펴볼 점
+
+- **Board.vue**: 컬럼들은 그 자체로 가로 방향의 정렬 가능한 리스트이고(`strategy: 'horizontal'`, `axis: 'x'`), 각 컬럼은 헤더로 드래그하는 정렬 가능한 항목입니다(`handle`).
+펼치면 보드가 화면을 채우고, 휴대폰에서는 옆으로 스크롤됩니다.
+- **Column.vue**: 모든 컬럼의 카드가 하나의 `group`이며, 컬럼마다 규칙이 있습니다. WIP 제한, Done
+전의 확인, 필터입니다. 헤더의 미터는 드래그로 들어올 카드를 밝혀 줍니다.
+- **Card.vue**: `type: 'card'`인 정렬 가능한 항목이므로, 휴지통은 카드를 받고 컬럼은 받지
+않습니다. 클릭하면 열리고, Ctrl/Cmd-클릭하면 선택됩니다(`selected`). 키보드에서는 Space로 집고,
+Enter로 열고, X로 선택합니다.
+- **store.ts**: 드래그 앤 드롭이 전혀 없는 보드의 데이터와 규칙으로, 오버레이도 읽을 수 있도록
+`DnDProvider` 위에서 제공됩니다.
+
+## 컬럼의 규칙
+
+각 컬럼은 자기 리스트에 네 가지 규칙을 넘깁니다. `put`은 멀티 드래그의 모든 카드를 한꺼번에 봅니다.
+카드가 모두 제한 안에 들어가면 컬럼은 전부 받고, 아니면 하나도 받지 않습니다. 꽉 찬 컬럼 위에서는
+자리가 드래그가 시작된 곳에 남고, 컬럼이 빨갛게 변하며, 손에 든 카드가 그 이유를 알려 줍니다.
+`onBeforeDrop`은 카드가 Done에 들어가기 전에 묻고, `animate`는 드래그 없이 들어오고 나가는 카드(필터,
+Add card, 실행 취소)를 미끄러지게 합니다.
+
+```ts [Column.vue]
+const { items, isOver, isAccepting } = makeSortableList(list, {
+  id: props.column.id,
+  items: () => props.column.cards.filter(board.matches),
+  group: { name: 'cards', put: ({ keys }) => board.fits(props.column, keys) },
+  overlay: CardOverlay,
+  animate: true,
+  onBeforeDrop: (event) => (props.column.confirm && !event.sameList ? board.ask(event.items) : 'accept'),
+  onDrop: (event) => {
+    event.preventDefault();
+    board.apply(event);
+  },
+});
+```
+
+## 필터, 그리고 보드가 적용하는 드롭
+
+툴바의 검색과 담당자가 카드를 걸러 내며, 모든 드래그는 보이는 것을 대상으로 그대로 동작합니다. 각
+리스트는 자기 컬럼을 getter로 걸러서 읽으므로 라이브러리가 그 컬럼에 기록하는 일은 없습니다.
+`onDrop`은 `preventDefault()`를 호출하고, `e.result`(드롭이 바꾼 모든 컬럼의 걸러진 새 카드)를 보드에
+넘깁니다. 보드는 그 카드들을 보이던 카드가 있던 자리에 되돌려 놓고, 필터에 가려진 카드는 원래 자리에
+남습니다.
+
+```ts [store.ts]
+const merge = (all: Card[], shown: Card[]) => {
+  const queue = [...shown];
+  const merged: Card[] = [];
+  for (const entry of all) {
+    if (!matches(entry)) merged.push(entry);
+    else if (queue.length) merged.push(queue.shift()!);
+  }
+  // Cards that came in from another column and found no place left: at the end.
+  return [...merged, ...queue];
+};
+```
+
+## 손에 든 카드
+
+**`CardOverlay.vue`**는 카드의 `overlay`입니다. 집은 카드는 들어 올려지며 기울고, 선택의 나머지는 그
+아래에 놓이며(래퍼의 `transform`으로 돌린 `DragPreview` 클론으로 만듭니다), 맨 위에 개수가 표시됩니다.
+카드 아래에는 놓으면 무슨 일이 일어날지 알려 주는 힌트가 오버레이의 `over`와 `accepted`를 바탕으로
+나타납니다. *Move 2 cards to In review*, *Complete*, *Delete*, 또는 *In review is full · 2 max*.
+컬럼에 드롭하면 각 클론이 자기 자리에 안착합니다. 휴지통 위에서는 더미가 줄어들고, 그곳에 드롭하면
+카드가 하나씩 차례로 들어갑니다.
+
+```ts [CardOverlay.vue]
+const hint = computed(() => {
+  if (props.status !== 'dragging' || !props.over) return null;
+  const many = props.items.length > 1 ? ` ${props.items.length} cards` : '';
+  if (props.over.id === 'trash') return { tone: 'danger', icon: 'trash', text: `Delete${many}` };
+  const column = board.column(props.over.id);
+  if (!column) return null;
+  if (!props.accepted) return { tone: 'danger', icon: 'limit', text: `${column.title} is full · ${column.limit} max` };
+  if (board.find(props.items[0]!.id)?.column.id === column.id) return null;
+  if (column.confirm) return { tone: 'done', column, text: `Complete${many}` };
+  return { tone: '', column, text: `Move${many} to ${column.title}` };
+});
+```
+
+헤더로 드래그한 컬럼은 기본 클론이며, `data-dnd-overlay`가 `dragging`인 동안 `rotate` 속성으로
+기웁니다.
+
+## Done은 먼저 묻습니다
+
+Done에 드롭하면 `onBeforeDrop`이 promise를 반환합니다. **`ConfirmDialog.vue`**가 묻는 동안 카드는
+놓은 자리에서 기다립니다. *Move to Done*은 `'accept'`, Cancel과 Escape는 `'reject'`(카드가 원래
+자리로 돌아갑니다), *Keep dragging*은 `'continue'`로 답합니다. 카드가 다시 포인터를 따라가고, 다음
+클릭에 드롭됩니다. 카드가 안착하면(`onDragSettle`) Done에서 체크 표시가 나타나고 스프린트 진행률이
+올라갑니다.
+
+```ts [Board.vue]
+useDnDMonitor({
+  onDragSettle: (event) => {
+    const target = event.over ? board.column(event.over.id) : undefined;
+    if ('dropped' in event && target?.confirm && event.source?.list !== target.id) board.complete(event.accepted);
+  },
+});
+```
+
+## 여러 카드, 휴지통, 실행 취소
+
+선택한 카드는 함께 움직입니다. 하나를 드래그하면 어느 컬럼에 있든 선택된 모든 카드가 따라옵니다.
+선택 바는 카드를 옮기거나, 삭제하거나, 선택을 해제합니다(Escape도 해제합니다). **`Trash.vue`**는
+카드만 받는 일반 드롭 대상입니다. Delete 버튼처럼 카드를 보드에서 삭제하므로, 알림에서 각 카드를
+원래 자리로 되돌릴 수 있습니다.
+
+```ts [Trash.vue]
+makeDroppable(el, {
+  id: 'trash',
+  accept: 'card',
+  onDrop: (event) => {
+    board.remove(event.active.ids);
+    selection.delete(...event.active.ids);
+  },
+});
+```
+
+## 드래그 없이 옮기기
+
+카드 패널에는 Status 버튼이 있고, 선택 바에는 컬럼마다 버튼이 있습니다. 이 버튼들은
+`@vue-dnd-kit/actions`로 카드를 옮깁니다. `moveItem`은 카드의 실제 키보드 드래그를 재생하며, 선택된
+카드라면 선택 항목 전체를 함께 가져갑니다. 직접 하는 드래그처럼 안내되고 애니메이션되며, 컬럼의
+제한과 Done의 확인도 다른 드래그와 똑같이 적용됩니다.
+
+```ts [store.ts]
+export function useMove() {
+  const board = inject(BOARD)!;
+  const { moveItem } = useDnDActions();
+  return (ids: Key[], target: Column) => {
+    if (!board.fits(target, ids)) return board.notify(`${target.title} is full: ${target.limit} cards at most`);
+    void moveItem(ids[0]!, { list: target.id });
+  };
+}
+```
+
+## 키보드와 스크린 리더
+
+카드를 집는 것은 Space뿐이므로 Enter는 카드를 여는 데 쓸 수 있습니다. 안내 지침에도 그렇게 적혀
+있습니다. 화살표 키는 카드를 자리 단위로 옮기고, 가로 방향으로는 카드를 받는 다음 컬럼으로 옮깁니다.
+꽉 찬 컬럼은 건너뛰고, 마지막 컬럼을 지나면 다음 입력으로 카드가 휴지통까지 갑니다. 안내 문구는 id
+대신 카드와 컬럼의 이름을 부릅니다. *"Picked up VDK-45, Haptics on Android tablets. Todo, position 6
+of 6."*, *"In review is full: its limit is 2 cards."*
+
+```vue [index.vue]
+<DnDProvider
+  :keyboard="{ keys: { start: ['Space'] } }"
+  screen-reader-instructions="Space picks up a card or a column, the arrow keys move it, Space drops it, Escape cancels. Enter opens a card, X selects it."
+  :announcements="announcements"
+  :haptics="{ enter: true, refuse: true }"
+>
+```
+
+더 읽어 보기: [항목을 공유하는 리스트](https://zizigy.github.io/docs/guides/shared-lists#controlled-lists) ·
+[드롭 결정하기](https://zizigy.github.io/docs/guides/drop-decisions) · [멀티 드래그](https://zizigy.github.io/docs/guides/multi-drag) ·
+[오버레이](https://zizigy.github.io/docs/guides/overlay#dragpreview-the-clone-in-your-layout) ·
+[프로그래밍 방식 드래그](https://zizigy.github.io/docs/guides/sensors#programmatic-drags) ·
+[접근성](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

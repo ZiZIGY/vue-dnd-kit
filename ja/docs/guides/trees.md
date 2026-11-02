@@ -1,0 +1,608 @@
+---
+title: "ツリー"
+description: "makeSortableTree によるアウトライン、メニュー、組織図、バックログ——深さ付きのフラットな形で描画し、横方向のドラッグや行へのホバーでネストし、ルール、折りたたまれたノード、挿入ライン、同じグループのリストに対応します。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/trees"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+ツリーは、行が深さを持つ並べ替え可能なリストです。セクションを左右にドラッグすると階層が変わり、別のセクションの中央に重ねて保つとその中にドロップされます。番号はドラッグに追従します。
+
+<example height="45.5rem" hint="セクションを横にドラッグするか、ネストのモードを切り替えてみましょう" name="tree-outline">
+
+
+
+</example>
+
+## フラットに描画する
+
+`makeSortableTree` はネストしたデータを受け取り、表示されているノードを順番どおりの**フラットなリスト**として、それぞれの `depth` とともに返します。そのリストを描画し、行のインデントは自分で付けます。すべての行は 1 つのコンテナー内の兄弟要素のままなので、リストの行と同じようにスライドし、アニメーションします。
+
+```vue [Outline.vue]
+<script setup lang="ts">
+import { ref, useTemplateRef } from 'vue';
+import { makeSortableTree } from '@vue-dnd-kit/core';
+import Heading from './Heading.vue';
+
+interface Section { id: string; title: string; children?: Section[] }
+
+const outline = ref<Section[]>([
+  { id: 'start', title: 'Getting started', children: [{ id: 'install', title: 'Installation' }] },
+  { id: 'faq', title: 'FAQ' },
+]);
+
+const root = useTemplateRef<HTMLElement>('root');
+const { items, projected } = makeSortableTree(root, {
+  items: outline,     // the root nodes: a writable ref takes every drop
+  indentation: 24,    // px per level: match the rows' indentation
+  maxDepth: 2,
+});
+</script>
+
+<template>
+  <ol ref="root">
+    <Heading v-for="node in items" :key="node.key" :node="node" />
+  </ol>
+</template>
+```
+
+```vue [Heading.vue]
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import { makeSortableItem, type FlatNode } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ node: FlatNode<{ id: string; title: string }> }>();
+const el = useTemplateRef<HTMLElement>('el');
+makeSortableItem(el, { id: () => props.node.key });
+</script>
+
+<template>
+  <li ref="el" :style="{ marginInlineStart: `${node.depth * 24}px` }">{{ node.item.title }}</li>
+</template>
+```
+
+行はリストの行と同じく `makeSortableItem` を使います。インデントは padding ではなく margin で付けてください。そうすると行そのものが深さに合わせて動きます。オーバーレイは枠の幅を取ってその階層に着地し、深さの変化もほかの移動と同じようにスライドします。padding では行の中身だけがインデントされ、持ち上げ時の行のコピーであるオーバーレイは、ドラッグを始めた階層のままになります。`items` には `FlatNode` が入ります。
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        FlatNode
+      </code>
+      
+       のフィールド
+    </th>
+    
+    <th>
+      内容
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        key
+      </code>
+    </td>
+    
+    <td>
+      ノードのキー（<code>
+        getKey
+      </code>
+      
+      、デフォルトは <code>
+        node.id
+      </code>
+      
+      ）。<code>
+        :key
+      </code>
+      
+       と行の <code>
+        id
+      </code>
+      
+       に使います。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        item
+      </code>
+    </td>
+    
+    <td>
+      あなたのノード。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        depth
+      </code>
+    </td>
+    
+    <td>
+      ルートは <code>
+        0
+      </code>
+      
+      。ドラッグ中のノードの深さは着地する<strong>
+        予定の
+      </strong>
+      
+      位置なので、その枠はその場でインデントされます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        parentKey
+      </code>
+    </td>
+    
+    <td>
+      親のキー。ルートは <code>
+        null
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        index
+      </code>
+    </td>
+    
+    <td>
+      兄弟の中でのインデックス。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        hasChildren
+      </code>
+      
+      、<code>
+        collapsed
+      </code>
+    </td>
+    
+    <td>
+      展開ボタン用。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`items` はドラフトなので、そこから計算したものはすべてドラッグに追従します。デモは `items` からセクションに番号を振っているので、動かしている間に「2.1」が「3.1」になります。`projected` はドラッグ中のノードの着地予定位置 `{ depth, parentKey }` で、このツリーの上にないときは `null` です。
+
+子は `node.children` から読み取られ、そこへ書き込まれます。ほかの形のデータには `getChildren` と `setChildren` を使います。下の[組織図](#rules)は子を `members` に持っています。
+
+```ts
+makeSortableTree(root, {
+  items: org,
+  getChildren: (member) => member.members,
+  setChildren: (member, members) => { member.members = members; },
+});
+```
+
+## ネスト
+
+ドラッグは 2 つの方法で深さを変えます。どちらもデフォルトでオンです。
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        nesting
+      </code>
+    </th>
+    
+    <th>
+      深さの決まり方
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'offset'
+      </code>
+    </td>
+    
+    <td>
+      横方向のドラッグ：左右に <code>
+        indentation
+      </code>
+      
+       ピクセル動くごとに 1 階層上下します。枠の周りの行が許す範囲までです。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'hover'
+      </code>
+    </td>
+    
+    <td>
+      行の中央にドラッグを保つ：ドロップはその行の中に、最初の子として入ります。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'both'
+      </code>
+    </td>
+    
+    <td>
+      どちらでも。デフォルトです。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+`indentation` には行が 1 階層ごとに付けるインデント（デフォルト `24`）を設定してください。そうすれば枠がポインターに追従します。デモで `40` に切り替えて、横にドラッグしてみましょう。`'hover'` だけの場合、横方向のドラッグでは階層は変わらず、行の中央だけがネストします。どちらのオプションも ref またはゲッターを受け取り、次のドラッグから適用されます。
+
+`axis: 'y'`（または `restrictToVerticalAxis`）では、ドラッグは横に動けませんが、ホバーで行をネストすることはできます。
+
+## ルール
+
+Engineering は人とチームを受け入れ、Leadership はロックされ、チームの中のチームより深くには何も入れません。チームを開いたり閉じたりしてみましょう。表示・非表示になる行がスライドして出入りします。
+
+<example height="41rem" hint="人をチーム間で動かしてみましょう。Leadership と 3 階層目も試してみましょう" name="tree-org">
+
+
+
+</example>
+
+```ts [OrgTree.vue]
+const { items } = makeSortableTree(root, {
+  items: org,
+  getChildren: (member) => member.members,
+  setChildren: (member, members) => { member.members = members; },
+  // Only teams take members, and a locked team takes no one.
+  canNest: (_member, team) => team.kind === 'team' && !team.locked,
+  maxDepth: 2,
+  collapsed,
+  animate: true,
+});
+```
+
+```ts [OrgRow.vue]
+// A locked row doesn't drag (and says so with `aria-disabled`).
+makeSortableItem(el, { id: () => props.node.key, disabled: () => !!props.node.item.locked });
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      オプション
+    </th>
+    
+    <th>
+      制限するもの
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        canNest(node, parent)
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        node
+      </code>
+      
+       を <code>
+        parent
+      </code>
+      
+       の下に置けるかどうか。マルチドラッグでは、ドラッグ中のすべてのノードについて問い合わせます。ルートは常に許可されます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        maxDepth
+      </code>
+    </td>
+    
+    <td>
+      許可される最大の深さ。ルートが <code>
+        0
+      </code>
+      
+       です。ドラッグ中のノードの子孫も数に入るので、メンバーのいるチームは <code>
+        maxDepth - 1
+      </code>
+      
+       より深くには行けません。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      行に指定：その行はドラッグできません。ツリーに指定：そこからドラッグできず、そこへドロップもできません。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        group.put
+      </code>
+    </td>
+    
+    <td>
+      ツリーがほかのリストやツリーからアイテムをそもそも受け入れるかどうか。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+    </td>
+    
+    <td>
+      それ以外のすべて。ドロップ時に判断します：<a href="/docs/guides/drop-decisions">
+        ドロップの判断
+      </a>
+      
+      を参照。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+ルールがある深さを拒否すると、枠は許可される最も深い深さを取ります。Noor を Raj の下へ、右にずらしてドラッグしても、枠は最上位にとどまります。Leadership はロックされていて、Raj は人だからです。どの深さも許可されない場所へは、枠は動きません。コピーや `createItem` から作られたノードも `canNest` と `maxDepth` に従います。
+
+### 折りたたまれたノード
+
+`collapsed` は、子が非表示になっているノードのキーの `Set` で、ref またはゲッターとして渡します。それらの子は `items` に含まれません。ボタンには `node.collapsed` と `node.hasChildren` を使います。
+
+```ts
+const collapsed = ref(new Set<Key>());
+const toggle = (key: Key) => (collapsed.value.has(key) ? collapsed.value.delete(key) : collapsed.value.add(key));
+```
+
+ドラッグ中のノードは、折りたたまれていてもいなくても、サブツリー全体を連れていきます。`animate: true` では、ノードの展開・折りたたみで表示・非表示になる行がアニメーションで出入りし、ドラッグ以外によるデータの変化も同様です。
+
+## 挿入ライン
+
+左のテンプレートをメニューにドラッグするか、項目を動かしてみましょう。メニューは動かず、ドロップ先をラインが、着地する階層から示します。ページやグループの中央の上では、代わりにその行が強調表示されます。
+
+<example height="31rem" hint="テンプレートをメニューにドラッグするか、項目を横に動かしてみましょう" name="tree-menu">
+
+
+
+</example>
+
+`placeholder: 'indicator'` では、ドラッグ中もツリーは動きません。各行が自分の `indicator` を読み取り、ラインを描きます。
+
+```vue [MenuRow.vue]
+<script setup lang="ts">
+import { computed, useTemplateRef } from 'vue';
+import { makeSortableItem, type FlatNode } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ node: FlatNode<MenuItem>; indent: number }>();
+const el = useTemplateRef<HTMLElement>('el');
+const { indicator } = makeSortableItem(el, { id: () => props.node.key });
+
+// 'inside': the drop goes into this row. Otherwise a line before or after it.
+const inside = computed(() => indicator.value?.side === 'inside');
+const line = computed(() => {
+  const value = indicator.value;
+  if (!value || value.side === 'inside') return null;
+  // From the level the drop lands at, measured from this row's own level.
+  return { side: value.side, left: `${((value.depth ?? 0) - props.node.depth) * props.indent}px` };
+});
+</script>
+
+<template>
+  <div ref="el" class="item" :class="{ inside }" :style="{ marginLeft: `${node.depth * indent}px` }">
+    {{ node.item.title }}
+    <span v-if="line" class="line" :class="line.side" :style="{ left: line.left }" />
+  </div>
+</template>
+
+<style scoped>
+.item { position: relative; }
+.item.inside { box-shadow: 0 0 0 1.5px #42b883; }
+.line { position: absolute; right: 0; height: 2px; background: #42b883; }
+.line.before { top: -3px; }
+.line.after { bottom: -3px; }
+</style>
+```
+
+ツリーでは `indicator` に `depth` と `parentKey` が加わります：ドロップされたノードが得る階層と親です。横にドラッグするとラインが階層の間を動き、キーボードでもラインが動きます。このモードでは、ツリーの外へのドロップはキャンセルになります。
+
+テンプレートは `data` を持つ通常のドラッグ可能な要素（`makeDraggable`）です。ツリーは `createItem` でそれを新しいノードに変え、ラインの位置と深さに置きます。
+
+```ts [MenuTree.vue]
+let created = 0;
+makeSortableTree(root, {
+  items: menu,
+  placeholder: 'indicator',
+  maxDepth: 1,
+  canNest: (_item, parent) => parent.kind !== 'link',
+  createItem: (active) => {
+    const template = active.data as { title: string; kind: MenuItem['kind'] };
+    return { id: `new-${++created}`, title: `New ${template.title.toLowerCase()}`, kind: template.kind };
+  },
+});
+```
+
+メニューの上のバーは `items` ではなく、保存済みのデータである `menu` を描画しています。変わるのはドロップ時だけです。
+
+## 同じグループのツリーとリスト
+
+バックログに移したストーリーは、見えないところでタスクを保持していて、ロードマップに戻すとタスクも戻ってきます。ロードマップからドラッグするときに <kbd value="Alt">
+
+
+
+</kbd>
+
+ を押していると、代わりにコピーになります。
+
+<example height="29.5rem" hint="Saved cards をバックログに移して戻してみましょう。Alt でコピーします" name="tree-backlog">
+
+
+
+</example>
+
+同じ `group` を持つツリーとリストは、2 つのリストと同じようにノードをやり取りします。ノードはどこへ行ってもサブツリーを保持し、リストはそれを表示しないだけです。`makeSortableItem({ item })` は行を所有するリストまたはツリーに応じてキー付けされるので、同じ行コンポーネントで両方に対応できます。
+
+コピーはリストと同様に動作します（`clone`、`pull: 'clone'`、コピーキー）が、`clone` は**サブツリー全体を含む**コピーを返す必要があり、その中のすべてのノードに新しいキーが必要です。
+
+```ts [Roadmap.vue]
+let copies = 0;
+const copy = (work: Work): Work => ({ ...work, id: `${work.id}-copy-${++copies}`, children: work.children?.map(copy) });
+
+makeSortableTree(root, {
+  items: roadmap,
+  group: 'work',
+  canNest: (work, parent) => RANK[parent.kind] < RANK[work.kind],
+  maxDepth: 2,
+  clone: copy,
+});
+```
+
+グループ、コピー、`createItem` については[アイテムを共有するリスト](https://zizigy.github.io/docs/guides/shared-lists)を参照してください。
+
+## ドロップ
+
+ツリーのドロップイベントはリストのものと同じで、`from` と `to` に `parentKey` が加わります。
+
+```ts
+makeSortableTree(root, {
+  items: outline,
+  onDrop: (e) => {
+    console.log(e.keys, e.from.parentKey, '→', e.to.parentKey, e.to.index);
+  },
+});
+```
+
+`to.index` は新しい兄弟の中での位置で、ノードが元の場所を離れた後で数えます。ドロップ時に、ライブラリは変化したノードに新しい子を設定し（`setChildren`）、新しいルート配列を ref に書き込みます。
+
+`e.result.get(treeId)` は新しいルート配列としての新しいツリーです。変化した経路上のノードはコピーで、変わっていないサブツリーは共有され、あなたのノードはそのままです。ストアやイミュータブルなデータでは、ゲッターを渡し、`e.preventDefault()` を呼んで `e.result` を保存してください（[ドロップの判断](https://zizigy.github.io/docs/guides/drop-decisions#stores-and-servers-controlled-lists)を参照）。コピーは `withChildren(node, children)` で作られ、デフォルトは新しい子を持つ `{ ...node }` です。クラスのインスタンスには独自の関数を渡してください。
+
+## キーボードとマルチドラッグ
+
+行にフォーカスし、:kbd{value="Space"} を押してから：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      キー
+    </th>
+    
+    <th>
+      ノードの移動先
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <kbd value="ArrowUp">
+        
+      </kbd>
+      
+       / <kbd value="ArrowDown">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      上または下の枠へ、1 行ずつ。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="ArrowRight">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      1 階層深く、上の行の下へ。ルールが許す場合のみ。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="ArrowLeft">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      1 階層上へ、親の外へ。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="Space">
+        
+      </kbd>
+      
+       / <kbd value="Escape">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      ドロップする / 元に戻す。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+インジケーターモードでは、矢印キーは代わりにラインを動かします。ツリーの隣のリストやテンプレートからは、ツリーに向かう矢印キーでアイテムが取り込まれ、その前に入る行と同じ階層に置かれます。
+
+選択されたノードは、それぞれのサブツリーとともに、ドキュメント順に 1 つのかたまりとして一緒に動きます。選択されたノードの中にある選択されたノードは、親のサブツリーに乗って一緒に動きます。[マルチドラッグ](https://zizigy.github.io/docs/guides/multi-drag)を参照してください。
+
+すべてのオプションは [makeSortableTree API](https://zizigy.github.io/docs/api/make-sortable-tree) にあります。数千行のツリーについては[仮想リスト](https://zizigy.github.io/docs/guides/virtual-lists)を参照してください。
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

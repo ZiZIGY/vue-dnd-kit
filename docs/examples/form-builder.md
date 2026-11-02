@@ -1,0 +1,344 @@
+---
+title: "Form builder"
+description: "A form builder made with Nuxt UI — fields dragged from a palette, set side by side in rows, edited in a panel, then filled in a live preview with validation and exported as Vue code."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/docs/examples/form-builder"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="44rem" hint="Drag a field into the form, beside another one for columns" name="form-builder" title="Form builder">
+
+
+
+</example>
+
+Every control here is a Nuxt UI component: the fields of the form (`UInput`, `USelect`,
+`URadioGroup`, `UInputRating`, `UFileUpload`…), the panels around them, the preview's `UForm`.
+Vue DnD Kit moves them. Expand the demo to full screen: the palette, the form and the settings
+then sit side by side.
+
+## What to look at
+
+- **PaletteGroup.vue**: a section of the palette is a sortable list that only gives copies:
+`group: { name: 'fields', pull: 'clone', put: false }` and `sort: false`. Its items are fields
+like the form's, so a copy dragged into a row is a field like the others; `clone` gives it a
+key of its own. A click (or <kbd value="Enter">
+
+
+
+</kbd>
+
+) adds the field without a drag.
+- **FormRow.vue**: a row is two things at once, as a kanban column is: an item of the form's
+list of rows, dragged by its grip, and a list of up to three fields in the palette's group.
+Its `put` refuses a fourth: over a full row the field in hand turns red and says why, and a
+drop there is cancelled.
+- **NewRowZone.vue**: drop a field on the gap between two rows, or below the last one, and it
+gets a row of its own. Those places are lists too: empty lists of the same group, whose ids
+say where the new row goes.
+- **FieldCard.vue**: the rows are in indicator mode (`placeholder: 'indicator'`), so nothing
+moves while a field is dragged: a line beside a field shows where it will go. In a narrow
+builder the fields of a row stack, and the line goes above or below them.
+- **Trash.vue**: while a field of the form is dragged, the palette becomes a trash: a plain
+drop target that takes the form's fields only (`accept: 'fields'`, their group's name) and
+removes them with `event.source.remove()`.
+- **OptionList.vue**: the options of a dropdown or a multiple choice are a sortable list of
+their own in the settings panel, dragged by their grips so their text stays editable.
+- **form.ts**: the form, and the only code that changes it. The lists read it and never write
+it, so Undo and Redo see every change, drops included.
+
+## A row of fields is a list in a list
+
+The rows of the form and the fields of each row are lists of two groups, `rows` and `fields`. A
+drag only ever enters the lists of its own group: a field never lands among the rows, and a row
+never inside another row, however they are nested.
+
+```ts [FormRow.vue]
+// The row is an item of the form's rows, dragged by its grip...
+makeSortableItem(el, { item: () => props.row, handle: grip });
+
+// ...and a list of up to three fields side by side, in the group of the palette.
+const { items, isOver, isAccepting } = makeSortableList(list, {
+  id: rowList(props.row.id),
+  items: () => props.row.fields,
+  group: { name: 'fields', put: ({ keys }) => props.row.fields.length + keys.length <= MAX_COLUMNS },
+  strategy: () => (props.stacked ? 'vertical' : 'horizontal'),
+  placeholder: 'indicator',
+  overlay: FieldOverlay,
+  clone: cloneField, // Alt-drag copies a field
+  animateChanges: true,
+  onDrop: form.drop,
+});
+```
+
+A new row needs a place to be dropped on. Each row holds a band over the gap above it, and the
+space below the last row is one more such place: an empty list of the `fields` group, which never
+shows an item. Over a band the list is `isOver`, and the band draws its line. The bands take the
+pointer only while something is dragged (`html[data-dnd-dragging]`), so they never get in the
+way of a click:
+
+```vue [NewRowZone.vue]
+<script setup lang="ts">
+const NONE: readonly Field[] = [];
+const { isOver, isAccepting } = makeSortableList(el, {
+  id: newRowList(props.before), // 'new:<row id>', or 'new:end'
+  items: () => NONE,
+  group: 'fields',
+  placeholder: 'indicator',
+  // A band across the page: up and down are the keys that cross it, to the next list.
+  strategy: 'horizontal',
+  onDrop: form.drop,
+});
+</script>
+
+<template>
+  <div
+    ref="el"
+    class="pointer-events-none absolute inset-x-0 -top-[18px] z-10 h-6 in-data-[dnd-dragging]:pointer-events-auto"
+  >
+    <span class="… bg-primary" :class="isOver ? 'opacity-100' : 'opacity-0'" />
+  </div>
+</template>
+```
+
+The keyboard finds the bands as well. A keyboard drag goes from list to list by their places on
+the page, with the arrows across a list: up and down for the rows, which are horizontal, and for
+the bands, horizontal too. So <kbd value="ArrowUp">
+
+
+
+</kbd>
+
+ and <kbd value="ArrowDown">
+
+
+
+</kbd>
+
+ visit the rows
+and the gaps between them in turn.
+
+## One store, one Undo: lists that never write
+
+Every list of the builder gets its items from a getter, so the library never writes them (a
+[controlled list](https://zizigy.github.io/docs/guides/shared-lists#controlled-lists)). Their `onDrop` is `form.drop`: it
+cancels the write and hands `event.result`, the new arrays of every list the drop changes, to the
+form. The list ids say what each array is: the fields of a row, the order of the rows, or a row
+to make.
+
+```ts [form.ts]
+function apply(result: ReadonlyMap<Key, unknown[]>) {
+  commit(() => {
+    const created: [before: string, fields: Field[]][] = [];
+    for (const [list, items] of result) {
+      const [type, id] = String(list).split(':') as [string, string];
+      if (list === ROWS) state.rows = items as Row[];
+      else if (type === 'row') state.rows.find((row) => row.id === id)!.fields = items as Field[];
+      else if (type === 'new' && items.length) created.push([id, items as Field[]]);
+    }
+    for (const [before, items] of created) {
+      const index = state.rows.findIndex((row) => row.id === before);
+      state.rows.splice(index < 0 ? state.rows.length : index, 0, row(...items));
+    }
+  });
+}
+
+/** `onDrop` of every list: applies the drop, and selects a field that was just added. */
+function drop(event: SortableDropEvent<unknown>) {
+  event.preventDefault();
+  apply(event.result);
+  if (event.mode === 'copy') selectedId.value = (event.items[0] as Field).id;
+  forgetGone();
+}
+```
+
+`commit` saves a snapshot of the form for Undo, makes the change, and removes the rows a move
+left empty, all before the drop lands, so the overlay flies to where the field really is. The
+trash takes the same road: `event.source.remove()` runs the row's `onDrop` with the field taken
+out (`to.index` is `-1`). Typing in the settings goes through `commit` too, and keystrokes in one
+setting share a key: a label typed letter by letter is a single step of Undo.
+
+## The field in hand
+
+The palette and the rows share one overlay component. It shows the library's copy of what is
+dragged (`DragPreview`: a chip from the palette, the whole field from the form, its Nuxt UI
+control included) in a frame, with a badge for what a drop would do: copy
+(<kbd value="Alt">
+
+
+
+</kbd>
+
+), delete over the trash, nothing over a full row.
+
+```vue [FieldOverlay.vue]
+<script setup lang="ts">
+const props = defineProps<{ items: DragItem[]; over: Over | null; accepted: boolean; status: DnDStatus; mode: DragMode }>();
+
+const entry = computed(() => props.items[0]!);
+const state = computed(() => {
+  if (props.status === 'dropping') return 'landing';
+  if (props.over?.id === TRASH) return 'delete';
+  // A row that refuses the field: it is full.
+  if (props.over && !props.accepted) return 'full';
+  // Palette fields are copies too, but they say nothing: adding is what they do.
+  if (props.mode === 'copy' && !entry.value.type.includes('new-field')) return 'copy';
+  return 'move';
+});
+</script>
+
+<template>
+  <!-- LOOKS: lifted and tilted, red when refused, smaller over the trash, flat as it lands. -->
+  <div class="relative size-full rounded-md bg-default ring-2 …" :class="LOOKS[state]">
+    <DragPreview :id="entry.id" class="rounded-md" :style="{ width: '100%', height: '100%' }" />
+    <UBadge v-if="badge" :label="badge.label" :icon="badge.icon" :color="badge.color" size="sm" />
+  </div>
+</template>
+```
+
+The palette's items have a `type` of their own, `'new-field'`: the overlay tells them apart by
+it, and the trash, which accepts `'fields'`, doesn't take them.
+
+## With Nuxt UI
+
+The docs are a Nuxt app with the `@nuxt/ui` module, and Nuxt's component auto-import reaches the
+examples too: these files use `<UInput>`, `<UFormField>` or `<UTabs>` without importing them, as
+a Nuxt UI project does. A Vue app with Nuxt UI's Vite plugin auto-imports them the same way;
+without it, import each one: `import UButton from '@nuxt/ui/components/Button.vue'`. The types
+come from `@nuxt/ui` (`import type { FormSubmitEvent } from '@nuxt/ui'`).
+
+- **While you build, fields are pictures.** `FieldView.vue` renders a field the same way on the
+canvas and in the preview: a `UFormField` around its control. On the canvas it sits in an
+`inert` element, so a press on an input starts a drag instead of typing, and
+<kbd value="Tab">
+
+
+
+</kbd>
+
+ skips the inputs. The card's toolbar (a `UFieldGroup` of buttons with
+tooltips) stays out of the overlay's copy with `data-dnd-no-clone`.
+- **States are Tailwind variants.** The library marks its states with attributes, which Tailwind
+reads as variants: `data-[dnd-placeholder]:outline-dashed` on the field being moved,
+`in-data-[dnd-overlay]:bg-default` on a row in hand, `in-data-[dnd-dragging]:pointer-events-auto`
+on the bands. The colors are Nuxt UI's semantic ones (`bg-default`, `ring-primary`,
+`text-error`): light and dark mode need nothing more.
+- **The preview is a real UForm.** `schema.ts` makes a Zod schema from the fields, and `UForm`
+validates the answers with it: `name` ties each `UFormField` to its rule, and the messages
+show under the fields. Send the form to see what it submits.
+- **The export** writes the same form as a component of its own: Nuxt UI controls, a Zod
+schema, a `reactive` state, and the rows as grids that stack on phones.
+- **The layout follows the builder's width** (`useElementSize`), not the window's: three panels
+in full screen; on the page the settings take the palette's place; narrower, the palette
+becomes a strip of chips above the form and the settings a sheet over it. Container queries
+(`@lg:`) do the rest.
+
+<note>
+
+The StackBlitz button opens the files in a plain Vite project, which has no Nuxt UI. To run this
+example, copy the folder into a Nuxt app with the `@nuxt/ui` module and `zod`, and render
+`index.vue` on a page.
+
+</note>
+
+## Keyboard and screen readers
+
+Tab to a field and press <kbd value="Space">
+
+
+
+</kbd>
+
+ to pick it up. <kbd value="ArrowLeft">
+
+
+
+</kbd>
+
+ and
+<kbd value="ArrowRight">
+
+
+
+</kbd>
+
+ move it along its row, <kbd value="ArrowUp">
+
+
+
+</kbd>
+
+ and
+<kbd value="ArrowDown">
+
+
+
+</kbd>
+
+ to the other rows and to the gaps between them (a new row),
+<kbd value="Space">
+
+
+
+</kbd>
+
+ drops it, <kbd value="Escape">
+
+
+
+</kbd>
+
+ puts it back. The provider takes only Space
+for drags (`keyboard: { keys: { start: ['Space'], drop: ['Space'] } }`), which leaves
+<kbd value="Enter">
+
+
+
+</kbd>
+
+ to open a field's settings. <kbd value="Delete">
+
+
+
+</kbd>
+
+ removes a field,
+<kbd value="Ctrl">
+
+
+
+</kbd>
+
+ <kbd value="D">
+
+
+
+</kbd>
+
+ duplicates it, <kbd value="Ctrl">
+
+
+
+</kbd>
+
+ <kbd value="Z">
+
+
+
+</kbd>
+
+ undoes.
+
+The provider's `announcements` speak the builder's words: "Work email: row 2, column 2 of 2",
+"New date field: a new row above row 3". `form.describe` turns the position the library gives
+(a list id and an index) into those words.
+
+Read more: [Lists that share items](https://zizigy.github.io/docs/guides/shared-lists) ·
+[An insertion line](https://zizigy.github.io/docs/guides/sortable-lists#an-insertion-line) ·
+[The overlay](https://zizigy.github.io/docs/guides/overlay) ·
+[Styling: Tailwind and UI kits](https://zizigy.github.io/docs/guides/styling#tailwind-css) ·
+[Accessibility](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

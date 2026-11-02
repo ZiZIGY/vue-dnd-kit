@@ -1,0 +1,661 @@
+---
+title: "DevTools"
+description: "Vue DevTools と Nuxt DevTools の Vue DnD Kit タブ——ライブのミニマップ、実際にドラッグするジョイスティック、オプションのライブ編集、すべてのドラッグのログ。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/devtools"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+`@vue-dnd-kit/devtools` は、Vue DevTools（`vite-plugin-vue-devtools`）と Nuxt DevTools に **Vue DnD Kit** タブを追加します。ページのすべてのリスト、ツリー、ドロップターゲットをライブのミニマップに表示し、ジョイスティックで任意のアイテムをドラッグし、アプリの実行中にオプションを編集し、各ドラッグが何をしたかを記録します。開発環境でのみ動作し、本番ビルドには何も含まれません。
+
+タブは、開発サーバーがアプリの隣で配信する独立したページなので、このドキュメントの中では動かせません。3 つのステップでセットアップできます。
+
+## インストール
+
+### 1. パッケージを追加する
+
+```bash
+npm i -D @vue-dnd-kit/devtools @vue-dnd-kit/actions
+```
+
+`@vue-dnd-kit/actions` はピア依存関係で、タブでの移動はこれを通じて行われます。npm 7 以降と pnpm は自動でインストールします。Yarn 1 では追加してください。
+
+### 2. プラグインを追加する
+
+<code-group>
+
+```ts [vite.config.ts]
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import vueDevTools from 'vite-plugin-vue-devtools';
+import { vueDnDKitDevtools } from '@vue-dnd-kit/devtools/vite';
+
+export default defineConfig({
+  // Next to the Vue DevTools plugin: the tab joins its sidebar.
+  plugins: [vueDevTools(), vueDnDKitDevtools(), vue()],
+});
+```
+
+```ts [nuxt.config.ts]
+export default defineNuxtConfig({
+  // With @vue-dnd-kit/devtools installed, the tab appears in development.
+  modules: ['@vue-dnd-kit/nuxt'],
+});
+```
+
+</code-group>
+
+Vite では、プラグインは開発サーバー（`vite serve`）で 3 つのことを行います：タブを `/__vue-dnd-kit-devtools/`（`base` の下）で配信し、Vue DevTools に追加し、アプリが起動する前にページがタブへ報告するようにします。`app.use()` は不要で、ビルドには影響しません。
+
+Nuxt では、`@vue-dnd-kit/nuxt` モジュールがパッケージを見つけ、タブを配信し、Nuxt DevTools に追加し、クライアントプラグインでページ側をインストールします。`vueDndKit: { devtools: false }` でオフになります。
+
+### 3. 開発環境でアプリを実行する
+
+いつもどおり開発サーバーを起動し（`vite`、`nuxt dev`）、アプリを開けば、タブの準備は完了です。ページのすべてのプロバイダーが、どのアプリで描画されていてもそこに表示されます。
+
+### プラグインを使わない場合
+
+独自の開発サーバーや、Vite が `index.html` から配信しないページ（SSR 構成）では、ページ側を自分でインストールしてください。
+
+```ts [main.ts]
+import { createApp } from 'vue';
+import { DnDDevtools } from '@vue-dnd-kit/devtools';
+import App from './App.vue';
+
+const app = createApp(App);
+app.use(DnDDevtools); // before mount: providers set up earlier aren't seen
+app.mount('#app');
+```
+
+または、エントリーファイルの最初で `@vue-dnd-kit/devtools/auto` をインポートします。プラグインにタブを配信させつつ、ページ側は自分でインストールする場合は `vueDnDKitDevtools({ inject: false })` を使ってください。`@vue-dnd-kit/devtools/vite` の `serveTab()` が、タブを配信するミドルウェアです。
+
+<note>
+
+本番ビルドでは、`app.use(DnDDevtools)` と `auto` のインポートはほぼ何も残りません。どのエントリーポイントも最初に `process.env.NODE_ENV` をチェックし、バンドラーが残りを取り除きます。サーバーでは何もしません。
+
+</note>
+
+## 開き方
+
+- **Vue DevTools**：:kbd{value="Alt"} + <kbd value="Shift">
+
+
+
+</kbd>
+
+ + <kbd value="D">
+
+
+
+</kbd>
+
+、またはページ下部の Vue ボタンを押し、**Vue DnD Kit** タブを選びます。
+- **Nuxt DevTools**：:kbd{value="Alt"} + <kbd value="Shift">
+
+
+
+</kbd>
+
+ + <kbd value="D">
+
+
+
+</kbd>
+
+、または Nuxt ボタンを押し、**Vue DnD Kit**（サイドバーかそのオーバーフローメニュー）を選びます。
+- **独立したウィンドウ**：開発サーバーの `http://localhost:5173/__vue-dnd-kit-devtools/` を開くか、タブの ⧉ ボタンを押します。2 台目の画面で便利です。複数のページを開いている場合は、上部のセレクトで監視するページを選びます。
+
+<warning>
+
+タブは独立したウィンドウに置き、同じウィンドウのバックグラウンドのブラウザータブにはしないでください。ページは表示されたままである必要があり、非表示のページはドラッグをキャンセルします。
+
+</warning>
+
+## タブの概要
+
+<table>
+<thead>
+  <tr>
+    <th>
+      部分
+    </th>
+    
+    <th>
+      内容
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      上部バー
+    </td>
+    
+    <td>
+      今ドラッグが何をしているか（<code>
+        dragging card-3 → done (accepts)
+      </code>
+      
+      ）、監視中のページ、<strong>
+        ⌖ Pick
+      </strong>
+      
+      、編集したオプションの数とリセット、⧉（独立したウィンドウ）、テーマ。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      左：レジストリ
+    </td>
+    
+    <td>
+      すべてのプロバイダーをツリーで表示：そのリスト、ツリー、ドロップターゲット、ドラッグ可能な要素。<strong>
+        ☰
+      </strong>
+      
+       で表示・非表示を切り替えます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      中央：<strong>
+        Map
+      </strong>
+      
+       と <strong>
+        Log
+      </strong>
+    </td>
+    
+    <td>
+      ページのライブのミニマップ、またはドラッグのログ。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      右：<strong>
+        Drive
+      </strong>
+      
+      、<strong>
+        Options
+      </strong>
+      
+      、<strong>
+        State
+      </strong>
+    </td>
+    
+    <td>
+      ジョイスティックと移動ボタン、選んだノードのオプション、プロバイダーがそれについて知っていること。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+レジストリでノードを、またはマップでアイテムを選ぶと、右側がそれに追従します。
+
+## ミニマップ
+
+リスト、ツリー、ドロップターゲットごとのライブのカードで、アイテムのコピーが実際の位置に表示されます——オーバーレイが表示するのと同じクローンで、ページの CSS が適用されています。ドラッグ中は次のものを示します。
+
+- ドラッグを**受け入れる**（青）または**拒否する**（赤）リストとターゲット
+- プレースホルダーと、ポインターの下のターゲット
+- ポインター、オーバーレイのボックス、`placeholder: 'indicator'` のリストの挿入ライン
+
+クリックでアイテムを選んでページ上で強調表示し、ダブルクリックでページをそこまでスクロールします。ドロップが期待した場所に行かないときにマップを使ってください。どのリストがドラッグを受け入れるかがひと目でわかります。
+
+## Drive：ジョイスティック
+
+アイテムを選び——マップで、レジストリで、または **⌖ Pick** で（ページのドラッグ可能な要素への次の押下を、作用させずに選択として受け取ります）——ジョイスティックのノブを押します。アイテムが持ち上げられてその方向へ動き、ノブが中心から遠いほど速くなります。離すと止まり、**Drop** と **Cancel** でドラッグを終えます。
+
+これは `devtools` という名前のセンサーによる本物のポインタードラッグで、公開の[センサー API](https://zizigy.github.io/docs/guides/sensors#a-sensor-of-your-own) で作られています。リストはその下で並べ替えられ、コンテナーは端で自動スクロールし、`onBeforeDrop` と `onDrop` はどのドラッグとも同じように実行されます。無効なアイテムは持ち上げられません。ページが始めたキーボードドラッグも操作できます。
+
+並べ替え可能なリストのアイテムにはボタンもあります：上へ、下へ、先頭へ、末尾へ、グループの別のリストへ。それぞれが [`moveItem`](https://zizigy.github.io/docs/guides/sensors#programmatic-drags) による 1 回のキーボードドラッグです。ジョイスティックの下には、オーバーレイが表示しているものの大きなコピーがあります。
+
+<table>
+<thead>
+  <tr>
+    <th>
+      キー（タブ内）
+    </th>
+    
+    <th>
+      動作
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      矢印キーまたは <kbd value="W">
+        
+      </kbd>
+      
+       <kbd value="A">
+        
+      </kbd>
+      
+       <kbd value="S">
+        
+      </kbd>
+      
+       <kbd value="D">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      ノブをその方向に半分倒す。:kbd{value="Shift"} 付きで最後まで
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="G">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      選んだアイテムを持ち上げる
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="Space">
+        
+      </kbd>
+      
+       / <kbd value="Enter">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      ドロップ
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="Escape">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      キャンセル
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <kbd value="P">
+        
+      </kbd>
+    </td>
+    
+    <td>
+      ページ上で選ぶ
+    </td>
+  </tr>
+</tbody>
+</table>
+
+## オプション
+
+コールバックでないオプションはすべて、アプリの実行中に編集できます。ノードを選び、**Options** を開いてください。
+
+<table>
+<thead>
+  <tr>
+    <th>
+      ノード
+    </th>
+    
+    <th>
+      オプション
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      プロバイダー
+    </td>
+    
+    <td>
+      <code>
+        overlayFit
+      </code>
+      
+      、<code>
+        autoScroll
+      </code>
+      
+      、<code>
+        collision
+      </code>
+      
+      、<code>
+        modifiers
+      </code>
+      
+      （ライブラリのもの、名前で）、<code>
+        animation
+      </code>
+      
+      、<code>
+        dropAnimation
+      </code>
+      
+      、<code>
+        animate
+      </code>
+      
+      、<code>
+        activation
+      </code>
+      
+      、<code>
+        keyboard
+      </code>
+      
+      、<code>
+        haptics
+      </code>
+      
+      、<code>
+        copyModifier
+      </code>
+      
+      …
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      リスト
+    </td>
+    
+    <td>
+      <code>
+        disabled
+      </code>
+      
+      、<code>
+        strategy
+      </code>
+      
+      、<code>
+        placeholder
+      </code>
+      
+      、<code>
+        behavior
+      </code>
+      
+      、<code>
+        multiple
+      </code>
+      
+      、<code>
+        sort
+      </code>
+      
+      、<code>
+        dropOutside
+      </code>
+      
+      、<code>
+        acceptMode
+      </code>
+      
+      、<code>
+        animation
+      </code>
+      
+      、<code>
+        animate
+      </code>
+      
+      、<code>
+        autoScroll
+      </code>
+      
+      、<code>
+        modifiers
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      ツリー
+    </td>
+    
+    <td>
+      <code>
+        placeholder
+      </code>
+      
+      、<code>
+        indentation
+      </code>
+      
+      、<code>
+        nesting
+      </code>
+      
+      、<code>
+        maxDepth
+      </code>
+      
+      …
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      ドロップターゲット
+    </td>
+    
+    <td>
+      <code>
+        disabled
+      </code>
+      
+      、<code>
+        priority
+      </code>
+      
+      、<code>
+        accept
+      </code>
+      
+      、<code>
+        acceptMode
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      アイテム
+    </td>
+    
+    <td>
+      <code>
+        disabled
+      </code>
+      
+      、<code>
+        keyboard
+      </code>
+      
+      、<code>
+        activation
+      </code>
+    </td>
+  </tr>
+</tbody>
+</table>
+
+編集はすぐに、このページだけに適用され、コードに書き込まれることはありません。ライブラリはオプションを読み取る場所で新しい値を読み取ります。リセットする（オプションごとの ↺、または上部バーのリセット）、プロバイダーがアンマウントされる、ページを再読み込みするまで有効です。編集したオプションの横には、コードでの値が表示されます。編集が有効な間にマウントされたアイテム——仮想リストの行——にも適用されます。
+
+## 状態
+
+選んだノードについて、各プロバイダーが知っていること：
+
+- **ドラッグセッション**：状態、アクティブな id、アイテムとセンサー、ターゲットとそれが受け入れるかどうか、ポインター、オーバーレイ、並べ替え可能なグループのセッションと挿入ライン
+- **リスト**：その順序とドラフト。**ツリー**：その行
+- **アイテム**：その型、データ、位置。**ドロップターゲット**：そのルール
+
+アイテムはイベントなしにマウント・アンマウントされます。レジストリは 1 秒以内に追いつきます。
+
+## ログ
+
+ドラッグごとに 1 本の帯が、順番に並びます。
+
+<table>
+<thead>
+  <tr>
+    <th>
+      エントリー
+    </th>
+    
+    <th>
+      伝えること
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        drag start
+      </code>
+    </td>
+    
+    <td>
+      id、センサーとタッチかどうか、移動元のリスト。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        over
+      </code>
+      
+      、<code>
+        left
+      </code>
+    </td>
+    
+    <td>
+      入った・出た各ターゲットと、それが受け入れるかどうか。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        release
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+       が判断している間の、離したときのターゲット。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+    </td>
+    
+    <td>
+      判定：受け入れた、一部を受け入れた、フックが拒否した、ターゲットの <code>
+        accept
+      </code>
+      
+       が拒否した。そしてフックにかかった時間。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        drop
+      </code>
+    </td>
+    
+    <td>
+      ターゲット。並べ替え可能なリストでは、移動、<code>
+        e.result
+      </code>
+      
+      、<code>
+        preventDefault()
+      </code>
+      
+       が呼ばれたかどうか。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        cancel
+      </code>
+    </td>
+    
+    <td>
+      理由：キャンセルされた（Escape、<code>
+        cancel()
+      </code>
+      
+      ）、フックが拒否した、ターゲットの <code>
+        accept
+      </code>
+      
+       が拒否した。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+ほかに `auto-scroll on` と `off`、`announcement` のテキスト（デフォルトでは非表示）、そしてドラッグの外では `animate`（ドラッグ以外によるリストのアイテムの変化）があります。エントリーをクリックするとそのデータが見られます。後から開いたタブも、それまでのドラッグを受け取ります。
+
+## ドロップを 1 ステップずつデバッグする
+
+カードがある列に入りません。タブを開いた状態で：
+
+1. **再現します**。手で行うか、**Drive** を使えば両手をタブの操作に使えます。
+2. カードが列の上にある間、**マップを見ます**。赤はリストがカードを拒否していることを意味します：その `group`（`put`）か、ターゲットの `accept` を確認してください。青は受け入れていることを意味し、問題はその後にあります。
+3. そのドラッグの**ログを読みます**。`onBeforeDrop` が、誰が拒否したか——フックか、ターゲットの `accept` か——を示します。ドロップは成立したのにデータが変わらない場合、`drop` エントリーが `preventDefault()` が呼ばれたかどうかと、`e.result` の中身を示します：制御されたリストは自分でそれを適用する必要があります。
+4. **Options** で**修正をその場で試します**——より緩い `acceptMode`、別の `collision`、`placeholder: 'indicator'`——そしてうまくいったものをコードに書きます。
+
+## 仕組み
+
+プロバイダーは、ページ側がインストールするフックに報告します。タブがページを監視するまでは記録されるだけです。監視が始まると、ページはほかのモニターと同じようにリッスンし、タブが表示するものを送ります——ドラッグ中は 40 ms ごと、それ以外は 1 秒に 2 回——そして、数秒間どのタブも監視しなくなると止まります。タブはページのオリジンの `BroadcastChannel` を通じてページと通信します。変更するのは、あなたが求めたものだけです：ドラッグ、選択、オプションの上書き。
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

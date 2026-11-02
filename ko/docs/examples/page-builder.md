@@ -1,0 +1,256 @@
+---
+title: "페이지 빌더"
+description: "드래그 앤 드롭으로 조립하는 랜딩 페이지. 페이지 위에서 실제 모습으로 바뀌는 팔레트의 섹션, 컬럼 사이를 오가는 요소, 같은 데이터를 쓰는 레이어 트리, 그 자리에서 하는 편집, 기기 너비, 실행 취소."
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/page-builder"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="45rem" hint="섹션이나 요소를 페이지로 드래그하세요. 텍스트를 더블클릭하면 편집합니다" name="page-builder" title="페이지 빌더">
+
+
+
+</example>
+
+프레임을 전체 화면으로 펼쳐 보세요. 팔레트는 왼쪽에, 레이어는 오른쪽에 고정되고, 페이지가 그 사이를
+차지합니다. 더 좁으면 둘이 상단 바에서 여는 서랍을 함께 씁니다.
+
+## 살펴볼 점
+
+- **Canvas.vue**: 페이지는 `placeholder: 'indicator'`를 쓰는 섹션의 정렬 가능한 리스트입니다.
+섹션이 옮겨지는 동안 페이지는 움직이지 않고, 두 섹션 사이의 선이 어디로 갈지 알려 줍니다. 자리마다
+500px짜리 섹션을 밀어내면 페이지 전체가 흔들리기 때문입니다. `dropzone`이 드롭을 캔버스 전체에
+맡기므로, 페이지 옆이나 아래에서 놓은 섹션도 안착합니다.
+- **ColumnList.vue**: 모든 섹션의 모든 컬럼이 `blocks` 그룹의 리스트입니다. 요소는 컬럼과 섹션
+사이를 옮겨 다니며 실시간으로 정렬됩니다. 드래그하는 동안 페이지가 결과를 보여 줍니다. 각 컬럼은
+별도의 컴포넌트이며, 컬럼들은 다른 리스트의 항목 안에 있는 리스트입니다.
+- **Palette.vue**: 섹션 템플릿은 `pull: 'clone'`, `put: false`, `sort: false`인 페이지 그룹의
+리스트입니다. 복사본을 내주고 아무것도 받지 않습니다. 그 아래의 요소(**ElementChip.vue**)는 일반
+draggable이며, 컬럼이 `createItem`으로 블록을 만듭니다.
+- **Layers.vue**: 같은 데이터를 쓰는, 정렬 가능한 트리로 본 같은 페이지. 그곳에서 옮긴 행은
+페이지에서도 옮겨지고, 그 반대도 마찬가지입니다.
+- **builder.ts**: 페이지, 선택, 기기, 기록. 드롭은 리스트를 통해 페이지에 기록되고, 툴바의 버튼과
+단축키는 여기서 페이지를 바꿉니다. 각 변경은 실행 취소의 한 단계입니다.
+
+## 손에 든 섹션은 실제 섹션입니다
+
+**`SectionGhost.vue`**는 페이지의 섹션과 팔레트의 템플릿 둘 다의 오버레이입니다. 페이지 위에서는
+(`to.list`가 페이지의 리스트) 섹션 자체를 페이지 너비로 렌더링하고, 포인터 아래에서 축소해 보여
+줍니다. 드롭이 정해지면(`status: 'dropping'`) 박스가 섹션의 자리로 날아가는 동안 배율이 1로 돌아와,
+그 자리에 정확히 안착합니다. 드롭은 그 트랜지션을 기다리므로 마지막에 튀는 것이 없습니다.
+
+```vue [SectionGhost.vue]
+<script setup lang="ts">
+const props = defineProps<{ items: DragItem[]; status: DnDStatus; to: DropDestination | null }>();
+const section = computed(() => props.items[0]!.item as Section);
+const fromPalette = computed(() => !find(section.value.id));
+const onPage = computed(() => props.to?.list === PAGE);
+
+const look = computed(() => {
+  if (fromPalette.value && !onPage.value) return 'card'; // still the palette's card
+  return props.status === 'dropping' ? 'landing' : 'ghost';
+});
+</script>
+
+<template>
+  <DragPreview v-if="look === 'card'" :id="items[0]!.id" :style="{ width: '100%', height: '100%' }" />
+  <div v-else class="replica" :class="look" :style="{ width: `${pageWidth}px`, '--shrink': shrink }">
+    <SectionView :section="section" />
+  </div>
+</template>
+
+<style scoped>
+.replica { transform-origin: 0 0; scale: var(--shrink); transition: scale 0.25s ease; }
+.replica.landing { scale: 1; }
+</style>
+```
+
+페이지에서 벗어나 있는 동안 템플릿은 팔레트에 있던 모습 그대로입니다. `DragPreview`가 그 카드의
+라이브러리 복사본을 보여 줍니다. 페이지에서 섹션이 있는 자리가 곧 자리입니다. 드래그하는 동안 흐린
+모습으로 그곳에서 기다리고, 드롭하면 새 자리는 오버레이가 안착할 때까지 비어 있습니다.
+
+```css [PageSection.vue]
+.page-section[data-dnd-placeholder] { opacity: 0; }
+html[data-dnd-dragging] .page-section[data-dnd-placeholder] { opacity: 0.35; }
+```
+
+각 섹션은 자신의 `indicator`에서 선을 그리고, 드롭이 할 일을 알려 줍니다. *Move Features here*,
+템플릿이면 *Add Pricing here*.
+
+## 요소: 들어갈 섹션의 색으로
+
+블록은 몸체 전체로 드래그하고, 섹션은 몸체가 클릭하고 드래그하는 콘텐츠이므로 태그의 그립으로
+드래그합니다. 블록과 칩의 오버레이인 **`BlockGhost.vue`**는 들어갈 컬럼을 `to`에서 읽고 그 섹션의
+색을 입습니다. 어두운 푸터 위의 버튼은 놓기 전에 밝아집니다. 박스는 그곳에서의 블록 자리 크기를 가지며
+(`overlayFit: 'slot'`, 기본값), 블록은 드롭한 뒤와 똑같이 그 안에 배치됩니다.
+
+```ts [BlockGhost.vue]
+// The column it would go into (`to.list` is the column's id): its section's tone.
+const look = computed(() => {
+  const at = props.to && find(String(props.to.list));
+  return at ? { ...TONES[SECTIONS[at.section.kind].tone], ...typeScale(pageWidth.value) } : null;
+});
+```
+
+팔레트의 칩은 자기 종류를 담은 일반 draggable입니다. 각 컬럼은 칩으로 블록을 만들고, 새 블록은 놓거나
+다른 곳으로 옮길 때까지 컬럼 자체의 템플릿으로 렌더링되어 그 컬럼에 놓입니다.
+
+```ts [ColumnList.vue]
+makeSortableList(list, {
+  id: props.column.id,
+  items: blocks,
+  group: 'blocks',
+  overlay: BlockGhost,
+  createItem: (active) => {
+    const kind = (active.data as ChipData | undefined)?.kind;
+    return kind ? createBlock(BLOCKS[kind].spec) : undefined;
+  },
+});
+```
+
+`blocks`는 `toRef`가 아니라 `props.column.blocks`에 대한 쓰기 가능한 `computed`입니다. 실행 취소가
+페이지에 새 객체를 넣으므로 컬럼이 그것을 따라가야 하기 때문입니다.
+
+## 템플릿: 복사본은 내보내고, 받는 것은 없음
+
+```ts [Palette.vue]
+makeSortableList(list, {
+  id: 'templates',
+  items: templates,
+  group: { name: 'sections', pull: 'clone', put: false },
+  sort: false,
+  clone: (template) => createSection(template.kind), // new ids all the way down
+  overlay: SectionGhost,
+});
+```
+
+템플릿은 실제 섹션이므로 카드가 그것을 (축소해서) 보여 주고 오버레이도 렌더링할 수 있습니다. 카드를
+클릭하거나 <kbd value="Enter">
+
+
+
+</kbd>
+
+를 누르면 선택한 섹션 뒤에 섹션을 추가합니다. 드래그를 전혀 하지 않고도
+페이지를 만들 수 있습니다.
+
+## 레이어: 트리로 본 같은 페이지
+
+```ts [Layers.vue]
+makeSortableTree(tree, {
+  id: LAYERS,
+  items: sections as Ref<LayerNode[]>,
+  // Keys of their own: the canvas's lists already drag these ids.
+  getKey: (node) => `layer-${node.id}`,
+  getChildren: (node) => (isSection(node) ? node.columns : isColumn(node) ? node.blocks : undefined),
+  setChildren: (node, children) => { … },
+  // Blocks go into columns, nothing into blocks, sections stay at the top.
+  canNest: (node, parent) => levelOf(node) === levelOf(parent) + 1,
+  maxDepth: 2,
+  placeholder: 'indicator',
+  // A tree takes any row at its top level: a block let go there flies back.
+  onBeforeDrop: (event) => (event.to.parentKey !== null || event.items.every(isSection) ? 'accept' : 'reject'),
+});
+```
+
+key는 프로바이더 전체가 공유하므로 행은 자체 key를 가집니다. 컬럼도 행이며 `disabled`입니다. 블록을
+받고 제자리에 머뭅니다. 블록이 갈 수 없는 곳(두 섹션 사이)에서는 선이 빨갛게 변합니다. 행 위에 있으면
+페이지에서 그 노드에 윤곽선이 그려지고, 페이지에서 노드를 선택하면 여기서 그 섹션이 열리며 행이 보이도록
+스크롤됩니다.
+
+## 그 자리에서 편집하기, 그리고 키보드
+
+블록은 어디서든 드래그되므로, 더블클릭하기 전까지 텍스트를 편집할 수 없습니다. 더블클릭하면
+`contenteditable`이 되고, `canDrag`가 드래그를 거절하므로 누르면 캐럿이 놓입니다.
+**`EditableText.vue`**는 텍스트를 편집하지 않는 동안에만 모델에서 DOM으로 기록하므로, 캐럿이 튀지
+않고 실행 취소도 그대로 보입니다.
+
+프로바이더는 <kbd value="Space">
+
+
+
+</kbd>
+
+를 드래그용으로 두고, <kbd value="Enter">
+
+
+
+</kbd>
+
+는 에디터에 맡깁니다.
+
+```vue [index.vue]
+<DnDProvider
+  :keyboard="{ keys: { start: ['Space'], drop: ['Space', 'Enter'], cancel: ['Escape'] } }"
+  :announcements="announcements"
+  :screen-reader-instructions="instructions"
+>
+```
+
+Tab으로 블록에 가세요. <kbd value="Space">
+
+
+
+</kbd>
+
+로 집고, 화살표 키로 컬럼 안을 지나 다음 컬럼으로 옮깁니다.
+<kbd value="Enter">
+
+
+
+</kbd>
+
+는 편집합니다. 섹션도 같은 방식으로 그립으로 옮기거나 툴바의 화살표로 옮깁니다.
+<kbd value="Ctrl">
+
+
+
+</kbd>
+
+ <kbd value="Z">
+
+
+
+</kbd>
+
+는 실행 취소, <kbd value="Delete">
+
+
+
+</kbd>
+
+는 제거, <kbd value="Ctrl">
+
+
+
+</kbd>
+
+<kbd value="D">
+
+
+
+</kbd>
+
+는 복제합니다. 스크린 리더는 id 대신 "the Hero section, position 3 of 7 on the page"를
+듣습니다.
+
+## 실행 취소, 그리고 드래그가 아닌 변경
+
+모든 드롭은 기록의 한 단계입니다. 리스트가 페이지를 기록한 뒤 모니터가 페이지를 저장합니다.
+
+```ts [Builder.vue]
+useDnDMonitor({ onDragEnd: () => builder.commit() });
+```
+
+실행 취소는 스냅숏을 되돌립니다. 리스트에 `animate`가 켜져 있으므로 스냅숏이 옮긴 것은 그 자리로
+미끄러지고, 툴바로 위아래로 옮긴 섹션도 마찬가지입니다. 추가된 섹션은 서서히 나타나고 삭제된 섹션은
+서서히 사라집니다.
+
+더 읽어 보기: [정렬 가능한 리스트](https://zizigy.github.io/docs/guides/sortable-lists#an-insertion-line) ·
+[항목을 공유하는 리스트](https://zizigy.github.io/docs/guides/shared-lists) · [트리](https://zizigy.github.io/docs/guides/trees) ·
+[오버레이](https://zizigy.github.io/docs/guides/overlay) · [애니메이션](https://zizigy.github.io/docs/guides/animations) ·
+[접근성](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

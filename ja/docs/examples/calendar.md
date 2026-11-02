@@ -1,0 +1,158 @@
+---
+title: "週間カレンダー"
+description: "週の予定表。予定を日と 15 分刻みの枠をまたいで動かし、端をドラッグして伸ばし、空いた時間に描き、終日にし、タスクリストから予定に入れ、元に戻せます。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/calendar"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+<example height="44rem" hint="予定を動かしたり伸ばしたり、空いた時間に描いたりしてみましょう" name="calendar" title="週間カレンダー">
+
+
+
+</example>
+
+## 注目ポイント
+
+- **EventBlock.vue**：時間帯にある予定は通常のドラッグ可能な要素で、そのオーバーレイ **EventOverlay.vue** は着地する場所を表示します：「Wed 10:30 – 11:15」。重なる予定は横に並びます（`placement.ts` の `layoutDay`）。
+- **Edge.vue**：予定の上端と下端は、それぞれ独立したドラッグ可能な要素です。1 つをドラッグすると、予定が 15 分ずつ伸びます。
+- **DayColumn.vue**：各日の時間帯はドロップターゲットで、予定の下にもドラッグ可能な要素があります：空いた時間を押してドラッグすると新しい予定が描かれ、続けてタイトルを入力できます。
+- **AllDayCell.vue** と **Tasks.vue**：予定を日の終日セルにドロップすると時刻がなくなり、タスクリストにドロップすると日がなくなります。タスク（**EventChip.vue**）は週へドラッグでき、長さを保ちます。
+- **Week.vue**：時間帯のドラッグエリアとその独自のモディファイア、キーボードでの移動、現在時刻のライン。
+- **calendar.ts**：予定と元に戻す履歴。すべての変更は 1 つの関数を通り、トーストがそれを取り消すかを尋ねます。
+
+サンプルを展開してみましょう：十分な幅があれば、サイドパネルに月、表示・非表示を切り替えるカレンダー、リスト形式のタスクが表示されます。スマートフォンでは週が 3 日になり、長押しでドラッグします。
+
+## すべてのドロップに 1 つの答え
+
+ドロップで何が起きるかは 4 か所で問われます：オーバーレイのラベル、タスクがその下の日に表示するゴースト、スクリーンリーダーが聞く内容、そしてドロップそのものです。どれも `placeOf` を呼ぶので、食い違うことはありません。各ドロップターゲットは自分が何であるかを `data` に持ち、`position` はドラッグ中のボックスがその中のどこにあるかを示します：その上端が時刻です。
+
+```ts [placement.ts]
+export function placeOf(event: CalendarEvent, over: Over | null, position: Coordinates | null): Place | null {
+  const target = over?.accepted ? (over.data as Target) : null;
+  if (!target) return null;
+  if (target.kind === 'tasks') return { day: null, start: null };
+  if (target.kind === 'all-day') return { day: target.day, start: null };
+  if (!position) return null;
+  return { day: target.day, start: clamp(minutesAt(position.y), 0, DAY_MINUTES - event.duration) };
+}
+```
+
+オーバーレイはそれを `useDnD().position` からライブで読み取り、着地中は最後の答えを保ちます。
+
+```ts [EventOverlay.vue]
+const { position } = useDnD();
+const place = shallowRef(placeOf(event.value, props.over, position.value));
+watchEffect(() => {
+  if (props.status === 'dragging') place.value = placeOf(event.value, props.over, position.value);
+});
+```
+
+予定はどこにあっても、id、`data`、オーバーレイを保ちます：時間帯のブロックでも、終日やタスクの中のチップでもです。別の場所にドロップされると別のコンポーネントで描画されますが、オーバーレイはそれでも新しい要素に着地します。
+
+## 時間帯独自のモディファイア
+
+`makeDragArea` は、時間帯で始まるドラッグ（予定、端、空いた時間）に独自のモディファイアを与えます。日の上では、ボックスはポインターがまたいだ分だけ丸一日単位で動くので、ほかの予定の隣にある予定も日の中での位置を保ちます。上端は、ドラッグが始まった日の 15 分刻みにスナップします。`containerRect` は、その日の現在の位置です：スクロールに追従し、ドラッグ中に時間帯が自動スクロールしてもスナップは保たれます。
+
+```ts [Week.vue]
+const snapToWeek: Modifier = ({ transform, overlayRect, containerRect, origin }) => {
+  const days = grid.value?.getBoundingClientRect();
+  if (!days || !containerRect) return transform;
+  const width = days.width / props.days.length;
+  const column = (x: number) => Math.floor((x - days.left) / width);
+  const pointer = origin.x + transform.x;
+  const x = pointer < days.left || pointer >= days.right ? transform.x : (column(pointer) - column(origin.x)) * width;
+  const top = overlayRect.top - containerRect.top;
+  return { x, y: transform.y + Math.round(top / STEP_PX) * STEP_PX - top };
+};
+
+makeDragArea(grid, { modifiers: [snapToWeek], autoScroll: { threshold: 0.12 } });
+```
+
+エリアの `autoScroll` は、時間帯の上を通るすべてのドラッグについて、時間帯をスクロールさせる端の領域を狭めます：すぐ上にある終日の行に届きやすくするためです。タスクと終日の予定はエリアの外で始まるので自由に動き、その下の日には着地する場所にゴーストが表示されます。
+
+## 伸ばす：端はドラッグ可能な要素
+
+端は予定の要素の中にあり、押下は最も近いドラッグ可能な要素、つまり端をドラッグします。端はオーバーレイを持たず、上下にだけ動き、表示中の時間帯の中に留まります。
+
+```ts [Edge.vue]
+makeDraggable(el, {
+  id: () => `${props.event.id}-${props.edge}`,
+  type: 'edge',
+  data: (): DragData => ({ kind: 'edge', event: props.event, edge: props.edge }),
+  overlay: false,
+  axis: 'y',
+  modifiers: [restrictToFirstScrollableAncestor],
+  attributes: false, // no tab stop: Shift + arrows change the end of a focused event
+});
+```
+
+端そのものは動きません。代わりに予定が、日の中で端がある位置から伸びます。その位置は、ドロップが読み取るのと同じく `position` から読み取られます。
+
+```ts [EventBlock.vue]
+const time = computed(() =>
+  resizing.value && position.value
+    ? resizeTo(props.event, resizing.value, position.value)
+    : { start: props.event.start!, duration: props.event.duration },
+);
+```
+
+## 空いた時間に描く
+
+予定の下では、各日にレーンがあり、そのレーンはオーバーレイのないドラッグ可能な要素です。レーンは決して動きません：そのボックスが動いた距離（`position`）が、押下からポインターが動いた距離で、エリアによって 15 分刻みにスナップされます。日は描かれている新しい予定を表示し、ドロップでそれを作成します。
+
+```ts [DayColumn.vue]
+makeDraggable(lane, {
+  id: () => `new-${props.day}`,
+  type: 'new',
+  data: (): DragData => ({ kind: 'new', day: props.day, from: from.value }),
+  overlay: false,
+  axis: 'y',
+  attributes: false, // the New event button is the keyboard's way
+});
+```
+
+日の `accept` は関数です：どの予定も受け入れ、端とレーンは自分のものだけを受け入れます。終日セルとタスクリストは文字列の `'event'` を受け入れるので、`edge` 型と `new` 型はコードを 1 行も書かずにそこで拒否されます。ドロップは 1 つのハンドラーです。
+
+```ts [DayColumn.vue]
+onDrop: ({ active, over, position }) => {
+  const data = active.data as DragData;
+  if (!position) return;
+  if (data.kind === 'event') {
+    const place = placeOf(data.event, over, position);
+    if (place) calendar.place(data.event.id, place);
+  } else if (data.kind === 'edge') {
+    calendar.resize(data.event.id, resizeTo(data.event, data.edge, position));
+  } else {
+    const { start, duration } = rangeOf(data.from, data.from + position.y);
+    calendar.create(props.day, start, duration);
+  }
+},
+```
+
+## キーボード
+
+Tab で予定に移り、Space で持ち上げます：週のモニターが矢印キーに `getKeyboardCoordinates` で答え、次の 15 分（Shift を押すと 1 時間）か次の日を返します。キーボードドラッグは自動スクロールしないので、表示中の時間帯の端の近くでは、矢印キーが代わりに時間帯をスクロールします。タスクと終日の予定は、時間帯の上に来るまでターゲットからターゲットへジャンプします（`keyboard: 'droppables'`）。
+
+```ts [Week.vue]
+useDnDMonitor({
+  getKeyboardCoordinates: (key, { pointer, direction }) => {
+    // …only over the hours
+    const dy = direction.y * STEP_PX * (key.shiftKey ? 4 : 1);
+    const next = { x: pointer.x + direction.x * (grid.value.offsetWidth / props.days.length), y: pointer.y + dy };
+    if (canScroll && (next.y < view.top + HOUR_PX || next.y > view.bottom - HOUR_PX)) {
+      hours.scrollTop += dy;
+      return { x: next.x, y: pointer.y };
+    }
+    return next;
+  },
+});
+```
+
+`index.vue` にあるプロバイダーの `announcements` は、何を持ち上げたか、どう動かすかを伝えます。週は矢印キーで変わった時刻を読み上げ（「Tuesday, 10:30 to 11:15」）、トーストはドロップで何が変わったかを伝えます。フォーカスした予定では Delete で削除でき、Ctrl+Z でどの変更も元に戻せます。
+
+さらに読む：[独自のモディファイア](https://zizigy.github.io/docs/guides/constraints#your-own-modifier) · [ページの一部に対するルール](https://zizigy.github.io/docs/guides/constraints#rules-for-a-part-of-the-page) · [ドロップした場所に置く](https://zizigy.github.io/docs/guides/drag-and-drop#leave-it-where-it-was-dropped) · [オーバーレイなし](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay) · [オーバーレイコンポーネント](https://zizigy.github.io/docs/guides/overlay#overlay-components) · [アクセシビリティ](https://zizigy.github.io/docs/guides/accessibility)
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.

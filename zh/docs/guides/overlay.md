@@ -1,0 +1,630 @@
+---
+title: "浮层"
+description: "拖拽时跟随指针的东西——默认克隆及其样式、随拖拽变化的浮层组件、同时显示多个项、它的尺寸，以及它渲染在哪里。"
+canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/overlay"
+---
+
+> Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
+
+拖拽时，一个盒子跟随指针：这就是**浮层**。被拖拽的元素本身留在原处，作为它将落入的位置。放置时，浮层飞到那个位置然后消失。
+
+浮层被传送到 `body`，位于你的组件之外。默认情况下，它显示被拖拽元素的克隆。
+
+<example height="22rem" hint="在一行中输入内容并勾选它，然后按住手柄拖动：副本保留输入的值和图表" name="overlay">
+
+
+
+</example>
+
+## 默认克隆
+
+克隆在拿起时生成，此时还没有任何东西移动。它是元素的深拷贝：
+
+- 表单的值和 `<canvas>` 的像素会被复制。
+- 元素离开列表后会丢失的计算样式会被内联：继承的字体和颜色、通过祖先匹配的样式（`.list li { … }`）、表格单元格的宽度。表格行会被包在一个它自己的表格里。
+- `id` 和 `data-dnd-*` 属性会被去掉，克隆带有 `aria-hidden`。
+- UI 库（Vuetify、Quasar、PrimeVue、Naive UI）的涟漪和其他按下效果会被略去。
+
+在上面的表格中，你输入过内容的行会带着它的文本、金额、勾选状态和图表一起移动，放在一个它自己的表格里，单元格保持真实单元格的宽度。
+
+其他不应随之移动的东西，用 **data-dnd-no-clone** 标记：菜单按钮、提示框、选中标记。每一行的删除按钮就留在原处：
+
+```vue [ExpenseRow.vue]
+<tr ref="el" class="row">
+  …
+  <td><button type="button" aria-label="Remove" data-dnd-no-clone @click="emit('remove')">×</button></td>
+</tr>
+```
+
+### 不会猜测背景
+
+克隆按元素本来的样子显示。自身没有背景、由列表绘制背景的行（白色 `<ul>` 中的 `<li>`、`v-list-item`、表格行），会得到一个**透明**的克隆。在 CSS 中给它加上列表的背景，这里加在单元格上：
+
+```vue [ExpenseRow.vue]
+<style scoped>
+[data-dnd-overlay] .row td {
+  background: color-mix(in srgb, currentColor 4%, Canvas);
+}
+</style>
+```
+
+克隆保留元素的 class 和属性，包括 Vue 的作用域属性，因此这条规则写在行的 scoped 样式中和写在全局样式表中都有效。另一种办法是给行本身设置背景。本就应当悬浮的图标和图块则有意保持透明。
+
+## 为盒子设置样式
+
+盒子是带有 `data-dnd-overlay` 的元素。它是 `position: fixed`，位于最上层（`z-index: 9999`），`pointer-events: none` 且 `inert`，它的值表示它正在做什么：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        data-dnd-overlay
+      </code>
+    </th>
+    
+    <th>
+      时机
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        "dragging"
+      </code>
+    </td>
+    
+    <td>
+      正在跟随指针。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        "dropping"
+      </code>
+    </td>
+    
+    <td>
+      正在落到它的位置上、飞回原处，或在等待异步的 <code>
+        onBeforeDrop
+      </code>
+      
+      。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+拖拽时呈现抬起的样子，落位时消失：
+
+```css
+[data-dnd-overlay='dragging'] .row td {
+  box-shadow: 0 14px 20px -16px rgb(0 0 0 / 0.7);
+}
+```
+
+盒子通过 `transform` 移动，尺寸由 `width` 和 `height` 设置：为盒子里面的内容设置样式，而不是盒子本身。克隆填满盒子，它的根元素上设置了 `width: 100%`、`height: 100%` 和 `transform: none`：用 `rotate` 和 `scale` 属性旋转和缩放它，过渡和关键帧都能为这两个属性添加动画。具体做法见[动画](https://zizigy.github.io/docs/guides/animations)。
+
+## 浮层组件
+
+要显示克隆以外的东西，传入一个组件。它在盒子内部渲染，并以 props 的形式获得拖拽信息，这些 props 会在拖拽过程中变化：拖拽在哪里、那里是否接收它、放置是否为复制，以及放置本身。
+
+<example height="26.5rem" hint="把工单拖过各列：Done 接收已批准的工单并给它们盖章；按住 Alt 复制" name="overlay-live">
+
+
+
+</example>
+
+```vue [TicketOverlay.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import type { DnDStatus, DragItem, DragMode, Over } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[]; over: Over | null; accepted: boolean; status: DnDStatus; mode: DragMode }>();
+const ticket = computed(() => props.items[0]?.item as Ticket);
+
+const state = computed(() => {
+  if (props.status === 'dropping') return props.over ? 'landed' : 'back'; // a cancel flies back
+  if (!props.over) return 'free';
+  return props.accepted ? 'ok' : 'refused';
+});
+</script>
+
+<template>
+  <!-- Fills the overlay box, which takes the size of the slot. -->
+  <div class="ticket-overlay" :data-state="state">
+    {{ ticket.title }}
+    <span v-if="mode === 'copy'" class="copy">+ copy</span>
+  </div>
+</template>
+
+<style scoped>
+.ticket-overlay { width: 100%; height: 100%; }
+.ticket-overlay[data-state='refused'] { background: color-mix(in srgb, #ef4444 8%, Canvas); }
+</style>
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      Prop
+    </th>
+    
+    <th>
+      内容
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        active
+      </code>
+    </td>
+    
+    <td>
+      拖拽（<code>
+        id
+      </code>
+      
+      、<code>
+        ids
+      </code>
+      
+      、<code>
+        data
+      </code>
+      
+      、<code>
+        type
+      </code>
+      
+      ……）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        items
+      </code>
+    </td>
+    
+    <td>
+      所有被拖拽的项，抓起的那个在最前：<code>
+        { id, item, data, type }
+      </code>
+      
+      。对于可排序拖拽，<code>
+        item
+      </code>
+      
+       是列表项。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        over
+      </code>
+    </td>
+    
+    <td>
+      拖拽下方的目标；放置落位期间，是它落到的那个目标。下方没有目标时，以及被拒绝或取消的拖拽飞回原处时为 <code>
+        null
+      </code>
+      
+      。可排序列表的 <code>
+        over.id
+      </code>
+      
+       是列表的 <code>
+        id
+      </code>
+      
+      ：上面的各列用的是它们的名称。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        accepted
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        over
+      </code>
+      
+       是否接收该拖拽：不接收时把浮层染成红色。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        status
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'dragging'
+      </code>
+      
+      ，落位时变为 <code>
+        'dropping'
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        mode
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        'move'
+      </code>
+      
+      、<code>
+        'copy'
+      </code>
+      
+      （从带有 <code>
+        clone
+      </code>
+      
+       的列表拖拽时按住 Alt，或从面板拖拽）、<code>
+        'swap'
+      </code>
+      
+      ，或 <code>
+        'insert'
+      </code>
+      
+      （普通可拖拽元素进入列表）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        to
+      </code>
+    </td>
+    
+    <td>
+      现在放置会把这些项放到哪里：<code>
+        { list, index }
+      </code>
+      
+      ，在树中还有 <code>
+        parentKey
+      </code>
+      
+       和 <code>
+        depth
+      </code>
+      
+      。不会把它们放进任何列表时为 <code>
+        null
+      </code>
+      
+      ，例如在普通目标上方。见<a href="#where-the-drop-would-go-to">
+        放置会去哪里
+      </a>
+      
+      。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+这些 props 的类型是 `OverlayProps`；只声明你读取的那些。把组件传给被拖拽的东西：
+
+```ts
+import TicketOverlay from './TicketOverlay.vue';
+
+makeSortableList(listRef, { items: tickets, overlay: TicketOverlay });   // every item of the list
+makeSortableItem(el, { item: () => props.ticket, overlay: TicketOverlay }); // this item
+makeDraggable(el, { id: 'chip', overlay: TicketOverlay });                // a plain draggable
+```
+
+组件可以直接传入，可以放在 `shallowRef` 中以便切换（拖拽过程中也可以：浮层会立即改变），也可以传入一个函数，Vue 会把它当作函数式组件：在 TSX 中写作 `overlay: (props) => <TicketOverlay {...props} compact />`。永远不要把它放进深层的 `ref` 或 `reactive`：Vue 会把组件变成响应式的并发出警告。
+
+浮层组件的根元素应当填满盒子（`width: 100%; height: 100%`）：盒子取位置的尺寸，并在放置时为它添加动画。根元素上的固定尺寸则会在盒子内部保持该尺寸。
+
+## provider 的 `#overlay` 插槽
+
+对于每个没有自己组件的拖拽，由 provider 的插槽渲染浮层。在应用的根组件旁定义一次，应用中的每个列表和可拖拽元素都会用上它。这里便签有自己的虚影，照片则回退到克隆：
+
+<example height="26rem" hint="拖动一张便签，再拖动一张照片" name="overlay-slot">
+
+
+
+</example>
+
+```vue [App.vue]
+<DnDProvider>
+  <RouterView />
+  <template #overlay="{ items, status }">
+    <NoteGhost v-if="items[0]?.type.includes('note')" :items="items" :status="status" />
+  </template>
+</DnDProvider>
+```
+
+插槽获得与浮层组件相同的 props。当它什么都不渲染时（上面的 `v-if`），拖拽回退到克隆。按 `type` 区分不同的拖拽：可排序项的类型是它所在分组的名称，除非它设置了自己的类型（`makeSortableItem(el, { type })`）。
+
+## 改变浮层的目标
+
+放置目标可以决定，当它接受的拖拽位于它上方时浮层显示什么。`makeDroppable` 接受 `overlay`；列表和树接受 `overOverlay`，因为它们的 `overlay` 是给它们自己的项用的。在文件夹上方，被拖拽邮件的标签会变成这次放置将要做的事：
+
+<example height="34rem" hint="勾选两封邮件，把其中一封拖到 Archive 上方并松开" name="overlay-folders">
+
+
+
+</example>
+
+```ts [Folder.vue]
+makeDroppable(el, {
+  id: () => props.folder.id,
+  data: () => props.folder,
+  overlay: MovePill,
+  onDrop: (event) => emit('move', event.active.ids),
+});
+```
+
+目标的组件获得与任何浮层组件相同的 props，其中包括 `over`，并把拖拽自己的浮层（它的组件、provider 的插槽或克隆）作为默认插槽。`MovePill` 省略了插槽，所以它会替换标签：
+
+```vue [MovePill.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import type { DragItem, Over } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[]; over: Over | null }>();
+// The folder under the drag: its `data`.
+const folder = computed(() => props.over?.data as Folder | undefined);
+</script>
+
+<template>
+  <!-- Fills the box like any overlay component. -->
+  <div class="pill-box">
+    <span v-if="folder" class="pill">Move {{ items.length }} to {{ folder.name }}</span>
+  </div>
+</template>
+```
+
+渲染 `<slot />` 可以保留拖拽自己的浮层并包裹它。上面[浮层组件](#overlay-components)的看板中，Done 就是这样做的：在 Done 上方，已批准的工单保留它自己的浮层，Done 给它盖章，来自其他列的工单在放下时会迎来彩纸屑。
+
+```ts [Column.vue]
+makeSortableList(listRef, {
+  items: tickets,
+  group: { name: 'release', put },
+  overlay: TicketOverlay, // the tickets' own, in every column
+  overOverlay: strict ? DoneOverlay : undefined, // Done's, around it
+});
+```
+
+```vue [DoneOverlay.vue]
+<template>
+  <div class="done">
+    <slot /> <!-- TicketOverlay -->
+    <span class="stamp">Shipped</span>
+    <span v-if="status === 'dropping' && arrives" class="confetti">…</span>
+  </div>
+</template>
+```
+
+- 它只在目标接受该拖拽时显示，并在放置落到这个目标上时保持显示。离开目标后，拖拽自己的浮层就会回来。
+- 切换时会交叉淡入淡出。provider 的 `overlayTransition` 决定怎么切换：`false` 立即替换，对象则是包裹内容的 `<Transition>` 的 props（`name`、`mode`，以及用于 GSAP 或 motion 的 JS 钩子）。没有 `mode: 'out-in'` 时，两者会同时显示片刻：在 `.<name>-leave-active` 中给离开的那个设置 `position: absolute`。
+- 放置会等待彩纸屑：浮层落位时在其中运行的 CSS 动画和过渡会播放到结束，最多两秒。
+- 带有 `overlay: false` 的拖拽在任何目标上方都没有浮层。
+
+文件夹还会以自己的方式让胶囊落位，落进文件夹的图标：目标也可以有 `dropAnimation`。见[动画](https://zizigy.github.io/docs/guides/animations#per-item-and-per-target)。
+
+## 放置会去哪里：`to`
+
+`to` 告诉浮层现在放置会把这些项放到哪里，与放置事件的 `to` 将给出的一致：列表和其中的索引，在树中还有父节点和深度。它随位置的移动而变化。这个网站菜单中的页面会写出它将进入哪个栏目，以及在第几行：
+
+<example height="27rem" hint="把页面拖到各栏目上方，再横向拖动以改变它的深度" name="overlay-move-path">
+
+
+
+</example>
+
+```vue [MoveOverlay.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import type { DragItem, DropDestination } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[]; to: DropDestination | null }>();
+const page = computed(() => props.items[0]!.item as MenuNode);
+// `parentKey` is the section the page would go into, `null` at the top level.
+const where = computed(() => (props.to ? pathOf(menu.value, props.to.parentKey) : null));
+</script>
+
+<template>
+  <div class="move">
+    <div class="row">{{ page.title }}</div>
+    <p v-if="to && where" class="where">Move to <b>{{ where }}</b>, row {{ to.index + 1 }}</p>
+  </div>
+</template>
+```
+
+在所有目标之外，`to` 仍是空位所在的地方：默认情况下，在那里放置会把这些项留在空位处（`dropOutside: 'placeholder'`）。当放置不会把它们放进任何列表时为 `null`：在普通目标上方、在拒绝它们的列表上方、在 `dropOutside: 'cancel'` 或 `'remove'` 时位于目标之外。
+
+## 谁优先
+
+对于每次拖拽，取下面第一个适用的：
+
+1. 放置目标的 `overlay`（列表或树的 `overOverlay`），在拖拽位于它上方且它接受该拖拽时。原本会显示的东西成为它的默认插槽。
+2. 项自己的 `overlay`（`makeSortableItem`、`makeDraggable`）。
+3. 它所在列表或树的 `overlay`。
+4. provider 的 `#overlay` 插槽，除非它什么都不渲染。
+5. 默认克隆。在多项拖拽中，是一列或一叠克隆：见[多项拖拽](https://zizigy.github.io/docs/guides/multi-drag#the-default-overlay)。
+
+拖拽究竟有没有浮层（`overlay: false`）在拖拽开始时决定。显示哪个组件则是实时读取的：在拖拽过程中切换 ref 会替换它，进入或离开带有自己浮层的目标也会。
+
+## `DragPreview`：布局中的克隆
+
+`DragPreview` 渲染库为某个被拖拽项生成的克隆。浮层组件可以排布多个克隆，或给一个克隆加上外框。点击书本来选中它们，然后拖动其中一本：浮层会把真实的克隆扇形展开。
+
+<example height="24rem" hint="拖动已选中的三本书中的一本；点击书本可以选中其他的" name="overlay-fan">
+
+
+
+</example>
+
+```vue [FanOverlay.vue]
+<script setup lang="ts">
+import { computed } from 'vue';
+import { DragPreview, type DragItem } from '@vue-dnd-kit/core';
+
+const props = defineProps<{ items: DragItem[] }>();
+const fan = computed(() =>
+  props.items.slice(0, 4).map((entry, index) => ({
+    entry,
+    angle: index === 0 ? 0 : (index % 2 ? -1 : 1) * Math.ceil(index / 2) * 10,
+  })),
+);
+</script>
+
+<template>
+  <div class="fan">
+    <div v-for="{ entry, angle } in fan" :key="entry.id" class="card" :style="{ transform: `rotate(${angle}deg)` }">
+      <DragPreview :id="entry.id" class="face" :style="{ width: '100%', height: '100%' }">
+        <div class="blank" /> <!-- an item without a clone -->
+      </DragPreview>
+    </div>
+    <span v-if="items.length > 1" class="count">{{ items.length }}</span>
+  </div>
+</template>
+```
+
+- 克隆针对抓起的项以及按放置顺序紧邻它的其他项生成，数量为 provider 的 `overlayPreviews`（默认 5 个，`'all'` 表示每一个），前提是它们在拿起时已被渲染。对于其他任何项，`DragPreview` 渲染它的默认插槽。
+- 预览具有其项在拿起时的尺寸，以内联方式设置。用 `style` 设置它的尺寸，`style` 会透传下去（class 无法覆盖它），如上所示。
+- 在可排序的多项拖拽中（`multiple: 'group'` 或 `'gaps'`），放置时每个预览都会落到它自己那一项的位置上。用 `transform`（而不是 `rotate` 属性）旋转它的包裹元素：落位时会在途中撤销旋转。把项的外观（圆角、阴影）放在预览本身上，就像 `class="face"` 那样：包裹元素留在盒子里。
+
+[多项拖拽指南](https://zizigy.github.io/docs/guides/multi-drag#a-custom-overlay-for-several-items)中有一个浮层，显示的是数量和标题而不是克隆。
+
+## 尺寸：`overlayFit`
+
+在尺寸不同的列表上方时，盒子取它将落入的位置的尺寸。provider 的 `overlayFit` 可以切换这一点；[DnDProvider 页面](https://zizigy.github.io/docs/api/dnd-provider)有一个带窄列表和宽列表的演示。
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        overlayFit
+      </code>
+      
+      （provider）
+    </th>
+    
+    <th>
+      盒子
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        'slot'
+      </code>
+      
+      （默认）
+    </td>
+    
+    <td>
+      取它将落入的位置的尺寸，平滑过渡过去。在较宽的列表上方时，它会变宽。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        'source'
+      </code>
+    </td>
+    
+    <td>
+      保持被拖拽元素的尺寸。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+使用 `'slot'` 时，盒子围绕指针改变尺寸，指针始终位于盒子的同一比例处。内容永远不会被缩放：它会按新尺寸重新布局，所以像那个演示中的任务那样的 flex 行在任何宽度下都显示正常。如果位置的样式比项小得多，比如一条细线，盒子不会沿那个轴缩小。
+
+无论哪种设置，放置时都一样：盒子飞向落位元素并以动画过渡到**它的**尺寸，内容在途中重新布局。当一个项在两个列表中外观不同时（面板中的紧凑标签、看板上的完整卡片），源元素的克隆会按目标的尺寸重新布局，在那里可能显得被挤压或拉伸。有两种办法保持正常：
+
+- 给项一个**在两种尺寸下都适用的布局**，就像任务行那样，或者让它在所有可能落入的列表中尺寸相同。
+- 在浮层组件中渲染**目标的外观**。它会收到 `over`，因此可以切换到它所在列表的外观，并在任何尺寸下填满盒子。
+
+## 渲染位置：`overlayTo`
+
+provider 把浮层传送到 `body`。模态 `<dialog>`（用 `showModal()` 打开）位于顶层，在 `body` 中所有内容之上，所以放在那里的浮层会被它遮住。把 `overlayTo` 指向对话框内部的一个选择器或元素。[DnDProvider 页面](https://zizigy.github.io/docs/api/dnd-provider#where-the-overlay-renders)有一个对话框，可以试试用和不用它的区别：
+
+```vue [index.vue]
+<script setup lang="ts">
+const dialog = useTemplateRef<HTMLDialogElement>('dialog');
+const open = ref(false);
+// While the dialog is open, the overlay renders inside it.
+const overlayTo = computed(() => (open.value ? '#columns-dialog' : 'body'));
+
+const show = () => {
+  dialog.value?.showModal();
+  open.value = true;
+};
+</script>
+
+<template>
+  <DnDProvider :overlay-to="overlayTo">
+    <button type="button" @click="show">Edit columns</button>
+    <dialog id="columns-dialog" ref="dialog" @close="open = false">
+      <ColumnList v-model:columns="columns" />
+    </dialog>
+  </DnDProvider>
+</template>
+```
+
+- provider 渲染浮层时（在它挂载之后），目标必须已在页面中。关闭的 `<dialog>` 也在页面中：它只是被隐藏了。对话框关闭时切换回 `body`，这样其他拖拽的浮层才能显示。
+- 盒子是 `position: fixed`。目标或其祖先上的 `transform`、`filter` 或 `contain` 会让它代替视口成为盒子的参照框，所以不要在对话框上使用它们。
+- 克隆的样式是针对它显示的位置计算的：在 shadow root 中，把 `overlayTo` 指向其内部，克隆就会保留 shadow root 的样式。
+
+## 不使用浮层
+
+`makeDraggable(el, { overlay: false })` 完全没有盒子：元素本身通过返回的 `transform` 移动。
+
+```ts
+const { transform } = makeDraggable(el, { overlay: false });
+const style = computed(() =>
+  transform.value ? { translate: `${transform.value.x}px ${transform.value.y}px` } : undefined,
+);
+```
+
+见[拖放](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay)。有盒子的拖拽如何落位由它的 `dropAnimation` 决定：放置目标的、项的（或它所在列表的）或 provider 的。见[动画](https://zizigy.github.io/docs/guides/animations#the-drop)。
+
+## Sitemap
+
+See the full [sitemap](https://zizigy.github.io/vue-dnd-kit/sitemap.md) for all pages.
