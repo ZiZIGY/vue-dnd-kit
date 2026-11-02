@@ -11,7 +11,7 @@ DevTools for [Vue DnD Kit](https://github.com/zizigy/vue-dnd-kit) v3: a **Vue Dn
 npm i -D @vue-dnd-kit/devtools @vue-dnd-kit/actions
 ```
 
-Peer dependencies: `vue ^3.5`, `@vue-dnd-kit/core ^3` and [`@vue-dnd-kit/actions`](https://www.npmjs.com/package/@vue-dnd-kit/actions) `^3` (the tab's moves go through it; npm 7+ and pnpm install peer dependencies themselves, with Yarn 1 add it). The tab is a prebuilt page that the package ships: the dev server serves it next to your app.
+Peer dependencies: `vue ^3.5`, `@vue-dnd-kit/core ^3` and [`@vue-dnd-kit/actions`](https://www.npmjs.com/package/@vue-dnd-kit/actions) `^1` (the tab's moves go through it; npm 7+ and pnpm install peer dependencies themselves, with Yarn 1 add it). The tab is a prebuilt page that the package ships: the dev server serves it next to your app.
 
 ### Vite
 

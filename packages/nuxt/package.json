@@ -43,7 +43,7 @@
     "@nuxt/kit": "^4.4.2"
   },
   "peerDependencies": {
-    "@vue-dnd-kit/core": "^3.0.0-0",
+    "@vue-dnd-kit/core": "^3.0.0",
     "nuxt": "^4.0.0"
   },
   "devDependencies": {

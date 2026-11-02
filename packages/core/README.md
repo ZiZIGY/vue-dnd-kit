@@ -1,74 +1,97 @@
-# Vue DnD Kit - Core Package
+# @vue-dnd-kit/core
 
-[![Release](https://img.shields.io/badge/status-release-green.svg)](https://github.com/zizigy/vue-dnd-kit)
 [![npm version](https://img.shields.io/npm/v/@vue-dnd-kit/core.svg)](https://www.npmjs.com/package/@vue-dnd-kit/core)
+[![License](https://img.shields.io/npm/l/@vue-dnd-kit/core.svg)](https://github.com/ZiZIGY/vue-dnd-kit/blob/master/LICENSE)
 
 <p align="center">
   <a href="https://zizigy.github.io/vue-dnd-kit/">
-    <img src="https://raw.githubusercontent.com/ZiZiGY/vue-dnd-kit/v2/public/logo.svg" width="400" alt="Vue Drag & Drop Logo">
+    <img src="https://raw.githubusercontent.com/ZiZIGY/vue-dnd-kit/master/public/logo.svg" width="400" alt="Vue DnD Kit">
   </a>
 </p>
 
-<p align="center">
-  Core package of the Vue Drag & Drop library with composables and provider-based API.
-</p>
+Drag and drop for Vue 3: sortable lists, kanban boards, trees, multi-drag, files from other
+apps and drop zones — animated, keyboard-ready and announced to screen readers out of the box,
+in your own markup.
 
-<p align="center">
-  <a href="https://zizigy.github.io/vue-dnd-kit/" target="_blank">
-    <img src="https://img.shields.io/badge/Documentation-Visit-blue?style=flat-square" alt="Documentation">
-  </a>
-</p>
+**[Documentation and live examples →](https://zizigy.github.io/vue-dnd-kit/)**
 
-<p align="center">
-  Inspired by <a href="https://dndkit.com/" target="_blank">React DnD Kit</a>, adapted for Vue.js
-</p>
-
----
-
-## About
-
-**Vue DnD Kit** — lightweight drag & drop library for Vue 3. Built around a provider (`DnDProvider`) and composables: `makeDraggable`, `makeDroppable`, `makeSelectionArea`, `makeConstraintArea`.
-
-- **Lightweight** — small bundle size, no extra dependencies (Vue as peer only)
-- **Flexible** — works with any layout and design system
-- **Accessible** — full keyboard support (start, move, cancel, drop)
-- **TypeScript** — fully typed
-
----
-
-## Features
-
-- **Composables API** — `makeDraggable`, `makeDroppable`, `makeSelectionArea`, `makeConstraintArea`
-- **Provider-based** — `DnDProvider` + `useDnDProvider` for state access
-- **Keyboard support** — Enter/Space for start and drop, arrows for movement, Escape to cancel
-- **Modifier keys** — drag only when modifier held (e.g. Ctrl)
-- **Custom overlay** — custom drag preview via slot or `render` option
-
----
-
-## Installation
+## Install
 
 ```bash
-npm install @vue-dnd-kit/core
+npm i @vue-dnd-kit/core
 ```
 
-```bash
-yarn add @vue-dnd-kit/core
+Vue 3.5 or newer. Coming from v2: see [migrating from v2](https://zizigy.github.io/vue-dnd-kit/docs/getting-started/migrating-from-v2).
+
+## A sortable list
+
+```vue
+<!-- App.vue -->
+<script setup lang="ts">
+import { DnDProvider } from '@vue-dnd-kit/core';
+import TaskList from './TaskList.vue';
+</script>
+
+<template>
+  <DnDProvider>
+    <TaskList />
+  </DnDProvider>
+</template>
 ```
 
-```bash
-pnpm add @vue-dnd-kit/core
+```vue
+<!-- TaskList.vue -->
+<script setup lang="ts">
+import { ref, useTemplateRef } from 'vue';
+import { makeSortableList } from '@vue-dnd-kit/core';
+import TaskRow from './TaskRow.vue';
+
+const tasks = ref([
+  { id: 1, title: 'Write the docs' },
+  { id: 2, title: 'Ship v3' },
+]);
+// `items` is the draft: it reorders while you drag; the drop writes the new order to `tasks`.
+const { items } = makeSortableList(useTemplateRef<HTMLElement>('list'), { items: tasks });
+</script>
+
+<template>
+  <ul ref="list">
+    <TaskRow v-for="task in items" :key="task.id" :task="task" />
+  </ul>
+</template>
 ```
 
-**Peer dependency:** Vue 3
+```vue
+<!-- TaskRow.vue -->
+<script setup lang="ts">
+import { useTemplateRef } from 'vue';
+import { makeSortableItem } from '@vue-dnd-kit/core';
 
----
+const props = defineProps<{ task: { id: number; title: string } }>();
+makeSortableItem(useTemplateRef<HTMLElement>('row'), { item: () => props.task });
+</script>
+
+<template>
+  <li ref="row">{{ task.title }}</li>
+</template>
+```
+
+## What it does
+
+- **Sortable lists, grids and trees** that reorder live, and lists that share items: groups,
+  copies, swaps, rules for what goes where.
+- **Multi-drag** with your own selection and a rubber band.
+- **Drop zones** with accept rules, and drops you confirm, refuse or apply yourself.
+- **Files and other apps**: the browser's own drag and drop through the same lists and zones.
+- **Animations by default**, or your own with GSAP or motion.
+- **The keyboard and screen readers**: drags by slots, announcements, ARIA attributes.
+- **Virtual lists**, **sensors** of your own, **modifiers**, and SSR.
+
+Related packages: [`@vue-dnd-kit/nuxt`](https://www.npmjs.com/package/@vue-dnd-kit/nuxt) (the
+Nuxt module), [`@vue-dnd-kit/devtools`](https://www.npmjs.com/package/@vue-dnd-kit/devtools)
+(a DevTools tab), [`@vue-dnd-kit/actions`](https://www.npmjs.com/package/@vue-dnd-kit/actions)
+(drags scripted from code).
 
 ## License
 
-[MIT](LICENSE) © [ZiZiGY](https://github.com/ZiZiGY)
-
----
-
-<p align="center">🎉 Congratulations on the official release! 🎉</p>
-<p align="center">Made with ❤️ for the Vue.js community</p>
+[MIT](https://github.com/ZiZIGY/vue-dnd-kit/blob/master/LICENSE) © [ZiZIGY](https://github.com/ZiZIGY)
