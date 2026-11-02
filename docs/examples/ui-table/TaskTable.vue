@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, useTemplateRef } from 'vue';
 import type { TableColumn } from '@nuxt/ui';
-import { makeSortableList } from '@vue-dnd-kit/core';
+import { makeSortableList, restrictToFirstScrollableAncestor } from '@vue-dnd-kit/core';
 import RowGrip from './RowGrip.vue';
 import { makeTasks, type Status, type Task } from './tasks';
 
@@ -18,7 +18,10 @@ const { items, captureLayout } = makeSortableList(() => table.value?.tableRef?.t
     const text = query.value.trim().toLowerCase();
     return !text || `${task.id} ${task.title} ${task.assignee}`.toLowerCase().includes(text);
   },
+  // Up and down only, and never out of the table: its scroller is the rows' first
+  // scrollable ancestor.
   axis: 'y',
+  modifiers: [restrictToFirstScrollableAncestor],
   label: 'Tasks',
 });
 
@@ -42,7 +45,8 @@ const shown = computed(() => (query.value.trim() ? `${items.value.length} of ${t
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-3xl flex-col gap-3">
+  <!-- As tall as the frame on the page; expanded, the frame is a flex column that `flex-1` fills. -->
+  <div class="mx-auto flex h-[29rem] min-h-0 w-full max-w-7xl flex-1 flex-col gap-3">
     <div class="flex items-center gap-3">
       <UInput v-model="query" icon="i-lucide-search" placeholder="Search tasks, keys, people" class="flex-1" />
       <span class="shrink-0 text-xs text-muted tabular-nums">{{ shown }} tasks</span>
@@ -61,27 +65,28 @@ const shown = computed(() => (query.value.trim() ? `${items.value.length} of ${t
       :watch-options="{ deep: false }"
       :virtualize="{ estimateSize: 45, overscan: 8, onChange: () => captureLayout() }"
       sticky
-      class="h-[26rem] rounded-lg bg-default ring ring-default"
+      class="min-h-0 flex-1 rounded-lg bg-default ring ring-default"
       :ui="{
-        th: 'py-2.5',
-        td: 'py-2 whitespace-nowrap',
+        th: 'px-3 py-2.5',
+        td: 'px-3 py-2',
         tr: 'data-[dnd-placeholder]:bg-primary/5',
       }"
     >
       <template #grip-cell="{ row }">
         <RowGrip :task="row.original" />
       </template>
+      <!-- The task's title may wrap: the rest stays on one line, and the row fits the table. -->
       <template #id-cell="{ row }">
-        <span class="font-mono text-xs text-muted">{{ row.original.id }}</span>
+        <span class="font-mono text-xs whitespace-nowrap text-muted">{{ row.original.id }}</span>
       </template>
       <template #title-cell="{ row }">
         <span class="font-medium text-highlighted">{{ row.original.title }}</span>
       </template>
       <template #status-cell="{ row }">
-        <UBadge :label="row.original.status" :color="COLORS[row.original.status]" variant="subtle" size="sm" />
+        <UBadge :label="row.original.status" :color="COLORS[row.original.status]" variant="subtle" size="sm" class="whitespace-nowrap" />
       </template>
       <template #assignee-cell="{ row }">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 whitespace-nowrap">
           <UAvatar :alt="row.original.assignee" size="2xs" />
           <span>{{ row.original.assignee }}</span>
         </div>

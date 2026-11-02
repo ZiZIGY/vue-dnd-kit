@@ -21,9 +21,21 @@
   /** The stage's height on the page, held by a placeholder while it is expanded. */
   const held = ref(0);
   const scrollLock = useScrollLock(import.meta.client ? document.body : null);
+  // Moving to `body` and back takes the stage out of the document for a moment, which resets
+  // the scroll of everything in it, without a scroll event: a scrolled list keeps its place,
+  // and a virtual one renders the rows of where it is.
+  const keepScroll = () => {
+    const scrolled = [...(stage.value?.querySelectorAll<HTMLElement>('*') ?? [])]
+      .filter((element) => element.scrollTop || element.scrollLeft)
+      .map((element) => [element, element.scrollLeft, element.scrollTop] as const);
+    return () => scrolled.forEach(([element, left, top]) => element.scrollTo(left, top));
+  };
   const setExpanded = (value: boolean) => {
     if (value) held.value = stage.value?.offsetHeight ?? 0;
+    const restore = keepScroll();
     expanded.value = value;
+    // After the render that moves the stage.
+    nextTick(restore);
   };
   watch(expanded, (now) => {
     scrollLock.value = now;
@@ -35,7 +47,7 @@
   useEventListener('keydown', (event: KeyboardEvent) => {
     if (!expanded.value || event.key !== 'Escape' || event.defaultPrevented) return;
     if (document.documentElement.hasAttribute('data-dnd-dragging')) return;
-    expanded.value = false;
+    setExpanded(false);
   });
   onBeforeUnmount(() => (scrollLock.value = false));
 
