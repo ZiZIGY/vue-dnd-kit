@@ -162,7 +162,7 @@ ref를 넘기면 항상 최신 값이 유지됩니다.
   <tr>
     <td>
       <code>
-        keyboard
+        keyboardMode
       </code>
     </td>
     
@@ -1007,7 +1007,7 @@ const { isOver, isAccepting } = makeDroppable(el, {
   <tr>
     <th>
       <code>
-        keyboard
+        keyboardMode
       </code>
     </th>
     
@@ -1055,7 +1055,7 @@ const { isOver, isAccepting } = makeDroppable(el, {
 </table>
 
 ```ts
-makeDraggable(el, { id: () => props.waste.id, type: () => props.waste.type, keyboard: 'droppables' });
+makeDraggable(el, { id: () => props.waste.id, type: () => props.waste.type, keyboardMode: 'droppables' });
 ```
 
 키는 프로바이더에서 다시 지정할 수 있습니다. 자세한 내용은 [접근성](https://zizigy.github.io/docs/guides/accessibility)에

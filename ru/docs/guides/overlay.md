@@ -404,8 +404,8 @@ makeDraggable(el, { id: 'chip', overlay: TicketOverlay });                // a p
 ## Цели, которые меняют оверлей
 
 Цель может задать, что показывает оверлей, пока над ней драг, который она принимает.
-`makeDroppable` принимает `overlay`; списки и деревья — `overOverlay`, так как их `overlay` —
-для их собственных элементов. Над папкой чип перетаскиваемых писем превращается в то, что
+`makeDroppable`, списки и деревья принимают `overOverlay` (`overlay` списка или дерева — для
+его собственных элементов). Над папкой чип перетаскиваемых писем превращается в то, что
 сделает бросок:
 
 <example height="34rem" hint="Отметьте два письма, перетащите одно на Archive и отпустите" name="overlay-folders">
@@ -418,7 +418,7 @@ makeDraggable(el, { id: 'chip', overlay: TicketOverlay });                // a p
 makeDroppable(el, {
   id: () => props.folder.id,
   data: () => props.folder,
-  overlay: MovePill,
+  overOverlay: MovePill,
   onDrop: (event) => emit('move', event.active.ids),
 });
 ```
@@ -480,7 +480,7 @@ makeSortableList(listRef, {
 - У драга с `overlay: false` нет оверлея ни над какой целью.
 
 Папки к тому же приземляют плашку по-своему — в иконку папки: у цели тоже может быть
-`dropAnimation`. См. [анимации](https://zizigy.github.io/docs/guides/animations#per-item-and-per-target).
+`overDropAnimation`. См. [анимации](https://zizigy.github.io/docs/guides/animations#per-item-and-per-target).
 
 ## Куда пойдёт бросок: `to`
 
@@ -523,7 +523,7 @@ const where = computed(() => (props.to ? pathOf(menu.value, props.to.parentKey) 
 
 Для каждого драга — первое, что подходит:
 
-1. `overlay` цели (`overOverlay` списка или дерева), пока драг над ней и она его принимает.
+1. `overOverlay` цели (и списка или дерева тоже), пока драг над ней и она его принимает.
 То, что показалось бы иначе, становится её слотом по умолчанию.
 2. Собственный `overlay` элемента (`makeSortableItem`, `makeDraggable`).
 3. `overlay` его списка или дерева.
@@ -707,7 +707,7 @@ const style = computed(() =>
 ```
 
 См. [drag and drop](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay). Как приземляется драг с
-блоком, задаёт его `dropAnimation`: цели, элемента (или его списка) или провайдера. См.
+блоком, задаёт его `dropAnimation`: цели (`overDropAnimation`), элемента (или его списка) или провайдера. См.
 [анимации](https://zizigy.github.io/docs/guides/animations#the-drop).
 
 ## Sitemap

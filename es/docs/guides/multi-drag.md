@@ -239,25 +239,60 @@ escritorio lo lee.
   <tr>
     <td>
       <code>
-        selection
+        strategy
       </code>
+      
+      , <code>
+        modifier
+      </code>
+      
+       y <code>
+        disabled
+      </code>
+      
+       aceptan un valor, una ref o un getter, que se leen cuando una
     </td>
     
     <td>
-      Un <code>
-        Ref<Set<Key>>
-      </code>
       
-       propio en lugar de la selección del provider.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      pulsación empieza un rectángulo. Con áreas dentro de áreas, la más interior se queda la
+    </td>
+    
+    <td>
+      
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      pulsación. La página de la <a href="/docs/api/make-selection-area">
+        API de makeSelectionArea
+      </a>
+      
+       las cambia en
+    </td>
+    
+    <td>
+      
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      vivo.
+    </td>
+    
+    <td>
+      
     </td>
   </tr>
 </tbody>
 </table>
-
-`strategy`, `modifier` y `disabled` aceptan un valor, una ref o un getter, que se leen cuando una
-pulsación empieza un rectángulo. Con áreas dentro de áreas, la más interior se queda la
-pulsación. La página de la [API de makeSelectionArea](https://zizigy.github.io/docs/api/make-selection-area) las cambia en
-vivo.
 
 ### Moverlos tal como están
 

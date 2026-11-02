@@ -238,24 +238,50 @@ const { isSelecting, style } = makeSelectionArea(desktop);
   <tr>
     <td>
       <code>
-        selection
+        strategy
       </code>
+      
+      , <code>
+        modifier
+      </code>
+      
+       и <code>
+        disabled
+      </code>
+      
+       принимают значение, ref или геттер и читаются, когда
     </td>
     
     <td>
-      Собственный <code>
-        Ref<Set<Key>>
-      </code>
       
-       вместо выделения провайдера.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      нажатие начинает рамку. Если области вложены друг в друга, нажатие забирает самая внутренняя.
+    </td>
+    
+    <td>
+      
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      На странице <a href="/docs/api/make-selection-area">
+        API makeSelectionArea
+      </a>
+      
+       их можно переключать вживую.
+    </td>
+    
+    <td>
+      
     </td>
   </tr>
 </tbody>
 </table>
-
-`strategy`, `modifier` и `disabled` принимают значение, ref или геттер и читаются, когда
-нажатие начинает рамку. Если области вложены друг в друга, нажатие забирает самая внутренняя.
-На странице [API makeSelectionArea](https://zizigy.github.io/docs/api/make-selection-area) их можно переключать вживую.
 
 ### Перемещение в том виде, как они лежат
 

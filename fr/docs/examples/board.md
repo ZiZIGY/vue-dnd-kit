@@ -31,7 +31,7 @@ Chaque colonne passe quatre règles à sa liste. `put` voit toutes les cartes d'
 fois : la colonne les accepte toutes si elles tiennent sous sa limite, ou aucune. Au-dessus d'une
 colonne pleine, l'emplacement reste là où le glissement a commencé, la colonne devient rouge et
 les cartes en main disent pourquoi. `onBeforeDrop` pose une question avant que des cartes
-n'entrent dans Done, et `animate` fait glisser les cartes qui arrivent et partent sans glissement :
+n'entrent dans Done, et `animateChanges` fait glisser les cartes qui arrivent et partent sans glissement :
 un filtre, Add card, Undo.
 
 ```ts [Column.vue]
@@ -40,7 +40,7 @@ const { items, isOver, isAccepting } = makeSortableList(list, {
   items: () => props.column.cards.filter(board.matches),
   group: { name: 'cards', put: ({ keys }) => board.fits(props.column, keys) },
   overlay: CardOverlay,
-  animate: true,
+  animateChanges: true,
   onBeforeDrop: (event) => (props.column.confirm && !event.sameList ? board.ask(event.items) : 'accept'),
   onDrop: (event) => {
     event.preventDefault();

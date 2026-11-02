@@ -407,8 +407,8 @@ ordenável é o nome do grupo dele, a menos que ele defina o seu próprio
 ## Alvos que mudam o overlay
 
 Um alvo de drop pode dizer o que o overlay mostra enquanto um arraste que ele aceita está sobre
-ele. `makeDroppable` aceita um `overlay`; listas e árvores aceitam um `overOverlay`, já que o
-`overlay` delas é para os próprios itens. Sobre uma pasta, o chip das mensagens arrastadas vira o
+ele. `makeDroppable`, listas e árvores aceitam um `overOverlay` (o `overlay` de uma lista ou
+árvore é para os próprios itens). Sobre uma pasta, o chip das mensagens arrastadas vira o
 que o drop vai fazer:
 
 <example height="34rem" hint="Marque duas mensagens, arraste uma sobre Archive e solte" name="overlay-folders">
@@ -421,7 +421,7 @@ que o drop vai fazer:
 makeDroppable(el, {
   id: () => props.folder.id,
   data: () => props.folder,
-  overlay: MovePill,
+  overOverlay: MovePill,
   onDrop: (event) => emit('move', event.active.ids),
 });
 ```
@@ -482,7 +482,7 @@ tocam até o fim, por no máximo dois segundos.
 - Um arraste com `overlay: false` não tem overlay sobre nenhum alvo.
 
 As pastas também fazem a pílula pousar do jeito delas, dentro do ícone da pasta: um alvo também
-pode ter um `dropAnimation`. Veja [animações](https://zizigy.github.io/docs/guides/animations#per-item-and-per-target).
+pode ter um `overDropAnimation`. Veja [animações](https://zizigy.github.io/docs/guides/animations#per-item-and-per-target).
 
 ## Onde o drop iria parar: `to`
 
@@ -524,7 +524,7 @@ colocaria em nenhuma lista: sobre um alvo simples, sobre uma lista que os recusa
 
 Para cada arraste, o primeiro que se aplica:
 
-1. O `overlay` do alvo de drop (o `overOverlay` de uma lista ou árvore), enquanto o arraste está
+1. O `overOverlay` do alvo de drop (também o de uma lista ou árvore), enquanto o arraste está
 sobre ele e ele aceita o arraste. O que apareceria caso contrário é o slot padrão dele.
 2. O `overlay` do próprio item (`makeSortableItem`, `makeDraggable`).
 3. O `overlay` da lista ou da árvore dele.
@@ -708,7 +708,7 @@ const style = computed(() =>
 ```
 
 Veja [arrastar e soltar](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay). Como um arraste com
-caixa pousa é definido pelo `dropAnimation` dele: o do alvo de drop, o do item (ou o da lista
+caixa pousa é definido pelo `dropAnimation` dele: o do alvo de drop (`overDropAnimation`), o do item (ou o da lista
 dele) ou o do provider. Veja [animações](https://zizigy.github.io/docs/guides/animations#the-drop).
 
 ## Sitemap

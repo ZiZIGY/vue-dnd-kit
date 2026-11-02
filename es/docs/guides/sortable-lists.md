@@ -217,13 +217,13 @@ const { items } = makeSortableList(strip, {
   items: tabs,
   strategy: 'horizontal',
   axis: 'x',        // the tabs stay on their row
-  animate: true,    // the buttons open and close tabs: slide the others then too
+  animateChanges: true, // the buttons open and close tabs: slide the others then too
 });
 ```
 
 El botón de cerrar de la pestaña sigue funcionando dentro de la pestaña arrastrable, y un clic que
 termina un arrastre no selecciona ninguna pestaña. Las filas se deslizan solas mientras
-arrastras; `animate` añade lo mismo para los cambios que no hizo ningún arrastre, aquí los
+arrastras; `animateChanges` añade lo mismo para los cambios que no hizo ningún arrastre, aquí los
 botones (consulta [animaciones](https://zizigy.github.io/docs/guides/animations)).
 
 Una cuadrícula ordena en dos dimensiones, con mosaicos de cualquier tamaño:
@@ -710,7 +710,7 @@ hueco. La propia lista crece o se encoge hasta su nuevo tamaño cuando entran y 
 (`animateSize`). Está activado por defecto y no necesita código. No envuelvas las filas en
 `<TransitionGroup>`: los movimientos se animarían dos veces. Tampoco pongas una `transition` CSS
 en el `transform` de las filas. Para los cambios que no hizo ningún arrastre (añadir, quitar,
-barajar), activa la opción `animate` de la lista, como hacen las pestañas. Consulta
+barajar), activa la opción `animateChanges` de la lista, como hacen las pestañas. Consulta
 [animaciones](https://zizigy.github.io/docs/guides/animations).
 
 La lista completa de opciones está en la API de [makeSortableList](https://zizigy.github.io/docs/api/make-sortable-list)

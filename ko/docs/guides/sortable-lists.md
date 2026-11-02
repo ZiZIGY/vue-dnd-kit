@@ -215,12 +215,12 @@ const { items } = makeSortableList(strip, {
   items: tabs,
   strategy: 'horizontal',
   axis: 'x',        // the tabs stay on their row
-  animate: true,    // the buttons open and close tabs: slide the others then too
+  animateChanges: true, // the buttons open and close tabs: slide the others then too
 });
 ```
 
 탭의 닫기 버튼은 드래그할 수 있는 탭 안에서도 동작하고, 드래그를 끝내는 클릭은 탭을 선택하지
-않습니다. 행은 드래그하는 동안 저절로 미끄러지듯 움직입니다. `animate`는 드래그가 아닌 변경, 여기서는
+않습니다. 행은 드래그하는 동안 저절로 미끄러지듯 움직입니다. `animateChanges`는 드래그가 아닌 변경, 여기서는
 버튼에 의한 변경에도 같은 효과를 줍니다([애니메이션](https://zizigy.github.io/docs/guides/animations) 참고).
 
 그리드는 크기가 제각각인 타일로 2차원 정렬을 합니다.
@@ -698,7 +698,7 @@ const { items } = makeSortableList(list, {
 나갈 때 리스트 자체도 새 크기로 커지거나 줄어듭니다(`animateSize`). 기본으로 켜져 있고 코드가 필요
 없습니다. 행을 `<TransitionGroup>`으로 감싸지 마세요. 이동이 두 번
 애니메이션됩니다. 행의 `transform`에 CSS `transition`을 걸지도 마세요. 드래그가 아닌
-변경(추가, 제거, 섞기)에는 탭처럼 리스트의 `animate` 옵션을 켜세요.
+변경(추가, 제거, 섞기)에는 탭처럼 리스트의 `animateChanges` 옵션을 켜세요.
 [애니메이션](https://zizigy.github.io/docs/guides/animations)을 참고하세요.
 
 전체 옵션 목록은 [makeSortableList](https://zizigy.github.io/docs/api/make-sortable-list)와

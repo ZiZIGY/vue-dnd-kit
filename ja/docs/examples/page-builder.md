@@ -174,7 +174,7 @@ Tab でブロックに移ります：:kbd{value="Space"} で持ち上げ、矢�
 useDnDMonitor({ onDragEnd: () => builder.commit() });
 ```
 
-元に戻す操作はスナップショットを戻します。リストは `animate` がオンなので、スナップショットで動いたものはそこへスライドし、ツールバーで上下に動かしたセクションも同じです。追加されたセクションはフェードインし、削除されたセクションはフェードアウトします。
+元に戻す操作はスナップショットを戻します。リストは `animateChanges` がオンなので、スナップショットで動いたものはそこへスライドし、ツールバーで上下に動かしたセクションも同じです。追加されたセクションはフェードインし、削除されたセクションはフェードアウトします。
 
 さらに読む：[並べ替え可能なリスト](https://zizigy.github.io/docs/guides/sortable-lists#an-insertion-line) · [アイテムを共有するリスト](https://zizigy.github.io/docs/guides/shared-lists) · [ツリー](https://zizigy.github.io/docs/guides/trees) · [オーバーレイ](https://zizigy.github.io/docs/guides/overlay) · [アニメーション](https://zizigy.github.io/docs/guides/animations) · [アクセシビリティ](https://zizigy.github.io/docs/guides/accessibility)
 

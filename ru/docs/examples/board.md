@@ -31,7 +31,7 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/board"
 Каждая колонка передаёт своему списку четыре правила. `put` видит сразу все карточки
 мульти-драга: колонка берёт их все, если они помещаются в её лимит, или ни одной. Над
 заполненной колонкой слот остаётся там, где начался драг, колонка краснеет, а карточки в руке
-говорят почему. `onBeforeDrop` спрашивает, прежде чем карточки попадут в Done, а `animate`
+говорят почему. `onBeforeDrop` спрашивает, прежде чем карточки попадут в Done, а `animateChanges`
 сдвигает карточки, которые появляются и исчезают без драга: фильтр, Add card, Undo.
 
 ```ts [Column.vue]
@@ -40,7 +40,7 @@ const { items, isOver, isAccepting } = makeSortableList(list, {
   items: () => props.column.cards.filter(board.matches),
   group: { name: 'cards', put: ({ keys }) => board.fits(props.column, keys) },
   overlay: CardOverlay,
-  animate: true,
+  animateChanges: true,
   onBeforeDrop: (event) => (props.column.confirm && !event.sameList ? board.ask(event.items) : 'accept'),
   onDrop: (event) => {
     event.preventDefault();

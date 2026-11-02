@@ -413,7 +413,7 @@ und öffne **Options**:
       </code>
       
       , <code>
-        animate
+        animateChanges
       </code>
       
       , <code>
@@ -479,7 +479,7 @@ und öffne **Options**:
       </code>
       
       , <code>
-        animate
+        animateChanges
       </code>
       
       , <code>
@@ -553,7 +553,7 @@ und öffne **Options**:
       </code>
       
       , <code>
-        keyboard
+        keyboardMode
       </code>
       
       , <code>

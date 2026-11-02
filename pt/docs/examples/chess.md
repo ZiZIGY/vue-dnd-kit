@@ -18,7 +18,7 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/chess"
 consultada enquanto uma peça é arrastada, então a casa aceita só os lances legais daquela peça;
 um drop em qualquer outro lugar é recusado e a peça volta ao lugar. As casas legais se acendem a
 partir de `isAccepting`: nenhum estado do próprio jogo acompanha o arraste.
-- **Piece.vue**: um draggable simples, `disabled` quando não é a vez do seu lado. `keyboard: 'droppables'` faz as setas pularem entre as casas que aceitam a peça: os lances legais dela, nada
+- **Piece.vue**: um draggable simples, `disabled` quando não é a vez do seu lado. `keyboardMode: 'droppables'` faz as setas pularem entre as casas que aceitam a peça: os lances legais dela, nada
 mais. `snapCenterToCursor` mantém a peça centralizada sob o ponteiro, e um toque arrasta na hora
 (`activation`). `canDrag` impede que você mexa nas peças do bot e no tabuleiro enquanto o código
 joga, sem desativar nada: arrastes iniciados por código não têm evento de entrada, então
@@ -61,7 +61,7 @@ pinned".
 
 ## Promoção: um drop que espera uma resposta
 
-Sobre a última fileira, um peão na mão mostra a peça em que vai se transformar: o `overlay` da
+Sobre a última fileira, um peão na mão mostra a peça em que vai se transformar: o `overOverlay` da
 própria casa (`PromotionOverlay.vue`) toma o lugar do da peça. Ao soltar, o `onBeforeDrop` da casa
 retorna uma promise, e o overlay espera sobre a casa enquanto **PromotionPicker.vue**, um
 elemento simples da página ao lado dela, pergunta qual peça. Uma peça responde `'accept'`, Escape
@@ -73,7 +73,7 @@ makeDroppable(el, {
   id: props.square,
   accept: ({ active }) => game.canMove(active.id, props.square),
   // Shown instead of the piece's overlay while a pawn is over the last rank.
-  overlay: computed(() =>
+  overOverlay: computed(() =>
     held.value?.kind === 'P' && isLastRank(props.square) ? PromotionOverlay : undefined,
   ),
   // A promise: the drop waits on the square until the picker answers.
@@ -85,7 +85,7 @@ makeDroppable(el, {
 
 O `onBeforeDrop` de um alvo de drop recebe o evento de arraste simples e só é consultado quando o
 `accept` dele aceitou o arraste; o de uma lista ordenável recebe o `SortableDropEvent` da lista,
-com o `result` do drop. O `overlay` do alvo é lido mais uma vez depois do `onDrop`, para o pouso:
+com o `result` do drop. O `overOverlay` do alvo é lido mais uma vez depois do `onDrop`, para o pouso:
 ele verifica o peão como ele foi pego (`active.data`), não o jogo, onde a essa altura ele já é uma
 dama.
 
@@ -115,7 +115,7 @@ arrastada por cima dele, então a torre nunca pula.
 ## Capturas, desfazer e um novo jogo
 
 As peças capturadas vão para o **Tray.vue** do seu lado: uma lista ordenável usada só pelo
-`animate` (`disabled`, nada é arrastado ali). O `enter` dela é uma função: uma nova peça voa para
+`animateChanges` (`disabled`, nada é arrastado ali). O `enter` dela é uma função: uma nova peça voa para
 dentro a partir da casa em que foi capturada, e as outras abrem espaço.
 
 ```ts [Tray.vue]
@@ -123,7 +123,7 @@ makeSortableList(tray, {
   items: () => props.pieces,
   getKey: (piece) => `taken-${piece.id}`,
   disabled: true,
-  animate: { enter: flyIn, leave: false },
+  animateChanges: { enter: flyIn, leave: false },
 });
 ```
 
@@ -134,7 +134,7 @@ o seu lance junto com a resposta dele.
 Leia mais: [Decidindo um drop](https://zizigy.github.io/docs/guides/drop-decisions) ·
 [O overlay](https://zizigy.github.io/docs/guides/overlay#targets-that-change-the-overlay) ·
 [Arrastes programáticos](https://zizigy.github.io/docs/guides/sensors#programmatic-drags) ·
-[Mudanças nos dados: `animate`](https://zizigy.github.io/docs/guides/animations#data-changes-animate) ·
+[Mudanças nos dados: `animateChanges`](https://zizigy.github.io/docs/guides/animations#data-changes-animatechanges) ·
 [Acessibilidade](https://zizigy.github.io/docs/guides/accessibility)
 
 ## Sitemap

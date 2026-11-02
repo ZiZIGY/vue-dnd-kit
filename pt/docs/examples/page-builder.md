@@ -250,7 +250,7 @@ Todo drop é um passo do histórico: um monitor salva a página depois que as li
 useDnDMonitor({ onDragEnd: () => builder.commit() });
 ```
 
-O desfazer coloca um snapshot de volta. As listas têm `animate` ligado, então o que o snapshot
+O desfazer coloca um snapshot de volta. As listas têm `animateChanges` ligado, então o que o snapshot
 moveu desliza até lá, assim como as seções que a barra de ferramentas move para cima e para baixo;
 as seções adicionadas aparecem esmaecendo e as apagadas somem.
 

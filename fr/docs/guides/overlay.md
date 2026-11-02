@@ -411,8 +411,8 @@ type d'un item triable est le nom de son groupe, sauf s'il définit le sien
 ## Cibles qui changent l'overlay
 
 Une cible de dépôt peut dire ce que montre l'overlay pendant qu'un glissement qu'elle accepte la
-survole. `makeDroppable` accepte un `overlay` ; les listes et les arbres acceptent un
-`overOverlay`, car leur `overlay` sert à leurs propres items. Au-dessus d'un dossier, la pastille
+survole. `makeDroppable`, les listes et les arbres acceptent un `overOverlay` (l'`overlay` d'une
+liste ou d'un arbre sert à ses propres items). Au-dessus d'un dossier, la pastille
 des messages glissés se transforme en ce que fera le dépôt :
 
 <example height="34rem" hint="Cochez deux messages, faites-en glisser un au-dessus d'Archive et relâchez" name="overlay-folders">
@@ -425,7 +425,7 @@ des messages glissés se transforme en ce que fera le dépôt :
 makeDroppable(el, {
   id: () => props.folder.id,
   data: () => props.folder,
-  overlay: MovePill,
+  overOverlay: MovePill,
   onDrop: (event) => emit('move', event.active.ids),
 });
 ```
@@ -487,7 +487,7 @@ pendant qu'il atterrit vont jusqu'au bout, pendant deux secondes au plus.
 - Un glissement avec `overlay: false` n'a d'overlay au-dessus d'aucune cible.
 
 Les dossiers font aussi atterrir la pilule à leur façon, dans l'icône du dossier : une cible peut
-aussi avoir une `dropAnimation`. Voir les [animations](https://zizigy.github.io/docs/guides/animations#per-item-and-per-target).
+aussi avoir une `overDropAnimation`. Voir les [animations](https://zizigy.github.io/docs/guides/animations#per-item-and-per-target).
 
 ## Où irait le dépôt : `to`
 
@@ -530,7 +530,7 @@ liste qui les refuse, à l'extérieur avec `dropOutside: 'cancel'` ou `'remove'`
 
 Pour chaque glissement, le premier qui s'applique :
 
-1. L'`overlay` de la cible de dépôt (l'`overOverlay` d'une liste ou d'un arbre), tant que le
+1. L'`overOverlay` de la cible de dépôt (celui d'une liste ou d'un arbre aussi), tant que le
 glissement la survole et qu'elle l'accepte. Ce qui s'afficherait sinon est son slot par défaut.
 2. L'`overlay` propre à l'item (`makeSortableItem`, `makeDraggable`).
 3. L'`overlay` de sa liste ou de son arbre.
@@ -716,7 +716,7 @@ const style = computed(() =>
 ```
 
 Voir le [glisser-déposer](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay). La façon dont atterrit
-un glissement avec une boîte dépend de sa `dropAnimation` : celle de la cible de dépôt, celle de
+un glissement avec une boîte dépend de sa `dropAnimation` : celle de la cible de dépôt (`overDropAnimation`), celle de
 l'item (ou de sa liste) ou celle du provider. Voir les [animations](https://zizigy.github.io/docs/guides/animations#the-drop).
 
 ## Sitemap

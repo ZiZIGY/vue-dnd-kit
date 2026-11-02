@@ -374,7 +374,7 @@ makeDraggable(el, { id: 'chip', overlay: TicketOverlay });                // a p
 
 ## オーバーレイを変えるターゲット
 
-ドロップターゲットは、自分が受け入れるドラッグが上にある間、オーバーレイに何を表示するかを決められます。`makeDroppable` は `overlay` を受け取ります。リストとツリーは `overOverlay` を受け取ります。それらの `overlay` は自分のアイテム用だからです。フォルダーの上では、ドラッグ中のメッセージのチップが、ドロップで行われることの表示に変わります。
+ドロップターゲットは、自分が受け入れるドラッグが上にある間、オーバーレイに何を表示するかを決められます。`makeDroppable`、リスト、ツリーは `overOverlay` を受け取ります（リストやツリーの `overlay` は自分のアイテム用です）。フォルダーの上では、ドラッグ中のメッセージのチップが、ドロップで行われることの表示に変わります。
 
 <example height="34rem" hint="メッセージを 2 つチェックし、1 つを Archive の上にドラッグして離してみましょう" name="overlay-folders">
 
@@ -386,7 +386,7 @@ makeDraggable(el, { id: 'chip', overlay: TicketOverlay });                // a p
 makeDroppable(el, {
   id: () => props.folder.id,
   data: () => props.folder,
-  overlay: MovePill,
+  overOverlay: MovePill,
   onDrop: (event) => emit('move', event.active.ids),
 });
 ```
@@ -437,7 +437,7 @@ makeSortableList(listRef, {
 - ドロップは紙吹雪を待ちます：着地中のオーバーレイで動いている CSS アニメーションとトランジションは、最後まで再生されます（最長 2 秒）。
 - `overlay: false` のドラッグは、どのターゲットの上でもオーバーレイを持ちません。
 
-フォルダーはさらに、ピルを独自の仕方でフォルダーのアイコンの中へ着地させます：ターゲットも `dropAnimation` を持てます。[アニメーション](https://zizigy.github.io/docs/guides/animations#per-item-and-per-target)を参照。
+フォルダーはさらに、ピルを独自の仕方でフォルダーのアイコンの中へ着地させます：ターゲットも `overDropAnimation` を持てます。[アニメーション](https://zizigy.github.io/docs/guides/animations#per-item-and-per-target)を参照。
 
 ## ドロップの行き先：`to`
 
@@ -474,7 +474,7 @@ const where = computed(() => (props.to ? pathOf(menu.value, props.to.parentKey) 
 
 各ドラッグについて、最初に当てはまるものが使われます。
 
-1. ドロップターゲットの `overlay`（リストやツリーでは `overOverlay`）。ドラッグがその上にあり、ターゲットがドラッグを受け入れている間。それがなければ表示されたはずのものが、そのデフォルトスロットになります。
+1. ドロップターゲットの `overOverlay`（リストやツリーのものも同じ）。ドラッグがその上にあり、ターゲットがドラッグを受け入れている間。それがなければ表示されたはずのものが、そのデフォルトスロットになります。
 2. アイテム自身の `overlay`（`makeSortableItem`、`makeDraggable`）。
 3. そのリストまたはツリーの `overlay`。
 4. プロバイダーの `#overlay` スロット。ただし何も描画しない場合を除きます。
@@ -623,7 +623,7 @@ const style = computed(() =>
 );
 ```
 
-[ドラッグ＆ドロップ](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay)を参照してください。ボックスのあるドラッグの着地の仕方は、その `dropAnimation` で決まります：ドロップターゲットのもの、アイテムのもの（またはそのリストのもの）、またはプロバイダーのものです。[アニメーション](https://zizigy.github.io/docs/guides/animations#the-drop)を参照。
+[ドラッグ＆ドロップ](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay)を参照してください。ボックスのあるドラッグの着地の仕方は、その `dropAnimation` で決まります：ドロップターゲットのもの（`overDropAnimation`）、アイテムのもの（またはそのリストのもの）、またはプロバイダーのものです。[アニメーション](https://zizigy.github.io/docs/guides/animations#the-drop)を参照。
 
 ## Sitemap
 

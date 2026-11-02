@@ -20,15 +20,15 @@ Canonical Origin: https://zizigy.github.io/vue-dnd-kit
 
 ## Available Languages on Website
 
-- [English (en)](https://zizigy.github.io/vue-dnd-kit/index.md): 49 pages; content included below.
-- [Русский (ru)](https://zizigy.github.io/vue-dnd-kit/ru.md): 48 pages; visit this language for content.
-- [简体中文 (zh)](https://zizigy.github.io/vue-dnd-kit/zh.md): 48 pages; visit this language for content.
-- [日本語 (ja)](https://zizigy.github.io/vue-dnd-kit/ja.md): 48 pages; visit this language for content.
-- [한국어 (ko)](https://zizigy.github.io/vue-dnd-kit/ko.md): 48 pages; visit this language for content.
-- [Español (es)](https://zizigy.github.io/vue-dnd-kit/es.md): 48 pages; visit this language for content.
-- [Português (pt)](https://zizigy.github.io/vue-dnd-kit/pt.md): 48 pages; visit this language for content.
-- [Deutsch (de)](https://zizigy.github.io/vue-dnd-kit/de.md): 48 pages; visit this language for content.
-- [Français (fr)](https://zizigy.github.io/vue-dnd-kit/fr.md): 48 pages; visit this language for content.
+- [English (en)](https://zizigy.github.io/vue-dnd-kit/index.md): 50 pages; content included below.
+- [Русский (ru)](https://zizigy.github.io/vue-dnd-kit/ru.md): 49 pages; visit this language for content.
+- [简体中文 (zh)](https://zizigy.github.io/vue-dnd-kit/zh.md): 49 pages; visit this language for content.
+- [日本語 (ja)](https://zizigy.github.io/vue-dnd-kit/ja.md): 49 pages; visit this language for content.
+- [한국어 (ko)](https://zizigy.github.io/vue-dnd-kit/ko.md): 49 pages; visit this language for content.
+- [Español (es)](https://zizigy.github.io/vue-dnd-kit/es.md): 49 pages; visit this language for content.
+- [Português (pt)](https://zizigy.github.io/vue-dnd-kit/pt.md): 49 pages; visit this language for content.
+- [Deutsch (de)](https://zizigy.github.io/vue-dnd-kit/de.md): 49 pages; visit this language for content.
+- [Français (fr)](https://zizigy.github.io/vue-dnd-kit/fr.md): 49 pages; visit this language for content.
 
 ## Pages
 
@@ -56,6 +56,7 @@ Canonical Origin: https://zizigy.github.io/vue-dnd-kit
 - [/docs/examples/board](https://zizigy.github.io/vue-dnd-kit/docs/examples/board.md)
 - [/docs/examples/calendar](https://zizigy.github.io/vue-dnd-kit/docs/examples/calendar.md)
 - [/docs/examples/chess](https://zizigy.github.io/vue-dnd-kit/docs/examples/chess.md)
+- [/docs/examples/data-table](https://zizigy.github.io/vue-dnd-kit/docs/examples/data-table.md)
 - [/docs/examples/design-canvas](https://zizigy.github.io/vue-dnd-kit/docs/examples/design-canvas.md)
 - [/docs/examples/file-manager](https://zizigy.github.io/vue-dnd-kit/docs/examples/file-manager.md)
 - [/docs/examples/form-builder](https://zizigy.github.io/vue-dnd-kit/docs/examples/form-builder.md)

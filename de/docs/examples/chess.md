@@ -19,7 +19,7 @@ wird gefragt, während eine Figur gezogen wird, also nimmt das Feld nur die gül
 Figur an; ein Drop anderswo wird abgelehnt, und die Figur fliegt zurück. Die gültigen Felder
 leuchten über `isAccepting` auf: Kein eigener Zustand des Spiels verfolgt den Drag.
 - **Piece.vue**: ein einfaches ziehbares Element, `disabled`, wenn seine Seite nicht am Zug ist.
-`keyboard: 'droppables'` lässt die Pfeiltasten zwischen den Feldern springen, die die Figur
+`keyboardMode: 'droppables'` lässt die Pfeiltasten zwischen den Feldern springen, die die Figur
 annehmen: ihren gültigen Zügen, sonst nichts. `snapCenterToCursor` hält die Figur zentriert
 unter dem Zeiger, und ein Touch zieht sofort (`activation`). `canDrag` hält deine Hände von den
 Figuren des Bots und vom Brett fern, solange Code spielt, ohne etwas abzuschalten: Von Code
@@ -63,7 +63,7 @@ sprechen dieselben Gründe: „f7, pinned“.
 
 ## Umwandlung: ein Drop, der auf eine Antwort wartet
 
-Über der letzten Reihe zeigt ein Bauer in der Hand die Figur, die er wird: Das eigene `overlay`
+Über der letzten Reihe zeigt ein Bauer in der Hand die Figur, die er wird: Das eigene `overOverlay`
 des Feldes (`PromotionOverlay.vue`) tritt an die Stelle des Overlays der Figur. Beim Loslassen
 gibt das `onBeforeDrop` des Feldes ein Promise zurück, und das Overlay wartet auf dem Feld,
 während **PromotionPicker.vue**, ein einfaches Element der Seite daneben, fragt, welche Figur.
@@ -76,7 +76,7 @@ makeDroppable(el, {
   id: props.square,
   accept: ({ active }) => game.canMove(active.id, props.square),
   // Shown instead of the piece's overlay while a pawn is over the last rank.
-  overlay: computed(() =>
+  overOverlay: computed(() =>
     held.value?.kind === 'P' && isLastRank(props.square) ? PromotionOverlay : undefined,
   ),
   // A promise: the drop waits on the square until the picker answers.
@@ -88,7 +88,7 @@ makeDroppable(el, {
 
 Das `onBeforeDrop` eines Drop-Ziels bekommt das einfache Drag-Event und wird nur gefragt, wenn
 sein `accept` den Drag angenommen hat; das einer sortierbaren Liste bekommt das
-`SortableDropEvent` der Liste, mit dem `result` des Drops. Das `overlay` des Ziels wird nach
+`SortableDropEvent` der Liste, mit dem `result` des Drops. Das `overOverlay` des Ziels wird nach
 `onDrop` noch einmal gelesen, für die Landung: Es prüft den Bauern, wie er aufgenommen wurde
 (`active.data`), nicht die Partie, in der er dann schon eine Dame ist.
 
@@ -118,7 +118,7 @@ sein Turm über ihn gezogen, der Turm springt also nie.
 ## Schlagen, Undo und eine neue Partie
 
 Geschlagene Figuren kommen in das **Tray.vue** ihrer Seite: eine sortierbare Liste, die nur für
-ihr `animate` verwendet wird (`disabled`, dort wird nichts gezogen). Ihr `enter` ist eine
+ihr `animateChanges` verwendet wird (`disabled`, dort wird nichts gezogen). Ihr `enter` ist eine
 Funktion: Eine neue Figur fliegt von dem Feld herein, auf dem sie geschlagen wurde, und die
 anderen machen Platz.
 
@@ -127,7 +127,7 @@ makeSortableList(tray, {
   items: () => props.pieces,
   getKey: (piece) => `taken-${piece.id}`,
   disabled: true,
-  animate: { enter: flyIn, leave: false },
+  animateChanges: { enter: flyIn, leave: false },
 });
 ```
 
@@ -138,7 +138,7 @@ sie jetzt ist. Gegen den Bot nimmt Undo deinen Zug zusammen mit seiner Antwort z
 Mehr dazu: [Über einen Drop entscheiden](https://zizigy.github.io/docs/guides/drop-decisions) ·
 [Das Overlay](https://zizigy.github.io/docs/guides/overlay#targets-that-change-the-overlay) ·
 [Programmatisches Ziehen](https://zizigy.github.io/docs/guides/sensors#programmatic-drags) ·
-[Datenänderungen: `animate`](https://zizigy.github.io/docs/guides/animations#data-changes-animate) ·
+[Datenänderungen: `animateChanges`](https://zizigy.github.io/docs/guides/animations#data-changes-animatechanges) ·
 [Barrierefreiheit](https://zizigy.github.io/docs/guides/accessibility)
 
 ## Sitemap

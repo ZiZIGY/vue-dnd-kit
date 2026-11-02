@@ -159,7 +159,7 @@ const { isDragging } = makeDraggable(el, {
   <tr>
     <td>
       <code>
-        keyboard
+        keyboardMode
       </code>
     </td>
     
@@ -947,7 +947,7 @@ const { isOver, isAccepting } = makeDroppable(el, {
   <tr>
     <th>
       <code>
-        keyboard
+        keyboardMode
       </code>
     </th>
     
@@ -995,7 +995,7 @@ const { isOver, isAccepting } = makeDroppable(el, {
 </table>
 
 ```ts
-makeDraggable(el, { id: () => props.waste.id, type: () => props.waste.type, keyboard: 'droppables' });
+makeDraggable(el, { id: () => props.waste.id, type: () => props.waste.type, keyboardMode: 'droppables' });
 ```
 
 按键可以在 provider 上重新绑定。更多内容见[无障碍](https://zizigy.github.io/docs/guides/accessibility)。

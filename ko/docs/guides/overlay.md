@@ -398,8 +398,8 @@ makeDraggable(el, { id: 'chip', overlay: TicketOverlay });                // a p
 ## 오버레이를 바꾸는 대상
 
 드롭 대상은 자신이 받는 드래그가 위에 있는 동안 오버레이가 무엇을 보여 줄지 정할 수 있습니다.
-`makeDroppable`은 `overlay`를 받습니다. 리스트와 트리는 `overOverlay`를 받는데, 그들의 `overlay`는
-자기 항목을 위한 것이기 때문입니다. 폴더 위에서는 드래그 중인 메시지의 칩이 드롭이 할 일을 보여 주는
+`makeDroppable`, 리스트, 트리는 `overOverlay`를 받습니다(리스트나 트리의 `overlay`는
+자기 항목을 위한 것입니다). 폴더 위에서는 드래그 중인 메시지의 칩이 드롭이 할 일을 보여 주는
 모습으로 바뀝니다.
 
 <example height="34rem" hint="메시지 두 개를 체크하고, 하나를 Archive 위로 드래그한 뒤 놓으세요" name="overlay-folders">
@@ -412,7 +412,7 @@ makeDraggable(el, { id: 'chip', overlay: TicketOverlay });                // a p
 makeDroppable(el, {
   id: () => props.folder.id,
   data: () => props.folder,
-  overlay: MovePill,
+  overOverlay: MovePill,
   onDrop: (event) => emit('move', event.active.ids),
 });
 ```
@@ -473,7 +473,7 @@ makeSortableList(listRef, {
 끝까지 재생되며, 최대 2초입니다.
 - `overlay: false`인 드래그는 어떤 대상 위에서도 오버레이가 없습니다.
 
-폴더는 또한 필을 자기만의 방식으로, 폴더 아이콘 안으로 안착시킵니다. 대상도 `dropAnimation`을
+폴더는 또한 필을 자기만의 방식으로, 폴더 아이콘 안으로 안착시킵니다. 대상도 `overDropAnimation`을
 가질 수 있습니다. [애니메이션](https://zizigy.github.io/docs/guides/animations#per-item-and-per-target)을 참고하세요.
 
 ## 드롭이 갈 곳: `to`
@@ -516,7 +516,7 @@ const where = computed(() => (props.to ? pathOf(menu.value, props.to.parentKey) 
 
 각 드래그에는 해당하는 첫 번째 것이 쓰입니다.
 
-1. 드롭 대상의 `overlay`(리스트나 트리는 `overOverlay`). 드래그가 그 위에 있고 대상이 드래그를
+1. 드롭 대상의 `overOverlay`(리스트나 트리의 것도 마찬가지). 드래그가 그 위에 있고 대상이 드래그를
 받는 동안입니다. 그렇지 않았다면 보였을 것이 그 기본 슬롯이 됩니다.
 2. 항목 자체의 `overlay`(`makeSortableItem`, `makeDraggable`).
 3. 그 리스트나 트리의 `overlay`.
@@ -697,7 +697,7 @@ const style = computed(() =>
 ```
 
 [드래그 앤 드롭](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay)을 참고하세요. 박스가 있는 드래그가
-안착하는 방식은 그 `dropAnimation`이 정합니다. 드롭 대상의 것, 항목의 것(또는 그 리스트의 것),
+안착하는 방식은 그 `dropAnimation`이 정합니다. 드롭 대상의 것(`overDropAnimation`), 항목의 것(또는 그 리스트의 것),
 또는 프로바이더의 것입니다.
 [애니메이션](https://zizigy.github.io/docs/guides/animations#the-drop)을 참고하세요.
 

@@ -239,24 +239,50 @@ bureau le lit.
   <tr>
     <td>
       <code>
-        selection
+        strategy
       </code>
+      
+      , <code>
+        modifier
+      </code>
+      
+       et <code>
+        disabled
+      </code>
+      
+       acceptent une valeur, une ref ou un getter, lus quand un
     </td>
     
     <td>
-      Votre propre <code>
-        Ref<Set<Key>>
-      </code>
       
-       au lieu de la sélection du provider.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      appui démarre un rectangle. Avec des zones dans des zones, la plus intérieure prend l'appui. La
+    </td>
+    
+    <td>
+      
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      page de l'<a href="/docs/api/make-selection-area">
+        API de makeSelectionArea
+      </a>
+      
+       les change en direct.
+    </td>
+    
+    <td>
+      
     </td>
   </tr>
 </tbody>
 </table>
-
-`strategy`, `modifier` et `disabled` acceptent une valeur, une ref ou un getter, lus quand un
-appui démarre un rectangle. Avec des zones dans des zones, la plus intérieure prend l'appui. La
-page de l'[API de makeSelectionArea](https://zizigy.github.io/docs/api/make-selection-area) les change en direct.
 
 ### Les déplacer tels qu'ils sont disposés
 

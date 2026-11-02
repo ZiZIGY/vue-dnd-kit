@@ -105,7 +105,7 @@ quem não consegue arrastar.
 
 </kbd>
 
- aumenta os passos. `makeDraggable(el, { keyboard: 'droppables' })`
+ aumenta os passos. `makeDraggable(el, { keyboardMode: 'droppables' })`
 faz as setas pularem entre os alvos que aceitam o item.
 - Um arraste por teclado começa a partir do draggable em foco, ou do handle dele — nunca a partir
 de um botão ou de um campo dentro dele, então esses mantêm as suas próprias teclas.
@@ -618,11 +618,11 @@ onde você está.
 
 </example>
 
-Um botão muda os dados; a lista desenha o movimento. Com `animate` na lista, as linhas deslizam
+Um botão muda os dados; a lista desenha o movimento. Com `animateChanges` na lista, as linhas deslizam
 como em um arraste (e ficam paradas para quem pede movimento reduzido):
 
 ```ts [ReadingList.vue]
-const { items } = makeSortableList(list, { id: 'reading', items: books, animate: true });
+const { items } = makeSortableList(list, { id: 'reading', items: books, animateChanges: true });
 
 // Buttons change the data, not a drag: the provider says nothing, so this region does.
 const message = ref('');
@@ -679,7 +679,7 @@ rapidamente quando começa; `:haptics="false"` desliga isso.
 ## Movimento reduzido
 
 Com `prefers-reduced-motion: reduce`, as animações da própria biblioteca não rodam: os itens pulam
-para os seus lugares durante a ordenação, o overlay não voa no drop, e as mudanças de `animate`
+para os seus lugares durante a ordenação, o overlay não voa no drop, e as mudanças de `animateChanges`
 aparecem na hora. As suas próprias funções de animação continuam rodando, com
 `reducedMotion: true`, então você decide: pulá-las, ou manter um esmaecimento curto. Veja
 [animações](https://zizigy.github.io/docs/guides/animations).

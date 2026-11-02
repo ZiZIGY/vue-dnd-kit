@@ -284,7 +284,7 @@ const { items } = makeSortableTree(root, {
   canNest: (_member, team) => team.kind === 'team' && !team.locked,
   maxDepth: 2,
   collapsed,
-  animate: true,
+  animateChanges: true,
 });
 ```
 
@@ -400,7 +400,7 @@ const collapsed = ref(new Set<Key>());
 const toggle = (key: Key) => (collapsed.value.has(key) ? collapsed.value.delete(key) : collapsed.value.add(key));
 ```
 
-ドラッグ中のノードは、折りたたまれていてもいなくても、サブツリー全体を連れていきます。`animate: true` では、ノードの展開・折りたたみで表示・非表示になる行がアニメーションで出入りし、ドラッグ以外によるデータの変化も同様です。
+ドラッグ中のノードは、折りたたまれていてもいなくても、サブツリー全体を連れていきます。`animateChanges: true` では、ノードの展開・折りたたみで表示・非表示になる行がアニメーションで出入りし、ドラッグ以外によるデータの変化も同様です。
 
 ## 挿入ライン
 

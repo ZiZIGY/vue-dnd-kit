@@ -237,24 +237,50 @@ Desktop liest es.
   <tr>
     <td>
       <code>
-        selection
+        strategy
       </code>
+      
+      , <code>
+        modifier
+      </code>
+      
+       und <code>
+        disabled
+      </code>
+      
+       nehmen einen Wert, ein Ref oder einen Getter, gelesen, wenn
     </td>
     
     <td>
-      Ein eigenes <code>
-        Ref<Set<Key>>
-      </code>
       
-       statt der Auswahl des Providers.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      ein Drücken einen Rahmen startet. Bei Bereichen in Bereichen nimmt der innerste das Drücken. Auf
+    </td>
+    
+    <td>
+      
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      der Seite der <a href="/docs/api/make-selection-area">
+        makeSelectionArea-API
+      </a>
+      
+       kannst du sie live umschalten.
+    </td>
+    
+    <td>
+      
     </td>
   </tr>
 </tbody>
 </table>
-
-`strategy`, `modifier` und `disabled` nehmen einen Wert, ein Ref oder einen Getter, gelesen, wenn
-ein Drücken einen Rahmen startet. Bei Bereichen in Bereichen nimmt der innerste das Drücken. Auf
-der Seite der [makeSelectionArea-API](https://zizigy.github.io/docs/api/make-selection-area) kannst du sie live umschalten.
 
 ### Sie so bewegen, wie sie liegen
 

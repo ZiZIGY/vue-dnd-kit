@@ -45,14 +45,14 @@ const { items } = makeSortableList(list, {
   multiple: 'gaps',       // the other picked files wait in place, as in Finder
   clone: drive.duplicateOf, // Alt-drag leaves the files and drops "Budget copy.xlsx"
   dropzone: area,         // the empty space takes drops too
-  animate: true,          // a new sort, a new folder, files sent to the Trash slide and fade
+  animateChanges: true,   // a new sort, a new folder, files sent to the Trash slide and fade
 });
 ```
 
 - `drive.entries` é um computed gravável: a biblioteca escreve cada drop de volta pelo `set` dele,
 e o `onDrop` da lista salva o drive antes, para o Undo.
 - A janela cria uma nova visualização para cada pasta (`:key` no `FileView`), então abrir uma não é
-uma mudança da lista que o `animate` animaria.
+uma mudança da lista que o `animateChanges` animaria.
 
 ## Selecionar
 
@@ -215,7 +215,7 @@ um arquivo.
 Leia mais: [Multi-drag e seleção](https://zizigy.github.io/docs/guides/multi-drag) ·
 [Drop dentro de um item ordenável](https://zizigy.github.io/docs/guides/drag-and-drop#drop-into-a-sortable-item) ·
 [`DragPreview`](https://zizigy.github.io/docs/guides/overlay#dragpreview-the-clone-in-your-layout) ·
-[Mudanças nos dados: `animate`](https://zizigy.github.io/docs/guides/animations#data-changes-animate) ·
+[Mudanças nos dados: `animateChanges`](https://zizigy.github.io/docs/guides/animations#data-changes-animatechanges) ·
 [Acessibilidade](https://zizigy.github.io/docs/guides/accessibility)
 
 ## Sitemap

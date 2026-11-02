@@ -52,7 +52,7 @@ const { items } = makeSortableTree(root, {
   collapsed: editor.collapsed,
   clone: copyBlock,         // Alt-drag copies a block with what is nested in it
   createItem: (active) => createBlock((active.data as { kind: BlockKind }).kind),
-  animate: true,
+  animateChanges: true,
   overOverlay: BlockGhost,
   dropzone: sheet,
   onDrop, // see Undo, below
@@ -66,7 +66,7 @@ const { items } = makeSortableTree(root, {
 안쪽에 있는 선은 블록을 토글 안의 맨 앞에 넣습니다.
 
 각 행은 자신의 `indicator`에서, 드롭이 안착할 깊이에 맞춰 선을 그립니다. 번호 목록은 `items`로
-세므로 "2."와 "a."가 모든 드롭과 Tab을 따라갑니다. `animate: true`는 드래그가 아닌 변경(Enter, Tab,
+세므로 "2."와 "a."가 모든 드롭과 Tab을 따라갑니다. `animateChanges: true`는 드래그가 아닌 변경(Enter, Tab,
 Delete, 실행 취소, 토글 열기)도 미끄러지고 서서히 사라지게 합니다.
 
 ```ts [BlockRow.vue]

@@ -299,7 +299,7 @@ const { items } = makeSortableTree(root, {
   canNest: (_member, team) => team.kind === 'team' && !team.locked,
   maxDepth: 2,
   collapsed,
-  animate: true,
+  animateChanges: true,
 });
 ```
 
@@ -419,7 +419,7 @@ const collapsed = ref(new Set<Key>());
 const toggle = (key: Key) => (collapsed.value.has(key) ? collapsed.value.delete(key) : collapsed.value.add(key));
 ```
 
-드래그 중인 노드는 접혀 있든 아니든 하위 트리 전체를 데리고 갑니다. `animate: true`를 쓰면 노드가
+드래그 중인 노드는 접혀 있든 아니든 하위 트리 전체를 데리고 갑니다. `animateChanges: true`를 쓰면 노드가
 열리고 닫힐 때 보여 주고 숨기는 행이 애니메이션되며 나타나고 사라지고, 드래그가 아닌 데이터 변경도
 마찬가지입니다.
 

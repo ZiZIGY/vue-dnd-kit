@@ -109,7 +109,7 @@ editor.move(active.ids, { x: to.x - from.x, y: to.y - from.y }, target, editor.a
 ```
 
 Um frame aceita camadas, não frames: um arraste que leva um frame passa sobre os outros frames
-(`disabled`, lido ao vivo) até o canvas. Os alvos têm `dropAnimation: false`, já que as camadas
+(`disabled`, lido ao vivo) até o canvas. Os alvos têm `overDropAnimation: false`, já que as camadas
 aparecem exatamente onde os clones delas foram soltos. As ferramentas da barra também são
 draggables simples: soltas em um frame, adicionam a sua camada dentro dele, centralizada no ponto
 do drop; clicadas, no meio da visualização.
@@ -119,7 +119,7 @@ makeDroppable(body, {
   id: () => props.frame.id,
   accept: 'layer',
   disabled: () => !!active.value?.items.some((item) => item.type.includes('frame')),
-  dropAnimation: false,
+  overDropAnimation: false,
   onDrop: useLayerDrop(() => props.frame),
 });
 ```
@@ -188,7 +188,7 @@ makeSortableTree(tree, {
   getKey: (layer) => `row:${layer.id}`,
   canNest: (layer, parent) => parent.kind === 'frame' && layer.kind !== 'frame',
   maxDepth: 1,
-  animate: true,
+  animateChanges: true,
   onDrop: ({ items, from, to }) => {
     // Positions count from the frame's corner: a layer changing frames takes the
     // difference, so it stays where it is on the canvas.
@@ -198,7 +198,7 @@ makeSortableTree(tree, {
 
 `onDrop` roda antes de a árvore ser escrita, então o editor ainda sabe de que frame cada camada
 vem, e salva o design para o desfazer. Uma camada movida para um frame que não a cobre seria
-recortada para fora da vista: em vez disso, ela vai para o meio do frame. Com `animate`, as linhas
+recortada para fora da vista: em vez disso, ela vai para o meio do frame. Com `animateChanges`, as linhas
 deslizam também nas mudanças feitas no canvas e pelo desfazer. Uma linha tem tipo
 (`type: 'row'`), então o canvas e os frames, que aceitam camadas e ferramentas, a recusam.
 
@@ -225,7 +225,7 @@ movem 10 pixels (<kbd value="Shift">
 
  a solta no frame sob ela. Sem
 arraste, as setas empurram a seleção um pixel. Uma ferramenta é pega do mesmo jeito, e as setas
-dela pulam entre o canvas e os frames (`keyboard: 'droppables'`). Os outros atalhos estão listados
+dela pulam entre o canvas e os frames (`keyboardMode: 'droppables'`). Os outros atalhos estão listados
 no painel Design quando nada está selecionado.
 
 Leia mais: [Arrastar e soltar](https://zizigy.github.io/docs/guides/drag-and-drop#leave-it-where-it-was-dropped) ·

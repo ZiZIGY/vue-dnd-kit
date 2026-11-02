@@ -417,7 +417,7 @@ Choisissez le nœud et ouvrez **Options** :
       </code>
       
       , <code>
-        animate
+        animateChanges
       </code>
       
       , <code>
@@ -483,7 +483,7 @@ Choisissez le nœud et ouvrez **Options** :
       </code>
       
       , <code>
-        animate
+        animateChanges
       </code>
       
       , <code>
@@ -557,7 +557,7 @@ Choisissez le nœud et ouvrez **Options** :
       </code>
       
       , <code>
-        keyboard
+        keyboardMode
       </code>
       
       , <code>

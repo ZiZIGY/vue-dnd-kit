@@ -176,7 +176,7 @@ aparecem.
     
     <td>
       uma cópia deixada por <code>
-        animate
+        animateChanges
       </code>
     </td>
     
@@ -771,7 +771,7 @@ qualquer outra coisa que não deve viajar, um tooltip ou um botão de menu, com
 - Não coloque um `transition` CSS em `transform` ou `translate` de itens ordenáveis: a biblioteca
 os anima ela mesma, e cancela essas transições enquanto mede.
 - Não envolva itens ordenáveis em `<TransitionGroup>`: os movimentos seriam animados duas vezes.
-Use o `animate` da lista.
+Use o `animateChanges` da lista.
 - Não anime `height`, `margin` ou `padding` de linhas em uma [lista virtual](/docs/guides/virtual-lists).
 - Desligue as transições que você adiciona em volta dos arrastes sob
 `prefers-reduced-motion: reduce`. A biblioteca já desliga as dela.

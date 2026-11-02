@@ -176,7 +176,7 @@ Multi-Drags tauchen dann auch auf.
     
     <td>
       einer Kopie, die <code>
-        animate
+        animateChanges
       </code>
       
        hinterlässt
@@ -776,7 +776,7 @@ Markiere alles andere, was nicht mitreisen soll, einen Tooltip oder einen Menü-
 - Setz kein CSS-`transition` auf `transform` oder `translate` sortierbarer Elemente: Die
 Bibliothek animiert sie selbst und bricht solche Transitions ab, während sie misst.
 - Umschließe sortierbare Elemente nicht mit `<TransitionGroup>`: Bewegungen würden doppelt
-animiert. Nimm `animate` der Liste.
+animiert. Nimm `animateChanges` der Liste.
 - Animiere nicht `height`, `margin` oder `padding` von Zeilen in einer
 [virtuellen Liste](/docs/guides/virtual-lists).
 - Schalte dagegen die Transitions, die du rund um Drags ergänzt, bei

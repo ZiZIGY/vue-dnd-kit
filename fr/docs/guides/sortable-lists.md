@@ -222,13 +222,13 @@ const { items } = makeSortableList(strip, {
   items: tabs,
   strategy: 'horizontal',
   axis: 'x',        // the tabs stay on their row
-  animate: true,    // the buttons open and close tabs: slide the others then too
+  animateChanges: true, // the buttons open and close tabs: slide the others then too
 });
 ```
 
 Le bouton de fermeture de l'onglet continue de fonctionner à l'intérieur de l'onglet déplaçable,
 et un clic qui termine un glissement ne sélectionne pas d'onglet. Les lignes glissent d'elles-mêmes
-pendant le glissement ; `animate` ajoute la même chose pour les changements qui ne viennent pas
+pendant le glissement ; `animateChanges` ajoute la même chose pour les changements qui ne viennent pas
 d'un glissement, ici les boutons (voir les [animations](https://zizigy.github.io/docs/guides/animations)).
 
 Une grille se trie en deux dimensions, avec des tuiles de toutes tailles :
@@ -718,7 +718,7 @@ quand des lignes arrivent et partent (`animateSize`). C'est activé par défaut 
 aucun code. N'enveloppez pas
 les lignes dans un `<TransitionGroup>` : les déplacements s'animeraient deux fois. Ne mettez pas
 non plus de `transition` CSS sur le `transform` des lignes. Pour les changements qui ne viennent
-pas d'un glissement (ajout, suppression, mélange), activez l'option `animate` de la liste, comme
+pas d'un glissement (ajout, suppression, mélange), activez l'option `animateChanges` de la liste, comme
 le font les onglets. Voir les [animations](https://zizigy.github.io/docs/guides/animations).
 
 La liste complète des options se trouve dans l'API de [makeSortableList](https://zizigy.github.io/docs/api/make-sortable-list)

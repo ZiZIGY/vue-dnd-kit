@@ -257,7 +257,7 @@ l'ont écrite.
 useDnDMonitor({ onDragEnd: () => builder.commit() });
 ```
 
-L'annulation remet un instantané en place. Les listes ont `animate` activé : ce que l'instantané a
+L'annulation remet un instantané en place. Les listes ont `animateChanges` activé : ce que l'instantané a
 déplacé y glisse donc, comme les sections que la barre d'outils monte et descend ; les sections
 ajoutées apparaissent en fondu et celles qui sont supprimées disparaissent en fondu.
 

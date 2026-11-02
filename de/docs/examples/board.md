@@ -31,7 +31,7 @@ Tastatur nimmt Space sie auf, Enter öffnet sie und X wählt sie aus.
 Jede Spalte gibt ihrer Liste vier Regeln. `put` sieht alle Karten eines Multi-Drags auf einmal:
 Die Spalte nimmt sie alle, wenn sie unter ihr Limit passen, oder keine. Über einer vollen Spalte
 bleibt der Slot dort, wo der Drag gestartet ist, die Spalte wird rot, und die Karten in der Hand
-sagen, warum. `onBeforeDrop` fragt nach, bevor Karten nach Done kommen, und `animate` lässt die
+sagen, warum. `onBeforeDrop` fragt nach, bevor Karten nach Done kommen, und `animateChanges` lässt die
 Karten gleiten, die ohne Drag kommen und gehen: ein Filter, Add card, Undo.
 
 ```ts [Column.vue]
@@ -40,7 +40,7 @@ const { items, isOver, isAccepting } = makeSortableList(list, {
   items: () => props.column.cards.filter(board.matches),
   group: { name: 'cards', put: ({ keys }) => board.fits(props.column, keys) },
   overlay: CardOverlay,
-  animate: true,
+  animateChanges: true,
   onBeforeDrop: (event) => (props.column.confirm && !event.sameList ? board.ask(event.items) : 'accept'),
   onDrop: (event) => {
     event.preventDefault();

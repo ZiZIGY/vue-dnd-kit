@@ -64,14 +64,14 @@ const to = toWorld(position.x, position.y);
 editor.move(active.ids, { x: to.x - from.x, y: to.y - from.y }, target, editor.altHeld.value);
 ```
 
-フレームが受け入れるのはレイヤーで、フレームは受け入れません：フレームを運ぶドラッグは、ほかのフレーム（`disabled` で、ライブで読み取られます）を素通りしてキャンバスへ向かいます。レイヤーはクローンが離された場所にそのまま現れるので、ターゲットは `dropAnimation: false` です。ツールバーのツールも通常のドラッグ可能な要素です：フレームにドロップすると、ドロップ位置を中心にそのレイヤーをフレームに追加し、クリックすると表示の中央に追加します。
+フレームが受け入れるのはレイヤーで、フレームは受け入れません：フレームを運ぶドラッグは、ほかのフレーム（`disabled` で、ライブで読み取られます）を素通りしてキャンバスへ向かいます。レイヤーはクローンが離された場所にそのまま現れるので、ターゲットは `overDropAnimation: false` です。ツールバーのツールも通常のドラッグ可能な要素です：フレームにドロップすると、ドロップ位置を中心にそのレイヤーをフレームに追加し、クリックすると表示の中央に追加します。
 
 ```ts [Artboard.vue]
 makeDroppable(body, {
   id: () => props.frame.id,
   accept: 'layer',
   disabled: () => !!active.value?.items.some((item) => item.type.includes('frame')),
-  dropAnimation: false,
+  overDropAnimation: false,
   onDrop: useLayerDrop(() => props.frame),
 });
 ```
@@ -122,7 +122,7 @@ makeSortableTree(tree, {
   getKey: (layer) => `row:${layer.id}`,
   canNest: (layer, parent) => parent.kind === 'frame' && layer.kind !== 'frame',
   maxDepth: 1,
-  animate: true,
+  animateChanges: true,
   onDrop: ({ items, from, to }) => {
     // Positions count from the frame's corner: a layer changing frames takes the
     // difference, so it stays where it is on the canvas.
@@ -130,11 +130,11 @@ makeSortableTree(tree, {
 });
 ```
 
-`onDrop` はツリーが書き込まれる前に実行されるので、エディターは各レイヤーがどのフレームから来たかをまだ知っており、元に戻すためにデザインを保存します。そのレイヤーを覆わないフレームへ移したレイヤーは、切り取られて見えなくなってしまうので、代わりにフレームの中央へ移ります。`animate` によって、キャンバスでの変更や元に戻す操作でも行がスライドします。行には型があるので（`type: 'row'`）、レイヤーとツールを受け入れるキャンバスとフレームは行を拒否します。
+`onDrop` はツリーが書き込まれる前に実行されるので、エディターは各レイヤーがどのフレームから来たかをまだ知っており、元に戻すためにデザインを保存します。そのレイヤーを覆わないフレームへ移したレイヤーは、切り取られて見えなくなってしまうので、代わりにフレームの中央へ移ります。`animateChanges` によって、キャンバスでの変更や元に戻す操作でも行がスライドします。行には型があるので（`type: 'row'`）、レイヤーとツールを受け入れるキャンバスとフレームは行を拒否します。
 
 ## キーボード
 
-Tab でレイヤーに移り（そのレイヤーが選択されます）、:kbd{value="Enter"} で持ち上げ、矢印キーで 10 ピクセル（:kbd{value="Shift"} で 40）動かし、:kbd{value="Enter"} でその下のフレームにドロップします。ドラッグしていないときは、矢印キーで選択を 1 ピクセルずつ動かします。ツールも同じように持ち上げ、その矢印キーはキャンバスとフレームの間をジャンプします（`keyboard: 'droppables'`）。そのほかのショートカットは、何も選択されていないときに Design パネルに一覧があります。
+Tab でレイヤーに移り（そのレイヤーが選択されます）、:kbd{value="Enter"} で持ち上げ、矢印キーで 10 ピクセル（:kbd{value="Shift"} で 40）動かし、:kbd{value="Enter"} でその下のフレームにドロップします。ドラッグしていないときは、矢印キーで選択を 1 ピクセルずつ動かします。ツールも同じように持ち上げ、その矢印キーはキャンバスとフレームの間をジャンプします（`keyboardMode: 'droppables'`）。そのほかのショートカットは、何も選択されていないときに Design パネルに一覧があります。
 
 さらに読む：[ドラッグ＆ドロップ](https://zizigy.github.io/docs/guides/drag-and-drop#leave-it-where-it-was-dropped) · [独自のモディファイア](https://zizigy.github.io/docs/guides/constraints#your-own-modifier) · [ページの一部に対するルール](https://zizigy.github.io/docs/guides/constraints#rules-for-a-part-of-the-page) · [範囲選択](https://zizigy.github.io/docs/guides/multi-drag#rubber-band-selection) · [ツリー](https://zizigy.github.io/docs/guides/trees)
 

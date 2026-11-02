@@ -411,7 +411,7 @@ dev-сервере или нажмите кнопку ⧉ вкладки. Удо
       </code>
       
       , <code>
-        animate
+        animateChanges
       </code>
       
       , <code>
@@ -477,7 +477,7 @@ dev-сервере или нажмите кнопку ⧉ вкладки. Удо
       </code>
       
       , <code>
-        animate
+        animateChanges
       </code>
       
       , <code>
@@ -551,7 +551,7 @@ dev-сервере или нажмите кнопку ⧉ вкладки. Удо
       </code>
       
       , <code>
-        keyboard
+        keyboardMode
       </code>
       
       , <code>

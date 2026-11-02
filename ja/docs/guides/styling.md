@@ -165,7 +165,7 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/styling"
     
     <td>
       <code>
-        animate
+        animateChanges
       </code>
       
        が残すコピー
@@ -719,7 +719,7 @@ Vue のスコープ付き CSS では、`:global()` はセレクター全体を�
 ## やってはいけないこと
 
 - 並べ替え可能なアイテムの `transform` や `translate` に CSS の `transition` を付けないでください。ライブラリが自分でアニメーションし、測定中はそうしたトランジションをキャンセルします。
-- 並べ替え可能なアイテムを `<TransitionGroup>` で囲まないでください。移動が二重にアニメーションします。リストの `animate` を使ってください。
+- 並べ替え可能なアイテムを `<TransitionGroup>` で囲まないでください。移動が二重にアニメーションします。リストの `animateChanges` を使ってください。
 - [仮想リスト](/docs/guides/virtual-lists)の行の `height`、`margin`、`padding` をアニメーションしないでください。
 - ドラッグに関連して追加したトランジションは、`prefers-reduced-motion: reduce` では必ず止めてください。ライブラリは自身のものをすでに止めています。
 

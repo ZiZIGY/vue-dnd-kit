@@ -7,10 +7,10 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/de/docs/api/animations"
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
 Die Optionen `animation` (Layout-Bewegungen beim Sortieren), `dropAnimation` (die Landung des
-Overlays) und `animate` (Datenänderungen, die kein Drag ausgelöst hat) des Providers nehmen
+Overlays) und `animateChanges` (Datenänderungen, die kein Drag ausgelöst hat) des Providers nehmen
 `false`, Optionen oder deine eigene Funktion entgegen – für GSAP oder motion. Listen und Bäume
-können `animation` und `animate` überschreiben; ziehbare Elemente, sortierbare Elemente, Listen
-und Drop-Ziele können ihre eigene `dropAnimation` mitbringen. Siehe
+können `animation` und `animateChanges` überschreiben; ziehbare Elemente, sortierbare Elemente und
+Listen können ihre eigene `dropAnimation` mitbringen, Drop-Ziele eine `overDropAnimation`. Siehe
 [Animationen](https://zizigy.github.io/docs/guides/animations).
 
 ```vue
@@ -18,7 +18,7 @@ und Drop-Ziele können ihre eigene `dropAnimation` mitbringen. Siehe
 ```
 
 Jede Bahn unten ist ein eigener Provider, der `animation`, `dropAnimation` und
-`animate` dieselbe Art von Wert gibt (`animate` bekommt in `move` eine Funktion).
+`animateChanges` dieselbe Art von Wert gibt (`animateChanges` bekommt in `move` eine Funktion).
 
 <example height="27rem" hint="Mische, oder ziehe in jeder Bahn eine Zeile" name="api-animation-shapes">
 

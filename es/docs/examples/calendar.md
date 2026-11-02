@@ -168,7 +168,7 @@ Llega a un evento con Tab y agárralo con Espacio: el monitor de la semana respo
 `getKeyboardCoordinates`, con el siguiente cuarto de hora (con Mayús, una hora) o el siguiente
 día. Los arrastres con teclado no se desplazan solos, así que cerca de un extremo de las horas
 visibles la flecha las desplaza en su lugar. Las tareas y los eventos de todo el día saltan de
-destino en destino (`keyboard: 'droppables'`) hasta que están sobre las horas.
+destino en destino (`keyboardMode: 'droppables'`) hasta que están sobre las horas.
 
 ```ts [Week.vue]
 useDnDMonitor({

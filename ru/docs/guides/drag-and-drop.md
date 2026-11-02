@@ -1064,7 +1064,7 @@ MIME-тип.
 </table>
 
 ```ts
-makeDraggable(el, { id: () => props.waste.id, type: () => props.waste.type, keyboard: 'droppables' });
+makeDraggable(el, { id: () => props.waste.id, type: () => props.waste.type, keyboardMode: 'droppables' });
 ```
 
 Клавиши можно переназначить на провайдере. Подробнее — в [доступности](https://zizigy.github.io/docs/guides/accessibility).

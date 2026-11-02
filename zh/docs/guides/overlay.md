@@ -374,7 +374,7 @@ makeDraggable(el, { id: 'chip', overlay: TicketOverlay });                // a p
 
 ## 改变浮层的目标
 
-放置目标可以决定，当它接受的拖拽位于它上方时浮层显示什么。`makeDroppable` 接受 `overlay`；列表和树接受 `overOverlay`，因为它们的 `overlay` 是给它们自己的项用的。在文件夹上方，被拖拽邮件的标签会变成这次放置将要做的事：
+放置目标可以决定，当它接受的拖拽位于它上方时浮层显示什么。`makeDroppable`、列表和树都接受 `overOverlay`（列表或树的 `overlay` 是给它自己的项用的）。在文件夹上方，被拖拽邮件的标签会变成这次放置将要做的事：
 
 <example height="34rem" hint="勾选两封邮件，把其中一封拖到 Archive 上方并松开" name="overlay-folders">
 
@@ -386,7 +386,7 @@ makeDraggable(el, { id: 'chip', overlay: TicketOverlay });                // a p
 makeDroppable(el, {
   id: () => props.folder.id,
   data: () => props.folder,
-  overlay: MovePill,
+  overOverlay: MovePill,
   onDrop: (event) => emit('move', event.active.ids),
 });
 ```
@@ -437,7 +437,7 @@ makeSortableList(listRef, {
 - 放置会等待彩纸屑：浮层落位时在其中运行的 CSS 动画和过渡会播放到结束，最多两秒。
 - 带有 `overlay: false` 的拖拽在任何目标上方都没有浮层。
 
-文件夹还会以自己的方式让胶囊落位，落进文件夹的图标：目标也可以有 `dropAnimation`。见[动画](https://zizigy.github.io/docs/guides/animations#per-item-and-per-target)。
+文件夹还会以自己的方式让胶囊落位，落进文件夹的图标：目标也可以有 `overDropAnimation`。见[动画](https://zizigy.github.io/docs/guides/animations#per-item-and-per-target)。
 
 ## 放置会去哪里：`to`
 
@@ -474,7 +474,7 @@ const where = computed(() => (props.to ? pathOf(menu.value, props.to.parentKey) 
 
 对于每次拖拽，取下面第一个适用的：
 
-1. 放置目标的 `overlay`（列表或树的 `overOverlay`），在拖拽位于它上方且它接受该拖拽时。原本会显示的东西成为它的默认插槽。
+1. 放置目标的 `overOverlay`（列表或树的也一样），在拖拽位于它上方且它接受该拖拽时。原本会显示的东西成为它的默认插槽。
 2. 项自己的 `overlay`（`makeSortableItem`、`makeDraggable`）。
 3. 它所在列表或树的 `overlay`。
 4. provider 的 `#overlay` 插槽，除非它什么都不渲染。
@@ -623,7 +623,7 @@ const style = computed(() =>
 );
 ```
 
-见[拖放](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay)。有盒子的拖拽如何落位由它的 `dropAnimation` 决定：放置目标的、项的（或它所在列表的）或 provider 的。见[动画](https://zizigy.github.io/docs/guides/animations#the-drop)。
+见[拖放](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay)。有盒子的拖拽如何落位由它的 `dropAnimation` 决定：放置目标的（`overDropAnimation`）、项的（或它所在列表的）或 provider 的。见[动画](https://zizigy.github.io/docs/guides/animations#the-drop)。
 
 ## Sitemap
 

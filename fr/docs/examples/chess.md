@@ -19,7 +19,7 @@ Elle est interrogée pendant qu'une pièce est glissée : la case n'accepte don
 légaux de cette pièce ; un dépôt ailleurs est refusé et la pièce revient à sa place. Les cases
 légales s'allument grâce à `isAccepting` : aucun état propre au jeu ne suit le glissement.
 - **Piece.vue** : un élément déplaçable simple, `disabled` quand ce n'est pas au tour de son camp.
-`keyboard: 'droppables'` fait sauter les flèches entre les cases qui acceptent la pièce : ses
+`keyboardMode: 'droppables'` fait sauter les flèches entre les cases qui acceptent la pièce : ses
 coups légaux, rien d'autre. `snapCenterToCursor` garde la pièce centrée sous le pointeur, et un
 toucher fait glisser tout de suite (`activation`). `canDrag` vous tient à l'écart des pièces du
 bot et de l'échiquier pendant que le code joue, sans rien désactiver : les glissements lancés
@@ -64,7 +64,7 @@ les mêmes raisons : "f7, pinned".
 
 ## La promotion : un dépôt qui attend une réponse
 
-Au-dessus de la dernière rangée, un pion en main montre la pièce qu'il devient : l'`overlay` propre
+Au-dessus de la dernière rangée, un pion en main montre la pièce qu'il devient : l'`overOverlay` propre
 à la case (`PromotionOverlay.vue`) prend la place de celui de la pièce. Au relâchement,
 l'`onBeforeDrop` de la case renvoie une promesse, et l'overlay attend sur la case pendant que
 **PromotionPicker.vue**, un simple élément de la page juste à côté, demande quelle pièce. Une
@@ -77,7 +77,7 @@ makeDroppable(el, {
   id: props.square,
   accept: ({ active }) => game.canMove(active.id, props.square),
   // Shown instead of the piece's overlay while a pawn is over the last rank.
-  overlay: computed(() =>
+  overOverlay: computed(() =>
     held.value?.kind === 'P' && isLastRank(props.square) ? PromotionOverlay : undefined,
   ),
   // A promise: the drop waits on the square until the picker answers.
@@ -89,7 +89,7 @@ makeDroppable(el, {
 
 L'`onBeforeDrop` d'une cible de dépôt reçoit l'événement de glissement simple et n'est interrogé
 que si son `accept` a accepté le glissement ; celui d'une liste triable reçoit le
-`SortableDropEvent` de la liste, avec le `result` du dépôt. L'`overlay` de la cible est relu une
+`SortableDropEvent` de la liste, avec le `result` du dépôt. L'`overOverlay` de la cible est relu une
 fois de plus après `onDrop`, pour l'atterrissage : il vérifie le pion tel qu'il a été saisi
 (`active.data`), pas la partie, où c'est déjà une dame.
 
@@ -120,7 +120,7 @@ glissée par-dessus lui, si bien que la tour ne saute jamais.
 ## Les prises, l'annulation et une nouvelle partie
 
 Les pièces prises vont dans le **Tray.vue** de leur camp : une liste triable utilisée pour son
-seul `animate` (`disabled`, rien ne s'y fait glisser). Son `enter` est une fonction : une nouvelle
+seul `animateChanges` (`disabled`, rien ne s'y fait glisser). Son `enter` est une fonction : une nouvelle
 pièce arrive en volant depuis la case où elle a été prise, et les autres lui font de la place.
 
 ```ts [Tray.vue]
@@ -128,7 +128,7 @@ makeSortableList(tray, {
   items: () => props.pieces,
   getKey: (piece) => `taken-${piece.id}`,
   disabled: true,
-  animate: { enter: flyIn, leave: false },
+  animateChanges: { enter: flyIn, leave: false },
 });
 ```
 
@@ -139,7 +139,7 @@ celui où elle est maintenant. Contre le bot, Undo annule votre coup avec sa ré
 En savoir plus : [Décider d'un dépôt](https://zizigy.github.io/docs/guides/drop-decisions) ·
 [L'overlay](https://zizigy.github.io/docs/guides/overlay#targets-that-change-the-overlay) ·
 [Glissements programmatiques](https://zizigy.github.io/docs/guides/sensors#programmatic-drags) ·
-[Changements de données : `animate`](https://zizigy.github.io/docs/guides/animations#data-changes-animate) ·
+[Changements de données : `animateChanges`](https://zizigy.github.io/docs/guides/animations#data-changes-animatechanges) ·
 [Accessibilité](https://zizigy.github.io/docs/guides/accessibility)
 
 ## Sitemap

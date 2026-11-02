@@ -20,7 +20,7 @@ movimientos legales de esa pieza; un drop en cualquier otro sitio se rechaza y l
 su sitio. Las casillas legales se iluminan gracias a `isAccepting`: ningún estado propio del
 juego sigue el arrastre.
 - **Piece.vue**: un elemento arrastrable simple, `disabled` cuando no es el turno de su bando.
-`keyboard: 'droppables'` hace que las flechas salten entre las casillas que aceptan la pieza: sus
+`keyboardMode: 'droppables'` hace que las flechas salten entre las casillas que aceptan la pieza: sus
 movimientos legales, nada más. `snapCenterToCursor` mantiene la pieza centrada bajo el puntero, y
 un toque arrastra de inmediato (`activation`). `canDrag` te mantiene lejos de las piezas del bot y
 del tablero mientras juega el código, sin desactivar nada: los arrastres iniciados por código no
@@ -65,7 +65,7 @@ arrastre táctil sobre una casilla legal y cuando se rechaza un drop; los `annou
 
 ## Promoción: un drop que espera una respuesta
 
-Sobre la última fila, un peón en la mano muestra la pieza en la que se convierte: el `overlay`
+Sobre la última fila, un peón en la mano muestra la pieza en la que se convierte: el `overOverlay`
 propio de la casilla (`PromotionOverlay.vue`) ocupa el lugar del de la pieza. Al soltar, el
 `onBeforeDrop` de la casilla devuelve una promesa, y el overlay espera sobre la casilla mientras
 **PromotionPicker.vue**, un elemento normal de la página junto a ella, pregunta qué pieza. Una
@@ -78,7 +78,7 @@ makeDroppable(el, {
   id: props.square,
   accept: ({ active }) => game.canMove(active.id, props.square),
   // Shown instead of the piece's overlay while a pawn is over the last rank.
-  overlay: computed(() =>
+  overOverlay: computed(() =>
     held.value?.kind === 'P' && isLastRank(props.square) ? PromotionOverlay : undefined,
   ),
   // A promise: the drop waits on the square until the picker answers.
@@ -90,7 +90,7 @@ makeDroppable(el, {
 
 El `onBeforeDrop` de un destino de drop recibe el evento de arrastre simple y solo se le pregunta
 cuando su `accept` aceptó el arrastre; el de una lista ordenable recibe el `SortableDropEvent` de
-la lista, con el `result` del drop. El `overlay` del destino se vuelve a leer una vez más después
+la lista, con el `result` del drop. El `overOverlay` del destino se vuelve a leer una vez más después
 de `onDrop`, para el aterrizaje: comprueba el peón tal como se agarró (`active.data`), no la
 partida, donde para entonces ya es una dama.
 
@@ -121,7 +121,7 @@ se arrastra por encima de él, así que la torre nunca salta.
 ## Capturas, deshacer y una partida nueva
 
 Las piezas capturadas van al **Tray.vue** de su bando: una lista ordenable que se usa solo por
-su `animate` (`disabled`, ahí no se arrastra nada). Su `enter` es una función: una pieza nueva
+su `animateChanges` (`disabled`, ahí no se arrastra nada). Su `enter` es una función: una pieza nueva
 llega volando desde la casilla en la que se capturó, y las demás le hacen sitio.
 
 ```ts [Tray.vue]
@@ -129,7 +129,7 @@ makeSortableList(tray, {
   items: () => props.pieces,
   getKey: (piece) => `taken-${piece.id}`,
   disabled: true,
-  animate: { enter: flyIn, leave: false },
+  animateChanges: { enter: flyIn, leave: false },
 });
 ```
 
@@ -140,7 +140,7 @@ Contra el bot, Undo deshace tu movimiento junto con su respuesta.
 Más información: [Decidir un drop](https://zizigy.github.io/docs/guides/drop-decisions) ·
 [El overlay](https://zizigy.github.io/docs/guides/overlay#targets-that-change-the-overlay) ·
 [Arrastres programáticos](https://zizigy.github.io/docs/guides/sensors#programmatic-drags) ·
-[Cambios de datos: `animate`](https://zizigy.github.io/docs/guides/animations#data-changes-animate) ·
+[Cambios de datos: `animateChanges`](https://zizigy.github.io/docs/guides/animations#data-changes-animatechanges) ·
 [Accesibilidad](https://zizigy.github.io/docs/guides/accessibility)
 
 ## Sitemap

@@ -407,8 +407,8 @@ sortierbaren Elements ist der Name seiner Gruppe, sofern es nicht seinen eigenen
 ## Ziele, die das Overlay ändern
 
 Ein Drop-Ziel kann bestimmen, was das Overlay zeigt, während ein Drag, den es annimmt, über ihm
-ist. `makeDroppable` nimmt ein `overlay`; Listen und Bäume nehmen ein `overOverlay`, denn ihr
-`overlay` ist für ihre eigenen Elemente da. Über einem Ordner wird der Chip der gezogenen
+ist. `makeDroppable`, Listen und Bäume nehmen ein `overOverlay` (das `overlay` einer Liste oder
+eines Baums ist für ihre eigenen Elemente da). Über einem Ordner wird der Chip der gezogenen
 Nachrichten zu dem, was der Drop tun wird:
 
 <example height="34rem" hint="Hake zwei Nachrichten an, ziehe eine über Archive und lass los" name="overlay-folders">
@@ -421,7 +421,7 @@ Nachrichten zu dem, was der Drop tun wird:
 makeDroppable(el, {
   id: () => props.folder.id,
   data: () => props.folder,
-  overlay: MovePill,
+  overOverlay: MovePill,
   onDrop: (event) => emit('move', event.active.ids),
 });
 ```
@@ -483,7 +483,7 @@ während es landet, spielen bis zu ihrem Ende, höchstens zwei Sekunden lang.
 - Ein Drag mit `overlay: false` hat über keinem Ziel ein Overlay.
 
 Die Ordner lassen die Pille außerdem auf ihre eigene Art landen, in das Symbol des Ordners: Auch
-ein Ziel kann eine `dropAnimation` haben. Siehe
+ein Ziel kann eine `overDropAnimation` haben. Siehe
 [Animationen](https://zizigy.github.io/docs/guides/animations#per-item-and-per-target).
 
 ## Wohin der Drop ginge: `to`
@@ -527,7 +527,7 @@ mit `dropOutside: 'cancel'` oder `'remove'`.
 
 Für jeden Drag das Erste, was zutrifft:
 
-1. Das `overlay` des Drop-Ziels (das `overOverlay` einer Liste oder eines Baums), solange der Drag
+1. Das `overOverlay` des Drop-Ziels (auch das einer Liste oder eines Baums), solange der Drag
 darüber ist und es ihn annimmt. Was sonst zu sehen wäre, ist sein Standard-Slot.
 2. Das eigene `overlay` des Elements (`makeSortableItem`, `makeDraggable`).
 3. Das `overlay` seiner Liste oder seines Baums.
@@ -713,7 +713,7 @@ const style = computed(() =>
 ```
 
 Siehe [Drag and Drop](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay). Wie ein Drag mit Box landet,
-bestimmt seine `dropAnimation`: die des Drop-Ziels, die des Elements (oder seiner Liste) oder die
+bestimmt seine `dropAnimation`: die des Drop-Ziels (`overDropAnimation`), die des Elements (oder seiner Liste) oder die
 des Providers. Siehe [Animationen](https://zizigy.github.io/docs/guides/animations#the-drop).
 
 ## Sitemap

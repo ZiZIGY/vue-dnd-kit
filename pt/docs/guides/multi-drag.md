@@ -232,22 +232,6 @@ trabalho lê isso.
       Chamado quando um retângulo termina, com a seleção.
     </td>
   </tr>
-  
-  <tr>
-    <td>
-      <code>
-        selection
-      </code>
-    </td>
-    
-    <td>
-      Um <code>
-        Ref<Set<Key>>
-      </code>
-      
-       seu em vez da seleção do provider.
-    </td>
-  </tr>
 </tbody>
 </table>
 

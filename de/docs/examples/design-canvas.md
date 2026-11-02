@@ -111,7 +111,7 @@ editor.move(active.ids, { x: to.x - from.x, y: to.y - from.y }, target, editor.a
 ```
 
 Ein Frame nimmt Ebenen an, keine Frames: Ein Drag, der einen Frame trägt, geht über die anderen
-Frames hinweg (`disabled`, live gelesen) auf die Leinwand. Die Ziele haben `dropAnimation: false`,
+Frames hinweg (`disabled`, live gelesen) auf die Leinwand. Die Ziele haben `overDropAnimation: false`,
 da die Ebenen genau dort erscheinen, wo ihre Klone losgelassen wurden. Werkzeuge in der
 Werkzeugleiste sind ebenfalls einfache ziehbare Elemente: Auf einem Frame abgelegt, fügen sie ihre
 Ebene in ihn ein, zentriert auf den Drop-Punkt; angeklickt, in der Mitte der Ansicht.
@@ -121,7 +121,7 @@ makeDroppable(body, {
   id: () => props.frame.id,
   accept: 'layer',
   disabled: () => !!active.value?.items.some((item) => item.type.includes('frame')),
-  dropAnimation: false,
+  overDropAnimation: false,
   onDrop: useLayerDrop(() => props.frame),
 });
 ```
@@ -191,7 +191,7 @@ makeSortableTree(tree, {
   getKey: (layer) => `row:${layer.id}`,
   canNest: (layer, parent) => parent.kind === 'frame' && layer.kind !== 'frame',
   maxDepth: 1,
-  animate: true,
+  animateChanges: true,
   onDrop: ({ items, from, to }) => {
     // Positions count from the frame's corner: a layer changing frames takes the
     // difference, so it stays where it is on the canvas.
@@ -202,7 +202,7 @@ makeSortableTree(tree, {
 `onDrop` läuft, bevor der Baum geschrieben wird, der Editor weiß also noch, aus welchem Frame jede
 Ebene kommt, und sichert das Design für Undo. Eine Ebene, die in einen Frame verschoben wird, der
 sie nicht abdeckt, würde unsichtbar abgeschnitten: Sie kommt stattdessen in die Mitte des Frames.
-Mit `animate` gleiten Zeilen auch bei Änderungen auf der Leinwand und durch Undo. Eine Zeile hat
+Mit `animateChanges` gleiten Zeilen auch bei Änderungen auf der Leinwand und durch Undo. Eine Zeile hat
 einen Typ (`type: 'row'`), also lehnen die Leinwand und die Frames, die Ebenen und Werkzeuge
 annehmen, sie ab.
 
@@ -230,7 +230,7 @@ Pfeile bewegen sie um 10 Pixel (<kbd value="Shift">
  legt sie in dem
 Frame darunter ab. Ohne Drag schieben die Pfeile die Auswahl um ein Pixel. Ein Werkzeug wird
 genauso aufgenommen, und seine Pfeile springen zwischen der Leinwand und den Frames
-(`keyboard: 'droppables'`). Die anderen Tastenkürzel stehen im Design-Panel, wenn nichts
+(`keyboardMode: 'droppables'`). Die anderen Tastenkürzel stehen im Design-Panel, wenn nichts
 ausgewählt ist.
 
 Mehr dazu: [Drag and Drop](https://zizigy.github.io/docs/guides/drag-and-drop#leave-it-where-it-was-dropped) ·

@@ -302,7 +302,7 @@ const { items } = makeSortableTree(root, {
   canNest: (_member, team) => team.kind === 'team' && !team.locked,
   maxDepth: 2,
   collapsed,
-  animate: true,
+  animateChanges: true,
 });
 ```
 
@@ -423,7 +423,7 @@ const toggle = (key: Key) => (collapsed.value.has(key) ? collapsed.value.delete(
 ```
 
 Ein gezogener Knoten nimmt seinen ganzen Teilbaum mit, eingeklappt oder nicht. Mit
-`animate: true` animieren die Zeilen, die ein Knoten beim Auf- oder Zuklappen zeigt oder
+`animateChanges: true` animieren die Zeilen, die ein Knoten beim Auf- oder Zuklappen zeigt oder
 verbirgt, herein und hinaus, ebenso Änderungen an den Daten, die kein Drag gemacht hat.
 
 ## Eine Einfügelinie

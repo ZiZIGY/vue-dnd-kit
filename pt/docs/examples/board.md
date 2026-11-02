@@ -30,7 +30,7 @@ acima do `DnDProvider` para que o overlay também os leia.
 Cada coluna passa quatro regras para a sua lista. `put` vê todos os cards de um multi-drag de uma
 vez: a coluna aceita todos se couberem no limite dela, ou nenhum. Sobre uma coluna cheia, a
 posição fica onde o arraste começou, a coluna fica vermelha e os cards na mão dizem por quê.
-`onBeforeDrop` pergunta antes de os cards entrarem em Done, e `animate` desliza os cards que
+`onBeforeDrop` pergunta antes de os cards entrarem em Done, e `animateChanges` desliza os cards que
 entram e saem sem um arraste: um filtro, Add card, Undo.
 
 ```ts [Column.vue]
@@ -39,7 +39,7 @@ const { items, isOver, isAccepting } = makeSortableList(list, {
   items: () => props.column.cards.filter(board.matches),
   group: { name: 'cards', put: ({ keys }) => board.fits(props.column, keys) },
   overlay: CardOverlay,
-  animate: true,
+  animateChanges: true,
   onBeforeDrop: (event) => (props.column.confirm && !event.sameList ? board.ask(event.items) : 'accept'),
   onDrop: (event) => {
     event.preventDefault();

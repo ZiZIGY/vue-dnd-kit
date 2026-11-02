@@ -219,12 +219,12 @@ const { items } = makeSortableList(strip, {
   items: tabs,
   strategy: 'horizontal',
   axis: 'x',        // the tabs stay on their row
-  animate: true,    // the buttons open and close tabs: slide the others then too
+  animateChanges: true, // the buttons open and close tabs: slide the others then too
 });
 ```
 
 Кнопка закрытия вкладки продолжает работать внутри перетаскиваемой вкладки, а клик, которым
-заканчивается драг, не выбирает вкладку. Во время драга строки скользят сами; `animate`
+заканчивается драг, не выбирает вкладку. Во время драга строки скользят сами; `animateChanges`
 добавляет то же для изменений, сделанных не драгом, здесь — кнопками (см.
 [анимации](https://zizigy.github.io/docs/guides/animations)).
 
@@ -712,7 +712,7 @@ const { items } = makeSortableList(list, {
 (`animateSize`). Это включено по умолчанию и не требует кода. Не оборачивайте строки в `<TransitionGroup>`:
 перемещения анимировались бы дважды. Не ставьте и CSS `transition` на `transform` строк. Для
 изменений, сделанных не драгом (добавление, удаление, перемешивание), включите опцию
-`animate` списка, как у вкладок. См. [анимации](https://zizigy.github.io/docs/guides/animations).
+`animateChanges` списка, как у вкладок. См. [анимации](https://zizigy.github.io/docs/guides/animations).
 
 Полный список опций — в API [makeSortableList](https://zizigy.github.io/docs/api/make-sortable-list) и
 [makeSortableItem](https://zizigy.github.io/docs/api/make-sortable-item).

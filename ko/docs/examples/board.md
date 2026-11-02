@@ -29,7 +29,7 @@ Enter로 열고, X로 선택합니다.
 각 컬럼은 자기 리스트에 네 가지 규칙을 넘깁니다. `put`은 멀티 드래그의 모든 카드를 한꺼번에 봅니다.
 카드가 모두 제한 안에 들어가면 컬럼은 전부 받고, 아니면 하나도 받지 않습니다. 꽉 찬 컬럼 위에서는
 자리가 드래그가 시작된 곳에 남고, 컬럼이 빨갛게 변하며, 손에 든 카드가 그 이유를 알려 줍니다.
-`onBeforeDrop`은 카드가 Done에 들어가기 전에 묻고, `animate`는 드래그 없이 들어오고 나가는 카드(필터,
+`onBeforeDrop`은 카드가 Done에 들어가기 전에 묻고, `animateChanges`는 드래그 없이 들어오고 나가는 카드(필터,
 Add card, 실행 취소)를 미끄러지게 합니다.
 
 ```ts [Column.vue]
@@ -38,7 +38,7 @@ const { items, isOver, isAccepting } = makeSortableList(list, {
   items: () => props.column.cards.filter(board.matches),
   group: { name: 'cards', put: ({ keys }) => board.fits(props.column, keys) },
   overlay: CardOverlay,
-  animate: true,
+  animateChanges: true,
   onBeforeDrop: (event) => (props.column.confirm && !event.sameList ? board.ask(event.items) : 'accept'),
   onDrop: (event) => {
     event.preventDefault();

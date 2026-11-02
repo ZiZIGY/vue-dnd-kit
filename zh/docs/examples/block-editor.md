@@ -42,7 +42,7 @@ const { items } = makeSortableTree(root, {
   collapsed: editor.collapsed,
   clone: copyBlock,         // Alt-drag copies a block with what is nested in it
   createItem: (active) => createBlock((active.data as { kind: BlockKind }).kind),
-  animate: true,
+  animateChanges: true,
   overOverlay: BlockGhost,
   dropzone: sheet,
   onDrop, // see Undo, below
@@ -51,7 +51,7 @@ const { items } = makeSortableTree(root, {
 
 `nesting: 'offset'` 只根据拖拽的横向偏移确定层级：悬停在段落中间并不会放进段落里，就像在文档编辑器中一样。`canNest` 规定哪些块可以接收嵌套块（段落、列表、待办、折叠块、引用、标注；标题、代码和图片不行），当上方的块拒绝时，线会停在最深的允许层级。关闭的折叠块（`collapsed`）仍然接收块：在它下方缩进一级的线会把块放进它里面，作为第一个。
 
-每一行根据自己的 `indicator`、按放置落入的层级画出插入线。编号列表根据 `items` 计数，所以“2.”和“a.”会随每次放置和每次 Tab 更新。`animate: true` 让不经拖拽的变化也滑动和淡入淡出：Enter、Tab、Delete、Undo、折叠块展开。
+每一行根据自己的 `indicator`、按放置落入的层级画出插入线。编号列表根据 `items` 计数，所以“2.”和“a.”会随每次放置和每次 Tab 更新。`animateChanges: true` 让不经拖拽的变化也滑动和淡入淡出：Enter、Tab、Delete、Undo、折叠块展开。
 
 ```ts [BlockRow.vue]
 const { indicator, selected } = makeSortableItem(el, {

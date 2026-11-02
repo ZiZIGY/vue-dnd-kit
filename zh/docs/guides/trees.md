@@ -284,7 +284,7 @@ const { items } = makeSortableTree(root, {
   canNest: (_member, team) => team.kind === 'team' && !team.locked,
   maxDepth: 2,
   collapsed,
-  animate: true,
+  animateChanges: true,
 });
 ```
 
@@ -400,7 +400,7 @@ const collapsed = ref(new Set<Key>());
 const toggle = (key: Key) => (collapsed.value.has(key) ? collapsed.value.delete(key) : collapsed.value.add(key));
 ```
 
-被拖拽的节点会带上它的整棵子树，无论是否折叠。使用 `animate: true` 时，节点展开或折叠时显示或隐藏的行会以动画进出，非拖拽引起的数据变化也一样。
+被拖拽的节点会带上它的整棵子树，无论是否折叠。使用 `animateChanges: true` 时，节点展开或折叠时显示或隐藏的行会以动画进出，非拖拽引起的数据变化也一样。
 
 ## 插入线
 

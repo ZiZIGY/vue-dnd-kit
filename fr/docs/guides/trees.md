@@ -303,7 +303,7 @@ const { items } = makeSortableTree(root, {
   canNest: (_member, team) => team.kind === 'team' && !team.locked,
   maxDepth: 2,
   collapsed,
-  animate: true,
+  animateChanges: true,
 });
 ```
 
@@ -425,7 +425,7 @@ const collapsed = ref(new Set<Key>());
 const toggle = (key: Key) => (collapsed.value.has(key) ? collapsed.value.delete(key) : collapsed.value.add(key));
 ```
 
-Un nœud glissé emporte tout son sous-arbre, replié ou non. Avec `animate: true`, les lignes
+Un nœud glissé emporte tout son sous-arbre, replié ou non. Avec `animateChanges: true`, les lignes
 qu'un nœud affiche ou masque quand il s'ouvre ou se ferme s'animent à l'entrée et à la sortie,
 tout comme les changements de données qui ne viennent pas d'un glissement.
 

@@ -220,12 +220,12 @@ const { items } = makeSortableList(strip, {
   items: tabs,
   strategy: 'horizontal',
   axis: 'x',        // the tabs stay on their row
-  animate: true,    // the buttons open and close tabs: slide the others then too
+  animateChanges: true, // the buttons open and close tabs: slide the others then too
 });
 ```
 
 Der Schließen-Button des Tabs funktioniert im ziehbaren Tab weiter, und ein Klick, der einen
-Drag beendet, wählt keinen Tab aus. Zeilen gleiten beim Ziehen von selbst; `animate` ergänzt
+Drag beendet, wählt keinen Tab aus. Zeilen gleiten beim Ziehen von selbst; `animateChanges` ergänzt
 dasselbe für Änderungen, die kein Drag gemacht hat, hier die der Buttons (siehe
 [Animationen](https://zizigy.github.io/docs/guides/animations)).
 
@@ -714,7 +714,7 @@ Die Liste selbst wächst oder schrumpft auf ihre neue Größe, wenn Zeilen hinzu
 (`animateSize`). Das ist standardmäßig an und braucht keinen Code. Umschließe Zeilen nicht mit
 `<TransitionGroup>`: Bewegungen würden doppelt animiert. Setz auch keine CSS-`transition` auf das
 `transform` der Zeilen. Für Änderungen, die kein Drag gemacht hat (Hinzufügen, Entfernen,
-Mischen), schalte die Option `animate` der Liste ein, wie es die Tabs tun. Siehe
+Mischen), schalte die Option `animateChanges` der Liste ein, wie es die Tabs tun. Siehe
 [Animationen](https://zizigy.github.io/docs/guides/animations).
 
 Die vollständige Liste der Optionen steht in der API von

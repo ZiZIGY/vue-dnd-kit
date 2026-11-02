@@ -164,7 +164,7 @@ Chegue a um evento com Tab, pegue-o com Space: o monitor da semana responde às 
 `getKeyboardCoordinates`, com o próximo quarto de hora (com Shift, uma hora) ou o próximo dia.
 Arrastes por teclado não rolam automaticamente, então perto de uma ponta das horas visíveis a seta
 as rola em vez disso. Tarefas e eventos de dia inteiro pulam de alvo em alvo
-(`keyboard: 'droppables'`) até estarem sobre as horas.
+(`keyboardMode: 'droppables'`) até estarem sobre as horas.
 
 ```ts [Week.vue]
 useDnDMonitor({

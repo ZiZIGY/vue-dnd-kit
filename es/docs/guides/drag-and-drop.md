@@ -162,7 +162,7 @@ leen cuando hacen falta, así que un getter o una ref las mantiene al día.
   <tr>
     <td>
       <code>
-        keyboard
+        keyboardMode
       </code>
     </td>
     
@@ -1018,7 +1018,7 @@ suelta con las mismas teclas y <kbd value="Escape">
   <tr>
     <th>
       <code>
-        keyboard
+        keyboardMode
       </code>
     </th>
     
@@ -1066,7 +1066,7 @@ suelta con las mismas teclas y <kbd value="Escape">
 </table>
 
 ```ts
-makeDraggable(el, { id: () => props.waste.id, type: () => props.waste.type, keyboard: 'droppables' });
+makeDraggable(el, { id: () => props.waste.id, type: () => props.waste.type, keyboardMode: 'droppables' });
 ```
 
 Las teclas se pueden reasignar en el provider. Más en [accesibilidad](https://zizigy.github.io/docs/guides/accessibility).

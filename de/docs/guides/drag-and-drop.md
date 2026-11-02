@@ -162,7 +162,7 @@ gelesen, wenn sie gebraucht werden, ein Getter oder ein Ref hält sie also aktue
   <tr>
     <td>
       <code>
-        keyboard
+        keyboardMode
       </code>
     </td>
     
@@ -1023,7 +1023,7 @@ bewegen es die Pfeiltasten:
   <tr>
     <th>
       <code>
-        keyboard
+        keyboardMode
       </code>
     </th>
     
@@ -1071,7 +1071,7 @@ bewegen es die Pfeiltasten:
 </table>
 
 ```ts
-makeDraggable(el, { id: () => props.waste.id, type: () => props.waste.type, keyboard: 'droppables' });
+makeDraggable(el, { id: () => props.waste.id, type: () => props.waste.type, keyboardMode: 'droppables' });
 ```
 
 Die Tasten lassen sich am Provider neu belegen. Mehr unter

@@ -175,7 +175,7 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/styling"
     
     <td>
       <code>
-        animate
+        animateChanges
       </code>
       
       가 남긴 복사본
@@ -768,7 +768,7 @@ Vue의 scoped CSS에서 `:global()`은 선택자 전체를 가져갑니다. `:gl
 - 정렬 가능한 항목의 `transform`이나 `translate`에 CSS `transition`을 걸지 마세요. 라이브러리가 직접
 애니메이션하며, 측정하는 동안 그런 트랜지션을 취소합니다.
 - 정렬 가능한 항목을 `<TransitionGroup>`으로 감싸지 마세요. 이동이 두 번 애니메이션됩니다. 리스트의
-`animate`를 쓰세요.
+`animateChanges`를 쓰세요.
 - [가상 리스트](/docs/guides/virtual-lists)에서 행의 `height`, `margin`, `padding`을 애니메이션하지
 마세요.
 - 드래그 주변에 추가한 트랜지션은 `prefers-reduced-motion: reduce`에서 멈추세요. 라이브러리는 자기

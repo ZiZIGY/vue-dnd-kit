@@ -176,7 +176,7 @@ multi-drag.
     
     <td>
       una copia dejada por <code>
-        animate
+        animateChanges
       </code>
     </td>
     
@@ -772,7 +772,7 @@ cualquier otra cosa que no deba viajar, un tooltip o un botón de menú, con
 - No pongas una `transition` CSS en el `transform` o el `translate` de los ítems ordenables: la
 biblioteca los anima ella misma, y cancela esas transiciones mientras mide.
 - No envuelvas los ítems ordenables en `<TransitionGroup>`: los movimientos se animarían dos
-veces. Usa el `animate` de la lista.
+veces. Usa el `animateChanges` de la lista.
 - No animes `height`, `margin` ni `padding` de las filas de una
 [lista virtual](/docs/guides/virtual-lists).
 - Eso sí, detén bajo `prefers-reduced-motion: reduce` las transiciones que añadas alrededor de

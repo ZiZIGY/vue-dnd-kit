@@ -171,7 +171,7 @@ Allez sur un événement avec Tab, saisissez-le avec Espace : le moniteur de la
 flèches, `getKeyboardCoordinates`, avec le quart d'heure suivant (avec Maj, une heure) ou le jour
 suivant. Les glissements au clavier ne défilent pas automatiquement : près d'un bout des heures
 visibles, la flèche les fait donc défiler à la place. Les tâches et les événements sur la journée
-entière sautent de cible en cible (`keyboard: 'droppables'`) jusqu'à ce qu'ils soient au-dessus
+entière sautent de cible en cible (`keyboardMode: 'droppables'`) jusqu'à ce qu'ils soient au-dessus
 des heures.
 
 ```ts [Week.vue]

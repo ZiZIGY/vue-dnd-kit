@@ -313,7 +313,7 @@ Der Provider liest seine Props dann, wenn er sie braucht: Die Demos unten schalt
   <tr>
     <td>
       <code>
-        animate
+        animateChanges
       </code>
     </td>
     

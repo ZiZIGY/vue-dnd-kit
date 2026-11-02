@@ -107,7 +107,7 @@ dorthin.
 </kbd>
 
  die Schritte größer.
-`makeDraggable(el, { keyboard: 'droppables' })` lässt die Pfeile stattdessen zwischen den Zielen
+`makeDraggable(el, { keyboardMode: 'droppables' })` lässt die Pfeile stattdessen zwischen den Zielen
 springen, die das Element annehmen.
 - Ein Drag per Tastatur startet am fokussierten ziehbaren Element oder an seinem Handle – nie an
 einem Button oder Feld darin, die behalten also ihre eigenen Tasten.
@@ -622,11 +622,11 @@ die Bücher ohne Drag, und der Fokus bleibt, wo du bist.
 
 </example>
 
-Ein Button ändert die Daten; die Liste zeichnet die Bewegung. Mit `animate` an der Liste gleiten
+Ein Button ändert die Daten; die Liste zeichnet die Bewegung. Mit `animateChanges` an der Liste gleiten
 die Zeilen wie bei einem Drag (und bleiben still für Nutzer, die reduzierte Bewegung wünschen):
 
 ```ts [ReadingList.vue]
-const { items } = makeSortableList(list, { id: 'reading', items: books, animate: true });
+const { items } = makeSortableList(list, { id: 'reading', items: books, animateChanges: true });
 
 // Buttons change the data, not a drag: the provider says nothing, so this region does.
 const message = ref('');
@@ -686,7 +686,7 @@ wenn er startet; `:haptics="false"` schaltet das ab.
 
 Bei `prefers-reduced-motion: reduce` laufen die eigenen Animationen der Bibliothek nicht: Elemente
 springen beim Sortieren an ihre Plätze, das Overlay fliegt beim Drop nicht, und Änderungen durch
-`animate` erscheinen sofort. Deine eigenen Animationsfunktionen laufen weiterhin, mit
+`animateChanges` erscheinen sofort. Deine eigenen Animationsfunktionen laufen weiterhin, mit
 `reducedMotion: true`, du entscheidest also: sie auslassen oder ein kurzes Ausblenden behalten.
 Siehe [Animationen](https://zizigy.github.io/docs/guides/animations).
 

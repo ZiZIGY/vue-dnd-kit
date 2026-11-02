@@ -132,7 +132,7 @@ onDrop: ({ active, over, position }) => {
 
 ## 键盘
 
-用 Tab 移到一个日程上，按 Space 拿起它：这一周的监听器通过 `getKeyboardCoordinates` 响应方向键，给出下一个刻钟（按住 Shift 时为一小时）或下一天。键盘拖拽不会自动滚动，所以靠近可见时间格的两端时，方向键会改为滚动时间格。任务和全天日程在目标之间跳转（`keyboard: 'droppables'`），直到位于时间格上方。
+用 Tab 移到一个日程上，按 Space 拿起它：这一周的监听器通过 `getKeyboardCoordinates` 响应方向键，给出下一个刻钟（按住 Shift 时为一小时）或下一天。键盘拖拽不会自动滚动，所以靠近可见时间格的两端时，方向键会改为滚动时间格。任务和全天日程在目标之间跳转（`keyboardMode: 'droppables'`），直到位于时间格上方。
 
 ```ts [Week.vue]
 useDnDMonitor({

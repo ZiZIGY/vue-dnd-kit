@@ -67,6 +67,12 @@ Sections that turn into the real thing over the page, elements between columns, 
 tree on the same data, inline editing.
 
 </card>
+
+<card icon="i-lucide-table-2" title="Data table" to="/docs/examples/data-table">
+
+A Nuxt UI table of 2,000 tasks: virtualized, searchable, sorted by its rows' grips.
+
+</card>
 </card-group>
 
 ## Sitemap

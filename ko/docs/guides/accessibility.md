@@ -104,7 +104,7 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/accessibilit
 
 </kbd>
 
-가 이동 단위를 키웁니다. `makeDraggable(el, { keyboard: 'droppables' })`를
+가 이동 단위를 키웁니다. `makeDraggable(el, { keyboardMode: 'droppables' })`를
 쓰면 화살표 키가 대신 항목을 받는 대상 사이를 건너뜁니다.
 - 키보드 드래그는 포커스된 draggable이나 그 핸들에서 시작합니다. 그 안의 버튼이나 입력 필드에서는
 절대 시작하지 않으므로, 이들은 자기 키를 그대로 씁니다.
@@ -610,11 +610,11 @@ props 모두 반응형이며, 데모는 언어를 실시간으로 바꿉니다.
 
 </example>
 
-버튼은 데이터를 바꾸고, 리스트가 이동을 그립니다. 리스트에 `animate`를 켜면 행이 드래그할 때처럼
+버튼은 데이터를 바꾸고, 리스트가 이동을 그립니다. 리스트에 `animateChanges`를 켜면 행이 드래그할 때처럼
 미끄러집니다(동작 줄이기를 요청한 사용자에게는 움직이지 않습니다).
 
 ```ts [ReadingList.vue]
-const { items } = makeSortableList(list, { id: 'reading', items: books, animate: true });
+const { items } = makeSortableList(list, { id: 'reading', items: books, animateChanges: true });
 
 // Buttons change the data, not a drag: the provider says nothing, so this region does.
 const message = ref('');
@@ -671,7 +671,7 @@ const move = async (direction: 'up' | 'down') => {
 ## 동작 줄이기
 
 `prefers-reduced-motion: reduce`에서는 라이브러리 자체의 애니메이션이 실행되지 않습니다. 정렬 중
-항목은 제자리로 바로 이동하고, 드롭할 때 오버레이가 날아가지 않으며, `animate`의 변경은 즉시
+항목은 제자리로 바로 이동하고, 드롭할 때 오버레이가 날아가지 않으며, `animateChanges`의 변경은 즉시
 나타납니다. 직접 만든 애니메이션 함수는 `reducedMotion: true`와 함께 계속 실행되므로, 건너뛸지 짧은
 페이드를 남길지 직접 정하세요. [애니메이션](https://zizigy.github.io/docs/guides/animations)을 참고하세요.
 

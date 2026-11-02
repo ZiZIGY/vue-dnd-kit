@@ -403,8 +403,8 @@ El slot recibe las mismas props que un componente de overlay. Cuando no renderiz
 ## Destinos que cambian el overlay
 
 Un destino de drop puede decir qué muestra el overlay mientras un arrastre que acepta está sobre
-él. `makeDroppable` acepta un `overlay`; las listas y los árboles aceptan un `overOverlay`, ya que
-su `overlay` es para sus propios ítems. Sobre una carpeta, el chip de los mensajes arrastrados se
+él. `makeDroppable`, las listas y los árboles aceptan un `overOverlay` (el `overlay` de una lista
+o de un árbol es para sus propios ítems). Sobre una carpeta, el chip de los mensajes arrastrados se
 convierte en lo que hará el drop:
 
 <example height="34rem" hint="Marca dos mensajes, arrastra uno sobre Archive y suéltalo" name="overlay-folders">
@@ -417,7 +417,7 @@ convierte en lo que hará el drop:
 makeDroppable(el, {
   id: () => props.folder.id,
   data: () => props.folder,
-  overlay: MovePill,
+  overOverlay: MovePill,
   onDrop: (event) => emit('move', event.active.ids),
 });
 ```
@@ -479,7 +479,7 @@ mientras aterriza se reproducen hasta el final, durante dos segundos como máxim
 - Un arrastre con `overlay: false` no tiene overlay sobre ningún destino.
 
 Las carpetas también hacen aterrizar la píldora a su manera, dentro del icono de la carpeta: un
-destino también puede tener una `dropAnimation`. Consulta
+destino también puede tener una `overDropAnimation`. Consulta
 [animaciones](https://zizigy.github.io/docs/guides/animations#per-item-and-per-target).
 
 ## Dónde iría el drop: `to`
@@ -522,7 +522,7 @@ pondría en ninguna lista: sobre un destino simple, sobre una lista que los rech
 
 Para cada arrastre, el primero que se aplique:
 
-1. El `overlay` del destino de drop (el `overOverlay` de una lista o de un árbol), mientras el
+1. El `overOverlay` del destino de drop (también el de una lista o de un árbol), mientras el
 arrastre está sobre él y él lo acepta. Lo que se mostraría en otro caso es su slot por defecto.
 2. El `overlay` propio del ítem (`makeSortableItem`, `makeDraggable`).
 3. El `overlay` de su lista o de su árbol.
@@ -706,7 +706,7 @@ const style = computed(() =>
 ```
 
 Consulta [arrastrar y soltar](https://zizigy.github.io/docs/guides/drag-and-drop#without-an-overlay). Cómo aterriza un
-arrastre con caja lo decide su `dropAnimation`: la del destino de drop, la del ítem (o la de su
+arrastre con caja lo decide su `dropAnimation`: la del destino de drop (`overDropAnimation`), la del ítem (o la de su
 lista) o la del provider. Consulta [animaciones](https://zizigy.github.io/docs/guides/animations#the-drop).
 
 ## Sitemap

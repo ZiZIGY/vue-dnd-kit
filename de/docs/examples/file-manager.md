@@ -46,14 +46,14 @@ const { items } = makeSortableList(list, {
   multiple: 'gaps',       // the other picked files wait in place, as in Finder
   clone: drive.duplicateOf, // Alt-drag leaves the files and drops "Budget copy.xlsx"
   dropzone: area,         // the empty space takes drops too
-  animate: true,          // a new sort, a new folder, files sent to the Trash slide and fade
+  animateChanges: true,   // a new sort, a new folder, files sent to the Trash slide and fade
 });
 ```
 
 - `drive.entries` ist ein beschreibbares Computed: Die Bibliothek schreibt jeden Drop über sein
 `set` zurück, und das `onDrop` der Liste sichert den Speicher vorher für Undo.
 - Das Fenster erzeugt für jeden Ordner eine neue Ansicht (`:key` auf `FileView`), das Öffnen
-eines Ordners ist also keine Änderung der Liste, die `animate` abspielen würde.
+eines Ordners ist also keine Änderung der Liste, die `animateChanges` abspielen würde.
 
 ## Auswählen
 
@@ -222,7 +222,7 @@ und ein langes Drücken nimmt eine Datei auf.
 Mehr dazu: [Multi-Drag und Auswahl](https://zizigy.github.io/docs/guides/multi-drag) ·
 [In ein sortierbares Element ablegen](https://zizigy.github.io/docs/guides/drag-and-drop#drop-into-a-sortable-item) ·
 [`DragPreview`](https://zizigy.github.io/docs/guides/overlay#dragpreview-the-clone-in-your-layout) ·
-[Datenänderungen: `animate`](https://zizigy.github.io/docs/guides/animations#data-changes-animate) ·
+[Datenänderungen: `animateChanges`](https://zizigy.github.io/docs/guides/animations#data-changes-animatechanges) ·
 [Barrierefreiheit](https://zizigy.github.io/docs/guides/accessibility)
 
 ## Sitemap

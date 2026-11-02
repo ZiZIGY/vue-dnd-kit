@@ -313,7 +313,7 @@ aucune. Le provider lit ses props au moment où il en a besoin : les démos ci-
   <tr>
     <td>
       <code>
-        animate
+        animateChanges
       </code>
     </td>
     

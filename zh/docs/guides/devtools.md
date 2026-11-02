@@ -362,7 +362,7 @@ app.mount('#app');
       </code>
       
       、<code>
-        animate
+        animateChanges
       </code>
       
       、<code>
@@ -428,7 +428,7 @@ app.mount('#app');
       </code>
       
       、<code>
-        animate
+        animateChanges
       </code>
       
       、<code>
@@ -502,7 +502,7 @@ app.mount('#app');
       </code>
       
       、<code>
-        keyboard
+        keyboardMode
       </code>
       
       、<code>

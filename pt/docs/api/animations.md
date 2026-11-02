@@ -7,9 +7,10 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/pt/docs/api/animations"
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
 `animation` (movimentos de layout durante a ordenação), `dropAnimation` (o overlay pousando) e
-`animate` (mudanças de dados que nenhum arraste fez) do provider aceitam `false`, opções ou uma
-função sua — para GSAP ou motion. Listas e árvores podem sobrescrever `animation` e `animate`;
-draggables, itens, listas e alvos de drop podem trazer o seu próprio `dropAnimation`. Veja
+`animateChanges` (mudanças de dados que nenhum arraste fez) do provider aceitam `false`, opções ou uma
+função sua — para GSAP ou motion. Listas e árvores podem sobrescrever `animation` e `animateChanges`;
+draggables, itens e listas podem trazer o seu próprio `dropAnimation`, e alvos de drop, um
+`overDropAnimation`. Veja
 [Animações](https://zizigy.github.io/docs/guides/animations).
 
 ```vue
@@ -17,7 +18,7 @@ draggables, itens, listas e alvos de drop podem trazer o seu próprio `dropAnima
 ```
 
 Cada faixa abaixo é um provider próprio que dá a `animation`, `dropAnimation` e
-`animate` o mesmo tipo de valor (`animate` recebe uma função em `move`).
+`animateChanges` o mesmo tipo de valor (`animateChanges` recebe uma função em `move`).
 
 <example height="27rem" hint="Embaralhe, ou arraste uma linha em cada faixa" name="api-animation-shapes">
 

@@ -196,11 +196,11 @@ const { items } = makeSortableList(strip, {
   items: tabs,
   strategy: 'horizontal',
   axis: 'x',        // the tabs stay on their row
-  animate: true,    // the buttons open and close tabs: slide the others then too
+  animateChanges: true, // the buttons open and close tabs: slide the others then too
 });
 ```
 
-タブの閉じるボタンはドラッグ可能なタブの中でも動作し、ドラッグを終えるクリックがタブを選択することはありません。ドラッグ中、行は自動でスライドします。`animate` はドラッグ以外による変化、ここではボタンによる変化にも同じ動きを加えます（[アニメーション](https://zizigy.github.io/docs/guides/animations)を参照）。
+タブの閉じるボタンはドラッグ可能なタブの中でも動作し、ドラッグを終えるクリックがタブを選択することはありません。ドラッグ中、行は自動でスライドします。`animateChanges` はドラッグ以外による変化、ここではボタンによる変化にも同じ動きを加えます（[アニメーション](https://zizigy.github.io/docs/guides/animations)を参照）。
 
 グリッドは 2 次元で並べ替わり、タイルのサイズは自由です。
 
@@ -628,7 +628,7 @@ const { items } = makeSortableList(list, {
 
 ## アニメーション
 
-ドラッグ中、行は新しい位置へスライドし、ドロップした行は自分の枠に着地します。行が入ったり出たりすると、リスト自体も新しいサイズへと大きくなったり小さくなったりします（`animateSize`）。これはデフォルトでオンで、コードは不要です。行を `<TransitionGroup>` で囲まないでください。移動が二重にアニメーションします。行の `transform` に CSS の `transition` を付けるのも避けてください。ドラッグ以外による変化（追加、削除、シャッフル）には、タブのようにリストの `animate` オプションをオンにします。[アニメーション](https://zizigy.github.io/docs/guides/animations)を参照してください。
+ドラッグ中、行は新しい位置へスライドし、ドロップした行は自分の枠に着地します。行が入ったり出たりすると、リスト自体も新しいサイズへと大きくなったり小さくなったりします（`animateSize`）。これはデフォルトでオンで、コードは不要です。行を `<TransitionGroup>` で囲まないでください。移動が二重にアニメーションします。行の `transform` に CSS の `transition` を付けるのも避けてください。ドラッグ以外による変化（追加、削除、シャッフル）には、タブのようにリストの `animateChanges` オプションをオンにします。[アニメーション](https://zizigy.github.io/docs/guides/animations)を参照してください。
 
 オプションの完全な一覧は [makeSortableList](https://zizigy.github.io/docs/api/make-sortable-list) と [makeSortableItem](https://zizigy.github.io/docs/api/make-sortable-item) の API にあります。
 

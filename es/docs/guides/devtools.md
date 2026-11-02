@@ -410,7 +410,7 @@ abre **Options**:
       </code>
       
       , <code>
-        animate
+        animateChanges
       </code>
       
       , <code>
@@ -476,7 +476,7 @@ abre **Options**:
       </code>
       
       , <code>
-        animate
+        animateChanges
       </code>
       
       , <code>
@@ -550,7 +550,7 @@ abre **Options**:
       </code>
       
       , <code>
-        keyboard
+        keyboardMode
       </code>
       
       , <code>

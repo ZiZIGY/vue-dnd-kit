@@ -313,7 +313,7 @@ lê as props quando precisa delas: as demos abaixo trocam `collision`, `activati
   <tr>
     <td>
       <code>
-        animate
+        animateChanges
       </code>
     </td>
     

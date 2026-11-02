@@ -106,7 +106,7 @@ déplacent pour les personnes qui ne peuvent pas glisser du tout.
 </kbd>
 
  agrandit les pas.
-`makeDraggable(el, { keyboard: 'droppables' })` fait plutôt sauter les flèches d'une cible qui
+`makeDraggable(el, { keyboardMode: 'droppables' })` fait plutôt sauter les flèches d'une cible qui
 accepte l'item à l'autre.
 - Un glissement au clavier démarre depuis l'élément déplaçable qui a le focus, ou depuis sa
 poignée — jamais depuis un bouton ou un champ qu'il contient, qui gardent ainsi leurs propres
@@ -625,12 +625,12 @@ déplacent les livres sans glissement, et le focus reste là où vous êtes.
 
 </example>
 
-Un bouton change les données ; la liste dessine le déplacement. Avec `animate` sur la liste, les
+Un bouton change les données ; la liste dessine le déplacement. Avec `animateChanges` sur la liste, les
 lignes glissent comme pendant un glissement (et restent immobiles pour les utilisateurs qui
 demandent un mouvement réduit) :
 
 ```ts [ReadingList.vue]
-const { items } = makeSortableList(list, { id: 'reading', items: books, animate: true });
+const { items } = makeSortableList(list, { id: 'reading', items: books, animateChanges: true });
 
 // Buttons change the data, not a drag: the provider says nothing, so this region does.
 const message = ref('');
@@ -689,7 +689,7 @@ Un glissement tactile vibre brièvement quand il commence ; `:haptics="false"` 
 
 Avec `prefers-reduced-motion: reduce`, les animations propres à la bibliothèque ne s'exécutent
 pas : les items sautent à leur place pendant le tri, l'overlay ne vole pas au dépôt, et les
-changements d'`animate` apparaissent d'un coup. Vos propres fonctions d'animation s'exécutent
+changements d'`animateChanges` apparaissent d'un coup. Vos propres fonctions d'animation s'exécutent
 toujours, avec `reducedMotion: true` : c'est donc vous qui décidez, les sauter ou garder un bref
 fondu. Voir les [animations](https://zizigy.github.io/docs/guides/animations).
 

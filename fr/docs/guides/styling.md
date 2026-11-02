@@ -177,7 +177,7 @@ multi-drag apparaissent aussi.
     
     <td>
       une copie laissée par <code>
-        animate
+        animateChanges
       </code>
     </td>
     
@@ -776,7 +776,7 @@ Marquez tout ce qui ne doit pas voyager, une infobulle ou un bouton de menu, ave
 - Ne mettez pas de `transition` CSS sur le `transform` ou le `translate` des items triables : la
 bibliothèque les anime elle-même, et annule ces transitions pendant qu'elle mesure.
 - N'enveloppez pas les items triables dans un `<TransitionGroup>` : les déplacements
-s'animeraient deux fois. Utilisez l'`animate` de la liste.
+s'animeraient deux fois. Utilisez l'`animateChanges` de la liste.
 - N'animez pas la `height`, la `margin` ou le `padding` des lignes d'une
 [liste virtuelle](/docs/guides/virtual-lists).
 - En revanche, arrêtez sous `prefers-reduced-motion: reduce` les transitions que vous ajoutez

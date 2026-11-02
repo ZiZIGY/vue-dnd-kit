@@ -216,12 +216,12 @@ const { items } = makeSortableList(strip, {
   items: tabs,
   strategy: 'horizontal',
   axis: 'x',        // the tabs stay on their row
-  animate: true,    // the buttons open and close tabs: slide the others then too
+  animateChanges: true, // the buttons open and close tabs: slide the others then too
 });
 ```
 
 O botão de fechar da aba continua funcionando dentro da aba arrastável, e um clique que termina
-um arraste não seleciona uma aba. As linhas deslizam sozinhas enquanto você arrasta; `animate`
+um arraste não seleciona uma aba. As linhas deslizam sozinhas enquanto você arrasta; `animateChanges`
 faz o mesmo para mudanças que nenhum arraste fez, aqui os botões (veja
 [animações](https://zizigy.github.io/docs/guides/animations)).
 
@@ -706,7 +706,7 @@ posição. A própria lista cresce ou encolhe até o novo tamanho quando linhas 
 (`animateSize`). Isso vem ligado por padrão e não precisa de código. Não envolva as linhas em
 `<TransitionGroup>`: os movimentos seriam animados duas vezes. Também não coloque um `transition`
 CSS no `transform` das linhas. Para mudanças que nenhum arraste fez (adicionar, remover,
-embaralhar), ligue a opção `animate` da lista, como as abas fazem. Veja
+embaralhar), ligue a opção `animateChanges` da lista, como as abas fazem. Veja
 [animações](https://zizigy.github.io/docs/guides/animations).
 
 A lista completa de opções está na API do [makeSortableList](https://zizigy.github.io/docs/api/make-sortable-list) e do

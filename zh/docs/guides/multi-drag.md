@@ -210,22 +210,6 @@ const { isSelecting, style } = makeSelectionArea(desktop);
       选框结束时调用，传入选中集合。
     </td>
   </tr>
-  
-  <tr>
-    <td>
-      <code>
-        selection
-      </code>
-    </td>
-    
-    <td>
-      用你自己的 <code>
-        Ref<Set<Key>>
-      </code>
-      
-       代替 provider 的选中集合。
-    </td>
-  </tr>
 </tbody>
 </table>
 

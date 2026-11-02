@@ -269,7 +269,10 @@ const { items } = makeSortableList(list, {
 - ****The cursor**** of the grabbed element stays during the drag ( `**--dnd-cursor**`).
 - **`**data-dnd-placeholder="into"**`** while a drop goes into a target inside an item: style the folder the files go into.
 - ****Scrolling during a drag****: axis locks keep the drag on its row ( `**containerShift**` for modifiers), and an overlay landing while the page scrolls still finds its slot.
-- ****Development warnings**** for two draggables or targets sharing an id, and for a drag asked for while `**onBeforeDrop**` decides. Production builds drop them.
+- ****Partial accepts on drop targets****: when `**onBeforeDrop**` takes only some of the dragged items, the target's `**onDrop**` says which ( `**accepted**`, and the new `**rejected**`).
+- ****Lists and trees**** take `**activation**`, their items' default, and `**data**`, what `**over.data**` says over them; `**group.put**` takes types, as a drop target's `**accept**` does.
+- **`**drag-resume**`** on the provider, for `**onBeforeDrop**` answering `**'continue'**`.
+- ****Development warnings**** for two draggables or targets sharing an id, for a drag asked for while `**onBeforeDrop**` decides, and for `**external**` without `**createItem**`. Production builds drop them.
 - ****Less work**** at pickup, per frame and on tree drops.
 
 New examples: whole apps, the way you would build them, each in a full-screen demo.
@@ -292,6 +295,12 @@ Legal moves light up, a pawn asks what it becomes, and a bot plays back with rea
 
 Notion-like blocks moved by their handles, nested, and dragged in from a "/" menu.
 
+[Data table](https://zizigy.github.io/vue-dnd-kit/es/docs/examples/data-table)
+
+**Data table**
+
+A Nuxt UI table of 2,000 tasks: virtualized, searchable, sorted by its rows' grips.
+
 [All examples](https://zizigy.github.io/vue-dnd-kit/es/docs/examples)
 
 **All examples**
@@ -310,6 +319,8 @@ A calendar, a file manager, a form builder, a design canvas, a page builder.
 - ****Lists animate their size**** ( `**animateSize**`). A list whose container has a fixed size isn't affected; to keep the old jump, pass `**animateSize: false**`.
 - ****A press on a handle that doesn't move is a click****: a button used as a handle gets its `**click**`.
 - ****Overlay components get only the props they declare****: the overlay's props no longer fall through to their root element as attributes.
+- **`**defaultStyles: false**`** removes only the looks**** (the dimmed placeholders). What drags rely on stays: no text selection and no scroll anchoring while dragging, the drag cursor, no link callout on a long press on iOS.
+- ****A drop target's **`**onDrop**`** gets the end event**** ( `**DnDEndEvent**`): the same fields, plus `**dropped**`, `**accepted**` and `**rejected**`. A partial accept used to show only in `**onDragEnd**`.
 
 ## All changes
 
@@ -330,6 +341,10 @@ A calendar, a file manager, a form builder, a design canvas, a page builder.
 - Drags don't wait for landings; a press catches a landing box; `**onDragSettle**` (provider: `**drag-settle**`); `**overlayPreviews**`.
 - Multi-drag: plain draggables show a pile; every clone flies home on a cancel; into a zone the clones go in one after another.
 - Development warnings for shared ids and for input while a drop is decided.
+- A drop target's `**onDrop**` gets `**accepted**` and `**rejected**` (also on `**DnDEndEvent**`).
+- `**activation**` and `**data**` on lists and trees; `**group.put**` takes types.
+- The provider emits `**drag-resume**`.
+- The behaviour styles are always injected; `**defaultStyles: false**` drops only the looks.
 
 ### Fixes
 
@@ -338,7 +353,8 @@ A calendar, a file manager, a form builder, a design canvas, a page builder.
 - The clone carries the item's custom properties on a box around it, not inline.
 - Indicator lines when nesting in place; insert mode over indicator trees; lists with `**createItem**` ignore the items of other groups.
 - `**e.source.remove()**` takes the items only out of the lists they came from.
-- Landing overlays no longer jump when drags follow each other quickly, with the default drop animation, GSAP or motion.
+- Landing overlays no longer jump when drags follow each other quickly, with the default drop animation, GSAP or motion, nor for a frame when the next drag reorders their list.
+- A `**native**` mouse drag asks `**canDrag**`; the selection area's cancel key matches `**key**` as well as `**code**`.
 - Multi-drag items without a clone show as the drop starts and fade in; a `**'group'**` block over a plain target outside the lists comes apart; a drop lands with the overlay its target showed when let go.
 - On a cancel, the other dragged items stay placeholders until their clones are home.
 - Keyboard pickups during a landing; an end announced as `**''**` silences the pending move text; a provider unmounting while `**onBeforeDrop**` decides cancels the drag.

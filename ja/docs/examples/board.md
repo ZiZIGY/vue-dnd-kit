@@ -21,7 +21,7 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/board"
 
 ## 列のルール
 
-各列は自分のリストに 4 つのルールを渡します。`put` はマルチドラッグのすべてのカードを一度に見ます：カードがすべて制限内に収まれば列はすべてを受け入れ、収まらなければ 1 枚も受け入れません。満杯の列の上では、枠はドラッグが始まった場所に留まり、列は赤くなり、手に持ったカードがその理由を伝えます。`onBeforeDrop` はカードが Done に入る前に確認し、`animate` はドラッグ以外で出入りするカード（フィルター、Add card、Undo）をスライドさせます。
+各列は自分のリストに 4 つのルールを渡します。`put` はマルチドラッグのすべてのカードを一度に見ます：カードがすべて制限内に収まれば列はすべてを受け入れ、収まらなければ 1 枚も受け入れません。満杯の列の上では、枠はドラッグが始まった場所に留まり、列は赤くなり、手に持ったカードがその理由を伝えます。`onBeforeDrop` はカードが Done に入る前に確認し、`animateChanges` はドラッグ以外で出入りするカード（フィルター、Add card、Undo）をスライドさせます。
 
 ```ts [Column.vue]
 const { items, isOver, isAccepting } = makeSortableList(list, {
@@ -29,7 +29,7 @@ const { items, isOver, isAccepting } = makeSortableList(list, {
   items: () => props.column.cards.filter(board.matches),
   group: { name: 'cards', put: ({ keys }) => board.fits(props.column, keys) },
   overlay: CardOverlay,
-  animate: true,
+  animateChanges: true,
   onBeforeDrop: (event) => (props.column.confirm && !event.sameList ? board.ask(event.items) : 'accept'),
   onDrop: (event) => {
     event.preventDefault();

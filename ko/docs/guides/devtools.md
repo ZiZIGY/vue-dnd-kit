@@ -399,7 +399,7 @@ draggable에 대한 다음 누르기를 동작시키지 않고 가로챕니다. 
       </code>
       
       , <code>
-        animate
+        animateChanges
       </code>
       
       , <code>
@@ -465,7 +465,7 @@ draggable에 대한 다음 누르기를 동작시키지 않고 가로챕니다. 
       </code>
       
       , <code>
-        animate
+        animateChanges
       </code>
       
       , <code>
@@ -539,7 +539,7 @@ draggable에 대한 다음 누르기를 동작시키지 않고 가로챕니다. 
       </code>
       
       , <code>
-        keyboard
+        keyboardMode
       </code>
       
       , <code>

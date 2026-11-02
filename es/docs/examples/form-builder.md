@@ -67,7 +67,7 @@ const { items, isOver, isAccepting } = makeSortableList(list, {
   placeholder: 'indicator',
   overlay: FieldOverlay,
   clone: cloneField, // Alt-drag copies a field
-  animate: true,
+  animateChanges: true,
   onDrop: form.drop,
 });
 ```

@@ -21,7 +21,7 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/board"
 
 ## 列的规则
 
-每一列给它的列表传入四条规则。`put` 一次就能看到多项拖拽中的所有卡片：如果它们都能放进上限之内，这一列就全部接收，否则一张都不接收。在已满的列上方，空位停在拖拽开始的地方，这一列变红，手中的卡片会说明原因。`onBeforeDrop` 在卡片进入 Done 之前询问，`animate` 让不经拖拽而出现或消失的卡片滑动：筛选、Add card、Undo。
+每一列给它的列表传入四条规则。`put` 一次就能看到多项拖拽中的所有卡片：如果它们都能放进上限之内，这一列就全部接收，否则一张都不接收。在已满的列上方，空位停在拖拽开始的地方，这一列变红，手中的卡片会说明原因。`onBeforeDrop` 在卡片进入 Done 之前询问，`animateChanges` 让不经拖拽而出现或消失的卡片滑动：筛选、Add card、Undo。
 
 ```ts [Column.vue]
 const { items, isOver, isAccepting } = makeSortableList(list, {
@@ -29,7 +29,7 @@ const { items, isOver, isAccepting } = makeSortableList(list, {
   items: () => props.column.cards.filter(board.matches),
   group: { name: 'cards', put: ({ keys }) => board.fits(props.column, keys) },
   overlay: CardOverlay,
-  animate: true,
+  animateChanges: true,
   onBeforeDrop: (event) => (props.column.confirm && !event.sameList ? board.ask(event.items) : 'accept'),
   onDrop: (event) => {
     event.preventDefault();

@@ -170,7 +170,7 @@ Springe mit Tab zu einem Termin und nimm ihn mit Space auf: Der Monitor der Woch
 Pfeile, `getKeyboardCoordinates`, mit der nächsten Viertelstunde (mit Shift einer Stunde) oder dem
 nächsten Tag. Drags per Tastatur scrollen nicht automatisch, also scrollt der Pfeil nahe an einem
 Ende der sichtbaren Stunden stattdessen diese. Aufgaben und ganztägige Termine springen von Ziel
-zu Ziel (`keyboard: 'droppables'`), bis sie über den Stunden sind.
+zu Ziel (`keyboardMode: 'droppables'`), bis sie über den Stunden sind.
 
 ```ts [Week.vue]
 useDnDMonitor({

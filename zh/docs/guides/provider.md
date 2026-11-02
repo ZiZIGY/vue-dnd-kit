@@ -307,7 +307,7 @@ import { DnDProvider } from '@vue-dnd-kit/core';
   <tr>
     <td>
       <code>
-        animate
+        animateChanges
       </code>
     </td>
     

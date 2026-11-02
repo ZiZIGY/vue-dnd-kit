@@ -44,14 +44,14 @@ const { items } = makeSortableList(list, {
   multiple: 'gaps',       // the other picked files wait in place, as in Finder
   clone: drive.duplicateOf, // Alt-drag leaves the files and drops "Budget copy.xlsx"
   dropzone: area,         // the empty space takes drops too
-  animate: true,          // a new sort, a new folder, files sent to the Trash slide and fade
+  animateChanges: true,   // a new sort, a new folder, files sent to the Trash slide and fade
 });
 ```
 
 - `drive.entries` — записываемый computed: библиотека записывает каждый бросок обратно через его
 `set`, а `onDrop` списка сначала сохраняет диск для Undo.
 - Окно создаёт новый вид для каждой папки (`:key` на `FileView`), так что открытие папки — не
-изменение списка, которое `animate` стал бы проигрывать.
+изменение списка, которое `animateChanges` стал бы проигрывать.
 
 ## Выделение
 
@@ -212,7 +212,7 @@ Put Back возвращает это туда.
 Подробнее: [мульти-драг и выделение](https://zizigy.github.io/docs/guides/multi-drag) ·
 [бросок в сортируемый элемент](https://zizigy.github.io/docs/guides/drag-and-drop#drop-into-a-sortable-item) ·
 [`DragPreview`](https://zizigy.github.io/docs/guides/overlay#dragpreview-the-clone-in-your-layout) ·
-[изменения данных: `animate`](https://zizigy.github.io/docs/guides/animations#data-changes-animate) ·
+[изменения данных: `animateChanges`](https://zizigy.github.io/docs/guides/animations#data-changes-animatechanges) ·
 [доступность](https://zizigy.github.io/docs/guides/accessibility)
 
 ## Sitemap

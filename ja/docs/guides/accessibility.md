@@ -89,7 +89,7 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/accessibilit
 </table>
 
 - リストでは、同じグループの別のリストの方向へ矢印キーを押すと、アイテムがそちらへ移動します。
-- 自由なドラッグでは、:kbd{value="Shift"} でステップが大きくなります。`makeDraggable(el, { keyboard: 'droppables' })` にすると、矢印キーは代わりに、そのアイテムを受け入れるターゲットの間をジャンプします。
+- 自由なドラッグでは、:kbd{value="Shift"} でステップが大きくなります。`makeDraggable(el, { keyboardMode: 'droppables' })` にすると、矢印キーは代わりに、そのアイテムを受け入れるターゲットの間をジャンプします。
 - キーボードドラッグは、フォーカスされたドラッグ可能な要素またはそのハンドルから始まります——中にあるボタンや入力欄から始まることはないため、それらは自分のキー操作を保ちます。
 - キーボードドラッグでは、端での自動スクロールの代わりに、アイテムがスクロールして表示されます。
 - ドロップ後、行が別のリストで再描画された場合でも、フォーカスはアイテムに戻ります。
@@ -553,10 +553,10 @@ const announcements = computed<Partial<Announcements>>(() => {
 
 </example>
 
-ボタンはデータを変え、リストが移動を描きます。リストで `animate` をオンにすると、行はドラッグのときと同じようにスライドします（モーションの軽減を求めるユーザーには動きません）。
+ボタンはデータを変え、リストが移動を描きます。リストで `animateChanges` をオンにすると、行はドラッグのときと同じようにスライドします（モーションの軽減を求めるユーザーには動きません）。
 
 ```ts [ReadingList.vue]
-const { items } = makeSortableList(list, { id: 'reading', items: books, animate: true });
+const { items } = makeSortableList(list, { id: 'reading', items: books, animateChanges: true });
 
 // Buttons change the data, not a drag: the provider says nothing, so this region does.
 const message = ref('');
@@ -603,7 +603,7 @@ const move = async (direction: 'up' | 'down') => {
 
 ## モーションの軽減
 
-`prefers-reduced-motion: reduce` では、ライブラリ自身のアニメーションは実行されません。並べ替え中はアイテムが所定の位置へ一気に移り、ドロップ時にオーバーレイは飛ばず、`animate` の変化はすぐに現れます。独自のアニメーション関数は `reducedMotion: true` とともに引き続き実行されるので、判断はあなた次第です：省くか、短いフェードを残すか。[アニメーション](https://zizigy.github.io/docs/guides/animations)を参照してください。
+`prefers-reduced-motion: reduce` では、ライブラリ自身のアニメーションは実行されません。並べ替え中はアイテムが所定の位置へ一気に移り、ドロップ時にオーバーレイは飛ばず、`animateChanges` の変化はすぐに現れます。独自のアニメーション関数は `reducedMotion: true` とともに引き続き実行されるので、判断はあなた次第です：省くか、短いフェードを残すか。[アニメーション](https://zizigy.github.io/docs/guides/animations)を参照してください。
 
 ## Sitemap
 

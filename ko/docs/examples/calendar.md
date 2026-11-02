@@ -160,7 +160,7 @@ onDrop: ({ active, over, position }) => {
 Tab으로 일정에 가서 Space로 집으세요. 주간의 모니터가 화살표 키에 `getKeyboardCoordinates`로 답하며,
 다음 15분(Shift를 누르면 1시간)이나 다음 요일을 돌려줍니다. 키보드 드래그는 자동 스크롤하지 않으므로,
 보이는 시간대의 끝 근처에서는 화살표 키가 대신 시간대를 스크롤합니다. 작업과 종일 일정은 시간대 위에
-올 때까지 대상에서 대상으로 건너뜁니다(`keyboard: 'droppables'`).
+올 때까지 대상에서 대상으로 건너뜁니다(`keyboardMode: 'droppables'`).
 
 ```ts [Week.vue]
 useDnDMonitor({

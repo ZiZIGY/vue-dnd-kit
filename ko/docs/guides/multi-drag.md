@@ -229,22 +229,6 @@ const { isSelecting, style } = makeSelectionArea(desktop);
       사각형이 끝날 때 선택과 함께 호출됩니다.
     </td>
   </tr>
-  
-  <tr>
-    <td>
-      <code>
-        selection
-      </code>
-    </td>
-    
-    <td>
-      프로바이더의 선택 대신 쓰는 직접 만든 <code>
-        Ref<Set<Key>>
-      </code>
-      
-      .
-    </td>
-  </tr>
 </tbody>
 </table>
 

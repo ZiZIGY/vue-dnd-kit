@@ -42,13 +42,13 @@ const { items } = makeSortableList(list, {
   multiple: 'gaps',       // the other picked files wait in place, as in Finder
   clone: drive.duplicateOf, // Alt-drag leaves the files and drops "Budget copy.xlsx"
   dropzone: area,         // the empty space takes drops too
-  animate: true,          // a new sort, a new folder, files sent to the Trash slide and fade
+  animateChanges: true,   // a new sort, a new folder, files sent to the Trash slide and fade
 });
 ```
 
 - `drive.entries`는 쓰기 가능한 computed입니다. 라이브러리는 각 드롭을 그 `set`을 통해 다시 기록하고,
 리스트의 `onDrop`은 그보다 먼저 실행 취소를 위해 드라이브를 저장합니다.
-- 창은 폴더마다 새 보기를 만들므로(`FileView`의 `:key`), 폴더를 여는 것은 `animate`가 재생할
+- 창은 폴더마다 새 보기를 만들므로(`FileView`의 `:key`), 폴더를 여는 것은 `animateChanges`가 재생할
 리스트 변경이 아닙니다.
 
 ## 선택하기
@@ -209,7 +209,7 @@ const dragover = (event: DragEvent) => {
 더 읽어 보기: [멀티 드래그와 선택](https://zizigy.github.io/docs/guides/multi-drag) ·
 [정렬 가능한 항목 안으로 드롭](https://zizigy.github.io/docs/guides/drag-and-drop#drop-into-a-sortable-item) ·
 [`DragPreview`](https://zizigy.github.io/docs/guides/overlay#dragpreview-the-clone-in-your-layout) ·
-[데이터 변경: `animate`](https://zizigy.github.io/docs/guides/animations#data-changes-animate) ·
+[데이터 변경: `animateChanges`](https://zizigy.github.io/docs/guides/animations#data-changes-animatechanges) ·
 [접근성](https://zizigy.github.io/docs/guides/accessibility)
 
 ## Sitemap

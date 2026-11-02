@@ -302,7 +302,7 @@ const { items } = makeSortableTree(root, {
   canNest: (_member, team) => team.kind === 'team' && !team.locked,
   maxDepth: 2,
   collapsed,
-  animate: true,
+  animateChanges: true,
 });
 ```
 
@@ -422,7 +422,7 @@ const collapsed = ref(new Set<Key>());
 const toggle = (key: Key) => (collapsed.value.has(key) ? collapsed.value.delete(key) : collapsed.value.add(key));
 ```
 
-Un nodo arrastrado se lleva todo su subárbol, plegado o no. Con `animate: true`, las filas que un
+Un nodo arrastrado se lleva todo su subárbol, plegado o no. Con `animateChanges: true`, las filas que un
 nodo muestra u oculta al abrirse o cerrarse se animan al entrar y salir, y lo mismo pasa con los
 cambios de datos que no hizo ningún arrastre.
 

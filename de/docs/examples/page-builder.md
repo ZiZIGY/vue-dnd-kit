@@ -255,7 +255,7 @@ geschrieben haben.
 useDnDMonitor({ onDragEnd: () => builder.commit() });
 ```
 
-Undo legt einen Schnappschuss zurück. Die Listen haben `animate` an, also gleitet, was der
+Undo legt einen Schnappschuss zurück. Die Listen haben `animateChanges` an, also gleitet, was der
 Schnappschuss verschoben hat, dorthin, wie auch die Abschnitte, die die Werkzeugleiste hoch und
 runter bewegt; hinzugefügte Abschnitte blenden sich ein und gelöschte aus.
 

@@ -108,7 +108,7 @@ editor.move(active.ids, { x: to.x - from.x, y: to.y - from.y }, target, editor.a
 ```
 
 Фрейм принимает слои, а не фреймы: драг, который несёт фрейм, проходит над другими фреймами
-(`disabled`, читается вживую) на холст. У целей `dropAnimation: false`, так как слои появляются
+(`disabled`, читается вживую) на холст. У целей `overDropAnimation: false`, так как слои появляются
 ровно там, где отпустили их клоны. Инструменты на панели инструментов — тоже обычные
 перетаскиваемые элементы: брошенные на фрейм, они добавляют в него свой слой с центром в точке
 броска; по клику — в середину вида.
@@ -118,7 +118,7 @@ makeDroppable(body, {
   id: () => props.frame.id,
   accept: 'layer',
   disabled: () => !!active.value?.items.some((item) => item.type.includes('frame')),
-  dropAnimation: false,
+  overDropAnimation: false,
   onDrop: useLayerDrop(() => props.frame),
 });
 ```
@@ -187,7 +187,7 @@ makeSortableTree(tree, {
   getKey: (layer) => `row:${layer.id}`,
   canNest: (layer, parent) => parent.kind === 'frame' && layer.kind !== 'frame',
   maxDepth: 1,
-  animate: true,
+  animateChanges: true,
   onDrop: ({ items, from, to }) => {
     // Positions count from the frame's corner: a layer changing frames takes the
     // difference, so it stays where it is on the canvas.
@@ -197,7 +197,7 @@ makeSortableTree(tree, {
 
 `onDrop` выполняется до записи дерева, поэтому редактор ещё знает, из какого фрейма пришёл
 каждый слой, и сохраняет дизайн для отмены. Слой, перемещённый во фрейм, который его не
-покрывает, был бы обрезан и не виден: вместо этого он встаёт в середину фрейма. С `animate`
+покрывает, был бы обрезан и не виден: вместо этого он встаёт в середину фрейма. С `animateChanges`
 строки скользят и при изменениях, сделанных на холсте и отменой. У строки есть тип
 (`type: 'row'`), поэтому холст и фреймы, которые принимают слои и инструменты, её отклоняют.
 
@@ -224,7 +224,7 @@ makeSortableTree(tree, {
 
  бросает его во фрейм под ним. Без
 драга стрелки сдвигают выделение на пиксель. Инструмент берётся так же, а его стрелки прыгают
-между холстом и фреймами (`keyboard: 'droppables'`). Остальные сочетания клавиш перечислены в
+между холстом и фреймами (`keyboardMode: 'droppables'`). Остальные сочетания клавиш перечислены в
 панели Design, когда ничего не выделено.
 
 Подробнее: [drag and drop](https://zizigy.github.io/docs/guides/drag-and-drop#leave-it-where-it-was-dropped) ·

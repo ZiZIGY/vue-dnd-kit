@@ -301,7 +301,7 @@ const { items } = makeSortableTree(root, {
   canNest: (_member, team) => team.kind === 'team' && !team.locked,
   maxDepth: 2,
   collapsed,
-  animate: true,
+  animateChanges: true,
 });
 ```
 
@@ -421,7 +421,7 @@ const collapsed = ref(new Set<Key>());
 const toggle = (key: Key) => (collapsed.value.has(key) ? collapsed.value.delete(key) : collapsed.value.add(key));
 ```
 
-Перетаскиваемый узел берёт с собой всё своё поддерево, свёрнутое или нет. С `animate: true`
+Перетаскиваемый узел берёт с собой всё своё поддерево, свёрнутое или нет. С `animateChanges: true`
 строки, которые узел показывает или скрывает при раскрытии и сворачивании, анимированно
 появляются и исчезают, как и изменения данных, сделанные не драгом.
 

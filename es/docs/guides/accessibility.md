@@ -106,7 +106,7 @@ quien no puede arrastrar en absoluto.
 </kbd>
 
  agranda los pasos.
-`makeDraggable(el, { keyboard: 'droppables' })` hace en cambio que las flechas salten entre los
+`makeDraggable(el, { keyboardMode: 'droppables' })` hace en cambio que las flechas salten entre los
 destinos que aceptan el ítem.
 - Un arrastre con teclado empieza desde el elemento arrastrable con el foco, o desde su asa —
 nunca desde un botón o un campo que contenga, que así conservan sus propias teclas.
@@ -619,11 +619,11 @@ arrastre, y el foco se queda donde estás.
 
 </example>
 
-Un botón cambia los datos; la lista dibuja el movimiento. Con `animate` en la lista, las filas se
+Un botón cambia los datos; la lista dibuja el movimiento. Con `animateChanges` en la lista, las filas se
 deslizan como en un arrastre (y se quedan quietas para quien pide movimiento reducido):
 
 ```ts [ReadingList.vue]
-const { items } = makeSortableList(list, { id: 'reading', items: books, animate: true });
+const { items } = makeSortableList(list, { id: 'reading', items: books, animateChanges: true });
 
 // Buttons change the data, not a drag: the provider says nothing, so this region does.
 const message = ref('');
@@ -680,7 +680,7 @@ Un arrastre táctil vibra brevemente al empezar; `:haptics="false"` lo desactiva
 ## Movimiento reducido
 
 Con `prefers-reduced-motion: reduce`, las animaciones propias de la biblioteca no se ejecutan: los
-ítems saltan a su sitio al ordenar, el overlay no vuela al soltar y los cambios de `animate`
+ítems saltan a su sitio al ordenar, el overlay no vuela al soltar y los cambios de `animateChanges`
 aparecen de golpe. Tus propias funciones de animación siguen ejecutándose, con
 `reducedMotion: true`, así que decides tú: saltarlas o mantener un fundido corto. Consulta
 [animaciones](https://zizigy.github.io/docs/guides/animations).

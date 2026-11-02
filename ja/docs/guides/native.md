@@ -255,7 +255,7 @@ const { items } = makeSortableList(grid, {
   <tr>
     <td>
       <code>
-        dropped
+        ready
       </code>
     </td>
     
@@ -283,7 +283,7 @@ export const fromOutside = (active: Active): Card | Card[] | undefined => {
   const { external } = active;
   if (!external) return undefined;
   // While it is held: a tile that says what is coming.
-  if (!external.dropped) return { id: 'incoming', kind: 'incoming', label: incoming(external) };
+  if (!external.ready) return { id: 'incoming', kind: 'incoming', label: incoming(external) };
   // At the drop: a card each.
   if (external.files.length) {
     return external.files.map((file) => ({ id: uid(), kind: 'image', src: URL.createObjectURL(file), name: file.name }));

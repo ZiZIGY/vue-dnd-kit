@@ -301,7 +301,7 @@ const { items } = makeSortableTree(root, {
   canNest: (_member, team) => team.kind === 'team' && !team.locked,
   maxDepth: 2,
   collapsed,
-  animate: true,
+  animateChanges: true,
 });
 ```
 
@@ -421,7 +421,7 @@ const collapsed = ref(new Set<Key>());
 const toggle = (key: Key) => (collapsed.value.has(key) ? collapsed.value.delete(key) : collapsed.value.add(key));
 ```
 
-Um nó arrastado leva toda a sua subárvore junto, recolhida ou não. Com `animate: true`, as linhas
+Um nó arrastado leva toda a sua subárvore junto, recolhida ou não. Com `animateChanges: true`, as linhas
 que um nó mostra ou esconde ao abrir ou fechar entram e saem animadas, assim como as mudanças nos
 dados que nenhum arraste fez.
 

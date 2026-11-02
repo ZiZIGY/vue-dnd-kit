@@ -95,7 +95,7 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/accessibilit
 </table>
 
 - 在列表中，朝同一分组的另一个列表方向按方向键，会把项移到那里。
-- 在自由拖拽中，:kbd{value="Shift"} 会加大步长。`makeDraggable(el, { keyboard: 'droppables' })` 则让方向键在接收该项的目标之间跳转。
+- 在自由拖拽中，:kbd{value="Shift"} 会加大步长。`makeDraggable(el, { keyboardMode: 'droppables' })` 则让方向键在接收该项的目标之间跳转。
 - 键盘拖拽从获得焦点的可拖拽元素或它的手柄开始——从不从其内部的按钮或输入框开始，所以它们保留自己的按键。
 - 键盘拖拽会把项滚动到可见范围内，而不是在边缘自动滚动。
 - 放置之后，焦点回到该项上，即使它的行在另一个列表中被重新渲染。
@@ -559,10 +559,10 @@ const announcements = computed<Partial<Announcements>>(() => {
 
 </example>
 
-按钮改变数据；列表负责呈现移动。列表开启 `animate` 后，各行会像拖拽时一样滑动（对于要求减少动态效果的用户则保持不动）：
+按钮改变数据；列表负责呈现移动。列表开启 `animateChanges` 后，各行会像拖拽时一样滑动（对于要求减少动态效果的用户则保持不动）：
 
 ```ts [ReadingList.vue]
-const { items } = makeSortableList(list, { id: 'reading', items: books, animate: true });
+const { items } = makeSortableList(list, { id: 'reading', items: books, animateChanges: true });
 
 // Buttons change the data, not a drag: the provider says nothing, so this region does.
 const message = ref('');
@@ -609,7 +609,7 @@ const move = async (direction: 'up' | 'down') => {
 
 ## 减少动态效果
 
-在 `prefers-reduced-motion: reduce` 下，库自己的动画不会运行：排序时项直接跳到它们的位置，放置时浮层不会飞行，`animate` 的变化立即出现。你自己的动画函数仍会运行，并带有 `reducedMotion: true`，所以由你决定：跳过它们，或保留一个短暂的淡入淡出。见[动画](https://zizigy.github.io/docs/guides/animations)。
+在 `prefers-reduced-motion: reduce` 下，库自己的动画不会运行：排序时项直接跳到它们的位置，放置时浮层不会飞行，`animateChanges` 的变化立即出现。你自己的动画函数仍会运行，并带有 `reducedMotion: true`，所以由你决定：跳过它们，或保留一个短暂的淡入淡出。见[动画](https://zizigy.github.io/docs/guides/animations)。
 
 ## Sitemap
 

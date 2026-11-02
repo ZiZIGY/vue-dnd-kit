@@ -210,22 +210,6 @@ const { isSelecting, style } = makeSelectionArea(desktop);
       選択枠が終わったときに、選択とともに呼ばれます。
     </td>
   </tr>
-  
-  <tr>
-    <td>
-      <code>
-        selection
-      </code>
-    </td>
-    
-    <td>
-      プロバイダーの選択の代わりに使う、独自の <code>
-        Ref<Set<Key>>
-      </code>
-      
-      。
-    </td>
-  </tr>
 </tbody>
 </table>
 

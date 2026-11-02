@@ -6,13 +6,13 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/api/animations"
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-provider 的 `animation`（排序时的布局移动）、`dropAnimation`（浮层落位）和 `animate`（非拖拽引起的数据变化）接受 `false`、选项，或你自己的函数——用于 GSAP 或 motion。列表和树可以覆盖 `animation` 和 `animate`；可拖拽元素、项、列表和放置目标可以带上自己的 `dropAnimation`。参见[动画](https://zizigy.github.io/docs/guides/animations)。
+provider 的 `animation`（排序时的布局移动）、`dropAnimation`（浮层落位）和 `animateChanges`（非拖拽引起的数据变化）接受 `false`、选项，或你自己的函数——用于 GSAP 或 motion。列表和树可以覆盖 `animation` 和 `animateChanges`；可拖拽元素、项和列表可以带上自己的 `dropAnimation`，放置目标则可以带上 `overDropAnimation`。参见[动画](https://zizigy.github.io/docs/guides/animations)。
 
 ```vue
 <DnDProvider :animation="{ duration: 180, easing: 'ease-out' }" :drop-animation="false" />
 ```
 
-下面的每条泳道都是一个独立的 provider，它的 `animation`、`dropAnimation` 和 `animate`（后者在 `move` 中接受函数）都使用同一种取值形式。
+下面的每条泳道都是一个独立的 provider，它的 `animation`、`dropAnimation` 和 `animateChanges`（后者在 `move` 中接受函数）都使用同一种取值形式。
 
 <example height="27rem" hint="打乱顺序，或在每条泳道中拖动一行" name="api-animation-shapes">
 

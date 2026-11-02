@@ -253,7 +253,7 @@ escrito.
 useDnDMonitor({ onDragEnd: () => builder.commit() });
 ```
 
-Deshacer vuelve a poner una instantánea. Las listas tienen `animate` activado, así que lo que movió
+Deshacer vuelve a poner una instantánea. Las listas tienen `animateChanges` activado, así que lo que movió
 la instantánea se desliza hasta ahí, igual que las secciones que la barra de herramientas sube y
 baja; las secciones añadidas aparecen con un fundido y las borradas desaparecen con otro.
 

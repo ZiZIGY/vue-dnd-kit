@@ -34,12 +34,12 @@ const { items } = makeSortableList(list, {
   multiple: 'gaps',       // the other picked files wait in place, as in Finder
   clone: drive.duplicateOf, // Alt-drag leaves the files and drops "Budget copy.xlsx"
   dropzone: area,         // the empty space takes drops too
-  animate: true,          // a new sort, a new folder, files sent to the Trash slide and fade
+  animateChanges: true,   // a new sort, a new folder, files sent to the Trash slide and fade
 });
 ```
 
 - `drive.entries` 是一个可写的 computed：库通过它的 `set` 写回每次放置，列表的 `onDrop` 会先保存云盘状态，以便 Undo。
-- 窗口为每个文件夹创建一个新视图（`FileView` 上的 `:key`），所以打开文件夹并不是列表的变化，`animate` 不会为它播放动画。
+- 窗口为每个文件夹创建一个新视图（`FileView` 上的 `:key`），所以打开文件夹并不是列表的变化，`animateChanges` 不会为它播放动画。
 
 ## 选择
 
@@ -166,7 +166,7 @@ const dragover = (event: DragEvent) => {
 - `ContextMenu.vue`（右键单击、Shift+F10 或“⋯”按钮）作用于选中集合或打开的文件夹：就地 Rename、Duplicate、Add to Favorites、Move to Trash、Empty Trash。
 - 展开时窗口会占满舞台，信息面板在文件旁边打开。在手机上，侧边栏是一个抽屉；轻点打开文件夹，长按拿起文件。
 
-延伸阅读：[多项拖拽与选择](https://zizigy.github.io/docs/guides/multi-drag) · [放进可排序项](https://zizigy.github.io/docs/guides/drag-and-drop#drop-into-a-sortable-item) · [`DragPreview`](https://zizigy.github.io/docs/guides/overlay#dragpreview-the-clone-in-your-layout) · [数据变化：`animate`](https://zizigy.github.io/docs/guides/animations#data-changes-animate) · [无障碍](https://zizigy.github.io/docs/guides/accessibility)
+延伸阅读：[多项拖拽与选择](https://zizigy.github.io/docs/guides/multi-drag) · [放进可排序项](https://zizigy.github.io/docs/guides/drag-and-drop#drop-into-a-sortable-item) · [`DragPreview`](https://zizigy.github.io/docs/guides/overlay#dragpreview-the-clone-in-your-layout) · [数据变化：`animateChanges`](https://zizigy.github.io/docs/guides/animations#data-changes-animatechanges) · [无障碍](https://zizigy.github.io/docs/guides/accessibility)
 
 ## Sitemap
 

@@ -171,7 +171,7 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/styling"
     
     <td>
       <code>
-        animate
+        animateChanges
       </code>
       
        留下的副本
@@ -721,7 +721,7 @@ provider 会在每个文档中注入一次几条规则。它们被包在 `:where
 ## 不要这样做
 
 - 不要给可排序项的 `transform` 或 `translate` 加 CSS `transition`：库会自己为它们添加动画，并在测量时取消这类过渡。
-- 不要用 `<TransitionGroup>` 包裹可排序项：移动会被动画两次。使用列表的 `animate`。
+- 不要用 `<TransitionGroup>` 包裹可排序项：移动会被动画两次。使用列表的 `animateChanges`。
 - 不要为[虚拟列表](/docs/guides/virtual-lists)中行的 `height`、`margin` 或 `padding` 添加动画。
 - 在 `prefers-reduced-motion: reduce` 下，务必停止你在拖拽相关处添加的过渡。库已经停止了它自己的过渡。
 

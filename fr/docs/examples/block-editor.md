@@ -55,7 +55,7 @@ const { items } = makeSortableTree(root, {
   collapsed: editor.collapsed,
   clone: copyBlock,         // Alt-drag copies a block with what is nested in it
   createItem: (active) => createBlock((active.data as { kind: BlockKind }).kind),
-  animate: true,
+  animateChanges: true,
   overOverlay: BlockGhost,
   dropzone: sheet,
   onDrop, // see Undo, below
@@ -71,7 +71,7 @@ blocs : une ligne un niveau plus à l'intérieur sous lui les met dedans, en pr
 
 Chaque ligne dessine le trait d'après son `indicator`, au niveau où le dépôt atterrit. Les listes
 numérotées comptent à partir de `items` : "2." et "a." suivent donc chaque dépôt et chaque Tab.
-`animate: true` fait aussi glisser et s'estomper les changements qu'aucun glissement ne fait :
+`animateChanges: true` fait aussi glisser et s'estomper les changements qu'aucun glissement ne fait :
 Entrée, Tab, Suppr, Undo, un toggle qui s'ouvre.
 
 ```ts [BlockRow.vue]

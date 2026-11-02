@@ -19,7 +19,7 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/chess"
 отклоняется, и фигура летит обратно. Допустимые поля подсвечиваются по `isAccepting`: никакое
 собственное состояние игры не следит за драгом.
 - **Piece.vue**: обычный перетаскиваемый элемент, `disabled`, когда ход не его стороны.
-`keyboard: 'droppables'` заставляет стрелки прыгать между полями, которые принимают фигуру:
+`keyboardMode: 'droppables'` заставляет стрелки прыгать между полями, которые принимают фигуру:
 её допустимыми ходами, и ничем больше. `snapCenterToCursor` держит фигуру по центру под
 указателем, а касание тащит сразу (`activation`). `canDrag` не даёт вам трогать фигуры бота и
 доску, пока играет код, ничего не отключая: у драгов, начатых кодом, нет события ввода, поэтому
@@ -63,7 +63,7 @@ const hint = computed(() => {
 ## Превращение: бросок, который ждёт ответа
 
 Над последней горизонталью пешка в руке показывает фигуру, в которую превращается: собственный
-`overlay` поля (`PromotionOverlay.vue`) занимает место оверлея фигуры. При отпускании
+`overOverlay` поля (`PromotionOverlay.vue`) занимает место оверлея фигуры. При отпускании
 `onBeforeDrop` поля возвращает промис, и оверлей ждёт на поле, пока **PromotionPicker.vue**,
 обычный элемент страницы рядом с ним, спрашивает, какая фигура. Фигура отвечает `'accept'`,
 Escape или Cancel — `'reject'` (пешка летит обратно), а Keep dragging — `'continue'`: пешка
@@ -74,7 +74,7 @@ makeDroppable(el, {
   id: props.square,
   accept: ({ active }) => game.canMove(active.id, props.square),
   // Shown instead of the piece's overlay while a pawn is over the last rank.
-  overlay: computed(() =>
+  overOverlay: computed(() =>
     held.value?.kind === 'P' && isLastRank(props.square) ? PromotionOverlay : undefined,
   ),
   // A promise: the drop waits on the square until the picker answers.
@@ -86,7 +86,7 @@ makeDroppable(el, {
 
 `onBeforeDrop` цели получает обычное событие драга и спрашивается, только когда её `accept`
 принял драг; `onBeforeDrop` сортируемого списка получает `SortableDropEvent` списка с `result`
-броска. `overlay` цели читается ещё раз после `onDrop`, для приземления: он проверяет пешку такой,
+броска. `overOverlay` цели читается ещё раз после `onDrop`, для приземления: он проверяет пешку такой,
 какой её взяли (`active.data`), а не партию, где к тому времени это уже ферзь.
 
 ## Бот, повторы и рокировка: драги, которые проигрывает код
@@ -115,7 +115,7 @@ return drag.drop(); // true once it has landed, false if the square refused it
 ## Взятия, отмена и новая партия
 
 Взятые фигуры уходят в **Tray.vue** своей стороны: сортируемый список, который используется
-только ради `animate` (`disabled`, там ничего не перетаскивается). Его `enter` — функция: новая
+только ради `animateChanges` (`disabled`, там ничего не перетаскивается). Его `enter` — функция: новая
 фигура прилетает с поля, на котором её взяли, а остальные освобождают место.
 
 ```ts [Tray.vue]
@@ -123,7 +123,7 @@ makeSortableList(tray, {
   items: () => props.pieces,
   getKey: (piece) => `taken-${piece.id}`,
   disabled: true,
-  animate: { enter: flyIn, leave: false },
+  animateChanges: { enter: flyIn, leave: false },
 });
 ```
 
@@ -134,7 +134,7 @@ Undo отменяет ваш ход вместе с его ответом.
 Подробнее: [решение о броске](https://zizigy.github.io/docs/guides/drop-decisions) ·
 [оверлей](https://zizigy.github.io/docs/guides/overlay#targets-that-change-the-overlay) ·
 [программные драги](https://zizigy.github.io/docs/guides/sensors#programmatic-drags) ·
-[изменения данных: `animate`](https://zizigy.github.io/docs/guides/animations#data-changes-animate) ·
+[изменения данных: `animateChanges`](https://zizigy.github.io/docs/guides/animations#data-changes-animatechanges) ·
 [доступность](https://zizigy.github.io/docs/guides/accessibility)
 
 ## Sitemap

@@ -408,7 +408,7 @@ Toda opção que não é um callback pode ser editada enquanto o app roda. Escol
       </code>
       
       , <code>
-        animate
+        animateChanges
       </code>
       
       , <code>
@@ -474,7 +474,7 @@ Toda opção que não é um callback pode ser editada enquanto o app roda. Escol
       </code>
       
       , <code>
-        animate
+        animateChanges
       </code>
       
       , <code>
@@ -548,7 +548,7 @@ Toda opção que não é um callback pode ser editada enquanto o app roda. Escol
       </code>
       
       , <code>
-        keyboard
+        keyboardMode
       </code>
       
       , <code>

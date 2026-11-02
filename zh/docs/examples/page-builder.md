@@ -180,7 +180,7 @@ provider 把 <kbd value="Space">
 useDnDMonitor({ onDragEnd: () => builder.commit() });
 ```
 
-撤销会放回一个快照。列表开启了 `animate`，所以快照移动过的内容会滑到那里，工具栏上下移动的区块也是如此；添加的区块淡入，删除的区块淡出。
+撤销会放回一个快照。列表开启了 `animateChanges`，所以快照移动过的内容会滑到那里，工具栏上下移动的区块也是如此；添加的区块淡入，删除的区块淡出。
 
 延伸阅读：[可排序列表](https://zizigy.github.io/docs/guides/sortable-lists#an-insertion-line) · [共享项的列表](https://zizigy.github.io/docs/guides/shared-lists) · [树](https://zizigy.github.io/docs/guides/trees) · [浮层](https://zizigy.github.io/docs/guides/overlay) · [动画](https://zizigy.github.io/docs/guides/animations) · [无障碍](https://zizigy.github.io/docs/guides/accessibility)
 

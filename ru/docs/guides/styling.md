@@ -176,7 +176,7 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/styling"
     
     <td>
       копия, оставленная <code>
-        animate
+        animateChanges
       </code>
     </td>
     
@@ -770,7 +770,7 @@ UI-киты тоже живут в слоях, и их слои идут поз�
 - Не ставьте CSS `transition` на `transform` или `translate` сортируемых элементов: библиотека
 анимирует их сама и отменяет такие переходы, пока измеряет.
 - Не оборачивайте сортируемые элементы в `<TransitionGroup>`: перемещения анимировались бы
-дважды. Используйте `animate` списка.
+дважды. Используйте `animateChanges` списка.
 - Не анимируйте `height`, `margin` или `padding` строк в [виртуальном списке](/docs/guides/virtual-lists).
 - А вот переходы, которые вы добавляете вокруг драгов, отключайте при
 `prefers-reduced-motion: reduce`. Свои библиотека уже отключает.
