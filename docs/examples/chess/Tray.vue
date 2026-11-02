@@ -4,7 +4,7 @@ import { makeSortableList, type EnterAnimation } from '@vue-dnd-kit/core';
 import TrayPiece from './TrayPiece.vue';
 import type { Piece } from './chess';
 
-// The pieces a side has taken. A sortable list for its `animate` alone: it is disabled,
+// The pieces a side has taken. A sortable list for its `animateChanges` alone: it is disabled,
 // nothing drags here, but a piece added to `pieces` animates in, and the others make room.
 const props = defineProps<{ pieces: Piece[]; board: HTMLElement | null }>();
 
@@ -30,7 +30,7 @@ const { items } = makeSortableList(tray, {
   getKey: (piece) => `taken-${piece.id}`,
   disabled: true,
   // Undo and a new game fly the pieces back to the board themselves (`glide.ts`).
-  animate: { enter: flyIn, leave: false },
+  animateChanges: { enter: flyIn, leave: false },
 });
 </script>
 

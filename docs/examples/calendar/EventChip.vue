@@ -19,7 +19,7 @@ const { isDragging } = makeDraggable(el, {
   type: 'event',
   data: (): DragData => ({ kind: 'event', event: props.event }),
   overlay: EventOverlay,
-  keyboard: 'droppables',
+  keyboardMode: 'droppables',
 });
 </script>
 

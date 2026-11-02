@@ -24,7 +24,7 @@ const ARROWS = new Map<string, SensorDirection>([
 ]);
 
 /** Bindings match `event.code` ('Space', 'KeyW') or `event.key` ('Enter', 'w'). */
-const matches = (bindings: readonly string[], event: KeyboardEvent): boolean =>
+export const matches = (bindings: readonly string[], event: KeyboardEvent): boolean =>
   bindings.includes(event.code) || bindings.includes(event.key);
 
 /**

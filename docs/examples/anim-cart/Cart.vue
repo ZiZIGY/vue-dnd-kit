@@ -39,7 +39,7 @@ const intoCart: DropAnimation = ({ overlay, from, reducedMotion }) => {
 const el = useTemplateRef<HTMLElement>('el');
 const { isOver } = makeDroppable(el, {
   id: 'cart',
-  dropAnimation: intoCart,
+  overDropAnimation: intoCart,
   // A sortable item carries its list's item.
   onDrop: (event) => {
     bought.value.push(event.active.items[0]!.item as Product);

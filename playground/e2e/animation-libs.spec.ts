@@ -127,7 +127,7 @@ test.describe('animation libraries through the hooks (animation-libs)', () => {
     });
   }
 
-  test('`animate: false` turns the data-change hooks off; drags still animate', async ({ page }) => {
+  test('`animateChanges: false` turns the data-change hooks off; drags still animate', async ({ page }) => {
     await page.getByTestId('animate-changes').uncheck();
     for (const lib of LIBS) {
       await button(page, lib, 'reverse').click();

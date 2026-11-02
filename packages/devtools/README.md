@@ -89,7 +89,7 @@ A live card per list, tree and drop target of the page (and one for the draggabl
 
 ### Options: live editing
 
-Every option that isn't a callback, editable while the app runs: the provider's (`overlayFit`, `autoScroll`, `collision`, `modifiers` — the library's, by name —, `animation`, `dropAnimation`, `animate`, `activation`, `keyboard`, `haptics`, `copyModifier`, …), a list's (`disabled`, `strategy`, `placeholder`, `behavior`, `multiple`, `sort`, `dropOutside`, `acceptMode`, `animation`, `animate`, `autoScroll`, `modifiers`), a tree's (`placeholder`, `indentation`, `nesting`, `maxDepth`, …), a drop target's (`disabled`, `priority`, `accept`, `acceptMode`) and an item's (`disabled`, `keyboard`, `activation`). Choose the node in the tree (or the item in the map) and open **Options**.
+Every option that isn't a callback, editable while the app runs: the provider's (`overlayFit`, `autoScroll`, `collision`, `modifiers` — the library's, by name —, `animation`, `dropAnimation`, `animateChanges`, `activation`, `keyboard`, `haptics`, `copyModifier`, …), a list's (`disabled`, `strategy`, `placeholder`, `behavior`, `multiple`, `sort`, `dropOutside`, `acceptMode`, `animation`, `animateChanges`, `autoScroll`, `modifiers`), a tree's (`placeholder`, `indentation`, `nesting`, `maxDepth`, …), a drop target's (`disabled`, `priority`, `accept`, `acceptMode`) and an item's (`disabled`, `keyboardMode`, `activation`). Choose the node in the tree (or the item in the map) and open **Options**.
 
 An edit applies at once, to this page only, and is never written to your code: the core's devtools bridge reads the option's new value where the library reads it, until you reset it (↺ per option, **Reset all**), the provider unmounts or the page reloads. An edited option shows the code's value too. Items remounted while an edit is set (virtual lists) get it as well.
 
@@ -99,7 +99,7 @@ What each provider knows, as the tree on the left: its drag session, its lists a
 
 ### Log
 
-What happened in each drag (one band per drag): `drag start` (ids, the sensor and whether by touch, the list it comes from), `over` and `left` (and whether the target accepts), `release`, `onBeforeDrop` (accepted, accepted some, rejected by a hook, refused by the target's `accept`, and how long the hooks took), `drop` (the target, and for sortable lists the move, `event.result` and whether `preventDefault()` was called) or `cancel` (and why), `announcement` (hidden by default), `auto-scroll on` / `off`, and outside drags `animate` (changes of a list's items that no drag made and its `animate` option plays). Click an entry for its data. A tab that opens later gets the drags so far.
+What happened in each drag (one band per drag): `drag start` (ids, the sensor and whether by touch, the list it comes from), `over` and `left` (and whether the target accepts), `release`, `onBeforeDrop` (accepted, accepted some, rejected by a hook, refused by the target's `accept`, and how long the hooks took), `drop` (the target, and for sortable lists the move, `event.result` and whether `preventDefault()` was called) or `cancel` (and why), `announcement` (hidden by default), `auto-scroll on` / `off`, and outside drags `animate` (changes of a list's items that no drag made and its `animateChanges` option plays). Click an entry for its data. A tab that opens later gets the drags so far.
 
 ## How it works
 

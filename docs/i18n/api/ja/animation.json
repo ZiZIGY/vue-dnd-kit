@@ -1,4 +1,28 @@
 {
+  "AnimationOptions": {
+    "source": "b09e1a9518",
+    "text": "アニメーションのタイミング。省略した部分は、そのアニメーションのデフォルトのままです。"
+  },
+  "AnimationOptions.duration": {
+    "source": "d0c1a0e2ba",
+    "text": "ms 単位。デフォルトはレイアウトの移動で 200、ドロップで 250。`0` でアニメーションをオフにします。"
+  },
+  "AnimationOptions.easing": {
+    "source": "203b67cb4a",
+    "text": "CSS のイージング（`'ease-out'`、`cubic-bezier(…)`）。"
+  },
+  "LayoutAnimationContext": {
+    "source": "4024b00eb0",
+    "text": "レイアウトアニメーション関数が受け取るもの。新しい場所へ移動する 1 つのアイテムについての情報です。"
+  },
+  "LayoutAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "アイテムのキー。"
+  },
+  "LayoutAnimationContext.element": {
+    "source": "a268435146",
+    "text": "アイテムの要素。すでに新しい場所にあります。"
+  },
   "LayoutAnimationContext.from": {
     "source": "c5845d8793",
     "text": "変化の前の見た目上の矩形（実行中のアニメーションがアイテムを表示していた位置）。"
@@ -7,9 +31,13 @@
     "source": "17f753cbe6",
     "text": "変化の後のレイアウト上の矩形。"
   },
+  "LayoutAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "オプションが指定するタイミング。デフォルトで補われています。"
+  },
   "LayoutAnimationContext.reason": {
-    "source": "eceea904fa",
-    "text": "何がアイテムを動かしたか：ドラッグ（`'drag'`：並べ替え、ドロップ、キャンセル）、またはドラッグ以外によるデータの変更（`'change'`。リストの `animate` がオンの場合）。"
+    "source": "fea2ee2ea2",
+    "text": "何がアイテムを動かしたか：ドラッグ（`'drag'`：並べ替え、ドロップ、キャンセル）、またはドラッグ以外によるデータの変更（`'change'`。リストの `animateChanges` がオンの場合）。"
   },
   "LayoutAnimationContext.signal": {
     "source": "c8aa938f56",
@@ -23,9 +51,17 @@
     "source": "233b130a9c",
     "text": "アイテムが新しい位置へどう動くか：`true`（デフォルトのタイミング）、オプション、`false`（瞬時に移動）、または 1 つのアイテムを `from` から `to` へアニメーションさせ、その `Animation`、終了時に確定する Promise、または何も返さない関数。"
   },
+  "DropAnimationContext": {
+    "source": "ed32f90e37",
+    "text": "ドロップアニメーション関数が受け取るもの：オーバーレイ、その現在の位置、着地する位置。"
+  },
   "DropAnimationContext.overlay": {
     "source": "e272382994",
     "text": "オーバーレイのボックス。アクティブなアイテムの位置に着地します。マルチドラッグでは、その中に乗っているほかのアイテムのクローン（デフォルトのオーバーレイのもの、カスタムのオーバーレイの `DragPreview`）は、それぞれ自分の位置に自動で着地します（これがカスタム関数の場合はデフォルトのタイミングで）。"
+  },
+  "DropAnimationContext.from": {
+    "source": "c2595bada3",
+    "text": "ドラッグが終わったときのオーバーレイの位置。"
   },
   "DropAnimationContext.to": {
     "source": "d0780ba408",
@@ -35,17 +71,37 @@
     "source": "cecafada99",
     "text": "ゾーン（並べ替え可能なリストではないもの）へのドロップの後、アイテムが表示されない場合。たとえば別のアイテム（フォルダー）やゴミ箱ゾーンにドロップされた場合で、そのゾーンの見えている矩形です。デフォルトのアニメーションは、その場でフェードする代わりに、オーバーレイをフェードアウトさせながらこの中へ縮めます。"
   },
+  "DropAnimationContext.reason": {
+    "source": "275d894e30",
+    "text": "`'drop'`：オーバーレイは、ドロップがアイテムを置いた場所に着地します。`'cancel'`：アイテムがあった場所へ戻ります。"
+  },
+  "DropAnimationContext.active": {
+    "source": "7c6ffaf118",
+    "text": "終了したドラッグ。"
+  },
   "DropAnimationContext.over": {
     "source": "54c7b98b67",
     "text": "ドロップが着地するターゲット（リスト、ゾーン）。キャンセル時は `null`。"
+  },
+  "DropAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "オプションが指定するタイミング。デフォルトで補われています。"
   },
   "DropAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "`prefers-reduced-motion: reduce` が設定されています。このときライブラリ自身のアニメーションは実行されませんが、あなたの関数は常に実行され、これを見て判断します（省略するか、フェードだけ残すか）。"
   },
+  "DropAnimation": {
+    "source": "4e7ab98e07",
+    "text": "ドロップ時にオーバーレイが着地し、キャンセル時に元の位置に戻る仕方：`true`（デフォルトのタイミング）、オプション、`false`（飛ばない：離した場所で終わります）、または `overlay` を `from` から `to` へアニメーションさせ、その `Animation`、終了時に確定する promise を返すか、何も返さない関数。"
+  },
   "EnterAnimationContext": {
-    "source": "bef530cbfe",
-    "text": "`animate` がオンのリストに現れたアイテム：追加された、または再び表示された（フィルター、展開されたツリーノード）もの。"
+    "source": "e45e8bafb3",
+    "text": "`animateChanges` がオンのリストに現れたアイテム：追加された、または再び表示された（フィルター、展開されたツリーノード）もの。"
+  },
+  "EnterAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "アイテムのキー。"
   },
   "EnterAnimationContext.element": {
     "source": "120613b512",
@@ -55,13 +111,21 @@
     "source": "fd058782f5",
     "text": "現れた場所（レイアウト上の矩形）。"
   },
+  "EnterAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "オプションが指定するタイミング。デフォルトで補われています。"
+  },
   "EnterAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "`prefers-reduced-motion: reduce` が設定されています。このときライブラリ自身のアニメーションは実行されませんが、あなたの関数は常に実行され、これを見て判断します（省略するか、フェードだけ残すか）。"
   },
   "LeaveAnimationContext": {
-    "source": "b67e70e13a",
-    "text": "`animate` がオンのリストから出ていったアイテム：削除された、または非表示になった（フィルター、折りたたまれたツリーノード）もの。"
+    "source": "5d6e9c20a9",
+    "text": "`animateChanges` がオンのリストから出ていったアイテム：削除された、または非表示になった（フィルター、折りたたまれたツリーノード）もの。"
+  },
+  "LeaveAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "アイテムのキー。"
   },
   "LeaveAnimationContext.element": {
     "source": "a4f7390241",
@@ -70,6 +134,10 @@
   "LeaveAnimationContext.from": {
     "source": "645084e2fd",
     "text": "アイテムがあった場所。"
+  },
+  "LeaveAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "オプションが指定するタイミング。デフォルトで補われています。"
   },
   "LeaveAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
@@ -84,8 +152,8 @@
     "text": "`true`、オプション、`false`（アイテムはそのまま消えます）、または元の場所に残されたコピーを退場させるアニメーションの関数：その `Animation` か Promise を返すと、終わったときにコピーが取り除かれます（関数が何も返さない場合はすぐに）。"
   },
   "AutoAnimationOptions": {
-    "source": "0130acd24e",
-    "text": "パーツごとに指定する `animate`：`duration` と `easing` はすべてのパーツに適用され、変更の種類ごとに `true`、オプション（共通のものを上書き）、`false`、または独自の関数を指定します。"
+    "source": "39ddcaee1b",
+    "text": "パーツごとに指定する `animateChanges`：`duration` と `easing` はすべてのパーツに適用され、変更の種類ごとに `true`、オプション（共通のものを上書き）、`false`、または独自の関数を指定します。"
   },
   "AutoAnimationOptions.move": {
     "source": "684eb0594d",

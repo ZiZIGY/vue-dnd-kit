@@ -7,6 +7,14 @@
     "source": "5ac7937354",
     "text": "MIME タイプ（`image/png`）。ブラウザーが判別できない場合は `''`。"
   },
+  "ExternalFile.name": {
+    "source": "85e29b464a",
+    "text": "拡張子付きの名前（`notes.md`）。ドロップ時に得られます。"
+  },
+  "ExternalFile.size": {
+    "source": "cf1f4b7920",
+    "text": "バイト単位のサイズ。ドロップ時に得られます。"
+  },
   "ExternalAccept": {
     "source": "f9ed0b389d",
     "text": "ドロップターゲット、リスト、ツリーが、ページの外から来るドラッグから受け取るもの：デスクトップからのファイル、別のアプリやタブからのリンクやテキスト（`external`）。"
@@ -32,8 +40,8 @@
     "text": "受け取るそのほかの MIME タイプ。ほかのアプリが提供するとおりに指定します。"
   },
   "ExternalData": {
-    "source": "52e1ec34b0",
-    "text": "ページの外からのドラッグ（`Active.external`、`DnDEvent.external`）。ドラッグ中、ブラウザーは何を運んでいるかは教えますが、データは教えません：ファイル、リンク、テキストはドロップ時に届きます（`dropped`）。"
+    "source": "44976c0766",
+    "text": "ページの外からのドラッグ（`Active.external`、`DnDEvent.external`）。ドラッグ中、ブラウザーは何を運んでいるかは教えますが、データは教えません：ファイル、リンク、テキストはドロップ時に届きます（`ready`）。"
   },
   "ExternalData.types": {
     "source": "840a3fb6e3",
@@ -63,7 +71,7 @@
     "source": "044c2022ec",
     "text": "ドロップ時：提供している任意のタイプのデータ（ドロップ前と、提供していないタイプでは `''`）。"
   },
-  "ExternalData.dropped": {
+  "ExternalData.ready": {
     "source": "11a898fda6",
     "text": "ドロップされました：上のデータがそろっています。"
   },
@@ -76,8 +84,8 @@
     "text": "マウスでページの外へドラッグできるドラッグ可能な要素や並べ替え可能なアイテム（`native`）：デスクトップへ、別のアプリへ、別のタブへ、アプリの別のウィンドウへ。"
   },
   "NativeDragOptions.data": {
-    "source": "5cec79d1b0",
-    "text": "ほかのアプリやページが受け取るもの：MIME タイプ → テキスト。例：`{ 'text/plain': title, 'text/uri-list': url }`。ドラッグの開始時に読み取られます。並べ替え可能なアイテムは、アプリの別のウィンドウにある同じグループのリストのために、自分自身も運びます。"
+    "source": "8268ca9868",
+    "text": "ほかのアプリやページが受け取るもの：MIME タイプごとのテキスト。形式は `{ 'text/plain': title, 'text/uri-list': url }`。ドラッグの開始時に読み取られます。並べ替え可能なアイテムは、アプリの別のウィンドウにある同じグループのリストのために、自分自身も運びます。"
   },
   "NativeDragOptions.effect": {
     "source": "67e99c2b14",

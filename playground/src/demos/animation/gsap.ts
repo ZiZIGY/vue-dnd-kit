@@ -54,5 +54,5 @@ const leave = ({ element, reducedMotion }: LeaveAnimationContext) =>
 export const gsapAnimations = {
   animation: move,
   dropAnimation: drop,
-  animate: { move, enter, leave },
+  animateChanges: { move, enter, leave },
 };

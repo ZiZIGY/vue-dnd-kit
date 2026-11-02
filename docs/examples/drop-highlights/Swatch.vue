@@ -8,7 +8,7 @@ const { isDragging } = makeDraggable(el, {
   id: () => props.swatch.id,
   type: () => props.swatch.tone,
   data: () => props.swatch,
-  keyboard: 'droppables',
+  keyboardMode: 'droppables',
 });
 </script>
 

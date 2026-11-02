@@ -234,6 +234,32 @@ describe('makeSortableList options are read when needed', () => {
     expect(await acceptedByB()).toBe(true);
   });
 
+  it('`group.put` as type rules: every item must have one, as a drop target\'s `accept`', async () => {
+    // a1 is a bug, the others tasks; `b` takes tasks only.
+    mountPair({}, { group: { name: 'pair', put: 'task' } }, {}, {});
+    await nextTick();
+    for (const id of ['a1', 'a2', 'a3']) manager.getDraggable(id)!.getTypes = () => [id === 'a1' ? 'bug' : 'task'];
+    const acceptedByB = async (...ids: string[]) => {
+      await pickUp(...ids);
+      await moveTo(at('b', 1));
+      const over = manager.over.value;
+      await cancel();
+      return over?.id === 'b' && over.accepted;
+    };
+    expect(await acceptedByB('a2')).toBe(true);
+    expect(await acceptedByB('a1')).toBe(false);
+    expect(await acceptedByB('a2', 'a1')).toBe(false);
+  });
+
+  it('`data`: what the list says about itself as a target (`over.data`)', async () => {
+    mountPair({}, { data: () => ({ column: 'Done' }) });
+    await nextTick();
+    await pickUp('a1');
+    await moveTo(at('b', 1));
+    expect(manager.over.value).toMatchObject({ id: 'b', data: { column: 'Done' } });
+    await cancel();
+  });
+
   it('`autoScroll` (when the drag starts)', async () => {
     vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
     const autoScroll = shallowRef<boolean | undefined>(undefined);
@@ -332,5 +358,27 @@ describe('makeSortableItem options', () => {
     expect(manager.status.value).toBe('activating');
     press('pointercancel', document);
     expect(manager.status.value).toBe('idle');
+  });
+
+  it("the list's `activation` is its items' default; an item's own wins", async () => {
+    // List `a` starts at the press; `b` keeps the provider's (a mouse moves 4px first).
+    const container = mountPair({ activation: { mouse: {} } }, {}, {}, {});
+    await nextTick();
+    press('pointerdown', container.querySelector('[data-id="b1"]')!);
+    expect(manager.status.value).toBe('activating');
+    press('pointercancel', document);
+    expect(manager.status.value).toBe('idle');
+    press('pointerdown', container.querySelector('[data-id="a1"]')!);
+    expect(manager.status.value).toBe('dragging');
+    press('pointercancel', document);
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+    mounted.splice(0).forEach((unmount) => unmount());
+
+    const own = mountPair({ activation: { mouse: { distance: 50 } } }, {}, {}, { activation: { mouse: {} } });
+    await nextTick();
+    press('pointerdown', own.querySelector('[data-id="a1"]')!);
+    expect(manager.status.value).toBe('dragging');
+    press('pointercancel', document);
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
   });
 });

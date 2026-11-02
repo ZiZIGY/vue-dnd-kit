@@ -1,4 +1,28 @@
 {
+  "AnimationOptions": {
+    "source": "b09e1a9518",
+    "text": "动画的时间设置。省略的部分保留该动画的默认值。"
+  },
+  "AnimationOptions.duration": {
+    "source": "d0c1a0e2ba",
+    "text": "单位为 ms。布局移动默认 200，放置默认 250；`0` 关闭动画。"
+  },
+  "AnimationOptions.easing": {
+    "source": "203b67cb4a",
+    "text": "CSS 缓动（`'ease-out'`、`cubic-bezier(…)`）。"
+  },
+  "LayoutAnimationContext": {
+    "source": "4024b00eb0",
+    "text": "布局动画函数收到的参数，针对一个移动到新位置的项。"
+  },
+  "LayoutAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "项的 key。"
+  },
+  "LayoutAnimationContext.element": {
+    "source": "a268435146",
+    "text": "项的元素，已经在新位置上。"
+  },
   "LayoutAnimationContext.from": {
     "source": "c5845d8793",
     "text": "变化之前的视觉矩形（正在运行的动画显示该项的位置）。"
@@ -7,9 +31,13 @@
     "source": "17f753cbe6",
     "text": "变化之后的布局矩形。"
   },
+  "LayoutAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "选项给出的时间设置，已填入默认值。"
+  },
   "LayoutAnimationContext.reason": {
-    "source": "eceea904fa",
-    "text": "是什么移动了这个项：一次拖拽（`'drag'`：排序、放置、取消），或者非拖拽引起的数据变化（`'change'`，需开启列表的 `animate`）。"
+    "source": "fea2ee2ea2",
+    "text": "是什么移动了这个项：一次拖拽（`'drag'`：排序、放置、取消），或者非拖拽引起的数据变化（`'change'`，需开启列表的 `animateChanges`）。"
   },
   "LayoutAnimationContext.signal": {
     "source": "c8aa938f56",
@@ -23,9 +51,17 @@
     "source": "233b130a9c",
     "text": "项如何移动到新位置：`true`（默认时间）、选项、`false`（直接跳过去），或一个函数——它为一个项执行从 `from` 到 `to` 的动画，并返回它的 `Animation`、一个在动画结束时完成的 Promise，或者不返回任何东西。"
   },
+  "DropAnimationContext": {
+    "source": "ed32f90e37",
+    "text": "放置动画函数收到的参数：浮层、它现在的位置和它将落到的位置。"
+  },
   "DropAnimationContext.overlay": {
     "source": "e272382994",
     "text": "浮层盒子；它会落到当前项的位置上。在多项拖拽中，随它一起移动的其他项的克隆（默认浮层中的克隆、自定义浮层中的 `DragPreview`）会自行落到各自的位置上（如果这是一个自定义函数，则使用默认时间）。"
+  },
+  "DropAnimationContext.from": {
+    "source": "c2595bada3",
+    "text": "拖拽结束时浮层所在的位置。"
   },
   "DropAnimationContext.to": {
     "source": "d0780ba408",
@@ -35,17 +71,37 @@
     "source": "cecafada99",
     "text": "放到一个区域（而不是可排序列表）上之后，该项不再显示，例如它被放进了另一个项（文件夹）或回收区：此时为该区域的可见矩形。默认动画会让浮层在淡出时缩进这个区域，而不是在原地淡出。"
   },
+  "DropAnimationContext.reason": {
+    "source": "275d894e30",
+    "text": "`'drop'`：浮层落到放置把项放到的地方。`'cancel'`：它飞回项原来所在的地方。"
+  },
+  "DropAnimationContext.active": {
+    "source": "7c6ffaf118",
+    "text": "结束的那次拖拽。"
+  },
   "DropAnimationContext.over": {
     "source": "54c7b98b67",
     "text": "放置落到的目标（列表、放置区）；取消时为 `null`。"
+  },
+  "DropAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "选项给出的时间设置，已填入默认值。"
   },
   "DropAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "设置了 `prefers-reduced-motion: reduce`。此时库自己的动画不会运行；你的函数总会运行，并据此做出决定（跳过，或保留一个淡入淡出）。"
   },
+  "DropAnimation": {
+    "source": "4e7ab98e07",
+    "text": "浮层在放置时如何落位、在取消时如何飞回原处：`true`（默认时间）、选项、`false`（不飞行：它停在松开的地方），或者一个函数：把 `overlay` 从 `from` 动画到 `to`，并返回它的 `Animation`、一个在动画结束时完成的 promise，或者什么都不返回。"
+  },
   "EnterAnimationContext": {
-    "source": "bef530cbfe",
-    "text": "在开启了 `animate` 的列表中出现的项：新添加的，或重新显示的（过滤、展开的树节点）。"
+    "source": "e45e8bafb3",
+    "text": "在开启了 `animateChanges` 的列表中出现的项：新添加的，或重新显示的（过滤、展开的树节点）。"
+  },
+  "EnterAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "项的 key。"
   },
   "EnterAnimationContext.element": {
     "source": "120613b512",
@@ -55,13 +111,21 @@
     "source": "fd058782f5",
     "text": "它出现的位置（布局矩形）。"
   },
+  "EnterAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "选项给出的时间设置，已填入默认值。"
+  },
   "EnterAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "设置了 `prefers-reduced-motion: reduce`。此时库自己的动画不会运行；你的函数总会运行，并据此做出决定（跳过，或保留一个淡入淡出）。"
   },
   "LeaveAnimationContext": {
-    "source": "b67e70e13a",
-    "text": "从开启了 `animate` 的列表中离开的项：被删除的，或被隐藏的（过滤、折叠的树节点）。"
+    "source": "5d6e9c20a9",
+    "text": "从开启了 `animateChanges` 的列表中离开的项：被删除的，或被隐藏的（过滤、折叠的树节点）。"
+  },
+  "LeaveAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "项的 key。"
   },
   "LeaveAnimationContext.element": {
     "source": "a4f7390241",
@@ -70,6 +134,10 @@
   "LeaveAnimationContext.from": {
     "source": "645084e2fd",
     "text": "该项原来所在的位置。"
+  },
+  "LeaveAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "选项给出的时间设置，已填入默认值。"
   },
   "LeaveAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
@@ -84,8 +152,8 @@
     "text": "`true`、选项、`false`（项直接消失），或一个为留在原处的副本执行离开动画的函数：返回它的 `Animation` 或一个 Promise，副本会在动画结束时被移除（函数什么都不返回时立即移除）。"
   },
   "AutoAnimationOptions": {
-    "source": "0130acd24e",
-    "text": "分部分设置的 `animate`：`duration` 和 `easing` 适用于所有部分；每种变化可以单独设为 `true`、选项（覆盖共享选项）、`false`，或你自己的函数。"
+    "source": "39ddcaee1b",
+    "text": "分部分设置的 `animateChanges`：`duration` 和 `easing` 适用于所有部分；每种变化可以单独设为 `true`、选项（覆盖共享选项）、`false`，或你自己的函数。"
   },
   "AutoAnimationOptions.move": {
     "source": "684eb0594d",

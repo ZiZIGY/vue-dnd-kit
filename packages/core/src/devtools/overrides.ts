@@ -24,7 +24,7 @@ type Getter = 'isDisabled' | 'getKeyboard' | 'getActivation';
 /** Options of draggables: the entry getter that reads each, and what it makes of the value. */
 const GETTERS: Record<string, [Getter, (value: unknown) => unknown]> = {
   disabled: ['isDisabled', (value) => !!value],
-  keyboard: ['getKeyboard', (value) => value],
+  keyboardMode: ['getKeyboard', (value) => value],
   activation: ['getActivation', (value) => value],
 };
 

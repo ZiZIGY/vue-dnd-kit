@@ -1,7 +1,19 @@
 {
+  "DragItem": {
+    "source": "959720da4c",
+    "text": "Un item glissé : celui depuis lequel le glissement a commencé, ou un autre d'un multi-drag."
+  },
+  "DragItem.id": {
+    "source": "776be4538c",
+    "text": "Id de son élément déplaçable (la clé d'un item triable)."
+  },
   "DragItem.item": {
     "source": "7cfd4640f1",
     "text": "L'objet item, quand le glissement vient d'une liste triable."
+  },
+  "DragItem.data": {
+    "source": "ac6ab14545",
+    "text": "Son option `data`."
   },
   "DragItem.label": {
     "source": "97ccfdec34",
@@ -11,6 +23,10 @@
     "source": "9189758463",
     "text": "`type` normalisé de l'élément déplaçable ; vide signifie qu'il convient à n'importe quelle cible de dépôt."
   },
+  "Active": {
+    "source": "91977ca5db",
+    "text": "Le glissement en cours : l'item depuis lequel il a commencé, et tous les items qu'il transporte."
+  },
   "Active.id": {
     "source": "f080aacddc",
     "text": "Id de l'item depuis lequel le glissement a commencé."
@@ -19,9 +35,21 @@
     "source": "173336b06e",
     "text": "Tous les ids glissés, en commençant par l'id principal (multi-drag)."
   },
+  "Active.items": {
+    "source": "f5b1ed4ced",
+    "text": "Tous les items glissés, le principal en premier."
+  },
+  "Active.data": {
+    "source": "c6df04687f",
+    "text": "Le `data` de l'item depuis lequel le glissement a commencé."
+  },
   "Active.label": {
     "source": "6b580da2fb",
     "text": "Le `label` de l'item d'où le glissement est parti, le nom que les gens lui donnent."
+  },
+  "Active.type": {
+    "source": "24c2cd378e",
+    "text": "Le `type` normalisé de l'item depuis lequel le glissement a commencé ; vide, il convient à toute cible de dépôt."
   },
   "Active.element": {
     "source": "b0e7f2b9f5",
@@ -31,17 +59,41 @@
     "source": "7964e6f559",
     "text": "Rectangle de mise en page d'`element` au début du glissement."
   },
+  "Active.sensor": {
+    "source": "d7ac7b8437",
+    "text": "Comment le glissement se déplace : `'pointer'` suit des points, `'keyboard'` avance d'item en item (`SensorActivation.type`)."
+  },
   "Active.external": {
     "source": "c2c230e8a3",
     "text": "Un glissement venu de l'extérieur de la page (des fichiers, un lien, du texte, ou des items d'une autre fenêtre de l'application) : ce qu'il transporte. Ses `items` sont créés pour lui (`element` est un substitut)."
   },
   "Active.native": {
-    "source": "70b681b12e",
-    "text": "Le glissement propre au navigateur (`native`, ou un glissement venu de l'extérieur) : il dessine l'image glissée, il n'y a pas d'overlay."
+    "source": "98192baf7a",
+    "text": "Le glissement propre au navigateur (`native`, ou un glissement venu de l'extérieur) : le navigateur dessine l'image glissée, et il n'y a pas d'overlay."
+  },
+  "Over": {
+    "source": "d438eb0a0d",
+    "text": "La cible de dépôt sous le glissement."
+  },
+  "Over.id": {
+    "source": "f9a233dcfd",
+    "text": "Id de la cible de dépôt."
+  },
+  "Over.data": {
+    "source": "c8dc5224f3",
+    "text": "L'option `data` de la cible."
   },
   "Over.label": {
     "source": "c388687981",
     "text": "Le `label` de la cible, le nom que les gens lui donnent."
+  },
+  "Over.element": {
+    "source": "bea8d333cc",
+    "text": "L'élément de la cible."
+  },
+  "Over.rect": {
+    "source": "7fd07d1f0f",
+    "text": "Le rectangle d'`element`, mesuré pendant le glissement."
   },
   "Over.accepted": {
     "source": "48997f2ee2",
@@ -67,6 +119,10 @@
     "source": "0a3289fa23",
     "text": "Arbres : la profondeur à laquelle ils vont (les racines sont à 0)."
   },
+  "DragSource": {
+    "source": "bc3de31654",
+    "text": "D'où viennent les items glissés, quand il s'agit d'une liste triable."
+  },
   "DragSource.list": {
     "source": "57db105431",
     "text": "Liste triable d'où viennent les items glissés."
@@ -74,6 +130,22 @@
   "DragSource.remove": {
     "source": "5ef5100d7a",
     "text": "Retire les items glissés de leur liste (zones de corbeille)."
+  },
+  "DragMode": {
+    "source": "c46a935d4d",
+    "text": "Ce que fait un dépôt : `'move'`, `'copy'` (les items restent, des copies sont insérées), `'swap'` (`behavior: 'swap'` : deux items échangent leurs places) ou `'insert'` (un simple élément déplaçable entre dans une liste sous la forme de l'item créé par son `createItem`)."
+  },
+  "DnDEvent": {
+    "source": "6c347e6fab",
+    "text": "Ce que transportent les événements de glissement : les moniteurs, les événements du provider et les hooks des cibles de dépôt le reçoivent."
+  },
+  "DnDEvent.active": {
+    "source": "ab2a0979dd",
+    "text": "Le glissement."
+  },
+  "DnDEvent.over": {
+    "source": "3b1f124a9c",
+    "text": "La cible de dépôt sous le glissement ; `null` au-dessus de rien."
   },
   "DnDEvent.pointer": {
     "source": "49759bca51",
@@ -99,6 +171,10 @@
     "source": "88a096f69f",
     "text": "Un glissement venu de l'extérieur de la page : ce qu'il transporte (`active.external`). Ses données arrivent au dépôt."
   },
+  "DnDEndEvent": {
+    "source": "07e34f7142",
+    "text": "Ce que reçoit `onDragEnd` (et le `onDrop` de la cible) : l'événement du dépôt, et comment il s'est passé."
+  },
   "DnDEndEvent.dropped": {
     "source": "8ada0b47b1",
     "text": "Faux quand le glissement s'est terminé hors de toute cible de dépôt."
@@ -106,6 +182,10 @@
   "DnDEndEvent.accepted": {
     "source": "bf82d1aeb9",
     "text": "Ids acceptés par `onBeforeDrop` (tous les ids glissés, sauf si un sous-ensemble a été renvoyé)."
+  },
+  "DnDEndEvent.rejected": {
+    "source": "641da3ee5b",
+    "text": "Les autres ids glissés : `onBeforeDrop` les a écartés, et ils reviennent à leur place. Vide quand il les a tous acceptés."
   },
   "DnDEndEvent.droppedOutside": {
     "source": "43906c7a55",
@@ -115,6 +195,22 @@
     "source": "056be141e8",
     "text": "Ce que décide `onBeforeDrop` :\n- `'accept'` (ou `true`, ou rien) : le dépôt a lieu ;\n- `'reject'` (ou `false`) : pas de dépôt, les items reviennent à leur place ;\n- une liste d'ids : seuls ces items sont acceptés, les autres reviennent à leur place ;\n- `'continue'` : pas de dépôt, et le glissement continue. Avec un pointeur, l'item le suit de nouveau (sans bouton maintenu) et le relâchement suivant le dépose, un clic suffit ; au toucher, il est repris ; le clavier le déplace comme avant. Escape l'annule. Le dépôt consulte de nouveau `onBeforeDrop`."
   },
+  "AcceptContext": {
+    "source": "04c6b6dfb5",
+    "text": "Ce avec quoi une règle `accept` sous forme de fonction est appelée."
+  },
+  "AcceptContext.active": {
+    "source": "ab2a0979dd",
+    "text": "Le glissement."
+  },
+  "AcceptContext.items": {
+    "source": "1724543673",
+    "text": "Tous les items glissés."
+  },
+  "AcceptContext.types": {
+    "source": "e1c94af5ab",
+    "text": "Les types de tous les items glissés, réunis."
+  },
   "AcceptRule": {
     "source": "b40b673608",
     "text": "`'*'` ou une règle omise accepte tout. Les items sans type satisfont n'importe quelle règle sous forme de chaîne (comme `groups: []` en v2)."
@@ -123,9 +219,37 @@
     "source": "2aa08aef31",
     "text": "`'all'` : chaque item glissé doit correspondre ; `'some'` : au moins un (les autres peuvent être refusés dans `onBeforeDrop`)."
   },
+  "KeyboardMoveContext": {
+    "source": "168a0c5add",
+    "text": "Ce avec quoi `getKeyboardCoordinates` est appelé, pour une touche fléchée."
+  },
+  "KeyboardMoveContext.active": {
+    "source": "ab2a0979dd",
+    "text": "Le glissement."
+  },
+  "KeyboardMoveContext.pointer": {
+    "source": "efc9d40d64",
+    "text": "Où se trouve le glissement maintenant, en coordonnées du viewport."
+  },
   "KeyboardMoveContext.direction": {
     "source": "a0b25b3b54",
     "text": "Vecteur unitaire de la flèche pressée."
+  },
+  "DnDMonitor": {
+    "source": "6f3b744e55",
+    "text": "Des hooks pour chaque glissement sous le provider (`useDnDMonitor`)."
+  },
+  "DnDMonitor.onDragStart": {
+    "source": "a0e7bdf431",
+    "text": "Un glissement a commencé, après son activation."
+  },
+  "DnDMonitor.onDragMove": {
+    "source": "454b2c8c39",
+    "text": "Le glissement a bougé (au plus une fois par image)."
+  },
+  "DnDMonitor.onDragOver": {
+    "source": "290d741d10",
+    "text": "La cible sous le glissement a changé."
   },
   "DnDMonitor.onBeforeDrop": {
     "source": "7c0b37588d",
@@ -134,6 +258,10 @@
   "DnDMonitor.onDragEnd": {
     "source": "117782ceb2",
     "text": "Une notification une fois le dépôt terminé : les listes triables ont exécuté leur `onDrop` et l'ont écrit."
+  },
+  "DnDMonitor.onDragCancel": {
+    "source": "699c396c4c",
+    "text": "Le glissement a été annulé, ou son dépôt refusé : les items reviennent à leur place."
   },
   "DnDMonitor.onDragResume": {
     "source": "8e5af01ef3",
@@ -147,12 +275,76 @@
     "source": "72d709477a",
     "text": "Glissements au clavier : prochaine position du pointeur pour une flèche (par exemple le prochain emplacement triable)."
   },
+  "DnDSelection": {
+    "source": "37feaeeee3",
+    "text": "Les éléments déplaçables sélectionnés, par id : glisser l'un d'eux les emporte tous (multi-drag). Conservée par id, une sélection survit aux démontages (listes virtuelles)."
+  },
+  "DnDSelection.ids": {
+    "source": "92b2721491",
+    "text": "Les ids sélectionnés, réactifs."
+  },
+  "DnDSelection.has": {
+    "source": "aeefc055d7",
+    "text": "Si `id` est sélectionné."
+  },
+  "DnDSelection.add": {
+    "source": "c02f8715ab",
+    "text": "Sélectionne ces ids."
+  },
+  "DnDSelection.delete": {
+    "source": "e426b1d84b",
+    "text": "Désélectionne ces ids."
+  },
+  "DnDSelection.toggle": {
+    "source": "04f91b4e9f",
+    "text": "Sélectionne `id` ou le désélectionne ; `force: true` le sélectionne, `false` le désélectionne."
+  },
+  "DnDSelection.set": {
+    "source": "daf58f421e",
+    "text": "Sélectionne ces ids et aucun autre."
+  },
+  "DnDSelection.clear": {
+    "source": "019671079e",
+    "text": "Désélectionne tous les ids."
+  },
   "DnDState": {
     "source": "227f071563",
     "text": "L'état du glissement prend fin quand le dépôt est décidé : `active`, `over` et `pointer` valent `null` (et les droppables cessent d'accepter) pendant que l'overlay s'anime encore jusqu'à sa place. Une UI dérivée ne mélange jamais l'ancien glissement avec les nouvelles données. Pendant qu'un `onBeforeDrop` asynchrone décide, l'état est conservé tel qu'il était au relâchement, mais la page est sortie du mode glissement : son propre curseur et la sélection de texte sont revenus (une boîte de dialogue de confirmation fonctionne normalement), et l'overlay attend là où il a été déposé.\n\n`status` vaut `'dragging'` pendant qu'un glissement est en cours, sinon `'dropping'` pendant qu'un dépôt se décide ou qu'un overlay atterrit encore, sinon `'idle'` (hors `'activating'` et `'selecting'`). Un nouveau glissement n'attend pas les atterrissages : il démarre aussitôt, et ils se terminent autour de lui."
   },
+  "DnDState.status": {
+    "source": "17deba0e0d",
+    "text": "Ce que fait le provider (voir `DnDStatus`)."
+  },
+  "DnDState.active": {
+    "source": "956d5f9c19",
+    "text": "Le glissement en cours ; `null` s'il n'y en a pas, et dès que son dépôt est décidé."
+  },
+  "DnDState.over": {
+    "source": "3b1f124a9c",
+    "text": "La cible de dépôt sous le glissement ; `null` au-dessus de rien."
+  },
+  "DnDState.pointer": {
+    "source": "3bb30d3398",
+    "text": "Le pointeur en coordonnées du viewport, après les modificateurs ; `null` sans glissement."
+  },
   "DnDState.position": {
     "source": "4795780b8f",
     "text": "Où se trouve le coin supérieur gauche de la boîte glissée dans `over`, en direct : `DnDEvent.position` à chaque déplacement. `null` au-dessus de rien. Un composant d'overlay le lit pour montrer où il atterrirait (une heure sur un calendrier)."
+  },
+  "DnDState.activation": {
+    "source": "ca2201da85",
+    "text": "`progress` : où en est un appui par rapport à sa condition d'activation, de 0 à 1, tant que `status` vaut `'activating'` : par exemple un anneau qui se remplit pendant un appui long."
+  },
+  "DnDState.isAutoScrolling": {
+    "source": "e5cea65cdf",
+    "text": "Le défilement automatique fait défiler un conteneur."
+  },
+  "DnDState.selection": {
+    "source": "d265527064",
+    "text": "Les éléments déplaçables sélectionnés (voir `DnDSelection`)."
+  },
+  "DnDState.cancel": {
+    "source": "3ea64398be",
+    "text": "Annule le glissement (il revient à sa place), ou l'activation en attente."
   }
 }

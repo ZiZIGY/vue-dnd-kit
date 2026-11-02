@@ -12,7 +12,7 @@ export interface Piece {
   id: string;
   label: string;
   type?: string;
-  keyboard?: 'pixels' | 'droppables';
+  keyboardMode?: 'pixels' | 'droppables';
   /** Position on the board; ignored while the piece sits in a zone. */
   x: number;
   y: number;

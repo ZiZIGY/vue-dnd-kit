@@ -1,0 +1,122 @@
+{
+  "DnDProvider": {
+    "source": "b1827fd191",
+    "text": "Verwaltet die Drags von allem, was darin gerendert wird: Eingabe, Overlay, Auswahl, Auto-Scroll und die Screenreader-Ansagen (siehe `DnDProviderProps`)."
+  },
+  "DragPreview": {
+    "source": "f4f4c9f952",
+    "text": "Der Standardklon eines gezogenen Elements (siehe `DragPreviewProps`). Eigene Overlays ordnen damit mehrere Elemente selbst an; das Standard-Overlay zeigt damit einen Multi-Drag."
+  },
+  "makeDraggable": {
+    "source": "611823a10c",
+    "text": "Macht ein Element ziehbar. Standardmäßig freies Ziehen; sortierbare Listen bauen darauf auf."
+  },
+  "makeDroppable": {
+    "source": "48253f728f",
+    "text": "Macht ein Element zu einem Drop-Ziel."
+  },
+  "useDnD": {
+    "source": "78d14d6351",
+    "text": "Schreibgeschützter Drag-Zustand für eigene UI (Hervorheben gültiger Ziele, Spinner, Fortschritt)."
+  },
+  "useDnDMonitor": {
+    "source": "4719611afa",
+    "text": "Abonniert die Events jedes Drags unter dem Provider, solange die aufrufende Komponente (oder der Effect Scope) lebt."
+  },
+  "useDnDContext": {
+    "source": "555b5f2b85",
+    "text": "Der Provider über dieser Komponente, als opakes Handle für `provideDnDContext`: Es bringt den Provider in Shadow Roots und separate Vue-Apps."
+  },
+  "provideDnDContext": {
+    "source": "8befa03229",
+    "text": "Teilt einen Provider (aus `useDnDContext()`) mit einer anderen Vue-App, z. B. einer, die in einem Shadow Root gemountet ist."
+  },
+  "makeSortableList": {
+    "source": "d03a1a39c8",
+    "text": "Macht einen Container zu einer sortierbaren Liste. Rendere die zurückgegebenen `items` (die Entwurfsreihenfolge), nicht dein Array: Der Drop wird nach `onDrop` in `options.items` zurückgeschrieben, sofern `event.preventDefault()` `event.result` nicht dir überlässt."
+  },
+  "makeSortableItem": {
+    "source": "c1e5819e0d",
+    "text": "Macht ein Element zu einer Zeile einer sortierbaren Liste oder eines Baums: Sie wird gezogen, macht Platz und landet in ihrem Slot. Rufe es in einer Komponente auf, die innerhalb derjenigen gerendert wird, die `makeSortableList` (oder `makeSortableTree`) aufgerufen hat; von mehreren dort erstellten Listen gehört die Zeile zur innersten, deren DOM-Element sie enthält. Identifiziere die Zeile mit `item` (Schlüssel aus `getKey` der Liste, standardmäßig `item.id`) oder `id`."
+  },
+  "makeSortableTree": {
+    "source": "a068e3925b",
+    "text": "Macht einen Container zu einem sortierbaren Baum. Rendere die zurückgegebenen `items` (sichtbare Knoten in Entwurfsreihenfolge, eingerückt nach `depth`) mit einer Zeilenkomponente, die `makeSortableItem` aufruft. Beim Drop werden nach `onDrop` die verschobenen Knoten (mit ihren Teilbäumen) in `options.items` geschrieben, sofern `event.preventDefault()` `event.result` nicht dir überlässt."
+  },
+  "makeSelectionArea": {
+    "source": "3e8548087f",
+    "text": "Macht ein Element zu einem Auswahlbereich mit Auswahlrahmen für die ziehbaren Elemente darin. Rendere das Rechteck selbst: `<div v-if=\"isSelecting\" class=\"band\" :style=\"style\" />`."
+  },
+  "makeDragArea": {
+    "source": "4d4126fd37",
+    "text": "Macht ein Element zu einem Drag-Bereich: Die Drags, die darin beginnen (ziehbare und sortierbare Elemente), folgen seinen Regeln, siehe `DragAreaOptions`. Ein Provider kann dann die ganze App bedienen, mit Boards, Canvases und Feeds, die jeweils auf ihre eigene Art ziehen. Bei verschachtelten Bereichen gewinnt der nächstgelegene."
+  },
+  "defineSensor": {
+    "source": "70baa86e7e",
+    "text": "Definiert einen Sensor (siehe `Sensor`): Es hilft nur bei den Typen und gibt sein Argument zurück."
+  },
+  "useSensor": {
+    "source": "dde117b5a5",
+    "text": "Führt einen Sensor im darüberliegenden Provider aus, solange die aufrufende Komponente (oder der Effect Scope) lebt, neben den `sensors` des Providers. Sein Drag wird beim Unmounten abgebrochen."
+  },
+  "pointerSensor": {
+    "source": "9da65b79da",
+    "text": "Maus, Touch und Stift über Pointer Events. Standardmäßig in `sensors`."
+  },
+  "keyboardSensor": {
+    "source": "394ed58ab2",
+    "text": "Leertaste/Enter, Pfeiltasten und Escape (neu belegbar mit der Option `keyboard` des Providers). Standardmäßig in `sensors`; er bricht mit Escape auch Zeiger- und eigene Drags ab, selbst mit `keyboard: false`."
+  },
+  "pointerFirst": {
+    "source": "a8cf072161",
+    "text": "Standard: was unter dem Zeiger ist, sonst was das Overlay überlappt."
+  },
+  "pointerWithin": {
+    "source": "0c701c6c7d",
+    "text": "Ziele unter dem Zeiger, aus dem Hit-Testing: berücksichtigt z-Reihenfolge, Overlays und Shadow Roots."
+  },
+  "rectIntersection": {
+    "source": "b68bd59aae",
+    "text": "Ziele, die das Overlay überlappen: höhere Priorität, dann tiefere Verschachtelung, dann Intersection over Union."
+  },
+  "closestCenter": {
+    "source": "54257511c8",
+    "text": "Jedes Ziel, nach dem Abstand zwischen den Mittelpunkten."
+  },
+  "closestCorners": {
+    "source": "d75758f400",
+    "text": "Jedes Ziel, nach der Summe der Abstände zwischen den Ecken (gut für gestapelte Ziele wie Kanban-Spalten)."
+  },
+  "restrictToVerticalAxis": {
+    "source": "3983cfff70",
+    "text": "Bewegt nur vertikal: Horizontal bleibt es bei dem Inhalt, in dem es begann (`containerShift`), wie auch immer die Seite scrollt. Die Option `axis: 'y'` macht dasselbe, als Letztes."
+  },
+  "restrictToHorizontalAxis": {
+    "source": "e484b813e5",
+    "text": "Bewegt nur horizontal: Vertikal bleibt es bei dem Inhalt, in dem es begann (`containerShift`), wie auch immer die Seite scrollt. Die Option `axis: 'x'` macht dasselbe, als Letztes."
+  },
+  "restrictToWindowEdges": {
+    "source": "cad0a3465c",
+    "text": "Hält das Overlay innerhalb des Fensters."
+  },
+  "restrictToParent": {
+    "source": "a8492ae8d2",
+    "text": "Hält das Overlay innerhalb des Containers, in dem der Drag begann: der sortierbaren Liste (nicht ihres DOM-Elternelements) oder, bei einfachen ziehbaren Elementen, des Elternelements."
+  },
+  "restrictToElement": {
+    "source": "9960d692bd",
+    "text": "Hält das Overlay innerhalb eines Elements: das Element, ein Ref oder ein Getter."
+  },
+  "restrictToFirstScrollableAncestor": {
+    "source": "d495991a85",
+    "text": "Hält das Overlay innerhalb des ersten scrollbaren Vorfahren des gezogenen Elements."
+  },
+  "snapToGrid": {
+    "source": "84f04cfd39",
+    "text": "Lässt das Overlay an einem Raster einrasten, in der nächsten Zelle: Eine Zahl ist die Größe quadratischer Zellen; Optionen legen jede Achse fest, wo das Raster beginnt und ein Gleiten zwischen den Zellen (`SnapToGridOptions`)."
+  },
+  "snapCenterToCursor": {
+    "source": "bfc0761525",
+    "text": "Zentriert das Overlay unter dem Zeiger, statt den Greifversatz beizubehalten."
+  }
+}

@@ -269,7 +269,7 @@ const decide = (g: GroupContext, current: Session, event: DnDEvent): MaybePromis
     current.marker = g.indicator.value ?? (outside ? current.indicator : null);
     // A drag from outside the page brings its data now: the list it goes into makes its
     // items again from it.
-    if (event.active.external?.dropped && current.mode === insert) {
+    if (event.active.external?.ready && current.mode === insert) {
       const list = listOf(g, current.list) ?? (current.marker ? g.lists.get(current.marker.list) : undefined);
       if (list) remake(g, list, current, event.active);
     }

@@ -7,9 +7,21 @@
     "source": "2dac667235",
     "text": "Id stable. Passez un getter dans les listes virtuelles, où les éléments sont recyclés. Par défaut : `useId()`, stable entre le rendu serveur et le rendu client, mais nouveau pour chaque instance du composant."
   },
+  "DraggableOptions.data": {
+    "source": "30d815634b",
+    "text": "Tout ce que le glissement doit transporter : les événements et les cibles de dépôt le lisent dans `active.data`."
+  },
   "DraggableOptions.label": {
     "source": "4edf4ca05a",
     "text": "Le nom que les gens lui donnent : les textes pour les lecteurs d'écran le disent à la place de l'id (`Picked up Tomato`). Les événements le transportent dans `active.label` et dans `items`."
+  },
+  "DraggableOptions.type": {
+    "source": "5a54d1a669",
+    "text": "Son type ou ses types, comparés aux règles `accept` des cibles de dépôt. Sans type, il convient à toute cible."
+  },
+  "DraggableOptions.disabled": {
+    "source": "deda4464f8",
+    "text": "`true` : il ne peut pas être glissé (il indique `aria-disabled`)."
   },
   "DraggableOptions.handle": {
     "source": "1330de430e",
@@ -24,12 +36,12 @@
     "text": "Filtre supplémentaire, par exemple ne faire glisser que pendant qu'une touche est maintenue."
   },
   "DraggableOptions.overlay": {
-    "source": "c9686248ff",
-    "text": "`true` (par défaut) : un overlay suit le pointeur, rendu par le slot `#overlay` du provider ou sous forme de clone de l'élément. Un composant : l'overlay le rend avec `OverlayProps`, avant le slot. `false` : pas d'overlay, l'élément lui-même bouge via le `transform` renvoyé. Une valeur ou une ref (une fonction est un composant fonctionnel, donc `(props) => <Card {...props} />` fonctionne). La présence d'un overlay est décidée au début du glissement ; une ref changée en plein glissement remplace aussitôt le composant (voir l'`overlayTransition` du provider). L'`overlay` propre à une cible de dépôt l'emporte tant que le glissement la survole. Le clone laisse de côté les effets d'appui des kits UI (ondulations) et tout élément intérieur marqué `data-dnd-no-clone`."
+    "source": "57703cc418",
+    "text": "`true` (par défaut) : un overlay suit le pointeur, rendu par le slot `#overlay` du provider ou sous forme de clone de l'élément. Un composant : l'overlay le rend avec `OverlayProps`, avant le slot. `false` : pas d'overlay, l'élément lui-même bouge via le `transform` renvoyé. Une valeur ou une ref (une fonction est un composant fonctionnel, donc `(props) => <Card {...props} />` fonctionne). La présence d'un overlay est décidée au début du glissement ; une ref changée en plein glissement remplace aussitôt le composant (voir l'`overlayTransition` du provider). L'`overOverlay` d'une cible de dépôt l'emporte tant que le glissement la survole. Le clone laisse de côté les effets d'appui des kits UI (ondulations) et tout élément intérieur marqué `data-dnd-no-clone`."
   },
   "DraggableOptions.dropAnimation": {
-    "source": "965316ffc5",
-    "text": "Comment l'overlay atterrit quand un glissement de cet élément se termine, à la place de la `dropAnimation` du provider ; la `dropAnimation` propre à une cible de dépôt l'emporte. Une valeur ou une ref (une fonction est l'animation), lue au dépôt."
+    "source": "d3eb50e0f8",
+    "text": "Comment l'overlay atterrit quand un glissement de cet élément se termine, à la place de la `dropAnimation` du provider ; l'`overDropAnimation` d'une cible de dépôt l'emporte. Une valeur ou une ref (une fonction est l'animation), lue au dépôt."
   },
   "DraggableOptions.modifiers": {
     "source": "71eb5c6851",
@@ -39,7 +51,7 @@
     "source": "41cb212360",
     "text": "Verrouille sur un axe les glissements qui commencent ici : `'x'` ne déplace qu'horizontalement, `'y'` que verticalement. Le verrouillage vient après `modifiers` (`restrictToHorizontalAxis` / `restrictToVerticalAxis` en dernier) : il tient donc quoi qu'ils fassent. Lu au début du glissement."
   },
-  "DraggableOptions.keyboard": {
+  "DraggableOptions.keyboardMode": {
     "source": "fd726db037",
     "text": "Les flèches dans les glissements libres : déplacer de quelques pixels (par défaut) ou sauter d'une cible de dépôt qui accepte l'élément à l'autre. Lu à chaque appui sur une flèche."
   },
@@ -48,20 +60,60 @@
     "text": "Définit les attributs role/tabindex/aria-* (`true` par défaut), sans jamais écraser ceux de l'utilisateur. L'id des instructions du provider rejoint un `aria-describedby` existant comme un jeton de plus (l'infobulle d'un kit UI sur le même élément garde le sien), et seul ce jeton est retiré le cas échéant. Réactif : le désactiver retire ce que la bibliothèque avait défini."
   },
   "DraggableOptions.native": {
-    "source": "c7441f484f",
-    "text": "Un glissement à la souris est le glissement propre au navigateur, qui peut quitter la page : vers le bureau, une autre application ou un autre onglet, une autre fenêtre de l'application. Sur la page, il fonctionne comme d'habitude (cibles, listes qui font de la place), mais le navigateur dessine l'image glissée à la place de l'overlay. Les glissements au toucher et au clavier restent ceux de la bibliothèque. `true` transporte le `label` comme texte. Lue au début d'un appui."
+    "source": "d35c31b251",
+    "text": "Un glissement à la souris est le glissement propre au navigateur, qui peut quitter la page : vers le bureau, une autre application ou un autre onglet, une autre fenêtre de l'application. Sur la page, il fonctionne comme d'habitude (cibles, listes qui font de la place), mais le navigateur dessine l'image glissée à la place de l'overlay. Les glissements au toucher et au clavier restent ceux de la bibliothèque. `true` transporte le `label` comme texte. Lue au début d'un appui. `canDrag` est consulté à l'appui ; le navigateur décide de la distance que la souris doit parcourir avant que son glissement commence (`activation` ne s'y applique pas)."
+  },
+  "DraggableReturn": {
+    "source": "976a57aa6f",
+    "text": "Ce que renvoie `makeDraggable`."
+  },
+  "DraggableReturn.id": {
+    "source": "c94024d888",
+    "text": "L'id de l'élément déplaçable : l'option `id`, ou celui créé pour lui."
+  },
+  "DraggableReturn.isDragging": {
+    "source": "d0f776877f",
+    "text": "Il est en cours de glissement (y compris comme autre item d'un multi-drag), ou son overlay est encore en train d'atterrir."
   },
   "DraggableReturn.transform": {
     "source": "3d7102b110",
     "text": "Décalage à appliquer quand `overlay: false` : celui du glissement, moins la distance dont le contenu où se trouve l'élément s'est déplacé depuis le début (la page ou un conteneur a défilé), pour que l'élément reste sous le pointeur."
   },
+  "DraggableReturn.selected": {
+    "source": "d15fb608a4",
+    "text": "Il fait partie de la sélection du provider : glisser un item sélectionné les emporte tous. Modifiez-le pour sélectionner ou désélectionner."
+  },
+  "Placement": {
+    "source": "ae8ffcc50c",
+    "text": "Dans quelles moitiés d'une cible de dépôt survolée se trouve le pointeur (`DroppableReturn.placement`)."
+  },
+  "Placement.top": {
+    "source": "5d2b56cb3a",
+    "text": "Dans sa moitié supérieure."
+  },
+  "Placement.right": {
+    "source": "2370dfaf9c",
+    "text": "Dans sa moitié droite."
+  },
+  "Placement.bottom": {
+    "source": "769843d001",
+    "text": "Dans sa moitié inférieure."
+  },
+  "Placement.left": {
+    "source": "68a878facf",
+    "text": "Dans sa moitié gauche."
+  },
   "DroppableOptions": {
-    "source": "c1de31b385",
-    "text": "Options de `makeDroppable`.\n\n**Dépôt dans un item.** Une cible de dépôt sur l'élément d'un item triable (ou à l'intérieur) fonctionne comme partout ailleurs, avec une règle tant que la liste de cet item trierait le glissement : elle ne compte que quand le pointeur est au milieu de l'item (de 25 à 75 % le long de l'axe de la liste ; x dans les grilles), là où le dépôt va dans la cible et où la liste ne bouge pas pour lui. Près des bords de l'item, la liste trie comme d'habitude. Une cible dont l'`accept` refuse le glissement est ignorée, et la liste trie au-dessus de l'item comme au-dessus de n'importe quel autre (inutile de la désactiver). Le clavier s'arrête sur une telle cible avant de dépasser son item. Une cible n'est jamais une cible de son propre glissement : ni dans (ou sur) un item glissé, ni dans l'emplacement où l'un d'eux atterrit. Pour retirer les items de leur liste dans `onDrop`, appelez `e.source.remove()`.\n\nChaque option sauf les callbacks accepte une valeur, une ref ou un getter (`accept`, `overlay`, `dropAnimation` : une valeur ou une ref) et est lue en direct, pendant qu'un glissement cherche sa cible."
+    "source": "f0f30d2e7e",
+    "text": "Options de `makeDroppable`.\n\n**Dépôt dans un item.** Une cible de dépôt sur l'élément d'un item triable (ou à l'intérieur) fonctionne comme partout ailleurs, avec une règle tant que la liste de cet item trierait le glissement : elle ne compte que quand le pointeur est au milieu de l'item (de 25 à 75 % le long de l'axe de la liste ; x dans les grilles), là où le dépôt va dans la cible et où la liste ne bouge pas pour lui. Près des bords de l'item, la liste trie comme d'habitude. Une cible dont l'`accept` refuse le glissement est ignorée, et la liste trie au-dessus de l'item comme au-dessus de n'importe quel autre (inutile de la désactiver). Le clavier s'arrête sur une telle cible avant de dépasser son item. Un glissement ne cible jamais ce qu'il transporte : aucune cible dans (ou sur) un item glissé, ni dans l'emplacement où l'un d'eux atterrit. Pour retirer les items de leur liste dans `onDrop`, appelez `e.source.remove()`.\n\nChaque option sauf les callbacks accepte une valeur, une ref ou un getter (`accept`, `overOverlay`, `overDropAnimation` : une valeur ou une ref) et est lue en direct, pendant qu'un glissement cherche sa cible."
   },
   "DroppableOptions.id": {
     "source": "ea58d47829",
     "text": "Par défaut : `useId()`, stable entre le rendu serveur et le rendu client."
+  },
+  "DroppableOptions.data": {
+    "source": "c94ea36561",
+    "text": "Tout ce qu'il y a à dire sur la cible : les événements le transportent dans `over.data`."
   },
   "DroppableOptions.label": {
     "source": "5e751a1320",
@@ -75,21 +127,49 @@
     "source": "05b17f13f4",
     "text": "`'all'` par défaut."
   },
+  "DroppableOptions.disabled": {
+    "source": "24bb02fdcc",
+    "text": "`true` : les glissements passent au-dessus comme si elle n'existait pas."
+  },
   "DroppableOptions.priority": {
     "source": "083ebc2847",
     "text": "La plus haute l'emporte quand des cibles se chevauchent sans être imbriquées (0 par défaut). Les items triables l'emportent sur les conteneurs."
   },
-  "DroppableOptions.overlay": {
-    "source": "9ef772f9a5",
-    "text": "Ce que montre l'overlay pendant qu'un glissement que cette cible accepte la survole : un composant qui reçoit `OverlayProps`, rendu à la place de l'overlay propre au glissement (le composant de l'item glissé, le slot du provider ou le clone), qu'il reçoit comme slot par défaut pour l'envelopper ou le laisser de côté (`<slot />`). Il reste pendant que le dépôt atterrit ici. Les glissements sans overlay (`overlay: false`) n'en ont toujours pas. Une valeur ou une ref, lue en direct ; le changement de composant s'anime avec l'`overlayTransition` du provider."
+  "DroppableOptions.overOverlay": {
+    "source": "5741fad6c3",
+    "text": "Ce que montre l'overlay pendant qu'un glissement que cette cible accepte la survole : un composant qui reçoit `OverlayProps`, rendu à la place de l'overlay propre au glissement (le composant de l'item glissé, le slot du provider ou le clone), qu'il reçoit comme slot par défaut pour l'envelopper ou le laisser de côté (`<slot />`). Il reste pendant que le dépôt atterrit ici. Les glissements sans overlay (`overlay: false`) n'en ont toujours pas. Une valeur ou une ref, lue en direct ; le changement de composant s'anime avec l'`overlayTransition` du provider. (Sur les éléments déplaçables, les items et les listes, `overlay` est l'overlay propre au glissement ; les listes triables et les arbres acceptent aussi celle-ci, sous le nom `overOverlay`.)"
   },
-  "DroppableOptions.dropAnimation": {
+  "DroppableOptions.overDropAnimation": {
     "source": "0f0a6dd259",
     "text": "Comment l'overlay atterrit quand il est déposé ici, à la place de la `dropAnimation` de l'item glissé et de celle du provider : `false` le laisse là où il a été déposé (l'animation propre à un composant d'overlay, une éclaboussure, s'y joue), une fonction l'anime. Une valeur ou une ref, lue au dépôt."
+  },
+  "DroppableOptions.onDragEnter": {
+    "source": "fa66c429e8",
+    "text": "Un glissement est arrivé au-dessus de cette cible, qu'elle l'accepte ou non (`event.over.accepted`)."
+  },
+  "DroppableOptions.onDragLeave": {
+    "source": "b63a860349",
+    "text": "Le glissement a quitté cette cible."
+  },
+  "DroppableOptions.onBeforeDrop": {
+    "source": "bd9bcff646",
+    "text": "Consulté avant qu'un dépôt sur cette cible n'aboutisse, après le `onBeforeDrop` des moniteurs, si elle accepte le glissement (voir `BeforeDropResult`). Peut être asynchrone : l'overlay attend là où il a été déposé. Une erreur refuse le dépôt."
+  },
+  "DroppableOptions.onDrop": {
+    "source": "9f7fd0f0aa",
+    "text": "Un dépôt sur cette cible a abouti : faites ce qu'il signifie (déplacer l'item, téléverser le fichier). Quand un `onBeforeDrop` n'a accepté qu'une partie des items glissés, `event.accepted` contient leurs ids et `event.rejected` les autres, qui reviennent à leur place ; `active` reste le glissement entier."
   },
   "DroppableOptions.external": {
     "source": "b80f2c5709",
     "text": "Accepte les glissements venus de l'extérieur de la page : des fichiers depuis le bureau, un lien ou du texte depuis une autre application ou un autre onglet (le glisser-déposer du navigateur). Ils fonctionnent comme les glissements de la bibliothèque (`isOver`, `isAccepting`, les événements), et `e.external` contient leurs données au dépôt. Les cibles sans `external` les ignorent. Une valeur, une ref ou un getter, lu en direct."
+  },
+  "DroppableReturn": {
+    "source": "745c149794",
+    "text": "Ce que renvoie `makeDroppable`."
+  },
+  "DroppableReturn.id": {
+    "source": "8c2640f4f2",
+    "text": "L'id de la cible : l'option `id`, ou celui créé pour elle."
   },
   "DroppableReturn.isOver": {
     "source": "bd388d0ac7",

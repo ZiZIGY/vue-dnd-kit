@@ -41,7 +41,10 @@ export default defineConfig({
   ...baseConfig,
   projects: [
     { name: 'chromium', ...desktop, use: { ...devices['Desktop Chrome'], viewport } },
-    { name: 'firefox', ...desktop, use: { ...devices['Desktop Firefox'], viewport } },
+    // A few Firefox instances at a time: many of them next to the other browsers (a full
+    // local run) crash its graphics (GraphicsCriticalError) and fail unrelated specs. CI
+    // runs one browser per job, on fewer workers than this anyway.
+    { name: 'firefox', ...desktop, workers: 4, use: { ...devices['Desktop Firefox'], viewport } },
     { name: 'webkit', ...desktop, use: { ...devices['Desktop Safari'], viewport } },
     {
       name: 'mobile',

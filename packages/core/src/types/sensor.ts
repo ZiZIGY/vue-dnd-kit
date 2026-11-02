@@ -54,8 +54,8 @@ export interface SensorActivation {
   /**
    * What the drag waits for before it starts (`useDnD().status` is `'activating'` until
    * then, with its progress). A pointer kind reads the draggable's `activation` option
-   * for it, then the provider's, then the defaults (mouse and pen 4px, at once on a
-   * handle; touch a 200ms long press with 5px tolerance). A constraint is used as it
+   * for it, then the provider's, then the defaults (mouse 4px, at once on a handle; pen
+   * 4px; touch a 200ms long press with 5px tolerance). A constraint is used as it
    * is. Default: none, the drag starts at once.
    */
   activation?: PointerKind | ActivationConstraint;
@@ -80,6 +80,7 @@ export interface SensorActivation {
  */
 export type SensorDragState = 'pending' | 'dragging' | 'ended';
 
+/** Options of `SensorDrag.step()`. */
 export interface SensorStepOptions {
   /** The key press, handed to monitors' `getKeyboardCoordinates`. Default: a keydown of the arrow key. */
   event?: KeyboardEvent;
@@ -94,7 +95,9 @@ export interface SensorStepOptions {
 export interface SensorDrag {
   /** Id of the dragged item. */
   readonly id: Key;
+  /** How the drag moves, as `activate()` asked (`SensorActivation.type`). */
   readonly type: SensorType;
+  /** Where the drag is: waiting for its activation, dragging, or ended. */
   readonly state: SensorDragState;
   /** The drag started, even if it has ended since (the pointer sensor swallows the click that follows it). */
   readonly started: boolean;
@@ -165,5 +168,9 @@ export interface SensorContext {
 export interface Sensor {
   /** For debugging. */
   name?: string;
+  /**
+   * Starts listening to the input, once per provider: call `context.activate()` when it
+   * wants to drag. May return a cleanup, run when the sensor stops.
+   */
   setup(context: SensorContext): void | (() => void);
 }

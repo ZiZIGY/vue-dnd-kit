@@ -21,7 +21,7 @@ const { isOver, isAccepting } = makeDroppable(el, {
   // Over the last rank, a pawn in hand shows the piece it becomes: this square's overlay
   // takes the place of the piece's own. It is read once more after `onDrop`, for the
   // landing: hence the pawn as it was picked up, not the game's piece, a queen by then.
-  overlay: computed(() => (held.value?.kind === 'P' && isLastRank(props.square) ? PromotionOverlay : undefined)),
+  overOverlay: computed(() => (held.value?.kind === 'P' && isLastRank(props.square) ? PromotionOverlay : undefined)),
   // Asked on release. A pawn reaching the last rank waits here, the overlay on the square,
   // until you pick its new piece: 'accept', 'reject' (Escape) or 'continue' (keep dragging).
   onBeforeDrop: ({ active }) =>

@@ -100,7 +100,7 @@ export const logLines = (event: DevtoolsEvent, released: boolean): LogLine[] => 
     case 'autoScroll':
       return [{ title: event.scrolling ? 'auto-scroll on' : 'auto-scroll off', subtitle: '', data: { scrolling: event.scrolling } }];
     case 'change': {
-      // A change of the items no drag made, which the list's `animate` plays.
+      // A change of the items no drag made, which the list's `animateChanges` plays.
       const what = [
         event.added.length ? `+${event.added.length}` : '',
         event.removed.length ? `−${event.removed.length}` : '',

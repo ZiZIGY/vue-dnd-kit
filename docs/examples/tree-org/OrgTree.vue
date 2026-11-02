@@ -23,7 +23,7 @@ const { items } = makeSortableTree(root, {
   maxDepth: 2,
   collapsed,
   // Rows a team shows or hides as it opens or closes slide in and out.
-  animate: true,
+  animateChanges: true,
 });
 
 const toggle = (key: Key) => (collapsed.value.has(key) ? collapsed.value.delete(key) : collapsed.value.add(key));

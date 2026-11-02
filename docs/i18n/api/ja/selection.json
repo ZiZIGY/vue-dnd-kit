@@ -7,13 +7,21 @@
     "source": "c7f915cabf",
     "text": "押下で枠を描くために押している必要があるキー（`KeyboardEvent.key` または `.code`）：そのすべて、またはそのうちのいくつか（`'some'`）。"
   },
-  "SelectionAreaOptions": {
-    "source": "395589bdaa",
-    "text": "`makeSelectionArea` のオプション。`modifier`、`strategy`、`accept`、`disabled` は値、ref、ゲッター（`accept`：値または ref。関数はルール）を受け付け、押下で枠が始まるときに読み取られます。`disabled` をオンにすると、描画中の枠もキャンセルされます。"
+  "SelectionModifier.keys": {
+    "source": "d97d7241ad",
+    "text": "キー。`KeyboardEvent.key`（`'Shift'`）または `.code`（`'KeyA'`）で指定します。なし：どの押下でも枠を描きます。"
   },
-  "SelectionAreaOptions.selection": {
-    "source": "294f767d3b",
-    "text": "デフォルトはプロバイダーの選択。"
+  "SelectionModifier.method": {
+    "source": "a46efd8e2a",
+    "text": "`'every'`：`keys` をすべて押している必要があります。`'some'`：どれか 1 つで十分です。"
+  },
+  "SelectionAreaOptions": {
+    "source": "951e39f4a0",
+    "text": "`makeSelectionArea` のオプション。枠はプロバイダーの選択、つまりマルチドラッグと `selected` が読むもの（`useDnD().selection`）に選択を加えます。`modifier`、`strategy`、`accept`、`disabled` は値、ref、ゲッター（`accept`：値または ref。関数はルール）を受け付け、押下で枠が始まるときに読み取られます。`disabled` をオンにすると、描画中の枠もキャンセルされます。"
+  },
+  "SelectionAreaOptions.modifier": {
+    "source": "65c8a221ac",
+    "text": "押下で枠を描くために押しておく必要があるキー。デフォルト：なし。空いている場所でのどの押下でも枠を描きます。"
   },
   "SelectionAreaOptions.strategy": {
     "source": "0367d14627",
@@ -22,6 +30,22 @@
   "SelectionAreaOptions.accept": {
     "source": "6293487b0c",
     "text": "枠がどのドラッグ可能な要素を選択するか。ドロップターゲットと同じ照合方法です。"
+  },
+  "SelectionAreaOptions.disabled": {
+    "source": "ac33d3517f",
+    "text": "`true`：押下しても枠を描きません。"
+  },
+  "SelectionAreaOptions.onSelected": {
+    "source": "1ca0d338e8",
+    "text": "枠が終わりました：現在選択されているすべての id を受け取ります。"
+  },
+  "SelectionAreaReturn": {
+    "source": "f6f48602c4",
+    "text": "`makeSelectionArea` が返すもの。"
+  },
+  "SelectionAreaReturn.isSelecting": {
+    "source": "f38c578911",
+    "text": "枠を描いている最中です：このときに枠を描画してください。"
   },
   "SelectionAreaReturn.style": {
     "source": "e4525127b1",

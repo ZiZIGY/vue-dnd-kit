@@ -1,4 +1,8 @@
 {
+  "Key": {
+    "source": "0e20a2c263",
+    "text": "Eine ID oder ein Schlüssel: eines ziehbaren Elements, eines Drop-Ziels, einer Liste, eines Elements einer Liste."
+  },
   "MaybeReadonlyRefOrGetter": {
     "source": "856e8d0c75",
     "text": "Ein Wert, ein Getter oder ein beliebiges Ref (beschreibbar, shallow, computed, readonly – z. B. aus `useTemplateRef`), das die Bibliothek nur liest. Anders als Vues `MaybeRefOrGetter` akzeptiert er `Ref<string>`, wo `string | number` erwartet wird."
@@ -7,9 +11,85 @@
     "source": "e1366b62a5",
     "text": "Ein Wert oder ein beliebiges Ref, für Optionen, bei denen eine Funktion ein eigenständiger Wert ist (eine Overlay-Komponente, eine Annahmeregel, eine eigene Animation), sodass ein Getter nicht davon zu unterscheiden wäre. Halte Komponenten in einem `shallowRef` (oder einem computed): Vue darf sie nicht reaktiv machen."
   },
+  "MaybeElement": {
+    "source": "1b8960adcb",
+    "text": "Ein Element: ein HTML- oder SVG-Element oder eine Komponenteninstanz (ihr Wurzelelement, `$el`), so wie ein Template-Ref sie liefert. `null` oder `undefined`, solange es keins gibt (noch nicht gemountet)."
+  },
+  "MaybeElementRef": {
+    "source": "603f215a38",
+    "text": "Das Element, mit dem ein Composable arbeitet (`makeDraggable(target)`): das Element, ein Template-Ref (`useTemplateRef`) oder ein Getter. Es darf sich ändern (ein `v-if`): Die Bibliothek folgt ihm."
+  },
+  "Coordinates": {
+    "source": "2f8f5c3336",
+    "text": "Ein Punkt oder ein Versatz, in px: eine Position ab der oberen linken Ecke des Viewports oder ein Versatz von dort, wo der Drag begann (`delta`, `transform`)."
+  },
+  "Coordinates.x": {
+    "source": "b43f5ddec4",
+    "text": "Horizontal, nach rechts wachsend."
+  },
+  "Coordinates.y": {
+    "source": "8f097fc225",
+    "text": "Vertikal, nach unten wachsend."
+  },
+  "Size": {
+    "source": "255c399f55",
+    "text": "Eine Breite und eine Höhe, in px."
+  },
+  "Size.width": {
+    "source": "f4f2b634d9",
+    "text": "Breite in px."
+  },
+  "Size.height": {
+    "source": "6e660db892",
+    "text": "Höhe in px."
+  },
+  "Rect": {
+    "source": "62078f7f5c",
+    "text": "Eine Box in px, in Viewport-Koordinaten, wie `getBoundingClientRect()` sie liefert."
+  },
+  "Rect.top": {
+    "source": "4e05fbd563",
+    "text": "Seine Oberkante, vom oberen Rand des Viewports aus."
+  },
+  "Rect.left": {
+    "source": "3d40777368",
+    "text": "Seine linke Kante, vom linken Rand des Viewports aus."
+  },
+  "Rect.width": {
+    "source": "d31ce8afdd",
+    "text": "Seine Breite."
+  },
+  "Rect.height": {
+    "source": "db48d67b0f",
+    "text": "Seine Höhe."
+  },
+  "Rect.right": {
+    "source": "7158323919",
+    "text": "Seine rechte Kante, vom linken Rand des Viewports aus: `left + width`."
+  },
+  "Rect.bottom": {
+    "source": "44b04207ae",
+    "text": "Seine Unterkante, vom oberen Rand des Viewports aus: `top + height`."
+  },
+  "MaybePromise": {
+    "source": "f3d05df331",
+    "text": "Ein Wert oder ein Promise davon: was ein Hook zurückgibt, der asynchron sein darf (`onBeforeDrop`)."
+  },
+  "DnDStatus": {
+    "source": "d5d49a4ce6",
+    "text": "Was der Provider gerade tut:\n- `'idle'`: nichts;\n- `'activating'`: Ein Drücken wartet auf seine Aktivierungsbedingung (eine Distanz, ein langes Drücken);\n- `'dragging'`: Ein Drag läuft;\n- `'dropping'`: Über einen Drop wird entschieden (ein asynchrones `onBeforeDrop`), oder ein Overlay landet noch;\n- `'selecting'`: Ein Auswahlbereich zeichnet seinen Rahmen."
+  },
   "SensorType": {
     "source": "ddccc05a96",
     "text": "Wie sich ein Drag bewegt, egal welcher Sensor ihn steuert (`SensorActivation.type`): `'pointer'` folgt Punkten, `'keyboard'` bewegt sich von Element zu Element."
+  },
+  "PointerKind": {
+    "source": "5db385a430",
+    "text": "Die Art des Zeigers, der gedrückt hat (`PointerEvent.pointerType`): Die Aktivierung wird pro Art eingestellt."
+  },
+  "ActivationConstraint": {
+    "source": "e5b4786b75",
+    "text": "Was ein Drücken tun muss, bevor es zum Drag wird: `distance` zurücklegen oder für `delay` gehalten werden, je nachdem, was zuerst eintritt. Nichts gesetzt: Der Drag startet sofort."
   },
   "ActivationConstraint.distance": {
     "source": "70ede97eca",
@@ -24,7 +104,7 @@
     "text": "Mit `delay`: Bewegung in px, die die Aktivierung abbricht, damit die Seite scrollen kann."
   },
   "ActivationOptions": {
-    "source": "75a2dcce93",
-    "text": "Pro Zeigerart. Standardwerte: Maus/Stift `{ distance: 4 }` (sofort bei einem Handle), Touch `{ delay: 200, tolerance: 5 }`."
+    "source": "a41c6198e1",
+    "text": "Pro Zeigerart. Standardwerte: Maus `{ distance: 4 }` (sofort bei einem Handle), Stift `{ distance: 4 }`, Touch `{ delay: 200, tolerance: 5 }`."
   }
 }

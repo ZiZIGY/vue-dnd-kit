@@ -44,10 +44,11 @@ describe('the mini-map', () => {
     ]);
     expect(zone(frame, 'a').rect).toEqual({ x: 0, y: 0, w: 200, h: 120 });
     expect(zone(frame, 'a').items[1]!.rect).toEqual({ x: 0, y: 40, w: 200, h: 40 });
-    // The copies are the library's clones, sent once.
+    // The copies are the library's clones, sent once: in the box that carries the item's
+    // inherited custom properties.
     const sent = copies(tab);
     const a1 = sent.get(zone(frame, 'a').items[0]!.copy)!;
-    expect(a1).toMatch(/^<li[^>]*>a1<\/li>$/);
+    expect(a1).toMatch(/^<div style="[^"]*"><li[^>]*>a1<\/li><\/div>$/);
     expect(a1).not.toContain('data-dnd-');
     // A shell: the zone in its ancestors (display: contents), without its items.
     expect(sent.get(zone(frame, 'a').shell)).toMatch(

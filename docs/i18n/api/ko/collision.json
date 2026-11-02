@@ -1,11 +1,39 @@
 {
+  "CollisionCandidate": {
+    "source": "32a74e6d93",
+    "text": "충돌 감지가 고를 수 있는 드롭 대상: 활성화되어 있고, 페이지에 있으며, 완전히 잘리지 않은 대상."
+  },
+  "CollisionCandidate.id": {
+    "source": "f9a233dcfd",
+    "text": "드롭 대상의 id."
+  },
   "CollisionCandidate.rect": {
     "source": "6367b9d53a",
     "text": "대상의 보이는 부분: 스크롤 컨테이너와 뷰포트로 잘린 영역."
   },
+  "CollisionCandidate.priority": {
+    "source": "c0a3e16a72",
+    "text": "대상의 `priority`(기본값 0): 대상이 중첩 없이 겹칠 때 높은 쪽이 이깁니다. 정렬 가능한 항목은 컨테이너를 이깁니다."
+  },
   "CollisionCandidate.depth": {
     "source": "87728867d4",
     "text": "드롭 대상 사이의 중첩 단계: 최상위는 0이고, 더 깊은 대상일수록 값이 큽니다."
+  },
+  "CollisionArgs": {
+    "source": "703334f32a",
+    "text": "충돌 감지가 드래그가 움직일 때마다 받는 것."
+  },
+  "CollisionArgs.pointer": {
+    "source": "49759bca51",
+    "text": "뷰포트 좌표의 포인터. 모디파이어를 적용한 뒤의 값입니다."
+  },
+  "CollisionArgs.overlayRect": {
+    "source": "38ddd4b88b",
+    "text": "드래그 중인 박스(오버레이, 또는 `overlay: false`일 때는 요소 자체)를 드래그가 옮겨 놓은 위치에서 잰 사각형."
+  },
+  "CollisionArgs.candidates": {
+    "source": "e999e2b499",
+    "text": "드래그가 갈 수 있는 모든 드롭 대상. 그 `accept` 규칙이 드래그를 받는지와 상관없습니다."
   },
   "CollisionArgs.hits": {
     "source": "78fd5d5eeb",
@@ -15,9 +43,17 @@
     "source": "1248ad0f81",
     "text": "후보 id를 반환합니다. 가장 적합한 것이 맨 앞입니다."
   },
+  "ModifierArgs": {
+    "source": "abd362ec1a",
+    "text": "모디파이어가 드래그가 움직일 때마다 받는 것."
+  },
   "ModifierArgs.transform": {
     "source": "559160a1f5",
     "text": "앞선 모디파이어가 수정한, 드래그 시작점 기준의 오프셋."
+  },
+  "ModifierArgs.active": {
+    "source": "ab2a0979dd",
+    "text": "현재 드래그."
   },
   "ModifierArgs.activeRect": {
     "source": "c410ca6675",
@@ -38,5 +74,37 @@
   "ModifierArgs.containerShift": {
     "source": "f4f9413e80",
     "text": "드래그가 시작된 내용이 시작 이후 화면에서 얼마나 움직였는지. 컨테이너가 움직인 것(페이지나 그것을 감싼 컨테이너가 스크롤됨, 레이아웃이 밀림)과 그 안에서 내용이 스크롤된 것입니다. 축 고정은 다른 축을 이 값에 맞춰 두므로, 드래그는 그 내용에서 자기 행이나 열에 머뭅니다."
+  },
+  "ModifierArgs.windowRect": {
+    "source": "4d3a00846c",
+    "text": "창(뷰포트)의 사각형."
+  },
+  "ModifierArgs.over": {
+    "source": "9f1ad2338d",
+    "text": "드래그 아래에 있는 드롭 대상(마지막으로 찾은 것). 아무것도 없으면 `null`."
+  },
+  "Modifier": {
+    "source": "c32d9e8b62",
+    "text": "드래그 중인 항목이 가는 곳을 바꿉니다. 드래그의 오프셋(`transform`)을 받아 새 오프셋을 반환합니다."
+  },
+  "SnapToGridOptions": {
+    "source": "a9d64c01db",
+    "text": "`snapToGrid`의 옵션."
+  },
+  "SnapToGridOptions.x": {
+    "source": "c5a80a7c74",
+    "text": "셀의 너비(px). 없으면(또는 0이면) 드래그가 x축으로 자유롭게 움직입니다."
+  },
+  "SnapToGridOptions.y": {
+    "source": "39512fba18",
+    "text": "셀의 높이(px). 없으면(또는 0이면) 드래그가 y축으로 자유롭게 움직입니다. `{ y: 15 }`는 캘린더 일정의 시간만 스냅합니다."
+  },
+  "SnapToGridOptions.origin": {
+    "source": "51c773a778",
+    "text": "`'container'`(기본값): 오버레이의 왼쪽 위 모서리가 컨테이너의 왼쪽 위에서부터 그린 그리드 선에 안착합니다(`containerRect`: 정렬 가능한 리스트 또는 부모 요소). `'delta'`: 드래그 오프셋을 반올림하므로, 항목이 시작한 위치가 그리드에서 벗어나 있던 만큼 그대로 유지됩니다."
+  },
+  "SnapToGridOptions.smooth": {
+    "source": "9952acec7d",
+    "text": "스냅된 위치 사이에서 오버레이를 부드럽게 움직입니다(기본값 80ms). 충돌 감지는 여전히 스냅된 위치를 바로 사용합니다."
   }
 }

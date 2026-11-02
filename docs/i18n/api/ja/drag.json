@@ -1,7 +1,19 @@
 {
+  "DragItem": {
+    "source": "959720da4c",
+    "text": "ドラッグされている 1 つのアイテム：ドラッグの起点となったもの、またはマルチドラッグのほかのアイテム。"
+  },
+  "DragItem.id": {
+    "source": "776be4538c",
+    "text": "そのドラッグ可能な要素の id（並べ替え可能なアイテムのキー）。"
+  },
   "DragItem.item": {
     "source": "7cfd4640f1",
     "text": "ドラッグが並べ替え可能なリストから来た場合のアイテムオブジェクト。"
+  },
+  "DragItem.data": {
+    "source": "ac6ab14545",
+    "text": "その `data` オプション。"
   },
   "DragItem.label": {
     "source": "97ccfdec34",
@@ -11,6 +23,10 @@
     "source": "9189758463",
     "text": "ドラッグ可能な要素の正規化された `type`。空の場合は、どのドロップターゲットにも当てはまります。"
   },
+  "Active": {
+    "source": "91977ca5db",
+    "text": "実行中のドラッグ：起点となったアイテムと、運んでいるすべてのアイテム。"
+  },
   "Active.id": {
     "source": "f080aacddc",
     "text": "ドラッグが始まったアイテムの id。"
@@ -19,9 +35,21 @@
     "source": "173336b06e",
     "text": "ドラッグ中のすべての id。主となるものが先頭です（マルチドラッグ）。"
   },
+  "Active.items": {
+    "source": "f5b1ed4ced",
+    "text": "ドラッグされているすべてのアイテム。主となるアイテムが先頭です。"
+  },
+  "Active.data": {
+    "source": "c6df04687f",
+    "text": "ドラッグの起点となったアイテムの `data`。"
+  },
   "Active.label": {
     "source": "6b580da2fb",
     "text": "ドラッグを始めたアイテムの `label`（人が呼ぶ名前）。"
+  },
+  "Active.type": {
+    "source": "24c2cd378e",
+    "text": "ドラッグの起点となったアイテムの、正規化された `type`。空なら、どのドロップターゲットにも合います。"
   },
   "Active.element": {
     "source": "b0e7f2b9f5",
@@ -31,17 +59,41 @@
     "source": "7964e6f559",
     "text": "ドラッグ開始時の `element` のレイアウト上の矩形。"
   },
+  "Active.sensor": {
+    "source": "d7ac7b8437",
+    "text": "ドラッグの動き方：`'pointer'` は座標に追従し、`'keyboard'` はアイテム単位で動きます（`SensorActivation.type`）。"
+  },
   "Active.external": {
     "source": "c2c230e8a3",
     "text": "ページの外からのドラッグ（ファイル、リンク、テキスト、またはアプリの別のウィンドウからのアイテム）：それが運ぶもの。その `items` はこのドラッグのために作られます（`element` は代役です）。"
   },
   "Active.native": {
-    "source": "70b681b12e",
+    "source": "98192baf7a",
     "text": "ブラウザー自身のドラッグ（`native`、または外部からのドラッグ）：ドラッグ中の画像はブラウザーが描き、オーバーレイはありません。"
+  },
+  "Over": {
+    "source": "d438eb0a0d",
+    "text": "ドラッグの下にあるドロップターゲット。"
+  },
+  "Over.id": {
+    "source": "f9a233dcfd",
+    "text": "ドロップターゲットの id。"
+  },
+  "Over.data": {
+    "source": "c8dc5224f3",
+    "text": "ターゲットの `data` オプション。"
   },
   "Over.label": {
     "source": "c388687981",
     "text": "ターゲットの `label`（人が呼ぶ名前）。"
+  },
+  "Over.element": {
+    "source": "bea8d333cc",
+    "text": "ターゲットの要素。"
+  },
+  "Over.rect": {
+    "source": "7fd07d1f0f",
+    "text": "`element` の矩形。ドラッグ中に測定されます。"
   },
   "Over.accepted": {
     "source": "48997f2ee2",
@@ -67,6 +119,10 @@
     "source": "0a3289fa23",
     "text": "ツリー：アイテムが置かれる深さ（ルートは 0）。"
   },
+  "DragSource": {
+    "source": "bc3de31654",
+    "text": "ドラッグされているアイテムの出どころ（それが並べ替え可能なリストの場合）。"
+  },
   "DragSource.list": {
     "source": "57db105431",
     "text": "ドラッグ中のアイテムの出どころである並べ替え可能なリスト。"
@@ -74,6 +130,22 @@
   "DragSource.remove": {
     "source": "5ef5100d7a",
     "text": "ドラッグ中のアイテムをそのリストから取り除きます（ゴミ箱ゾーン）。"
+  },
+  "DragMode": {
+    "source": "c46a935d4d",
+    "text": "ドロップが何をするか：`'move'`、`'copy'`（アイテムは残り、そのコピーが入ります）、`'swap'`（`behavior: 'swap'`：2 つのアイテムが場所を入れ替えます）、または `'insert'`（通常のドラッグ可能な要素が、リストの `createItem` が作ったアイテムとしてリストに入ります）。"
+  },
+  "DnDEvent": {
+    "source": "6c347e6fab",
+    "text": "ドラッグイベントが運ぶもの：モニター、プロバイダーのイベント、ドロップターゲットのフックがこれを受け取ります。"
+  },
+  "DnDEvent.active": {
+    "source": "ab2a0979dd",
+    "text": "現在のドラッグ。"
+  },
+  "DnDEvent.over": {
+    "source": "3b1f124a9c",
+    "text": "ドラッグの下にあるドロップターゲット。何もない上では `null`。"
   },
   "DnDEvent.pointer": {
     "source": "49759bca51",
@@ -99,6 +171,10 @@
     "source": "88a096f69f",
     "text": "ページの外からのドラッグ：それが運ぶもの（`active.external`）。データはドロップ時に届きます。"
   },
+  "DnDEndEvent": {
+    "source": "07e34f7142",
+    "text": "`onDragEnd`（とターゲットの `onDrop`）が受け取るもの：ドロップのイベントと、その結果。"
+  },
   "DnDEndEvent.dropped": {
     "source": "8ada0b47b1",
     "text": "ドラッグがすべてのドロップターゲットの外で終わった場合は false。"
@@ -106,6 +182,10 @@
   "DnDEndEvent.accepted": {
     "source": "bf82d1aeb9",
     "text": "`onBeforeDrop` が受け入れた id（一部が返されなかった限り、ドラッグ中のすべての id）。"
+  },
+  "DnDEndEvent.rejected": {
+    "source": "641da3ee5b",
+    "text": "ドラッグされたそのほかの id：`onBeforeDrop` が除外したもので、元の位置に戻ります。すべて受け入れられた場合は空です。"
   },
   "DnDEndEvent.droppedOutside": {
     "source": "43906c7a55",
@@ -115,6 +195,22 @@
     "source": "056be141e8",
     "text": "`onBeforeDrop` の判断：\n- `'accept'`（または `true`、または何も返さない）：ドロップが成立します。\n- `'reject'`（または `false`）：ドロップせず、アイテムは元の位置に戻ります。\n- id のリスト：それらのアイテムだけを受け入れ、ほかは元の位置に戻ります。\n- `'continue'`：ドロップせず、ドラッグが続きます。ポインターでは、アイテムが再びポインターに追従し（ボタンを押していなくても）、次に離したとき、つまりクリックでドロップされます。タッチでは、もう一度アイテムを掴みます。キーボードでは、これまでどおりアイテムを動かします。Escape でキャンセルします。ドロップ時には再び `onBeforeDrop` に問い合わせます。"
   },
+  "AcceptContext": {
+    "source": "04c6b6dfb5",
+    "text": "関数の `accept` ルールに渡されるもの。"
+  },
+  "AcceptContext.active": {
+    "source": "ab2a0979dd",
+    "text": "現在のドラッグ。"
+  },
+  "AcceptContext.items": {
+    "source": "1724543673",
+    "text": "ドラッグされているすべてのアイテム。"
+  },
+  "AcceptContext.types": {
+    "source": "e1c94af5ab",
+    "text": "ドラッグされているすべてのアイテムの型をまとめたもの。"
+  },
   "AcceptRule": {
     "source": "b40b673608",
     "text": "`'*'` または省略ですべてを受け入れます。型のないアイテムは、どの文字列ルールにも当てはまります（v2 の `groups: []` と同じ挙動）。"
@@ -123,9 +219,37 @@
     "source": "2aa08aef31",
     "text": "`'all'`：ドラッグ中のすべてのアイテムが一致する必要があります。`'some'`：少なくとも 1 つ（残りは `onBeforeDrop` で拒否できます）。"
   },
+  "KeyboardMoveContext": {
+    "source": "168a0c5add",
+    "text": "矢印キーが押されたときに `getKeyboardCoordinates` に渡されるもの。"
+  },
+  "KeyboardMoveContext.active": {
+    "source": "ab2a0979dd",
+    "text": "現在のドラッグ。"
+  },
+  "KeyboardMoveContext.pointer": {
+    "source": "efc9d40d64",
+    "text": "ドラッグの現在位置（ビューポート座標）。"
+  },
   "KeyboardMoveContext.direction": {
     "source": "a0b25b3b54",
     "text": "押された矢印キーの単位ベクトル。"
+  },
+  "DnDMonitor": {
+    "source": "6f3b744e55",
+    "text": "プロバイダー配下のすべてのドラッグに対するフック（`useDnDMonitor`）。"
+  },
+  "DnDMonitor.onDragStart": {
+    "source": "a0e7bdf431",
+    "text": "アクティベーションを経て、ドラッグが始まりました。"
+  },
+  "DnDMonitor.onDragMove": {
+    "source": "454b2c8c39",
+    "text": "ドラッグが動きました（多くても 1 フレームに 1 回）。"
+  },
+  "DnDMonitor.onDragOver": {
+    "source": "290d741d10",
+    "text": "ドラッグの下にあるターゲットが変わりました。"
   },
   "DnDMonitor.onBeforeDrop": {
     "source": "7c0b37588d",
@@ -134,6 +258,10 @@
   "DnDMonitor.onDragEnd": {
     "source": "117782ceb2",
     "text": "ドロップが完了したことの通知：並べ替え可能なリストは、それぞれの `onDrop` を実行し、書き込みを済ませています。"
+  },
+  "DnDMonitor.onDragCancel": {
+    "source": "699c396c4c",
+    "text": "ドラッグがキャンセルされたか、ドロップが拒否されました：アイテムは元の位置に戻ります。"
   },
   "DnDMonitor.onDragResume": {
     "source": "8e5af01ef3",
@@ -147,12 +275,76 @@
     "source": "72d709477a",
     "text": "キーボードドラッグ：矢印キーに対する次のポインター位置（たとえば次の並べ替え位置）。"
   },
+  "DnDSelection": {
+    "source": "37feaeeee3",
+    "text": "選択中のドラッグ可能な要素（id で管理）：そのうちの 1 つをドラッグすると全部を運びます（マルチドラッグ）。id で保持しているので、選択はアンマウントされても残ります（仮想リスト）。"
+  },
+  "DnDSelection.ids": {
+    "source": "92b2721491",
+    "text": "選択中の id。リアクティブです。"
+  },
+  "DnDSelection.has": {
+    "source": "aeefc055d7",
+    "text": "`id` が選択されているかどうか。"
+  },
+  "DnDSelection.add": {
+    "source": "c02f8715ab",
+    "text": "これらの id を選択します。"
+  },
+  "DnDSelection.delete": {
+    "source": "e426b1d84b",
+    "text": "これらの id の選択を解除します。"
+  },
+  "DnDSelection.toggle": {
+    "source": "04f91b4e9f",
+    "text": "`id` を選択するか、選択を解除します。`force: true` なら選択し、`false` なら解除します。"
+  },
+  "DnDSelection.set": {
+    "source": "daf58f421e",
+    "text": "これらの id だけを選択し、ほかは選択しません。"
+  },
+  "DnDSelection.clear": {
+    "source": "019671079e",
+    "text": "すべての id の選択を解除します。"
+  },
   "DnDState": {
     "source": "227f071563",
     "text": "ドラッグの状態は、ドロップが決まった時点で終わります：オーバーレイがまだ所定の位置へアニメーションしている間でも、`active`、`over`、`pointer` は `null` になります（ドロップゾーンも受け入れをやめます）。派生した UI が古いドラッグと新しいデータを混ぜることはありません。非同期の `onBeforeDrop` が判断している間、状態は離した時点のまま保たれますが、ページはドラッグモードから抜けています：ページ自身のカーソルとテキスト選択が戻り（確認ダイアログは通常どおり動作します）、オーバーレイはドロップされた場所で待機します。\n\n`status` は、ドラッグの実行中は `'dragging'`、そうでなければドロップの判断中またはオーバーレイがまだ着地中の間は `'dropping'`、それ以外は `'idle'` です（`'activating'` と `'selecting'` は別です）。新しいドラッグは着地を待ちません：すぐに始まり、着地はその周りで完了します。"
   },
+  "DnDState.status": {
+    "source": "17deba0e0d",
+    "text": "プロバイダーが何をしているか（`DnDStatus` を参照）。"
+  },
+  "DnDState.active": {
+    "source": "956d5f9c19",
+    "text": "実行中のドラッグ。ドラッグがないとき、およびドロップが確定した時点で `null` になります。"
+  },
+  "DnDState.over": {
+    "source": "3b1f124a9c",
+    "text": "ドラッグの下にあるドロップターゲット。何もない上では `null`。"
+  },
+  "DnDState.pointer": {
+    "source": "3bb30d3398",
+    "text": "ビューポート座標でのポインター（モディファイア適用後）。ドラッグがないときは `null`。"
+  },
   "DnDState.position": {
     "source": "4795780b8f",
     "text": "`over` の中でのドラッグ中のボックスの左上の角の位置。ライブで更新され、移動のたびの `DnDEvent.position` と同じです。何もない上では `null`。オーバーレイコンポーネントは、着地する場所（カレンダー上の時刻）を表示するためにこれを読み取ります。"
+  },
+  "DnDState.activation": {
+    "source": "ca2201da85",
+    "text": "`progress`：`status` が `'activating'` の間、押下がアクティベーション制約にどこまで近づいたかを 0 から 1 で表します。たとえば、長押しの間に満ちていくリングに使えます。"
+  },
+  "DnDState.isAutoScrolling": {
+    "source": "e5cea65cdf",
+    "text": "自動スクロールがコンテナーを動かしています。"
+  },
+  "DnDState.selection": {
+    "source": "d265527064",
+    "text": "選択中のドラッグ可能な要素（`DnDSelection` を参照）。"
+  },
+  "DnDState.cancel": {
+    "source": "3ea64398be",
+    "text": "ドラッグ（元の位置に戻ります）、または保留中のアクティベーションをキャンセルします。"
   }
 }

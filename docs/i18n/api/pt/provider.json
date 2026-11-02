@@ -3,9 +3,21 @@
     "source": "957ec8f6ce",
     "text": "Um lugar em uma lista ordenável ou árvore (nas linhas visíveis dela): `index` conta a partir de 0, de um total de `length`."
   },
+  "AnnouncedPosition.list": {
+    "source": "31b274663e",
+    "text": "Id da lista ou da árvore."
+  },
   "AnnouncedPosition.label": {
     "source": "702bfecdc2",
     "text": "O `label` da lista, como as pessoas a chamam."
+  },
+  "AnnouncedPosition.index": {
+    "source": "2155e11380",
+    "text": "A posição, a partir de 0: os textos embutidos dizem `index + 1`."
+  },
+  "AnnouncedPosition.length": {
+    "source": "97c61b39e8",
+    "text": "Quantas posições a lista tem."
   },
   "AnnouncementContext": {
     "source": "884af39ecf",
@@ -28,8 +40,24 @@
     "text": "O arraste copia (`group.pull: 'clone'`, a tecla modificadora de cópia)."
   },
   "Announcements": {
-    "source": "08ba8bd127",
-    "text": "Textos para leitores de tela. Retorne `undefined` para o texto embutido, `''` para nenhum. `context` traz as posições de que falam os textos embutidos das listas ordenáveis."
+    "source": "b5a69fbd7f",
+    "text": "Textos para leitores de tela, por evento. Retorne `undefined` para o texto embutido, `''` para nenhum. `context` traz as posições de que falam os textos embutidos das listas ordenáveis.\n\nUm texto é falado pela live region do provider (os movimentos, quando o arraste fica parado por 500 ms); `undefined` deixa o evento para a próxima fonte (os textos das integrações, como as posições das listas ordenáveis, e depois os padrões). Um movimento não é anunciado para o alvo encontrado no início do arraste: nada se moveu ainda."
+  },
+  "Announcements.onDragStart": {
+    "source": "cb7361dadf",
+    "text": "Um arraste começou."
+  },
+  "Announcements.onDragOver": {
+    "source": "e7155df562",
+    "text": "O arraste passou sobre outro alvo, ou para outra posição em uma lista (quando fica parado por 500 ms)."
+  },
+  "Announcements.onDragEnd": {
+    "source": "56ab53c578",
+    "text": "O drop se concretizou, ou o arraste terminou fora de todos os alvos."
+  },
+  "Announcements.onDragCancel": {
+    "source": "e76ef54e23",
+    "text": "O arraste foi cancelado, ou o seu drop foi recusado."
   },
   "Announcements.onDragResume": {
     "source": "d4806359e7",
@@ -39,9 +67,21 @@
     "source": "35562b8590",
     "text": "Os textos de uma integração (listas ordenáveis), e o contexto que ela conhece para os textos do próprio provider."
   },
+  "KeyboardOptions": {
+    "source": "bb782ceb9e",
+    "text": "Arrastes por teclado (o `keyboard` do provider): as teclas deles e o passo dos arrastes livres."
+  },
+  "KeyboardOptions.keys": {
+    "source": "c36afa9f52",
+    "text": "As teclas que pegam (`start`), soltam e cancelam, como `KeyboardEvent.code` (`'Space'`, `'KeyW'`) ou `.key` (`'Enter'`, `'w'`). Padrão: Espaço e Enter pegam e soltam, Escape cancela. As setas sempre movem."
+  },
   "KeyboardOptions.step": {
     "source": "66a729c31a",
     "text": "Pixels por toque de seta nos arrastes livres (não ordenáveis). Padrão 25."
+  },
+  "AutoScrollOptions": {
+    "source": "c15af10035",
+    "text": "Como os contêineres rolam quando um arraste se aproxima das bordas deles (o `autoScroll` do provider)."
   },
   "AutoScrollOptions.threshold": {
     "source": "1b2cd0615c",
@@ -50,6 +90,10 @@
   "AutoScrollOptions.maxSpeed": {
     "source": "4ebcb33d64",
     "text": "Velocidade máxima em px por frame de 16ms."
+  },
+  "AutoScrollOptions.acceleration": {
+    "source": "c2b02de232",
+    "text": "Velocidade em px por frame com o ponteiro na borda do contêiner: mais devagar dentro da zona da borda, mais rápido além da borda, até `maxSpeed`. Padrão 10."
   },
   "HapticPattern": {
     "source": "1fb9df65e6",
@@ -75,17 +119,41 @@
     "source": "54d244b821",
     "text": "O drop é recusado (por um alvo ou pelo `onBeforeDrop`) e os itens voltam ao lugar. Padrão `false`."
   },
+  "DnDProviderProps": {
+    "source": "e1d670147b",
+    "text": "Props de `DnDProvider`. A maioria é lida quando o provider precisa delas: mude uma, e o próximo arraste a usa."
+  },
+  "DnDProviderProps.collision": {
+    "source": "629dec725a",
+    "text": "Como o alvo sob o arraste é escolhido. Padrão `pointerFirst`; outro embutido (`closestCorners`) ou um seu."
+  },
+  "DnDProviderProps.modifiers": {
+    "source": "71e9e53a44",
+    "text": "Modificadores para todo arraste, aplicados primeiro: os das áreas de arraste, dos draggables e das listas vêm depois."
+  },
   "DnDProviderProps.animation": {
     "source": "699c35a63c",
     "text": "Animação FLIP padrão para as listas ordenáveis."
   },
   "DnDProviderProps.dropAnimation": {
-    "source": "f99201968c",
-    "text": "Como o overlay pousa no drop e volta ao lugar no cancelamento, quando nada mais próximo define um: primeiro vem o `dropAnimation` do alvo de drop, depois o do próprio item arrastado (ou o da lista dele) e, por fim, este."
+    "source": "60c09d4b6d",
+    "text": "Como o overlay pousa no drop e volta ao lugar no cancelamento, quando nada mais próximo define um: primeiro vem o `overDropAnimation` do alvo de drop, depois o do próprio item arrastado (ou o da lista dele) e, por fim, este."
   },
-  "DnDProviderProps.animate": {
-    "source": "e7b8ee12ca",
-    "text": "`animate` padrão das listas e árvores ordenáveis: mudanças nos itens delas que nenhum arraste fez. Desligado por padrão."
+  "DnDProviderProps.animateChanges": {
+    "source": "37255f7e71",
+    "text": "`animateChanges` padrão das listas e árvores ordenáveis: mudanças nos itens delas que nenhum arraste fez. Desligado por padrão."
+  },
+  "DnDProviderProps.autoScroll": {
+    "source": "b84b62fce5",
+    "text": "Rola os contêineres e a página quando um arraste se aproxima das bordas deles. Padrão `true`; opções o ajustam, `false` o desliga. Listas, árvores e áreas de arraste podem sobrescrevê-lo."
+  },
+  "DnDProviderProps.activation": {
+    "source": "afc7892642",
+    "text": "O que um pressionamento precisa fazer antes de virar um arraste, por tipo de ponteiro (veja `ActivationOptions` para os padrões). Áreas de arraste, listas, árvores, itens e draggables podem sobrescrevê-lo."
+  },
+  "DnDProviderProps.keyboard": {
+    "source": "9f75dfd23a",
+    "text": "Arrastes por teclado: as teclas e o passo deles. `false` os desliga; Escape continua cancelando qualquer arraste."
   },
   "DnDProviderProps.sensors": {
     "source": "180c7efcc3",
@@ -99,6 +167,10 @@
     "source": "c45bff39ad",
     "text": "Tecla (KeyboardEvent.key) que transforma um movimento em cópia. Padrão `'Alt'`; `null` desativa."
   },
+  "DnDProviderProps.overlayTo": {
+    "source": "274db53619",
+    "text": "Onde o overlay é renderizado: um seletor ou um elemento. Padrão `'body'`. Um `<dialog>` modal fica acima do resto da página: arrastes dentro de um precisam do overlay ali."
+  },
   "DnDProviderProps.overlayFit": {
     "source": "2cebf1b9ab",
     "text": "Tamanho do overlay durante o arraste. `'slot'` (padrão): ele acompanha a posição onde o item vai pousar, então, sobre outra lista, assume o tamanho dos itens dessa lista, e o drop não precisa de redimensionamento. Ele se redimensiona ao redor do ponteiro, que fica na mesma fração da caixa. `'source'`: ele mantém o tamanho do elemento arrastado. O conteúdo padrão do overlay é diagramado de novo no novo tamanho; ele nunca é escalado."
@@ -108,8 +180,8 @@
     "text": "Multi-drag: quantos itens arrastados ganham um clone no início do arraste, o pego e os outros ao lado dele na ordem do drop. Padrão 5; `'all'` clona todos os que estão renderizados. O overlay padrão mostra os clones e conta o resto (`+N`); em um layout próprio, `DragPreview` renderiza o seu slot para um item sem clone. Todo clone voa: de volta ao seu item em um cancelamento, para a sua posição em um drop, para dentro da zona em que um drop entra, um depois do outro. Os clones são feitos juntos, com um só layout por passada de snapshot para todos, mas cada um custa a leitura dos seus estilos: cuidado com itens longos em celulares lentos."
   },
   "DnDProviderProps.overlayTransition": {
-    "source": "6852def127",
-    "text": "Como o overlay muda de um componente para outro durante um arraste (o `overlay` de um alvo de drop assume, um ref de `overlay` é trocado): `true` (padrão) faz um crossfade entre eles em 150 ms, `false` os troca na hora, e um objeto são as props de um `<Transition>` do Vue em volta da raiz do conteúdo (`name`, `mode`, hooks JS para GSAP ou motion). Sem `mode: 'out-in'`, os dois aparecem ao mesmo tempo: dê ao que sai `position: absolute` (`.<name>-leave-active`) para que fiquem empilhados na caixa."
+    "source": "4182e55d7d",
+    "text": "Como o overlay muda de um componente para outro durante um arraste (o `overOverlay` de um alvo de drop assume, um ref de `overlay` é trocado): `true` (padrão) faz um crossfade entre eles em 150 ms, `false` os troca na hora, e um objeto são as props de um `<Transition>` do Vue em volta da raiz do conteúdo (`name`, `mode`, hooks JS para GSAP ou motion). Sem `mode: 'out-in'`, os dois aparecem ao mesmo tempo: dê ao que sai `position: absolute` (`.<name>-leave-active`) para que fiquem empilhados na caixa."
   },
   "DnDProviderProps.overlayClass": {
     "source": "fe858c5071",
@@ -119,9 +191,13 @@
     "source": "0729e8985f",
     "text": "Textos próprios para alguns eventos (veja `Announcements`); `false` mantém a live region em silêncio."
   },
+  "DnDProviderProps.screenReaderInstructions": {
+    "source": "e835bc26b0",
+    "text": "Como arrastar com o teclado, lido pelos leitores de tela para cada draggable (o `aria-describedby` dele). Padrão: instruções em inglês para Espaço, Enter, as setas e Escape."
+  },
   "DnDProviderProps.defaultStyles": {
-    "source": "b635d7cd38",
-    "text": "Injeta estilos padrão de especificidade zero (opacidade do placeholder, sem seleção de texto durante o arraste)."
+    "source": "9cecc4e9bf",
+    "text": "Injeta a aparência padrão: CSS em camadas, de especificidade zero, que esmaece os placeholders e os itens que um multi-drag deixa no lugar (`opacity: 0.4`). Padrão `true`; `false` deixa a aparência com você. O que os arrastes precisam é injetado de qualquer forma: sem seleção de texto e sem scroll anchoring durante o arraste (as listas virtuais dependem disso), o cursor de arraste (`--dnd-cursor`) e sem o menu de link em um toque longo no iOS."
   },
   "DnDContext": {
     "source": "224db9f60d",
@@ -130,6 +206,10 @@
   "OverlaySlotProps": {
     "source": "38a21c4b6d",
     "text": "O que o overlay mostra: as props do slot `#overlay` do provider e dos componentes de overlay (opção `overlay` de draggables, itens ordenáveis, listas e árvores)."
+  },
+  "OverlaySlotProps.active": {
+    "source": "ab2a0979dd",
+    "text": "O arraste."
   },
   "OverlaySlotProps.items": {
     "source": "10d477a1e7",
@@ -142,6 +222,14 @@
   "OverlaySlotProps.accepted": {
     "source": "f7641f18e1",
     "text": "Se `over` aceita os itens arrastados; `false` quando não há nada embaixo."
+  },
+  "OverlaySlotProps.status": {
+    "source": "14a833949b",
+    "text": "`'dragging'`, depois `'dropping'` enquanto o overlay pousa (ou volta ao lugar)."
+  },
+  "OverlaySlotProps.mode": {
+    "source": "d0692a357f",
+    "text": "O que um drop faria agora (veja `DnDEvent.mode`): por exemplo, mostrar um sinal de mais enquanto copia."
   },
   "OverlaySlotProps.to": {
     "source": "a7cc5a79db",

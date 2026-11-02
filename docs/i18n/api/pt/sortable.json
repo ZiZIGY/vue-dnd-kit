@@ -1,19 +1,63 @@
 {
+  "SortableStrategy": {
+    "source": "0ff5f935bf",
+    "text": "Como uma lista dispõe os itens: uma coluna (`'vertical'`), uma linha (`'horizontal'`) ou uma grade que quebra linha (`'grid'`)."
+  },
+  "SortableBehavior": {
+    "source": "cf929048cf",
+    "text": "O que passar sobre um item faz: `'sort'` abre espaço (os itens no meio se deslocam), `'swap'` troca os dois itens de lugar."
+  },
+  "SortablePlaceholder": {
+    "source": "c4965dccef",
+    "text": "Como um arraste mostra para onde vai: `'item'`, a posição do item arrastado se move pela lista; `'indicator'`, a lista fica como está e `indicator` diz para onde vai o drop (você desenha a linha)."
+  },
   "MultipleMode": {
     "source": "d913df4640",
     "text": "O que os outros itens selecionados fazem em um multi-drag:\n- `'group'`: eles saem dos seus lugares e viajam com o item ativo como placeholders contíguos, então, ao passar por cima, a lista já mostra o resultado do drop;\n- `'gaps'`: eles ficam no lugar até o drop;\n- `'stack'`: eles se recolhem para dentro do overlay.\n\nO overlay padrão mostra os itens arrastados em uma coluna na direção da lista (`'group'`, `'gaps'`; uma linha em listas horizontais, uma pilha atrás do item ativo em grades), ou o item ativo com um contador (`'stack'`)."
   },
+  "DropOutside": {
+    "source": "b2809b7876",
+    "text": "O que um drop fora de todos os alvos faz: `'placeholder'` mantém os itens onde está a posição deles, `'cancel'` os manda de volta, `'remove'` os tira da lista deles."
+  },
+  "SortablePutContext": {
+    "source": "5ef622d555",
+    "text": "Com o que um `group.put` em forma de função é consultado: os itens que entrariam na lista."
+  },
+  "SortablePutContext.keys": {
+    "source": "96424ef5cd",
+    "text": "Keys dos itens."
+  },
+  "SortablePutContext.items": {
+    "source": "69b4784ae4",
+    "text": "Os itens (para um draggable simples, o item que `createItem` criou)."
+  },
+  "SortablePutContext.types": {
+    "source": "a2e7cb8b67",
+    "text": "Os tipos dos itens, juntos."
+  },
   "SortablePutContext.from": {
     "source": "3ade1d4f94",
     "text": "Lista de origem, `null` para draggables externos."
+  },
+  "SortablePutContext.to": {
+    "source": "73ee9e1c59",
+    "text": "Id da lista consultada."
+  },
+  "SortableGroupOptions": {
+    "source": "a6318bcafd",
+    "text": "O grupo de uma lista: as listas que trocam itens, e se os itens podem sair desta e entrar nela."
+  },
+  "SortableGroupOptions.name": {
+    "source": "cdf3f297f5",
+    "text": "Listas e árvores com o mesmo nome trocam itens."
   },
   "SortableGroupOptions.pull": {
     "source": "ea3b5c781f",
     "text": "Se os itens podem sair desta lista: mover, copiar (`'clone'`, uma paleta) ou de jeito nenhum."
   },
   "SortableGroupOptions.put": {
-    "source": "a59ba8af01",
-    "text": "Se os itens podem entrar nesta lista."
+    "source": "65a7c533de",
+    "text": "Se os itens podem entrar nesta lista: `true` (padrão), `false`, um tipo ou tipos que os itens precisam ter (como o `accept` de um alvo de drop: com `acceptMode`, todos ou alguns), ou uma função do arraste."
   },
   "SortableItems": {
     "source": "ff96686528",
@@ -23,9 +67,37 @@
     "source": "1cb69d3b8b",
     "text": "Um drop em uma lista ou árvore ordenável. Os hooks dele rodam em ordem: `onBeforeDrop` decide, `onDrop` é avisado, depois a ação padrão grava `result` nos `items` de cada lista que ele cita, e o overlay pousa. `preventDefault()` em qualquer um dos hooks pula essa gravação, para que você aplique `result` você mesmo."
   },
+  "SortableDropEvent.keys": {
+    "source": "a6675cba6f",
+    "text": "Keys dos itens arrastados."
+  },
+  "SortableDropEvent.items": {
+    "source": "55b9d0f682",
+    "text": "Os itens que pousam: os arrastados, as cópias deles (`mode: 'copy'`), ou o item que `createItem` criou (`'insert'`)."
+  },
+  "SortableDropEvent.accepted": {
+    "source": "fb0823f2ec",
+    "text": "Keys que se concretizam: todas, a menos que a lista ou `onBeforeDrop` aceite só algumas."
+  },
+  "SortableDropEvent.rejected": {
+    "source": "e4f9f1db01",
+    "text": "Keys que voltam para onde estavam."
+  },
+  "SortableDropEvent.from": {
+    "source": "5b8ec4ac95",
+    "text": "Onde o arraste começou: a lista e o índice do item ativo. `list` é `null` para um draggable simples de fora."
+  },
   "SortableDropEvent.to": {
     "source": "f5bc49d9b2",
     "text": "`index` é -1 quando nada pousou: os itens saíram das suas listas (`e.source.remove()`, `dropOutside: 'remove'`)."
+  },
+  "SortableDropEvent.sameList": {
+    "source": "4d0a4c5137",
+    "text": "O drop fica na lista onde o arraste começou."
+  },
+  "SortableDropEvent.mode": {
+    "source": "e0dfac110b",
+    "text": "O que o drop faz (veja `DragMode`)."
   },
   "SortableDropEvent.partner": {
     "source": "0dc90e4f32",
@@ -44,8 +116,16 @@
     "text": "`preventDefault()` foi chamado, no `onBeforeDrop` ou no `onDrop`."
   },
   "SortableDropEvent.external": {
-    "source": "25e3ab04b3",
-    "text": "Um arraste de fora da página (`external`): o que ele carregava, com os dados dele."
+    "source": "bb43ee40e1",
+    "text": "Um arraste de fora da página (`external`): o que ele carregava, com os dados dele (ele foi solto)."
+  },
+  "SortableIndicator": {
+    "source": "6b1e3f646c",
+    "text": "Para onde vai o drop com `placeholder: 'indicator'`: a lista não se mexe, você desenha a linha."
+  },
+  "SortableIndicator.list": {
+    "source": "1e408489b9",
+    "text": "Id da lista (ou árvore) para onde vai o drop."
   },
   "SortableIndicator.index": {
     "source": "0043b67077",
@@ -68,8 +148,8 @@
     "text": "Árvores: pai que os nós soltos recebem, `null` no nível das raízes."
   },
   "SortableListOptions": {
-    "source": "f8e2e84b3b",
-    "text": "Opções de `makeSortableList`. Um componente pode criar várias listas (e árvores): cada item renderizado nele entra na mais interna cujo elemento o contém.\n\nAs opções aceitam um valor, um ref ou um getter (`overlay`, `animation`: um valor ou um ref) e são lidas quando a lista precisa delas, então uma mudança vale, no máximo, a partir do próximo arraste. Exceções: `id` e `group` são lidos uma única vez, quando a lista é criada; `items` é o próprio model; funções (`getKey`, `filter`, `clone`, `createItem`, os callbacks) são passadas como estão."
+    "source": "f1e8324a59",
+    "text": "Opções de `makeSortableList`. Um componente pode criar várias listas (e árvores): cada item renderizado nele entra na mais interna cujo elemento o contém.\n\nAs opções aceitam um valor, um ref ou um getter (`overlay`, `overOverlay`, `dropAnimation`, `overDropAnimation`, `animation`: um valor ou um ref) e são lidas quando a lista precisa delas, então uma mudança vale, no máximo, a partir do próximo arraste. Exceções: `id` e `group` são lidos uma única vez, quando a lista é criada; `items` é o próprio model; funções (`getKey`, `filter`, `clone`, `createItem`, os callbacks) são passadas como estão."
   },
   "SortableListOptions.items": {
     "source": "bcf07acd7a",
@@ -91,13 +171,21 @@
     "source": "afaee09f48",
     "text": "Como as pessoas chamam a lista: os textos para leitores de tela dizem isso em vez do id dela (`position 2 of 5 in Garden`)."
   },
+  "SortableListOptions.data": {
+    "source": "a7247f236a",
+    "text": "Qualquer coisa a dizer sobre a lista como alvo de drop: os eventos a carregam como `over.data` enquanto um arraste está sobre ela."
+  },
+  "SortableListOptions.activation": {
+    "source": "2e75796cf9",
+    "text": "Como um clique nos itens desta lista começa um arraste, em vez da `activation` do provider (a do próprio item prevalece). Lido quando um clique começa."
+  },
   "SortableListOptions.overlay": {
     "source": "47e3eb4c8a",
     "text": "Componente de overlay para os itens desta lista (o `overlay` do próprio item prevalece). Ele recebe `OverlayProps` e é mantido durante todo o arraste, inclusive sobre outras listas, a menos que o alvo sob o arraste tenha um overlay próprio (`overOverlay`). Um ref trocado durante o arraste o troca na hora."
   },
   "SortableListOptions.overOverlay": {
-    "source": "ac8fff8632",
-    "text": "O que o overlay mostra enquanto um arraste que esta lista aceita está sobre ela, venha de qual lista vier: um componente que recebe `OverlayProps` e o overlay do próprio arraste como slot padrão (veja `DroppableOptions.overlay`). Lido ao vivo."
+    "source": "b16cfebf45",
+    "text": "O que o overlay mostra enquanto um arraste que esta lista aceita está sobre ela, venha de qual lista vier: um componente que recebe `OverlayProps` e o overlay do próprio arraste como slot padrão (veja `DroppableOptions.overOverlay`). Lido ao vivo."
   },
   "SortableListOptions.dropAnimation": {
     "source": "9b8f883d95",
@@ -148,12 +236,12 @@
     "text": "Cria cópias (`pull: 'clone'`, tecla modificadora de cópia). Obrigatório para copiar."
   },
   "SortableListOptions.createItem": {
-    "source": "5676dc9273",
-    "text": "Aceita draggables simples de fora: cria o item a inserir. Pelo teclado, uma seta em direção à lista leva o draggable para dentro dela (na altura dele, como nos movimentos entre listas), e o item criado então se move de posição em posição como qualquer outro.\n\nUm arraste de fora da página (`external`) faz a pergunta duas vezes: durante o arraste, pelo item que mostra para onde ele vai (só `active.external.fileTypes` e `types` são conhecidos nesse momento), e no drop, com os dados dele (`active.external.dropped`), pelo que é inserido. Um array de itens insere todos onde estava a posição: um por arquivo."
+    "source": "e108ee747d",
+    "text": "Aceita draggables simples de fora: cria o item a inserir. Pelo teclado, uma seta em direção à lista leva o draggable para dentro dela (na altura dele, como nos movimentos entre listas), e o item criado então se move de posição em posição como qualquer outro.\n\nUm arraste de fora da página (`external`) faz a pergunta duas vezes: durante o arraste, pelo item que mostra para onde ele vai (só `active.external.fileTypes` e `types` são conhecidos nesse momento), e no drop, com os dados dele (`active.external.ready`), pelo que é inserido. Um array de itens insere todos onde estava a posição: um por arquivo."
   },
   "SortableListOptions.external": {
-    "source": "9ae9a7ef2d",
-    "text": "Aceita arrastes de fora da página: arquivos, links, texto (veja `ExternalAccept`). A lista abre espaço para eles como para um draggable simples, com `createItem`, que ela exige. Itens do grupo dela arrastados de outra janela do app (`native`) não precisam de nenhum dos dois: entram como eles mesmos. Um valor, um ref ou um getter, lido ao vivo."
+    "source": "adbc2f861e",
+    "text": "Aceita arrastes de fora da página: arquivos, links, texto (veja `ExternalAccept`). A lista abre espaço para eles como para um draggable simples, com `createItem`, que ela exige. Itens do grupo dela arrastados de outra janela do app (`native`) não precisam de nenhuma das duas opções: entram como eles mesmos. Um valor, um ref ou um getter, lido ao vivo."
   },
   "SortableListOptions.dropOutside": {
     "source": "bffdd0d062",
@@ -163,13 +251,13 @@
     "source": "cc6ad2ca6a",
     "text": "Animação FLIP desta lista; padrão: a `animation` do provider. Um valor ou um ref (uma função é uma animação personalizada)."
   },
-  "SortableListOptions.animate": {
-    "source": "86283c7ec0",
-    "text": "Anima as mudanças em `items` que nenhum arraste fez: itens adicionados, removidos, movidos e filtrados (veja `AutoAnimation`). Padrão: o `animate` do provider, desligado a menos que definido ali. Lido quando `items` muda."
+  "SortableListOptions.animateChanges": {
+    "source": "74a1263e3f",
+    "text": "Anima as mudanças em `items` que nenhum arraste fez: itens adicionados, removidos, movidos e filtrados (veja `AutoAnimation`). Padrão: o `animateChanges` do provider, desligado a menos que definido ali. Lido quando `items` muda."
   },
   "SortableListOptions.animateSize": {
-    "source": "382b485c30",
-    "text": "O tamanho da própria lista acompanha os itens dela: quando um arraste traz um item ou leva um embora (e no drop, e nas mudanças que `animate` mostra), ela cresce ou encolhe até o novo tamanho com a duração e o easing de `animation` em vez de pular, e o que está em volta se move junto. Padrão `true`; `false` a deixa pular. Lido a cada mudança."
+    "source": "a69c0b1f97",
+    "text": "O tamanho da própria lista acompanha os itens dela: quando um arraste traz um item ou leva um embora (e no drop, e nas mudanças que `animateChanges` mostra), ela cresce ou encolhe até o novo tamanho com a duração e o easing de `animation` em vez de pular, e o que está em volta se move junto. Padrão `true`; `false` a deixa pular. Lido a cada mudança."
   },
   "SortableListOptions.autoScroll": {
     "source": "0c0b0867b3",
@@ -179,6 +267,10 @@
     "source": "6202e9c757",
     "text": "O elemento que recebe os drops pela lista; por padrão, o próprio elemento da lista. Por exemplo, a coluna inteira ao redor de uma lista curta de cards, para que um card solto abaixo do último ainda pouse na lista (no final dela). Os itens ficam no elemento da lista."
   },
+  "SortableListOptions.disabled": {
+    "source": "5ce0000028",
+    "text": "`true`: os itens dela não podem ser arrastados, e ela não aceita itens."
+  },
   "SortableListOptions.onBeforeDrop": {
     "source": "75b3651128",
     "text": "Consultado antes de um drop nesta lista, e antes de `dropOutside: 'remove'` tirar os itens dela: `false` o rejeita (os itens voltam ao lugar), algumas keys aceitam só esses itens. Pode ser assíncrono: o overlay espera onde foi solto. Um erro também rejeita o drop. Veja `SortableDropEvent` para `result` e `preventDefault`."
@@ -187,21 +279,49 @@
     "source": "e1c7bf0125",
     "text": "Chamado assim que um drop nesta lista é aceito, antes de ser gravado: `items` ainda tem a ordem antiga, `event.result`, a nova. Síncrono: a gravação vem assim que ele retorna, a menos que tenha chamado `event.preventDefault()`. Também é chamado na lista de onde os itens vieram quando eles são removidos (`to.index` é -1)."
   },
+  "SortableListReturn": {
+    "source": "e815828b93",
+    "text": "O que `makeSortableList` retorna."
+  },
+  "SortableListReturn.id": {
+    "source": "4085e3d2dc",
+    "text": "O id da lista: a opção `id`, ou o que foi gerado para ela."
+  },
   "SortableListReturn.items": {
     "source": "d650d61bc4",
     "text": "Ordem do rascunho: renderize isto, não o array de origem."
   },
+  "SortableListReturn.isOver": {
+    "source": "d43d16ad78",
+    "text": "Um arraste está sobre a lista."
+  },
+  "SortableListReturn.isAccepting": {
+    "source": "fe5bd01f6b",
+    "text": "Algo está sendo arrastado e esta lista o aceita."
+  },
+  "SortableListReturn.indicator": {
+    "source": "60ca94d5b2",
+    "text": "Modo indicador: para onde vai o drop nesta lista; `null` quando não é aqui."
+  },
+  "SortableListReturn.activeKey": {
+    "source": "4ec3691928",
+    "text": "A linha que um virtualizador precisa manter montada: a posição enquanto ela está nesta lista (uma cópia, um item criado), senão o item arrastado; `null` sem arraste."
+  },
   "SortableListReturn.activeIndex": {
     "source": "eff30ad0eb",
     "text": "Índice do item ativo no rascunho desta lista, -1 quando ele não está aqui."
+  },
+  "SortableListReturn.activeSize": {
+    "source": "7c5077af4c",
+    "text": "Tamanho do item arrastado no início do arraste: por exemplo, para o tamanho de uma linha virtual que ele ocupa."
   },
   "SortableListReturn.captureLayout": {
     "source": "4d1e38426d",
     "text": "Anima mudanças de layout que a biblioteca não causou (por exemplo, uma nova medição de um virtualizador)."
   },
   "SortableItemOptions": {
-    "source": "b25e70a1fe",
-    "text": "Passe `id` ou `item` (`id` prevalece quando os dois são passados). As keys ordenáveis precisam vir dos dados: um id automático mudaria sempre que o componente fosse recriado (movido para outra lista, reciclado por uma lista virtual), e o arraste perderia o item.\n\nAs opções, exceto `canDrag`, aceitam um valor, um ref ou um getter (`overlay`: um valor ou um ref) e significam o mesmo que em `makeDraggable`. Não existe `keyboard`: o teclado move um item ordenável de posição em posição."
+    "source": "03dae81bf5",
+    "text": "Passe `id` ou `item` (`id` prevalece quando os dois são passados). As keys ordenáveis precisam vir dos dados: um id automático mudaria sempre que o componente fosse recriado (movido para outra lista, reciclado por uma lista virtual), e o arraste perderia o item.\n\nAs opções, exceto `canDrag`, aceitam um valor, um ref ou um getter (`overlay`, `dropAnimation`: um valor ou um ref) e significam o mesmo que em `makeDraggable`. Não existe `keyboardMode`: o teclado move um item ordenável de posição em posição."
   },
   "SortableItemOptions.id": {
     "source": "f76ac37600",
@@ -231,13 +351,25 @@
     "source": "519bda20d7",
     "text": "Elemento ou seletor dentro do item que inicia o arraste (e recebe os atributos)."
   },
+  "SortableItemOptions.disabled": {
+    "source": "c702380010",
+    "text": "`true`: o item não pode ser arrastado (como todo item de uma lista desativada)."
+  },
+  "SortableItemOptions.type": {
+    "source": "0f582d8dc4",
+    "text": "O tipo ou os tipos dele, para as regras `group.put` e o `accept` dos alvos de drop. Padrão: o nome do grupo da lista dele."
+  },
+  "SortableItemOptions.data": {
+    "source": "30d815634b",
+    "text": "Qualquer coisa que o arraste deva carregar: os eventos e os alvos de drop a leem como `active.data`."
+  },
   "SortableItemOptions.label": {
     "source": "93ed063b77",
     "text": "Como as pessoas chamam o item: os textos para leitores de tela dizem isso em vez da key dele (`Picked up Tomato at position 2 of 5 in Garden`). Os eventos o trazem como `active.label` e em `items`."
   },
   "SortableItemOptions.activation": {
-    "source": "07b1465312",
-    "text": "Sobrescreve a `activation` do provider. Lido quando um clique começa."
+    "source": "ed1e1a99e1",
+    "text": "Sobrescreve a `activation` da lista (ou árvore) dele e a do provider. Lido quando um clique começa."
   },
   "SortableItemOptions.canDrag": {
     "source": "ba9d01922f",
@@ -251,13 +383,21 @@
     "source": "6b13bbb4b9",
     "text": "Um arraste dele com o mouse é o arraste do próprio navegador, que pode sair da página (veja `DraggableOptions.native`). Ele também carrega o item: as listas do grupo dele em outra janela do app o aceitam, e quando uma aceita, ele sai desta lista (`'move'`)."
   },
+  "SortableItemReturn": {
+    "source": "7d0a843936",
+    "text": "O que `makeSortableItem` retorna."
+  },
   "SortableItemReturn.isDragging": {
-    "source": "f148b949fd",
-    "text": "Este item está sendo arrastado (também é true para os outros itens de um multi-drag)."
+    "source": "e849497527",
+    "text": "Este item está sendo arrastado (também é true para os outros itens de um multi-drag), ou o overlay dele ainda está pousando."
   },
   "SortableItemReturn.isPlaceholder": {
     "source": "e31014eb2c",
     "text": "Este elemento é uma posição onde um item arrastado vai pousar: a do item ativo e, no modo `'group'` do multi-drag, as posições dos itens que viajam com ele."
+  },
+  "SortableItemReturn.selected": {
+    "source": "d15fb608a4",
+    "text": "Ele está na seleção do provider: um arraste de um item selecionado carrega todos. Atribua um valor para selecionar ou desmarcar."
   },
   "SortableItemReturn.indicator": {
     "source": "3e7f9ce50b",

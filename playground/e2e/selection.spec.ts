@@ -168,7 +168,7 @@ test.describe('selection area', () => {
     await page.mouse.up();
   });
 
-  test('a band in a nested area selects only its own items, into its own Ref', async ({ page }) => {
+  test('a band in a nested area selects only its own items, into the provider selection', async ({ page }) => {
     const inner = page.getByTestId('inner-area');
     const n2 = page.locator('[data-testid="inner-area"] [data-id="n2"]');
     await band(page, await corner(inner), await past(n2), { release: false });
@@ -178,7 +178,7 @@ test.describe('selection area', () => {
     await page.mouse.up();
 
     await expect(page.getByTestId('inner-on-selected')).toHaveText('n1,n2');
-    await expect(page.getByTestId('all-selected')).toHaveText('');
+    await expect(page.getByTestId('all-selected')).toHaveText('n1,n2');
   });
 
   test('the outer band skips items owned by a nested area', async ({ page }) => {

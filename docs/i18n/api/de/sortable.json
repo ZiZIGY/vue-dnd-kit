@@ -1,19 +1,63 @@
 {
+  "SortableStrategy": {
+    "source": "0ff5f935bf",
+    "text": "Wie eine Liste ihre Elemente anordnet: als Spalte (`'vertical'`), als Zeile (`'horizontal'`) oder als umbrechendes Raster (`'grid'`)."
+  },
+  "SortableBehavior": {
+    "source": "cf929048cf",
+    "text": "Was das Hovern über einem Element bewirkt: `'sort'` macht Platz (die Elemente dazwischen verschieben sich), `'swap'` tauscht die beiden Elemente."
+  },
+  "SortablePlaceholder": {
+    "source": "c4965dccef",
+    "text": "Wie ein Drag zeigt, wohin er geht: `'item'`, der Slot des gezogenen Elements wandert durch die Liste; `'indicator'`, die Liste bleibt, wie sie ist, und `indicator` sagt, wohin der Drop geht (du zeichnest die Linie)."
+  },
   "MultipleMode": {
     "source": "d913df4640",
     "text": "Was die anderen ausgewählten Elemente bei einem Multi-Drag tun:\n- `'group'`: Sie verlassen ihre Plätze und begleiten das aktive Element als zusammenhängende Platzhalter, sodass die Liste schon beim Hovern das Ergebnis des Drops zeigt;\n- `'gaps'`: Sie bleiben bis zum Drop an ihrem Platz;\n- `'stack'`: Sie fallen im Overlay zusammen.\n\nDas Standard-Overlay zeigt die gezogenen Elemente in einer Spalte entlang der Liste (`'group'`, `'gaps'`; eine Zeile in horizontalen Listen, ein Stapel hinter dem aktiven Element in Rastern) oder das aktive Element mit einer Anzahl (`'stack'`)."
   },
+  "DropOutside": {
+    "source": "b2809b7876",
+    "text": "Was ein Drop außerhalb aller Ziele bewirkt: `'placeholder'` behält die Elemente dort, wo ihr Slot ist, `'cancel'` schickt sie zurück, `'remove'` nimmt sie aus ihrer Liste."
+  },
+  "SortablePutContext": {
+    "source": "5ef622d555",
+    "text": "Womit ein `group.put` in Form einer Funktion aufgerufen wird: die Elemente, die in die Liste kämen."
+  },
+  "SortablePutContext.keys": {
+    "source": "96424ef5cd",
+    "text": "Schlüssel der Elemente."
+  },
+  "SortablePutContext.items": {
+    "source": "69b4784ae4",
+    "text": "Die Elemente (bei einem einfachen ziehbaren Element das, das `createItem` erzeugt hat)."
+  },
+  "SortablePutContext.types": {
+    "source": "a2e7cb8b67",
+    "text": "Die Typen der Elemente, zusammen."
+  },
   "SortablePutContext.from": {
     "source": "3ade1d4f94",
     "text": "Quellliste, `null` für externe ziehbare Elemente."
+  },
+  "SortablePutContext.to": {
+    "source": "73ee9e1c59",
+    "text": "ID der gefragten Liste."
+  },
+  "SortableGroupOptions": {
+    "source": "a6318bcafd",
+    "text": "Die Gruppe einer Liste: die Listen, die Elemente austauschen, und ob Elemente diese verlassen und in sie kommen dürfen."
+  },
+  "SortableGroupOptions.name": {
+    "source": "cdf3f297f5",
+    "text": "Listen und Bäume mit demselben Namen tauschen Elemente aus."
   },
   "SortableGroupOptions.pull": {
     "source": "ea3b5c781f",
     "text": "Ob Elemente diese Liste verlassen können: verschieben, kopieren (`'clone'`, eine Palette) oder gar nicht."
   },
   "SortableGroupOptions.put": {
-    "source": "a59ba8af01",
-    "text": "Ob Elemente in diese Liste kommen können."
+    "source": "65a7c533de",
+    "text": "Ob Elemente in diese Liste kommen können: `true` (Standard), `false`, ein Typ oder Typen, die die Elemente haben müssen (wie das `accept` eines Drop-Ziels: mit `acceptMode` alle oder einige), oder eine Funktion des Drags."
   },
   "SortableItems": {
     "source": "ff96686528",
@@ -23,9 +67,37 @@
     "source": "1cb69d3b8b",
     "text": "Ein Drop auf eine sortierbare Liste oder einen Baum. Seine Hooks laufen in dieser Reihenfolge: `onBeforeDrop` entscheidet, `onDrop` wird informiert, dann schreibt die Standardaktion `result` in die `items` jeder Liste, die darin genannt ist, und das Overlay landet. `preventDefault()` in einem der beiden Hooks überspringt dieses Schreiben, sodass du `result` selbst anwenden kannst."
   },
+  "SortableDropEvent.keys": {
+    "source": "a6675cba6f",
+    "text": "Schlüssel der gezogenen Elemente."
+  },
+  "SortableDropEvent.items": {
+    "source": "55b9d0f682",
+    "text": "Die Elemente, die landen: die gezogenen, ihre Kopien (`mode: 'copy'`) oder das Element, das `createItem` erzeugt hat (`'insert'`)."
+  },
+  "SortableDropEvent.accepted": {
+    "source": "fb0823f2ec",
+    "text": "Schlüssel, die durchgehen: alle, sofern die Liste oder `onBeforeDrop` nicht nur einige annimmt."
+  },
+  "SortableDropEvent.rejected": {
+    "source": "e4f9f1db01",
+    "text": "Schlüssel, die dorthin zurückfliegen, wo sie waren."
+  },
+  "SortableDropEvent.from": {
+    "source": "5b8ec4ac95",
+    "text": "Wo der Drag begann: die Liste und der Index des aktiven Elements. `list` ist `null` bei einem einfachen ziehbaren Element von außen."
+  },
   "SortableDropEvent.to": {
     "source": "f5bc49d9b2",
     "text": "`index` ist -1, wenn nichts gelandet ist: Die Elemente haben ihre Listen verlassen (`e.source.remove()`, `dropOutside: 'remove'`)."
+  },
+  "SortableDropEvent.sameList": {
+    "source": "4d0a4c5137",
+    "text": "Der Drop bleibt in der Liste, in der der Drag begann."
+  },
+  "SortableDropEvent.mode": {
+    "source": "e0dfac110b",
+    "text": "Was der Drop bewirkt (siehe `DragMode`)."
   },
   "SortableDropEvent.partner": {
     "source": "0dc90e4f32",
@@ -44,8 +116,16 @@
     "text": "`preventDefault()` wurde aufgerufen, in `onBeforeDrop` oder `onDrop`."
   },
   "SortableDropEvent.external": {
-    "source": "25e3ab04b3",
-    "text": "Ein Drag von außerhalb der Seite (`external`): was er trug, mit seinen Daten."
+    "source": "bb43ee40e1",
+    "text": "Ein Drag von außerhalb der Seite (`external`): was er trug, mit seinen Daten (er wurde abgelegt)."
+  },
+  "SortableIndicator": {
+    "source": "6b1e3f646c",
+    "text": "Wohin der Drop mit `placeholder: 'indicator'` geht: Die Liste bewegt sich nicht, du zeichnest die Linie."
+  },
+  "SortableIndicator.list": {
+    "source": "1e408489b9",
+    "text": "ID der Liste (oder des Baums), in die der Drop geht."
   },
   "SortableIndicator.index": {
     "source": "0043b67077",
@@ -68,8 +148,8 @@
     "text": "Bäume: Elternknoten, den die abgelegten Knoten bekommen, `null` auf der Wurzelebene."
   },
   "SortableListOptions": {
-    "source": "f8e2e84b3b",
-    "text": "Optionen von `makeSortableList`. Eine Komponente kann mehrere Listen (und Bäume) erstellen: Jedes darin gerenderte Element gehört zur innersten, deren DOM-Element es enthält.\n\nOptionen nehmen einen Wert, ein Ref oder einen Getter entgegen (`overlay`, `animation`: einen Wert oder ein Ref) und werden gelesen, wenn die Liste sie braucht, sodass eine Änderung spätestens ab dem nächsten Drag gilt. Ausnahmen: `id` und `group` werden einmal gelesen, wenn die Liste erstellt wird; `items` ist das Modell selbst; Funktionen (`getKey`, `filter`, `clone`, `createItem`, die Callbacks) werden so übergeben, wie sie sind."
+    "source": "f1e8324a59",
+    "text": "Optionen von `makeSortableList`. Eine Komponente kann mehrere Listen (und Bäume) erstellen: Jedes darin gerenderte Element gehört zur innersten, deren DOM-Element es enthält.\n\nOptionen nehmen einen Wert, ein Ref oder einen Getter entgegen (`overlay`, `overOverlay`, `dropAnimation`, `overDropAnimation`, `animation`: einen Wert oder ein Ref) und werden gelesen, wenn die Liste sie braucht, sodass eine Änderung spätestens ab dem nächsten Drag gilt. Ausnahmen: `id` und `group` werden einmal gelesen, wenn die Liste erstellt wird; `items` ist das Modell selbst; Funktionen (`getKey`, `filter`, `clone`, `createItem`, die Callbacks) werden so übergeben, wie sie sind."
   },
   "SortableListOptions.items": {
     "source": "bcf07acd7a",
@@ -91,13 +171,21 @@
     "source": "afaee09f48",
     "text": "Der lesbare Name der Liste: Screenreader-Texte nennen ihn statt ihrer ID (`position 2 of 5 in Garden`)."
   },
+  "SortableListOptions.data": {
+    "source": "a7247f236a",
+    "text": "Alles, was es über die Liste als Drop-Ziel zu sagen gibt: Events tragen es als `over.data`, solange ein Drag über ihr ist."
+  },
+  "SortableListOptions.activation": {
+    "source": "2e75796cf9",
+    "text": "Wie ein Druck auf die Elemente dieser Liste einen Drag startet, statt `activation` des Providers (die eigene eines Elements gewinnt). Wird gelesen, wenn ein Druck beginnt."
+  },
   "SortableListOptions.overlay": {
     "source": "47e3eb4c8a",
     "text": "Overlay-Komponente für die Elemente dieser Liste (das eigene `overlay` eines Elements gewinnt). Sie bekommt `OverlayProps` und bleibt für den ganzen Drag erhalten, auch über anderen Listen, sofern das Ziel unter dem Drag kein eigenes Overlay hat (`overOverlay`). Ein mitten im Drag umgeschaltetes Ref tauscht sie sofort."
   },
   "SortableListOptions.overOverlay": {
-    "source": "ac8fff8632",
-    "text": "Was das Overlay zeigt, während ein Drag, den diese Liste annimmt, über ihr ist, egal aus welcher Liste er kommt: eine Komponente, die `OverlayProps` und das eigene Overlay des Drags als Standard-Slot bekommt (siehe `DroppableOptions.overlay`). Wird live gelesen."
+    "source": "b16cfebf45",
+    "text": "Was das Overlay zeigt, während ein Drag, den diese Liste annimmt, über ihr ist, egal aus welcher Liste er kommt: eine Komponente, die `OverlayProps` und das eigene Overlay des Drags als Standard-Slot bekommt (siehe `DroppableOptions.overOverlay`). Wird live gelesen."
   },
   "SortableListOptions.dropAnimation": {
     "source": "9b8f883d95",
@@ -148,12 +236,12 @@
     "text": "Erstellt Kopien (`pull: 'clone'`, Modifier-Taste zum Kopieren). Zum Kopieren erforderlich."
   },
   "SortableListOptions.createItem": {
-    "source": "5676dc9273",
-    "text": "Nimmt einfache ziehbare Elemente von außen an: erstellt das einzufügende Element. Mit der Tastatur holt ein Pfeil in Richtung der Liste das ziehbare Element herein (auf seiner Höhe, wie bei Bewegungen zwischen Listen), und das erstellte Element bewegt sich dann wie jedes andere von Slot zu Slot.\n\nBei einem Drag von außerhalb der Seite (`external`) wird es zweimal gefragt: während er gehalten wird, nach dem Element, das zeigt, wo er hinkommt (dann sind nur `active.external.fileTypes` und `types` bekannt), und beim Drop, mit seinen Daten (`active.external.dropped`), nach dem, was eingefügt wird. Ein Array von Elementen wird komplett dort eingefügt, wo der Slot war: eines pro Datei."
+    "source": "e108ee747d",
+    "text": "Nimmt einfache ziehbare Elemente von außen an: erstellt das einzufügende Element. Mit der Tastatur holt ein Pfeil in Richtung der Liste das ziehbare Element herein (auf seiner Höhe, wie bei Bewegungen zwischen Listen), und das erstellte Element bewegt sich dann wie jedes andere von Slot zu Slot.\n\nBei einem Drag von außerhalb der Seite (`external`) wird es zweimal gefragt: während er gehalten wird, nach dem Element, das zeigt, wo er hinkommt (dann sind nur `active.external.fileTypes` und `types` bekannt), und beim Drop, mit seinen Daten (`active.external.ready`), nach dem, was eingefügt wird. Ein Array von Elementen wird komplett dort eingefügt, wo der Slot war: eines pro Datei."
   },
   "SortableListOptions.external": {
-    "source": "9ae9a7ef2d",
-    "text": "Nimmt Drags von außerhalb der Seite an: Dateien, Links, Text (siehe `ExternalAccept`). Die Liste macht ihnen Platz wie einem einfachen ziehbaren Element, mit `createItem`, das sie dafür braucht. Elemente ihrer Gruppe, die aus einem anderen Fenster der App hereingezogen werden (`native`), brauchen keins von beiden: Sie kommen als sie selbst hinein. Ein Wert, ein Ref oder ein Getter, live gelesen."
+    "source": "adbc2f861e",
+    "text": "Nimmt Drags von außerhalb der Seite an: Dateien, Links, Text (siehe `ExternalAccept`). Die Liste macht ihnen Platz wie einem einfachen ziehbaren Element, mit `createItem`, das sie dafür braucht. Elemente ihrer Gruppe, die aus einem anderen Fenster der App hereingezogen werden (`native`), brauchen keine der beiden Optionen: Sie kommen als sie selbst hinein. Ein Wert, ein Ref oder ein Getter, live gelesen."
   },
   "SortableListOptions.dropOutside": {
     "source": "bffdd0d062",
@@ -163,13 +251,13 @@
     "source": "cc6ad2ca6a",
     "text": "FLIP-Animation dieser Liste; Standard: `animation` des Providers. Ein Wert oder ein Ref (eine Funktion ist eine eigene Animation)."
   },
-  "SortableListOptions.animate": {
-    "source": "86283c7ec0",
-    "text": "Animiert Änderungen von `items`, die kein Drag ausgelöst hat: hinzugefügte, entfernte, verschobene und gefilterte Elemente (siehe `AutoAnimation`). Standard: `animate` des Providers, aus, sofern dort nicht gesetzt. Wird gelesen, wenn sich `items` ändert."
+  "SortableListOptions.animateChanges": {
+    "source": "74a1263e3f",
+    "text": "Animiert Änderungen von `items`, die kein Drag ausgelöst hat: hinzugefügte, entfernte, verschobene und gefilterte Elemente (siehe `AutoAnimation`). Standard: `animateChanges` des Providers, aus, sofern dort nicht gesetzt. Wird gelesen, wenn sich `items` ändert."
   },
   "SortableListOptions.animateSize": {
-    "source": "382b485c30",
-    "text": "Die eigene Größe der Liste folgt ihren Elementen: Wenn ein Drag ein Element hereinbringt oder herausnimmt (und beim Drop und bei den Änderungen, die `animate` zeigt), wächst oder schrumpft sie mit Dauer und Easing von `animation` auf ihre neue Größe, statt zu springen, und was um sie herum ist, bewegt sich mit. Standard `true`; `false` lässt sie springen. Wird bei jeder Änderung gelesen."
+    "source": "a69c0b1f97",
+    "text": "Die eigene Größe der Liste folgt ihren Elementen: Wenn ein Drag ein Element hereinbringt oder herausnimmt (und beim Drop und bei den Änderungen, die `animateChanges` zeigt), wächst oder schrumpft sie mit Dauer und Easing von `animation` auf ihre neue Größe, statt zu springen, und was um sie herum ist, bewegt sich mit. Standard `true`; `false` lässt sie springen. Wird bei jeder Änderung gelesen."
   },
   "SortableListOptions.autoScroll": {
     "source": "0c0b0867b3",
@@ -179,6 +267,10 @@
     "source": "6202e9c757",
     "text": "Das Element, das Drops für die Liste annimmt, standardmäßig das Listenelement selbst: z. B. die ganze Spalte um eine kurze Liste von Karten, sodass eine Karte, die unterhalb der letzten losgelassen wird, trotzdem in der Liste landet (an ihrem Ende). Die Elemente bleiben im Listenelement."
   },
+  "SortableListOptions.disabled": {
+    "source": "5ce0000028",
+    "text": "`true`: Ihre Elemente können nicht gezogen werden, und sie nimmt keine Elemente an."
+  },
   "SortableListOptions.onBeforeDrop": {
     "source": "75b3651128",
     "text": "Wird vor einem Drop in diese Liste gefragt und bevor `dropOutside: 'remove'` ihre Elemente herausnimmt: `false` lehnt ihn ab (die Elemente fliegen zurück), einige Schlüssel nehmen nur diese an. Darf asynchron sein: Das Overlay wartet dort, wo es abgelegt wurde. Auch ein Fehler lehnt den Drop ab. Siehe `SortableDropEvent` für `result` und `preventDefault`."
@@ -187,21 +279,49 @@
     "source": "e1c7bf0125",
     "text": "Wird aufgerufen, sobald ein Drop in diese Liste angenommen ist, bevor er geschrieben wird: `items` enthält noch die alte Reihenfolge, `event.result` die neue. Synchron: Das Schreiben folgt, sobald es zurückkehrt, sofern es nicht `event.preventDefault()` aufgerufen hat. Wird auch für die Liste aufgerufen, aus der die Elemente kamen, wenn sie entfernt werden (`to.index` ist -1)."
   },
+  "SortableListReturn": {
+    "source": "e815828b93",
+    "text": "Was `makeSortableList` zurückgibt."
+  },
+  "SortableListReturn.id": {
+    "source": "4085e3d2dc",
+    "text": "Die ID der Liste: die Option `id` oder die dafür erzeugte."
+  },
   "SortableListReturn.items": {
     "source": "d650d61bc4",
     "text": "Entwurfsreihenfolge: Rendere das, nicht das Quell-Array."
   },
+  "SortableListReturn.isOver": {
+    "source": "d43d16ad78",
+    "text": "Ein Drag ist über der Liste."
+  },
+  "SortableListReturn.isAccepting": {
+    "source": "fe5bd01f6b",
+    "text": "Etwas wird gezogen, und diese Liste nimmt es an."
+  },
+  "SortableListReturn.indicator": {
+    "source": "60ca94d5b2",
+    "text": "Indikator-Modus: wohin der Drop in dieser Liste geht; `null`, wenn nicht hier."
+  },
+  "SortableListReturn.activeKey": {
+    "source": "4ec3691928",
+    "text": "Die Zeile, die ein Virtualizer gemountet halten muss: der Slot, solange er in dieser Liste ist (eine Kopie, ein erstelltes Element), sonst das gezogene Element; `null` ohne Drag."
+  },
   "SortableListReturn.activeIndex": {
     "source": "eff30ad0eb",
     "text": "Index des aktiven Elements im Entwurf dieser Liste, -1, wenn es nicht hier ist."
+  },
+  "SortableListReturn.activeSize": {
+    "source": "7c5077af4c",
+    "text": "Größe des gezogenen Elements beim Start des Drags: z. B. für die Größe einer virtuellen Zeile, die es hält."
   },
   "SortableListReturn.captureLayout": {
     "source": "4d1e38426d",
     "text": "Animiert Layoutänderungen, die nicht die Bibliothek verursacht hat (z. B. ein erneutes Messen durch einen Virtualizer)."
   },
   "SortableItemOptions": {
-    "source": "b25e70a1fe",
-    "text": "Übergib `id` oder `item` (`id` gewinnt, wenn beide angegeben sind). Sortierbare Schlüssel müssen aus den Daten kommen: Eine automatische ID würde sich ändern, sobald die Komponente neu erstellt wird (in eine andere Liste verschoben, von einer virtuellen Liste wiederverwendet), und der Drag würde das Element verlieren.\n\nOptionen außer `canDrag` nehmen einen Wert, ein Ref oder einen Getter entgegen (`overlay`: einen Wert oder ein Ref) und bedeuten dasselbe wie bei `makeDraggable`. Es gibt kein `keyboard`: Die Tastatur bewegt ein sortierbares Element von Slot zu Slot."
+    "source": "03dae81bf5",
+    "text": "Übergib `id` oder `item` (`id` gewinnt, wenn beide angegeben sind). Sortierbare Schlüssel müssen aus den Daten kommen: Eine automatische ID würde sich ändern, sobald die Komponente neu erstellt wird (in eine andere Liste verschoben, von einer virtuellen Liste wiederverwendet), und der Drag würde das Element verlieren.\n\nOptionen außer `canDrag` nehmen einen Wert, ein Ref oder einen Getter entgegen (`overlay`, `dropAnimation`: einen Wert oder ein Ref) und bedeuten dasselbe wie bei `makeDraggable`. Es gibt kein `keyboardMode`: Die Tastatur bewegt ein sortierbares Element von Slot zu Slot."
   },
   "SortableItemOptions.id": {
     "source": "f76ac37600",
@@ -231,13 +351,25 @@
     "source": "519bda20d7",
     "text": "Element oder Selektor innerhalb des Elements, der den Drag startet (und die Attribute bekommt)."
   },
+  "SortableItemOptions.disabled": {
+    "source": "c702380010",
+    "text": "`true`: Das Element kann nicht gezogen werden (wie jedes Element einer deaktivierten Liste)."
+  },
+  "SortableItemOptions.type": {
+    "source": "0f582d8dc4",
+    "text": "Sein Typ oder seine Typen, für `group.put`-Regeln und das `accept` von Drop-Zielen. Standard: der Name der Gruppe seiner Liste."
+  },
+  "SortableItemOptions.data": {
+    "source": "30d815634b",
+    "text": "Alles, was der Drag mitführen soll: Events und Drop-Ziele lesen es als `active.data`."
+  },
   "SortableItemOptions.label": {
     "source": "93ed063b77",
     "text": "Der lesbare Name des Elements: Screenreader-Texte nennen ihn statt seines Schlüssels (`Picked up Tomato at position 2 of 5 in Garden`). Events tragen ihn als `active.label` und in `items`."
   },
   "SortableItemOptions.activation": {
-    "source": "07b1465312",
-    "text": "Überschreibt `activation` des Providers. Wird gelesen, wenn ein Druck beginnt."
+    "source": "ed1e1a99e1",
+    "text": "Überschreibt `activation` seiner Liste (oder seines Baums) und des Providers. Wird gelesen, wenn ein Druck beginnt."
   },
   "SortableItemOptions.canDrag": {
     "source": "ba9d01922f",
@@ -251,13 +383,21 @@
     "source": "6b13bbb4b9",
     "text": "Ein Maus-Drag des Elements ist der eigene Drag des Browsers, der die Seite verlassen kann (siehe `DraggableOptions.native`). Er trägt auch das Element: Die Listen seiner Gruppe in einem anderen Fenster der App nehmen es an, und wenn eine das tut, verlässt es diese Liste (`'move'`)."
   },
+  "SortableItemReturn": {
+    "source": "7d0a843936",
+    "text": "Was `makeSortableItem` zurückgibt."
+  },
   "SortableItemReturn.isDragging": {
-    "source": "f148b949fd",
-    "text": "Dieses Element wird gezogen (auch true für die anderen Elemente eines Multi-Drags)."
+    "source": "e849497527",
+    "text": "Dieses Element wird gezogen (auch true für die anderen Elemente eines Multi-Drags), oder sein Overlay landet noch."
   },
   "SortableItemReturn.isPlaceholder": {
     "source": "e31014eb2c",
     "text": "Dieses Element ist ein Slot, in dem ein gezogenes Element landen wird: der des aktiven Elements und im Multi-Drag-Modus `'group'` die Slots der Elemente, die mit ihm wandern."
+  },
+  "SortableItemReturn.selected": {
+    "source": "d15fb608a4",
+    "text": "Es ist in der Auswahl des Providers: Ein Drag eines ausgewählten Elements trägt sie alle. Setze den Wert, um es aus- oder abzuwählen."
   },
   "SortableItemReturn.indicator": {
     "source": "3e7f9ce50b",

@@ -273,7 +273,7 @@ export type DevtoolsEvent =
   | { type: 'announcement'; text: string }
   | { type: 'autoScroll'; scrolling: boolean }
   /**
-   * The items of a list with `animate` on changed, and no drag changed them: the list
+   * The items of a list with `animateChanges` on changed, and no drag changed them: the list
    * animates the change (its keys; a tree's visible rows).
    */
   | { type: 'change'; group: string; list: Key; added: Key[]; removed: Key[]; reordered: boolean };

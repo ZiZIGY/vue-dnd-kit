@@ -140,9 +140,9 @@ const mountBoard = (provider: Record<string, unknown> = {}, listA: Record<string
           h(Zone, {
             zoneId: 'water',
             column: 2,
-            options: { overlay: waterOverlay, dropAnimation: waterLanding, onDrop: () => onWaterDrop?.() },
+            options: { overOverlay: waterOverlay, overDropAnimation: waterLanding, onDrop: () => onWaterDrop?.() },
           }),
-          h(Zone, { zoneId: 'stone', column: 3, options: { accept: () => false, overlay: Rock } }),
+          h(Zone, { zoneId: 'stone', column: 3, options: { accept: () => false, overOverlay: Rock } }),
           h(Free, { freeId: 'seed', column: 4, options: { overlay: seedOverlay, dropAnimation: animation('seed') } }),
         ],
       }),

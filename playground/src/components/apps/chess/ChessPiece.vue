@@ -14,7 +14,7 @@
     // Only the side to move can pick up pieces, and nobody once a king has fallen.
     disabled: () => chess.over.value || props.piece.color !== chess.turn.value,
     // Arrow keys jump between the squares that accept the piece: its legal moves.
-    keyboard: 'droppables',
+    keyboardMode: 'droppables',
   });
 </script>
 

@@ -4,7 +4,7 @@ import type { DnDStatus, Over } from '@vue-dnd-kit/core';
 
 // The bin's overlay. It wraps the photo's own overlay (its slot, the clone) and crumples
 // it up. When the drop is decided it throws it into the bin: the drop waits for that
-// animation, and the bin's `dropAnimation: false` leaves the box where it was let go.
+// animation, and the bin's `overDropAnimation: false` leaves the box where it was let go.
 const props = defineProps<{ over: Over | null; status: DnDStatus }>();
 
 const paper = useTemplateRef<HTMLElement>('paper');

@@ -26,7 +26,7 @@ import { makeSortableItem } from './makeSortableItem';
 import { makeSortableList } from './makeSortableList';
 import { makeSortableTree } from './makeSortableTree';
 
-// `animate` (rfcs/0001-v3.md §8): changes of `items` that no drag made animate. Off by default.
+// `animateChanges` (rfcs/0001-v3.md §8): changes of `items` that no drag made animate. Off by default.
 
 type Item = { id: string; children?: Item[] };
 
@@ -76,7 +76,7 @@ const Tree = defineComponent({
       id: 'a',
       items: data.a!,
       collapsed: props.collapsed,
-      animate: true,
+      animateChanges: true,
     });
     return () => h('ul', { ref: 'list', 'data-list': 'a' }, items.value.map((row) => h(Row, { key: row.key, rowId: String(row.key) })));
   },
@@ -174,7 +174,7 @@ const flush = async () => {
   await new Promise((resolve) => setTimeout(resolve));
 };
 
-describe('animate: changes no drag made', () => {
+describe('animateChanges: changes no drag made', () => {
   beforeEach(() => {
     data = { a: ref(ids('a1', 'a2', 'a3')), b: ref(ids('b1', 'b2')) };
     rectReads = 0;
@@ -199,7 +199,7 @@ describe('animate: changes no drag made', () => {
   });
 
   it('moves items to their new places from where they were', async () => {
-    mount({ a: { options: { animate: true } } });
+    mount({ a: { options: { animateChanges:true } } });
     stubAnimate();
     data.a!.value = ids('a3', 'a2', 'a1');
     await flush();
@@ -209,7 +209,7 @@ describe('animate: changes no drag made', () => {
   });
 
   it('fades in an item that appears', async () => {
-    mount({ a: { options: { animate: true } } });
+    mount({ a: { options: { animateChanges:true } } });
     stubAnimate();
     data.a!.value = ids('a1', 'a4', 'a2', 'a3');
     await flush();
@@ -219,7 +219,7 @@ describe('animate: changes no drag made', () => {
   });
 
   it('a copy of a removed item fades out where it was, then goes', async () => {
-    const container = mount({ a: { options: { animate: true } } });
+    const container = mount({ a: { options: { animateChanges:true } } });
     stubAnimate();
     data.a!.value = ids('a2', 'a3');
     await flush();
@@ -244,7 +244,7 @@ describe('animate: changes no drag made', () => {
     const move = vi.fn<(context: LayoutAnimationContext) => void>();
     const enter = vi.fn<(context: EnterAnimationContext) => void>();
     const leave = vi.fn((_context: LeaveAnimationContext) => new Promise<void>((resolve) => (leaveDone = resolve)));
-    const container = mount({ a: { options: { animate: { duration: 300, move, enter, leave } } } });
+    const container = mount({ a: { options: { animateChanges:{ duration: 300, move, enter, leave } } } });
     stubAnimate();
     data.a!.value = ids('a3', 'a4', 'a2');
     await flush();
@@ -283,7 +283,7 @@ describe('animate: changes no drag made', () => {
       signals.push(signal);
       return new Promise<void>(() => {});
     });
-    mount({ a: { options: { animate: { move } } } });
+    mount({ a: { options: { animateChanges:{ move } } } });
     stubAnimate();
     data.a!.value = ids('a2', 'a1', 'a3');
     await flush();
@@ -298,7 +298,7 @@ describe('animate: changes no drag made', () => {
   });
 
   it('`false` turns one kind off', async () => {
-    const container = mount({ a: { options: { animate: { leave: false } } } });
+    const container = mount({ a: { options: { animateChanges:{ leave: false } } } });
     stubAnimate();
     data.a!.value = ids('a2', 'a3');
     await flush();
@@ -308,7 +308,7 @@ describe('animate: changes no drag made', () => {
 
   it('reduced motion turns the default animations off: nothing is even measured', async () => {
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('reduce') }));
-    const container = mount({ a: { options: { animate: true } } });
+    const container = mount({ a: { options: { animateChanges:true } } });
     stubAnimate();
     rectReads = 0;
     data.a!.value = ids('a3', 'a2');
@@ -322,7 +322,7 @@ describe('animate: changes no drag made', () => {
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('reduce') }));
     const move = vi.fn();
     const leave = vi.fn();
-    mount({ a: { options: { animate: { move, leave } } } });
+    mount({ a: { options: { animateChanges:{ move, leave } } } });
     stubAnimate();
     data.a!.value = ids('a3', 'a2');
     await flush();
@@ -333,9 +333,9 @@ describe('animate: changes no drag made', () => {
     expect(played).toEqual([]);
   });
 
-  it("the provider's `animate` is the default; a list's own wins; a ref turns it on and off", async () => {
+  it("the provider's `animateChanges` is the default; a list's own wins; a ref turns it on and off", async () => {
     const own = shallowRef<AutoAnimation>(false);
-    mount({ a: {}, b: { options: { animate: own } } }, { animate: true });
+    mount({ a: {}, b: { options: { animateChanges: own } } }, { animateChanges: true });
     stubAnimate();
     data.a!.value = ids('a2', 'a1', 'a3');
     data.b!.value = ids('b2', 'b1');
@@ -350,7 +350,7 @@ describe('animate: changes no drag made', () => {
   });
 
   it('an item moved to another list of the group slides there', async () => {
-    mount({ a: { options: { animate: true } }, b: { options: { animate: true } } });
+    mount({ a: { options: { animateChanges:true } }, b: { options: { animateChanges:true } } });
     stubAnimate();
     data.a!.value = ids('a2', 'a3');
     data.b!.value = ids('a1', 'b1', 'b2');
@@ -361,7 +361,7 @@ describe('animate: changes no drag made', () => {
 
   it("rows a virtual list doesn't render are skipped", async () => {
     data.a!.value = ids('a1', 'a2', 'a3', 'a4', 'a5');
-    const container = mount({ a: { options: { animate: true }, shown: 3 } });
+    const container = mount({ a: { options: { animateChanges:true }, shown: 3 } });
     stubAnimate();
     // a5 (not rendered) leaves, a4 comes into view as a1 leaves: neither is new.
     data.a!.value = ids('a2', 'a3', 'a4');
@@ -374,7 +374,7 @@ describe('animate: changes no drag made', () => {
   it('drags keep their own animations, their drop included', async () => {
     const move = vi.fn();
     const animation = vi.fn();
-    mount({ a: { options: { animate: { move }, animation } } });
+    mount({ a: { options: { animateChanges:{ move }, animation } } });
     stubAnimate();
     expect(manager.start('a1', { x: 100, y: 10 }, 'pointer')).toBe(true);
     await nextTick();
@@ -391,7 +391,7 @@ describe('animate: changes no drag made', () => {
   });
 
   it("a drop's render stays the drag's: items a `'stack'` multi-drag brings back still fly out of the overlay", async () => {
-    mount({ a: { options: { animate: true, multiple: 'stack' } } });
+    mount({ a: { options: { animateChanges:true, multiple: 'stack' } } });
     stubAnimate();
     manager.selection.add('a1');
     manager.selection.add('a3');

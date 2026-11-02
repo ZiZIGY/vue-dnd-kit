@@ -1,4 +1,8 @@
 {
+  "Key": {
+    "source": "0e20a2c263",
+    "text": "Un id ou une clé : d'un élément déplaçable, d'une cible de dépôt, d'une liste, d'un item de liste."
+  },
   "MaybeReadonlyRefOrGetter": {
     "source": "856e8d0c75",
     "text": "Une valeur, un getter ou n'importe quelle ref (modifiable, shallow, computed, readonly — par exemple issue de `useTemplateRef`) que la bibliothèque se contente de lire. Contrairement au `MaybeRefOrGetter` de Vue, il accepte `Ref<string>` là où `string | number` est attendu."
@@ -7,9 +11,85 @@
     "source": "e1366b62a5",
     "text": "Une valeur ou n'importe quelle ref, pour les options où une fonction est une valeur à part entière (un composant d'overlay, une règle d'acceptation, une animation personnalisée), et où un getter ne pourrait donc pas être distingué. Gardez les composants dans une `shallowRef` (ou un computed) : Vue ne doit pas les rendre réactifs."
   },
+  "MaybeElement": {
+    "source": "1b8960adcb",
+    "text": "Un élément : un élément HTML ou SVG, ou une instance de composant (son élément racine, `$el`), tels que les donne une ref de template. `null` ou `undefined` tant qu'il n'y en a pas (pas encore monté)."
+  },
+  "MaybeElementRef": {
+    "source": "603f215a38",
+    "text": "L'élément sur lequel travaille un composable (`makeDraggable(target)`) : l'élément, une ref de template (`useTemplateRef`) ou un getter. Il peut changer (un `v-if`) : la bibliothèque le suit."
+  },
+  "Coordinates": {
+    "source": "2f8f5c3336",
+    "text": "Un point ou un décalage, en px : une position depuis le coin supérieur gauche du viewport, ou un décalage depuis l'endroit où le glissement a commencé (`delta`, `transform`)."
+  },
+  "Coordinates.x": {
+    "source": "b43f5ddec4",
+    "text": "Horizontal, croissant vers la droite."
+  },
+  "Coordinates.y": {
+    "source": "8f097fc225",
+    "text": "Vertical, croissant vers le bas."
+  },
+  "Size": {
+    "source": "255c399f55",
+    "text": "Une largeur et une hauteur, en px."
+  },
+  "Size.width": {
+    "source": "f4f2b634d9",
+    "text": "Largeur en px."
+  },
+  "Size.height": {
+    "source": "6e660db892",
+    "text": "Hauteur en px."
+  },
+  "Rect": {
+    "source": "62078f7f5c",
+    "text": "Une boîte en px, en coordonnées du viewport, telle que la donne `getBoundingClientRect()`."
+  },
+  "Rect.top": {
+    "source": "4e05fbd563",
+    "text": "Son bord supérieur, depuis le haut du viewport."
+  },
+  "Rect.left": {
+    "source": "3d40777368",
+    "text": "Son bord gauche, depuis la gauche du viewport."
+  },
+  "Rect.width": {
+    "source": "d31ce8afdd",
+    "text": "Sa largeur."
+  },
+  "Rect.height": {
+    "source": "db48d67b0f",
+    "text": "Sa hauteur."
+  },
+  "Rect.right": {
+    "source": "7158323919",
+    "text": "Son bord droit, depuis la gauche du viewport : `left + width`."
+  },
+  "Rect.bottom": {
+    "source": "44b04207ae",
+    "text": "Son bord inférieur, depuis le haut du viewport : `top + height`."
+  },
+  "MaybePromise": {
+    "source": "f3d05df331",
+    "text": "Une valeur, ou une promesse de cette valeur : ce que renvoie un hook qui peut être asynchrone (`onBeforeDrop`)."
+  },
+  "DnDStatus": {
+    "source": "d5d49a4ce6",
+    "text": "Ce que fait le provider :\n- `'idle'` : rien ;\n- `'activating'` : un appui attend sa condition d'activation (une distance, un appui long) ;\n- `'dragging'` : un glissement est en cours ;\n- `'dropping'` : un dépôt est en cours de décision (un `onBeforeDrop` asynchrone), ou un overlay atterrit encore ;\n- `'selecting'` : une zone de sélection dessine son rectangle."
+  },
   "SensorType": {
     "source": "ddccc05a96",
     "text": "Comment un glissement se déplace, quel que soit le capteur qui le pilote (`SensorActivation.type`) : `'pointer'` suit des points, `'keyboard'` se déplace d'item en item."
+  },
+  "PointerKind": {
+    "source": "5db385a430",
+    "text": "Le type de pointeur qui a appuyé (`PointerEvent.pointerType`) : l'activation se règle par type."
+  },
+  "ActivationConstraint": {
+    "source": "e5b4786b75",
+    "text": "Ce qu'un appui doit faire avant de devenir un glissement : parcourir `distance`, ou être maintenu pendant `delay`, selon ce qui arrive en premier. Rien de défini : le glissement commence tout de suite."
   },
   "ActivationConstraint.distance": {
     "source": "70ede97eca",
@@ -24,7 +104,7 @@
     "text": "Avec `delay` : le mouvement en px qui interrompt l'activation, pour que la page puisse défiler."
   },
   "ActivationOptions": {
-    "source": "75a2dcce93",
-    "text": "Par type de pointeur. Par défaut : souris/stylet `{ distance: 4 }` (immédiat sur une poignée), toucher `{ delay: 200, tolerance: 5 }`."
+    "source": "a41c6198e1",
+    "text": "Par type de pointeur. Par défaut : souris `{ distance: 4 }` (immédiat sur une poignée), stylet `{ distance: 4 }`, toucher `{ delay: 200, tolerance: 5 }`."
   }
 }

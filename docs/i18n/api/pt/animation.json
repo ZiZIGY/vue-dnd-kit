@@ -1,4 +1,28 @@
 {
+  "AnimationOptions": {
+    "source": "b09e1a9518",
+    "text": "O tempo de uma animação. O que ficar de fora mantém o padrão daquela animação."
+  },
+  "AnimationOptions.duration": {
+    "source": "d0c1a0e2ba",
+    "text": "Em ms. Padrão: 200 para os movimentos de layout, 250 para o drop; `0` desliga a animação."
+  },
+  "AnimationOptions.easing": {
+    "source": "203b67cb4a",
+    "text": "Um easing CSS (`'ease-out'`, `cubic-bezier(…)`)."
+  },
+  "LayoutAnimationContext": {
+    "source": "4024b00eb0",
+    "text": "O que uma função de animação de layout recebe, para um item que se move para o seu novo lugar."
+  },
+  "LayoutAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "A key do item."
+  },
+  "LayoutAnimationContext.element": {
+    "source": "a268435146",
+    "text": "O elemento do item, já no seu novo lugar."
+  },
   "LayoutAnimationContext.from": {
     "source": "c5845d8793",
     "text": "Retângulo visual antes da mudança (onde uma animação em andamento mostrava o item)."
@@ -7,9 +31,13 @@
     "source": "17f753cbe6",
     "text": "Retângulo de layout depois da mudança."
   },
+  "LayoutAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "O tempo dado pelas opções, com os padrões preenchidos."
+  },
   "LayoutAnimationContext.reason": {
-    "source": "eceea904fa",
-    "text": "O que moveu o item: um arraste (`'drag'`: a ordenação, o drop, um cancelamento), ou uma mudança nos seus dados que nenhum arraste fez (`'change'`, com o `animate` da lista ligado)."
+    "source": "fea2ee2ea2",
+    "text": "O que moveu o item: um arraste (`'drag'`: a ordenação, o drop, um cancelamento), ou uma mudança nos seus dados que nenhum arraste fez (`'change'`, com o `animateChanges` da lista ligado)."
   },
   "LayoutAnimationContext.signal": {
     "source": "c8aa938f56",
@@ -23,9 +51,17 @@
     "source": "233b130a9c",
     "text": "Como os itens se movem para os novos lugares: `true` (tempo padrão), opções, `false` (eles saltam), ou uma função que anima um item de `from` até `to` e retorna a `Animation` dele, uma promise que é resolvida quando ela termina, ou nada."
   },
+  "DropAnimationContext": {
+    "source": "ed32f90e37",
+    "text": "O que uma função de animação de drop recebe: o overlay, onde ele está e onde ele pousa."
+  },
   "DropAnimationContext.overlay": {
     "source": "e272382994",
     "text": "A caixa do overlay; ela pousa na posição do item ativo. Em um multi-drag, os clones dos outros itens que viajam dentro dela (os do overlay padrão, os `DragPreview`s de um personalizado) pousam sozinhos nas suas próprias posições (com o tempo padrão quando isto é uma função personalizada)."
+  },
+  "DropAnimationContext.from": {
+    "source": "c2595bada3",
+    "text": "Onde o overlay está quando o arraste termina."
   },
   "DropAnimationContext.to": {
     "source": "d0780ba408",
@@ -35,17 +71,37 @@
     "source": "cecafada99",
     "text": "O item não é mostrado depois de um drop em uma zona (não uma lista ordenável), por exemplo, ele foi solto dentro de outro item (uma pasta) ou de uma zona de lixeira: o retângulo visível da zona. A animação padrão encolhe o overlay para dentro dela enquanto ele desaparece, em vez de desaparecer no lugar."
   },
+  "DropAnimationContext.reason": {
+    "source": "275d894e30",
+    "text": "`'drop'`: o overlay pousa onde o drop colocou o item. `'cancel'`: ele volta ao lugar onde o item estava."
+  },
+  "DropAnimationContext.active": {
+    "source": "7c6ffaf118",
+    "text": "O arraste que terminou."
+  },
   "DropAnimationContext.over": {
     "source": "54c7b98b67",
     "text": "O alvo em que o drop pousa (uma lista, uma zona); `null` no cancelamento."
+  },
+  "DropAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "O tempo dado pelas opções, com os padrões preenchidos."
   },
   "DropAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "`prefers-reduced-motion: reduce` está ativo. Nesse caso, as animações da própria biblioteca não rodam; as suas funções sempre rodam, e decidem com isto (pular, ou manter um fade)."
   },
+  "DropAnimation": {
+    "source": "4e7ab98e07",
+    "text": "Como o overlay pousa em um drop e volta ao lugar em um cancelamento: `true` (tempo padrão), opções, `false` (sem voo: ele termina onde foi solto), ou uma função que anima `overlay` de `from` até `to` e retorna a `Animation` dele, uma promise que é resolvida quando ela termina, ou nada."
+  },
   "EnterAnimationContext": {
-    "source": "bef530cbfe",
-    "text": "Um item que apareceu em uma lista com `animate` ligado: adicionado, ou mostrado de novo (um filtro, um nó de árvore expandido)."
+    "source": "e45e8bafb3",
+    "text": "Um item que apareceu em uma lista com `animateChanges` ligado: adicionado, ou mostrado de novo (um filtro, um nó de árvore expandido)."
+  },
+  "EnterAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "A key do item."
   },
   "EnterAnimationContext.element": {
     "source": "120613b512",
@@ -55,13 +111,21 @@
     "source": "fd058782f5",
     "text": "Onde ele apareceu (retângulo de layout)."
   },
+  "EnterAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "O tempo dado pelas opções, com os padrões preenchidos."
+  },
   "EnterAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "`prefers-reduced-motion: reduce` está ativo. Nesse caso, as animações da própria biblioteca não rodam; as suas funções sempre rodam, e decidem com isto (pular, ou manter um fade)."
   },
   "LeaveAnimationContext": {
-    "source": "b67e70e13a",
-    "text": "Um item que saiu de uma lista com `animate` ligado: removido, ou ocultado (um filtro, um nó de árvore recolhido)."
+    "source": "5d6e9c20a9",
+    "text": "Um item que saiu de uma lista com `animateChanges` ligado: removido, ou ocultado (um filtro, um nó de árvore recolhido)."
+  },
+  "LeaveAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "A key do item."
   },
   "LeaveAnimationContext.element": {
     "source": "a4f7390241",
@@ -70,6 +134,10 @@
   "LeaveAnimationContext.from": {
     "source": "645084e2fd",
     "text": "Onde o item estava."
+  },
+  "LeaveAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "O tempo dado pelas opções, com os padrões preenchidos."
   },
   "LeaveAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
@@ -84,8 +152,8 @@
     "text": "`true`, opções, `false` (o item simplesmente desaparece), ou uma função que anima a saída da cópia deixada no lugar dele: retorne a `Animation` dela ou uma promise, e a cópia é removida quando ela terminar (na hora, quando a função não retorna nada)."
   },
   "AutoAnimationOptions": {
-    "source": "0130acd24e",
-    "text": "`animate` com as suas partes: `duration` e `easing` para todas elas, e, por tipo de mudança, `true`, opções (sobre as compartilhadas), `false` ou uma função sua."
+    "source": "39ddcaee1b",
+    "text": "`animateChanges` com as suas partes: `duration` e `easing` para todas elas, e, por tipo de mudança, `true`, opções (sobre as compartilhadas), `false` ou uma função sua."
   },
   "AutoAnimationOptions.move": {
     "source": "684eb0594d",

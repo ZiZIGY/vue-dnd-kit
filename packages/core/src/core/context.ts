@@ -86,7 +86,7 @@ export const useDnD = (): DnDState => {
   };
 };
 
-/** Subscribes to drag events for the lifetime of the calling scope. */
+/** Subscribes to the events of every drag under the provider, for as long as the calling component (or effect scope) lives. */
 export const useDnDMonitor = (monitor: DnDMonitor): void => {
   const manager = useManager();
   onScopeDispose(manager.addMonitor(monitor));

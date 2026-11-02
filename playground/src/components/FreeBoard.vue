@@ -6,8 +6,8 @@
   import type { Piece } from '../types';
 
   const pieces = ref<Piece[]>([
-    { id: 'red', label: 'Red', type: 'red', keyboard: 'droppables', x: 40, y: 40, zone: null },
-    { id: 'blue', label: 'Blue', type: 'blue', keyboard: 'droppables', x: 160, y: 40, zone: null },
+    { id: 'red', label: 'Red', type: 'red', keyboardMode: 'droppables', x: 40, y: 40, zone: null },
+    { id: 'blue', label: 'Blue', type: 'blue', keyboardMode: 'droppables', x: 160, y: 40, zone: null },
     // Off the grid on purpose: the first snap aligns it to the board's grid.
     { id: 'free', label: 'Free', x: 30, y: 150, zone: null, button: true },
     { id: 'shift', label: 'Shift', x: 240, y: 200, zone: null, shift: true },

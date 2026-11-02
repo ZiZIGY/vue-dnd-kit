@@ -99,30 +99,41 @@ test.describe('the next drag during a landing', () => {
 
 type Step = { box: number; at: number; x: number; y: number; landing: boolean };
 
-/** Records every overlay box's position every frame; returns the largest step a landing box made in one frame. */
+/** A frame at 60Hz, in ms. */
+const FRAME = 1000 / 60;
+
+/** Records every overlay box's position every frame, with the frame's time. */
 const watchSteps = (page: Page) =>
   page.evaluate(() => {
     const win = window as Window & { __steps?: Step[] };
     const ids = new WeakMap<Element, number>();
     let next = 0;
     win.__steps = [];
-    const tick = () => {
+    const tick = (at: number) => {
       for (const box of document.querySelectorAll('[data-dnd-overlay]')) {
         if (!ids.has(box)) ids.set(box, next++);
         const { left, top } = box.getBoundingClientRect();
-        win.__steps!.push({ box: ids.get(box)!, at: performance.now(), x: left, y: top, landing: box.getAttribute('data-dnd-overlay') === 'dropping' });
+        win.__steps!.push({ box: ids.get(box)!, at, x: left, y: top, landing: box.getAttribute('data-dnd-overlay') === 'dropping' });
       }
       requestAnimationFrame(tick);
     };
-    tick();
+    requestAnimationFrame(tick);
   });
+/**
+ * The largest step a landing box made in one frame, per 60Hz frame: a late frame (a loaded
+ * machine) lets a box glide farther, and counts for the frames it took. A jump doesn't
+ * grow with the time it takes, and it comes in pairs when the box comes back.
+ */
 const largestLandingStep = async (page: Page) => {
   const steps = await page.evaluate(() => (window as Window & { __steps?: Step[] }).__steps!);
   const last = new Map<number, Step>();
   let largest = 0;
   for (const step of steps) {
     const before = last.get(step.box);
-    if (before?.landing) largest = Math.max(largest, Math.hypot(step.x - before.x, step.y - before.y));
+    if (before?.landing) {
+      const frames = Math.max(1, (step.at - before.at) / FRAME);
+      largest = Math.max(largest, Math.hypot(step.x - before.x, step.y - before.y) / frames);
+    }
     last.set(step.box, step);
   }
   return largest;

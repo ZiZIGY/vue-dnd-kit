@@ -1,41 +1,89 @@
 name: Deploy Documentation
 
+# zizigy.github.io/vue-dnd-kit: the v3 docs (the Nuxt app in docs/ of the v3 branch), with
+# the old VitePress site of v1 and v2 (docs/ of master) under /legacy/. Its old addresses
+# (/v1/…, /v2/…) redirect there, so links and search results keep working.
+
 on:
   push:
-    branches: [master]
+    branches: [v3]
+    paths:
+      - 'docs/**'
+      - 'packages/core/src/**'
+      - 'packages/actions/src/**'
+      - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
 
 permissions:
   contents: write
-  pages: write
+
+concurrency:
+  group: deploy-docs
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 22
+  BASE: /vue-dnd-kit
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'yarn'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: |
+            docs/yarn.lock
+            packages/core/yarn.lock
+            packages/actions/yarn.lock
 
-      - name: Install dependencies
-        run: yarn install
+      # The docs import the packages from their sources (aliases in nuxt.config.ts).
+      - name: Install
+        run: |
+          yarn --cwd packages/core install --frozen-lockfile
+          yarn --cwd packages/actions install --frozen-lockfile
+          yarn --cwd docs install --frozen-lockfile
 
-      - name: Install core dependencies
-        run: yarn --cwd packages/core install
+      # Every public type and function documented and shown on a page.
+      - name: Check the API reference
+        run: yarn --cwd docs api:check
 
-      - name: Build core package
-        run: yarn --cwd packages/core build
+      - name: Generate the v3 docs
+        run: yarn --cwd docs generate
 
-      - name: Build documentation
-        run: yarn build
+      # v1 and v2: the VitePress site as it is on master, built under /legacy/.
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          path: legacy-site
+
+      - name: Build the v1 and v2 docs
+        working-directory: legacy-site
+        run: |
+          yarn install
+          yarn --cwd packages/core install
+          yarn --cwd packages/core build
+          npx vitepress build docs --base "$BASE/legacy/"
+
+      - name: Put them under /legacy, and redirect their old addresses
+        run: |
+          site=docs/.output/public
+          mkdir -p "$site/legacy"
+          cp -r legacy-site/docs/.vitepress/dist/. "$site/legacy/"
+          cd "$site/legacy"
+          find v1 v2 -name '*.html' | while read -r page; do
+            target="$BASE/legacy/${page%.html}"
+            mkdir -p "../$(dirname "$page")"
+            printf '<!doctype html><meta charset="utf-8"><title>Moved</title><link rel="canonical" href="%s"><meta http-equiv="refresh" content="0; url=%s"><a href="%s">%s</a>\n' \
+              "$target" "$target" "$target" "$target" > "../$page"
+          done
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: docs/.vitepress/dist
+          folder: docs/.output/public
           branch: gh-pages

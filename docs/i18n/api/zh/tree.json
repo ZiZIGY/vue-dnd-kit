@@ -1,11 +1,63 @@
 {
+  "TreeNesting": {
+    "source": "9af740feca",
+    "text": "树中的拖拽如何选择深度：`'offset'`，按横向移动的距离（每级 `indentation`）；`'hover'`，悬停在某行的中间，该行会把它作为子节点接收；`'both'`。"
+  },
+  "FlatNode": {
+    "source": "23666e81ba",
+    "text": "树中一个可见的节点，与树的 `items` 列出的一致：按顺序渲染它们，并按 `depth` 缩进。"
+  },
+  "FlatNode.key": {
+    "source": "96ba306f48",
+    "text": "节点的 key（`getKey`）。"
+  },
+  "FlatNode.item": {
+    "source": "b4ce340716",
+    "text": "你的节点。"
+  },
+  "FlatNode.depth": {
+    "source": "0c7c31948d",
+    "text": "它的深度：根节点为 0。被拖拽的节点使用它的预计深度。"
+  },
+  "FlatNode.parentKey": {
+    "source": "8c7e128431",
+    "text": "父节点的 key；根节点为 `null`。"
+  },
   "FlatNode.index": {
     "source": "b24454e95d",
     "text": "在兄弟节点中的索引。"
   },
+  "FlatNode.hasChildren": {
+    "source": "b824e0490e",
+    "text": "它有子节点，无论是否显示。"
+  },
+  "FlatNode.collapsed": {
+    "source": "bd45c73799",
+    "text": "它的子节点被隐藏了（它的 key 在 `collapsed` 中）。"
+  },
+  "TreeProjection": {
+    "source": "7161034972",
+    "text": "被拖拽的节点将落到树中的哪里。"
+  },
+  "TreeProjection.depth": {
+    "source": "2e69aed9a0",
+    "text": "它将得到的深度（根节点为 0）。"
+  },
+  "TreeProjection.parentKey": {
+    "source": "b142da09fd",
+    "text": "它将归入的父节点；在根层级时为 `null`。"
+  },
   "SortableTreeDropEvent": {
     "source": "eb47878c8b",
     "text": "树的放置事件。`index` 是在 `parentKey` 之下兄弟节点中的位置（`from`：移动之前；`to`：移动之后，此时节点已从原位置移除）。对于根节点以及来自其他列表的项，`from.parentKey` 为 `null`。多项拖拽会把 `keys`（各自带着子树）并排移动：`from` 是带领这次拖拽的节点（抓起的节点，或它所在的那个选中节点）原来的位置，`to` 是其中第一个节点落下的位置。复制（`mode: 'copy'`）会把节点留在原处，并插入 `items`，即它们的副本；普通可拖拽元素（`mode: 'insert'`）则插入 `createItem` 创建的节点。"
+  },
+  "SortableTreeDropEvent.from": {
+    "source": "9d2938f9b8",
+    "text": "带领拖拽的节点原来所在的位置：它所在的树、它在兄弟节点中的索引、它的父节点。"
+  },
+  "SortableTreeDropEvent.to": {
+    "source": "423e0db1d1",
+    "text": "第一个被放下的节点落到的位置：它所在的树、它在新兄弟节点中的索引、它的新父节点。"
   },
   "SortableTreeOptions": {
     "source": "a99d0dc21f",
@@ -18,6 +70,10 @@
   "SortableTreeOptions.getKey": {
     "source": "8bd06a8146",
     "text": "默认：`node.id`。也用于为 `makeSortableItem({ item })`、副本和新创建的节点生成 key。"
+  },
+  "SortableTreeOptions.getChildren": {
+    "source": "16d2b0d885",
+    "text": "节点的子节点。默认：`node.children`。"
   },
   "SortableTreeOptions.setChildren": {
     "source": "ebc9ed1493",
@@ -34,6 +90,14 @@
   "SortableTreeOptions.label": {
     "source": "86c099a68f",
     "text": "人们对树的称呼：屏幕阅读器文本会说出它，而不是树的 id。"
+  },
+  "SortableTreeOptions.data": {
+    "source": "06a846f752",
+    "text": "关于这棵树作为放置目标的任何信息：拖拽位于它上方时，事件以 `over.data` 携带它。"
+  },
+  "SortableTreeOptions.activation": {
+    "source": "bb472ecc80",
+    "text": "在这棵树的行上按下时如何开始拖拽，替代 provider 的 `activation`（行自己的优先）。"
   },
   "SortableTreeOptions.overlay": {
     "source": "cf37f2819a",
@@ -111,7 +175,7 @@
     "source": "5d1e2c66c2",
     "text": "这棵树的 FLIP 动画；默认：provider 的 `animation`。值或 ref（函数即自定义动画）。"
   },
-  "SortableTreeOptions.animate": {
+  "SortableTreeOptions.animateChanges": {
     "source": "9004d33175",
     "text": "与 `SortableListOptions` 中相同，作用于可见的行：被添加、删除或移动的节点，以及节点展开或折叠时显示或隐藏的行（`collapsed`）。"
   },
@@ -127,6 +191,10 @@
     "source": "26c5e98e4b",
     "text": "与 `SortableListOptions` 中相同：替树接收放置的元素，默认是树自己的元素。"
   },
+  "SortableTreeOptions.disabled": {
+    "source": "e015689412",
+    "text": "`true`：它的行不能被拖拽，它也不接受任何项。"
+  },
   "SortableTreeOptions.onBeforeDrop": {
     "source": "94fc28e843",
     "text": "与 `SortableListOptions` 中相同。"
@@ -134,6 +202,14 @@
   "SortableTreeOptions.onDrop": {
     "source": "cac25ac658",
     "text": "与 `SortableListOptions` 中相同：在写入之前调用，`event.preventDefault()` 会跳过写入。"
+  },
+  "SortableTreeReturn": {
+    "source": "63d4a830bd",
+    "text": "`makeSortableTree` 的返回值。"
+  },
+  "SortableTreeReturn.id": {
+    "source": "78f5948858",
+    "text": "树的 id：`id` 选项，或为它生成的 id。"
   },
   "SortableTreeReturn.items": {
     "source": "7c78a356e7",
@@ -146,6 +222,10 @@
   "SortableTreeReturn.indicator": {
     "source": "3f5878f4c5",
     "text": "指示器模式：放置的位置，以及它的 `depth` 和 `parentKey`；不在这里时为 `null`。"
+  },
+  "SortableTreeReturn.isOver": {
+    "source": "862facdce0",
+    "text": "有拖拽位于树上方。"
   },
   "SortableTreeReturn.isAccepting": {
     "source": "ae54d9827e",
@@ -162,5 +242,9 @@
   "SortableTreeReturn.activeSize": {
     "source": "8337786343",
     "text": "拖拽开始时被拖拽行的尺寸。"
+  },
+  "SortableTreeReturn.captureLayout": {
+    "source": "4d1e38426d",
+    "text": "为不是本库引起的布局变化添加动画（例如虚拟化器重新测量）。"
   }
 }

@@ -129,13 +129,13 @@ describe('data: what a browser drag carries', () => {
   it('while held: the types, and the files by type only; at the drop, the data', () => {
     const data = transfer([PNG, PDF], { 'text/uri-list': '# comment\nhttps://a.dev\r\nhttps://b.dev', 'text/plain': 'hi' });
     const external = readHeld(data);
-    expect(external).toMatchObject({ fileTypes: ['image/png', 'application/pdf'], files: [], dropped: false, text: '' });
+    expect(external).toMatchObject({ fileTypes: ['image/png', 'application/pdf'], files: [], ready: false, text: '' });
     readDropped(external, data, { files: 'image/*' });
     expect(external.files.map((file) => file.name)).toEqual(['cat.png']);
     expect(external.urls).toEqual(['https://a.dev', 'https://b.dev']);
     expect(external.text).toBe('hi');
     expect(external.getData('TEXT/PLAIN')).toBe('hi');
-    expect(external.dropped).toBe(true);
+    expect(external.ready).toBe(true);
   });
 
   it('takesExternal: files by type (extensions at the drop), one only without `multiple`, links, text, types', () => {
@@ -185,7 +185,7 @@ describe('drags from outside the page into drop targets (`external`)', () => {
     fire(zone, 'dragenter', data);
     expect(manager.status.value).toBe('dragging');
     const active = manager.active.value as Active;
-    expect(active).toMatchObject({ native: true, label: 'a file', external: { fileTypes: ['image/png'], dropped: false } });
+    expect(active).toMatchObject({ native: true, label: 'a file', external: { fileTypes: ['image/png'], ready: false } });
     const event = await over(zone, data, { x: 50, y: 50 });
     expect(event.defaultPrevented).toBe(true);
     expect(data.dropEffect).toBe('copy');
@@ -198,7 +198,7 @@ describe('drags from outside the page into drop targets (`external`)', () => {
     await settle();
     expect(drops).toHaveLength(1);
     expect(drops[0]!.external?.files.map((file) => file.name)).toEqual(['cat.png']);
-    expect(drops[0]!.external?.dropped).toBe(true);
+    expect(drops[0]!.external?.ready).toBe(true);
     // The stand-in is gone.
     expect(document.querySelector('[data-dnd-external]')).toBeNull();
   });
@@ -279,7 +279,7 @@ describe('drags from outside the page into a sortable list', () => {
             createItem:
               createItem ??
               ((active) =>
-                active.external!.dropped
+                active.external!.ready
                   ? active.external!.files.map((file) => ({ id: `f${++made}`, name: file.name, file }))
                   : { id: 'pending', name: `${active.external!.fileTypes.length} files` }),
             onDrop: (event) => drops.push(event),
@@ -447,5 +447,22 @@ describe("the page's own drags out of it (`native`)", () => {
     data.dropEffect = 'none';
     fire(card, 'dragend', data);
     await settle();
+  });
+
+  it('`canDrag` is asked at the press: refused, the browser may not drag it', async () => {
+    const container = mount(
+      defineComponent({
+        setup() {
+          makeDraggable(useTemplateRef<HTMLElement>('card'), { id: 'card', native: true, canDrag: (event) => event.shiftKey });
+          return () => h('div', { ref: 'card', 'data-rect': '0,0,100,40' }, 'card');
+        },
+      }),
+    );
+    await nextTick();
+    const card = container.querySelector('[data-rect]')!;
+    pressMouse(card, 50, 20);
+    expect(card.hasAttribute('draggable')).toBe(false);
+    card.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, isPrimary: true, button: 0, pointerType: 'mouse', shiftKey: true }));
+    expect(card.getAttribute('draggable')).toBe('true');
   });
 });

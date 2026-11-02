@@ -83,7 +83,7 @@ export const readHeld = (transfer: DataTransfer, group?: string): ExternalData =
     text: '',
     html: '',
     getData: () => '',
-    dropped: false,
+    ready: false,
     group,
   };
 };
@@ -115,7 +115,7 @@ export const takesExternal = (rule: ExternalAccept | undefined, external: Extern
   if (!rule || external.group) return false;
   const { types } = external;
   if (rule.types?.some((type) => types.includes(type.toLowerCase()))) return true;
-  const files = external.dropped ? external.files.map((file) => ({ type: file.type, name: file.name, size: file.size })) : external.fileTypes.map((type) => ({ type }));
+  const files = external.ready ? external.files.map((file) => ({ type: file.type, name: file.name, size: file.size })) : external.fileTypes.map((type) => ({ type }));
   if (types.includes('Files') && rule.files) {
     if (rule.multiple === false && files.length > 1) return false;
     if (files.length && files.every((file) => takesFile(rule.files, file))) return true;
@@ -146,7 +146,7 @@ export const readDropped = (external: ExternalData, transfer: DataTransfer, rule
     text: data.get('text/plain') ?? '',
     html: data.get('text/html') ?? '',
     getData: (type: string) => data.get(type.toLowerCase()) ?? '',
-    dropped: true,
+    ready: true,
   } satisfies Partial<ExternalData>);
 };
 

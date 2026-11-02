@@ -1,4 +1,28 @@
 {
+  "AnimationOptions": {
+    "source": "b09e1a9518",
+    "text": "Los tiempos de una animación. Lo que se omite conserva el valor por defecto de esa animación."
+  },
+  "AnimationOptions.duration": {
+    "source": "d0c1a0e2ba",
+    "text": "En ms. Por defecto 200 para los movimientos de layout, 250 para el drop; `0` desactiva la animación."
+  },
+  "AnimationOptions.easing": {
+    "source": "203b67cb4a",
+    "text": "Un easing de CSS (`'ease-out'`, `cubic-bezier(…)`)."
+  },
+  "LayoutAnimationContext": {
+    "source": "4024b00eb0",
+    "text": "Lo que recibe una función de animación de layout, para un ítem que se mueve a su nuevo sitio."
+  },
+  "LayoutAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "Clave del ítem."
+  },
+  "LayoutAnimationContext.element": {
+    "source": "a268435146",
+    "text": "El elemento del ítem, ya en su nuevo sitio."
+  },
   "LayoutAnimationContext.from": {
     "source": "c5845d8793",
     "text": "Rectángulo visual antes del cambio (donde una animación en curso mostraba el ítem)."
@@ -7,9 +31,13 @@
     "source": "17f753cbe6",
     "text": "Rectángulo de layout después del cambio."
   },
+  "LayoutAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "Los tiempos que dan las opciones, con los valores por defecto ya puestos."
+  },
   "LayoutAnimationContext.reason": {
-    "source": "eceea904fa",
-    "text": "Qué movió el ítem: un arrastre (`'drag'`: la ordenación, el drop, una cancelación), o un cambio de tus datos que no vino de un arrastre (`'change'`, con la opción `animate` de la lista activada)."
+    "source": "fea2ee2ea2",
+    "text": "Qué movió el ítem: un arrastre (`'drag'`: la ordenación, el drop, una cancelación), o un cambio de tus datos que no vino de un arrastre (`'change'`, con la opción `animateChanges` de la lista activada)."
   },
   "LayoutAnimationContext.signal": {
     "source": "c8aa938f56",
@@ -23,9 +51,17 @@
     "source": "233b130a9c",
     "text": "Cómo se mueven los ítems a su nuevo sitio: `true` (tiempos por defecto), opciones, `false` (saltan directamente) o una función que anima un ítem de `from` a `to` y devuelve su `Animation`, una promesa que se resuelve cuando termina, o nada."
   },
+  "DropAnimationContext": {
+    "source": "ed32f90e37",
+    "text": "Lo que recibe una función de animación al soltar: el overlay, dónde está y dónde aterriza."
+  },
   "DropAnimationContext.overlay": {
     "source": "e272382994",
     "text": "La caja del overlay; aterriza en el hueco del ítem activo. En un multi-drag, los clones de los demás ítems que viajan dentro de ella (los del overlay por defecto, los `DragPreview` de uno personalizado) aterrizan por sí solos en sus propios huecos (con los tiempos por defecto cuando esta es una función personalizada)."
+  },
+  "DropAnimationContext.from": {
+    "source": "c2595bada3",
+    "text": "Dónde está el overlay cuando termina el arrastre."
   },
   "DropAnimationContext.to": {
     "source": "d0780ba408",
@@ -35,17 +71,37 @@
     "source": "cecafada99",
     "text": "El ítem no se muestra después de un drop sobre una zona (no una lista ordenable), por ejemplo porque se soltó dentro de otro ítem (una carpeta) o en una zona de papelera: el rectángulo visible de la zona. La animación por defecto encoge el overlay dentro de ella mientras se desvanece, en lugar de desvanecerse en el sitio."
   },
+  "DropAnimationContext.reason": {
+    "source": "275d894e30",
+    "text": "`'drop'`: el overlay aterriza donde el drop puso el ítem. `'cancel'`: vuelve volando a donde estaba el ítem."
+  },
+  "DropAnimationContext.active": {
+    "source": "7c6ffaf118",
+    "text": "El arrastre que terminó."
+  },
   "DropAnimationContext.over": {
     "source": "54c7b98b67",
     "text": "El destino en el que aterriza el drop (una lista, una zona); `null` al cancelar."
+  },
+  "DropAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "Los tiempos que dan las opciones, con los valores por defecto ya puestos."
   },
   "DropAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "`prefers-reduced-motion: reduce` está activo. Las animaciones propias de la biblioteca no se ejecutan entonces; las funciones tuyas se ejecutan siempre, y deciden con este valor (omitir el movimiento o mantener un fundido)."
   },
+  "DropAnimation": {
+    "source": "4e7ab98e07",
+    "text": "Cómo aterriza el overlay al soltar y vuelve volando al cancelar: `true` (tiempos por defecto), opciones, `false` (sin vuelo: termina donde se soltó) o una función que anima `overlay` de `from` a `to` y devuelve su `Animation`, una promesa que se resuelve cuando termina, o nada."
+  },
   "EnterAnimationContext": {
-    "source": "bef530cbfe",
-    "text": "Un ítem que apareció en una lista con `animate` activado: añadido, o mostrado de nuevo (un filtro, un nodo de árbol expandido)."
+    "source": "e45e8bafb3",
+    "text": "Un ítem que apareció en una lista con `animateChanges` activado: añadido, o mostrado de nuevo (un filtro, un nodo de árbol expandido)."
+  },
+  "EnterAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "Clave del ítem."
   },
   "EnterAnimationContext.element": {
     "source": "120613b512",
@@ -55,13 +111,21 @@
     "source": "fd058782f5",
     "text": "Dónde apareció (rectángulo de layout)."
   },
+  "EnterAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "Los tiempos que dan las opciones, con los valores por defecto ya puestos."
+  },
   "EnterAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "`prefers-reduced-motion: reduce` está activo. Las animaciones propias de la biblioteca no se ejecutan entonces; las funciones tuyas se ejecutan siempre, y deciden con este valor (omitir el movimiento o mantener un fundido)."
   },
   "LeaveAnimationContext": {
-    "source": "b67e70e13a",
-    "text": "Un ítem que salió de una lista con `animate` activado: quitado, u ocultado (un filtro, un nodo de árbol plegado)."
+    "source": "5d6e9c20a9",
+    "text": "Un ítem que salió de una lista con `animateChanges` activado: quitado, u ocultado (un filtro, un nodo de árbol plegado)."
+  },
+  "LeaveAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "Clave del ítem."
   },
   "LeaveAnimationContext.element": {
     "source": "a4f7390241",
@@ -70,6 +134,10 @@
   "LeaveAnimationContext.from": {
     "source": "645084e2fd",
     "text": "Dónde estaba el ítem."
+  },
+  "LeaveAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "Los tiempos que dan las opciones, con los valores por defecto ya puestos."
   },
   "LeaveAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
@@ -84,8 +152,8 @@
     "text": "`true`, opciones, `false` (el ítem simplemente desaparece) o una función que anima la salida de la copia que queda en su lugar: devuelve su `Animation` o una promesa, y la copia se elimina cuando termina (al instante si la función no devuelve nada)."
   },
   "AutoAnimationOptions": {
-    "source": "0130acd24e",
-    "text": "`animate` con sus partes: `duration` y `easing` para todas, y por cada tipo de cambio `true`, opciones (sobre las compartidas), `false` o una función propia."
+    "source": "39ddcaee1b",
+    "text": "`animateChanges` con sus partes: `duration` y `easing` para todas, y por cada tipo de cambio `true`, opciones (sobre las compartidas), `false` o una función propia."
   },
   "AutoAnimationOptions.move": {
     "source": "684eb0594d",

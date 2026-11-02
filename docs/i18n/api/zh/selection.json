@@ -7,13 +7,21 @@
     "source": "c7f915cabf",
     "text": "按下时必须按住才能画选框的按键（`KeyboardEvent.key` 或 `.code`）：全部按住，或只按住其中一部分（`'some'`）。"
   },
-  "SelectionAreaOptions": {
-    "source": "395589bdaa",
-    "text": "`makeSelectionArea` 的选项。`modifier`、`strategy`、`accept` 和 `disabled` 接受值、ref 或 getter（`accept`：值或 ref，函数即规则），并在按下开始画选框时读取；开启 `disabled` 还会取消正在进行的选框。"
+  "SelectionModifier.keys": {
+    "source": "d97d7241ad",
+    "text": "按键，以 `KeyboardEvent.key`（`'Shift'`）或 `.code`（`'KeyA'`）表示。不设置：任何按下都会画选框。"
   },
-  "SelectionAreaOptions.selection": {
-    "source": "294f767d3b",
-    "text": "默认使用 provider 的选中集合。"
+  "SelectionModifier.method": {
+    "source": "a46efd8e2a",
+    "text": "`'every'`：必须按住 `keys` 中的所有键；`'some'`：按住其中一个即可。"
+  },
+  "SelectionAreaOptions": {
+    "source": "951e39f4a0",
+    "text": "`makeSelectionArea` 的选项。选框把项选入 provider 的选中集合，也就是多项拖拽和 `selected` 读取的那个（`useDnD().selection`）。`modifier`、`strategy`、`accept` 和 `disabled` 接受值、ref 或 getter（`accept`：值或 ref，函数即规则），并在按下开始画选框时读取；开启 `disabled` 还会取消正在进行的选框。"
+  },
+  "SelectionAreaOptions.modifier": {
+    "source": "65c8a221ac",
+    "text": "按下时必须按住这些键才会画出选框。默认：无，在空白处的任何按下都会画选框。"
   },
   "SelectionAreaOptions.strategy": {
     "source": "0367d14627",
@@ -22,6 +30,22 @@
   "SelectionAreaOptions.accept": {
     "source": "6293487b0c",
     "text": "选框选中哪些可拖拽元素；与放置目标使用相同的匹配器。"
+  },
+  "SelectionAreaOptions.disabled": {
+    "source": "ac33d3517f",
+    "text": "`true`：按下不会画选框。"
+  },
+  "SelectionAreaOptions.onSelected": {
+    "source": "1ca0d338e8",
+    "text": "选框结束：获得现在选中的所有 id。"
+  },
+  "SelectionAreaReturn": {
+    "source": "f6f48602c4",
+    "text": "`makeSelectionArea` 的返回值。"
+  },
+  "SelectionAreaReturn.isSelecting": {
+    "source": "f38c578911",
+    "text": "正在画选框：此时渲染它。"
   },
   "SelectionAreaReturn.style": {
     "source": "e4525127b1",

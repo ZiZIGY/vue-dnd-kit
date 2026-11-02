@@ -1,11 +1,39 @@
 {
+  "CollisionCandidate": {
+    "source": "32a74e6d93",
+    "text": "衝突判定が選べるドロップターゲット：有効で、ページ上にあり、完全には切り取られていないもの。"
+  },
+  "CollisionCandidate.id": {
+    "source": "f9a233dcfd",
+    "text": "ドロップターゲットの id。"
+  },
   "CollisionCandidate.rect": {
     "source": "6367b9d53a",
     "text": "ターゲットの見えている部分：スクロールコンテナーとビューポートで切り取られたもの。"
   },
+  "CollisionCandidate.priority": {
+    "source": "c0a3e16a72",
+    "text": "ターゲットの `priority`（デフォルト 0）：ネストせずにターゲットが重なるときは、高いほうが勝ちます。並べ替え可能なアイテムはコンテナーに勝ちます。"
+  },
   "CollisionCandidate.depth": {
     "source": "87728867d4",
     "text": "ドロップターゲット間のネストの階層：最上位は 0 で、深いターゲットほど大きな値になります。"
+  },
+  "CollisionArgs": {
+    "source": "703334f32a",
+    "text": "衝突判定がドラッグの移動のたびに受け取るもの。"
+  },
+  "CollisionArgs.pointer": {
+    "source": "49759bca51",
+    "text": "ビューポート座標でのポインター。モディファイア適用後の値です。"
+  },
+  "CollisionArgs.overlayRect": {
+    "source": "38ddd4b88b",
+    "text": "ドラッグされているボックス（オーバーレイ、または `overlay: false` の場合は要素自体）を、ドラッグが動かした位置で表す矩形。"
+  },
+  "CollisionArgs.candidates": {
+    "source": "e999e2b499",
+    "text": "ドラッグが向かう可能性のあるすべてのドロップターゲット。その `accept` ルールがドラッグを受け入れるかどうかは問いません。"
   },
   "CollisionArgs.hits": {
     "source": "78fd5d5eeb",
@@ -15,9 +43,17 @@
     "source": "1248ad0f81",
     "text": "候補の id を、良いものから順に返します。"
   },
+  "ModifierArgs": {
+    "source": "abd362ec1a",
+    "text": "モディファイアがドラッグの移動のたびに受け取るもの。"
+  },
   "ModifierArgs.transform": {
     "source": "559160a1f5",
     "text": "ドラッグ開始位置からのオフセット。それより前のモディファイアで変更された後の値です。"
+  },
+  "ModifierArgs.active": {
+    "source": "ab2a0979dd",
+    "text": "現在のドラッグ。"
   },
   "ModifierArgs.activeRect": {
     "source": "c410ca6675",
@@ -38,5 +74,37 @@
   "ModifierArgs.containerShift": {
     "source": "f4f9413e80",
     "text": "ドラッグを開始したコンテンツが、開始時から画面上でどれだけ動いたか。コンテナーが動いた分（ページやそれを囲むコンテナーのスクロール、レイアウトのずれ）と、その中でコンテンツがスクロールした分です。軸の固定はもう一方の軸をこの値に保つので、ドラッグはそのコンテンツの中で自分の行または列にとどまります。"
+  },
+  "ModifierArgs.windowRect": {
+    "source": "4d3a00846c",
+    "text": "ウィンドウ（ビューポート）の矩形。"
+  },
+  "ModifierArgs.over": {
+    "source": "9f1ad2338d",
+    "text": "ドラッグの下にあるドロップターゲット（最後に見つかったもの）。何もない上では `null`。"
+  },
+  "Modifier": {
+    "source": "c32d9e8b62",
+    "text": "ドラッグされたアイテムの行き先を変えます：ドラッグのオフセット（`transform`）を受け取り、新しいオフセットを返します。"
+  },
+  "SnapToGridOptions": {
+    "source": "a9d64c01db",
+    "text": "`snapToGrid` のオプション。"
+  },
+  "SnapToGridOptions.x": {
+    "source": "c5a80a7c74",
+    "text": "セルの幅（px）。指定しない（または 0）と、ドラッグは x 方向に自由に動きます。"
+  },
+  "SnapToGridOptions.y": {
+    "source": "39512fba18",
+    "text": "セルの高さ（px）。指定しない（または 0）と、ドラッグは y 方向に自由に動きます：`{ y: 15 }` はカレンダーのイベントの時刻だけをスナップします。"
+  },
+  "SnapToGridOptions.origin": {
+    "source": "51c773a778",
+    "text": "`'container'`（デフォルト）：オーバーレイの左上が、コンテナーの左上から引いたグリッド線に着地します（`containerRect`：並べ替え可能なリストまたは親要素）。`'delta'`：ドラッグのオフセットを丸めるので、アイテムの開始位置のグリッドからのずれは保たれます。"
+  },
+  "SnapToGridOptions.smooth": {
+    "source": "9952acec7d",
+    "text": "スナップした位置の間でオーバーレイを滑らかに動かします（デフォルト 80ms）。衝突判定は引き続き、スナップした位置をすぐに使います。"
   }
 }

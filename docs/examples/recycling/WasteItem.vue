@@ -9,7 +9,7 @@ const { isDragging } = makeDraggable(el, {
   id: () => props.waste.id,
   type: () => props.waste.type, // matched against the bins' `accept`
   data: () => props.waste, // read by the compost bin's rule
-  keyboard: 'droppables', // arrows jump between the bins that take it
+  keyboardMode: 'droppables', // arrows jump between the bins that take it
 });
 </script>
 

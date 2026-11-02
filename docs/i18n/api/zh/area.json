@@ -27,6 +27,10 @@
     "source": "238dd09834",
     "text": "`true`：区域内不会开始任何拖拽，其内部的区域也一样（与其他选项不同，其他选项取自最近的区域）。区域中的可拖拽元素会报告 `aria-disabled`。"
   },
+  "DragAreaReturn": {
+    "source": "48fc4346c4",
+    "text": "`makeDragArea` 的返回值。"
+  },
   "DragAreaReturn.isDragging": {
     "source": "5e8f41c6fd",
     "text": "从这个区域开始的拖拽正在进行（直到放置结果确定）。"

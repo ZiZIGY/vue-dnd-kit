@@ -7,7 +7,7 @@ const rows = defineModel<{ id: string; hue: number }[]>({ required: true });
 defineProps<{ label: string }>();
 
 const list = useTemplateRef<HTMLElement>('list');
-// No options of its own: the list takes `animation` and `animate` from its provider.
+// No options of its own: the list takes `animation` and `animateChanges` from its provider.
 const { items } = makeSortableList(list, { items: rows });
 </script>
 

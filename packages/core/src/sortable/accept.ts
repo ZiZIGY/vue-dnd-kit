@@ -3,9 +3,29 @@
  * the drag comes from, `group.put` and `acceptMode` of the one it goes to.
  */
 
-import type { Active, Key, SortablePutContext } from '../types';
+import type { Active, Key, SortableGroupOptions, SortablePutContext } from '../types';
+import type { DnDManager } from '../core/manager';
 import { listOf, lookup, type GroupContext, type Session } from './context';
 import type { ListEntry } from './entry';
+
+/**
+ * `group.put` of a list or tree for the items of `context`: a boolean, a function, or type
+ * rules that each item must meet as a drop target's `accept` has them (an item without a
+ * type fits any). An item not rendered (a virtual row) counts with the types of the drag.
+ */
+export const putAllows = (
+  put: SortableGroupOptions['put'],
+  context: SortablePutContext,
+  manager: DnDManager,
+): boolean => {
+  if (put === undefined || typeof put === 'boolean') return put ?? true;
+  if (typeof put === 'function') return put(context);
+  const allowed = typeof put === 'string' ? [put] : put;
+  return context.keys.every((key) => {
+    const types = manager.getDraggable(key)?.getTypes() ?? context.types;
+    return !types.length || types.some((type) => allowed.includes(type));
+  });
+};
 
 export interface Partition {
   accepted: Key[];

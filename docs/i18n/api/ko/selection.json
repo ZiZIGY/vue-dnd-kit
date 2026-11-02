@@ -7,13 +7,21 @@
     "source": "c7f915cabf",
     "text": "누르기로 사각형을 그리려면 누르고 있어야 하는 키(`KeyboardEvent.key` 또는 `.code`): 전부, 또는 그중 `'some'`."
   },
-  "SelectionAreaOptions": {
-    "source": "395589bdaa",
-    "text": "`makeSelectionArea`의 옵션. `modifier`, `strategy`, `accept`, `disabled`는 값, ref, getter를 받으며(`accept`: 값 또는 ref, 함수는 규칙입니다) 누르기가 사각형을 시작할 때 읽습니다. `disabled`를 켜면 진행 중인 사각형도 취소합니다."
+  "SelectionModifier.keys": {
+    "source": "d97d7241ad",
+    "text": "키. `KeyboardEvent.key`(`'Shift'`) 또는 `.code`(`'KeyA'`)로 지정합니다. 없음: 어떤 누르기든 사각형을 그립니다."
   },
-  "SelectionAreaOptions.selection": {
-    "source": "294f767d3b",
-    "text": "기본값은 프로바이더의 선택입니다."
+  "SelectionModifier.method": {
+    "source": "a46efd8e2a",
+    "text": "`'every'`: `keys`를 모두 누르고 있어야 합니다. `'some'`: 그중 하나면 됩니다."
+  },
+  "SelectionAreaOptions": {
+    "source": "951e39f4a0",
+    "text": "`makeSelectionArea`의 옵션. 사각형은 프로바이더의 선택, 즉 멀티 드래그와 `selected`가 읽는 선택에 항목을 넣습니다(`useDnD().selection`). `modifier`, `strategy`, `accept`, `disabled`는 값, ref, getter를 받으며(`accept`: 값 또는 ref, 함수는 규칙입니다) 누르기가 사각형을 시작할 때 읽습니다. `disabled`를 켜면 진행 중인 사각형도 취소합니다."
+  },
+  "SelectionAreaOptions.modifier": {
+    "source": "65c8a221ac",
+    "text": "누르기로 사각형을 그리려면 누르고 있어야 하는 키. 기본값: 없음, 빈 공간에서의 어떤 누르기든 사각형을 그립니다."
   },
   "SelectionAreaOptions.strategy": {
     "source": "0367d14627",
@@ -22,6 +30,22 @@
   "SelectionAreaOptions.accept": {
     "source": "6293487b0c",
     "text": "사각형이 선택할 draggable. 드롭 대상과 같은 비교 방식을 씁니다."
+  },
+  "SelectionAreaOptions.disabled": {
+    "source": "ac33d3517f",
+    "text": "`true`: 눌러도 사각형을 그리지 않습니다."
+  },
+  "SelectionAreaOptions.onSelected": {
+    "source": "1ca0d338e8",
+    "text": "사각형이 끝났습니다. 지금 선택된 모든 id를 받습니다."
+  },
+  "SelectionAreaReturn": {
+    "source": "f6f48602c4",
+    "text": "`makeSelectionArea`가 반환하는 것."
+  },
+  "SelectionAreaReturn.isSelecting": {
+    "source": "f38c578911",
+    "text": "사각형을 그리는 중입니다. 이때 사각형을 렌더링하세요."
   },
   "SelectionAreaReturn.style": {
     "source": "e4525127b1",

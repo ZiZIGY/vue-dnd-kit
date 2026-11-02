@@ -7,6 +7,14 @@
     "source": "5ac7937354",
     "text": "Ihr MIME-Typ (`image/png`); `''`, wenn der Browser ihn nicht nennen kann."
   },
+  "ExternalFile.name": {
+    "source": "85e29b464a",
+    "text": "Sein Name mit der Endung (`notes.md`), beim Drop."
+  },
+  "ExternalFile.size": {
+    "source": "cf1f4b7920",
+    "text": "Seine Größe in Bytes, beim Drop."
+  },
   "ExternalAccept": {
     "source": "f9ed0b389d",
     "text": "Was ein Drop-Ziel, eine Liste oder ein Baum von Drags annimmt, die von außerhalb der Seite kommen: Dateien vom Desktop, einen Link oder Text aus einer anderen App oder einem anderen Tab (`external`)."
@@ -32,8 +40,8 @@
     "text": "Andere MIME-Typen, die es annimmt, genau so, wie andere Apps sie anbieten."
   },
   "ExternalData": {
-    "source": "52e1ec34b0",
-    "text": "Ein Drag von außerhalb der Seite (`Active.external`, `DnDEvent.external`). Solange er gehalten wird, sagt der Browser, was er trägt, nicht die Daten: Die Dateien, Links und der Text kommen beim Drop (`dropped`)."
+    "source": "44976c0766",
+    "text": "Ein Drag von außerhalb der Seite (`Active.external`, `DnDEvent.external`). Solange er gehalten wird, sagt der Browser, was er trägt, nicht die Daten: Die Dateien, Links und der Text kommen beim Drop (`ready`)."
   },
   "ExternalData.types": {
     "source": "840a3fb6e3",
@@ -63,7 +71,7 @@
     "source": "044c2022ec",
     "text": "Beim Drop: die Daten jedes Typs, den er anbietet (`''` vorher und für einen Typ, den er nicht anbietet)."
   },
-  "ExternalData.dropped": {
+  "ExternalData.ready": {
     "source": "11a898fda6",
     "text": "Er wurde abgelegt: Die Daten oben sind da."
   },
@@ -76,8 +84,8 @@
     "text": "Ein ziehbares oder sortierbares Element, das eine Maus aus der Seite hinausziehen kann (`native`): auf den Desktop, in eine andere App, einen anderen Tab, ein anderes Fenster der App."
   },
   "NativeDragOptions.data": {
-    "source": "5cec79d1b0",
-    "text": "Was andere Apps und Seiten bekommen: MIME-Typ → Text, z. B. `{ 'text/plain': title, 'text/uri-list': url }`. Wird beim Start des Drags gelesen. Sortierbare Elemente tragen außerdem sich selbst, für die Listen ihrer Gruppe in einem anderen Fenster der App."
+    "source": "8268ca9868",
+    "text": "Was andere Apps und Seiten bekommen: Text nach MIME-Typ, als `{ 'text/plain': title, 'text/uri-list': url }`. Wird beim Start des Drags gelesen. Sortierbare Elemente tragen außerdem sich selbst, für die Listen ihrer Gruppe in einem anderen Fenster der App."
   },
   "NativeDragOptions.effect": {
     "source": "67e99c2b14",

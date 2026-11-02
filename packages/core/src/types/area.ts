@@ -46,6 +46,7 @@ export interface DragAreaOptions {
   disabled?: MaybeReadonlyRefOrGetter<boolean | undefined>;
 }
 
+/** What `makeDragArea` returns. */
 export interface DragAreaReturn {
   /** A drag that started in this area is running (until its drop is decided). */
   isDragging: ComputedRef<boolean>;

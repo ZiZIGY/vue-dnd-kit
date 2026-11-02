@@ -9,9 +9,9 @@ let created = swatches.value.length;
 
 const animated = ref(true);
 const grid = useTemplateRef<HTMLElement>('grid');
-// Drags animate by default. `animate` also animates the changes no drag made: the
+// Drags animate by default. `animateChanges` also animates the changes no drag made: the
 // buttons below replace the array, and the tiles move, fade in and fade out.
-const { items } = makeSortableList(grid, { items: swatches, strategy: 'grid', animate: animated });
+const { items } = makeSortableList(grid, { items: swatches, strategy: 'grid', animateChanges: animated });
 
 const shuffle = () => {
   const next = [...swatches.value];

@@ -13,7 +13,9 @@ import type { Active } from './drag';
 export interface ExternalFile {
   /** Its MIME type (`image/png`); `''` when the browser can't tell. */
   type: string;
+  /** Its name with the extension (`notes.md`), at the drop. */
   name?: string;
+  /** Its size in bytes, at the drop. */
   size?: number;
 }
 
@@ -42,7 +44,7 @@ export interface ExternalAccept {
 /**
  * A drag from outside the page (`Active.external`, `DnDEvent.external`). While it is held
  * the browser tells what it carries, not the data: the files, links and text come at the
- * drop (`dropped`).
+ * drop (`ready`).
  */
 export interface ExternalData {
   /** The MIME types it offers (`Files`, `text/uri-list`, `text/plain`, an app's own). */
@@ -60,7 +62,7 @@ export interface ExternalData {
   /** At the drop: the data of any type it offers (`''` before, and for a type it doesn't offer). */
   getData(type: string): string;
   /** It was dropped: the data above is there. */
-  dropped: boolean;
+  ready: boolean;
   /**
    * Items of the library dragged in from another window of the app (`native`): the name of
    * their sortable group. The lists of that group take them as if they came from one of

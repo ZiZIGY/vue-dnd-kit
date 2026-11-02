@@ -36,8 +36,8 @@
     "text": "El evento de entrada. Se pasa al `canDrag` del elemento arrastrable: sin él (un mando, un arrastre programático), no se consulta `canDrag`. Un `pointerType` `'touch'` convierte el arrastre en uno táctil (`haptics`)."
   },
   "SensorActivation.activation": {
-    "source": "39a1a2728a",
-    "text": "Lo que espera el arrastre antes de empezar (`useDnD().status` es `'activating'` hasta entonces, con su progreso). Un tipo de puntero lee para él la opción `activation` del elemento arrastrable, luego la del provider y luego los valores por defecto (ratón y lápiz 4 px, al instante sobre un asa; táctil, una pulsación larga de 200 ms con 5 px de tolerancia). Una restricción se usa tal cual. Por defecto: ninguna, el arrastre empieza al instante."
+    "source": "b57a130781",
+    "text": "Lo que espera el arrastre antes de empezar (`useDnD().status` es `'activating'` hasta entonces, con su progreso). Un tipo de puntero lee para él la opción `activation` del elemento arrastrable, luego la del provider y luego los valores por defecto (ratón 4 px, al instante sobre un asa; lápiz 4 px; táctil, una pulsación larga de 200 ms con 5 px de tolerancia). Una restricción se usa tal cual. Por defecto: ninguna, el arrastre empieza al instante."
   },
   "SensorActivation.onStart": {
     "source": "e74975e61a",
@@ -55,6 +55,10 @@
     "source": "cede55f00c",
     "text": "- `'pending'`: esperando la restricción de activación;\n- `'dragging'`: desde el inicio hasta que se decide el drop o se cancela el arrastre;\n- `'ended'`: la activación se abortó, o el arrastre se soltó o se canceló, por el sensor o por cualquier otra cosa (Escape, una pestaña oculta, `useDnD().cancel()`, el desmontaje del provider)."
   },
+  "SensorStepOptions": {
+    "source": "068f67f8ef",
+    "text": "Opciones de `SensorDrag.step()`."
+  },
   "SensorStepOptions.event": {
     "source": "a9cd22b651",
     "text": "La pulsación de tecla, que se pasa al `getKeyboardCoordinates` de los monitores. Por defecto: un keydown de la flecha."
@@ -70,6 +74,14 @@
   "SensorDrag.id": {
     "source": "407eb1b511",
     "text": "Id del ítem arrastrado."
+  },
+  "SensorDrag.type": {
+    "source": "76da00f024",
+    "text": "Cómo se mueve el arrastre, según lo pidió `activate()` (`SensorActivation.type`)."
+  },
+  "SensorDrag.state": {
+    "source": "09adafb8ab",
+    "text": "En qué punto está el arrastre: esperando su activación, arrastrando o terminado."
   },
   "SensorDrag.started": {
     "source": "0bc4410fb6",
@@ -126,5 +138,9 @@
   "Sensor.name": {
     "source": "f3f1afa08b",
     "text": "Para depuración."
+  },
+  "Sensor.setup": {
+    "source": "4633ff96ac",
+    "text": "Empieza a escuchar la entrada, una vez por provider: llama a `context.activate()` cuando quiera arrastrar. Puede devolver una función de limpieza, que se ejecuta cuando el sensor se detiene."
   }
 }

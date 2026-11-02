@@ -1,11 +1,63 @@
 {
+  "TreeNesting": {
+    "source": "9af740feca",
+    "text": "트리 드래그가 깊이를 정하는 방식: `'offset'`은 옆으로 얼마나 움직였는지로(단계당 `indentation`), `'hover'`는 행의 가운데에 올려서 정하며 그 행이 드래그를 자식으로 받습니다. `'both'`는 둘 다입니다."
+  },
+  "FlatNode": {
+    "source": "23666e81ba",
+    "text": "트리의 보이는 노드. 트리의 `items`에 나열된 그대로입니다. 순서대로 렌더링하고 `depth`만큼 들여 쓰세요."
+  },
+  "FlatNode.key": {
+    "source": "96ba306f48",
+    "text": "노드의 key(`getKey`)."
+  },
+  "FlatNode.item": {
+    "source": "b4ce340716",
+    "text": "원본 노드."
+  },
+  "FlatNode.depth": {
+    "source": "0c7c31948d",
+    "text": "깊이: 루트는 0입니다. 드래그 중인 노드는 예상 깊이를 가집니다."
+  },
+  "FlatNode.parentKey": {
+    "source": "8c7e128431",
+    "text": "부모의 key. 루트는 `null`."
+  },
   "FlatNode.index": {
     "source": "b24454e95d",
     "text": "형제 사이에서의 인덱스."
   },
+  "FlatNode.hasChildren": {
+    "source": "b824e0490e",
+    "text": "자식이 있습니다(보이든 아니든)."
+  },
+  "FlatNode.collapsed": {
+    "source": "bd45c73799",
+    "text": "자식이 숨겨져 있습니다(key가 `collapsed`에 있습니다)."
+  },
+  "TreeProjection": {
+    "source": "7161034972",
+    "text": "드래그 중인 노드가 트리의 어디에 안착할지."
+  },
+  "TreeProjection.depth": {
+    "source": "2e69aed9a0",
+    "text": "노드가 갖게 될 깊이(루트는 0)."
+  },
+  "TreeProjection.parentKey": {
+    "source": "b142da09fd",
+    "text": "노드가 들어갈 부모 노드. 루트에서는 `null`."
+  },
   "SortableTreeDropEvent": {
     "source": "eb47878c8b",
     "text": "트리의 드롭 이벤트. `index`는 `parentKey` 아래 형제 사이에서의 위치입니다(`from`: 이동 전, `to`: 이동 후, 노드가 이미 이전 자리에서 빠진 상태). `from.parentKey`는 루트 노드와 다른 리스트에서 온 항목이면 `null`입니다. 멀티 드래그는 `keys`(각각 하위 트리 포함)를 나란히 옮깁니다. `from`은 드래그를 이끄는 노드(집은 노드, 또는 그 노드를 싣고 가는 선택된 노드)가 있던 곳이고, `to`는 그중 첫 번째가 안착하는 곳입니다. 복사(`mode: 'copy'`)는 노드를 제자리에 두고 그 복사본인 `items`를 삽입하며, 일반 draggable(`mode: 'insert'`)은 `createItem`이 만든 노드를 삽입합니다."
+  },
+  "SortableTreeDropEvent.from": {
+    "source": "9d2938f9b8",
+    "text": "드래그를 이끄는 노드가 있던 곳: 그 트리, 형제 노드 사이의 인덱스, 부모."
+  },
+  "SortableTreeDropEvent.to": {
+    "source": "423e0db1d1",
+    "text": "처음 드롭된 노드가 안착하는 곳: 그 트리, 새 형제 노드 사이의 인덱스, 새 부모."
   },
   "SortableTreeOptions": {
     "source": "a99d0dc21f",
@@ -18,6 +70,10 @@
   "SortableTreeOptions.getKey": {
     "source": "8bd06a8146",
     "text": "기본값: `node.id`. `makeSortableItem({ item })`, 복사본, 새로 만든 노드의 key도 이것으로 정합니다."
+  },
+  "SortableTreeOptions.getChildren": {
+    "source": "16d2b0d885",
+    "text": "노드의 자식. 기본값: `node.children`."
   },
   "SortableTreeOptions.setChildren": {
     "source": "ebc9ed1493",
@@ -34,6 +90,14 @@
   "SortableTreeOptions.label": {
     "source": "86c099a68f",
     "text": "사람이 트리를 부르는 이름. 스크린 리더용 문구가 id 대신 이 이름을 읽습니다."
+  },
+  "SortableTreeOptions.data": {
+    "source": "06a846f752",
+    "text": "드롭 대상으로서의 트리에 대해 알릴 아무 데이터. 드래그가 위에 있는 동안 이벤트는 이것을 `over.data`로 담습니다."
+  },
+  "SortableTreeOptions.activation": {
+    "source": "bb472ecc80",
+    "text": "이 트리의 행을 눌렀을 때 드래그가 시작되는 방식으로, 프로바이더의 `activation` 대신 쓰입니다(행 자체의 설정이 우선합니다)."
   },
   "SortableTreeOptions.overlay": {
     "source": "cf37f2819a",
@@ -111,7 +175,7 @@
     "source": "5d1e2c66c2",
     "text": "이 트리의 FLIP 애니메이션. 기본값: 프로바이더의 `animation`. 값 또는 ref(함수는 커스텀 애니메이션입니다)."
   },
-  "SortableTreeOptions.animate": {
+  "SortableTreeOptions.animateChanges": {
     "source": "9004d33175",
     "text": "`SortableListOptions`와 같으며, 보이는 행에 적용됩니다: 추가, 제거, 이동된 노드, 그리고 노드를 펼치거나 접을 때(`collapsed`) 보이거나 숨겨지는 행."
   },
@@ -127,6 +191,10 @@
     "source": "26c5e98e4b",
     "text": "`SortableListOptions`와 같습니다. 트리 대신 드롭을 받는 요소이며, 기본값은 트리 자체의 요소입니다."
   },
+  "SortableTreeOptions.disabled": {
+    "source": "e015689412",
+    "text": "`true`: 행을 드래그할 수 없고, 항목을 받지도 않습니다."
+  },
   "SortableTreeOptions.onBeforeDrop": {
     "source": "94fc28e843",
     "text": "`SortableListOptions`와 같습니다."
@@ -134,6 +202,14 @@
   "SortableTreeOptions.onDrop": {
     "source": "cac25ac658",
     "text": "`SortableListOptions`와 같습니다. 기록 전에 호출되며, `event.preventDefault()`로 기록을 건너뜁니다."
+  },
+  "SortableTreeReturn": {
+    "source": "63d4a830bd",
+    "text": "`makeSortableTree`가 반환하는 것."
+  },
+  "SortableTreeReturn.id": {
+    "source": "78f5948858",
+    "text": "트리의 id: `id` 옵션, 또는 자동으로 만들어진 id."
   },
   "SortableTreeReturn.items": {
     "source": "7c78a356e7",
@@ -146,6 +222,10 @@
   "SortableTreeReturn.indicator": {
     "source": "3f5878f4c5",
     "text": "인디케이터 모드: 드롭될 위치와 그 `depth`, `parentKey`. 여기가 아니면 `null`."
+  },
+  "SortableTreeReturn.isOver": {
+    "source": "862facdce0",
+    "text": "드래그가 트리 위에 있습니다."
   },
   "SortableTreeReturn.isAccepting": {
     "source": "ae54d9827e",
@@ -162,5 +242,9 @@
   "SortableTreeReturn.activeSize": {
     "source": "8337786343",
     "text": "드래그 시작 시점의 드래그 중인 행 크기."
+  },
+  "SortableTreeReturn.captureLayout": {
+    "source": "4d1e38426d",
+    "text": "라이브러리가 일으키지 않은 레이아웃 변경을 애니메이션합니다(예: 가상화 라이브러리의 재측정)."
   }
 }

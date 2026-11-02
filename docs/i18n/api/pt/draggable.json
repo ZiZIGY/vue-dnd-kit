@@ -7,9 +7,21 @@
     "source": "2dac667235",
     "text": "Id estável. Passe um getter em listas virtuais, onde os elementos são reciclados. Padrão: `useId()`, estável entre a renderização no servidor e no cliente, mas novo a cada instância do componente."
   },
+  "DraggableOptions.data": {
+    "source": "30d815634b",
+    "text": "Qualquer coisa que o arraste deva carregar: os eventos e os alvos de drop a leem como `active.data`."
+  },
   "DraggableOptions.label": {
     "source": "4edf4ca05a",
     "text": "Como as pessoas o chamam: os textos para leitores de tela dizem isso em vez do id (`Picked up Tomato`). Os eventos o trazem como `active.label` e em `items`."
+  },
+  "DraggableOptions.type": {
+    "source": "5a54d1a669",
+    "text": "O tipo ou os tipos dele, comparados pelas regras `accept` dos alvos de drop. Sem nenhum, ele serve para qualquer alvo."
+  },
+  "DraggableOptions.disabled": {
+    "source": "deda4464f8",
+    "text": "`true`: ele não pode ser arrastado (informa `aria-disabled`)."
   },
   "DraggableOptions.handle": {
     "source": "1330de430e",
@@ -24,12 +36,12 @@
     "text": "Barreira extra, por exemplo, arrastar só enquanto uma tecla está pressionada."
   },
   "DraggableOptions.overlay": {
-    "source": "c9686248ff",
-    "text": "`true` (padrão): um overlay segue o ponteiro, renderizado pelo slot `#overlay` do provider ou como um clone do elemento. Um componente: o overlay o renderiza com `OverlayProps`, antes do slot. `false`: sem overlay, o próprio elemento se move por meio do `transform` retornado. Um valor ou um ref (uma função é um componente funcional, então `(props) => <Card {...props} />` funciona). Se há overlay ou não é decidido quando o arraste começa; um ref trocado durante o arraste troca o componente na hora (veja o `overlayTransition` do provider). O `overlay` próprio de um alvo de drop prevalece enquanto o arraste está sobre ele. O clone deixa de fora os efeitos de clique de UI kits (ripples) e qualquer elemento interno marcado com `data-dnd-no-clone`."
+    "source": "57703cc418",
+    "text": "`true` (padrão): um overlay segue o ponteiro, renderizado pelo slot `#overlay` do provider ou como um clone do elemento. Um componente: o overlay o renderiza com `OverlayProps`, antes do slot. `false`: sem overlay, o próprio elemento se move por meio do `transform` retornado. Um valor ou um ref (uma função é um componente funcional, então `(props) => <Card {...props} />` funciona). Se há overlay ou não é decidido quando o arraste começa; um ref trocado durante o arraste troca o componente na hora (veja o `overlayTransition` do provider). O `overOverlay` de um alvo de drop prevalece enquanto o arraste está sobre ele. O clone deixa de fora os efeitos de clique de UI kits (ripples) e qualquer elemento interno marcado com `data-dnd-no-clone`."
   },
   "DraggableOptions.dropAnimation": {
-    "source": "965316ffc5",
-    "text": "Como o overlay pousa quando um arraste deste elemento termina, em vez do `dropAnimation` do provider; o `dropAnimation` próprio de um alvo de drop prevalece. Um valor ou um ref (uma função é a animação), lido no drop."
+    "source": "d3eb50e0f8",
+    "text": "Como o overlay pousa quando um arraste deste elemento termina, em vez do `dropAnimation` do provider; o `overDropAnimation` de um alvo de drop prevalece. Um valor ou um ref (uma função é a animação), lido no drop."
   },
   "DraggableOptions.modifiers": {
     "source": "71eb5c6851",
@@ -39,7 +51,7 @@
     "source": "41cb212360",
     "text": "Trava em um eixo os arrastes que começam aqui: `'x'` move só na horizontal, `'y'` só na vertical. A trava vem depois de `modifiers` (por último, como `restrictToHorizontalAxis` / `restrictToVerticalAxis`), então se mantém não importa o que eles façam. Lido quando o arraste começa."
   },
-  "DraggableOptions.keyboard": {
+  "DraggableOptions.keyboardMode": {
     "source": "fd726db037",
     "text": "Setas nos arrastes livres: mover em pixels (padrão) ou saltar entre os alvos de drop que aceitam o item. Lido a cada toque de seta."
   },
@@ -48,20 +60,60 @@
     "text": "Define os atributos role/tabindex/aria-* (padrão `true`), sem nunca sobrescrever os que o usuário definiu. O id das instruções do provider entra em um `aria-describedby` existente como mais um token (uma tooltip de UI kit no mesmo elemento mantém o seu), e só esse token é removido. Ao vivo: desligar remove o que a biblioteca definiu."
   },
   "DraggableOptions.native": {
-    "source": "c7441f484f",
-    "text": "Um arraste dele com o mouse é o arraste do próprio navegador, que pode sair da página: para a área de trabalho, para outro app ou aba, para outra janela do app. Na página ele funciona como sempre (alvos, listas que abrem espaço), mas o navegador desenha a imagem arrastada em vez do overlay. Arrastes por toque e por teclado continuam sendo da biblioteca. `true` carrega o `label` como texto. Lido quando um clique começa."
+    "source": "d35c31b251",
+    "text": "Um arraste dele com o mouse é o arraste do próprio navegador, que pode sair da página: para a área de trabalho, para outro app ou aba, para outra janela do app. Na página ele funciona como sempre (alvos, listas que abrem espaço), mas o navegador desenha a imagem arrastada em vez do overlay. Arrastes por toque e por teclado continuam sendo da biblioteca. `true` carrega o `label` como texto. Lido quando um clique começa. `canDrag` é consultado no clique; o navegador decide quanto o mouse se move antes de o arraste dele começar (`activation` não se aplica a ele)."
+  },
+  "DraggableReturn": {
+    "source": "976a57aa6f",
+    "text": "O que `makeDraggable` retorna."
+  },
+  "DraggableReturn.id": {
+    "source": "c94024d888",
+    "text": "O id do draggable: a opção `id`, ou o que foi gerado para ele."
+  },
+  "DraggableReturn.isDragging": {
+    "source": "d0f776877f",
+    "text": "Ele está sendo arrastado (também como outro item de um multi-drag), ou o overlay dele ainda está pousando."
   },
   "DraggableReturn.transform": {
     "source": "3d7102b110",
     "text": "Deslocamento a aplicar quando `overlay: false`: o do arraste, menos o quanto o conteúdo em que o elemento está se moveu desde o início (a página ou um contêiner rolou), para que o elemento continue sob o ponteiro."
   },
+  "DraggableReturn.selected": {
+    "source": "d15fb608a4",
+    "text": "Ele está na seleção do provider: um arraste de um item selecionado carrega todos. Atribua um valor para selecionar ou desmarcar."
+  },
+  "Placement": {
+    "source": "ae8ffcc50c",
+    "text": "Em quais metades de um alvo de drop sob o arraste o ponteiro está (`DroppableReturn.placement`)."
+  },
+  "Placement.top": {
+    "source": "5d2b56cb3a",
+    "text": "Na metade de cima."
+  },
+  "Placement.right": {
+    "source": "2370dfaf9c",
+    "text": "Na metade direita."
+  },
+  "Placement.bottom": {
+    "source": "769843d001",
+    "text": "Na metade de baixo."
+  },
+  "Placement.left": {
+    "source": "68a878facf",
+    "text": "Na metade esquerda."
+  },
   "DroppableOptions": {
-    "source": "c1de31b385",
-    "text": "Opções de `makeDroppable`.\n\n**Drop dentro de um item.** Um alvo de drop no elemento de um item ordenável (ou dentro dele) funciona como em qualquer outro lugar, com uma regra enquanto a lista desse item ordenaria o arraste: ele só conta enquanto o ponteiro está no meio do item (25–75% ao longo do eixo da lista; x em grades), onde o drop vai para dentro do alvo e a lista não se mexe por causa dele. Perto das bordas do item, a lista ordena como sempre. Um alvo cujo `accept` recusa o arraste fica de fora, então a lista ordena sobre o item como sobre qualquer outro (não é preciso desativá-lo). O teclado para em um alvo assim antes de passar pelo item dele. Um alvo nunca é alvo do seu próprio arraste: nem dentro (ou em cima) de algum item arrastado, nem na posição em que um deles pousa. Para tirar os itens da lista deles em `onDrop`, chame `e.source.remove()`.\n\nToda opção, menos os callbacks, aceita um valor, um ref ou um getter (`accept`, `overlay`, `dropAnimation`: um valor ou um ref) e é lida ao vivo, enquanto um arraste procura o seu alvo."
+    "source": "f0f30d2e7e",
+    "text":"Opções de `makeDroppable`.\n\n**Drop dentro de um item.** Um alvo de drop no elemento de um item ordenável (ou dentro dele) funciona como em qualquer outro lugar, com uma regra enquanto a lista desse item ordenaria o arraste: ele só conta enquanto o ponteiro está no meio do item (25–75% ao longo do eixo da lista; x em grades), onde o drop vai para dentro do alvo e a lista não se mexe por causa dele. Perto das bordas do item, a lista ordena como sempre. Um alvo cujo `accept` recusa o arraste fica de fora, então a lista ordena sobre o item como sobre qualquer outro (não é preciso desativá-lo). O teclado para em um alvo assim antes de passar pelo item dele. Um arraste nunca mira o que ele carrega: nenhum alvo dentro (ou em cima) de um item arrastado, nem na posição em que um deles pousa. Para tirar os itens da lista deles em `onDrop`, chame `e.source.remove()`.\n\nToda opção, menos os callbacks, aceita um valor, um ref ou um getter (`accept`, `overOverlay`, `overDropAnimation`: um valor ou um ref) e é lida ao vivo, enquanto um arraste procura o seu alvo."
   },
   "DroppableOptions.id": {
     "source": "ea58d47829",
     "text": "Padrão: `useId()`, estável entre a renderização no servidor e no cliente."
+  },
+  "DroppableOptions.data": {
+    "source": "c94ea36561",
+    "text": "Qualquer coisa a dizer sobre o alvo: os eventos a carregam como `over.data`."
   },
   "DroppableOptions.label": {
     "source": "5e751a1320",
@@ -75,21 +127,49 @@
     "source": "05b17f13f4",
     "text": "Padrão `'all'`."
   },
+  "DroppableOptions.disabled": {
+    "source": "24bb02fdcc",
+    "text": "`true`: os arrastes passam por cima dele como se ele não estivesse ali."
+  },
   "DroppableOptions.priority": {
     "source": "083ebc2847",
     "text": "O maior vence quando os alvos se sobrepõem sem estarem aninhados (padrão 0). Itens ordenáveis vencem contêineres."
   },
-  "DroppableOptions.overlay": {
-    "source": "9ef772f9a5",
-    "text": "O que o overlay mostra enquanto um arraste que este alvo aceita está sobre ele: um componente que recebe `OverlayProps`, renderizado no lugar do overlay do próprio arraste (o componente do item arrastado, o slot do provider ou o clone), que ele recebe como slot padrão para envolver ou deixar de fora (`<slot />`). Ele fica enquanto o drop pousa aqui. Arrastes sem overlay (`overlay: false`) continuam sem nenhum. Um valor ou um ref, lido ao vivo; a troca de componente é animada com o `overlayTransition` do provider."
+  "DroppableOptions.overOverlay": {
+    "source": "5741fad6c3",
+    "text": "O que o overlay mostra enquanto um arraste que este alvo aceita está sobre ele: um componente que recebe `OverlayProps`, renderizado no lugar do overlay do próprio arraste (o componente do item arrastado, o slot do provider ou o clone), que ele recebe como slot padrão para envolver ou deixar de fora (`<slot />`). Ele fica enquanto o drop pousa aqui. Arrastes sem overlay (`overlay: false`) continuam sem nenhum. Um valor ou um ref, lido ao vivo; a troca de componente é animada com o `overlayTransition` do provider. (Em draggables, itens e listas, `overlay` é o overlay do próprio arraste; listas ordenáveis e árvores também recebem este como `overOverlay`.)"
   },
-  "DroppableOptions.dropAnimation": {
+  "DroppableOptions.overDropAnimation": {
     "source": "0f0a6dd259",
     "text": "Como o overlay pousa quando é solto aqui, em vez do `dropAnimation` do item arrastado e do provider: `false` o deixa onde foi solto (a animação própria de um componente de overlay, um respingo, acontece ali), uma função o anima. Um valor ou um ref, lido no drop."
+  },
+  "DroppableOptions.onDragEnter": {
+    "source": "fa66c429e8",
+    "text": "Um arraste chegou sobre este alvo, quer ele aceite o arraste ou não (`event.over.accepted`)."
+  },
+  "DroppableOptions.onDragLeave": {
+    "source": "b63a860349",
+    "text": "O arraste saiu deste alvo."
+  },
+  "DroppableOptions.onBeforeDrop": {
+    "source": "bd9bcff646",
+    "text": "Consultado antes de um drop neste alvo se concretizar, depois do `onBeforeDrop` dos monitores, se ele aceita o arraste (veja `BeforeDropResult`). Pode ser assíncrono: o overlay espera onde foi solto. Um erro rejeita o drop."
+  },
+  "DroppableOptions.onDrop": {
+    "source": "9f7fd0f0aa",
+    "text": "Um drop neste alvo se concretizou: faça o que ele significa (mover o item, enviar o arquivo). Quando um `onBeforeDrop` aceitou só alguns dos itens arrastados, `event.accepted` tem os ids deles e `event.rejected` os outros, que voltam ao lugar; `active` continua sendo o arraste inteiro."
   },
   "DroppableOptions.external": {
     "source": "b80f2c5709",
     "text": "Aceita arrastes de fora da página: arquivos da área de trabalho, um link ou texto de outro app ou aba (o arrastar e soltar do navegador). Eles funcionam como os arrastes da biblioteca (`isOver`, `isAccepting`, os eventos), e `e.external` tem os dados deles no drop. Alvos sem `external` os ignoram. Um valor, um ref ou um getter, lido ao vivo."
+  },
+  "DroppableReturn": {
+    "source": "745c149794",
+    "text": "O que `makeDroppable` retorna."
+  },
+  "DroppableReturn.id": {
+    "source": "8c2640f4f2",
+    "text": "O id do alvo: a opção `id`, ou o que foi gerado para ele."
   },
   "DroppableReturn.isOver": {
     "source": "bd388d0ac7",

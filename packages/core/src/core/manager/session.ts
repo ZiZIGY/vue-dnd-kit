@@ -498,19 +498,22 @@ export function createSession(ctx: ManagerContext) {
       return conclude('onDragCancel', event);
     }
 
+    const accepted = Array.isArray(verdict) ? verdict : event.active.ids;
+    const endEvent: DnDEndEvent = {
+      ...event,
+      dropped: !!target,
+      accepted,
+      rejected: event.active.ids.filter((id) => !accepted.includes(id)),
+      ...(ctx.droppedOutside && { droppedOutside: ctx.droppedOutside }),
+    };
+    // The target is told what it takes: a partial accept leaves the others out.
     if (target) {
       try {
-        ctx.droppables.get(target.id)?.onDrop?.(event);
+        ctx.droppables.get(target.id)?.onDrop?.(endEvent);
       } catch (error) {
         console.error(error);
       }
     }
-    const endEvent: DnDEndEvent = {
-      ...event,
-      dropped: !!target,
-      accepted: Array.isArray(verdict) ? verdict : event.active.ids,
-      ...(ctx.droppedOutside && { droppedOutside: ctx.droppedOutside }),
-    };
     vibrate(ctx.props.haptics, 'drop', ctx.touch);
     return conclude('onDragEnd', endEvent);
   };

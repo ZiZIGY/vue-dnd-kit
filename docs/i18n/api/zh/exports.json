@@ -1,0 +1,122 @@
+{
+  "DnDProvider": {
+    "source": "b1827fd191",
+    "text": "管理在它内部渲染的所有内容的拖拽：输入、浮层、选中集合、自动滚动和屏幕阅读器播报（见 `DnDProviderProps`）。"
+  },
+  "DragPreview": {
+    "source": "f4f4c9f952",
+    "text": "一个被拖拽项的默认克隆（见 `DragPreviewProps`）。自定义浮层用它自行排布多个项；默认浮层用它显示多项拖拽。"
+  },
+  "makeDraggable": {
+    "source": "611823a10c",
+    "text": "让元素可拖拽。默认是自由拖拽；可排序列表构建在它之上。"
+  },
+  "makeDroppable": {
+    "source": "48253f728f",
+    "text": "让元素成为放置目标。"
+  },
+  "useDnD": {
+    "source": "78d14d6351",
+    "text": "用于自定义 UI 的只读拖拽状态（高亮有效目标、加载指示、进度）。"
+  },
+  "useDnDMonitor": {
+    "source": "4719611afa",
+    "text": "订阅 provider 下每次拖拽的事件，持续到调用它的组件（或 effect 作用域）销毁为止。"
+  },
+  "useDnDContext": {
+    "source": "555b5f2b85",
+    "text": "这个组件上方的 provider，作为供 `provideDnDContext` 使用的不透明句柄：它把 provider 桥接到 shadow root 和独立的 Vue 应用中。"
+  },
+  "provideDnDContext": {
+    "source": "8befa03229",
+    "text": "把一个 provider（来自 `useDnDContext()`）共享给另一个 Vue 应用，例如挂载在 shadow root 中的应用。"
+  },
+  "makeSortableList": {
+    "source": "d03a1a39c8",
+    "text": "让容器成为可排序列表。渲染返回的 `items`（草稿顺序），而不是你的数组：放置结果会在 `onDrop` 之后写回 `options.items`，除非 `event.preventDefault()` 把 `event.result` 留给你处理。"
+  },
+  "makeSortableItem": {
+    "source": "c1e5819e0d",
+    "text": "让元素成为可排序列表或树中的一行：它可以被拖拽、腾出位置并落到自己的位置上。在调用了 `makeSortableList`（或 `makeSortableTree`）的组件内部渲染的组件中调用它；如果那里创建了多个列表，这一行会加入元素包含它的最内层列表。用 `item`（由列表的 `getKey` 生成 key，默认 `item.id`）或 `id` 标识这一行。"
+  },
+  "makeSortableTree": {
+    "source": "a068e3925b",
+    "text": "让容器成为可排序树。用调用 `makeSortableItem` 的行组件渲染返回的 `items`（草稿顺序中的可见节点，按 `depth` 缩进）。放置时，在 `onDrop` 之后，被移动的节点（连同它们的子树）会写入 `options.items`，除非 `event.preventDefault()` 把 `event.result` 留给你处理。"
+  },
+  "makeSelectionArea": {
+    "source": "3e8548087f",
+    "text": "让元素成为框选区域，用于选择其中的可拖拽元素。选框由你自己渲染：`<div v-if=\"isSelecting\" class=\"band\" :style=\"style\" />`。"
+  },
+  "makeDragArea": {
+    "source": "4d4126fd37",
+    "text": "让元素成为拖拽区域：在它内部开始的拖拽（可拖拽元素和可排序项）遵循它的规则，见 `DragAreaOptions`。这样一个 provider 就能服务整个应用，其中的看板、画布和信息流各自以自己的方式拖拽。区域嵌套时，最近的区域胜出。"
+  },
+  "defineSensor": {
+    "source": "70baa86e7e",
+    "text": "定义一个传感器（见 `Sensor`）：它只帮助推导类型，并原样返回参数。"
+  },
+  "useSensor": {
+    "source": "dde117b5a5",
+    "text": "在上方的 provider 中运行一个传感器，与 provider 的 `sensors` 并列，持续到调用它的组件（或 effect 作用域）销毁为止。卸载时它的拖拽会被取消。"
+  },
+  "pointerSensor": {
+    "source": "9da65b79da",
+    "text": "通过 Pointer Events 支持鼠标、触摸和触控笔。默认在 `sensors` 中。"
+  },
+  "keyboardSensor": {
+    "source": "394ed58ab2",
+    "text": "Space/Enter、方向键和 Escape（可通过 provider 的 `keyboard` 选项重新绑定）。默认在 `sensors` 中；即使设置了 `keyboard: false`，它也会用 Escape 取消指针拖拽和自定义拖拽。"
+  },
+  "pointerFirst": {
+    "source": "a8cf072161",
+    "text": "默认：指针下方的目标，否则是浮层重叠的目标。"
+  },
+  "pointerWithin": {
+    "source": "0c701c6c7d",
+    "text": "指针下方的目标，来自命中测试：遵循 z-order、浮层和 shadow root。"
+  },
+  "rectIntersection": {
+    "source": "b68bd59aae",
+    "text": "与浮层重叠的目标：先比优先级，再比嵌套深度，最后比交并比（intersection over union）。"
+  },
+  "closestCenter": {
+    "source": "54257511c8",
+    "text": "所有目标，按中心之间的距离排序。"
+  },
+  "closestCorners": {
+    "source": "d75758f400",
+    "text": "所有目标，按各角之间的距离之和排序（适合堆叠的目标，例如看板的列）。"
+  },
+  "restrictToVerticalAxis": {
+    "source": "3983cfff70",
+    "text": "只在垂直方向移动：水平方向上，无论页面如何滚动，它都跟随开始时所在的内容（`containerShift`）。`axis: 'y'` 选项做的是同样的事，并且最后应用。"
+  },
+  "restrictToHorizontalAxis": {
+    "source": "e484b813e5",
+    "text": "只在水平方向移动：垂直方向上，无论页面如何滚动，它都跟随开始时所在的内容（`containerShift`）。`axis: 'x'` 选项做的是同样的事，并且最后应用。"
+  },
+  "restrictToWindowEdges": {
+    "source": "cad0a3465c",
+    "text": "把浮层限制在窗口内。"
+  },
+  "restrictToParent": {
+    "source": "a8492ae8d2",
+    "text": "把浮层限制在拖拽开始时所在的容器内：可排序列表（而不是它的 DOM 父元素），对于普通的可拖拽元素则是父元素。"
+  },
+  "restrictToElement": {
+    "source": "9960d692bd",
+    "text": "把浮层限制在某个元素内：元素本身、ref 或 getter。"
+  },
+  "restrictToFirstScrollableAncestor": {
+    "source": "d495991a85",
+    "text": "把浮层限制在被拖拽元素的第一个可滚动祖先元素内。"
+  },
+  "snapToGrid": {
+    "source": "84f04cfd39",
+    "text": "把浮层吸附到网格上最近的单元格：数字表示正方形单元格的尺寸；选项可以分别设置每个轴、网格的起点，以及在单元格之间的滑动（`SnapToGridOptions`）。"
+  },
+  "snapCenterToCursor": {
+    "source": "bfc0761525",
+    "text": "让浮层中心对准指针，而不是保持抓取时的偏移。"
+  }
+}

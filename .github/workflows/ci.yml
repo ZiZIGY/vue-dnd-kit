@@ -48,6 +48,11 @@ jobs:
       - name: Build
         run: yarn build
 
+      # What apps pay for typical imports (tree-shaken, minified, gzipped): fails past the
+      # limits in scripts/size.mjs, or when a scenario keeps code it has no use for.
+      - name: Size budget
+        run: yarn size
+
       - name: publint + arethetypeswrong
         run: yarn lint:package
 

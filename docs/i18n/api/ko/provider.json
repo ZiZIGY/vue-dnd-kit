@@ -3,9 +3,21 @@
     "source": "957ec8f6ce",
     "text": "정렬 가능한 리스트나 트리(보이는 행)에서의 자리: `index`는 0부터 세며, 전체 개수는 `length`입니다."
   },
+  "AnnouncedPosition.list": {
+    "source": "31b274663e",
+    "text": "리스트 또는 트리의 id."
+  },
   "AnnouncedPosition.label": {
     "source": "702bfecdc2",
     "text": "리스트의 `label`(사람이 부르는 이름)."
+  },
+  "AnnouncedPosition.index": {
+    "source": "2155e11380",
+    "text": "자리(0부터): 기본 문구는 `index + 1`을 읽어 줍니다."
+  },
+  "AnnouncedPosition.length": {
+    "source": "97c61b39e8",
+    "text": "리스트에 있는 자리의 수."
   },
   "AnnouncementContext": {
     "source": "884af39ecf",
@@ -28,8 +40,24 @@
     "text": "드래그가 복사합니다(`group.pull: 'clone'`, 복사 모디파이어 키)."
   },
   "Announcements": {
-    "source": "08ba8bd127",
-    "text": "스크린 리더용 문구. 기본 문구를 쓰려면 `undefined`를, 아무것도 읽지 않으려면 `''`를 반환하세요. `context`에는 정렬 가능한 리스트의 기본 문구가 읽어 주는 위치가 들어 있습니다."
+    "source": "b5a69fbd7f",
+    "text": "이벤트별 스크린 리더용 문구. 기본 문구를 쓰려면 `undefined`를, 아무것도 읽지 않으려면 `''`를 반환하세요. `context`에는 정렬 가능한 리스트의 기본 문구가 읽어 주는 위치가 들어 있습니다.\n\n문구는 프로바이더의 라이브 리전이 읽어 줍니다(이동은 드래그가 500 ms 동안 멈춘 뒤에). `undefined`는 이벤트를 다음 출처에 맡깁니다(정렬 위치 같은 연동 기능의 문구, 그다음 기본 문구). 집을 때 찾은 대상에 대해서는 이동을 안내하지 않습니다. 아직 아무것도 움직이지 않았기 때문입니다."
+  },
+  "Announcements.onDragStart": {
+    "source": "cb7361dadf",
+    "text": "드래그가 시작되었습니다."
+  },
+  "Announcements.onDragOver": {
+    "source": "e7155df562",
+    "text": "드래그가 다른 대상 위로, 또는 리스트의 다른 자리로 옮겨 갔습니다(500 ms 동안 멈춘 뒤에)."
+  },
+  "Announcements.onDragEnd": {
+    "source": "56ab53c578",
+    "text": "드롭이 확정되었거나, 드래그가 모든 대상 밖에서 끝났습니다."
+  },
+  "Announcements.onDragCancel": {
+    "source": "e76ef54e23",
+    "text": "드래그가 취소되었거나 드롭이 거부되었습니다."
   },
   "Announcements.onDragResume": {
     "source": "d4806359e7",
@@ -39,9 +67,21 @@
     "source": "35562b8590",
     "text": "통합 기능(정렬 가능한 리스트)의 문구와, 그 통합 기능이 프로바이더 자체 문구를 위해 알고 있는 컨텍스트."
   },
+  "KeyboardOptions": {
+    "source": "bb782ceb9e",
+    "text": "키보드 드래그(프로바이더의 `keyboard`): 그 키와 자유 드래그의 이동 단위."
+  },
+  "KeyboardOptions.keys": {
+    "source": "c36afa9f52",
+    "text": "집기(`start`), 드롭, 취소에 쓰는 키. `KeyboardEvent.code`(`'Space'`, `'KeyW'`) 또는 `.key`(`'Enter'`, `'w'`)로 지정합니다. 기본값: Space와 Enter로 집고 드롭하며, Escape로 취소합니다. 화살표 키는 항상 이동에 쓰입니다."
+  },
   "KeyboardOptions.step": {
     "source": "66a729c31a",
     "text": "자유(정렬이 아닌) 드래그에서 화살표 키를 한 번 누를 때 움직이는 픽셀 수. 기본값 25."
+  },
+  "AutoScrollOptions": {
+    "source": "c15af10035",
+    "text": "드래그가 가장자리에 가까워질 때 컨테이너가 스크롤되는 방식(프로바이더의 `autoScroll`)."
   },
   "AutoScrollOptions.threshold": {
     "source": "1b2cd0615c",
@@ -50,6 +90,10 @@
   "AutoScrollOptions.maxSpeed": {
     "source": "4ebcb33d64",
     "text": "16ms 프레임당 최대 속도(px)."
+  },
+  "AutoScrollOptions.acceleration": {
+    "source": "c2b02de232",
+    "text": "포인터가 컨테이너 가장자리에 있을 때의 속도(프레임당 px): 가장자리 영역 안쪽에서는 느리고, 가장자리를 넘으면 빨라지며, 최대 `maxSpeed`까지입니다. 기본값 10."
   },
   "HapticPattern": {
     "source": "1fb9df65e6",
@@ -75,17 +119,41 @@
     "source": "54d244b821",
     "text": "드롭이 (대상이나 `onBeforeDrop`에 의해) 거부되어 항목이 원래 자리로 돌아갈 때. 기본값 `false`."
   },
+  "DnDProviderProps": {
+    "source": "e1d670147b",
+    "text": "`DnDProvider`의 props. 대부분은 프로바이더가 필요할 때 읽으므로, 하나를 바꾸면 다음 드래그부터 그 값을 씁니다."
+  },
+  "DnDProviderProps.collision": {
+    "source": "629dec725a",
+    "text": "드래그 아래의 대상을 고르는 방식. 기본값 `pointerFirst`. 다른 내장 방식(`closestCorners`)이나 직접 만든 것을 쓸 수 있습니다."
+  },
+  "DnDProviderProps.modifiers": {
+    "source": "71e9e53a44",
+    "text": "모든 드래그에 쓰는 모디파이어로, 가장 먼저 적용됩니다. 드래그 영역, draggable, 리스트의 모디파이어는 그 뒤에 옵니다."
+  },
   "DnDProviderProps.animation": {
     "source": "699c35a63c",
     "text": "정렬 가능한 리스트의 기본 FLIP 애니메이션."
   },
   "DnDProviderProps.dropAnimation": {
-    "source": "f99201968c",
-    "text": "드롭할 때 오버레이가 안착하고 취소할 때 원래 자리로 돌아가는 방식으로, 더 가까운 곳에서 정하지 않았을 때 쓰입니다. 드롭 대상의 `dropAnimation`이 먼저이고, 그다음은 드래그 중인 항목 자체의 것(또는 그 리스트의 것), 마지막이 이것입니다."
+    "source": "60c09d4b6d",
+    "text": "드롭할 때 오버레이가 안착하고 취소할 때 원래 자리로 돌아가는 방식으로, 더 가까운 곳에서 정하지 않았을 때 쓰입니다. 드롭 대상의 `overDropAnimation`이 먼저이고, 그다음은 드래그 중인 항목 자체의 것(또는 그 리스트의 것), 마지막이 이것입니다."
   },
-  "DnDProviderProps.animate": {
-    "source": "e7b8ee12ca",
-    "text": "정렬 가능한 리스트와 트리의 기본 `animate`: 드래그가 아닌 항목 변경. 기본으로 꺼져 있습니다."
+  "DnDProviderProps.animateChanges": {
+    "source": "37255f7e71",
+    "text": "정렬 가능한 리스트와 트리의 기본 `animateChanges`: 드래그가 아닌 항목 변경. 기본으로 꺼져 있습니다."
+  },
+  "DnDProviderProps.autoScroll": {
+    "source": "b84b62fce5",
+    "text": "드래그가 가장자리에 가까워지면 컨테이너와 페이지를 스크롤합니다. 기본값 `true`. 옵션으로 조정하고, `false`로 끕니다. 리스트, 트리, 드래그 영역에서 재정의할 수 있습니다."
+  },
+  "DnDProviderProps.activation": {
+    "source": "afc7892642",
+    "text": "누르기가 드래그가 되기 전에 충족해야 하는 조건으로, 포인터 종류별로 정합니다(기본값은 `ActivationOptions` 참고). 드래그 영역, 리스트, 트리, 항목, draggable에서 재정의할 수 있습니다."
+  },
+  "DnDProviderProps.keyboard": {
+    "source": "9f75dfd23a",
+    "text": "키보드 드래그: 그 키와 이동 단위. `false`로 끕니다. Escape는 여전히 모든 드래그를 취소합니다."
   },
   "DnDProviderProps.sensors": {
     "source": "180c7efcc3",
@@ -99,6 +167,10 @@
     "source": "c45bff39ad",
     "text": "이동을 복사로 바꾸는 키(KeyboardEvent.key). 기본값 `'Alt'`. `null`이면 비활성화합니다."
   },
+  "DnDProviderProps.overlayTo": {
+    "source": "274db53619",
+    "text": "오버레이를 렌더링할 곳: 선택자 또는 요소. 기본값 `'body'`. 모달 `<dialog>`는 페이지의 나머지 부분 위에 놓입니다. 그 안에서 드래그하려면 오버레이도 그 안에 있어야 합니다."
+  },
   "DnDProviderProps.overlayFit": {
     "source": "2cebf1b9ab",
     "text": "드래그 중 오버레이의 크기. `'slot'`(기본값): 항목이 안착할 자리를 따르므로, 다른 리스트 위에서는 그 리스트 항목의 크기가 되고 드롭할 때 크기를 바꿀 필요가 없습니다. 포인터를 중심으로 크기가 바뀌며, 포인터는 박스 안에서 같은 비율의 위치에 머무릅니다. `'source'`: 드래그 중인 요소의 크기를 유지합니다. 기본 오버레이 콘텐츠는 새 크기에 맞춰 다시 배치되며, 확대·축소되지 않습니다."
@@ -108,8 +180,8 @@
     "text": "멀티 드래그: 집을 때 클론을 받는 드래그 항목의 수로, 집은 항목과 드롭 순서상 그 옆에 있는 다른 항목들이 대상입니다. 기본값은 5이고, `'all'`은 렌더링된 항목을 모두 클론합니다. 기본 오버레이는 클론을 보여 주고 나머지는 개수로 셉니다(`+N`). 직접 만든 레이아웃에서는 클론이 없는 항목에 대해 `DragPreview`가 자신의 슬롯을 렌더링합니다. 모든 클론이 날아갑니다. 취소하면 자기 항목으로 돌아가고, 드롭하면 자기 자리로 가며, 드롭이 들어가는 영역으로는 하나씩 차례로 들어갑니다. 클론은 한꺼번에 만들어지고 스냅샷 한 번에 레이아웃도 전체에 한 번이지만, 클론마다 스타일을 읽는 비용이 듭니다. 느린 휴대폰에서는 긴 항목에 주의하세요."
   },
   "DnDProviderProps.overlayTransition": {
-    "source": "6852def127",
-    "text": "드래그 중에 오버레이가 한 컴포넌트에서 다른 컴포넌트로 바뀌는 방식(드롭 대상의 `overlay`가 넘겨받거나, `overlay` ref가 바뀔 때). `true`(기본값)는 150 ms 동안 크로스페이드하고, `false`는 바로 교체하며, 객체는 내용의 루트를 감싸는 Vue `<Transition>`의 props입니다(`name`, `mode`, GSAP이나 motion용 JS 훅). `mode: 'out-in'`이 없으면 둘이 동시에 보입니다. 떠나는 쪽에 `position: absolute`를 주어(`.<name>-leave-active`) 박스 안에서 겹치게 하세요."
+    "source": "4182e55d7d",
+    "text": "드래그 중에 오버레이가 한 컴포넌트에서 다른 컴포넌트로 바뀌는 방식(드롭 대상의 `overOverlay`가 넘겨받거나, `overlay` ref가 바뀔 때). `true`(기본값)는 150 ms 동안 크로스페이드하고, `false`는 바로 교체하며, 객체는 내용의 루트를 감싸는 Vue `<Transition>`의 props입니다(`name`, `mode`, GSAP이나 motion용 JS 훅). `mode: 'out-in'`이 없으면 둘이 동시에 보입니다. 떠나는 쪽에 `position: absolute`를 주어(`.<name>-leave-active`) 박스 안에서 겹치게 하세요."
   },
   "DnDProviderProps.overlayClass": {
     "source": "fe858c5071",
@@ -119,9 +191,13 @@
     "source": "0729e8985f",
     "text": "일부 이벤트에 쓸 직접 만든 문구(`Announcements` 참고). `false`면 라이브 리전이 아무것도 읽지 않습니다."
   },
+  "DnDProviderProps.screenReaderInstructions": {
+    "source": "e835bc26b0",
+    "text": "키보드로 드래그하는 방법. 스크린 리더가 모든 draggable에 대해 읽어 줍니다(그 `aria-describedby`). 기본값: Space, Enter, 화살표 키, Escape에 대한 영어 안내."
+  },
   "DnDProviderProps.defaultStyles": {
-    "source": "b635d7cd38",
-    "text": "명시도가 0인 기본 스타일을 주입합니다(플레이스홀더 투명도, 드래그 중 텍스트 선택 방지)."
+    "source": "9cecc4e9bf",
+    "text": "기본 모양을 주입합니다: 명시도가 0인 레이어드 CSS로, 플레이스홀더와 멀티 드래그가 제자리에 남긴 항목을 흐리게 합니다(`opacity: 0.4`). 기본값 `true`. `false`이면 모양은 직접 정합니다. 드래그에 필요한 것은 어느 쪽이든 주입됩니다: 드래그 중 텍스트 선택과 스크롤 앵커링 방지(가상 리스트가 이에 의존합니다), 드래그 커서(`--dnd-cursor`), iOS에서 길게 누를 때 링크 콜아웃 방지."
   },
   "DnDContext": {
     "source": "224db9f60d",
@@ -130,6 +206,10 @@
   "OverlaySlotProps": {
     "source": "38a21c4b6d",
     "text": "오버레이가 보여 주는 것: 프로바이더의 `#overlay` 슬롯과 오버레이 컴포넌트(draggable, 정렬 가능한 항목, 리스트, 트리의 `overlay` 옵션)의 props."
+  },
+  "OverlaySlotProps.active": {
+    "source": "ab2a0979dd",
+    "text": "현재 드래그."
   },
   "OverlaySlotProps.items": {
     "source": "10d477a1e7",
@@ -142,6 +222,14 @@
   "OverlaySlotProps.accepted": {
     "source": "f7641f18e1",
     "text": "`over`가 드래그 중인 항목을 받아들이는지 여부. 아래에 아무것도 없으면 `false`."
+  },
+  "OverlaySlotProps.status": {
+    "source": "14a833949b",
+    "text": "`'dragging'`, 그리고 오버레이가 안착하는(또는 원래 자리로 돌아가는) 동안은 `'dropping'`."
+  },
+  "OverlaySlotProps.mode": {
+    "source": "d0692a357f",
+    "text": "지금 드롭하면 일어날 일(`DnDEvent.mode` 참고): 예를 들어 복사하는 동안 더하기 표시를 보여 줍니다."
   },
   "OverlaySlotProps.to": {
     "source": "a7cc5a79db",

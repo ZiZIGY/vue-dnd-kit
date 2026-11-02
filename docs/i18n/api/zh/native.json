@@ -7,6 +7,14 @@
     "source": "5ac7937354",
     "text": "它的 MIME 类型（`image/png`）；浏览器无法判断时为 `''`。"
   },
+  "ExternalFile.name": {
+    "source": "85e29b464a",
+    "text": "带扩展名的文件名（`notes.md`），在放置时可用。"
+  },
+  "ExternalFile.size": {
+    "source": "cf1f4b7920",
+    "text": "以字节为单位的大小，在放置时可用。"
+  },
   "ExternalAccept": {
     "source": "f9ed0b389d",
     "text": "放置目标、列表或树从来自页面之外的拖拽中接收什么：来自桌面的文件、来自另一个应用或标签页的链接或文本（`external`）。"
@@ -32,8 +40,8 @@
     "text": "它接收的其他 MIME 类型，写法与其他应用提供它们时完全一致。"
   },
   "ExternalData": {
-    "source": "52e1ec34b0",
-    "text": "来自页面之外的拖拽（`Active.external`、`DnDEvent.external`）。拖拽进行时，浏览器只告知它携带了什么，而不给出数据：文件、链接和文本在放置时到来（`dropped`）。"
+    "source": "44976c0766",
+    "text": "来自页面之外的拖拽（`Active.external`、`DnDEvent.external`）。拖拽进行时，浏览器只告知它携带了什么，而不给出数据：文件、链接和文本在放置时到来（`ready`）。"
   },
   "ExternalData.types": {
     "source": "840a3fb6e3",
@@ -63,7 +71,7 @@
     "source": "044c2022ec",
     "text": "放置时：它提供的任意类型的数据（放置之前，以及对于它不提供的类型，为 `''`）。"
   },
-  "ExternalData.dropped": {
+  "ExternalData.ready": {
     "source": "11a898fda6",
     "text": "它已被放下：上面的数据已经可用。"
   },
@@ -76,8 +84,8 @@
     "text": "可以用鼠标拖出页面的可拖拽元素或可排序项（`native`）：拖到桌面上，拖进另一个应用、另一个标签页、应用的另一个窗口。"
   },
   "NativeDragOptions.data": {
-    "source": "5cec79d1b0",
-    "text": "其他应用和页面得到的内容：MIME 类型 → 文本，例如 `{ 'text/plain': title, 'text/uri-list': url }`。在拖拽开始时读取。可排序项还会携带它们自身，供应用另一个窗口中同一分组的列表使用。"
+    "source": "8268ca9868",
+    "text": "其他应用和页面得到的内容：按 MIME 类型给出的文本，形如 `{ 'text/plain': title, 'text/uri-list': url }`。在拖拽开始时读取。可排序项还会携带它们自身，供应用另一个窗口中同一分组的列表使用。"
   },
   "NativeDragOptions.effect": {
     "source": "67e99c2b14",

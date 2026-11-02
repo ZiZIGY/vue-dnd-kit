@@ -1,11 +1,39 @@
 {
+  "CollisionCandidate": {
+    "source": "32a74e6d93",
+    "text": "Une cible de dépôt qu'une détection de collision peut choisir : activée, présente sur la page et pas entièrement rognée."
+  },
+  "CollisionCandidate.id": {
+    "source": "f9a233dcfd",
+    "text": "Id de la cible de dépôt."
+  },
   "CollisionCandidate.rect": {
     "source": "6367b9d53a",
     "text": "Partie visible de la cible : rognée par ses conteneurs défilants et par le viewport."
   },
+  "CollisionCandidate.priority": {
+    "source": "c0a3e16a72",
+    "text": "La `priority` de la cible (0 par défaut) : la plus haute l'emporte quand des cibles se chevauchent sans être imbriquées. Les items triables l'emportent sur les conteneurs."
+  },
   "CollisionCandidate.depth": {
     "source": "87728867d4",
     "text": "Niveau d'imbrication parmi les cibles de dépôt : 0 au sommet, les cibles plus profondes ont des valeurs plus élevées."
+  },
+  "CollisionArgs": {
+    "source": "703334f32a",
+    "text": "Ce que reçoit une détection de collision, à chaque mouvement du glissement."
+  },
+  "CollisionArgs.pointer": {
+    "source": "49759bca51",
+    "text": "Le pointeur en coordonnées du viewport, après les modificateurs."
+  },
+  "CollisionArgs.overlayRect": {
+    "source": "38ddd4b88b",
+    "text": "Rectangle de la boîte glissée (l'overlay, ou l'élément lui-même avec `overlay: false`) là où le glissement l'a amenée."
+  },
+  "CollisionArgs.candidates": {
+    "source": "e999e2b499",
+    "text": "Toutes les cibles de dépôt où le glissement pourrait aller, que leur règle `accept` accepte le glissement ou non."
   },
   "CollisionArgs.hits": {
     "source": "78fd5d5eeb",
@@ -15,9 +43,17 @@
     "source": "1248ad0f81",
     "text": "Renvoie les ids des candidats, le meilleur en premier."
   },
+  "ModifierArgs": {
+    "source": "abd362ec1a",
+    "text": "Ce que reçoit un modificateur, à chaque mouvement du glissement."
+  },
   "ModifierArgs.transform": {
     "source": "559160a1f5",
     "text": "Décalage depuis le début du glissement, tel que modifié par les modificateurs précédents."
+  },
+  "ModifierArgs.active": {
+    "source": "ab2a0979dd",
+    "text": "Le glissement."
   },
   "ModifierArgs.activeRect": {
     "source": "c410ca6675",
@@ -38,5 +74,37 @@
   "ModifierArgs.containerShift": {
     "source": "f4f9413e80",
     "text": "De combien le contenu où le glissement a commencé s'est déplacé à l'écran depuis le début : le conteneur a bougé (la page ou un conteneur autour a défilé, la mise en page s'est décalée), et son contenu a défilé à l'intérieur. Les verrouillages d'axe y maintiennent l'autre axe, si bien que le glissement reste sur sa ligne ou sa colonne de ce contenu."
+  },
+  "ModifierArgs.windowRect": {
+    "source": "4d3a00846c",
+    "text": "Rectangle de la fenêtre (le viewport)."
+  },
+  "ModifierArgs.over": {
+    "source": "9f1ad2338d",
+    "text": "La cible de dépôt sous le glissement, telle que trouvée en dernier ; `null` au-dessus de rien."
+  },
+  "Modifier": {
+    "source": "c32d9e8b62",
+    "text": "Change l'endroit où va l'item glissé : reçoit le décalage du glissement (`transform`) et en renvoie un nouveau."
+  },
+  "SnapToGridOptions": {
+    "source": "a9d64c01db",
+    "text": "Options de `snapToGrid`."
+  },
+  "SnapToGridOptions.x": {
+    "source": "c5a80a7c74",
+    "text": "La largeur de la cellule en px. Sans elle (ou à 0), le glissement se déplace librement sur x."
+  },
+  "SnapToGridOptions.y": {
+    "source": "39512fba18",
+    "text": "La hauteur de la cellule en px. Sans elle (ou à 0), le glissement se déplace librement sur y : `{ y: 15 }` aligne uniquement l'heure d'un événement de calendrier."
+  },
+  "SnapToGridOptions.origin": {
+    "source": "51c773a778",
+    "text": "`'container'` (par défaut) : le coin supérieur gauche de l'overlay se pose sur des lignes de grille tracées depuis le coin supérieur gauche du conteneur (`containerRect` : la liste triable ou l'élément parent). `'delta'` : le décalage du glissement est arrondi, en gardant la position de départ de l'item hors de la grille."
+  },
+  "SnapToGridOptions.smooth": {
+    "source": "9952acec7d",
+    "text": "Fait glisser l'overlay en douceur entre les positions alignées (80 ms par défaut). La détection de collision utilise quand même tout de suite la position alignée."
   }
 }

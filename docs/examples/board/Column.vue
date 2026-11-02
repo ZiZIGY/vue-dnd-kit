@@ -28,7 +28,7 @@ const { items, isOver, isAccepting } = makeSortableList(list, {
   group: { name: 'cards', put: ({ keys }) => board.fits(props.column, keys) },
   overlay: CardOverlay,
   // Cards that come and go without a drag (filters, Add card, Undo) slide and fade too.
-  animate: true,
+  animateChanges: true,
   // Cards coming into Done wait for an answer: 'accept', 'reject', or 'continue' to keep dragging.
   onBeforeDrop: (event) => (props.column.confirm && !event.sameList ? board.ask(event.items) : 'accept'),
   onDrop: (event) => {

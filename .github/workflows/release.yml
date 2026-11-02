@@ -38,6 +38,9 @@ jobs:
     outputs:
       created: ${{ steps.release.outputs.releases_created }}
       paths: ${{ steps.release.outputs.paths_released }}
+      core: ${{ steps.release.outputs['packages/core--release_created'] }}
+      core-version: ${{ steps.release.outputs['packages/core--version'] }}
+      core-tag: ${{ steps.release.outputs['packages/core--tag_name'] }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -45,6 +48,42 @@ jobs:
           target-branch: ${{ github.ref_name }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+  # The core's GitHub release gets the notes of its page in the docs' changelog
+  # (docs/content/en/docs/5.changelog/, `version:` in its front matter), with links to the
+  # live demos, above the commits release-please listed. A version without a page keeps
+  # the commits only.
+  notes:
+    name: Release notes
+    needs: release-please
+    if: needs.release-please.outputs.core == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Notes from the changelog page
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.release-please.outputs.core-version }}
+          TAG: ${{ needs.release-please.outputs.core-tag }}
+        run: |
+          node docs/tools/release-notes.ts "$VERSION" > notes.md
+          if [ ! -s notes.md ]; then
+            echo "No changelog page for $VERSION"
+            exit 0
+          fi
+          gh release view "$TAG" --json body --jq .body > commits.md
+          # A re-run doesn't add them twice.
+          if grep -q 'changelog-page' commits.md; then
+            echo "$TAG already has its notes"
+            exit 0
+          fi
+          { cat notes.md; printf '\n---\n\n'; cat commits.md; } > body.md
+          gh release edit "$TAG" --notes-file body.md
 
   publish:
     name: Publish ${{ matrix.path }}

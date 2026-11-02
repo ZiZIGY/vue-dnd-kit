@@ -7,13 +7,21 @@
     "source": "c7f915cabf",
     "text": "Клавиши (`KeyboardEvent.key` или `.code`), которые нужно удерживать, чтобы нажатие рисовало рамку: все до одной или `'some'` — хотя бы одну из них."
   },
-  "SelectionAreaOptions": {
-    "source": "395589bdaa",
-    "text": "Опции `makeSelectionArea`. `modifier`, `strategy`, `accept` и `disabled` принимают значение, ref или геттер (`accept` — значение или ref: функция здесь — это правило) и читаются, когда нажатие начинает рамку. Включение `disabled` также отменяет уже идущую рамку."
+  "SelectionModifier.keys": {
+    "source": "d97d7241ad",
+    "text": "Клавиши — как `KeyboardEvent.key` (`'Shift'`) или `.code` (`'KeyA'`). Если их нет, рамку рисует любое нажатие."
   },
-  "SelectionAreaOptions.selection": {
-    "source": "294f767d3b",
-    "text": "По умолчанию — выделение провайдера."
+  "SelectionModifier.method": {
+    "source": "a46efd8e2a",
+    "text": "`'every'`: должны быть зажаты все `keys`; `'some'`: достаточно одной из них."
+  },
+  "SelectionAreaOptions": {
+    "source": "951e39f4a0",
+    "text": "Опции `makeSelectionArea`. Рамка выделяет в выделение провайдера — то, которое читают мульти-драг и `selected` (`useDnD().selection`). `modifier`, `strategy`, `accept` и `disabled` принимают значение, ref или геттер (`accept` — значение или ref: функция здесь — это правило) и читаются, когда нажатие начинает рамку. Включение `disabled` также отменяет уже идущую рамку."
+  },
+  "SelectionAreaOptions.modifier": {
+    "source": "65c8a221ac",
+    "text": "Клавиши, которые должны быть зажаты, чтобы нажатие рисовало рамку. По умолчанию: никаких, рамку рисует любое нажатие на пустом месте."
   },
   "SelectionAreaOptions.strategy": {
     "source": "0367d14627",
@@ -22,6 +30,22 @@
   "SelectionAreaOptions.accept": {
     "source": "6293487b0c",
     "text": "Какие перетаскиваемые элементы выделяет рамка; матчер такой же, как у целей."
+  },
+  "SelectionAreaOptions.disabled": {
+    "source": "ac33d3517f",
+    "text": "`true`: нажатия не рисуют рамку."
+  },
+  "SelectionAreaOptions.onSelected": {
+    "source": "1ca0d338e8",
+    "text": "Рамка закончилась: получает все id, выделенные сейчас."
+  },
+  "SelectionAreaReturn": {
+    "source": "f6f48602c4",
+    "text": "Что возвращает `makeSelectionArea`."
+  },
+  "SelectionAreaReturn.isSelecting": {
+    "source": "f38c578911",
+    "text": "Рамка рисуется: в это время рендерите её."
   },
   "SelectionAreaReturn.style": {
     "source": "e4525127b1",

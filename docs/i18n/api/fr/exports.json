@@ -1,0 +1,122 @@
+{
+  "DnDProvider": {
+    "source": "b1827fd191",
+    "text": "Gère les glissements de tout ce qui est rendu à l'intérieur : les entrées, l'overlay, la sélection, le défilement automatique et les annonces pour lecteurs d'écran (voir `DnDProviderProps`)."
+  },
+  "DragPreview": {
+    "source": "f4f4c9f952",
+    "text": "Le clone par défaut d'un item glissé (voir `DragPreviewProps`). Les overlays personnalisés s'en servent pour disposer eux-mêmes plusieurs items ; l'overlay par défaut s'en sert pour afficher un multi-drag."
+  },
+  "makeDraggable": {
+    "source": "611823a10c",
+    "text": "Rend un élément déplaçable. Glissement libre par défaut ; les listes triables s'appuient dessus."
+  },
+  "makeDroppable": {
+    "source": "48253f728f",
+    "text": "Fait d'un élément une cible de dépôt."
+  },
+  "useDnD": {
+    "source": "78d14d6351",
+    "text": "L'état du glissement en lecture seule, pour une UI personnalisée (mise en évidence des cibles valides, indicateurs de chargement, progression)."
+  },
+  "useDnDMonitor": {
+    "source": "4719611afa",
+    "text": "S'abonne aux événements de chaque glissement sous le provider, tant que le composant appelant (ou l'effect scope) existe."
+  },
+  "useDnDContext": {
+    "source": "555b5f2b85",
+    "text": "Le provider au-dessus de ce composant, sous forme de handle opaque pour `provideDnDContext` : il fait passer le provider dans des shadow roots et des applications Vue séparées."
+  },
+  "provideDnDContext": {
+    "source": "8befa03229",
+    "text": "Partage un provider (obtenu par `useDnDContext()`) avec une autre application Vue, par exemple une application montée dans un shadow root."
+  },
+  "makeSortableList": {
+    "source": "d03a1a39c8",
+    "text": "Fait d'un conteneur une liste triable. Rendez les `items` renvoyés (l'ordre du brouillon), pas votre tableau : le dépôt est réécrit dans `options.items`, après `onDrop`, sauf si `event.preventDefault()` vous laisse `event.result`."
+  },
+  "makeSortableItem": {
+    "source": "c1e5819e0d",
+    "text": "Fait d'un élément une ligne d'une liste triable ou d'un arbre : elle se glisse, fait de la place et atterrit dans son emplacement. Appelez-le dans un composant rendu à l'intérieur de celui qui a appelé `makeSortableList` (ou `makeSortableTree`) ; parmi plusieurs listes créées là, la ligne rejoint la plus intérieure dont l'élément la contient. Identifiez la ligne par `item` (avec la clé donnée par le `getKey` de la liste, `item.id` par défaut) ou par `id`."
+  },
+  "makeSortableTree": {
+    "source": "a068e3925b",
+    "text": "Fait d'un conteneur un arbre triable. Rendez les `items` renvoyés (les nœuds visibles dans l'ordre du brouillon, indentés selon `depth`) avec un composant de ligne qui appelle `makeSortableItem`. Au dépôt, après `onDrop`, les nœuds déplacés (avec leurs sous-arbres) sont écrits dans `options.items`, sauf si `event.preventDefault()` vous laisse `event.result`."
+  },
+  "makeSelectionArea": {
+    "source": "3e8548087f",
+    "text": "Fait d'un élément une zone de sélection au rectangle pour les éléments déplaçables qu'il contient. Rendez le rectangle vous-même : `<div v-if=\"isSelecting\" class=\"band\" :style=\"style\" />`."
+  },
+  "makeDragArea": {
+    "source": "4d4126fd37",
+    "text": "Fait d'un élément une zone de glissement : les glissements qui y commencent (éléments déplaçables et items triables) suivent ses règles, voir `DragAreaOptions`. Un seul provider peut alors servir toute l'application, avec des tableaux, des canevas et des fils qui glissent chacun à leur manière. Quand des zones sont imbriquées, la plus proche l'emporte."
+  },
+  "defineSensor": {
+    "source": "70baa86e7e",
+    "text": "Définit un capteur (voir `Sensor`) : il aide seulement pour les types et renvoie son argument."
+  },
+  "useSensor": {
+    "source": "dde117b5a5",
+    "text": "Exécute un capteur dans le provider au-dessus, tant que le composant appelant (ou l'effect scope) existe, à côté des `sensors` du provider. Son glissement est annulé au démontage."
+  },
+  "pointerSensor": {
+    "source": "9da65b79da",
+    "text": "Souris, tactile et stylet via les Pointer Events. Présent dans `sensors` par défaut."
+  },
+  "keyboardSensor": {
+    "source": "394ed58ab2",
+    "text": "Espace/Entrée, flèches et Échap (réassignables avec l'option `keyboard` du provider). Présent dans `sensors` par défaut ; il annule aussi avec Échap les glissements au pointeur et personnalisés, même avec `keyboard: false`."
+  },
+  "pointerFirst": {
+    "source": "a8cf072161",
+    "text": "Par défaut : ce qui est sous le pointeur, sinon ce que l'overlay chevauche."
+  },
+  "pointerWithin": {
+    "source": "0c701c6c7d",
+    "text": "Les cibles sous le pointeur, par test de collision : respecte l'ordre z, les overlays et les shadow roots."
+  },
+  "rectIntersection": {
+    "source": "b68bd59aae",
+    "text": "Les cibles que chevauche l'overlay : priorité la plus haute, puis imbrication la plus profonde, puis intersection sur union."
+  },
+  "closestCenter": {
+    "source": "54257511c8",
+    "text": "Toutes les cibles, par distance entre les centres."
+  },
+  "closestCorners": {
+    "source": "d75758f400",
+    "text": "Toutes les cibles, par somme des distances entre les coins (adapté aux cibles empilées comme les colonnes d'un tableau kanban)."
+  },
+  "restrictToVerticalAxis": {
+    "source": "3983cfff70",
+    "text": "Déplace uniquement à la verticale : à l'horizontale, il reste avec le contenu dans lequel il a commencé (`containerShift`), quel que soit le défilement de la page. L'option `axis: 'y'` fait la même chose, en dernier."
+  },
+  "restrictToHorizontalAxis": {
+    "source": "e484b813e5",
+    "text": "Déplace uniquement à l'horizontale : à la verticale, il reste avec le contenu dans lequel il a commencé (`containerShift`), quel que soit le défilement de la page. L'option `axis: 'x'` fait la même chose, en dernier."
+  },
+  "restrictToWindowEdges": {
+    "source": "cad0a3465c",
+    "text": "Garde l'overlay dans la fenêtre."
+  },
+  "restrictToParent": {
+    "source": "a8492ae8d2",
+    "text": "Garde l'overlay dans le conteneur où le glissement a commencé : la liste triable (pas son parent dans le DOM) ou, pour les éléments déplaçables simples, l'élément parent."
+  },
+  "restrictToElement": {
+    "source": "9960d692bd",
+    "text": "Garde l'overlay dans un élément : l'élément, une ref ou un getter."
+  },
+  "restrictToFirstScrollableAncestor": {
+    "source": "d495991a85",
+    "text": "Garde l'overlay dans le premier ancêtre défilable de l'élément glissé."
+  },
+  "snapToGrid": {
+    "source": "84f04cfd39",
+    "text": "Aligne l'overlay sur une grille, sur la cellule la plus proche : un nombre est la taille de cellules carrées ; des options définissent chaque axe, l'origine de la grille et un glissement fluide entre les cellules (`SnapToGridOptions`)."
+  },
+  "snapCenterToCursor": {
+    "source": "bfc0761525",
+    "text": "Centre l'overlay sous le pointeur au lieu de garder le décalage de saisie."
+  }
+}

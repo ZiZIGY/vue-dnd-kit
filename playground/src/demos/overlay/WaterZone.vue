@@ -8,8 +8,8 @@
     id: 'water',
     // Over the water a seed becomes a droplet. Dropped, it doesn't fly anywhere: it
     // splashes where it is (the droplet's own animation, which the drop waits for).
-    overlay: DropletOverlay,
-    dropAnimation: false,
+    overOverlay: DropletOverlay,
+    overDropAnimation: false,
     onDrop: (event) => {
       emit('watered', String(event.active.id));
       event.source?.remove();

@@ -93,7 +93,7 @@ describe('the state', () => {
 
     tab.send({ type: 'select', node: { provider: providerOf(tab).id, kind: 'draggable', id: 'chip' } });
     const chip = await tab.next('state', (message) => message.detail?.node.kind === 'draggable');
-    expect(chip.detail!.options.map((entry) => entry.name)).toEqual(['disabled', 'keyboard', 'activation']);
+    expect(chip.detail!.options.map((entry) => entry.name)).toEqual(['disabled', 'keyboardMode', 'activation']);
     expect(Object.fromEntries(chip.detail!.sections.find((section) => section.name === 'data')!.fields)).toEqual({ data: { color: 'red' } });
   });
 });

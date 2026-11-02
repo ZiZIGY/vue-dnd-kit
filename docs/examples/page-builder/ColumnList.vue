@@ -30,7 +30,7 @@ const { items, isOver, isAccepting } = makeSortableList(list, {
   disabled: () => !!active.value?.type.includes('sections'),
   // A block in hand, and a chip over a column: the real block, in the section's colors.
   overlay: BlockGhost,
-  animate: true,
+  animateChanges: true,
   // The palette's chips are plain draggables: the column makes the block their `data` names.
   createItem: (active) => {
     const kind = (active.data as ChipData | undefined)?.kind;

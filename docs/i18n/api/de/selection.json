@@ -7,13 +7,21 @@
     "source": "c7f915cabf",
     "text": "Tasten (`KeyboardEvent.key` oder `.code`), die gedrückt sein müssen, damit ein Druck einen Rahmen aufzieht: alle oder `'some'` davon."
   },
-  "SelectionAreaOptions": {
-    "source": "395589bdaa",
-    "text": "Optionen von `makeSelectionArea`. `modifier`, `strategy`, `accept` und `disabled` nehmen einen Wert, ein Ref oder einen Getter entgegen (`accept`: einen Wert oder ein Ref, eine Funktion ist eine Regel) und werden gelesen, wenn ein Druck einen Rahmen startet; `disabled` einzuschalten bricht auch einen laufenden ab."
+  "SelectionModifier.keys": {
+    "source": "d97d7241ad",
+    "text": "Die Tasten, als `KeyboardEvent.key` (`'Shift'`) oder `.code` (`'KeyA'`). Keine: Jeder Druck zieht einen Rahmen auf."
   },
-  "SelectionAreaOptions.selection": {
-    "source": "294f767d3b",
-    "text": "Standardmäßig die Auswahl des Providers."
+  "SelectionModifier.method": {
+    "source": "a46efd8e2a",
+    "text": "`'every'`: Alle `keys` müssen gedrückt sein; `'some'`: Eine davon genügt."
+  },
+  "SelectionAreaOptions": {
+    "source": "951e39f4a0",
+    "text": "Optionen von `makeSelectionArea`. Der Rahmen wählt in die Auswahl des Providers aus, die Multi-Drag und `selected` lesen (`useDnD().selection`). `modifier`, `strategy`, `accept` und `disabled` nehmen einen Wert, ein Ref oder einen Getter entgegen (`accept`: einen Wert oder ein Ref, eine Funktion ist eine Regel) und werden gelesen, wenn ein Druck einen Rahmen startet; `disabled` einzuschalten bricht auch einen laufenden ab."
+  },
+  "SelectionAreaOptions.modifier": {
+    "source": "65c8a221ac",
+    "text": "Tasten, die gedrückt sein müssen, damit ein Druck einen Rahmen aufzieht. Standard: keine, jeder Druck auf die leere Fläche zieht einen auf."
   },
   "SelectionAreaOptions.strategy": {
     "source": "0367d14627",
@@ -22,6 +30,22 @@
   "SelectionAreaOptions.accept": {
     "source": "6293487b0c",
     "text": "Welche ziehbaren Elemente der Rahmen auswählt; der Matcher der Drop-Ziele."
+  },
+  "SelectionAreaOptions.disabled": {
+    "source": "ac33d3517f",
+    "text": "`true`: Ein Druck zieht keinen Rahmen auf."
+  },
+  "SelectionAreaOptions.onSelected": {
+    "source": "1ca0d338e8",
+    "text": "Der Rahmen ist beendet: Bekommt jede jetzt ausgewählte ID."
+  },
+  "SelectionAreaReturn": {
+    "source": "f6f48602c4",
+    "text": "Was `makeSelectionArea` zurückgibt."
+  },
+  "SelectionAreaReturn.isSelecting": {
+    "source": "f38c578911",
+    "text": "Ein Rahmen wird gerade aufgezogen: Rendere ihn dann."
   },
   "SelectionAreaReturn.style": {
     "source": "e4525127b1",

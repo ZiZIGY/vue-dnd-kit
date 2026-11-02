@@ -1,4 +1,4 @@
-import type { AnimationOptions, Coordinates, MaybeElementRef, Modifier, Rect } from '../types';
+import type { AnimationOptions, Coordinates, MaybeElementRef, Modifier, Rect, SnapToGridOptions } from '../types';
 import type { AreaEntry } from './manager';
 import { getCenter, getRect } from '../animation/layout';
 import { toElement } from '../utils/dom';
@@ -22,10 +22,16 @@ const baseRect = (overlayRect: Rect, transform: Coordinates): Rect => ({
   bottom: overlayRect.bottom - transform.y,
 });
 
-/** Moves only vertically: horizontally it stays with the content it started in (`containerShift`). */
+/**
+ * Moves only vertically: horizontally it stays with the content it started in
+ * (`containerShift`), however the page scrolls. The `axis: 'y'` option does the same, last.
+ */
 export const restrictToVerticalAxis: Modifier = ({ transform, containerShift }) => ({ x: containerShift.x, y: transform.y });
 
-/** Moves only horizontally: vertically it stays with the content it started in (`containerShift`). */
+/**
+ * Moves only horizontally: vertically it stays with the content it started in
+ * (`containerShift`), however the page scrolls. The `axis: 'x'` option does the same, last.
+ */
 export const restrictToHorizontalAxis: Modifier = ({ transform, containerShift }) => ({ x: transform.x, y: containerShift.y });
 
 /** `modifiers` with the lock of the `axis` option last, so it holds whatever they do. */
@@ -48,6 +54,7 @@ export const dragModifiers = (
   return withAxis(modifiers, axis ?? area.getAxis());
 };
 
+/** Keeps the overlay inside the window. */
 export const restrictToWindowEdges: Modifier = ({ transform, overlayRect, windowRect }) =>
   restrictToRect(transform, baseRect(overlayRect, transform), windowRect);
 
@@ -58,6 +65,7 @@ export const restrictToWindowEdges: Modifier = ({ transform, overlayRect, window
 export const restrictToParent: Modifier = ({ transform, overlayRect, containerRect }) =>
   containerRect ? restrictToRect(transform, baseRect(overlayRect, transform), containerRect) : transform;
 
+/** Keeps the overlay inside an element: the element, a ref or a getter. */
 export const restrictToElement =
   (target: MaybeElementRef): Modifier =>
   ({ transform, overlayRect }) => {
@@ -88,24 +96,6 @@ export const restrictToFirstScrollableAncestor: Modifier = ({ transform, overlay
     : transform;
 };
 
-export interface SnapToGridOptions {
-  /** The cell's width in px. Without one (or 0), the drag moves freely along x. */
-  x?: number;
-  /** The cell's height in px. Without one (or 0), the drag moves freely along y: `{ y: 15 }` snaps the time of a calendar event only. */
-  y?: number;
-  /**
-   * `'container'` (default): the overlay's top-left lands on grid lines drawn from the
-   * container's top-left (`containerRect`: the sortable list or the parent element).
-   * `'delta'`: the drag offset is rounded, keeping where the item started off-grid.
-   */
-  origin?: 'container' | 'delta';
-  /**
-   * Glide the overlay between snapped positions (default 80ms). Collision still
-   * uses the snapped position at once.
-   */
-  smooth?: boolean | AnimationOptions;
-}
-
 /** Marker read by the overlay: glide between the positions this modifier produces. */
 export type SmoothModifier = Modifier & { smooth?: Required<AnimationOptions> };
 
@@ -113,7 +103,10 @@ const DEFAULT_SMOOTH: Required<AnimationOptions> = { duration: 80, easing: 'ease
 
 const snap = (value: number, size = 0) => (size > 0 ? Math.round(value / size) * size : value);
 
-/** Snaps the overlay to a grid (rounding to the nearest cell). */
+/**
+ * Snaps the overlay to a grid, to the nearest cell: a number is the size of square cells;
+ * options set each axis, where the grid starts and a glide between cells (`SnapToGridOptions`).
+ */
 export const snapToGrid = (size: number | SnapToGridOptions): Modifier => {
   const options: SnapToGridOptions = typeof size === 'number' ? { x: size, y: size } : size;
   const { x: sx, y: sy, origin = 'container' } = options;

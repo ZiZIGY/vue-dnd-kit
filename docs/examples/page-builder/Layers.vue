@@ -35,7 +35,7 @@ const { items } = makeSortableTree(tree, {
   collapsed,
   placeholder: 'indicator',
   indentation: 14,
-  animate: true,
+  animateChanges: true,
   // A tree takes any row at its top level: a block let go there would become a section. It flies back.
   onBeforeDrop: (event) => (event.to.parentKey !== null || event.items.every(isSection) ? 'accept' : 'reject'),
 });

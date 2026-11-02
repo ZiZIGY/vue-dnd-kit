@@ -60,7 +60,7 @@ const List = defineComponent({
       id: 'a',
       group: 'g',
       items: listItems,
-      animate: () => props.animate,
+      animateChanges: () => props.animate,
     });
     return () => h('ul', { ref: 'list', 'data-col': 0 }, items.value.map((item) => h(Row, { key: item.id, rowId: item.id })));
   },

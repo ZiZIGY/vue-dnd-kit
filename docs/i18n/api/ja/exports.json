@@ -1,0 +1,122 @@
+{
+  "DnDProvider": {
+    "source": "b1827fd191",
+    "text": "内側で描画されるすべてのもののドラッグを管理します：入力、オーバーレイ、選択、自動スクロール、スクリーンリーダーの読み上げ（`DnDProviderProps` を参照）。"
+  },
+  "DragPreview": {
+    "source": "f4f4c9f952",
+    "text": "ドラッグされている 1 つのアイテムのデフォルトのクローン（`DragPreviewProps` を参照）。カスタムのオーバーレイは、複数のアイテムを自分でレイアウトするのにこれを使います。デフォルトのオーバーレイは、これでマルチドラッグを表示します。"
+  },
+  "makeDraggable": {
+    "source": "611823a10c",
+    "text": "要素をドラッグ可能にします。デフォルトは自由なドラッグです。並べ替え可能なリストはこの上に作られています。"
+  },
+  "makeDroppable": {
+    "source": "48253f728f",
+    "text": "要素をドロップターゲットにします。"
+  },
+  "useDnD": {
+    "source": "78d14d6351",
+    "text": "カスタム UI 向けの読み取り専用のドラッグ状態（有効なターゲットのハイライト、スピナー、進捗）。"
+  },
+  "useDnDMonitor": {
+    "source": "4719611afa",
+    "text": "プロバイダー配下のすべてのドラッグのイベントを購読します。呼び出したコンポーネント（またはエフェクトスコープ）が存在する間、有効です。"
+  },
+  "useDnDContext": {
+    "source": "555b5f2b85",
+    "text": "このコンポーネントの上にあるプロバイダー。`provideDnDContext` 用の不透明なハンドルです：プロバイダーをシャドウルートや別の Vue アプリへ橋渡しします。"
+  },
+  "provideDnDContext": {
+    "source": "8befa03229",
+    "text": "プロバイダー（`useDnDContext()` から得たもの）を別の Vue アプリと共有します。たとえば、シャドウルートの中にマウントされたアプリです。"
+  },
+  "makeSortableList": {
+    "source": "d03a1a39c8",
+    "text": "コンテナーを並べ替え可能なリストにします。自分の配列ではなく、返される `items`（ドラフトの順序）を描画してください：ドロップは `onDrop` の後で `options.items` に書き戻されます。ただし `event.preventDefault()` で `event.result` を自分で扱う場合を除きます。"
+  },
+  "makeSortableItem": {
+    "source": "c1e5819e0d",
+    "text": "要素を並べ替え可能なリストまたはツリーの行にします：ドラッグでき、場所を空け、自分の位置に着地します。`makeSortableList`（または `makeSortableTree`）を呼んだコンポーネントの内側で描画されるコンポーネントで呼び出してください。そこで複数のリストが作られている場合、行は自分を含む要素を持つ最も内側のリストに加わります。行は `item`（リストの `getKey` でキーを決めます。デフォルトは `item.id`）または `id` で識別します。"
+  },
+  "makeSortableTree": {
+    "source": "a068e3925b",
+    "text": "コンテナーを並べ替え可能なツリーにします。返される `items`（ドラフトの順序の表示中のノード。`depth` に応じてインデント）を、`makeSortableItem` を呼ぶ行コンポーネントで描画してください。ドロップ時、`onDrop` の後で、移動したノード（サブツリーごと）が `options.items` に書き込まれます。ただし `event.preventDefault()` で `event.result` を自分で扱う場合を除きます。"
+  },
+  "makeSelectionArea": {
+    "source": "3e8548087f",
+    "text": "要素を、その中のドラッグ可能な要素のための範囲選択エリアにします。矩形は自分で描画してください：`<div v-if=\"isSelecting\" class=\"band\" :style=\"style\" />`。"
+  },
+  "makeDragArea": {
+    "source": "4d4126fd37",
+    "text": "要素をドラッグエリアにします：その中で始まるドラッグ（ドラッグ可能な要素と並べ替え可能なアイテム）は、そのルールに従います（`DragAreaOptions` を参照）。これで 1 つのプロバイダーがアプリ全体を受け持てます。ボード、キャンバス、フィードがそれぞれのやり方でドラッグします。エリアがネストしている場合は、最も近いエリアが優先されます。"
+  },
+  "defineSensor": {
+    "source": "70baa86e7e",
+    "text": "センサーを定義します（`Sensor` を参照）：型の補助をするだけで、引数をそのまま返します。"
+  },
+  "useSensor": {
+    "source": "dde117b5a5",
+    "text": "上にあるプロバイダーで、プロバイダーの `sensors` と並んでセンサーを動かします。呼び出したコンポーネント（またはエフェクトスコープ）が存在する間、有効です。アンマウントされると、そのドラッグはキャンセルされます。"
+  },
+  "pointerSensor": {
+    "source": "9da65b79da",
+    "text": "Pointer Events によるマウス、タッチ、ペン。デフォルトで `sensors` に含まれます。"
+  },
+  "keyboardSensor": {
+    "source": "394ed58ab2",
+    "text": "Space/Enter、矢印キー、Escape（プロバイダーの `keyboard` オプションで割り当てを変更できます）。デフォルトで `sensors` に含まれます。`keyboard: false` でも、Escape でポインターとカスタムのドラッグをキャンセルします。"
+  },
+  "pointerFirst": {
+    "source": "a8cf072161",
+    "text": "デフォルト：ポインターの下にあるもの。なければオーバーレイが重なっているもの。"
+  },
+  "pointerWithin": {
+    "source": "0c701c6c7d",
+    "text": "ポインターの下にあるターゲット。ヒットテストで求めます：z-order、オーバーレイ、シャドウルートを考慮します。"
+  },
+  "rectIntersection": {
+    "source": "b68bd59aae",
+    "text": "オーバーレイと重なっているターゲット：優先度の高いもの、次にネストの深いもの、次に IoU（intersection over union）の大きいもの。"
+  },
+  "closestCenter": {
+    "source": "54257511c8",
+    "text": "すべてのターゲット。中心間の距離で並べます。"
+  },
+  "closestCorners": {
+    "source": "d75758f400",
+    "text": "すべてのターゲット。角どうしの距離の合計で並べます（カンバンの列のように積み重なったターゲットに向いています）。"
+  },
+  "restrictToVerticalAxis": {
+    "source": "3983cfff70",
+    "text": "垂直方向にだけ動きます：水平方向では、ページがどうスクロールしても、開始時のコンテンツについていきます（`containerShift`）。`axis: 'y'` オプションも同じことを、最後に行います。"
+  },
+  "restrictToHorizontalAxis": {
+    "source": "e484b813e5",
+    "text": "水平方向にだけ動きます：垂直方向では、ページがどうスクロールしても、開始時のコンテンツについていきます（`containerShift`）。`axis: 'x'` オプションも同じことを、最後に行います。"
+  },
+  "restrictToWindowEdges": {
+    "source": "cad0a3465c",
+    "text": "オーバーレイをウィンドウの中にとどめます。"
+  },
+  "restrictToParent": {
+    "source": "a8492ae8d2",
+    "text": "オーバーレイを、ドラッグが始まったコンテナーの中にとどめます：並べ替え可能なリスト（その DOM 上の親ではなく）、または通常のドラッグ可能な要素では親要素。"
+  },
+  "restrictToElement": {
+    "source": "9960d692bd",
+    "text": "オーバーレイを要素の中にとどめます：要素、ref、またはゲッター。"
+  },
+  "restrictToFirstScrollableAncestor": {
+    "source": "d495991a85",
+    "text": "オーバーレイを、ドラッグされている要素の最初のスクロール可能な祖先の中にとどめます。"
+  },
+  "snapToGrid": {
+    "source": "84f04cfd39",
+    "text": "オーバーレイをグリッドの最も近いセルにスナップします：数値は正方形のセルのサイズです。オプションでは、軸ごとの設定、グリッドの開始位置、セル間の滑らかな移動を指定します（`SnapToGridOptions`）。"
+  },
+  "snapCenterToCursor": {
+    "source": "bfc0761525",
+    "text": "掴んだ位置のオフセットを保つ代わりに、オーバーレイの中心をポインターの下に合わせます。"
+  }
+}

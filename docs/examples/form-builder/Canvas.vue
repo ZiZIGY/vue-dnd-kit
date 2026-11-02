@@ -17,7 +17,7 @@ const { items } = makeSortableList(list, {
   items: () => form.state.rows,
   group: 'rows',
   axis: 'y',
-  animate: true,
+  animateChanges: true,
   onDrop: form.drop,
 });
 </script>

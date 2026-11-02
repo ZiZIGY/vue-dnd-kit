@@ -3,9 +3,21 @@
     "source": "957ec8f6ce",
     "text": "Ein Platz in einer sortierbaren Liste oder einem Baum (unter seinen sichtbaren Zeilen): `index` zählt ab 0, von `length`."
   },
+  "AnnouncedPosition.list": {
+    "source": "31b274663e",
+    "text": "ID der Liste oder des Baums."
+  },
   "AnnouncedPosition.label": {
     "source": "702bfecdc2",
     "text": "Das `label` der Liste, der lesbare Name."
+  },
+  "AnnouncedPosition.index": {
+    "source": "2155e11380",
+    "text": "Der Platz, ab 0: Die eingebauten Texte sagen `index + 1`."
+  },
+  "AnnouncedPosition.length": {
+    "source": "97c61b39e8",
+    "text": "Wie viele Plätze die Liste hat."
   },
   "AnnouncementContext": {
     "source": "884af39ecf",
@@ -28,8 +40,24 @@
     "text": "Der Drag kopiert (`group.pull: 'clone'`, die Kopier-Taste)."
   },
   "Announcements": {
-    "source": "08ba8bd127",
-    "text": "Texte für Screenreader. Gib `undefined` für den eingebauten Text zurück, `''` für keinen. `context` enthält die Positionen, die die eingebauten Texte sortierbarer Listen sprechen."
+    "source": "b5a69fbd7f",
+    "text": "Texte für Screenreader, pro Event. Gib `undefined` für den eingebauten Text zurück, `''` für keinen. `context` enthält die Positionen, die die eingebauten Texte sortierbarer Listen sprechen.\n\nEin Text wird von der Live-Region des Providers gesprochen (Bewegungen, sobald der Drag 500 ms ruht); `undefined` überlässt das Event der nächsten Quelle (den Texten von Integrationen wie sortierbaren Positionen, dann den Standardtexten). Für das beim Aufnehmen gefundene Ziel wird keine Bewegung angesagt: Es hat sich noch nichts bewegt."
+  },
+  "Announcements.onDragStart": {
+    "source": "cb7361dadf",
+    "text": "Ein Drag hat begonnen."
+  },
+  "Announcements.onDragOver": {
+    "source": "e7155df562",
+    "text": "Der Drag ist über ein anderes Ziel oder an einen anderen Platz in einer Liste gelangt (sobald er 500 ms ruht)."
+  },
+  "Announcements.onDragEnd": {
+    "source": "56ab53c578",
+    "text": "Der Drop ist durchgegangen, oder der Drag endete außerhalb aller Ziele."
+  },
+  "Announcements.onDragCancel": {
+    "source": "e76ef54e23",
+    "text": "Der Drag wurde abgebrochen oder sein Drop abgelehnt."
   },
   "Announcements.onDragResume": {
     "source": "d4806359e7",
@@ -39,9 +67,21 @@
     "source": "35562b8590",
     "text": "Die Texte einer Integration (sortierbare Listen) und der Kontext, den sie für die eigenen Texte des Providers kennt."
   },
+  "KeyboardOptions": {
+    "source": "bb782ceb9e",
+    "text": "Ziehen per Tastatur (`keyboard` des Providers): die Tasten und die Schrittweite freier Drags."
+  },
+  "KeyboardOptions.keys": {
+    "source": "c36afa9f52",
+    "text": "Die Tasten, die aufnehmen (`start`), ablegen und abbrechen, als `KeyboardEvent.code` (`'Space'`, `'KeyW'`) oder `.key` (`'Enter'`, `'w'`). Standard: Leertaste und Enter nehmen auf und legen ab, Escape bricht ab. Die Pfeiltasten bewegen immer."
+  },
   "KeyboardOptions.step": {
     "source": "66a729c31a",
     "text": "Pixel pro Druck auf eine Pfeiltaste bei freien (nicht sortierbaren) Drags. Standard 25."
+  },
+  "AutoScrollOptions": {
+    "source": "c15af10035",
+    "text": "Wie Container scrollen, wenn sich ein Drag ihren Rändern nähert (`autoScroll` des Providers)."
   },
   "AutoScrollOptions.threshold": {
     "source": "1b2cd0615c",
@@ -50,6 +90,10 @@
   "AutoScrollOptions.maxSpeed": {
     "source": "4ebcb33d64",
     "text": "Höchstgeschwindigkeit in px pro Frame von 16ms."
+  },
+  "AutoScrollOptions.acceleration": {
+    "source": "c2b02de232",
+    "text": "Geschwindigkeit in px pro Frame, wenn der Zeiger am Rand des Containers ist: langsamer innerhalb der Randzone, schneller jenseits des Rands, bis zu `maxSpeed`. Standard 10."
   },
   "HapticPattern": {
     "source": "1fb9df65e6",
@@ -75,17 +119,41 @@
     "source": "54d244b821",
     "text": "Der Drop wird abgelehnt (von einem Ziel oder von `onBeforeDrop`), und die Elemente fliegen zurück. Standard `false`."
   },
+  "DnDProviderProps": {
+    "source": "e1d670147b",
+    "text": "Props von `DnDProvider`. Die meisten werden gelesen, wenn der Provider sie braucht: Ändere eine, und der nächste Drag verwendet sie."
+  },
+  "DnDProviderProps.collision": {
+    "source": "629dec725a",
+    "text": "Wie das Ziel unter dem Drag gewählt wird. Standard `pointerFirst`; eine andere eingebaute (`closestCorners`) oder deine eigene."
+  },
+  "DnDProviderProps.modifiers": {
+    "source": "71e9e53a44",
+    "text": "Modifier für jeden Drag, zuerst angewendet: Die von Drag-Bereichen, ziehbaren Elementen und Listen kommen danach."
+  },
   "DnDProviderProps.animation": {
     "source": "699c35a63c",
     "text": "Standard-FLIP-Animation für sortierbare Listen."
   },
   "DnDProviderProps.dropAnimation": {
-    "source": "f99201968c",
-    "text": "Wie das Overlay beim Drop landet und beim Abbrechen zurückfliegt, wenn nichts Näheres eine setzt: Zuerst kommt die `dropAnimation` des Drop-Ziels, dann die eigene des gezogenen Elements (oder die seiner Liste), dann diese."
+    "source": "60c09d4b6d",
+    "text": "Wie das Overlay beim Drop landet und beim Abbrechen zurückfliegt, wenn nichts Näheres eine setzt: Zuerst kommt die `overDropAnimation` des Drop-Ziels, dann die eigene des gezogenen Elements (oder die seiner Liste), dann diese."
   },
-  "DnDProviderProps.animate": {
-    "source": "e7b8ee12ca",
-    "text": "Standardwert von `animate` für sortierbare Listen und Bäume: Änderungen ihrer Elemente, die kein Drag ausgelöst hat. Standardmäßig aus."
+  "DnDProviderProps.animateChanges": {
+    "source": "37255f7e71",
+    "text": "Standardwert von `animateChanges` für sortierbare Listen und Bäume: Änderungen ihrer Elemente, die kein Drag ausgelöst hat. Standardmäßig aus."
+  },
+  "DnDProviderProps.autoScroll": {
+    "source": "b84b62fce5",
+    "text": "Scrollt Container und die Seite, wenn sich ein Drag ihren Rändern nähert. Standard `true`; Optionen stimmen es ab, `false` schaltet es aus. Listen, Bäume und Drag-Bereiche können es überschreiben."
+  },
+  "DnDProviderProps.activation": {
+    "source": "afc7892642",
+    "text": "Was ein Drücken tun muss, bevor es zum Drag wird, pro Zeigerart (Standardwerte siehe `ActivationOptions`). Drag-Bereiche, Listen, Bäume, Elemente und ziehbare Elemente können es überschreiben."
+  },
+  "DnDProviderProps.keyboard": {
+    "source": "9f75dfd23a",
+    "text": "Ziehen per Tastatur: Tasten und Schrittweite. `false` schaltet es aus; Escape bricht trotzdem jeden Drag ab."
   },
   "DnDProviderProps.sensors": {
     "source": "180c7efcc3",
@@ -99,6 +167,10 @@
     "source": "c45bff39ad",
     "text": "Taste (KeyboardEvent.key), die eine Verschiebung in eine Kopie verwandelt. Standard `'Alt'`; `null` deaktiviert das."
   },
+  "DnDProviderProps.overlayTo": {
+    "source": "274db53619",
+    "text": "Wo das Overlay gerendert wird: ein Selektor oder ein Element. Standard `'body'`. Ein modaler `<dialog>` liegt über dem Rest der Seite: Drags darin brauchen es dort."
+  },
   "DnDProviderProps.overlayFit": {
     "source": "2cebf1b9ab",
     "text": "Größe des Overlays während des Ziehens. `'slot'` (Standard): Das Overlay folgt dem Slot, in dem das Element landen wird; über einer anderen Liste nimmt es also die Größe der Elemente dieser Liste an, und der Drop braucht keine Größenänderung. Es ändert seine Größe um den Zeiger herum, der immer beim selben Anteil der Box bleibt. `'source'`: Es behält die Größe des gezogenen Elements. Der Inhalt des Standard-Overlays wird in der neuen Größe neu angeordnet; er wird nie skaliert."
@@ -108,8 +180,8 @@
     "text": "Multi-Drag: wie viele gezogene Elemente beim Aufnehmen einen Klon bekommen, das gegriffene und die anderen daneben in Drop-Reihenfolge. Standard 5; `'all'` klont jedes, das gerendert ist. Das Standard-Overlay zeigt die Klone und zählt den Rest (`+N`); in einem eigenen Layout rendert `DragPreview` für ein Element ohne Klon seinen Slot. Jeder Klon fliegt: bei einem Abbruch zurück zu seinem Element, bei einem Drop zu seinem Slot, in die Zone, in die ein Drop geht, einer nach dem anderen. Die Klone werden gemeinsam erstellt, mit einem Layout pro Snapshot-Durchlauf für alle, aber jeder kostet das Auslesen seiner Styles: Achte auf lange Elemente auf langsamen Handys."
   },
   "DnDProviderProps.overlayTransition": {
-    "source": "6852def127",
-    "text": "Wie das Overlay während eines Drags von einer Komponente zur anderen wechselt (das `overlay` eines Drop-Ziels übernimmt, ein `overlay`-Ref wird umgeschaltet): `true` (Standard) blendet sie in 150 ms über, `false` tauscht sie sofort, und ein Objekt sind die Props einer Vue-`<Transition>` um die Wurzel des Inhalts (`name`, `mode`, JS-Hooks für GSAP oder motion). Ohne `mode: 'out-in'` sind beide gleichzeitig zu sehen: Gib der ausgehenden `position: absolute` (`.<name>-leave-active`), damit sie sich in der Box stapeln."
+    "source": "4182e55d7d",
+    "text": "Wie das Overlay während eines Drags von einer Komponente zur anderen wechselt (das `overOverlay` eines Drop-Ziels übernimmt, ein `overlay`-Ref wird umgeschaltet): `true` (Standard) blendet sie in 150 ms über, `false` tauscht sie sofort, und ein Objekt sind die Props einer Vue-`<Transition>` um die Wurzel des Inhalts (`name`, `mode`, JS-Hooks für GSAP oder motion). Ohne `mode: 'out-in'` sind beide gleichzeitig zu sehen: Gib der ausgehenden `position: absolute` (`.<name>-leave-active`), damit sie sich in der Box stapeln."
   },
   "DnDProviderProps.overlayClass": {
     "source": "fe858c5071",
@@ -119,9 +191,13 @@
     "source": "0729e8985f",
     "text": "Eigene Texte für einige Events (siehe `Announcements`); `false` lässt die Live-Region stumm."
   },
+  "DnDProviderProps.screenReaderInstructions": {
+    "source": "e835bc26b0",
+    "text": "Wie man per Tastatur zieht, von Screenreadern für jedes ziehbare Element vorgelesen (sein `aria-describedby`). Standard: englische Anweisungen für Leertaste, Enter, die Pfeiltasten und Escape."
+  },
   "DnDProviderProps.defaultStyles": {
-    "source": "b635d7cd38",
-    "text": "Standard-Styles ohne Spezifität einfügen (Deckkraft des Platzhalters, keine Textauswahl während des Ziehens)."
+    "source": "9cecc4e9bf",
+    "text": "Das Standard-Aussehen einfügen: CSS ohne Spezifität in Layern, das Platzhalter und die Elemente, die ein Multi-Drag an ihrem Platz lässt, abblendet (`opacity: 0.4`). Standard `true`; `false` überlässt das Aussehen dir. Was Drags brauchen, wird in jedem Fall eingefügt: keine Textauswahl und kein Scroll-Anchoring während des Ziehens (virtuelle Listen sind darauf angewiesen), der Drag-Cursor (`--dnd-cursor`) und kein Link-Callout bei langem Drücken auf iOS."
   },
   "DnDContext": {
     "source": "224db9f60d",
@@ -130,6 +206,10 @@
   "OverlaySlotProps": {
     "source": "38a21c4b6d",
     "text": "Was das Overlay zeigt: die Props des Slots `#overlay` des Providers und von Overlay-Komponenten (Option `overlay` von ziehbaren Elementen, sortierbaren Elementen, Listen und Bäumen)."
+  },
+  "OverlaySlotProps.active": {
+    "source": "ab2a0979dd",
+    "text": "Der Drag."
   },
   "OverlaySlotProps.items": {
     "source": "10d477a1e7",
@@ -142,6 +222,14 @@
   "OverlaySlotProps.accepted": {
     "source": "f7641f18e1",
     "text": "Ob `over` die gezogenen Elemente annimmt; `false`, wenn der Drag über nichts ist."
+  },
+  "OverlaySlotProps.status": {
+    "source": "14a833949b",
+    "text": "`'dragging'`, dann `'dropping'`, während das Overlay landet (oder zurückfliegt)."
+  },
+  "OverlaySlotProps.mode": {
+    "source": "d0692a357f",
+    "text": "Was ein Drop jetzt bewirken würde (siehe `DnDEvent.mode`): z. B. ein Plus zeigen, solange er kopiert."
   },
   "OverlaySlotProps.to": {
     "source": "a7cc5a79db",

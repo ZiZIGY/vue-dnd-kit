@@ -1,26 +1,33 @@
-/** Layout (FLIP), drop and data-change (`animate`) animations. */
+/** Layout (FLIP), drop and data-change (`animateChanges`) animations. */
 
 import type { Key, Rect } from './primitives';
 import type { Active, Over } from './drag';
 
 // ─── Animation ─────────────────────────────────────────────────────────────────
 
+/** The timing of an animation. What is left out keeps the default of that animation. */
 export interface AnimationOptions {
+  /** In ms. Default 200 for layout moves, 250 for the drop; `0` turns the animation off. */
   duration?: number;
+  /** A CSS easing (`'ease-out'`, `cubic-bezier(…)`). */
   easing?: string;
 }
 
+/** What a layout animation function gets, for one item that moves to its new place. */
 export interface LayoutAnimationContext {
+  /** Key of the item. */
   key: Key;
+  /** The item's element, already in its new place. */
   element: HTMLElement;
   /** Visual rect before the change (where a running animation showed the item). */
   from: Rect;
   /** Layout rect after the change. */
   to: Rect;
+  /** The timing the options give, defaults filled in. */
   options: Required<AnimationOptions>;
   /**
    * What moved the item: a drag (`'drag'`: sorting, the drop, a cancel), or a change of
-   * your data that no drag made (`'change'`, with the list's `animate` on).
+   * your data that no drag made (`'change'`, with the list's `animateChanges` on).
    */
   reason: 'drag' | 'change';
   /**
@@ -47,6 +54,7 @@ export type LayoutAnimation =
   | AnimationOptions
   | ((context: LayoutAnimationContext) => Animation | Promise<unknown> | void);
 
+/** What a drop animation function gets: the overlay, where it is and where it lands. */
 export interface DropAnimationContext {
   /**
    * The overlay box; it lands on the active item's slot. In a multi-drag the clones of the
@@ -55,6 +63,7 @@ export interface DropAnimationContext {
    * custom function).
    */
   overlay: HTMLElement;
+  /** Where the overlay is when the drag ends. */
   from: Rect;
   /** Final rect of the dropped item; `null` when it isn't rendered or visible (the overlay fades out). */
   to: Rect | null;
@@ -64,10 +73,13 @@ export interface DropAnimationContext {
    * animation shrinks the overlay into it as it fades out, instead of fading in place.
    */
   into: Rect | null;
+  /** `'drop'`: the overlay lands where the drop put the item. `'cancel'`: it flies back to where the item was. */
   reason: 'drop' | 'cancel';
+  /** The drag that ended. */
   active: Active;
   /** The target the drop lands on (a list, a zone); `null` on a cancel. */
   over: Over | null;
+  /** The timing the options give, defaults filled in. */
   options: Required<AnimationOptions>;
   /**
    * `prefers-reduced-motion: reduce` is set. The library's own animations don't run then;
@@ -76,20 +88,28 @@ export interface DropAnimationContext {
   reducedMotion: boolean;
 }
 
+/**
+ * How the overlay lands on a drop and flies back on a cancel: `true` (default timing),
+ * options, `false` (no flight: it ends where it was let go), or a function that animates
+ * `overlay` from `from` to `to` and returns its `Animation`, a promise that settles when it
+ * ends, or nothing.
+ */
 export type DropAnimation =
   | boolean
   | AnimationOptions
   | ((context: DropAnimationContext) => Animation | Promise<unknown> | void);
 
-// ─── Data changes (`animate`) ──────────────────────────────────────────────────
+// ─── Data changes (`animateChanges`) ───────────────────────────────────────────
 
-/** An item that appeared in a list with `animate` on: added, or shown again (a filter, an expanded tree node). */
+/** An item that appeared in a list with `animateChanges` on: added, or shown again (a filter, an expanded tree node). */
 export interface EnterAnimationContext {
+  /** Key of the item. */
   key: Key;
   /** The item's element, already in its place. */
   element: HTMLElement;
   /** Where it appeared (layout rect). */
   to: Rect;
+  /** The timing the options give, defaults filled in. */
   options: Required<AnimationOptions>;
   /**
    * `prefers-reduced-motion: reduce` is set. The library's own animations don't run then;
@@ -98,8 +118,9 @@ export interface EnterAnimationContext {
   reducedMotion: boolean;
 }
 
-/** An item that left a list with `animate` on: removed, or hidden (a filter, a collapsed tree node). */
+/** An item that left a list with `animateChanges` on: removed, or hidden (a filter, a collapsed tree node). */
 export interface LeaveAnimationContext {
+  /** Key of the item. */
   key: Key;
   /**
    * A copy of the item's element, shown where the item was (the item itself is gone):
@@ -109,6 +130,7 @@ export interface LeaveAnimationContext {
   element: HTMLElement;
   /** Where the item was. */
   from: Rect;
+  /** The timing the options give, defaults filled in. */
   options: Required<AnimationOptions>;
   /**
    * `prefers-reduced-motion: reduce` is set. The library's own animations don't run then;
@@ -134,7 +156,7 @@ export type LeaveAnimation =
   | ((context: LeaveAnimationContext) => Animation | Promise<unknown> | void);
 
 /**
- * `animate` with its parts: `duration` and `easing` for all of them, and per kind of
+ * `animateChanges` with its parts: `duration` and `easing` for all of them, and per kind of
  * change `true`, options (over the shared ones), `false`, or a function of your own.
  */
 export interface AutoAnimationOptions extends AnimationOptions {

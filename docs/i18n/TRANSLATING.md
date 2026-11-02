@@ -12,7 +12,7 @@ The live examples (`examples/`) and all code stay in English.
 | What | Files | Tracks its English with |
 | --- | --- | --- |
 | Pages and the sidebar sections | `content/<code>/**`, mirroring `content/en/**` (`.md`, `.navigation.yml`) | `source:` |
-| API descriptions (the tables of the API pages) | `i18n/api/<code>/<types file>.json` | `source` of each text |
+| API descriptions (the tables and signatures of the API pages) | `i18n/api/<code>/<types file>.json`, and `exports.json` for the functions and components | `source` of each text |
 | UI strings (header, home page, notices) | `i18n/locales/<code>.json`, the keys of `en.json` | — |
 | The language's terms | `i18n/glossary/<code>.md` | — |
 
@@ -58,7 +58,7 @@ node tools/i18n.ts headings content/en/docs/2.guides/07.overlay.md   # the ids t
   - `::example{name height hint title}`: translate `hint` and `title`.
   - `::card{title to icon}` and other cards: translate `title` and the body.
   - `::tip`, `::note`, `::warning`: translate the body.
-  - `::api-table{name}`, `:kbd{value}`, `::code-group`: unchanged.
+  - `::api-table{name}`, `::api-signature{name}` (or `names`), `:kbd{value}`, `::code-group`: unchanged.
 - **Tables:** translate the text cells; code cells stay.
 - **Say the same, in the language's own way.** Don't add, drop or "improve": the meaning stays
   the English one. Plain, direct sentences, as in the English. Use the terms developers of the
@@ -69,3 +69,10 @@ node tools/i18n.ts headings content/en/docs/2.guides/07.overlay.md   # the ids t
 
 The same rules: `` `code` `` stays, `**bold**` stays bold, lines starting with `- ` are list
 items, and a blank line (`\n\n`) separates paragraphs. Keep that structure in `text`.
+
+They are the JSDoc of the library (`packages/core/src/types/*.ts`, and the functions and
+components `packages/core/src/index.ts` exports), read at build time: `::api-table` shows a
+type, `::api-signature` the signature of a function or component. `node tools/api-check.ts`
+(`yarn api:check`) fails when something public has no JSDoc or no page shows it, or when a
+page names something that doesn't exist: run it after changing the library's exports or the
+API pages. A text missing in English is written in the library's source, never here.

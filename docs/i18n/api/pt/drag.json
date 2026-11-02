@@ -1,7 +1,19 @@
 {
+  "DragItem": {
+    "source": "959720da4c",
+    "text": "Um item arrastado: aquele de onde o arraste começou, ou outro de um multi-drag."
+  },
+  "DragItem.id": {
+    "source": "776be4538c",
+    "text": "Id do draggable dele (a key de um item ordenável)."
+  },
   "DragItem.item": {
     "source": "7cfd4640f1",
     "text": "Objeto do item quando o arraste vem de uma lista ordenável."
+  },
+  "DragItem.data": {
+    "source": "ac6ab14545",
+    "text": "A opção `data` dele."
   },
   "DragItem.label": {
     "source": "97ccfdec34",
@@ -11,6 +23,10 @@
     "source": "9189758463",
     "text": "`type` normalizado do draggable; vazio significa que ele passa em qualquer alvo de drop."
   },
+  "Active": {
+    "source": "91977ca5db",
+    "text": "O arraste em andamento: o item de onde ele começou e todos os itens que ele carrega."
+  },
   "Active.id": {
     "source": "f080aacddc",
     "text": "Id do item a partir do qual o arraste começou."
@@ -19,9 +35,21 @@
     "source": "173336b06e",
     "text": "Todos os ids arrastados, começando pelo principal (multi-drag)."
   },
+  "Active.items": {
+    "source": "f5b1ed4ced",
+    "text": "Todos os itens arrastados, o principal primeiro."
+  },
+  "Active.data": {
+    "source": "c6df04687f",
+    "text": "O `data` do item de onde o arraste começou."
+  },
   "Active.label": {
     "source": "6b580da2fb",
     "text": "O `label` do item em que o arraste começou, como as pessoas o chamam."
+  },
+  "Active.type": {
+    "source": "24c2cd378e",
+    "text": "O `type` normalizado do item de onde o arraste começou; vazio significa que ele serve para qualquer alvo de drop."
   },
   "Active.element": {
     "source": "b0e7f2b9f5",
@@ -31,17 +59,41 @@
     "source": "7964e6f559",
     "text": "Retângulo de layout de `element` no início do arraste."
   },
+  "Active.sensor": {
+    "source": "d7ac7b8437",
+    "text": "Como o arraste se move: `'pointer'` segue pontos, `'keyboard'` se move de item em item (`SensorActivation.type`)."
+  },
   "Active.external": {
     "source": "c2c230e8a3",
     "text": "Um arraste de fora da página (arquivos, um link, texto, ou itens de outra janela do app): o que ele carrega. Os `items` dele são criados para ele (`element` é um substituto)."
   },
   "Active.native": {
-    "source": "70b681b12e",
-    "text": "O arraste do próprio navegador (`native`, ou um de fora): ele desenha a imagem arrastada, não há overlay."
+    "source": "98192baf7a",
+    "text": "O arraste do próprio navegador (`native`, ou um de fora): o navegador desenha a imagem arrastada, e não há overlay."
+  },
+  "Over": {
+    "source": "d438eb0a0d",
+    "text": "O alvo de drop sob o arraste."
+  },
+  "Over.id": {
+    "source": "f9a233dcfd",
+    "text": "Id do alvo de drop."
+  },
+  "Over.data": {
+    "source": "c8dc5224f3",
+    "text": "A opção `data` do alvo."
   },
   "Over.label": {
     "source": "c388687981",
     "text": "O `label` do alvo, como as pessoas o chamam."
+  },
+  "Over.element": {
+    "source": "bea8d333cc",
+    "text": "O elemento do alvo."
+  },
+  "Over.rect": {
+    "source": "7fd07d1f0f",
+    "text": "O retângulo de `element`, medido durante o arraste."
   },
   "Over.accepted": {
     "source": "48997f2ee2",
@@ -67,6 +119,10 @@
     "source": "0a3289fa23",
     "text": "Árvores: a profundidade em que eles vão (as raízes são 0)."
   },
+  "DragSource": {
+    "source": "bc3de31654",
+    "text": "De onde vêm os itens arrastados, quando é uma lista ordenável."
+  },
   "DragSource.list": {
     "source": "57db105431",
     "text": "Lista ordenável de onde vêm os itens arrastados."
@@ -74,6 +130,22 @@
   "DragSource.remove": {
     "source": "5ef5100d7a",
     "text": "Remove os itens arrastados da lista deles (zonas de lixeira)."
+  },
+  "DragMode": {
+    "source": "c46a935d4d",
+    "text": "O que um drop faz: `'move'`, `'copy'` (os itens ficam, cópias deles entram), `'swap'` (`behavior: 'swap'`: dois itens trocam de lugar) ou `'insert'` (um draggable simples entra em uma lista como o item criado pelo `createItem` dela)."
+  },
+  "DnDEvent": {
+    "source": "6c347e6fab",
+    "text": "O que os eventos de arraste carregam: os monitores, os eventos do provider e os hooks dos alvos de drop recebem isto."
+  },
+  "DnDEvent.active": {
+    "source": "ab2a0979dd",
+    "text": "O arraste."
+  },
+  "DnDEvent.over": {
+    "source": "3b1f124a9c",
+    "text": "O alvo de drop sob o arraste; `null` sobre nada."
   },
   "DnDEvent.pointer": {
     "source": "49759bca51",
@@ -99,6 +171,10 @@
     "source": "88a096f69f",
     "text": "Um arraste de fora da página: o que ele carrega (`active.external`). Os dados dele chegam no drop."
   },
+  "DnDEndEvent": {
+    "source": "07e34f7142",
+    "text": "O que `onDragEnd` (e o `onDrop` do alvo) recebe: o evento do drop e como ele terminou."
+  },
   "DnDEndEvent.dropped": {
     "source": "8ada0b47b1",
     "text": "False quando o arraste terminou fora de todos os alvos de drop."
@@ -106,6 +182,10 @@
   "DnDEndEvent.accepted": {
     "source": "bf82d1aeb9",
     "text": "Ids aceitos pelo `onBeforeDrop` (todos os ids arrastados, a menos que um subconjunto tenha sido retornado)."
+  },
+  "DnDEndEvent.rejected": {
+    "source": "641da3ee5b",
+    "text": "Os outros ids arrastados: `onBeforeDrop` os deixou de fora, e eles voltam ao lugar. Vazio quando ele aceitou todos."
   },
   "DnDEndEvent.droppedOutside": {
     "source": "43906c7a55",
@@ -115,6 +195,22 @@
     "source": "056be141e8",
     "text": "O que o `onBeforeDrop` decide:\n- `'accept'` (ou `true`, ou nada): o drop é concluído;\n- `'reject'` (ou `false`): nenhum drop, os itens voltam ao lugar;\n- uma lista de ids: só esses itens são aceitos, os outros voltam ao lugar;\n- `'continue'`: nenhum drop, e o arraste continua. Com um ponteiro, o item volta a segui-lo (sem nenhum botão pressionado) e o próximo soltar, um clique, o solta; um toque o pega de novo; o teclado o move como antes. Escape o cancela. O drop consulta o `onBeforeDrop` de novo."
   },
+  "AcceptContext": {
+    "source": "04c6b6dfb5",
+    "text": "Com o que uma regra `accept` em forma de função é consultada."
+  },
+  "AcceptContext.active": {
+    "source": "ab2a0979dd",
+    "text": "O arraste."
+  },
+  "AcceptContext.items": {
+    "source": "1724543673",
+    "text": "Todos os itens arrastados."
+  },
+  "AcceptContext.types": {
+    "source": "e1c94af5ab",
+    "text": "Os tipos de todos os itens arrastados, juntos."
+  },
   "AcceptRule": {
     "source": "b40b673608",
     "text": "`'*'` ou omitido aceita tudo. Itens sem tipo passam em qualquer regra de string (equivalente a `groups: []` da v2)."
@@ -123,9 +219,37 @@
     "source": "2aa08aef31",
     "text": "`'all'`: todos os itens arrastados precisam passar; `'some'`: pelo menos um (o resto pode ser rejeitado no `onBeforeDrop`)."
   },
+  "KeyboardMoveContext": {
+    "source": "168a0c5add",
+    "text": "Com o que `getKeyboardCoordinates` é chamado, para uma tecla de seta."
+  },
+  "KeyboardMoveContext.active": {
+    "source": "ab2a0979dd",
+    "text": "O arraste."
+  },
+  "KeyboardMoveContext.pointer": {
+    "source": "efc9d40d64",
+    "text": "Onde o arraste está agora, em coordenadas da viewport."
+  },
   "KeyboardMoveContext.direction": {
     "source": "a0b25b3b54",
     "text": "Vetor unitário da seta pressionada."
+  },
+  "DnDMonitor": {
+    "source": "6f3b744e55",
+    "text": "Hooks para todo arraste sob o provider (`useDnDMonitor`)."
+  },
+  "DnDMonitor.onDragStart": {
+    "source": "a0e7bdf431",
+    "text": "Um arraste começou, depois da sua ativação."
+  },
+  "DnDMonitor.onDragMove": {
+    "source": "454b2c8c39",
+    "text": "O arraste se moveu (no máximo uma vez por frame)."
+  },
+  "DnDMonitor.onDragOver": {
+    "source": "290d741d10",
+    "text": "O alvo sob o arraste mudou."
   },
   "DnDMonitor.onBeforeDrop": {
     "source": "7c0b37588d",
@@ -134,6 +258,10 @@
   "DnDMonitor.onDragEnd": {
     "source": "117782ceb2",
     "text": "Uma notificação assim que o drop termina: as listas ordenáveis já rodaram o `onDrop` delas e o gravaram."
+  },
+  "DnDMonitor.onDragCancel": {
+    "source": "699c396c4c",
+    "text": "O arraste foi cancelado, ou o seu drop foi recusado: os itens voltam ao lugar."
   },
   "DnDMonitor.onDragResume": {
     "source": "8e5af01ef3",
@@ -147,12 +275,76 @@
     "source": "72d709477a",
     "text": "Arrastes por teclado: a próxima posição do ponteiro para uma seta (por exemplo, a próxima posição ordenável)."
   },
+  "DnDSelection": {
+    "source": "37feaeeee3",
+    "text": "Os draggables selecionados, por id: um arraste de um deles carrega todos (multi-drag). Guardada por id, uma seleção sobrevive a desmontagens (listas virtuais)."
+  },
+  "DnDSelection.ids": {
+    "source": "92b2721491",
+    "text": "Os ids selecionados, reativos."
+  },
+  "DnDSelection.has": {
+    "source": "aeefc055d7",
+    "text": "Se `id` está selecionado."
+  },
+  "DnDSelection.add": {
+    "source": "c02f8715ab",
+    "text": "Seleciona esses ids."
+  },
+  "DnDSelection.delete": {
+    "source": "e426b1d84b",
+    "text": "Desmarca esses ids."
+  },
+  "DnDSelection.toggle": {
+    "source": "04f91b4e9f",
+    "text": "Seleciona `id` ou o desmarca; `force: true` o seleciona, `false` o desmarca."
+  },
+  "DnDSelection.set": {
+    "source": "daf58f421e",
+    "text": "Seleciona esses ids e nenhum outro."
+  },
+  "DnDSelection.clear": {
+    "source": "019671079e",
+    "text": "Desmarca todos os ids."
+  },
   "DnDState": {
     "source": "227f071563",
     "text": "O estado do arraste termina quando o drop é decidido: `active`, `over` e `pointer` passam a ser `null` (e os droppables deixam de aceitar) enquanto o overlay ainda está sendo animado até o lugar. Uma UI derivada nunca mistura o arraste antigo com os dados novos. Enquanto um `onBeforeDrop` assíncrono decide, o estado é mantido como estava no momento em que o item foi solto, mas a página sai do modo de arraste: o cursor e a seleção de texto dela voltam (um diálogo de confirmação funciona normalmente), e o overlay espera onde foi solto.\n\n`status` é `'dragging'` enquanto um arraste está em andamento; senão, `'dropping'` enquanto um drop é decidido ou um overlay ainda pousa; senão, `'idle'` (deixando de lado `'activating'` e `'selecting'`). Um novo arraste não espera os pousos: ele começa na hora, e eles terminam ao redor dele."
   },
+  "DnDState.status": {
+    "source": "17deba0e0d",
+    "text": "O que o provider está fazendo (veja `DnDStatus`)."
+  },
+  "DnDState.active": {
+    "source": "956d5f9c19",
+    "text": "O arraste em andamento; `null` sem nenhum, e assim que o drop dele é decidido."
+  },
+  "DnDState.over": {
+    "source": "3b1f124a9c",
+    "text": "O alvo de drop sob o arraste; `null` sobre nada."
+  },
+  "DnDState.pointer": {
+    "source": "3bb30d3398",
+    "text": "Ponteiro em coordenadas da viewport, depois dos modificadores; `null` sem arraste."
+  },
   "DnDState.position": {
     "source": "4795780b8f",
     "text": "Onde está o canto superior esquerdo da caixa arrastada dentro de `over`, ao vivo: o `DnDEvent.position` de cada movimento. `null` sobre nada. Um componente de overlay o lê para mostrar onde pousaria (um horário em um calendário)."
+  },
+  "DnDState.activation": {
+    "source": "ca2201da85",
+    "text": "`progress`: o quanto um pressionamento já avançou rumo à sua restrição de ativação, de 0 a 1, enquanto `status` é `'activating'`: por exemplo, um anel que se enche durante um toque longo."
+  },
+  "DnDState.isAutoScrolling": {
+    "source": "e5cea65cdf",
+    "text": "A rolagem automática está movendo um contêiner."
+  },
+  "DnDState.selection": {
+    "source": "d265527064",
+    "text": "Os draggables selecionados (veja `DnDSelection`)."
+  },
+  "DnDState.cancel": {
+    "source": "3ea64398be",
+    "text": "Cancela o arraste (ele volta ao lugar), ou a ativação pendente."
   }
 }

@@ -36,8 +36,8 @@
     "text": "输入事件。它会交给可拖拽元素的 `canDrag`：没有事件时（游戏手柄、程序化拖拽），不会询问 `canDrag`。`pointerType` 为 `'touch'` 时，这次拖拽会成为触摸拖拽（`haptics`）。"
   },
   "SensorActivation.activation": {
-    "source": "39a1a2728a",
-    "text": "拖拽开始之前等待的条件（在此之前 `useDnD().status` 为 `'activating'`，并带有进度）。指针类型会先读取可拖拽元素的 `activation` 选项中对应的设置，然后是 provider 的，最后是默认值（鼠标和触控笔为 4px，在手柄上立即开始；触摸为 200ms 长按，容差 5px）。约束会按原样使用。默认：无，拖拽立即开始。"
+    "source": "b57a130781",
+    "text": "拖拽开始之前等待的条件（在此之前 `useDnD().status` 为 `'activating'`，并带有进度）。指针类型会先读取可拖拽元素的 `activation` 选项中对应的设置，然后是 provider 的，最后是默认值（鼠标为 4px，在手柄上立即开始；触控笔为 4px；触摸为 200ms 长按，容差 5px）。约束会按原样使用。默认：无，拖拽立即开始。"
   },
   "SensorActivation.onStart": {
     "source": "e74975e61a",
@@ -55,6 +55,10 @@
     "source": "cede55f00c",
     "text": "- `'pending'`：等待激活约束；\n- `'dragging'`：从开始直到放置结果确定或拖拽被取消；\n- `'ended'`：激活被中止，或者拖拽已放下或被取消，无论是由传感器还是其他原因（Escape、隐藏的标签页、`useDnD().cancel()`、provider 卸载）。"
   },
+  "SensorStepOptions": {
+    "source": "068f67f8ef",
+    "text": "`SensorDrag.step()` 的选项。"
+  },
   "SensorStepOptions.event": {
     "source": "a9cd22b651",
     "text": "按键事件，会交给监听器的 `getKeyboardCoordinates`。默认：该方向键的一个 keydown 事件。"
@@ -70,6 +74,14 @@
   "SensorDrag.id": {
     "source": "407eb1b511",
     "text": "被拖拽项的 id。"
+  },
+  "SensorDrag.type": {
+    "source": "76da00f024",
+    "text": "拖拽的移动方式，即 `activate()` 所要求的（`SensorActivation.type`）。"
+  },
+  "SensorDrag.state": {
+    "source": "09adafb8ab",
+    "text": "拖拽所处的阶段：等待激活、拖拽中，或已结束。"
   },
   "SensorDrag.started": {
     "source": "0bc4410fb6",
@@ -126,5 +138,9 @@
   "Sensor.name": {
     "source": "f3f1afa08b",
     "text": "用于调试。"
+  },
+  "Sensor.setup": {
+    "source": "4633ff96ac",
+    "text": "开始监听输入，每个 provider 一次：想要拖拽时调用 `context.activate()`。可以返回一个清理函数，在传感器停止时运行。"
   }
 }

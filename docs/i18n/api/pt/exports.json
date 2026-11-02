@@ -1,0 +1,122 @@
+{
+  "DnDProvider": {
+    "source": "b1827fd191",
+    "text": "Controla os arrastes de tudo o que é renderizado dentro dele: a entrada, o overlay, a seleção, a rolagem automática e os anúncios para leitores de tela (veja `DnDProviderProps`)."
+  },
+  "DragPreview": {
+    "source": "f4f4c9f952",
+    "text": "O clone padrão de um item arrastado (veja `DragPreviewProps`). Overlays personalizados o usam para dispor vários itens por conta própria; o overlay padrão mostra um multi-drag com ele."
+  },
+  "makeDraggable": {
+    "source": "611823a10c",
+    "text": "Torna um elemento arrastável. Arraste livre por padrão; as listas ordenáveis são construídas sobre ele."
+  },
+  "makeDroppable": {
+    "source": "48253f728f",
+    "text": "Torna um elemento um alvo de drop."
+  },
+  "useDnD": {
+    "source": "78d14d6351",
+    "text": "Estado do arraste, somente leitura, para UI personalizada (destaque de alvos válidos, spinners, progresso)."
+  },
+  "useDnDMonitor": {
+    "source": "4719611afa",
+    "text": "Assina os eventos de todo arraste sob o provider, enquanto o componente que a chama (ou o effect scope) existir."
+  },
+  "useDnDContext": {
+    "source": "555b5f2b85",
+    "text": "O provider acima deste componente, como um handle opaco para `provideDnDContext`: ele leva o provider para dentro de shadow roots e de apps Vue separados."
+  },
+  "provideDnDContext": {
+    "source": "8befa03229",
+    "text": "Compartilha um provider (de `useDnDContext()`) com outro app Vue, por exemplo, um montado dentro de um shadow root."
+  },
+  "makeSortableList": {
+    "source": "d03a1a39c8",
+    "text": "Torna um contêiner uma lista ordenável. Renderize os `items` retornados (a ordem do rascunho), não o seu array: o drop é escrito de volta em `options.items`, depois de `onDrop`, a menos que `event.preventDefault()` deixe `event.result` com você."
+  },
+  "makeSortableItem": {
+    "source": "c1e5819e0d",
+    "text": "Torna um elemento uma linha de uma lista ordenável ou de uma árvore: ele é arrastado, abre espaço e pousa na sua posição. Chame-o em um componente renderizado dentro daquele que chamou `makeSortableList` (ou `makeSortableTree`); entre várias listas criadas ali, a linha entra na mais interna cujo elemento a contém. Identifique a linha com `item` (identificado pelo `getKey` da lista, `item.id` por padrão) ou `id`."
+  },
+  "makeSortableTree": {
+    "source": "a068e3925b",
+    "text": "Torna um contêiner uma árvore ordenável. Renderize os `items` retornados (os nós visíveis na ordem do rascunho, recuados conforme `depth`) com um componente de linha que chama `makeSortableItem`. No drop, depois de `onDrop`, os nós movidos (com as suas subárvores) são escritos em `options.items`, a menos que `event.preventDefault()` deixe `event.result` com você."
+  },
+  "makeSelectionArea": {
+    "source": "3e8548087f",
+    "text": "Torna um elemento uma área de seleção por retângulo para os draggables dentro dele. Renderize o retângulo você mesmo: `<div v-if=\"isSelecting\" class=\"band\" :style=\"style\" />`."
+  },
+  "makeDragArea": {
+    "source": "4d4126fd37",
+    "text": "Torna um elemento uma área de arraste: os arrastes que começam dentro dela (draggables e itens ordenáveis) seguem as regras dela, veja `DragAreaOptions`. Um único provider pode então servir o app inteiro, com quadros, canvases e feeds que arrastam cada um do seu jeito. A área mais próxima vence quando as áreas estão aninhadas."
+  },
+  "defineSensor": {
+    "source": "70baa86e7e",
+    "text": "Define um sensor (veja `Sensor`): só ajuda com os tipos e retorna o seu argumento."
+  },
+  "useSensor": {
+    "source": "dde117b5a5",
+    "text": "Executa um sensor no provider acima enquanto o componente que o chama (ou o effect scope) existir, ao lado dos `sensors` do provider. O arraste dele é cancelado quando ele é desmontado."
+  },
+  "pointerSensor": {
+    "source": "9da65b79da",
+    "text": "Mouse, toque e caneta via Pointer Events. Em `sensors` por padrão."
+  },
+  "keyboardSensor": {
+    "source": "394ed58ab2",
+    "text": "Espaço/Enter, setas e Escape (reconfiguráveis com a opção `keyboard` do provider). Em `sensors` por padrão; ele também cancela arrastes por ponteiro e personalizados com Escape, mesmo com `keyboard: false`."
+  },
+  "pointerFirst": {
+    "source": "a8cf072161",
+    "text": "Padrão: o que está sob o ponteiro, senão o que o overlay sobrepõe."
+  },
+  "pointerWithin": {
+    "source": "0c701c6c7d",
+    "text": "Alvos sob o ponteiro, obtidos por hit-testing: respeita z-order, overlays e shadow roots."
+  },
+  "rectIntersection": {
+    "source": "b68bd59aae",
+    "text": "Alvos que se sobrepõem ao overlay: maior prioridade, depois aninhamento mais profundo, depois intersection over union."
+  },
+  "closestCenter": {
+    "source": "54257511c8",
+    "text": "Todos os alvos, pela distância entre os centros."
+  },
+  "closestCorners": {
+    "source": "d75758f400",
+    "text": "Todos os alvos, pela soma das distâncias entre os cantos (bom para alvos empilhados, como colunas de kanban)."
+  },
+  "restrictToVerticalAxis": {
+    "source": "3983cfff70",
+    "text": "Move só na vertical: na horizontal ele acompanha o conteúdo onde começou (`containerShift`), não importa como a página role. A opção `axis: 'y'` faz o mesmo, por último."
+  },
+  "restrictToHorizontalAxis": {
+    "source": "e484b813e5",
+    "text": "Move só na horizontal: na vertical ele acompanha o conteúdo onde começou (`containerShift`), não importa como a página role. A opção `axis: 'x'` faz o mesmo, por último."
+  },
+  "restrictToWindowEdges": {
+    "source": "cad0a3465c",
+    "text": "Mantém o overlay dentro da janela."
+  },
+  "restrictToParent": {
+    "source": "a8492ae8d2",
+    "text": "Mantém o overlay dentro do contêiner onde o arraste começou: a lista ordenável (não o pai dela no DOM) ou, para draggables simples, o elemento pai."
+  },
+  "restrictToElement": {
+    "source": "9960d692bd",
+    "text": "Mantém o overlay dentro de um elemento: o elemento, um ref ou um getter."
+  },
+  "restrictToFirstScrollableAncestor": {
+    "source": "d495991a85",
+    "text": "Mantém o overlay dentro do primeiro ancestral rolável do elemento arrastado."
+  },
+  "snapToGrid": {
+    "source": "84f04cfd39",
+    "text": "Encaixa o overlay em uma grade, na célula mais próxima: um número é o tamanho de células quadradas; as opções definem cada eixo, onde a grade começa e um deslizamento entre as células (`SnapToGridOptions`)."
+  },
+  "snapCenterToCursor": {
+    "source": "bfc0761525",
+    "text": "Centraliza o overlay sob o ponteiro em vez de manter o deslocamento de onde ele foi pego."
+  }
+}

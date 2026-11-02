@@ -3,6 +3,7 @@ import type {
   FlatNode,
   Key,
   MaybeElementRef,
+  SortableGroupOptions,
   SortableTreeOptions,
   SortableTreeReturn,
   TreeProjection,
@@ -12,8 +13,9 @@ import { createDroppable } from '../core/makeDroppable';
 import { createId, toElement } from '../utils/dom';
 import { read } from '../utils/read';
 import { useSortableGroup } from './group';
+import { putAllows } from './accept';
 import type { ListEntry } from './entry';
-import { defaultGetKey, provideSortableContext, pullOf } from './makeSortableList';
+import { checkExternal, defaultGetKey, provideSortableContext, pullOf } from './makeSortableList';
 import { createFlatTree, flattenTree, type TreeAccessors } from './tree/flatten';
 import { blockHere, indicating, rows, source, type TreeContext } from './tree/context';
 import { treeLayout } from './tree/layout';
@@ -41,6 +43,7 @@ export function makeSortableTree<T>(
   const id = options.id ?? createId('tree');
   const groupOptions = typeof options.group === 'string' ? { name: options.group } : options.group;
   const group = useSortableGroup(manager, groupOptions?.name ?? `sortable:${id}`);
+  checkExternal(options, 'tree');
   const accessors: TreeAccessors<T> = {
     getKey: (options.getKey ?? defaultGetKey) as (node: T) => Key,
     getChildren: (options.getChildren ?? defaultGetChildren) as (node: T) => T[] | undefined,
@@ -85,15 +88,12 @@ export function makeSortableTree<T>(
     strategy: () => 'vertical',
     placeholder: () => read(options.placeholder) ?? 'item',
     animation: () => unref(options.animation) ?? manager.props.animation,
-    animate: () => read(options.animate) ?? manager.props.animate,
+    animate: () => read(options.animateChanges) ?? manager.props.animateChanges,
     animateSize: () => read(options.animateSize) ?? true,
     isDisabled: () => !!read(options.disabled),
     canSort: () => true,
     pull: () => pullOf(groupOptions, !!options.clone),
-    canPut: (context) => {
-      const put = groupOptions?.put ?? true;
-      return typeof put === 'function' ? put(context) : put;
-    },
+    canPut: (context) => putAllows(groupOptions?.put as SortableGroupOptions['put'], context, manager),
     dropOutside: () => read(options.dropOutside) ?? (indicating(t) ? 'cancel' : 'placeholder'),
     multiple: () => 'group',
     acceptMode: () => read(options.acceptMode) ?? 'all',
@@ -138,10 +138,11 @@ export function makeSortableTree<T>(
     {
       id,
       label: options.label,
+      data: options.data,
       disabled: () => !!read(options.disabled) || group.isInert(entry),
       // As a target: what the overlay shows over it, and how it lands in it.
-      overlay: options.overOverlay,
-      dropAnimation: options.overDropAnimation,
+      overOverlay: options.overOverlay,
+      overDropAnimation: options.overDropAnimation,
       // Drags from outside the page it takes (with `createItem`).
       external: options.external,
     },
@@ -159,6 +160,7 @@ export function makeSortableTree<T>(
     options.dropAnimation,
     () => read(options.modifiers),
     () => read(options.axis),
+    () => read(options.activation),
   );
 
   // The row a virtualizer must keep mounted. The session is mutated in place: a copy or a

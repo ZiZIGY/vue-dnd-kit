@@ -36,8 +36,8 @@
     "text": "L'événement d'entrée. Il est transmis au `canDrag` de l'élément déplaçable : sans événement (une manette, un glissement programmatique), `canDrag` n'est pas consulté. Un `pointerType` valant `'touch'` fait du glissement un glissement tactile (`haptics`)."
   },
   "SensorActivation.activation": {
-    "source": "39a1a2728a",
-    "text": "Ce que le glissement attend avant de commencer (`useDnD().status` vaut `'activating'` jusque-là, avec sa progression). Un type de pointeur lit pour lui l'option `activation` de l'élément déplaçable, puis celle du provider, puis les valeurs par défaut (souris et stylet 4 px, immédiat sur une poignée ; toucher : un appui long de 200 ms avec une tolérance de 5 px). Une contrainte est utilisée telle quelle. Par défaut : aucune, le glissement commence immédiatement."
+    "source": "b57a130781",
+    "text": "Ce que le glissement attend avant de commencer (`useDnD().status` vaut `'activating'` jusque-là, avec sa progression). Un type de pointeur lit pour lui l'option `activation` de l'élément déplaçable, puis celle du provider, puis les valeurs par défaut (souris 4 px, immédiat sur une poignée ; stylet 4 px ; toucher : un appui long de 200 ms avec une tolérance de 5 px). Une contrainte est utilisée telle quelle. Par défaut : aucune, le glissement commence immédiatement."
   },
   "SensorActivation.onStart": {
     "source": "e74975e61a",
@@ -55,6 +55,10 @@
     "source": "cede55f00c",
     "text": "- `'pending'` : en attente de la contrainte d'activation ;\n- `'dragging'` : depuis le début jusqu'à ce que le dépôt soit décidé ou que le glissement soit annulé ;\n- `'ended'` : l'activation a été interrompue, ou le glissement a été déposé ou annulé, par le capteur ou par autre chose (Escape, un onglet masqué, `useDnD().cancel()`, le démontage du provider)."
   },
+  "SensorStepOptions": {
+    "source": "068f67f8ef",
+    "text": "Options de `SensorDrag.step()`."
+  },
   "SensorStepOptions.event": {
     "source": "a9cd22b651",
     "text": "L'appui sur la touche, transmis au `getKeyboardCoordinates` des moniteurs. Par défaut : un keydown de la flèche."
@@ -70,6 +74,14 @@
   "SensorDrag.id": {
     "source": "407eb1b511",
     "text": "Id de l'item glissé."
+  },
+  "SensorDrag.type": {
+    "source": "76da00f024",
+    "text": "Comment le glissement se déplace, tel que `activate()` l'a demandé (`SensorActivation.type`)."
+  },
+  "SensorDrag.state": {
+    "source": "09adafb8ab",
+    "text": "Où en est le glissement : en attente de son activation, en cours, ou terminé."
   },
   "SensorDrag.started": {
     "source": "0bc4410fb6",
@@ -126,5 +138,9 @@
   "Sensor.name": {
     "source": "f3f1afa08b",
     "text": "Pour le débogage."
+  },
+  "Sensor.setup": {
+    "source": "4633ff96ac",
+    "text": "Commence à écouter l'entrée, une fois par provider : appelez `context.activate()` quand elle veut glisser. Peut renvoyer une fonction de nettoyage, exécutée quand le capteur s'arrête."
   }
 }

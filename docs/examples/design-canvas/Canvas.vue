@@ -54,7 +54,7 @@ makeDroppable(viewport, {
   id: 'canvas',
   data: { name: 'Canvas' },
   accept: ['layer', 'frame'],
-  dropAnimation: false,
+  overDropAnimation: false,
   onDrop: useLayerDrop(() => null),
 });
 

@@ -19,8 +19,14 @@ import type { AutoScrollOptions } from './provider';
 
 // ─── Sortable ──────────────────────────────────────────────────────────────────
 
+/** How a list lays out its items: a column (`'vertical'`), a row (`'horizontal'`) or a grid that wraps (`'grid'`). */
 export type SortableStrategy = 'vertical' | 'horizontal' | 'grid';
+/** What hovering an item does: `'sort'` makes room (the items between shift), `'swap'` exchanges the two items. */
 export type SortableBehavior = 'sort' | 'swap';
+/**
+ * How a drag shows where it goes: `'item'`, the dragged item's slot moves through the list;
+ * `'indicator'`, the list stays as it is and `indicator` says where the drop goes (you draw the line).
+ */
 export type SortablePlaceholder = 'item' | 'indicator';
 /**
  * What the other selected items do in a multi-drag:
@@ -34,23 +40,38 @@ export type SortablePlaceholder = 'item' | 'indicator';
  * one with a count (`'stack'`).
  */
 export type MultipleMode = 'group' | 'gaps' | 'stack';
+/**
+ * What a drop outside every target does: `'placeholder'` keeps the items where their slot
+ * is, `'cancel'` sends them back, `'remove'` takes them out of their list.
+ */
 export type DropOutside = 'placeholder' | 'cancel' | 'remove';
 
-export interface SortablePutContext {
+/** What a function `group.put` is asked with: the items that would enter the list. */
+export interface SortablePutContext<T = unknown> {
+  /** Keys of the items. */
   keys: Key[];
-  items: unknown[];
+  /** The items (for a plain draggable, the item `createItem` made). */
+  items: T[];
+  /** The types of the items, together. */
   types: string[];
   /** Source list, `null` for external draggables. */
   from: Key | null;
+  /** Id of the list asked. */
   to: Key;
 }
 
-export interface SortableGroupOptions {
+/** A list's group: the lists that exchange items, and whether items may leave and enter this one. */
+export interface SortableGroupOptions<T = unknown> {
+  /** Lists and trees with the same name exchange items. */
   name: string;
   /** Can items leave this list: move, copy (`'clone'`, a palette) or not at all. */
   pull?: boolean | 'clone';
-  /** Can items enter this list. */
-  put?: boolean | ((context: SortablePutContext) => boolean);
+  /**
+   * Can items enter this list: `true` (default), `false`, a type or types the items must
+   * have (as a drop target's `accept`: with `acceptMode`, all of them or some), or a
+   * function of the drag.
+   */
+  put?: boolean | string | string[] | ((context: SortablePutContext<T>) => boolean);
 }
 
 /**
@@ -68,14 +89,21 @@ export type SortableItems<T> = Ref<T[]> | Readonly<Ref<readonly T[]>> | (() => r
  * write, so you can apply `result` yourself.
  */
 export interface SortableDropEvent<T = unknown> {
+  /** Keys of the dragged items. */
   keys: Key[];
+  /** The items that land: the dragged ones, their copies (`mode: 'copy'`), or the item `createItem` made (`'insert'`). */
   items: T[];
+  /** Keys that go through: all of them, unless the list or `onBeforeDrop` takes only some. */
   accepted: Key[];
+  /** Keys that fly back to where they were. */
   rejected: Key[];
+  /** Where the drag started: the list and index of the active item. `list` is `null` for a plain draggable from outside. */
   from: { list: Key | null; index: number };
   /** `index` is -1 when nothing landed: the items left their lists (`e.source.remove()`, `dropOutside: 'remove'`). */
   to: { list: Key; index: number };
+  /** The drop stays in the list the drag started from. */
   sameList: boolean;
+  /** What the drop does (see `DragMode`). */
   mode: DragMode;
   /**
    * `mode: 'swap'`: the item the dragged one was exchanged with. It moved the other way,
@@ -108,7 +136,9 @@ export interface SortableDropEvent<T = unknown> {
   external?: ExternalData;
 }
 
+/** Where the drop goes with `placeholder: 'indicator'`: the list doesn't move, you draw the line. */
 export interface SortableIndicator {
+  /** Id of the list (or tree) the drop goes into. */
   list: Key;
   /** Insertion position in the list as rendered. */
   index: number;
@@ -130,8 +160,9 @@ export interface SortableIndicator {
  * Options of `makeSortableList`. A component may make several lists (and trees): each
  * item rendered in it joins the innermost one whose element holds it.
  *
- * Options take a value, a ref or a getter (`overlay`, `animation`: a value or a ref) and
- * are read when the list needs them, so a change applies to the next drag at the latest.
+ * Options take a value, a ref or a getter (`overlay`, `overOverlay`, `dropAnimation`,
+ * `overDropAnimation`, `animation`: a value or a ref) and are read when the list needs
+ * them, so a change applies to the next drag at the latest.
  * Exceptions: `id` and `group` are read once, when the list is created; `items` is the
  * model itself; functions (`getKey`, `filter`, `clone`, `createItem`, the callbacks) are
  * passed as they are.
@@ -158,6 +189,13 @@ export interface SortableListOptions<T> {
   id?: Key;
   /** What people call the list: screen reader texts say it instead of its id (`position 2 of 5 in Garden`). */
   label?: MaybeReadonlyRefOrGetter<string | undefined>;
+  /** Anything to tell about the list as a drop target: events carry it as `over.data` while a drag is over it. */
+  data?: MaybeReadonlyRefOrGetter<unknown>;
+  /**
+   * How a press on this list's items starts a drag, instead of the provider's `activation`
+   * (an item's own wins). Read when a press starts.
+   */
+  activation?: MaybeReadonlyRefOrGetter<ActivationOptions | undefined>;
   /**
    * Overlay component for this list's items (an item's own `overlay` wins). It receives
    * `OverlayProps` and stays for the whole drag, also over other lists, unless the target
@@ -168,7 +206,7 @@ export interface SortableListOptions<T> {
   /**
    * What the overlay shows while a drag this list accepts is over it, whatever list it
    * comes from: a component that gets `OverlayProps` and the drag's own overlay as its
-   * default slot (see `DroppableOptions.overlay`). Read live.
+   * default slot (see `DroppableOptions.overOverlay`). Read live.
    */
   overOverlay?: MaybeReadonlyRef<Component | undefined>;
   /**
@@ -195,7 +233,7 @@ export interface SortableListOptions<T> {
    */
   axis?: MaybeReadonlyRefOrGetter<'x' | 'y' | undefined>;
   /** Lists with the same group name exchange items. Default: a group of its own. Read once. */
-  group?: string | SortableGroupOptions;
+  group?: string | SortableGroupOptions<T>;
   /** Multi-drag of items of several types: `'all'` (default) or `'some'` must be accepted (`group.put`). */
   acceptMode?: MaybeReadonlyRefOrGetter<AcceptMode | undefined>;
   /** Default `'vertical'`. */
@@ -223,7 +261,7 @@ export interface SortableListOptions<T> {
    *
    * A drag from outside the page (`external`) is asked twice: while it is held, for the
    * item that shows where it goes (only `active.external.fileTypes` and `types` are known
-   * then), and at the drop, with its data (`active.external.dropped`), for what is
+   * then), and at the drop, with its data (`active.external.ready`), for what is
    * inserted. A list of items inserts them all where the slot was: a file each.
    */
   createItem?: (active: Active) => T | T[] | undefined;
@@ -244,13 +282,13 @@ export interface SortableListOptions<T> {
   animation?: MaybeReadonlyRef<LayoutAnimation | undefined>;
   /**
    * Animates changes of `items` that no drag made: added, removed, moved and filtered
-   * items (see `AutoAnimation`). Default: the provider's `animate`, off unless set there.
-   * Read when `items` changes.
+   * items (see `AutoAnimation`). Default: the provider's `animateChanges`, off unless set
+   * there. Read when `items` changes.
    */
-  animate?: MaybeReadonlyRefOrGetter<AutoAnimation | undefined>;
+  animateChanges?: MaybeReadonlyRefOrGetter<AutoAnimation | undefined>;
   /**
    * The list's own size follows its items: when a drag brings an item in or takes one out
-   * (and at the drop, and for the changes `animate` shows), it grows or shrinks to its new
+   * (and at the drop, and for the changes `animateChanges` shows), it grows or shrinks to its new
    * size with `animation`'s duration and easing instead of jumping, and what is around it
    * moves along. Default `true`; `false` lets it jump. Read on every change.
    */
@@ -263,6 +301,7 @@ export interface SortableListOptions<T> {
    * lands in the list (at its end). The items stay in the list element.
    */
   dropzone?: MaybeElementRef;
+  /** `true`: its items can't be dragged, and it takes no items. */
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
   /**
    * Asked before a drop into this list, and before `dropOutside: 'remove'` takes its items
@@ -282,16 +321,26 @@ export interface SortableListOptions<T> {
   onDrop?: (event: SortableDropEvent<T>) => void;
 }
 
+/** What `makeSortableList` returns. */
 export interface SortableListReturn<T> {
+  /** The list's id: the `id` option, or the one made for it. */
   id: Key;
   /** Draft order: render this, not the source array. */
   items: ComputedRef<T[]>;
+  /** A drag is over the list. */
   isOver: ComputedRef<boolean>;
+  /** Something is being dragged and this list takes it. */
   isAccepting: ComputedRef<boolean>;
+  /** Indicator mode: where the drop goes in this list; `null` when not here. */
   indicator: ComputedRef<SortableIndicator | null>;
+  /**
+   * The row a virtualizer must keep mounted: the slot while it is in this list (a copy, a
+   * created item), otherwise the dragged item; `null` without a drag.
+   */
   activeKey: ComputedRef<Key | null>;
   /** Index of the active item in this list's draft, -1 when it isn't here. */
   activeIndex: ComputedRef<number>;
+  /** Size of the dragged item at drag start: e.g. for the size of a virtual row it holds. */
   activeSize: ComputedRef<Size | null>;
   /** Animates layout changes the library didn't cause (e.g. a virtualizer re-measure). */
   captureLayout(): void;
@@ -302,9 +351,9 @@ export interface SortableListReturn<T> {
  * data: an automatic id would change whenever the component is recreated (moved to
  * another list, recycled by a virtual list), and the drag would lose the item.
  *
- * Options but `canDrag` take a value, a ref or a getter (`overlay`: a value or a ref) and
- * mean what they mean on `makeDraggable`. There is no `keyboard`: the keyboard moves a
- * sortable item by slots.
+ * Options but `canDrag` take a value, a ref or a getter (`overlay`, `dropAnimation`: a
+ * value or a ref) and mean what they mean on `makeDraggable`. There is no `keyboardMode`:
+ * the keyboard moves a sortable item by slots.
  */
 export interface SortableItemOptions<TData = unknown> {
   /** Key of the item in its list. A getter keeps it current in virtual lists. */
@@ -324,15 +373,18 @@ export interface SortableItemOptions<TData = unknown> {
   axis?: MaybeReadonlyRefOrGetter<'x' | 'y' | undefined>;
   /** Element or selector inside the item that starts the drag (and gets the attributes). */
   handle?: MaybeReadonlyRefOrGetter<MaybeElement | string>;
+  /** `true`: the item can't be dragged (as every item of a disabled list). */
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
+  /** Its type or types, for `group.put` rules and drop targets' `accept`. Default: the name of its list's group. */
   type?: MaybeReadonlyRefOrGetter<string | string[] | undefined>;
+  /** Anything the drag should carry: events and drop targets read it as `active.data`. */
   data?: MaybeReadonlyRefOrGetter<TData>;
   /**
    * What people call the item: screen reader texts say it instead of its key (`Picked up
    * Tomato at position 2 of 5 in Garden`). Events carry it as `active.label` and in `items`.
    */
   label?: MaybeReadonlyRefOrGetter<string | undefined>;
-  /** Overrides the provider's `activation`. Read when a press starts. */
+  /** Overrides its list's (or tree's) `activation` and the provider's. Read when a press starts. */
   activation?: MaybeReadonlyRefOrGetter<ActivationOptions | undefined>;
   /** Extra gate, e.g. drag only while a key is held. */
   canDrag?: (event: PointerEvent | KeyboardEvent) => boolean;
@@ -349,14 +401,16 @@ export interface SortableItemOptions<TData = unknown> {
   native?: MaybeReadonlyRefOrGetter<boolean | NativeDragOptions | undefined>;
 }
 
+/** What `makeSortableItem` returns. */
 export interface SortableItemReturn {
-  /** This item is being dragged (also true for the other items of a multi-drag). */
+  /** This item is being dragged (also true for the other items of a multi-drag), or its overlay is still landing. */
   isDragging: ComputedRef<boolean>;
   /**
    * This element is a slot a dragged item will land in: the active item's, and in
    * multi-drag `'group'` mode the slots of the items travelling with it.
    */
   isPlaceholder: ComputedRef<boolean>;
+  /** It is in the provider's selection: a drag of one selected item carries them all. Set it to select or deselect. */
   selected: WritableComputedRef<boolean>;
   /**
    * Indicator mode: the list's `indicator` while it is attached to this item, `null`

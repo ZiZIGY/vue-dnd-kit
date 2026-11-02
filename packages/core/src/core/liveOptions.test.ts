@@ -126,9 +126,9 @@ describe('makeDraggable options are read when needed', () => {
     await cancel();
   });
 
-  it('`keyboard` on every arrow press', async () => {
+  it('`keyboardMode` on every arrow press', async () => {
     const keyboard = shallowRef<'pixels' | 'droppables'>('pixels');
-    const container = mount(() => [h(Card, { cardId: 'card', options: { keyboard: () => keyboard.value } }), h(Zone, { zoneId: 'zone' })]);
+    const container = mount(() => [h(Card, { cardId: 'card', options: { keyboardMode: () => keyboard.value } }), h(Zone, { zoneId: 'zone' })]);
     await nextTick();
     const zone = container.querySelector('[data-zone]')!;
     vi.spyOn(zone, 'getBoundingClientRect').mockReturnValue(createRect(300, 0, 100, 100) as DOMRect);
@@ -198,6 +198,28 @@ describe('makeDroppable options are read live', () => {
     expect(await drag(['card', 'other'])).toEqual({ id: 'inner', accepted: false });
     acceptMode.value = 'some';
     expect(await drag(['card', 'other'])).toEqual({ id: 'inner', accepted: true });
+  });
+
+  it('`onDrop` is told what a partial accept took: `accepted`, `rejected`, and the whole drag in `active`', async () => {
+    const drops: Array<{ accepted: Key[]; rejected: Key[]; ids: Key[] }> = [];
+    const container = mount(() => [
+      h(Card, { cardId: 'card' }),
+      h(Card, { cardId: 'other' }),
+      h(Zone, {
+        zoneId: 'zone',
+        options: {
+          onBeforeDrop: () => ['card'],
+          onDrop: ({ accepted, rejected, active }) => void drops.push({ accepted, rejected, ids: active.ids }),
+        },
+      }),
+    ]);
+    await nextTick();
+    vi.spyOn(document, 'elementFromPoint').mockReturnValue(container.querySelector('[data-zone]'));
+    manager.selection.add('card').add('other');
+    manager.start('card', { x: 10, y: 10 }, 'pointer');
+    await manager.drop();
+    await settle();
+    expect(drops).toEqual([{ accepted: ['card'], rejected: ['other'], ids: ['card', 'other'] }]);
   });
 });
 

@@ -36,8 +36,8 @@
     "text": "O evento de entrada. Ele é repassado ao `canDrag` do draggable: sem ele (um gamepad, um arraste programático), o `canDrag` não é consultado. Um `pointerType` igual a `'touch'` faz do arraste um arraste por toque (`haptics`)."
   },
   "SensorActivation.activation": {
-    "source": "39a1a2728a",
-    "text": "O que o arraste espera antes de começar (`useDnD().status` é `'activating'` até lá, com o progresso). Para um tipo de ponteiro, é lida a opção `activation` do draggable, depois a do provider, depois os padrões (mouse e caneta 4px, imediato em um handle; toque, um toque longo de 200ms com 5px de tolerância). Uma restrição é usada como está. Padrão: nenhuma, o arraste começa na hora."
+    "source": "b57a130781",
+    "text": "O que o arraste espera antes de começar (`useDnD().status` é `'activating'` até lá, com o progresso). Para um tipo de ponteiro, é lida a opção `activation` do draggable, depois a do provider, depois os padrões (mouse 4px, imediato em um handle; caneta 4px; toque, um toque longo de 200ms com 5px de tolerância). Uma restrição é usada como está. Padrão: nenhuma, o arraste começa na hora."
   },
   "SensorActivation.onStart": {
     "source": "e74975e61a",
@@ -55,6 +55,10 @@
     "source": "cede55f00c",
     "text": "- `'pending'`: esperando a restrição de ativação;\n- `'dragging'`: do início até o drop ser decidido ou o arraste ser cancelado;\n- `'ended'`: a ativação foi abortada, ou o arraste foi solto ou cancelado, pelo sensor ou por qualquer outra coisa (Escape, uma aba oculta, `useDnD().cancel()`, o provider sendo desmontado)."
   },
+  "SensorStepOptions": {
+    "source": "068f67f8ef",
+    "text": "Opções de `SensorDrag.step()`."
+  },
   "SensorStepOptions.event": {
     "source": "a9cd22b651",
     "text": "O pressionar de tecla, repassado ao `getKeyboardCoordinates` dos monitores. Padrão: um keydown da seta."
@@ -70,6 +74,14 @@
   "SensorDrag.id": {
     "source": "407eb1b511",
     "text": "Id do item arrastado."
+  },
+  "SensorDrag.type": {
+    "source": "76da00f024",
+    "text": "Como o arraste se move, conforme `activate()` pediu (`SensorActivation.type`)."
+  },
+  "SensorDrag.state": {
+    "source": "09adafb8ab",
+    "text": "Em que ponto o arraste está: esperando a ativação, arrastando ou encerrado."
   },
   "SensorDrag.started": {
     "source": "0bc4410fb6",
@@ -126,5 +138,9 @@
   "Sensor.name": {
     "source": "f3f1afa08b",
     "text": "Para depuração."
+  },
+  "Sensor.setup": {
+    "source": "4633ff96ac",
+    "text": "Começa a escutar a entrada, uma vez por provider: chame `context.activate()` quando ele quiser arrastar. Pode retornar uma função de limpeza, executada quando o sensor para."
   }
 }

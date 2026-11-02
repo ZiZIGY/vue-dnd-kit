@@ -3,9 +3,21 @@
     "source": "957ec8f6ce",
     "text": "Une place dans une liste ou un arbre triable (ses lignes visibles) : `index` compte à partir de 0, sur un total de `length`."
   },
+  "AnnouncedPosition.list": {
+    "source": "31b274663e",
+    "text": "Id de la liste ou de l'arbre."
+  },
   "AnnouncedPosition.label": {
     "source": "702bfecdc2",
     "text": "Le `label` de la liste, le nom que les gens lui donnent."
+  },
+  "AnnouncedPosition.index": {
+    "source": "2155e11380",
+    "text": "La place, à partir de 0 : les textes intégrés disent `index + 1`."
+  },
+  "AnnouncedPosition.length": {
+    "source": "97c61b39e8",
+    "text": "Le nombre de places de la liste."
   },
   "AnnouncementContext": {
     "source": "884af39ecf",
@@ -28,8 +40,24 @@
     "text": "Le glissement copie (`group.pull: 'clone'`, la touche de copie)."
   },
   "Announcements": {
-    "source": "08ba8bd127",
-    "text": "Les textes pour les lecteurs d'écran. Renvoyez `undefined` pour le texte intégré, `''` pour aucun texte. `context` contient les positions qu'énoncent les textes intégrés des listes triables."
+    "source": "b5a69fbd7f",
+    "text": "Les textes pour les lecteurs d'écran, par événement. Renvoyez `undefined` pour le texte intégré, `''` pour aucun texte. `context` contient les positions qu'énoncent les textes intégrés des listes triables.\n\nUn texte est lu par la région live du provider (les déplacements, une fois que le glissement reste immobile 500 ms) ; `undefined` laisse l'événement à la source suivante (les textes des intégrations, comme les positions triables, puis ceux par défaut). Aucun déplacement n'est annoncé pour la cible trouvée à la saisie : rien n'a encore bougé."
+  },
+  "Announcements.onDragStart": {
+    "source": "cb7361dadf",
+    "text": "Un glissement a commencé."
+  },
+  "Announcements.onDragOver": {
+    "source": "e7155df562",
+    "text": "Le glissement est passé sur une autre cible, ou à une autre place dans une liste (une fois immobile pendant 500 ms)."
+  },
+  "Announcements.onDragEnd": {
+    "source": "56ab53c578",
+    "text": "Le dépôt a abouti, ou le glissement s'est terminé hors de toute cible."
+  },
+  "Announcements.onDragCancel": {
+    "source": "e76ef54e23",
+    "text": "Le glissement a été annulé, ou son dépôt refusé."
   },
   "Announcements.onDragResume": {
     "source": "d4806359e7",
@@ -39,9 +67,21 @@
     "source": "35562b8590",
     "text": "Les textes d'une intégration (les listes triables), et le contexte qu'elle connaît pour les textes propres au provider."
   },
+  "KeyboardOptions": {
+    "source": "bb782ceb9e",
+    "text": "Les glissements au clavier (`keyboard` du provider) : leurs touches, et le pas des glissements libres."
+  },
+  "KeyboardOptions.keys": {
+    "source": "c36afa9f52",
+    "text": "Les touches qui saisissent (`start`), déposent et annulent, sous forme de `KeyboardEvent.code` (`'Space'`, `'KeyW'`) ou de `.key` (`'Enter'`, `'w'`). Par défaut : Espace et Entrée saisissent et déposent, Échap annule. Les flèches déplacent toujours."
+  },
   "KeyboardOptions.step": {
     "source": "66a729c31a",
     "text": "Pixels par appui sur une flèche pour les glissements libres (non triables). 25 par défaut."
+  },
+  "AutoScrollOptions": {
+    "source": "c15af10035",
+    "text": "Comment les conteneurs défilent quand un glissement approche de leurs bords (`autoScroll` du provider)."
   },
   "AutoScrollOptions.threshold": {
     "source": "1b2cd0615c",
@@ -50,6 +90,10 @@
   "AutoScrollOptions.maxSpeed": {
     "source": "4ebcb33d64",
     "text": "Vitesse maximale en px par frame de 16 ms."
+  },
+  "AutoScrollOptions.acceleration": {
+    "source": "c2b02de232",
+    "text": "La vitesse en px par image quand le pointeur est au bord du conteneur : plus lente dans la zone du bord, plus rapide au-delà du bord, jusqu'à `maxSpeed`. 10 par défaut."
   },
   "HapticPattern": {
     "source": "1fb9df65e6",
@@ -75,17 +119,41 @@
     "source": "54d244b821",
     "text": "Le dépôt est refusé (par une cible ou par `onBeforeDrop`) et les items reviennent à leur place. `false` par défaut."
   },
+  "DnDProviderProps": {
+    "source": "e1d670147b",
+    "text": "Les props de `DnDProvider`. La plupart sont lues quand le provider en a besoin : changez-en une, et le glissement suivant l'utilise."
+  },
+  "DnDProviderProps.collision": {
+    "source": "629dec725a",
+    "text": "Comment la cible sous le glissement est choisie. Par défaut `pointerFirst` ; une autre détection intégrée (`closestCorners`) ou la vôtre."
+  },
+  "DnDProviderProps.modifiers": {
+    "source": "71e9e53a44",
+    "text": "Les modificateurs de chaque glissement, appliqués en premier : ceux des zones de glissement, des éléments déplaçables et des listes viennent après."
+  },
   "DnDProviderProps.animation": {
     "source": "699c35a63c",
     "text": "Animation FLIP par défaut des listes triables."
   },
   "DnDProviderProps.dropAnimation": {
-    "source": "f99201968c",
-    "text": "Comment l'overlay atterrit au dépôt et revient à sa place en cas d'annulation, quand rien de plus proche n'en définit une : la `dropAnimation` de la cible de dépôt passe en premier, puis celle propre à l'item glissé (ou celle de sa liste), puis celle-ci."
+    "source": "60c09d4b6d",
+    "text": "Comment l'overlay atterrit au dépôt et revient à sa place en cas d'annulation, quand rien de plus proche n'en définit une : l'`overDropAnimation` de la cible de dépôt passe en premier, puis celle propre à l'item glissé (ou celle de sa liste), puis celle-ci."
   },
-  "DnDProviderProps.animate": {
-    "source": "e7b8ee12ca",
-    "text": "`animate` par défaut des listes et des arbres triables : les changements de leurs items qui ne viennent pas d'un glissement. Désactivé par défaut."
+  "DnDProviderProps.animateChanges": {
+    "source": "37255f7e71",
+    "text": "`animateChanges` par défaut des listes et des arbres triables : les changements de leurs items qui ne viennent pas d'un glissement. Désactivé par défaut."
+  },
+  "DnDProviderProps.autoScroll": {
+    "source": "b84b62fce5",
+    "text": "Fait défiler les conteneurs et la page quand un glissement approche de leurs bords. Par défaut `true` ; des options le règlent, `false` le désactive. Les listes, les arbres et les zones de glissement peuvent le redéfinir."
+  },
+  "DnDProviderProps.activation": {
+    "source": "afc7892642",
+    "text": "Ce qu'un appui doit faire avant de devenir un glissement, par type de pointeur (voir `ActivationOptions` pour les valeurs par défaut). Les zones de glissement, les listes, les arbres, les items et les éléments déplaçables peuvent le redéfinir."
+  },
+  "DnDProviderProps.keyboard": {
+    "source": "9f75dfd23a",
+    "text": "Les glissements au clavier : leurs touches et leur pas. `false` les désactive ; Échap annule toujours n'importe quel glissement."
   },
   "DnDProviderProps.sensors": {
     "source": "180c7efcc3",
@@ -99,6 +167,10 @@
     "source": "c45bff39ad",
     "text": "La touche (KeyboardEvent.key) qui transforme un déplacement en copie. `'Alt'` par défaut ; `null` désactive."
   },
+  "DnDProviderProps.overlayTo": {
+    "source": "274db53619",
+    "text": "Où l'overlay est rendu : un sélecteur ou un élément. `'body'` par défaut. Un `<dialog>` modal se place au-dessus du reste de la page : les glissements à l'intérieur en ont besoin là."
+  },
   "DnDProviderProps.overlayFit": {
     "source": "2cebf1b9ab",
     "text": "Taille de l'overlay pendant le glissement. `'slot'` (par défaut) : il suit l'emplacement où l'item va atterrir ; au-dessus d'une autre liste, il prend donc la taille des items de cette liste, et le dépôt n'a pas besoin de redimensionnement. Il se redimensionne autour du pointeur, qui reste à la même proportion de la boîte. `'source'` : il garde la taille de l'élément glissé. La mise en page du contenu de l'overlay par défaut est recalculée à la nouvelle taille ; il n'est jamais mis à l'échelle."
@@ -108,8 +180,8 @@
     "text": "Multi-drag : combien d'items glissés reçoivent un clone à la saisie, celui qui a été saisi et les autres à côté de lui dans l'ordre du dépôt. 5 par défaut ; `'all'` clone tous ceux qui sont rendus. L'overlay par défaut affiche les clones et compte le reste (`+N`) ; dans une mise en page à vous, `DragPreview` rend son slot pour un item sans clone. Chaque clone vole : de retour vers son item lors d'une annulation, vers son emplacement lors d'un dépôt, dans la zone où entre un dépôt, l'un après l'autre. Les clones sont pris ensemble, avec une seule mise en page par passe de snapshot pour tous, mais chacun coûte la lecture de ses styles : attention aux items longs sur les téléphones lents."
   },
   "DnDProviderProps.overlayTransition": {
-    "source": "6852def127",
-    "text": "Comment l'overlay passe d'un composant à un autre pendant un glissement (l'`overlay` d'une cible de dépôt prend le relais, une ref d'`overlay` est changée) : `true` (par défaut) les enchaîne en fondu en 150 ms, `false` les échange aussitôt, et un objet donne les props d'une `<Transition>` Vue autour de la racine du contenu (`name`, `mode`, hooks JS pour GSAP ou motion). Sans `mode: 'out-in'`, les deux s'affichent en même temps : donnez à celui qui part `position: absolute` (`.<name>-leave-active`) pour qu'ils s'empilent dans la boîte."
+    "source": "4182e55d7d",
+    "text": "Comment l'overlay passe d'un composant à un autre pendant un glissement (l'`overOverlay` d'une cible de dépôt prend le relais, une ref d'`overlay` est changée) : `true` (par défaut) les enchaîne en fondu en 150 ms, `false` les échange aussitôt, et un objet donne les props d'une `<Transition>` Vue autour de la racine du contenu (`name`, `mode`, hooks JS pour GSAP ou motion). Sans `mode: 'out-in'`, les deux s'affichent en même temps : donnez à celui qui part `position: absolute` (`.<name>-leave-active`) pour qu'ils s'empilent dans la boîte."
   },
   "DnDProviderProps.overlayClass": {
     "source": "fe858c5071",
@@ -119,9 +191,13 @@
     "source": "0729e8985f",
     "text": "Vos propres textes pour certains événements (voir `Announcements`) ; `false` rend la région live muette."
   },
+  "DnDProviderProps.screenReaderInstructions": {
+    "source": "e835bc26b0",
+    "text": "Comment glisser au clavier, lu par les lecteurs d'écran pour chaque élément déplaçable (son `aria-describedby`). Par défaut : des instructions en anglais pour Espace, Entrée, les flèches et Échap."
+  },
   "DnDProviderProps.defaultStyles": {
-    "source": "b635d7cd38",
-    "text": "Injecte des styles par défaut de spécificité nulle (opacité du placeholder, pas de sélection de texte pendant le glissement)."
+    "source": "9cecc4e9bf",
+    "text": "Injecte l'apparence par défaut : du CSS en couches, de spécificité nulle, qui estompe les placeholders et les items qu'un multi-drag laisse en place (`opacity: 0.4`). Par défaut `true` ; `false` vous laisse l'apparence. Ce dont les glissements ont besoin est injecté dans tous les cas : pas de sélection de texte ni d'ancrage du défilement pendant le glissement (les listes virtuelles en dépendent), le curseur de glissement (`--dnd-cursor`), et pas de menu de lien lors d'un appui long sur iOS."
   },
   "DnDContext": {
     "source": "224db9f60d",
@@ -130,6 +206,10 @@
   "OverlaySlotProps": {
     "source": "38a21c4b6d",
     "text": "Ce que montre l'overlay : les props du slot `#overlay` du provider et des composants d'overlay (option `overlay` des éléments déplaçables, des items triables, des listes et des arbres)."
+  },
+  "OverlaySlotProps.active": {
+    "source": "ab2a0979dd",
+    "text": "Le glissement."
   },
   "OverlaySlotProps.items": {
     "source": "10d477a1e7",
@@ -142,6 +222,14 @@
   "OverlaySlotProps.accepted": {
     "source": "f7641f18e1",
     "text": "Si `over` accepte les items glissés ; `false` au-dessus de rien."
+  },
+  "OverlaySlotProps.status": {
+    "source": "14a833949b",
+    "text": "`'dragging'`, puis `'dropping'` pendant que l'overlay atterrit (ou revient à sa place)."
+  },
+  "OverlaySlotProps.mode": {
+    "source": "d0692a357f",
+    "text": "Ce que ferait un dépôt maintenant (voir `DnDEvent.mode`) : par exemple afficher un plus pendant une copie."
   },
   "OverlaySlotProps.to": {
     "source": "a7cc5a79db",

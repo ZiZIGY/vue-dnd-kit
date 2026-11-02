@@ -10,7 +10,7 @@ import { makeDraggable } from './makeDraggable';
 let manager: DnDManager;
 let unmount: (() => void) | null = null;
 
-const mountCard = (cursor?: string) => {
+const mountCard = (cursor?: string, providerProps: Record<string, unknown> = {}) => {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const Card = defineComponent({
@@ -20,7 +20,7 @@ const mountCard = (cursor?: string) => {
       return () => h('div', { ref: 'el', style: cursor && { cursor } }, 'card');
     },
   });
-  const app = createApp({ setup: () => () => h(DnDProvider, { dropAnimation: false }, { default: () => h(Card) }) });
+  const app = createApp({ setup: () => () => h(DnDProvider, { dropAnimation: false, ...providerProps }, { default: () => h(Card) }) });
   app.mount(container);
   unmount = () => {
     app.unmount();
@@ -138,8 +138,9 @@ describe('onBeforeDrop answers', () => {
   });
 
   it("'continue': no drop, the drag goes on in drag mode; the next drop asks again", async () => {
-    mountCard();
     const heard: string[] = [];
+    // The provider emits it too.
+    mountCard(undefined, { onDragResume: () => heard.push('drag-resume') });
     const answers: BeforeDropResult[] = ['continue', 'accept'];
     manager.addMonitor({
       onBeforeDrop: () => answers.shift(),
@@ -152,14 +153,14 @@ describe('onBeforeDrop answers', () => {
     expect(manager.status.value).toBe('dragging');
     expect(manager.active.value?.id).toBe('card');
     expect(dragging()).toBe('pointer');
-    expect(heard).toEqual(['resume']);
+    expect(heard).toEqual(['drag-resume', 'resume']);
     // It moves again, and drops when asked.
     manager.move({ x: 40, y: 30 });
     manager.flushFrame();
     expect(manager.pointer.value).toEqual({ x: 40, y: 30 });
     await manager.drop();
     await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
-    expect(heard).toEqual(['resume', 'end']);
+    expect(heard).toEqual(['drag-resume', 'resume', 'end']);
   });
 });
 
@@ -188,6 +189,26 @@ describe('the provider going away while onBeforeDrop decides', () => {
     answer('accept');
     await dropped;
     expect(heard).toEqual(['cancel']);
+  });
+});
+
+describe('the styles a provider injects', () => {
+  afterEach(() => {
+    unmount?.();
+    unmount = null;
+  });
+
+  it('what drags need, always; the looks unless `defaultStyles` is false', async () => {
+    document.getElementById('vue-dnd-kit-behavior')?.remove();
+    document.getElementById('vue-dnd-kit-styles')?.remove();
+    mountCard(undefined, { defaultStyles: false });
+    await nextTick();
+    expect(document.getElementById('vue-dnd-kit-behavior')?.textContent).toContain('overflow-anchor: none');
+    expect(document.getElementById('vue-dnd-kit-styles')).toBeNull();
+    unmount!();
+    mountCard();
+    await nextTick();
+    expect(document.getElementById('vue-dnd-kit-styles')?.textContent).toContain('opacity: 0.4');
   });
 });
 

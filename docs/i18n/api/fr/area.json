@@ -27,6 +27,10 @@
     "source": "238dd09834",
     "text": "`true` : aucun glissement ne commence dans la zone, ni dans les zones qu'elle contient (contrairement aux autres options, qui viennent de la zone la plus proche). Ses éléments déplaçables indiquent `aria-disabled`."
   },
+  "DragAreaReturn": {
+    "source": "48fc4346c4",
+    "text": "Ce que renvoie `makeDragArea`."
+  },
   "DragAreaReturn.isDragging": {
     "source": "5e8f41c6fd",
     "text": "Un glissement commencé dans cette zone est en cours (jusqu'à ce que son dépôt soit décidé)."

@@ -27,7 +27,7 @@ const { items } = makeSortableTree(tree, {
   indentation: 14,
   collapsed,
   // Changes made elsewhere (the canvas, undo) slide the rows too.
-  animate: true,
+  animateChanges: true,
   autoScroll: true,
   onDrop: ({ items: moved, from, to }) => {
     if (from.parentKey === to.parentKey && from.index === to.index) return;

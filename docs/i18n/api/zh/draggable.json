@@ -7,9 +7,21 @@
     "source": "2dac667235",
     "text": "稳定的 id。在元素会被回收的虚拟列表中，传入 getter。默认：`useId()`，在服务端和客户端渲染之间保持稳定，但每个组件实例都不同。"
   },
+  "DraggableOptions.data": {
+    "source": "30d815634b",
+    "text": "拖拽要携带的任何内容：事件和放置目标以 `active.data` 读取它。"
+  },
   "DraggableOptions.label": {
     "source": "4edf4ca05a",
     "text": "人们对它的称呼：屏幕阅读器文本会说出它，而不是 id（`Picked up Tomato`）。事件以 `active.label` 和在 `items` 中携带它。"
+  },
+  "DraggableOptions.type": {
+    "source": "5a54d1a669",
+    "text": "它的一个或多个类型，由放置目标的 `accept` 规则来匹配。没有类型时它适合任何目标。"
+  },
+  "DraggableOptions.disabled": {
+    "source": "deda4464f8",
+    "text": "`true`：它不能被拖拽（会报告 `aria-disabled`）。"
   },
   "DraggableOptions.handle": {
     "source": "1330de430e",
@@ -24,12 +36,12 @@
     "text": "额外的关卡，例如只在按住某个键时才能拖拽。"
   },
   "DraggableOptions.overlay": {
-    "source": "c9686248ff",
-    "text": "`true`（默认）：浮层跟随指针，由 provider 的 `#overlay` 插槽渲染，或者是元素的克隆。组件：浮层以 `OverlayProps` 渲染它，优先于插槽。`false`：没有浮层，元素本身通过返回的 `transform` 移动。值或 ref（函数即函数式组件，所以 `(props) => <Card {...props} />` 也可以）。是否有浮层在拖拽开始时决定；在拖拽过程中切换的 ref 会立即替换组件（见 provider 的 `overlayTransition`）。拖拽位于放置目标上方时，目标自己的 `overlay` 优先。克隆会排除 UI 库的按下效果（水波纹），以及内部任何标记了 `data-dnd-no-clone` 的元素。"
+    "source": "57703cc418",
+    "text": "`true`（默认）：浮层跟随指针，由 provider 的 `#overlay` 插槽渲染，或者是元素的克隆。组件：浮层以 `OverlayProps` 渲染它，优先于插槽。`false`：没有浮层，元素本身通过返回的 `transform` 移动。值或 ref（函数即函数式组件，所以 `(props) => <Card {...props} />` 也可以）。是否有浮层在拖拽开始时决定；在拖拽过程中切换的 ref 会立即替换组件（见 provider 的 `overlayTransition`）。拖拽位于放置目标上方时，目标的 `overOverlay` 优先。克隆会排除 UI 库的按下效果（水波纹），以及内部任何标记了 `data-dnd-no-clone` 的元素。"
   },
   "DraggableOptions.dropAnimation": {
-    "source": "965316ffc5",
-    "text": "这个元素的拖拽结束时浮层如何落位，替代 provider 的 `dropAnimation`；放置目标自己的 `dropAnimation` 优先。值或 ref（函数即动画），在放置时读取。"
+    "source": "d3eb50e0f8",
+    "text": "这个元素的拖拽结束时浮层如何落位，替代 provider 的 `dropAnimation`；放置目标的 `overDropAnimation` 优先。值或 ref（函数即动画），在放置时读取。"
   },
   "DraggableOptions.modifiers": {
     "source": "71eb5c6851",
@@ -39,7 +51,7 @@
     "source": "41cb212360",
     "text": "把从这里开始的拖拽锁定在一个轴上：`'x'` 只水平移动，`'y'` 只垂直移动。锁定在 `modifiers` 之后执行（相当于把 `restrictToHorizontalAxis` / `restrictToVerticalAxis` 放在最后），所以无论修饰器做什么，锁定都成立。在拖拽开始时读取。"
   },
-  "DraggableOptions.keyboard": {
+  "DraggableOptions.keyboardMode": {
     "source": "fd726db037",
     "text": "自由拖拽中的方向键：按像素移动（默认），或在接收它的放置目标之间跳转。每次按下方向键时读取。"
   },
@@ -48,20 +60,60 @@
     "text": "设置 role/tabindex/aria-* 属性（默认 `true`），永远不会覆盖用户自己设置的。provider 的操作说明 id 会作为又一个 token 加入已有的 `aria-describedby`（同一元素上 UI 库的提示框会保留它自己的），并且只有这个 token 会被移除。实时生效：关闭后，库设置的属性会被移除。"
   },
   "DraggableOptions.native": {
-    "source": "c7441f484f",
-    "text": "用鼠标拖拽它就是浏览器自己的拖拽，可以离开页面：拖到桌面上，拖进另一个应用或标签页，拖进应用的另一个窗口。在页面上它照常工作（目标、腾出位置的列表），但拖拽的图像由浏览器绘制，代替浮层。触摸拖拽和键盘拖拽仍是本库的拖拽。`true` 把 `label` 作为文本携带。在按下开始时读取。"
+    "source": "d35c31b251",
+    "text": "用鼠标拖拽它就是浏览器自己的拖拽，可以离开页面：拖到桌面上，拖进另一个应用或标签页，拖进应用的另一个窗口。在页面上它照常工作（目标、腾出位置的列表），但拖拽的图像由浏览器绘制，代替浮层。触摸拖拽和键盘拖拽仍是本库的拖拽。`true` 把 `label` 作为文本携带。在按下开始时读取。`canDrag` 在按下时询问；鼠标移动多远后开始拖拽由浏览器决定（`activation` 对它不适用）。"
+  },
+  "DraggableReturn": {
+    "source": "976a57aa6f",
+    "text": "`makeDraggable` 的返回值。"
+  },
+  "DraggableReturn.id": {
+    "source": "c94024d888",
+    "text": "可拖拽元素的 id：`id` 选项，或为它生成的 id。"
+  },
+  "DraggableReturn.isDragging": {
+    "source": "d0f776877f",
+    "text": "它正在被拖拽（也包括作为多项拖拽中的另一个项），或者它的浮层仍在落位。"
   },
   "DraggableReturn.transform": {
     "source": "3d7102b110",
     "text": "使用 `overlay: false` 时要应用的偏移量：拖拽的偏移量，减去元素所在的内容自开始以来移动的距离（页面或某个容器滚动了），这样元素会一直停在指针下方。"
   },
+  "DraggableReturn.selected": {
+    "source": "d15fb608a4",
+    "text": "它在 provider 的选中集合中：拖拽一个选中的项会带上全部。对它赋值即可选中或取消选中。"
+  },
+  "Placement": {
+    "source": "ae8ffcc50c",
+    "text": "指针位于被悬停的放置目标的哪几个半区（`DroppableReturn.placement`）。"
+  },
+  "Placement.top": {
+    "source": "5d2b56cb3a",
+    "text": "在上半部分。"
+  },
+  "Placement.right": {
+    "source": "2370dfaf9c",
+    "text": "在右半部分。"
+  },
+  "Placement.bottom": {
+    "source": "769843d001",
+    "text": "在下半部分。"
+  },
+  "Placement.left": {
+    "source": "68a878facf",
+    "text": "在左半部分。"
+  },
   "DroppableOptions": {
-    "source": "c1de31b385",
-    "text": "`makeDroppable` 的选项。\n\n**放进项中**。可排序项的元素上（或其内部）的放置目标和其他地方的一样工作，只有一条规则，适用于该项所在的列表本会对拖拽进行排序的时候：只有指针位于项的中间（沿列表轴向的 25–75%；网格中为 x 方向）时它才生效，在那里放置会进入目标，列表不会为它移动。靠近项的边缘时，列表照常排序。`accept` 拒绝该拖拽的目标会被排除，所以列表在该项上方照常排序，就像在其他项上方一样（无需禁用它）。键盘会先停在这样的目标上，然后才越过它所在的项。目标永远不会接收它自己的拖拽：位于任何被拖拽项之中（或之上）的目标不会，位于被拖拽项落入的位置中的目标也不会。要在 `onDrop` 中把这些项从它们的列表中移出，调用 `e.source.remove()`。\n\n除回调外，每个选项都接受值、ref 或 getter（`accept`、`overlay`、`dropAnimation`：值或 ref），并在拖拽寻找目标时实时读取。"
+    "source": "f0f30d2e7e",
+    "text":"`makeDroppable` 的选项。\n\n**放进项中**。可排序项的元素上（或其内部）的放置目标和其他地方的一样工作，只有一条规则，适用于该项所在的列表本会对拖拽进行排序的时候：只有指针位于项的中间（沿列表轴向的 25–75%；网格中为 x 方向）时它才生效，在那里放置会进入目标，列表不会为它移动。靠近项的边缘时，列表照常排序。`accept` 拒绝该拖拽的目标会被排除，所以列表在该项上方照常排序，就像在其他项上方一样（无需禁用它）。键盘会先停在这样的目标上，然后才越过它所在的项。拖拽永远不会以它携带的东西为目标：被拖拽项之中（或之上）的目标不算，被拖拽项落入的位置中的目标也不算。要在 `onDrop` 中把这些项从它们的列表中移出，调用 `e.source.remove()`。\n\n除回调外，每个选项都接受值、ref 或 getter（`accept`、`overOverlay`、`overDropAnimation`：值或 ref），并在拖拽寻找目标时实时读取。"
   },
   "DroppableOptions.id": {
     "source": "ea58d47829",
     "text": "默认：`useId()`，在服务端和客户端渲染之间保持稳定。"
+  },
+  "DroppableOptions.data": {
+    "source": "c94ea36561",
+    "text": "关于这个目标的任何信息：事件以 `over.data` 携带它。"
   },
   "DroppableOptions.label": {
     "source": "5e751a1320",
@@ -75,21 +127,49 @@
     "source": "05b17f13f4",
     "text": "默认为 `'all'`。"
   },
+  "DroppableOptions.disabled": {
+    "source": "24bb02fdcc",
+    "text": "`true`：拖拽经过它时就像它不存在一样。"
+  },
   "DroppableOptions.priority": {
     "source": "083ebc2847",
     "text": "目标重叠但不嵌套时，值较高的优先（默认 0）。可排序项胜过容器。"
   },
-  "DroppableOptions.overlay": {
-    "source": "9ef772f9a5",
-    "text": "当这个目标接受的拖拽位于它上方时，浮层显示什么：一个获得 `OverlayProps` 的组件，代替拖拽自己的浮层（被拖拽项的组件、provider 的插槽或克隆）渲染，并把后者作为默认插槽获得，可以包裹它，也可以省略它（`<slot />`）。放置落到这里时它保持显示。没有浮层的拖拽（`overlay: false`）仍然没有浮层。值或 ref，实时读取；组件的切换使用 provider 的 `overlayTransition` 动画。"
+  "DroppableOptions.overOverlay": {
+    "source": "5741fad6c3",
+    "text": "当这个目标接受的拖拽位于它上方时，浮层显示什么：一个获得 `OverlayProps` 的组件，代替拖拽自己的浮层（被拖拽项的组件、provider 的插槽或克隆）渲染，并把后者作为默认插槽获得，可以包裹它，也可以省略它（`<slot />`）。放置落到这里时它保持显示。没有浮层的拖拽（`overlay: false`）仍然没有浮层。值或 ref，实时读取；组件的切换使用 provider 的 `overlayTransition` 动画。（在可拖拽元素、项和列表上，`overlay` 是拖拽自己的浮层；可排序列表和树也以 `overOverlay` 接受这个选项。）"
   },
-  "DroppableOptions.dropAnimation": {
+  "DroppableOptions.overDropAnimation": {
     "source": "0f0a6dd259",
     "text": "浮层被放到这里时如何落位，替代被拖拽项和 provider 的 `dropAnimation`：`false` 让它停在放下的地方（浮层组件自己的动画，比如溅开，会在那里播放），函数则为它添加动画。值或 ref，在放置时读取。"
+  },
+  "DroppableOptions.onDragEnter": {
+    "source": "fa66c429e8",
+    "text": "拖拽来到了这个目标上方，无论它是否接受这次拖拽（`event.over.accepted`）。"
+  },
+  "DroppableOptions.onDragLeave": {
+    "source": "b63a860349",
+    "text": "拖拽离开了这个目标。"
+  },
+  "DroppableOptions.onBeforeDrop": {
+    "source": "bd9bcff646",
+    "text": "在这个目标上的放置生效之前询问，位于监听器的 `onBeforeDrop` 之后，前提是它接受这次拖拽（见 `BeforeDropResult`）。可以是异步的：浮层在松开的地方等待。抛出错误会拒绝这次放置。"
+  },
+  "DroppableOptions.onDrop": {
+    "source": "9f7fd0f0aa",
+    "text": "这个目标上的放置已生效：执行它所代表的操作（移动项、上传文件）。当 `onBeforeDrop` 只接受了部分被拖拽的项时，`event.accepted` 是它们的 id，`event.rejected` 是其余的 id，这些项会飞回原处；`active` 仍然是整个拖拽。"
   },
   "DroppableOptions.external": {
     "source": "b80f2c5709",
     "text": "接收来自页面之外的拖拽：来自桌面的文件、来自另一个应用或标签页的链接或文本（浏览器的拖放）。它们和本库的拖拽一样工作（`isOver`、`isAccepting`、各个事件），放置时 `e.external` 中有它们的数据。没有 `external` 的目标会忽略它们。值、ref 或 getter，实时读取。"
+  },
+  "DroppableReturn": {
+    "source": "745c149794",
+    "text": "`makeDroppable` 的返回值。"
+  },
+  "DroppableReturn.id": {
+    "source": "8c2640f4f2",
+    "text": "目标的 id：`id` 选项，或为它生成的 id。"
   },
   "DroppableReturn.isOver": {
     "source": "bd388d0ac7",

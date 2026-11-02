@@ -1,4 +1,8 @@
 {
+  "Key": {
+    "source": "0e20a2c263",
+    "text": "id またはキー：ドラッグ可能な要素、ドロップターゲット、リスト、リストのアイテムのもの。"
+  },
   "MaybeReadonlyRefOrGetter": {
     "source": "856e8d0c75",
     "text": "値、ゲッター、または任意の ref（書き込み可能、shallow、computed、readonly。たとえば `useTemplateRef` から得たもの）で、ライブラリは読み取るだけです。Vue の `MaybeRefOrGetter` と違い、`string | number` が期待される場所で `Ref<string>` を受け付けます。"
@@ -7,9 +11,85 @@
     "source": "e1366b62a5",
     "text": "値または任意の ref。関数そのものが値になるオプション（オーバーレイコンポーネント、accept ルール、カスタムアニメーション）向けで、そのためゲッターとは区別できません。コンポーネントは `shallowRef`（または computed）で保持してください：Vue がそれらをリアクティブにしてはいけません。"
   },
+  "MaybeElement": {
+    "source": "1b8960adcb",
+    "text": "要素：HTML または SVG の要素、あるいはコンポーネントインスタンス（そのルート要素 `$el`）。テンプレート参照が返すものと同じです。要素がない間（まだマウントされていない）は `null` または `undefined`。"
+  },
+  "MaybeElementRef": {
+    "source": "603f215a38",
+    "text": "コンポーザブルが対象とする要素（`makeDraggable(target)`）：要素そのもの、テンプレート参照（`useTemplateRef`）、またはゲッター。変わってもかまいません（`v-if`）：ライブラリが追従します。"
+  },
+  "Coordinates": {
+    "source": "2f8f5c3336",
+    "text": "点またはオフセット（px）：ビューポートの左上隅からの位置、またはドラッグの開始位置からのオフセット（`delta`、`transform`）。"
+  },
+  "Coordinates.x": {
+    "source": "b43f5ddec4",
+    "text": "水平方向。右に向かって増えます。"
+  },
+  "Coordinates.y": {
+    "source": "8f097fc225",
+    "text": "垂直方向。下に向かって増えます。"
+  },
+  "Size": {
+    "source": "255c399f55",
+    "text": "幅と高さ（px）。"
+  },
+  "Size.width": {
+    "source": "f4f2b634d9",
+    "text": "幅（px）。"
+  },
+  "Size.height": {
+    "source": "6e660db892",
+    "text": "高さ（px）。"
+  },
+  "Rect": {
+    "source": "62078f7f5c",
+    "text": "ビューポート座標でのボックス（px）。`getBoundingClientRect()` が返すものと同じです。"
+  },
+  "Rect.top": {
+    "source": "4e05fbd563",
+    "text": "上端。ビューポートの上端からの距離です。"
+  },
+  "Rect.left": {
+    "source": "3d40777368",
+    "text": "左端。ビューポートの左端からの距離です。"
+  },
+  "Rect.width": {
+    "source": "d31ce8afdd",
+    "text": "幅。"
+  },
+  "Rect.height": {
+    "source": "db48d67b0f",
+    "text": "高さ。"
+  },
+  "Rect.right": {
+    "source": "7158323919",
+    "text": "右端。ビューポートの左端からの距離です：`left + width`。"
+  },
+  "Rect.bottom": {
+    "source": "44b04207ae",
+    "text": "下端。ビューポートの上端からの距離です：`top + height`。"
+  },
+  "MaybePromise": {
+    "source": "f3d05df331",
+    "text": "値、またはその promise：非同期になりうるフックが返すもの（`onBeforeDrop`）。"
+  },
+  "DnDStatus": {
+    "source": "d5d49a4ce6",
+    "text": "プロバイダーが何をしているか：\n- `'idle'`：何もしていません。\n- `'activating'`：押下がアクティベーション制約（距離、長押し）を満たすのを待っています。\n- `'dragging'`：ドラッグ中です。\n- `'dropping'`：ドロップを確定しているところ（非同期の `onBeforeDrop`）か、オーバーレイがまだ着地中です。\n- `'selecting'`：選択エリアが枠を描いています。"
+  },
   "SensorType": {
     "source": "ddccc05a96",
     "text": "ドラッグがどう動くか。どのセンサーが操作していても同じです（`SensorActivation.type`）：`'pointer'` は座標を追い、`'keyboard'` はアイテム単位で動きます。"
+  },
+  "PointerKind": {
+    "source": "5db385a430",
+    "text": "押下したポインターの種類（`PointerEvent.pointerType`）：アクティベーションは種類ごとに設定します。"
+  },
+  "ActivationConstraint": {
+    "source": "e5b4786b75",
+    "text": "押下がドラッグになる前に満たすべき条件：`distance` だけ移動するか、`delay` の間押し続けるか、どちらか早いほう。何も設定しなければ、ドラッグはすぐに始まります。"
   },
   "ActivationConstraint.distance": {
     "source": "70ede97eca",
@@ -24,7 +104,7 @@
     "text": "`delay` と組み合わせて：アクティベーションを中断する移動量（px）。これによりページはスクロールできます。"
   },
   "ActivationOptions": {
-    "source": "75a2dcce93",
-    "text": "ポインターの種類ごと。デフォルト：マウス/ペンは `{ distance: 4 }`（ハンドル上では即座）、タッチは `{ delay: 200, tolerance: 5 }`。"
+    "source": "a41c6198e1",
+    "text": "ポインターの種類ごと。デフォルト：マウスは `{ distance: 4 }`（ハンドル上では即座）、ペンは `{ distance: 4 }`、タッチは `{ delay: 200, tolerance: 5 }`。"
   }
 }

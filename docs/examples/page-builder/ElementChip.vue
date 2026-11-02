@@ -17,7 +17,7 @@ makeDraggable(el, {
   id: () => `chip-${props.kind}`,
   data: (): ChipData => ({ kind: props.kind }),
   overlay: BlockGhost,
-  keyboard: 'droppables',
+  keyboardMode: 'droppables',
 });
 </script>
 

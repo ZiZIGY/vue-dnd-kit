@@ -27,6 +27,10 @@
     "source": "238dd09834",
     "text": "`true`：エリア内でも、その内側のエリアでもドラッグが始まりません（最も近いエリアから取られるほかのオプションとは異なります）。エリアのドラッグ可能な要素は `aria-disabled` を報告します。"
   },
+  "DragAreaReturn": {
+    "source": "48fc4346c4",
+    "text": "`makeDragArea` が返すもの。"
+  },
   "DragAreaReturn.isDragging": {
     "source": "5e8f41c6fd",
     "text": "このエリアで始まったドラッグが実行中です（ドロップが決まるまで）。"

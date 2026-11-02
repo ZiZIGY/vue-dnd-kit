@@ -1,4 +1,28 @@
 {
+  "AnimationOptions": {
+    "source": "b09e1a9518",
+    "text": "Das Timing einer Animation. Was weggelassen wird, behält den Standardwert dieser Animation."
+  },
+  "AnimationOptions.duration": {
+    "source": "d0c1a0e2ba",
+    "text": "In ms. Standard 200 für Layout-Bewegungen, 250 für den Drop; `0` schaltet die Animation aus."
+  },
+  "AnimationOptions.easing": {
+    "source": "203b67cb4a",
+    "text": "Ein CSS-Easing (`'ease-out'`, `cubic-bezier(…)`)."
+  },
+  "LayoutAnimationContext": {
+    "source": "4024b00eb0",
+    "text": "Was eine Layout-Animationsfunktion erhält, für ein Element, das an seinen neuen Platz zieht."
+  },
+  "LayoutAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "Schlüssel des Elements."
+  },
+  "LayoutAnimationContext.element": {
+    "source": "a268435146",
+    "text": "Das DOM-Element des Elements, bereits an seinem neuen Platz."
+  },
   "LayoutAnimationContext.from": {
     "source": "c5845d8793",
     "text": "Sichtbares Rechteck vor der Änderung (wo eine laufende Animation das Element gezeigt hat)."
@@ -7,9 +31,13 @@
     "source": "17f753cbe6",
     "text": "Layout-Rechteck nach der Änderung."
   },
+  "LayoutAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "Das Timing aus den Optionen, mit eingesetzten Standardwerten."
+  },
   "LayoutAnimationContext.reason": {
-    "source": "eceea904fa",
-    "text": "Was das Element bewegt hat: ein Drag (`'drag'`: Sortieren, der Drop, ein Abbruch) oder eine Änderung deiner Daten, die kein Drag ausgelöst hat (`'change'`, bei eingeschaltetem `animate` der Liste)."
+    "source": "fea2ee2ea2",
+    "text": "Was das Element bewegt hat: ein Drag (`'drag'`: Sortieren, der Drop, ein Abbruch) oder eine Änderung deiner Daten, die kein Drag ausgelöst hat (`'change'`, bei eingeschaltetem `animateChanges` der Liste)."
   },
   "LayoutAnimationContext.signal": {
     "source": "c8aa938f56",
@@ -23,9 +51,17 @@
     "source": "233b130a9c",
     "text": "Wie Elemente an ihre neuen Plätze gelangen: `true` (Standard-Timing), Optionen, `false` (sie springen) oder eine Funktion, die ein Element von `from` nach `to` animiert und seine `Animation` zurückgibt, ein Promise, das abgeschlossen ist, wenn sie endet, oder nichts."
   },
+  "DropAnimationContext": {
+    "source": "ed32f90e37",
+    "text": "Was eine Drop-Animationsfunktion erhält: das Overlay, wo es ist und wo es landet."
+  },
   "DropAnimationContext.overlay": {
     "source": "e272382994",
     "text": "Die Box des Overlays; sie landet im Slot des aktiven Elements. Bei einem Multi-Drag landen die Klone der anderen Elemente, die darin mitfahren (die des Standard-Overlays, die `DragPreview`s eines eigenen), von selbst in ihren eigenen Slots (mit dem Standard-Timing, wenn dies eine eigene Funktion ist)."
+  },
+  "DropAnimationContext.from": {
+    "source": "c2595bada3",
+    "text": "Wo das Overlay ist, wenn der Drag endet."
   },
   "DropAnimationContext.to": {
     "source": "d0780ba408",
@@ -35,17 +71,37 @@
     "source": "cecafada99",
     "text": "Das Element ist nach einem Drop auf eine Drop-Zone (keine sortierbare Liste) nicht zu sehen, z. B. wurde es in ein anderes Element (einen Ordner) oder eine Papierkorb-Zone abgelegt: das sichtbare Rechteck der Zone. Die Standardanimation lässt das Overlay beim Ausblenden in dieses Rechteck schrumpfen, statt es an Ort und Stelle auszublenden."
   },
+  "DropAnimationContext.reason": {
+    "source": "275d894e30",
+    "text": "`'drop'`: Das Overlay landet dort, wo der Drop das Element abgelegt hat. `'cancel'`: Es fliegt dorthin zurück, wo das Element war."
+  },
+  "DropAnimationContext.active": {
+    "source": "7c6ffaf118",
+    "text": "Der beendete Drag."
+  },
   "DropAnimationContext.over": {
     "source": "54c7b98b67",
     "text": "Das Ziel, auf dem der Drop landet (eine Liste, eine Zone); `null` beim Abbrechen."
+  },
+  "DropAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "Das Timing aus den Optionen, mit eingesetzten Standardwerten."
   },
   "DropAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "`prefers-reduced-motion: reduce` ist gesetzt. Die eigenen Animationen der Bibliothek laufen dann nicht; deine Funktionen laufen immer und entscheiden anhand dieses Werts (überspringen oder eine Überblendung beibehalten)."
   },
+  "DropAnimation": {
+    "source": "4e7ab98e07",
+    "text": "Wie das Overlay bei einem Drop landet und bei einem Abbruch zurückfliegt: `true` (Standard-Timing), Optionen, `false` (kein Flug: Es endet dort, wo es losgelassen wurde) oder eine Funktion, die `overlay` von `from` nach `to` animiert und seine `Animation` zurückgibt, ein Promise, das abgeschlossen ist, wenn sie endet, oder nichts."
+  },
   "EnterAnimationContext": {
-    "source": "bef530cbfe",
-    "text": "Ein Element, das in einer Liste mit eingeschaltetem `animate` erschienen ist: hinzugefügt oder wieder eingeblendet (ein Filter, ein aufgeklappter Baumknoten)."
+    "source": "e45e8bafb3",
+    "text": "Ein Element, das in einer Liste mit eingeschaltetem `animateChanges` erschienen ist: hinzugefügt oder wieder eingeblendet (ein Filter, ein aufgeklappter Baumknoten)."
+  },
+  "EnterAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "Schlüssel des Elements."
   },
   "EnterAnimationContext.element": {
     "source": "120613b512",
@@ -55,13 +111,21 @@
     "source": "fd058782f5",
     "text": "Wo es erschienen ist (Layout-Rechteck)."
   },
+  "EnterAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "Das Timing aus den Optionen, mit eingesetzten Standardwerten."
+  },
   "EnterAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "`prefers-reduced-motion: reduce` ist gesetzt. Die eigenen Animationen der Bibliothek laufen dann nicht; deine Funktionen laufen immer und entscheiden anhand dieses Werts (überspringen oder eine Überblendung beibehalten)."
   },
   "LeaveAnimationContext": {
-    "source": "b67e70e13a",
-    "text": "Ein Element, das eine Liste mit eingeschaltetem `animate` verlassen hat: entfernt oder ausgeblendet (ein Filter, ein zugeklappter Baumknoten)."
+    "source": "5d6e9c20a9",
+    "text": "Ein Element, das eine Liste mit eingeschaltetem `animateChanges` verlassen hat: entfernt oder ausgeblendet (ein Filter, ein zugeklappter Baumknoten)."
+  },
+  "LeaveAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "Schlüssel des Elements."
   },
   "LeaveAnimationContext.element": {
     "source": "a4f7390241",
@@ -70,6 +134,10 @@
   "LeaveAnimationContext.from": {
     "source": "645084e2fd",
     "text": "Wo das Element war."
+  },
+  "LeaveAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "Das Timing aus den Optionen, mit eingesetzten Standardwerten."
   },
   "LeaveAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
@@ -84,8 +152,8 @@
     "text": "`true`, Optionen, `false` (das Element verschwindet einfach) oder eine Funktion, die das Verschwinden der an seinem Platz zurückgelassenen Kopie animiert: Gib ihre `Animation` oder ein Promise zurück, und die Kopie wird entfernt, wenn sie endet (sofort, wenn die Funktion nichts zurückgibt)."
   },
   "AutoAnimationOptions": {
-    "source": "0130acd24e",
-    "text": "`animate` mit seinen Teilen: `duration` und `easing` für alle, und pro Art von Änderung `true`, Optionen (über den gemeinsamen), `false` oder eine eigene Funktion."
+    "source": "39ddcaee1b",
+    "text": "`animateChanges` mit seinen Teilen: `duration` und `easing` für alle, und pro Art von Änderung `true`, Optionen (über den gemeinsamen), `false` oder eine eigene Funktion."
   },
   "AutoAnimationOptions.move": {
     "source": "684eb0594d",

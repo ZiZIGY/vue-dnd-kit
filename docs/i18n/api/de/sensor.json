@@ -36,8 +36,8 @@
     "text": "Das Eingabe-Event. Es wird an `canDrag` des ziehbaren Elements übergeben: Ohne Event (ein Gamepad, ein programmatischer Drag) wird `canDrag` nicht gefragt. Ein `pointerType` von `'touch'` macht den Drag zu einem Touch-Drag (`haptics`)."
   },
   "SensorActivation.activation": {
-    "source": "39a1a2728a",
-    "text": "Worauf der Drag wartet, bevor er beginnt (`useDnD().status` ist bis dahin `'activating'`, mit seinem Fortschritt). Eine Zeigerart liest dafür die Option `activation` des ziehbaren Elements, dann die des Providers, dann die Standardwerte (Maus und Stift 4px, sofort bei einem Handle; Touch ein langes Drücken von 200ms mit 5px Toleranz). Eine Aktivierungsbedingung wird so verwendet, wie sie ist. Standard: keine, der Drag beginnt sofort."
+    "source": "b57a130781",
+    "text": "Worauf der Drag wartet, bevor er beginnt (`useDnD().status` ist bis dahin `'activating'`, mit seinem Fortschritt). Eine Zeigerart liest dafür die Option `activation` des ziehbaren Elements, dann die des Providers, dann die Standardwerte (Maus 4px, sofort bei einem Handle; Stift 4px; Touch ein langes Drücken von 200ms mit 5px Toleranz). Eine Aktivierungsbedingung wird so verwendet, wie sie ist. Standard: keine, der Drag beginnt sofort."
   },
   "SensorActivation.onStart": {
     "source": "e74975e61a",
@@ -55,6 +55,10 @@
     "source": "cede55f00c",
     "text": "- `'pending'`: wartet auf die Aktivierungsbedingung;\n- `'dragging'`: vom Start, bis über den Drop entschieden ist oder der Drag abgebrochen wird;\n- `'ended'`: Die Aktivierung wurde abgebrochen, oder der Drag wurde abgelegt oder abgebrochen, vom Sensor oder durch etwas anderes (Escape, ein verborgener Tab, `useDnD().cancel()`, das Unmounten des Providers)."
   },
+  "SensorStepOptions": {
+    "source": "068f67f8ef",
+    "text": "Optionen von `SensorDrag.step()`."
+  },
   "SensorStepOptions.event": {
     "source": "a9cd22b651",
     "text": "Der Tastendruck, der an `getKeyboardCoordinates` der Monitore übergeben wird. Standard: ein keydown der Pfeiltaste."
@@ -70,6 +74,14 @@
   "SensorDrag.id": {
     "source": "407eb1b511",
     "text": "ID des gezogenen Elements."
+  },
+  "SensorDrag.type": {
+    "source": "76da00f024",
+    "text": "Wie sich der Drag bewegt, wie von `activate()` angefragt (`SensorActivation.type`)."
+  },
+  "SensorDrag.state": {
+    "source": "09adafb8ab",
+    "text": "Wo der Drag steht: wartet auf seine Aktivierung, zieht oder ist beendet."
   },
   "SensorDrag.started": {
     "source": "0bc4410fb6",
@@ -126,5 +138,9 @@
   "Sensor.name": {
     "source": "f3f1afa08b",
     "text": "Zum Debuggen."
+  },
+  "Sensor.setup": {
+    "source": "4633ff96ac",
+    "text": "Beginnt, auf die Eingabe zu hören, einmal pro Provider: Rufe `context.activate()` auf, wenn sie ziehen will. Darf eine Aufräumfunktion zurückgeben, die läuft, wenn der Sensor stoppt."
   }
 }

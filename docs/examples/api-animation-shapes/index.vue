@@ -7,18 +7,18 @@ import { tiltDrop, tiltMove } from './tilt';
 const SLOW = { duration: 700, easing: 'ease-in-out' };
 
 // One shape per lane, for all three options: sorting, the drop, and changes no drag made.
-const lanes: { label: string; animation: LayoutAnimation; dropAnimation: DropAnimation; animate: AutoAnimation }[] = [
-  { label: 'true', animation: true, dropAnimation: true, animate: true },
-  { label: 'false', animation: false, dropAnimation: false, animate: false },
-  { label: '{ duration: 700 }', animation: SLOW, dropAnimation: SLOW, animate: SLOW },
-  // `animate` takes no function itself: its parts (`move`, `enter`, `leave`) do.
-  { label: 'ƒ tilt', animation: tiltMove, dropAnimation: tiltDrop, animate: { move: tiltMove } },
+const lanes: { label: string; animation: LayoutAnimation; dropAnimation: DropAnimation; animateChanges: AutoAnimation }[] = [
+  { label: 'true', animation: true, dropAnimation: true, animateChanges: true },
+  { label: 'false', animation: false, dropAnimation: false, animateChanges: false },
+  { label: '{ duration: 700 }', animation: SLOW, dropAnimation: SLOW, animateChanges: SLOW },
+  // `animateChanges` takes no function itself: its parts (`move`, `enter`, `leave`) do.
+  { label: 'ƒ tilt', animation: tiltMove, dropAnimation: tiltDrop, animateChanges: { move: tiltMove } },
 ];
 
 const letters = ['A', 'B', 'C', 'D'];
 const rows = ref(lanes.map(() => letters.map((id, i) => ({ id, hue: 150 + i * 40 }))));
 
-/** The same new order in every lane (Fisher–Yates: every order as likely): `animate` plays it four ways. */
+/** The same new order in every lane (Fisher–Yates: every order as likely): `animateChanges` plays it four ways. */
 const shuffle = () => {
   const order = [...letters];
   for (let i = order.length - 1; i > 0; i--) {
@@ -31,7 +31,7 @@ const shuffle = () => {
 
 <template>
   <div class="demo">
-    <code>&lt;DnDProvider :animation="shape" :drop-animation="shape" :animate="shape"&gt;</code>
+    <code>&lt;DnDProvider :animation="shape" :drop-animation="shape" :animate-changes="shape"&gt;</code>
     <div class="lanes">
       <!-- A provider per lane: each one has its own animations. -->
       <DnDProvider
@@ -39,7 +39,7 @@ const shuffle = () => {
         :key="lane.label"
         :animation="lane.animation"
         :drop-animation="lane.dropAnimation"
-        :animate="lane.animate"
+        :animate-changes="lane.animateChanges"
       >
         <AnimLane v-model="rows[index]!" :label="lane.label" />
       </DnDProvider>

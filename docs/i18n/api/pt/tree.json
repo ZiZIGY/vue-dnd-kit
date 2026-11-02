@@ -1,11 +1,63 @@
 {
+  "TreeNesting": {
+    "source": "9af740feca",
+    "text": "Como um arraste na árvore escolhe a profundidade: `'offset'`, pelo quanto ele se move para o lado (`indentation` por nível); `'hover'`, passando sobre o meio de uma linha, que o recebe como filho; `'both'`."
+  },
+  "FlatNode": {
+    "source": "23666e81ba",
+    "text": "Um nó visível de uma árvore, como os `items` da árvore o listam: renderize-os em ordem, recuados conforme `depth`."
+  },
+  "FlatNode.key": {
+    "source": "96ba306f48",
+    "text": "A key do nó (`getKey`)."
+  },
+  "FlatNode.item": {
+    "source": "b4ce340716",
+    "text": "O seu nó."
+  },
+  "FlatNode.depth": {
+    "source": "0c7c31948d",
+    "text": "A profundidade dele: as raízes são 0. O nó arrastado tem a profundidade projetada."
+  },
+  "FlatNode.parentKey": {
+    "source": "8c7e128431",
+    "text": "Key do pai dele; `null` para uma raiz."
+  },
   "FlatNode.index": {
     "source": "b24454e95d",
     "text": "Índice entre os irmãos."
   },
+  "FlatNode.hasChildren": {
+    "source": "b824e0490e",
+    "text": "Ele tem filhos, mostrados ou não."
+  },
+  "FlatNode.collapsed": {
+    "source": "bd45c73799",
+    "text": "Os filhos dele estão ocultos (a key dele está em `collapsed`)."
+  },
+  "TreeProjection": {
+    "source": "7161034972",
+    "text": "Onde o nó arrastado pousaria em uma árvore."
+  },
+  "TreeProjection.depth": {
+    "source": "2e69aed9a0",
+    "text": "A profundidade que ele teria (as raízes são 0)."
+  },
+  "TreeProjection.parentKey": {
+    "source": "b142da09fd",
+    "text": "O nó sob o qual ele ficaria; `null` na raiz."
+  },
   "SortableTreeDropEvent": {
     "source": "eb47878c8b",
     "text": "Evento de drop de uma árvore. `index` é a posição entre os irmãos sob `parentKey` (`from`: antes do movimento; `to`: depois dele, com o nó já removido do lugar antigo). `from.parentKey` é `null` para os nós raiz e para itens vindos de outra lista. Um multi-drag move as `keys` (cada uma com a sua subárvore) lado a lado: `from` é onde estava o nó que conduz o arraste (o pego, ou o nó selecionado dentro do qual ele vai junto), `to` é onde o primeiro deles pousa. Uma cópia (`mode: 'copy'`) deixa os nós onde estão e insere `items`, as cópias deles; um draggable simples (`mode: 'insert'`), o nó que `createItem` criou."
+  },
+  "SortableTreeDropEvent.from": {
+    "source": "9d2938f9b8",
+    "text": "Onde estava o nó que conduz o arraste: a árvore dele, o índice entre os irmãos, o pai."
+  },
+  "SortableTreeDropEvent.to": {
+    "source": "423e0db1d1",
+    "text": "Onde o primeiro nó solto pousa: a árvore dele, o índice entre os novos irmãos, o novo pai."
   },
   "SortableTreeOptions": {
     "source": "a99d0dc21f",
@@ -18,6 +70,10 @@
   "SortableTreeOptions.getKey": {
     "source": "8bd06a8146",
     "text": "Padrão: `node.id`. Também define as keys de `makeSortableItem({ item })`, das cópias e dos nós criados."
+  },
+  "SortableTreeOptions.getChildren": {
+    "source": "16d2b0d885",
+    "text": "Os filhos de um nó. Padrão: `node.children`."
   },
   "SortableTreeOptions.setChildren": {
     "source": "ebc9ed1493",
@@ -34,6 +90,14 @@
   "SortableTreeOptions.label": {
     "source": "86c099a68f",
     "text": "Como as pessoas chamam a árvore: os textos para leitores de tela dizem isso em vez do id dela."
+  },
+  "SortableTreeOptions.data": {
+    "source": "06a846f752",
+    "text": "Qualquer coisa a dizer sobre a árvore como alvo de drop: os eventos a carregam como `over.data` enquanto um arraste está sobre ela."
+  },
+  "SortableTreeOptions.activation": {
+    "source": "bb472ecc80",
+    "text": "Como um clique nas linhas desta árvore começa um arraste, em vez da `activation` do provider (a da própria linha prevalece)."
   },
   "SortableTreeOptions.overlay": {
     "source": "cf37f2819a",
@@ -111,7 +175,7 @@
     "source": "5d1e2c66c2",
     "text": "Animação FLIP desta árvore; padrão: a `animation` do provider. Um valor ou um ref (uma função é uma animação personalizada)."
   },
-  "SortableTreeOptions.animate": {
+  "SortableTreeOptions.animateChanges": {
     "source": "9004d33175",
     "text": "Como em `SortableListOptions`, para as linhas visíveis: nós adicionados, removidos ou movidos, e as linhas que um nó mostra ou oculta ao expandir ou recolher (`collapsed`)."
   },
@@ -127,6 +191,10 @@
     "source": "26c5e98e4b",
     "text": "Como em `SortableListOptions`: o elemento que recebe os drops pela árvore; por padrão, o da própria árvore."
   },
+  "SortableTreeOptions.disabled": {
+    "source": "e015689412",
+    "text": "`true`: as linhas dela não podem ser arrastadas, e ela não aceita itens."
+  },
   "SortableTreeOptions.onBeforeDrop": {
     "source": "94fc28e843",
     "text": "Como em `SortableListOptions`."
@@ -134,6 +202,14 @@
   "SortableTreeOptions.onDrop": {
     "source": "cac25ac658",
     "text": "Como em `SortableListOptions`: antes da gravação, que `event.preventDefault()` pula."
+  },
+  "SortableTreeReturn": {
+    "source": "63d4a830bd",
+    "text": "O que `makeSortableTree` retorna."
+  },
+  "SortableTreeReturn.id": {
+    "source": "78f5948858",
+    "text": "O id da árvore: a opção `id`, ou o que foi gerado para ela."
   },
   "SortableTreeReturn.items": {
     "source": "7c78a356e7",
@@ -146,6 +222,10 @@
   "SortableTreeReturn.indicator": {
     "source": "3f5878f4c5",
     "text": "Modo indicador: para onde vai o drop, com a `depth` e o `parentKey` dele; `null` quando não é aqui."
+  },
+  "SortableTreeReturn.isOver": {
+    "source": "862facdce0",
+    "text": "Um arraste está sobre a árvore."
   },
   "SortableTreeReturn.isAccepting": {
     "source": "ae54d9827e",
@@ -162,5 +242,9 @@
   "SortableTreeReturn.activeSize": {
     "source": "8337786343",
     "text": "Tamanho da linha arrastada no início do arraste."
+  },
+  "SortableTreeReturn.captureLayout": {
+    "source": "4d1e38426d",
+    "text": "Anima mudanças de layout que a biblioteca não causou (por exemplo, uma nova medição de um virtualizador)."
   }
 }

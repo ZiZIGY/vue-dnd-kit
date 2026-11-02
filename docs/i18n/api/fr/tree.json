@@ -1,11 +1,63 @@
 {
+  "TreeNesting": {
+    "source": "9af740feca",
+    "text": "Comment un glissement dans un arbre choisit sa profondeur : `'offset'`, selon son déplacement latéral (`indentation` par niveau) ; `'hover'`, en survolant le milieu d'une ligne, qui le prend comme enfant ; `'both'`."
+  },
+  "FlatNode": {
+    "source": "23666e81ba",
+    "text": "Un nœud visible d'un arbre, tel que les liste l'`items` de l'arbre : rendez-les dans l'ordre, indentés selon `depth`."
+  },
+  "FlatNode.key": {
+    "source": "96ba306f48",
+    "text": "La clé du nœud (`getKey`)."
+  },
+  "FlatNode.item": {
+    "source": "b4ce340716",
+    "text": "Votre nœud."
+  },
+  "FlatNode.depth": {
+    "source": "0c7c31948d",
+    "text": "Sa profondeur : les racines sont à 0. Le nœud glissé a sa profondeur projetée."
+  },
+  "FlatNode.parentKey": {
+    "source": "8c7e128431",
+    "text": "Clé de son parent ; `null` pour une racine."
+  },
   "FlatNode.index": {
     "source": "b24454e95d",
     "text": "Index parmi les frères."
   },
+  "FlatNode.hasChildren": {
+    "source": "b824e0490e",
+    "text": "Il a des enfants, affichés ou non."
+  },
+  "FlatNode.collapsed": {
+    "source": "bd45c73799",
+    "text": "Ses enfants sont masqués (sa clé est dans `collapsed`)."
+  },
+  "TreeProjection": {
+    "source": "7161034972",
+    "text": "Où le nœud glissé atterrirait dans un arbre."
+  },
+  "TreeProjection.depth": {
+    "source": "2e69aed9a0",
+    "text": "La profondeur qu'il aurait (les racines sont à 0)."
+  },
+  "TreeProjection.parentKey": {
+    "source": "b142da09fd",
+    "text": "Le nœud sous lequel il irait ; `null` à la racine."
+  },
   "SortableTreeDropEvent": {
     "source": "eb47878c8b",
     "text": "Événement de dépôt d'un arbre. `index` est la position parmi les frères sous `parentKey` (`from` : avant le déplacement ; `to` : après, le nœud étant déjà retiré de son ancienne place). `from.parentKey` vaut `null` pour les nœuds racines et pour les items venant d'une autre liste. Un multi-drag déplace les `keys` (chacune avec son sous-arbre) côte à côte : `from` est l'endroit où se trouvait le nœud qui mène le glissement (celui qui a été saisi, ou le nœud sélectionné dans lequel il est emporté), `to` l'endroit où atterrit le premier d'entre eux. Une copie (`mode: 'copy'`) laisse les nœuds là où ils sont et insère `items`, leurs copies ; un élément déplaçable simple (`mode: 'insert'`), le nœud créé par `createItem`."
+  },
+  "SortableTreeDropEvent.from": {
+    "source": "9d2938f9b8",
+    "text": "Où était le nœud qui mène le glissement : son arbre, son index parmi ses frères, son parent."
+  },
+  "SortableTreeDropEvent.to": {
+    "source": "423e0db1d1",
+    "text": "Où atterrit le premier nœud déposé : son arbre, son index parmi ses nouveaux frères, son nouveau parent."
   },
   "SortableTreeOptions": {
     "source": "a99d0dc21f",
@@ -18,6 +70,10 @@
   "SortableTreeOptions.getKey": {
     "source": "8bd06a8146",
     "text": "Par défaut : `node.id`. Sert aussi de clé à `makeSortableItem({ item })`, aux copies et aux nœuds créés."
+  },
+  "SortableTreeOptions.getChildren": {
+    "source": "16d2b0d885",
+    "text": "Les enfants d'un nœud. Par défaut : `node.children`."
   },
   "SortableTreeOptions.setChildren": {
     "source": "ebc9ed1493",
@@ -34,6 +90,14 @@
   "SortableTreeOptions.label": {
     "source": "86c099a68f",
     "text": "Le nom que les gens donnent à l'arbre : les textes pour les lecteurs d'écran le disent à la place de son id."
+  },
+  "SortableTreeOptions.data": {
+    "source": "06a846f752",
+    "text": "Tout ce qu'il y a à dire sur l'arbre en tant que cible de dépôt : les événements le transportent dans `over.data` tant qu'un glissement le survole."
+  },
+  "SortableTreeOptions.activation": {
+    "source": "bb472ecc80",
+    "text": "Comment un appui sur les lignes de cet arbre lance un glissement, à la place de l'`activation` du provider (celle propre à une ligne l'emporte)."
   },
   "SortableTreeOptions.overlay": {
     "source": "cf37f2819a",
@@ -111,7 +175,7 @@
     "source": "5d1e2c66c2",
     "text": "Animation FLIP de cet arbre ; par défaut : l'`animation` du provider. Une valeur ou une ref (une fonction est une animation personnalisée)."
   },
-  "SortableTreeOptions.animate": {
+  "SortableTreeOptions.animateChanges": {
     "source": "9004d33175",
     "text": "Comme dans `SortableListOptions`, pour les lignes visibles : nœuds ajoutés, retirés ou déplacés, et lignes qu'un nœud affiche ou masque quand il se déplie ou se replie (`collapsed`)."
   },
@@ -127,6 +191,10 @@
     "source": "26c5e98e4b",
     "text": "Comme dans `SortableListOptions` : l'élément qui reçoit les dépôts pour l'arbre, par défaut celui de l'arbre lui-même."
   },
+  "SortableTreeOptions.disabled": {
+    "source": "e015689412",
+    "text": "`true` : ses lignes ne peuvent pas être glissées, et il n'accepte aucun item."
+  },
   "SortableTreeOptions.onBeforeDrop": {
     "source": "94fc28e843",
     "text": "Comme dans `SortableListOptions`."
@@ -134,6 +202,14 @@
   "SortableTreeOptions.onDrop": {
     "source": "cac25ac658",
     "text": "Comme dans `SortableListOptions` : avant l'écriture, que `event.preventDefault()` empêche."
+  },
+  "SortableTreeReturn": {
+    "source": "63d4a830bd",
+    "text": "Ce que renvoie `makeSortableTree`."
+  },
+  "SortableTreeReturn.id": {
+    "source": "78f5948858",
+    "text": "L'id de l'arbre : l'option `id`, ou celui créé pour lui."
   },
   "SortableTreeReturn.items": {
     "source": "7c78a356e7",
@@ -146,6 +222,10 @@
   "SortableTreeReturn.indicator": {
     "source": "3f5878f4c5",
     "text": "Mode indicateur : où va le dépôt, avec sa `depth` et son `parentKey` ; `null` quand ce n'est pas dans cet arbre."
+  },
+  "SortableTreeReturn.isOver": {
+    "source": "862facdce0",
+    "text": "Un glissement survole l'arbre."
   },
   "SortableTreeReturn.isAccepting": {
     "source": "ae54d9827e",
@@ -162,5 +242,9 @@
   "SortableTreeReturn.activeSize": {
     "source": "8337786343",
     "text": "Taille de la ligne glissée au début du glissement."
+  },
+  "SortableTreeReturn.captureLayout": {
+    "source": "4d1e38426d",
+    "text": "Anime les changements de mise en page que la bibliothèque n'a pas causés (par exemple une nouvelle mesure d'un virtualiseur)."
   }
 }

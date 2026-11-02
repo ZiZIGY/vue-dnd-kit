@@ -1,19 +1,63 @@
 {
+  "SortableStrategy": {
+    "source": "0ff5f935bf",
+    "text": "列表如何排布它的项：一列（`'vertical'`）、一行（`'horizontal'`）或自动换行的网格（`'grid'`）。"
+  },
+  "SortableBehavior": {
+    "source": "cf929048cf",
+    "text": "悬停在某个项上时会发生什么：`'sort'` 腾出位置（中间的项平移），`'swap'` 交换这两个项。"
+  },
+  "SortablePlaceholder": {
+    "source": "c4965dccef",
+    "text": "拖拽如何显示它将去往哪里：`'item'`，被拖拽项的位置在列表中移动；`'indicator'`，列表保持不动，由 `indicator` 指出放置的位置（由你来画线）。"
+  },
   "MultipleMode": {
     "source": "d913df4640",
     "text": "多项拖拽中其他选中项的行为：\n- `'group'`：它们离开原位置，作为连续的占位随当前项一起移动，因此悬停时列表已经显示出放置的结果；\n- `'gaps'`：它们留在原处，直到放置；\n- `'stack'`：它们收进浮层中。\n\n默认浮层会把被拖拽的项沿列表方向排成一列（`'group'`、`'gaps'`；在水平列表中是一行，在网格中是当前项后面的一叠），或者显示当前项加上数量（`'stack'`）。"
   },
+  "DropOutside": {
+    "source": "b2809b7876",
+    "text": "在所有目标之外放置时会发生什么：`'placeholder'` 把项留在它们的位置所在处，`'cancel'` 把它们送回原处，`'remove'` 把它们从所在列表中移除。"
+  },
+  "SortablePutContext": {
+    "source": "5ef622d555",
+    "text": "函数形式的 `group.put` 被调用时收到的参数：将要进入列表的项。"
+  },
+  "SortablePutContext.keys": {
+    "source": "96424ef5cd",
+    "text": "这些项的 key。"
+  },
+  "SortablePutContext.items": {
+    "source": "69b4784ae4",
+    "text": "这些项（对于普通的可拖拽元素，是 `createItem` 创建的项）。"
+  },
+  "SortablePutContext.types": {
+    "source": "a2e7cb8b67",
+    "text": "这些项的类型合在一起。"
+  },
   "SortablePutContext.from": {
     "source": "3ade1d4f94",
     "text": "来源列表，对于外部的可拖拽元素为 `null`。"
+  },
+  "SortablePutContext.to": {
+    "source": "73ee9e1c59",
+    "text": "被询问的列表的 id。"
+  },
+  "SortableGroupOptions": {
+    "source": "a6318bcafd",
+    "text": "列表的分组：相互交换项的列表，以及项能否离开和进入这个列表。"
+  },
+  "SortableGroupOptions.name": {
+    "source": "cdf3f297f5",
+    "text": "名称相同的列表和树相互交换项。"
   },
   "SortableGroupOptions.pull": {
     "source": "ea3b5c781f",
     "text": "项能否离开这个列表：移动、复制（`'clone'`，面板）或完全不能。"
   },
   "SortableGroupOptions.put": {
-    "source": "a59ba8af01",
-    "text": "项能否进入这个列表。"
+    "source": "65a7c533de",
+    "text": "项能否进入这个列表：`true`（默认）、`false`、项必须具有的一个或多个类型（与放置目标的 `accept` 相同：通过 `acceptMode` 决定全部还是部分），或者一个关于拖拽的函数。"
   },
   "SortableItems": {
     "source": "ff96686528",
@@ -23,9 +67,37 @@
     "source": "1cb69d3b8b",
     "text": "可排序列表或树上的一次放置。它的钩子按顺序运行：`onBeforeDrop` 做决定，`onDrop` 收到通知，然后默认行为把 `result` 写入它所列出的每个列表的 `items`，最后浮层落位。在任一钩子中调用 `preventDefault()` 都会跳过这次写入，这样你就可以自己应用 `result`。"
   },
+  "SortableDropEvent.keys": {
+    "source": "a6675cba6f",
+    "text": "被拖拽项的 key。"
+  },
+  "SortableDropEvent.items": {
+    "source": "55b9d0f682",
+    "text": "落位的项：被拖拽的项、它们的副本（`mode: 'copy'`），或 `createItem` 创建的项（`'insert'`）。"
+  },
+  "SortableDropEvent.accepted": {
+    "source": "fb0823f2ec",
+    "text": "放置生效的 key：全部，除非列表或 `onBeforeDrop` 只接受了一部分。"
+  },
+  "SortableDropEvent.rejected": {
+    "source": "e4f9f1db01",
+    "text": "飞回原处的 key。"
+  },
+  "SortableDropEvent.from": {
+    "source": "5b8ec4ac95",
+    "text": "拖拽从哪里开始：当前项所在的列表和索引。对于来自外部的普通可拖拽元素，`list` 为 `null`。"
+  },
   "SortableDropEvent.to": {
     "source": "f5bc49d9b2",
     "text": "没有任何东西落下时，`index` 为 -1：项离开了它们的列表（`e.source.remove()`、`dropOutside: 'remove'`）。"
+  },
+  "SortableDropEvent.sameList": {
+    "source": "4d0a4c5137",
+    "text": "放置仍在拖拽开始的那个列表中。"
+  },
+  "SortableDropEvent.mode": {
+    "source": "e0dfac110b",
+    "text": "放置会做什么（见 `DragMode`）。"
   },
   "SortableDropEvent.partner": {
     "source": "0dc90e4f32",
@@ -44,8 +116,16 @@
     "text": "在 `onBeforeDrop` 或 `onDrop` 中调用过 `preventDefault()`。"
   },
   "SortableDropEvent.external": {
-    "source": "25e3ab04b3",
-    "text": "来自页面之外的拖拽（`external`）：它携带的内容，包括它的数据。"
+    "source": "bb43ee40e1",
+    "text": "来自页面之外的拖拽（`external`）：它携带的内容，包括它的数据（它已被放下）。"
+  },
+  "SortableIndicator": {
+    "source": "6b1e3f646c",
+    "text": "使用 `placeholder: 'indicator'` 时放置的位置：列表不移动，由你来画线。"
+  },
+  "SortableIndicator.list": {
+    "source": "1e408489b9",
+    "text": "放置进入的列表（或树）的 id。"
   },
   "SortableIndicator.index": {
     "source": "0043b67077",
@@ -68,8 +148,8 @@
     "text": "树：被放下的节点将得到的父节点，在根层级时为 `null`。"
   },
   "SortableListOptions": {
-    "source": "f8e2e84b3b",
-    "text": "`makeSortableList` 的选项。一个组件可以创建多个列表（和树）：组件中渲染的每个项都会加入元素包含它的最内层列表。\n\n选项接受值、ref 或 getter（`overlay`、`animation`：值或 ref），并在列表需要时读取，所以变化最迟在下一次拖拽时生效。例外：`id` 和 `group` 只在创建列表时读取一次；`items` 就是模型本身；函数（`getKey`、`filter`、`clone`、`createItem`、各个回调）按原样传入。"
+    "source": "f1e8324a59",
+    "text": "`makeSortableList` 的选项。一个组件可以创建多个列表（和树）：组件中渲染的每个项都会加入元素包含它的最内层列表。\n\n选项接受值、ref 或 getter（`overlay`、`overOverlay`、`dropAnimation`、`overDropAnimation`、`animation`：值或 ref），并在列表需要时读取，所以变化最迟在下一次拖拽时生效。例外：`id` 和 `group` 只在创建列表时读取一次；`items` 就是模型本身；函数（`getKey`、`filter`、`clone`、`createItem`、各个回调）按原样传入。"
   },
   "SortableListOptions.items": {
     "source": "bcf07acd7a",
@@ -91,13 +171,21 @@
     "source": "afaee09f48",
     "text": "人们对列表的称呼：屏幕阅读器文本会说出它，而不是列表的 id（`position 2 of 5 in Garden`）。"
   },
+  "SortableListOptions.data": {
+    "source": "a7247f236a",
+    "text": "关于这个列表作为放置目标的任何信息：拖拽位于它上方时，事件以 `over.data` 携带它。"
+  },
+  "SortableListOptions.activation": {
+    "source": "2e75796cf9",
+    "text": "在这个列表的项上按下时如何开始拖拽，替代 provider 的 `activation`（项自己的优先）。在按下开始时读取。"
+  },
   "SortableListOptions.overlay": {
     "source": "47e3eb4c8a",
     "text": "这个列表中项的浮层组件（项自己的 `overlay` 优先）。它接收 `OverlayProps`，并在整个拖拽过程中保持不变，经过其他列表时也是如此，除非拖拽下方的目标有自己的浮层（`overOverlay`）。在拖拽过程中切换的 ref 会立即替换它。"
   },
   "SortableListOptions.overOverlay": {
-    "source": "ac8fff8632",
-    "text": "当这个列表接受的拖拽位于它上方时浮层显示什么，无论拖拽来自哪个列表：一个获得 `OverlayProps`、并把拖拽自己的浮层作为默认插槽的组件（见 `DroppableOptions.overlay`）。实时读取。"
+    "source": "b16cfebf45",
+    "text": "当这个列表接受的拖拽位于它上方时浮层显示什么，无论拖拽来自哪个列表：一个获得 `OverlayProps`、并把拖拽自己的浮层作为默认插槽的组件（见 `DroppableOptions.overOverlay`）。实时读取。"
   },
   "SortableListOptions.dropAnimation": {
     "source": "9b8f883d95",
@@ -148,12 +236,12 @@
     "text": "创建副本（`pull: 'clone'`、复制修饰键）。复制时必需。"
   },
   "SortableListOptions.createItem": {
-    "source": "5676dc9273",
-    "text": "接收来自外部的普通可拖拽元素：创建要插入的项。使用键盘时，朝列表方向按方向键即可把可拖拽元素放进来（与它平齐，就像在列表之间移动那样），之后新创建的项会像其他项一样逐个位置移动。\n\n来自页面之外的拖拽（`external`）会被询问两次：拖拽进行时，询问用来显示它将去往哪里的项（此时只知道 `active.external.fileTypes` 和 `types`）；放置时，带着它的数据（`active.external.dropped`），询问要插入的内容。返回一组项时，它们会全部插入到占位所在的位置：每个文件一项。"
+    "source": "e108ee747d",
+    "text": "接收来自外部的普通可拖拽元素：创建要插入的项。使用键盘时，朝列表方向按方向键即可把可拖拽元素放进来（与它平齐，就像在列表之间移动那样），之后新创建的项会像其他项一样逐个位置移动。\n\n来自页面之外的拖拽（`external`）会被询问两次：拖拽进行时，询问用来显示它将去往哪里的项（此时只知道 `active.external.fileTypes` 和 `types`）；放置时，带着它的数据（`active.external.ready`），询问要插入的内容。返回一组项时，它们会全部插入到占位所在的位置：每个文件一项。"
   },
   "SortableListOptions.external": {
-    "source": "9ae9a7ef2d",
-    "text": "接收来自页面之外的拖拽：文件、链接、文本（见 `ExternalAccept`）。列表像为普通可拖拽元素那样为它们腾出位置，这需要 `createItem`。从应用另一个窗口拖进来的同一分组的项（`native`）两者都不需要：它们以自身进入。值、ref 或 getter，实时读取。"
+    "source": "adbc2f861e",
+    "text": "接收来自页面之外的拖拽：文件、链接、文本（见 `ExternalAccept`）。列表像为普通可拖拽元素那样为它们腾出位置，这需要 `createItem`。从应用另一个窗口拖进来的同一分组的项（`native`）两个选项都不需要：它们以自身进入。值、ref 或 getter，实时读取。"
   },
   "SortableListOptions.dropOutside": {
     "source": "bffdd0d062",
@@ -163,13 +251,13 @@
     "source": "cc6ad2ca6a",
     "text": "这个列表的 FLIP 动画；默认：provider 的 `animation`。值或 ref（函数即自定义动画）。"
   },
-  "SortableListOptions.animate": {
-    "source": "86283c7ec0",
-    "text": "为非拖拽引起的 `items` 变化添加动画：被添加、删除、移动和过滤的项（参见 `AutoAnimation`）。默认：provider 的 `animate`，除非在那里设置，否则关闭。在 `items` 变化时读取。"
+  "SortableListOptions.animateChanges": {
+    "source": "74a1263e3f",
+    "text": "为非拖拽引起的 `items` 变化添加动画：被添加、删除、移动和过滤的项（参见 `AutoAnimation`）。默认：provider 的 `animateChanges`，除非在那里设置，否则关闭。在 `items` 变化时读取。"
   },
   "SortableListOptions.animateSize": {
-    "source": "382b485c30",
-    "text": "列表自身的尺寸跟随它的项：当拖拽带入或带走一个项时（以及放置时，和 `animate` 展示的变化中），它以 `animation` 的时长和缓动增大或缩小到新尺寸，而不是跳变，周围的内容也随之移动。默认 `true`；`false` 让它跳变。每次变化时读取。"
+    "source": "a69c0b1f97",
+    "text": "列表自身的尺寸跟随它的项：当拖拽带入或带走一个项时（以及放置时，和 `animateChanges` 展示的变化中），它以 `animation` 的时长和缓动增大或缩小到新尺寸，而不是跳变，周围的内容也随之移动。默认 `true`；`false` 让它跳变。每次变化时读取。"
   },
   "SortableListOptions.autoScroll": {
     "source": "0c0b0867b3",
@@ -179,6 +267,10 @@
     "source": "6202e9c757",
     "text": "替列表接收放置的元素，默认是列表元素本身：例如包围一个短卡片列表的整列，这样在最后一张卡片下方松开的卡片仍然会落进列表（落到末尾）。项仍然留在列表元素中。"
   },
+  "SortableListOptions.disabled": {
+    "source": "5ce0000028",
+    "text": "`true`：它的项不能被拖拽，它也不接受任何项。"
+  },
   "SortableListOptions.onBeforeDrop": {
     "source": "75b3651128",
     "text": "在放置进入这个列表之前、以及 `dropOutside: 'remove'` 移出它的项之前询问：`false` 拒绝（项飞回原处），返回部分 key 则只接受这些项。可以是异步的：浮层停在被放下的位置等待。抛出错误也会拒绝这次放置。关于 `result` 和 `preventDefault`，参见 `SortableDropEvent`。"
@@ -187,21 +279,49 @@
     "source": "e1c7bf0125",
     "text": "放置进入这个列表并被接受后、写入之前调用：`items` 仍是旧顺序，`event.result` 是新顺序。同步执行：它返回后紧接着就会写入，除非它调用了 `event.preventDefault()`。当项被移除时（`to.index` 为 -1），也会在项所来自的列表上调用。"
   },
+  "SortableListReturn": {
+    "source": "e815828b93",
+    "text": "`makeSortableList` 的返回值。"
+  },
+  "SortableListReturn.id": {
+    "source": "4085e3d2dc",
+    "text": "列表的 id：`id` 选项，或为它生成的 id。"
+  },
   "SortableListReturn.items": {
     "source": "d650d61bc4",
     "text": "草稿顺序：渲染它，而不是源数组。"
   },
+  "SortableListReturn.isOver": {
+    "source": "d43d16ad78",
+    "text": "有拖拽位于列表上方。"
+  },
+  "SortableListReturn.isAccepting": {
+    "source": "fe5bd01f6b",
+    "text": "正在拖拽某个东西，并且这个列表接受它。"
+  },
+  "SortableListReturn.indicator": {
+    "source": "60ca94d5b2",
+    "text": "指示器模式：放置在这个列表中的位置；不在这里时为 `null`。"
+  },
+  "SortableListReturn.activeKey": {
+    "source": "4ec3691928",
+    "text": "虚拟化器必须保持挂载的行：位置在这个列表中时（副本、新创建的项）是该位置，否则是被拖拽的项；没有拖拽时为 `null`。"
+  },
   "SortableListReturn.activeIndex": {
     "source": "eff30ad0eb",
     "text": "当前项在这个列表草稿中的索引，不在这里时为 -1。"
+  },
+  "SortableListReturn.activeSize": {
+    "source": "7c5077af4c",
+    "text": "拖拽开始时被拖拽项的尺寸：例如用作它所占虚拟行的尺寸。"
   },
   "SortableListReturn.captureLayout": {
     "source": "4d1e38426d",
     "text": "为库没有引起的布局变化添加动画（例如虚拟化器重新测量）。"
   },
   "SortableItemOptions": {
-    "source": "b25e70a1fe",
-    "text": "传入 `id` 或 `item`（两者都传时 `id` 优先）。可排序的 key 必须来自数据：自动生成的 id 会在组件重新创建时（移到另一个列表、被虚拟列表回收）发生变化，拖拽就会丢失这个项。\n\n除 `canDrag` 外，选项都接受值、ref 或 getter（`overlay`：值或 ref），含义与 `makeDraggable` 上的相同。没有 `keyboard`：键盘按位置逐个移动可排序项。"
+    "source": "03dae81bf5",
+    "text": "传入 `id` 或 `item`（两者都传时 `id` 优先）。可排序的 key 必须来自数据：自动生成的 id 会在组件重新创建时（移到另一个列表、被虚拟列表回收）发生变化，拖拽就会丢失这个项。\n\n除 `canDrag` 外，选项都接受值、ref 或 getter（`overlay`、`dropAnimation`：值或 ref），含义与 `makeDraggable` 上的相同。没有 `keyboardMode`：键盘按位置逐个移动可排序项。"
   },
   "SortableItemOptions.id": {
     "source": "f76ac37600",
@@ -231,13 +351,25 @@
     "source": "519bda20d7",
     "text": "项内部用于开始拖拽的元素或选择器（它也会得到相关属性）。"
   },
+  "SortableItemOptions.disabled": {
+    "source": "c702380010",
+    "text": "`true`：这个项不能被拖拽（与禁用列表中的每个项一样）。"
+  },
+  "SortableItemOptions.type": {
+    "source": "0f582d8dc4",
+    "text": "它的一个或多个类型，用于 `group.put` 规则和放置目标的 `accept`。默认：它所在列表的分组名称。"
+  },
+  "SortableItemOptions.data": {
+    "source": "30d815634b",
+    "text": "拖拽要携带的任何内容：事件和放置目标以 `active.data` 读取它。"
+  },
   "SortableItemOptions.label": {
     "source": "93ed063b77",
     "text": "人们对项的称呼：屏幕阅读器文本会说出它，而不是项的 key（`Picked up Tomato at position 2 of 5 in Garden`）。事件以 `active.label` 和在 `items` 中携带它。"
   },
   "SortableItemOptions.activation": {
-    "source": "07b1465312",
-    "text": "覆盖 provider 的 `activation`。在按下开始时读取。"
+    "source": "ed1e1a99e1",
+    "text": "覆盖它所在列表（或树）的 `activation` 以及 provider 的。在按下开始时读取。"
   },
   "SortableItemOptions.canDrag": {
     "source": "ba9d01922f",
@@ -251,13 +383,21 @@
     "source": "6b13bbb4b9",
     "text": "用鼠标拖拽它就是浏览器自己的拖拽，可以离开页面（见 `DraggableOptions.native`）。它还携带这个项：应用另一个窗口中同一分组的列表会接收它，一旦被接收，它就离开这个列表（`'move'`）。"
   },
+  "SortableItemReturn": {
+    "source": "7d0a843936",
+    "text": "`makeSortableItem` 的返回值。"
+  },
   "SortableItemReturn.isDragging": {
-    "source": "f148b949fd",
-    "text": "这个项正在被拖拽（对多项拖拽中的其他项也为 true）。"
+    "source": "e849497527",
+    "text": "这个项正在被拖拽（对多项拖拽中的其他项也为 true），或者它的浮层仍在落位。"
   },
   "SortableItemReturn.isPlaceholder": {
     "source": "e31014eb2c",
     "text": "这个元素是被拖拽项将落入的位置：当前项的位置；在多项拖拽的 `'group'` 模式下，还包括随它一起移动的各项的位置。"
+  },
+  "SortableItemReturn.selected": {
+    "source": "d15fb608a4",
+    "text": "它在 provider 的选中集合中：拖拽一个选中的项会带上全部。对它赋值即可选中或取消选中。"
   },
   "SortableItemReturn.indicator": {
     "source": "3e7f9ce50b",

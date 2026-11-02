@@ -38,7 +38,7 @@ const { items } = makeSortableTree(root, {
   // A kind dragged from the menu or the sidebar becomes a new block, where the line is.
   createItem: (active) => createBlock((active.data as { kind: BlockKind }).kind),
   // Changes no drag made (Enter, Tab, Delete, Undo) slide and fade too.
-  animate: true,
+  animateChanges: true,
   overOverlay: BlockGhost,
   dropzone: sheet,
   onDrop: (event) => {

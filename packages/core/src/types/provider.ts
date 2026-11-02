@@ -9,18 +9,15 @@ import type { Sensor } from './sensor';
 
 // ─── Provider ──────────────────────────────────────────────────────────────────
 
-/**
- * Screen reader texts per event. A text is spoken by the provider's live region (moves
- * once the drag rests for 500 ms); `undefined` leaves the event to the next source (the
- * texts of integrations such as sortable positions, then the defaults); `''` says
- * nothing. A move isn't announced for the target found at pickup: nothing moved yet.
- */
 /** A place in a sortable list or tree (its visible rows): `index` counts from 0, out of `length`. */
 export interface AnnouncedPosition {
+  /** Id of the list or tree. */
   list: Key;
   /** The list's `label`, what people call it. */
   label?: string;
+  /** The place, from 0: the built-in texts say `index + 1`. */
   index: number;
+  /** How many places the list has. */
   length: number;
 }
 
@@ -44,13 +41,22 @@ export interface AnnouncementContext {
 }
 
 /**
- * Texts for screen readers. Return `undefined` for the built-in text, `''` for none.
- * `context` has the positions the built-in texts of sortable lists speak.
+ * Texts for screen readers, per event. Return `undefined` for the built-in text, `''` for
+ * none. `context` has the positions the built-in texts of sortable lists speak.
+ *
+ * A text is spoken by the provider's live region (moves once the drag rests for 500 ms);
+ * `undefined` leaves the event to the next source (the texts of integrations such as
+ * sortable positions, then the defaults). A move isn't announced for the target found at
+ * pickup: nothing moved yet.
  */
 export interface Announcements {
+  /** A drag started. */
   onDragStart(event: DnDEvent, context: AnnouncementContext): string | undefined;
+  /** The drag moved over another target, or to another place in a list (once it rests for 500 ms). */
   onDragOver(event: DnDEvent, context: AnnouncementContext): string | undefined;
+  /** The drop went through, or the drag ended outside every target. */
   onDragEnd(event: DnDEndEvent, context: AnnouncementContext): string | undefined;
+  /** The drag was cancelled, or its drop refused. */
   onDragCancel(event: DnDEvent, context: AnnouncementContext): string | undefined;
   /** `onBeforeDrop` answered `'continue'`: the drag goes on. */
   onDragResume(event: DnDEvent, context: AnnouncementContext): string | undefined;
@@ -61,17 +67,28 @@ export interface Announcer extends Partial<Announcements> {
   describe?(name: keyof Announcements, event: DnDEvent): Partial<AnnouncementContext> | undefined;
 }
 
+/** Keyboard drags (the provider's `keyboard`): their keys, and the step of free drags. */
 export interface KeyboardOptions {
+  /**
+   * The keys that pick up (`start`), drop and cancel, as `KeyboardEvent.code` (`'Space'`,
+   * `'KeyW'`) or `.key` (`'Enter'`, `'w'`). Default: Space and Enter pick up and drop,
+   * Escape cancels. The arrows always move.
+   */
   keys?: { start?: string[]; drop?: string[]; cancel?: string[] };
   /** Pixels per arrow press for free (non-sortable) drags. Default 25. */
   step?: number;
 }
 
+/** How containers scroll when a drag nears their edges (the provider's `autoScroll`). */
 export interface AutoScrollOptions {
   /** Edge zone as a fraction of the container size. Default 0.2 (clamped to 24–96px). */
   threshold?: number;
   /** Maximum speed in px per 16ms frame. */
   maxSpeed?: number;
+  /**
+   * Speed in px per frame with the pointer at the container's edge: slower inside the edge
+   * zone, faster past the edge, up to `maxSpeed`. Default 10.
+   */
   acceleration?: number;
 }
 
@@ -96,21 +113,37 @@ export interface HapticsOptions {
   refuse?: HapticPattern;
 }
 
+/**
+ * Props of `DnDProvider`. Most are read when the provider needs them: change one, and the
+ * next drag uses it.
+ */
 export interface DnDProviderProps {
+  /** How the target under the drag is chosen. Default `pointerFirst`; another built-in (`closestCorners`) or your own. */
   collision?: CollisionDetection;
+  /** Modifiers for every drag, applied first: those of drag areas, draggables and lists come after. */
   modifiers?: Modifier[];
   /** Default FLIP animation for sortable lists. */
   animation?: LayoutAnimation;
   /**
    * How the overlay lands on drop and flies back on cancel, when nothing closer sets one:
-   * the drop target's `dropAnimation` comes first, then the dragged item's own (or its
+   * the drop target's `overDropAnimation` comes first, then the dragged item's own (or its
    * list's), then this one.
    */
   dropAnimation?: DropAnimation;
-  /** Default `animate` of sortable lists and trees: changes of their items that no drag made. Off by default. */
-  animate?: AutoAnimation;
+  /** Default `animateChanges` of sortable lists and trees: changes of their items that no drag made. Off by default. */
+  animateChanges?: AutoAnimation;
+  /**
+   * Scrolls containers and the page when a drag nears their edges. Default `true`; options
+   * tune it, `false` turns it off. Lists, trees and drag areas can override it.
+   */
   autoScroll?: boolean | AutoScrollOptions;
+  /**
+   * What a press must do before it becomes a drag, per pointer kind (see
+   * `ActivationOptions` for the defaults). Drag areas, lists, trees, items and draggables
+   * can override it.
+   */
   activation?: ActivationOptions;
+  /** Keyboard drags: their keys and step. `false` turns them off; Escape still cancels any drag. */
   keyboard?: KeyboardOptions | false;
   /**
    * What turns input into drags. Default `[pointerSensor, keyboardSensor]`: leave one out,
@@ -126,6 +159,10 @@ export interface DnDProviderProps {
   haptics?: boolean | HapticsOptions;
   /** Key (KeyboardEvent.key) that turns a move into a copy. Default `'Alt'`; `null` disables. */
   copyModifier?: string | null;
+  /**
+   * Where the overlay renders: a selector or an element. Default `'body'`. A modal
+   * `<dialog>` sits above the rest of the page: drags inside one need it there.
+   */
   overlayTo?: string | HTMLElement;
   /**
    * Overlay size while dragging. `'slot'` (default): it follows the slot the item will
@@ -147,7 +184,7 @@ export interface DnDProviderProps {
   overlayPreviews?: number | 'all';
   /**
    * How the overlay changes from one component to another during a drag (a drop target's
-   * `overlay` takes over, an `overlay` ref is switched): `true` (default) crossfades them
+   * `overOverlay` takes over, an `overlay` ref is switched): `true` (default) crossfades them
    * in 150 ms, `false` swaps them at once, and an object is the props of a Vue
    * `<Transition>` around the content's root (`name`, `mode`, JS hooks for GSAP or
    * motion). Without `mode: 'out-in'` both show at once: give the leaving one
@@ -165,8 +202,18 @@ export interface DnDProviderProps {
   overlayClass?: string | Record<string, boolean> | Array<string | Record<string, boolean>>;
   /** Own texts for some events (see `Announcements`); `false` keeps the live region silent. */
   announcements?: Partial<Announcements> | false;
+  /**
+   * How to drag with the keyboard, read out by screen readers for every draggable (its
+   * `aria-describedby`). Default: English instructions for Space, Enter, the arrows and Escape.
+   */
   screenReaderInstructions?: string;
-  /** Inject zero-specificity default styles (placeholder opacity, no text selection while dragging). */
+  /**
+   * Inject the default looks: zero-specificity, layered CSS that dims placeholders and the
+   * items a multi-drag leaves in place (`opacity: 0.4`). Default `true`; `false` leaves
+   * the looks to you. What drags need is injected either way: no text selection and no
+   * scroll anchoring while dragging (virtual lists rely on it), the drag cursor
+   * (`--dnd-cursor`), and no link callout on a long press on iOS.
+   */
   defaultStyles?: boolean;
 }
 
@@ -186,6 +233,7 @@ export interface DnDContext {
  * components (`overlay` option of draggables, sortable items, lists and trees).
  */
 export interface OverlaySlotProps {
+  /** The drag. */
   active: Active;
   /** Every dragged item, the primary one first: one overlay for the whole multi-drag. */
   items: DragItem[];
@@ -196,7 +244,9 @@ export interface OverlaySlotProps {
   over: Over | null;
   /** Whether `over` accepts the dragged items; `false` when over nothing. */
   accepted: boolean;
+  /** `'dragging'`, then `'dropping'` while the overlay lands (or flies back). */
   status: DnDStatus;
+  /** What a drop would do now (see `DnDEvent.mode`): e.g. show a plus while it copies. */
   mode: DragMode;
   /**
    * Where a drop would put the dragged items now, in a sortable list or tree: e.g. tint

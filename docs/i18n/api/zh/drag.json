@@ -1,7 +1,19 @@
 {
+  "DragItem": {
+    "source": "959720da4c",
+    "text": "一个被拖拽的项：拖拽开始时的那个，或者多项拖拽中的另一个。"
+  },
+  "DragItem.id": {
+    "source": "776be4538c",
+    "text": "它的可拖拽元素的 id（可排序项的 key）。"
+  },
   "DragItem.item": {
     "source": "7cfd4640f1",
     "text": "拖拽来自可排序列表时的项对象。"
+  },
+  "DragItem.data": {
+    "source": "ac6ab14545",
+    "text": "它的 `data` 选项。"
   },
   "DragItem.label": {
     "source": "97ccfdec34",
@@ -11,6 +23,10 @@
     "source": "9189758463",
     "text": "可拖拽元素经过规范化的 `type`；为空表示它符合任何放置目标。"
   },
+  "Active": {
+    "source": "91977ca5db",
+    "text": "进行中的拖拽：开始拖拽的那个项，以及它携带的每个项。"
+  },
   "Active.id": {
     "source": "f080aacddc",
     "text": "拖拽开始时所在项的 id。"
@@ -19,9 +35,21 @@
     "source": "173336b06e",
     "text": "所有被拖拽的 id，主项在最前（多项拖拽）。"
   },
+  "Active.items": {
+    "source": "f5b1ed4ced",
+    "text": "所有被拖拽的项，主项在最前。"
+  },
+  "Active.data": {
+    "source": "c6df04687f",
+    "text": "开始拖拽的那个项的 `data`。"
+  },
   "Active.label": {
     "source": "6b580da2fb",
     "text": "拖拽开始时那个项的 `label`，即人们对它的称呼。"
+  },
+  "Active.type": {
+    "source": "24c2cd378e",
+    "text": "开始拖拽的那个项经过规范化的 `type`；为空表示它适合任何放置目标。"
   },
   "Active.element": {
     "source": "b0e7f2b9f5",
@@ -31,17 +59,41 @@
     "source": "7964e6f559",
     "text": "拖拽开始时 `element` 的布局矩形。"
   },
+  "Active.sensor": {
+    "source": "d7ac7b8437",
+    "text": "拖拽的移动方式：`'pointer'` 跟随坐标点，`'keyboard'` 按项移动（`SensorActivation.type`）。"
+  },
   "Active.external": {
     "source": "c2c230e8a3",
     "text": "来自页面之外的拖拽（文件、链接、文本，或来自应用另一个窗口的项）：它携带的内容。它的 `items` 是为它生成的（`element` 是一个替身）。"
   },
   "Active.native": {
-    "source": "70b681b12e",
+    "source": "98192baf7a",
     "text": "浏览器自己的拖拽（`native`，或来自外部的拖拽）：拖拽的图像由浏览器绘制，没有浮层。"
+  },
+  "Over": {
+    "source": "d438eb0a0d",
+    "text": "拖拽下方的放置目标。"
+  },
+  "Over.id": {
+    "source": "f9a233dcfd",
+    "text": "放置目标的 id。"
+  },
+  "Over.data": {
+    "source": "c8dc5224f3",
+    "text": "目标的 `data` 选项。"
   },
   "Over.label": {
     "source": "c388687981",
     "text": "目标的 `label`，即人们对它的称呼。"
+  },
+  "Over.element": {
+    "source": "bea8d333cc",
+    "text": "目标的元素。"
+  },
+  "Over.rect": {
+    "source": "7fd07d1f0f",
+    "text": "`element` 的矩形，在拖拽期间测量。"
   },
   "Over.accepted": {
     "source": "48997f2ee2",
@@ -67,6 +119,10 @@
     "source": "0a3289fa23",
     "text": "树：它们将处于的深度（根节点为 0）。"
   },
+  "DragSource": {
+    "source": "bc3de31654",
+    "text": "被拖拽的项来自哪里（当来源是可排序列表时）。"
+  },
   "DragSource.list": {
     "source": "57db105431",
     "text": "被拖拽的项所来自的可排序列表。"
@@ -74,6 +130,22 @@
   "DragSource.remove": {
     "source": "5ef5100d7a",
     "text": "把被拖拽的项从它们的列表中移除（回收区）。"
+  },
+  "DragMode": {
+    "source": "c46a935d4d",
+    "text": "放置会做什么：`'move'`、`'copy'`（项留在原处，放进去的是它们的副本）、`'swap'`（`behavior: 'swap'`：两个项交换位置）或 `'insert'`（普通的可拖拽元素以列表的 `createItem` 创建的项进入列表）。"
+  },
+  "DnDEvent": {
+    "source": "6c347e6fab",
+    "text": "拖拽事件携带的内容：监听器、provider 的事件和放置目标的钩子都会收到它。"
+  },
+  "DnDEvent.active": {
+    "source": "ab2a0979dd",
+    "text": "这次拖拽。"
+  },
+  "DnDEvent.over": {
+    "source": "3b1f124a9c",
+    "text": "拖拽下方的放置目标；不在任何目标上方时为 `null`。"
   },
   "DnDEvent.pointer": {
     "source": "49759bca51",
@@ -99,6 +171,10 @@
     "source": "88a096f69f",
     "text": "来自页面之外的拖拽：它携带的内容（`active.external`）。它的数据在放置时到来。"
   },
+  "DnDEndEvent": {
+    "source": "07e34f7142",
+    "text": "`onDragEnd`（以及目标的 `onDrop`）收到的内容：放置的事件，以及它的结果。"
+  },
   "DnDEndEvent.dropped": {
     "source": "8ada0b47b1",
     "text": "拖拽结束在所有放置目标之外时为 false。"
@@ -106,6 +182,10 @@
   "DnDEndEvent.accepted": {
     "source": "bf82d1aeb9",
     "text": "被 `onBeforeDrop` 接受的 id（除非返回了一个子集，否则就是所有被拖拽的 id）。"
+  },
+  "DnDEndEvent.rejected": {
+    "source": "641da3ee5b",
+    "text": "其余被拖拽的 id：`onBeforeDrop` 没有接受它们，它们会飞回原处。全部接受时为空。"
   },
   "DnDEndEvent.droppedOutside": {
     "source": "43906c7a55",
@@ -115,6 +195,22 @@
     "source": "056be141e8",
     "text": "`onBeforeDrop` 的决定：\n- `'accept'`（或 `true`，或不返回）：放置生效；\n- `'reject'`（或 `false`）：不放置，项飞回原处；\n- id 列表：只接受这些项，其他项飞回原处；\n- `'continue'`：不放置，拖拽继续。使用指针时，项会再次跟随指针（不需要按住按键），下一次松开——也就是一次点击——会放下它；使用触摸时，会重新拿起它；使用键盘时，照常移动它。Escape 会取消它。放置时会再次询问 `onBeforeDrop`。"
   },
+  "AcceptContext": {
+    "source": "04c6b6dfb5",
+    "text": "函数形式的 `accept` 规则被调用时收到的参数。"
+  },
+  "AcceptContext.active": {
+    "source": "ab2a0979dd",
+    "text": "这次拖拽。"
+  },
+  "AcceptContext.items": {
+    "source": "1724543673",
+    "text": "所有被拖拽的项。"
+  },
+  "AcceptContext.types": {
+    "source": "e1c94af5ab",
+    "text": "所有被拖拽项的类型合在一起。"
+  },
   "AcceptRule": {
     "source": "b40b673608",
     "text": "`'*'` 或省略表示接收所有。没有类型的项符合任何字符串规则（与 v2 的 `groups: []` 行为一致）。"
@@ -123,9 +219,37 @@
     "source": "2aa08aef31",
     "text": "`'all'`：每个被拖拽的项都必须匹配；`'some'`：至少一个（其余的可以在 `onBeforeDrop` 中拒绝）。"
   },
+  "KeyboardMoveContext": {
+    "source": "168a0c5add",
+    "text": "按下方向键时，调用 `getKeyboardCoordinates` 所传入的参数。"
+  },
+  "KeyboardMoveContext.active": {
+    "source": "ab2a0979dd",
+    "text": "这次拖拽。"
+  },
+  "KeyboardMoveContext.pointer": {
+    "source": "efc9d40d64",
+    "text": "拖拽当前所在的位置，使用视口坐标。"
+  },
   "KeyboardMoveContext.direction": {
     "source": "a0b25b3b54",
     "text": "所按方向键的单位向量。"
+  },
+  "DnDMonitor": {
+    "source": "6f3b744e55",
+    "text": "provider 下每次拖拽的钩子（`useDnDMonitor`）。"
+  },
+  "DnDMonitor.onDragStart": {
+    "source": "a0e7bdf431",
+    "text": "拖拽在激活之后开始了。"
+  },
+  "DnDMonitor.onDragMove": {
+    "source": "454b2c8c39",
+    "text": "拖拽移动了（每帧最多一次）。"
+  },
+  "DnDMonitor.onDragOver": {
+    "source": "290d741d10",
+    "text": "拖拽下方的目标变了。"
   },
   "DnDMonitor.onBeforeDrop": {
     "source": "7c0b37588d",
@@ -134,6 +258,10 @@
   "DnDMonitor.onDragEnd": {
     "source": "117782ceb2",
     "text": "放置完成后的通知：可排序列表已经运行了它们的 `onDrop` 并完成了写入。"
+  },
+  "DnDMonitor.onDragCancel": {
+    "source": "699c396c4c",
+    "text": "拖拽被取消，或者它的放置被拒绝：项飞回原处。"
   },
   "DnDMonitor.onDragResume": {
     "source": "8e5af01ef3",
@@ -147,12 +275,76 @@
     "source": "72d709477a",
     "text": "键盘拖拽：某个方向键对应的下一个指针位置（例如下一个可排序位置）。"
   },
+  "DnDSelection": {
+    "source": "37feaeeee3",
+    "text": "选中的可拖拽元素，按 id 记录：拖拽其中一个会带上全部（多项拖拽）。由于按 id 保存，选中集合在元素卸载后依然保留（虚拟列表）。"
+  },
+  "DnDSelection.ids": {
+    "source": "92b2721491",
+    "text": "选中的 id，响应式。"
+  },
+  "DnDSelection.has": {
+    "source": "aeefc055d7",
+    "text": "`id` 是否被选中。"
+  },
+  "DnDSelection.add": {
+    "source": "c02f8715ab",
+    "text": "选中这些 id。"
+  },
+  "DnDSelection.delete": {
+    "source": "e426b1d84b",
+    "text": "取消选中这些 id。"
+  },
+  "DnDSelection.toggle": {
+    "source": "04f91b4e9f",
+    "text": "选中或取消选中 `id`；`force: true` 选中它，`false` 取消选中它。"
+  },
+  "DnDSelection.set": {
+    "source": "daf58f421e",
+    "text": "只选中这些 id，其他都不选。"
+  },
+  "DnDSelection.clear": {
+    "source": "019671079e",
+    "text": "取消选中所有 id。"
+  },
   "DnDState": {
     "source": "227f071563",
     "text": "放置结果确定时，拖拽状态即告结束：`active`、`over` 和 `pointer` 变为 `null`（放置目标也不再接收），而浮层仍在以动画方式就位。派生的 UI 永远不会把旧的拖拽和新数据混在一起。在异步的 `onBeforeDrop` 做决定期间，状态保持松开时的样子，但页面已退出拖拽模式：它自己的光标和文本选择恢复正常（确认对话框可以照常工作），浮层停在被放下的位置等待。\n\n拖拽进行时 `status` 为 `'dragging'`；否则，在放置结果待定或仍有浮层在落位时为 `'dropping'`；否则为 `'idle'`（`'activating'` 和 `'selecting'` 除外）。新的拖拽不会等待落位：它立即开始，落位在它周围完成。"
   },
+  "DnDState.status": {
+    "source": "17deba0e0d",
+    "text": "provider 当前在做什么（见 `DnDStatus`）。"
+  },
+  "DnDState.active": {
+    "source": "956d5f9c19",
+    "text": "进行中的拖拽；没有拖拽时为 `null`，放置一旦确定也变为 `null`。"
+  },
+  "DnDState.over": {
+    "source": "3b1f124a9c",
+    "text": "拖拽下方的放置目标；不在任何目标上方时为 `null`。"
+  },
+  "DnDState.pointer": {
+    "source": "3bb30d3398",
+    "text": "视口坐标中的指针位置，已应用修饰器；没有拖拽时为 `null`。"
+  },
   "DnDState.position": {
     "source": "4795780b8f",
     "text": "被拖拽盒子的左上角在 `over` 中的实时位置：即每次移动时的 `DnDEvent.position`。下方没有目标时为 `null`。浮层组件可以读取它来显示将落到哪里（日历上的某个时间）。"
+  },
+  "DnDState.activation": {
+    "source": "ca2201da85",
+    "text": "`progress`：在 `status` 为 `'activating'` 时，按下距离满足激活约束的进度，从 0 到 1：例如在长按期间逐渐填满的圆环。"
+  },
+  "DnDState.isAutoScrolling": {
+    "source": "e5cea65cdf",
+    "text": "自动滚动正在移动某个容器。"
+  },
+  "DnDState.selection": {
+    "source": "d265527064",
+    "text": "选中的可拖拽元素（见 `DnDSelection`）。"
+  },
+  "DnDState.cancel": {
+    "source": "3ea64398be",
+    "text": "取消拖拽（它会飞回原处），或取消等待中的激活。"
   }
 }

@@ -17,7 +17,7 @@ type Result = Animation | Promise<unknown> | void;
 export interface Recipe {
   animation: (context: LayoutAnimationContext) => Result;
   dropAnimation: (context: DropAnimationContext) => Result;
-  animate: {
+  animateChanges: {
     move: (context: LayoutAnimationContext) => Result;
     enter: (context: EnterAnimationContext) => Result;
     leave: (context: LeaveAnimationContext) => Result;
@@ -54,10 +54,10 @@ export const counted = (recipe: Recipe, counts: HookCounts): Recipe => {
   return {
     animation: move,
     dropAnimation: counting(recipe.dropAnimation, () => counts.drop++),
-    animate: {
+    animateChanges: {
       move,
-      enter: counting(recipe.animate.enter, () => counts.enter++),
-      leave: counting(recipe.animate.leave, ({ element }) => {
+      enter: counting(recipe.animateChanges.enter, () => counts.enter++),
+      leave: counting(recipe.animateChanges.leave, ({ element }) => {
         counts.leave++;
         counts.left = element.hasAttribute('data-dnd-leaving') ? (element.getAttribute('data-id') ?? '') : '';
       }),

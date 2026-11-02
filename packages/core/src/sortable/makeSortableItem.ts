@@ -6,10 +6,11 @@ import { read } from '../utils/read';
 import { SORTABLE_CONTEXT, contextOf } from './makeSortableList';
 
 /**
- * Makes an element an item of the closest sortable list. Must be called in a
- * component rendered inside the component that called `makeSortableList`; of several
- * lists there, the item is in the one whose element holds it.
- * Identify the item with `id` or `item` (keyed by the list's `getKey`).
+ * Makes an element a row of a sortable list or tree: it drags, makes room and lands in
+ * its slot. Call it in a component rendered inside the one that called `makeSortableList`
+ * (or `makeSortableTree`); of several lists made there, the row joins the innermost one
+ * whose element holds it. Identify the row with `item` (keyed by the list's `getKey`,
+ * `item.id` by default) or `id`.
  */
 export function makeSortableItem<TData = unknown>(
   target: MaybeElementRef,
@@ -45,7 +46,7 @@ export function makeSortableItem<TData = unknown>(
       type: () => read(options.type) ?? group().name,
       data: options.data,
       label: options.label,
-      activation: options.activation,
+      activation: () => read(options.activation) ?? context.value.getActivation?.(),
       canDrag: options.canDrag,
       attributes: options.attributes,
       overlay: options.overlay,

@@ -1,11 +1,63 @@
 {
+  "TreeNesting": {
+    "source": "9af740feca",
+    "text": "Cómo elige su profundidad un arrastre en un árbol: `'offset'`, según cuánto se desplaza de lado (`indentation` por nivel); `'hover'`, pasando por encima del centro de una fila, que lo toma como hijo; `'both'`."
+  },
+  "FlatNode": {
+    "source": "23666e81ba",
+    "text": "Un nodo visible de un árbol, tal como los lista `items` del árbol: renderízalos en orden, con sangría según `depth`."
+  },
+  "FlatNode.key": {
+    "source": "96ba306f48",
+    "text": "La clave del nodo (`getKey`)."
+  },
+  "FlatNode.item": {
+    "source": "b4ce340716",
+    "text": "Tu nodo."
+  },
+  "FlatNode.depth": {
+    "source": "0c7c31948d",
+    "text": "Su profundidad: las raíces son 0. El nodo arrastrado tiene su profundidad proyectada."
+  },
+  "FlatNode.parentKey": {
+    "source": "8c7e128431",
+    "text": "Clave de su padre; `null` para una raíz."
+  },
   "FlatNode.index": {
     "source": "b24454e95d",
     "text": "Índice entre sus hermanos."
   },
+  "FlatNode.hasChildren": {
+    "source": "b824e0490e",
+    "text": "Tiene hijos, mostrados o no."
+  },
+  "FlatNode.collapsed": {
+    "source": "bd45c73799",
+    "text": "Sus hijos están ocultos (su clave está en `collapsed`)."
+  },
+  "TreeProjection": {
+    "source": "7161034972",
+    "text": "Dónde aterrizaría el nodo arrastrado en un árbol."
+  },
+  "TreeProjection.depth": {
+    "source": "2e69aed9a0",
+    "text": "La profundidad que tendría (las raíces son 0)."
+  },
+  "TreeProjection.parentKey": {
+    "source": "b142da09fd",
+    "text": "El nodo bajo el que iría; `null` en la raíz."
+  },
   "SortableTreeDropEvent": {
     "source": "eb47878c8b",
     "text": "Evento de drop de un árbol. `index` es la posición entre los hermanos bajo `parentKey` (`from`: antes del movimiento; `to`: después, con el nodo ya quitado de su sitio anterior). `from.parentKey` es `null` para los nodos raíz y para los ítems que vienen de otra lista. Un multi-drag mueve las `keys` (cada una con su subárbol) una junto a otra: `from` es donde estaba el nodo que guía el arrastre (el agarrado, o el nodo seleccionado dentro del que viaja), `to` donde aterriza el primero de ellos. Una copia (`mode: 'copy'`) deja los nodos donde están e inserta `items`, sus copias; un elemento arrastrable simple (`mode: 'insert'`), el nodo que creó `createItem`."
+  },
+  "SortableTreeDropEvent.from": {
+    "source": "9d2938f9b8",
+    "text": "Dónde estaba el nodo que encabeza el arrastre: su árbol, su índice entre sus hermanos, su padre."
+  },
+  "SortableTreeDropEvent.to": {
+    "source": "423e0db1d1",
+    "text": "Dónde aterriza el primer nodo soltado: su árbol, su índice entre sus nuevos hermanos, su nuevo padre."
   },
   "SortableTreeOptions": {
     "source": "a99d0dc21f",
@@ -18,6 +70,10 @@
   "SortableTreeOptions.getKey": {
     "source": "8bd06a8146",
     "text": "Por defecto: `node.id`. También da la clave de `makeSortableItem({ item })`, de las copias y de los nodos creados."
+  },
+  "SortableTreeOptions.getChildren": {
+    "source": "16d2b0d885",
+    "text": "Los hijos de un nodo. Por defecto: `node.children`."
   },
   "SortableTreeOptions.setChildren": {
     "source": "ebc9ed1493",
@@ -34,6 +90,14 @@
   "SortableTreeOptions.label": {
     "source": "86c099a68f",
     "text": "El nombre que la gente le da al árbol: los textos para lectores de pantalla lo dicen en lugar de su id."
+  },
+  "SortableTreeOptions.data": {
+    "source": "06a846f752",
+    "text": "Cualquier cosa que contar sobre el árbol como destino de drop: los eventos lo llevan como `over.data` mientras un arrastre está sobre él."
+  },
+  "SortableTreeOptions.activation": {
+    "source": "bb472ecc80",
+    "text": "Cómo una pulsación sobre las filas de este árbol inicia un arrastre, en lugar de la `activation` del provider (la propia de una fila tiene prioridad)."
   },
   "SortableTreeOptions.overlay": {
     "source": "cf37f2819a",
@@ -111,7 +175,7 @@
     "source": "5d1e2c66c2",
     "text": "Animación FLIP de este árbol; por defecto, la `animation` del provider. Un valor o una ref (una función es una animación personalizada)."
   },
-  "SortableTreeOptions.animate": {
+  "SortableTreeOptions.animateChanges": {
     "source": "9004d33175",
     "text": "Como en `SortableListOptions`, para las filas visibles: nodos añadidos, quitados o movidos, y las filas que un nodo muestra u oculta al expandirse o plegarse (`collapsed`)."
   },
@@ -127,6 +191,10 @@
     "source": "26c5e98e4b",
     "text": "Como en `SortableListOptions`: el elemento que recibe los drops del árbol, por defecto el propio del árbol."
   },
+  "SortableTreeOptions.disabled": {
+    "source": "e015689412",
+    "text": "`true`: sus filas no se pueden arrastrar y no acepta ítems."
+  },
   "SortableTreeOptions.onBeforeDrop": {
     "source": "94fc28e843",
     "text": "Como en `SortableListOptions`."
@@ -134,6 +202,14 @@
   "SortableTreeOptions.onDrop": {
     "source": "cac25ac658",
     "text": "Como en `SortableListOptions`: antes de la escritura, que `event.preventDefault()` omite."
+  },
+  "SortableTreeReturn": {
+    "source": "63d4a830bd",
+    "text": "Lo que devuelve `makeSortableTree`."
+  },
+  "SortableTreeReturn.id": {
+    "source": "78f5948858",
+    "text": "El id del árbol: la opción `id` o el que se creó para él."
   },
   "SortableTreeReturn.items": {
     "source": "7c78a356e7",
@@ -146,6 +222,10 @@
   "SortableTreeReturn.indicator": {
     "source": "3f5878f4c5",
     "text": "Modo indicador: adónde va el drop, con su `depth` y su `parentKey`; `null` cuando no es aquí."
+  },
+  "SortableTreeReturn.isOver": {
+    "source": "862facdce0",
+    "text": "Hay un arrastre sobre el árbol."
   },
   "SortableTreeReturn.isAccepting": {
     "source": "ae54d9827e",
@@ -162,5 +242,9 @@
   "SortableTreeReturn.activeSize": {
     "source": "8337786343",
     "text": "Tamaño de la fila arrastrada al inicio del arrastre."
+  },
+  "SortableTreeReturn.captureLayout": {
+    "source": "4d1e38426d",
+    "text": "Anima los cambios de layout que no causó la biblioteca (por ejemplo, una nueva medición de un virtualizador)."
   }
 }

@@ -20,7 +20,7 @@ const { isDragging } = makeDraggable(button, {
   data: (): ToolData => ({ tool: props.kind, zoom: editor.view.zoom }),
   overlay: ToolGhost,
   modifiers: [snapCenterToCursor],
-  keyboard: 'droppables',
+  keyboardMode: 'droppables',
 });
 
 // A click adds the layer in the middle of the view.

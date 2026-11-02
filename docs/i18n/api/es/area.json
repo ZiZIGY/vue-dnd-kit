@@ -27,6 +27,10 @@
     "source": "238dd09834",
     "text": "`true`: no empieza ningún arrastre en el área, ni en las áreas que contiene (a diferencia de las demás opciones, que vienen del área más cercana). Sus elementos arrastrables indican `aria-disabled`."
   },
+  "DragAreaReturn": {
+    "source": "48fc4346c4",
+    "text": "Lo que devuelve `makeDragArea`."
+  },
   "DragAreaReturn.isDragging": {
     "source": "5e8f41c6fd",
     "text": "Hay en curso un arrastre que empezó en esta área (hasta que se decide su drop)."

@@ -48,7 +48,7 @@ const createdIn = (g: GroupContext, list: ListEntry, current: Session): Key | nu
 
 /**
  * A drag from outside the page brings its data with the drop: `list`, where it goes, makes
- * its items again from it (`createItem` is asked with `external.dropped`), and those go in.
+ * its items again from it (`createItem` is asked with `external.ready`), and those go in.
  */
 export const remake = (g: GroupContext, list: ListEntry, current: Session, active: Active) => {
   const made = makeFor(g, list, active);

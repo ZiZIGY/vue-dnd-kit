@@ -1,4 +1,8 @@
 {
+  "Key": {
+    "source": "0e20a2c263",
+    "text": "Um id ou uma key: de um draggable, de um alvo de drop, de uma lista, de um item de uma lista."
+  },
   "MaybeReadonlyRefOrGetter": {
     "source": "856e8d0c75",
     "text": "Um valor, um getter ou qualquer ref (gravável, shallow, computed, readonly — por exemplo, de `useTemplateRef`) que a biblioteca apenas lê. Diferente do `MaybeRefOrGetter` do Vue, aceita `Ref<string>` onde se espera `string | number`."
@@ -7,9 +11,85 @@
     "source": "e1366b62a5",
     "text": "Um valor ou qualquer ref, para opções em que uma função é um valor por si só (um componente de overlay, uma regra de accept, uma animação personalizada), então não dá para distinguir um getter. Guarde componentes em um `shallowRef` (ou em um computed): o Vue não deve torná-los reativos."
   },
+  "MaybeElement": {
+    "source": "1b8960adcb",
+    "text": "Um elemento: um elemento HTML ou SVG, ou uma instância de componente (o elemento raiz dela, `$el`), como um template ref os entrega. `null` ou `undefined` enquanto não há nenhum (ainda não montado)."
+  },
+  "MaybeElementRef": {
+    "source": "603f215a38",
+    "text": "O elemento com que um composable trabalha (`makeDraggable(target)`): o elemento, um template ref (`useTemplateRef`) ou um getter. Ele pode mudar (um `v-if`): a biblioteca o acompanha."
+  },
+  "Coordinates": {
+    "source": "2f8f5c3336",
+    "text": "Um ponto ou um deslocamento, em px: uma posição a partir do canto superior esquerdo da viewport, ou um deslocamento a partir de onde o arraste começou (`delta`, `transform`)."
+  },
+  "Coordinates.x": {
+    "source": "b43f5ddec4",
+    "text": "Horizontal, crescendo para a direita."
+  },
+  "Coordinates.y": {
+    "source": "8f097fc225",
+    "text": "Vertical, crescendo para baixo."
+  },
+  "Size": {
+    "source": "255c399f55",
+    "text": "Uma largura e uma altura, em px."
+  },
+  "Size.width": {
+    "source": "f4f2b634d9",
+    "text": "Largura em px."
+  },
+  "Size.height": {
+    "source": "6e660db892",
+    "text": "Altura em px."
+  },
+  "Rect": {
+    "source": "62078f7f5c",
+    "text": "Uma caixa em px, em coordenadas da viewport, como `getBoundingClientRect()` a entrega."
+  },
+  "Rect.top": {
+    "source": "4e05fbd563",
+    "text": "A borda de cima, a partir do topo da viewport."
+  },
+  "Rect.left": {
+    "source": "3d40777368",
+    "text": "A borda esquerda, a partir da esquerda da viewport."
+  },
+  "Rect.width": {
+    "source": "d31ce8afdd",
+    "text": "A largura."
+  },
+  "Rect.height": {
+    "source": "db48d67b0f",
+    "text": "A altura."
+  },
+  "Rect.right": {
+    "source": "7158323919",
+    "text": "A borda direita, a partir da esquerda da viewport: `left + width`."
+  },
+  "Rect.bottom": {
+    "source": "44b04207ae",
+    "text": "A borda de baixo, a partir do topo da viewport: `top + height`."
+  },
+  "MaybePromise": {
+    "source": "f3d05df331",
+    "text": "Um valor, ou uma promise dele: o que um hook que pode ser assíncrono retorna (`onBeforeDrop`)."
+  },
+  "DnDStatus": {
+    "source": "d5d49a4ce6",
+    "text": "O que o provider está fazendo:\n- `'idle'`: nada;\n- `'activating'`: um pressionamento espera a sua restrição de ativação (uma distância, um toque longo);\n- `'dragging'`: um arraste está em andamento;\n- `'dropping'`: um drop está sendo decidido (um `onBeforeDrop` assíncrono), ou um overlay ainda está pousando;\n- `'selecting'`: uma área de seleção desenha o seu retângulo."
+  },
   "SensorType": {
     "source": "ddccc05a96",
     "text": "Como um arraste se move, seja qual for o sensor que o conduz (`SensorActivation.type`): `'pointer'` segue pontos, `'keyboard'` se move de item em item."
+  },
+  "PointerKind": {
+    "source": "5db385a430",
+    "text": "O tipo de ponteiro que pressionou (`PointerEvent.pointerType`): a ativação é definida por tipo."
+  },
+  "ActivationConstraint": {
+    "source": "e5b4786b75",
+    "text": "O que um pressionamento precisa fazer antes de virar um arraste: percorrer `distance`, ou ser mantido por `delay`, o que vier primeiro. Nada definido: o arraste começa na hora."
   },
   "ActivationConstraint.distance": {
     "source": "70ede97eca",
@@ -24,7 +104,7 @@
     "text": "Com `delay`: movimento em px que aborta a ativação, para que a página possa rolar."
   },
   "ActivationOptions": {
-    "source": "75a2dcce93",
-    "text": "Por tipo de ponteiro. Padrões: mouse/caneta `{ distance: 4 }` (imediato em um handle), toque `{ delay: 200, tolerance: 5 }`."
+    "source": "a41c6198e1",
+    "text": "Por tipo de ponteiro. Padrões: mouse `{ distance: 4 }` (imediato em um handle), caneta `{ distance: 4 }`, toque `{ delay: 200, tolerance: 5 }`."
   }
 }

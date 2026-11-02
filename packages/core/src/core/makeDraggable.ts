@@ -157,7 +157,7 @@ export function createDraggable<TData>(
       return own && inherited ? { ...inherited, ...own } : (own ?? inherited);
     },
     canDrag: options.canDrag,
-    getKeyboard: () => read(options.keyboard),
+    getKeyboard: () => read(options.keyboardMode),
     getElement,
     getHandle: () => {
       const handle = read(options.handle);

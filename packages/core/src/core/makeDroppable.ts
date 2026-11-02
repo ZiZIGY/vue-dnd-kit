@@ -58,10 +58,10 @@ export function createDroppable<TData>(
     getExternal: () => read(options.external),
     getGroup: internals.getGroup,
     getOverlay: () => {
-      const overlay = unref(options.overlay);
+      const overlay = unref(options.overOverlay);
       return overlay ? markRaw(overlay) : undefined;
     },
-    getDropAnimation: () => unref(options.dropAnimation),
+    getDropAnimation: () => unref(options.overDropAnimation),
     onDragEnter: options.onDragEnter,
     onDragLeave: options.onDragLeave,
     onBeforeDrop: options.onBeforeDrop,

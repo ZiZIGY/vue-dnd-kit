@@ -1,7 +1,19 @@
 {
+  "DragItem": {
+    "source": "959720da4c",
+    "text": "드래그 중인 항목 하나: 드래그가 시작된 항목, 또는 멀티 드래그의 다른 항목."
+  },
+  "DragItem.id": {
+    "source": "776be4538c",
+    "text": "그 draggable의 id(정렬 가능한 항목의 key)."
+  },
   "DragItem.item": {
     "source": "7cfd4640f1",
     "text": "드래그가 정렬 가능한 리스트에서 왔을 때의 항목 객체."
+  },
+  "DragItem.data": {
+    "source": "ac6ab14545",
+    "text": "그 항목의 `data` 옵션."
   },
   "DragItem.label": {
     "source": "97ccfdec34",
@@ -11,6 +23,10 @@
     "source": "9189758463",
     "text": "draggable의 정규화된 `type`. 비어 있으면 어떤 드롭 대상에도 맞습니다."
   },
+  "Active": {
+    "source": "91977ca5db",
+    "text": "진행 중인 드래그: 드래그가 시작된 항목과, 드래그가 옮기는 모든 항목."
+  },
   "Active.id": {
     "source": "f080aacddc",
     "text": "드래그가 시작된 항목의 id."
@@ -19,9 +35,21 @@
     "source": "173336b06e",
     "text": "드래그 중인 모든 id. 주 항목이 맨 앞입니다(멀티 드래그)."
   },
+  "Active.items": {
+    "source": "f5b1ed4ced",
+    "text": "드래그 중인 모든 항목. 주 항목이 맨 앞입니다."
+  },
+  "Active.data": {
+    "source": "c6df04687f",
+    "text": "드래그가 시작된 항목의 `data`."
+  },
   "Active.label": {
     "source": "6b580da2fb",
     "text": "드래그가 시작된 항목의 `label`(사람이 부르는 이름)."
+  },
+  "Active.type": {
+    "source": "24c2cd378e",
+    "text": "드래그가 시작된 항목의 정규화된 `type`. 비어 있으면 어떤 드롭 대상에도 맞습니다."
   },
   "Active.element": {
     "source": "b0e7f2b9f5",
@@ -31,17 +59,41 @@
     "source": "7964e6f559",
     "text": "드래그 시작 시점의 `element` 레이아웃 사각형."
   },
+  "Active.sensor": {
+    "source": "d7ac7b8437",
+    "text": "드래그가 움직이는 방식: `'pointer'`는 좌표를 따라가고, `'keyboard'`는 항목 단위로 움직입니다(`SensorActivation.type`)."
+  },
   "Active.external": {
     "source": "c2c230e8a3",
     "text": "페이지 밖에서 온 드래그(파일, 링크, 텍스트, 또는 앱의 다른 창에서 온 항목)가 담고 있는 것. 이 드래그의 `items`는 드래그를 위해 만들어집니다(`element`는 대역입니다)."
   },
   "Active.native": {
-    "source": "70b681b12e",
+    "source": "98192baf7a",
     "text": "브라우저 자체의 드래그(`native`, 또는 외부에서 온 드래그). 드래그되는 이미지는 브라우저가 그리며, 오버레이는 없습니다."
+  },
+  "Over": {
+    "source": "d438eb0a0d",
+    "text": "드래그 아래에 있는 드롭 대상."
+  },
+  "Over.id": {
+    "source": "f9a233dcfd",
+    "text": "드롭 대상의 id."
+  },
+  "Over.data": {
+    "source": "c8dc5224f3",
+    "text": "대상의 `data` 옵션."
   },
   "Over.label": {
     "source": "c388687981",
     "text": "대상의 `label`(사람이 부르는 이름)."
+  },
+  "Over.element": {
+    "source": "bea8d333cc",
+    "text": "대상의 요소."
+  },
+  "Over.rect": {
+    "source": "7fd07d1f0f",
+    "text": "`element`의 사각형. 드래그 중에 측정합니다."
   },
   "Over.accepted": {
     "source": "48997f2ee2",
@@ -67,6 +119,10 @@
     "source": "0a3289fa23",
     "text": "트리: 항목이 놓일 깊이(루트는 0)."
   },
+  "DragSource": {
+    "source": "bc3de31654",
+    "text": "드래그 중인 항목이 온 곳(그곳이 정렬 가능한 리스트일 때)."
+  },
   "DragSource.list": {
     "source": "57db105431",
     "text": "드래그 중인 항목이 온 정렬 가능한 리스트."
@@ -74,6 +130,22 @@
   "DragSource.remove": {
     "source": "5ef5100d7a",
     "text": "드래그 중인 항목을 원래 리스트에서 제거합니다(휴지통 영역)."
+  },
+  "DragMode": {
+    "source": "c46a935d4d",
+    "text": "드롭이 하는 일: `'move'`, `'copy'`(항목은 그대로 있고 복사본이 들어갑니다), `'swap'`(`behavior: 'swap'`: 두 항목이 자리를 바꿉니다), 또는 `'insert'`(일반 draggable이 리스트의 `createItem`이 만든 항목으로 리스트에 들어갑니다)."
+  },
+  "DnDEvent": {
+    "source": "6c347e6fab",
+    "text": "드래그 이벤트가 담는 것: 모니터, 프로바이더의 이벤트, 드롭 대상의 훅이 이것을 받습니다."
+  },
+  "DnDEvent.active": {
+    "source": "ab2a0979dd",
+    "text": "현재 드래그."
+  },
+  "DnDEvent.over": {
+    "source": "3b1f124a9c",
+    "text": "드래그 아래에 있는 드롭 대상. 아무것도 없으면 `null`."
   },
   "DnDEvent.pointer": {
     "source": "49759bca51",
@@ -99,6 +171,10 @@
     "source": "88a096f69f",
     "text": "페이지 밖에서 온 드래그가 담고 있는 것(`active.external`). 데이터는 드롭할 때 옵니다."
   },
+  "DnDEndEvent": {
+    "source": "07e34f7142",
+    "text": "`onDragEnd`(와 대상의 `onDrop`)가 받는 것: 드롭의 이벤트와 그 결과."
+  },
   "DnDEndEvent.dropped": {
     "source": "8ada0b47b1",
     "text": "드래그가 모든 드롭 대상 바깥에서 끝나면 false."
@@ -106,6 +182,10 @@
   "DnDEndEvent.accepted": {
     "source": "bf82d1aeb9",
     "text": "`onBeforeDrop`이 수락한 id(일부를 반환하지 않았다면 드래그 중인 모든 id)."
+  },
+  "DnDEndEvent.rejected": {
+    "source": "641da3ee5b",
+    "text": "나머지 드래그된 id: `onBeforeDrop`이 제외한 것으로, 원래 자리로 돌아갑니다. 모두 받았으면 비어 있습니다."
   },
   "DnDEndEvent.droppedOutside": {
     "source": "43906c7a55",
@@ -115,6 +195,22 @@
     "source": "056be141e8",
     "text": "`onBeforeDrop`이 결정하는 것:\n- `'accept'`(또는 `true`, 또는 아무것도 반환하지 않음): 드롭이 완료됩니다.\n- `'reject'`(또는 `false`): 드롭하지 않고, 항목은 원래 자리로 돌아갑니다.\n- id 목록: 해당 항목만 수락하고, 나머지는 원래 자리로 돌아갑니다.\n- `'continue'`: 드롭하지 않고 드래그가 계속됩니다. 포인터에서는 항목이 다시 포인터를 따라가며(버튼을 누르지 않은 상태), 다음에 놓는 동작인 클릭이 드롭합니다. 터치에서는 다시 집고, 키보드에서는 이전처럼 옮깁니다. Escape로 취소합니다. 다음 드롭에서 `onBeforeDrop`을 다시 호출합니다."
   },
+  "AcceptContext": {
+    "source": "04c6b6dfb5",
+    "text": "함수 형태의 `accept` 규칙이 받는 것."
+  },
+  "AcceptContext.active": {
+    "source": "ab2a0979dd",
+    "text": "현재 드래그."
+  },
+  "AcceptContext.items": {
+    "source": "1724543673",
+    "text": "드래그 중인 모든 항목."
+  },
+  "AcceptContext.types": {
+    "source": "e1c94af5ab",
+    "text": "드래그 중인 모든 항목의 타입을 합친 것."
+  },
   "AcceptRule": {
     "source": "b40b673608",
     "text": "`'*'`이거나 생략하면 모두 받아들입니다. 타입이 없는 항목은 어떤 문자열 규칙에도 맞습니다(v2의 `groups: []`와 동일)."
@@ -123,9 +219,37 @@
     "source": "2aa08aef31",
     "text": "`'all'`: 드래그 중인 모든 항목이 맞아야 합니다. `'some'`: 하나 이상이면 됩니다(나머지는 `onBeforeDrop`에서 거부할 수 있습니다)."
   },
+  "KeyboardMoveContext": {
+    "source": "168a0c5add",
+    "text": "화살표 키를 눌렀을 때 `getKeyboardCoordinates`가 받는 것."
+  },
+  "KeyboardMoveContext.active": {
+    "source": "ab2a0979dd",
+    "text": "현재 드래그."
+  },
+  "KeyboardMoveContext.pointer": {
+    "source": "efc9d40d64",
+    "text": "지금 드래그가 있는 위치(뷰포트 좌표)."
+  },
   "KeyboardMoveContext.direction": {
     "source": "a0b25b3b54",
     "text": "누른 화살표 키의 단위 벡터."
+  },
+  "DnDMonitor": {
+    "source": "6f3b744e55",
+    "text": "프로바이더 아래의 모든 드래그에 대한 훅(`useDnDMonitor`)."
+  },
+  "DnDMonitor.onDragStart": {
+    "source": "a0e7bdf431",
+    "text": "활성화를 거쳐 드래그가 시작되었습니다."
+  },
+  "DnDMonitor.onDragMove": {
+    "source": "454b2c8c39",
+    "text": "드래그가 움직였습니다(많아야 프레임당 한 번)."
+  },
+  "DnDMonitor.onDragOver": {
+    "source": "290d741d10",
+    "text": "드래그 아래의 대상이 바뀌었습니다."
   },
   "DnDMonitor.onBeforeDrop": {
     "source": "7c0b37588d",
@@ -134,6 +258,10 @@
   "DnDMonitor.onDragEnd": {
     "source": "117782ceb2",
     "text": "드롭이 끝난 뒤의 알림. 정렬 가능한 리스트는 이미 `onDrop`을 실행하고 기록했습니다."
+  },
+  "DnDMonitor.onDragCancel": {
+    "source": "699c396c4c",
+    "text": "드래그가 취소되었거나 드롭이 거부되었습니다. 항목이 원래 자리로 돌아갑니다."
   },
   "DnDMonitor.onDragResume": {
     "source": "8e5af01ef3",
@@ -147,12 +275,76 @@
     "source": "72d709477a",
     "text": "키보드 드래그: 화살표 키에 대한 다음 포인터 위치(예: 다음 정렬 자리)."
   },
+  "DnDSelection": {
+    "source": "37feaeeee3",
+    "text": "선택된 draggable(id 기준): 그중 하나를 드래그하면 모두 함께 옮겨집니다(멀티 드래그). id로 보관하므로 선택은 언마운트된 뒤에도 남습니다(가상 리스트)."
+  },
+  "DnDSelection.ids": {
+    "source": "92b2721491",
+    "text": "선택된 id. 반응형입니다."
+  },
+  "DnDSelection.has": {
+    "source": "aeefc055d7",
+    "text": "`id`가 선택되어 있는지."
+  },
+  "DnDSelection.add": {
+    "source": "c02f8715ab",
+    "text": "이 id들을 선택합니다."
+  },
+  "DnDSelection.delete": {
+    "source": "e426b1d84b",
+    "text": "이 id들의 선택을 해제합니다."
+  },
+  "DnDSelection.toggle": {
+    "source": "04f91b4e9f",
+    "text": "`id`를 선택하거나 선택 해제합니다. `force: true`면 선택하고, `false`면 해제합니다."
+  },
+  "DnDSelection.set": {
+    "source": "daf58f421e",
+    "text": "이 id들만 선택하고 나머지는 선택하지 않습니다."
+  },
+  "DnDSelection.clear": {
+    "source": "019671079e",
+    "text": "모든 id의 선택을 해제합니다."
+  },
   "DnDState": {
     "source": "227f071563",
     "text": "드래그 상태는 드롭이 결정되면 끝납니다. 오버레이가 아직 제자리로 애니메이션되는 동안에도 `active`, `over`, `pointer`는 `null`이 됩니다(droppable도 더 이상 받아들이지 않습니다). 파생된 UI는 이전 드래그와 새 데이터를 섞지 않습니다. 비동기 `onBeforeDrop`이 결정하는 동안 상태는 놓은 순간 그대로 유지되지만, 페이지는 드래그 모드에서 벗어납니다. 페이지 자체의 커서와 텍스트 선택이 돌아오고(확인 다이얼로그가 정상적으로 동작합니다), 오버레이는 드롭한 자리에서 기다립니다.\n\n`status`는 드래그가 진행되는 동안 `'dragging'`, 그렇지 않고 드롭이 결정되는 중이거나 오버레이가 아직 안착하는 중이면 `'dropping'`, 그 밖에는 `'idle'`입니다(`'activating'`과 `'selecting'`은 별도). 새 드래그는 안착을 기다리지 않습니다. 바로 시작되고, 안착은 그 주위에서 마무리됩니다."
   },
+  "DnDState.status": {
+    "source": "17deba0e0d",
+    "text": "프로바이더가 하고 있는 일(`DnDStatus` 참고)."
+  },
+  "DnDState.active": {
+    "source": "956d5f9c19",
+    "text": "진행 중인 드래그. 드래그가 없을 때, 그리고 드롭이 결정되는 즉시 `null`입니다."
+  },
+  "DnDState.over": {
+    "source": "3b1f124a9c",
+    "text": "드래그 아래에 있는 드롭 대상. 아무것도 없으면 `null`."
+  },
+  "DnDState.pointer": {
+    "source": "3bb30d3398",
+    "text": "뷰포트 좌표의 포인터(모디파이어 적용 후). 드래그가 없으면 `null`."
+  },
   "DnDState.position": {
     "source": "4795780b8f",
     "text": "`over` 안에서 드래그 중인 박스의 왼쪽 위 모서리가 있는 위치(실시간). 매 이동의 `DnDEvent.position`입니다. 아무것도 없는 곳 위에서는 `null`입니다. 오버레이 컴포넌트는 이 값을 읽어 안착할 위치(캘린더의 시간)를 보여 줍니다."
+  },
+  "DnDState.activation": {
+    "source": "ca2201da85",
+    "text": "`progress`: `status`가 `'activating'`인 동안, 누르기가 활성화 조건에 얼마나 다가갔는지를 0에서 1로 나타냅니다. 예: 길게 누르는 동안 채워지는 링."
+  },
+  "DnDState.isAutoScrolling": {
+    "source": "e5cea65cdf",
+    "text": "자동 스크롤이 컨테이너를 움직이고 있습니다."
+  },
+  "DnDState.selection": {
+    "source": "d265527064",
+    "text": "선택된 draggable(`DnDSelection` 참고)."
+  },
+  "DnDState.cancel": {
+    "source": "3ea64398be",
+    "text": "드래그(원래 자리로 돌아갑니다) 또는 대기 중인 활성화를 취소합니다."
   }
 }

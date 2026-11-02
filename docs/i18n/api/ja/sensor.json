@@ -36,8 +36,8 @@
     "text": "入力イベント。ドラッグ可能な要素の `canDrag` に渡されます：イベントがない場合（ゲームパッド、プログラムによるドラッグ）は、`canDrag` に問い合わせません。`pointerType` が `'touch'` の場合、そのドラッグはタッチドラッグ（`haptics`）になります。"
   },
   "SensorActivation.activation": {
-    "source": "39a1a2728a",
-    "text": "ドラッグが始まる前に何を待つか（それまで `useDnD().status` は `'activating'` で、進捗を持ちます）。ポインターの種類を指定すると、ドラッグ可能な要素の `activation` オプションのその種類の設定を読み、次にプロバイダーのもの、次にデフォルト（マウスとペンは 4px、ハンドル上では即座。タッチは 5px の許容範囲で 200ms の長押し）を使います。制約はそのまま使われます。デフォルト：なし。ドラッグはすぐに始まります。"
+    "source": "b57a130781",
+    "text": "ドラッグが始まる前に何を待つか（それまで `useDnD().status` は `'activating'` で、進捗を持ちます）。ポインターの種類を指定すると、ドラッグ可能な要素の `activation` オプションのその種類の設定を読み、次にプロバイダーのもの、次にデフォルト（マウスは 4px、ハンドル上では即座。ペンは 4px。タッチは 5px の許容範囲で 200ms の長押し）を使います。制約はそのまま使われます。デフォルト：なし。ドラッグはすぐに始まります。"
   },
   "SensorActivation.onStart": {
     "source": "e74975e61a",
@@ -55,6 +55,10 @@
     "source": "cede55f00c",
     "text": "- `'pending'`：アクティベーション制約を待っています。\n- `'dragging'`：開始から、ドロップが決まるかドラッグがキャンセルされるまで。\n- `'ended'`：アクティベーションが中断された、またはドラッグがドロップされた、キャンセルされた。センサーによるものでも、それ以外（Escape、非表示のタブ、`useDnD().cancel()`、プロバイダーのアンマウント）によるものでも同じです。"
   },
+  "SensorStepOptions": {
+    "source": "068f67f8ef",
+    "text": "`SensorDrag.step()` のオプション。"
+  },
   "SensorStepOptions.event": {
     "source": "a9cd22b651",
     "text": "キーの押下。モニターの `getKeyboardCoordinates` に渡されます。デフォルト：その矢印キーの keydown。"
@@ -70,6 +74,14 @@
   "SensorDrag.id": {
     "source": "407eb1b511",
     "text": "ドラッグ中のアイテムの id。"
+  },
+  "SensorDrag.type": {
+    "source": "76da00f024",
+    "text": "ドラッグの動き方。`activate()` で指定されたとおりです（`SensorActivation.type`）。"
+  },
+  "SensorDrag.state": {
+    "source": "09adafb8ab",
+    "text": "ドラッグの段階：アクティベーション待ち、ドラッグ中、または終了。"
   },
   "SensorDrag.started": {
     "source": "0bc4410fb6",
@@ -126,5 +138,9 @@
   "Sensor.name": {
     "source": "f3f1afa08b",
     "text": "デバッグ用。"
+  },
+  "Sensor.setup": {
+    "source": "4633ff96ac",
+    "text": "入力の監視を始めます。プロバイダーごとに 1 回です：ドラッグしたいときに `context.activate()` を呼びます。クリーンアップ関数を返すことができ、センサーの停止時に実行されます。"
   }
 }

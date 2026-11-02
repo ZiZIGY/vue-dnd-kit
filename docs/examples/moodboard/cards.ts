@@ -46,7 +46,7 @@ export const fromOutside = (active: Active): Card | Card[] | undefined => {
   const { external } = active;
   if (!external) return undefined;
   if (external.group) return active.items.map(({ item }) => ({ ...(item as Card), id: uid() }));
-  if (!external.dropped) return { id: 'incoming', kind: 'incoming', label: incoming(external) };
+  if (!external.ready) return { id: 'incoming', kind: 'incoming', label: incoming(external) };
   if (external.files.length) {
     return external.files.map((file) => ({ id: uid(), kind: 'image', src: URL.createObjectURL(file), name: file.name }));
   }

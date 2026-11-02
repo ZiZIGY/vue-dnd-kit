@@ -1,7 +1,19 @@
 {
+  "DragItem": {
+    "source": "959720da4c",
+    "text": "Un ítem arrastrado: aquel desde el que empezó el arrastre, u otro de un multi-drag."
+  },
+  "DragItem.id": {
+    "source": "776be4538c",
+    "text": "Id de su elemento arrastrable (la clave de un ítem ordenable)."
+  },
   "DragItem.item": {
     "source": "7cfd4640f1",
     "text": "El objeto del ítem cuando el arrastre viene de una lista ordenable."
+  },
+  "DragItem.data": {
+    "source": "ac6ab14545",
+    "text": "Su opción `data`."
   },
   "DragItem.label": {
     "source": "97ccfdec34",
@@ -11,6 +23,10 @@
     "source": "9189758463",
     "text": "`type` normalizado del elemento arrastrable; vacío significa que encaja con cualquier destino de drop."
   },
+  "Active": {
+    "source": "91977ca5db",
+    "text": "El arrastre en curso: el ítem desde el que empezó y todos los ítems que lleva."
+  },
   "Active.id": {
     "source": "f080aacddc",
     "text": "Id del ítem desde el que empezó el arrastre."
@@ -19,9 +35,21 @@
     "source": "173336b06e",
     "text": "Todos los ids arrastrados, empezando por el principal (multi-drag)."
   },
+  "Active.items": {
+    "source": "f5b1ed4ced",
+    "text": "Todos los ítems arrastrados, el principal primero."
+  },
+  "Active.data": {
+    "source": "c6df04687f",
+    "text": "El `data` del ítem desde el que empezó el arrastre."
+  },
   "Active.label": {
     "source": "6b580da2fb",
     "text": "El `label` del ítem desde el que empezó el arrastre, el nombre que le da la gente."
+  },
+  "Active.type": {
+    "source": "24c2cd378e",
+    "text": "El `type` normalizado del ítem desde el que empezó el arrastre; vacío significa que encaja en cualquier destino de drop."
   },
   "Active.element": {
     "source": "b0e7f2b9f5",
@@ -31,17 +59,41 @@
     "source": "7964e6f559",
     "text": "Rectángulo de layout de `element` al inicio del arrastre."
   },
+  "Active.sensor": {
+    "source": "d7ac7b8437",
+    "text": "Cómo se mueve el arrastre: `'pointer'` sigue puntos, `'keyboard'` avanza de ítem en ítem (`SensorActivation.type`)."
+  },
   "Active.external": {
     "source": "c2c230e8a3",
     "text": "Un arrastre desde fuera de la página (archivos, un enlace, texto o ítems de otra ventana de la app): lo que lleva. Sus `items` se crean para él (`element` es un sustituto)."
   },
   "Active.native": {
-    "source": "70b681b12e",
-    "text": "El arrastre propio del navegador (`native`, o uno de fuera): él dibuja la imagen arrastrada, no hay overlay."
+    "source": "98192baf7a",
+    "text": "El arrastre propio del navegador (`native`, o uno de fuera): el navegador dibuja la imagen arrastrada, y no hay overlay."
+  },
+  "Over": {
+    "source": "d438eb0a0d",
+    "text": "El destino de drop bajo el arrastre."
+  },
+  "Over.id": {
+    "source": "f9a233dcfd",
+    "text": "Id del destino de drop."
+  },
+  "Over.data": {
+    "source": "c8dc5224f3",
+    "text": "La opción `data` del destino."
   },
   "Over.label": {
     "source": "c388687981",
     "text": "El `label` del destino, el nombre que le da la gente."
+  },
+  "Over.element": {
+    "source": "bea8d333cc",
+    "text": "El elemento del destino."
+  },
+  "Over.rect": {
+    "source": "7fd07d1f0f",
+    "text": "El rectángulo de `element`, medido durante el arrastre."
   },
   "Over.accepted": {
     "source": "48997f2ee2",
@@ -67,6 +119,10 @@
     "source": "0a3289fa23",
     "text": "Árboles: la profundidad a la que van (las raíces son 0)."
   },
+  "DragSource": {
+    "source": "bc3de31654",
+    "text": "De dónde vienen los ítems arrastrados, cuando es una lista ordenable."
+  },
   "DragSource.list": {
     "source": "57db105431",
     "text": "Lista ordenable de la que vienen los ítems arrastrados."
@@ -74,6 +130,22 @@
   "DragSource.remove": {
     "source": "5ef5100d7a",
     "text": "Quita los ítems arrastrados de su lista (zonas de papelera)."
+  },
+  "DragMode": {
+    "source": "c46a935d4d",
+    "text": "Lo que hace un drop: `'move'`, `'copy'` (los ítems se quedan y entran copias suyas), `'swap'` (`behavior: 'swap'`: dos ítems intercambian sus sitios) o `'insert'` (un elemento arrastrable simple entra en una lista como el ítem que creó su `createItem`)."
+  },
+  "DnDEvent": {
+    "source": "6c347e6fab",
+    "text": "Lo que llevan los eventos de arrastre: lo reciben los monitores, los eventos del provider y los hooks de los destinos de drop."
+  },
+  "DnDEvent.active": {
+    "source": "ab2a0979dd",
+    "text": "El arrastre."
+  },
+  "DnDEvent.over": {
+    "source": "3b1f124a9c",
+    "text": "El destino de drop bajo el arrastre; `null` si no está sobre nada."
   },
   "DnDEvent.pointer": {
     "source": "49759bca51",
@@ -99,6 +171,10 @@
     "source": "88a096f69f",
     "text": "Un arrastre desde fuera de la página: lo que lleva (`active.external`). Sus datos llegan al soltar."
   },
+  "DnDEndEvent": {
+    "source": "07e34f7142",
+    "text": "Lo que recibe `onDragEnd` (y el `onDrop` del destino): el evento del drop y cómo fue."
+  },
   "DnDEndEvent.dropped": {
     "source": "8ada0b47b1",
     "text": "Falso cuando el arrastre terminó fuera de todo destino de drop."
@@ -106,6 +182,10 @@
   "DnDEndEvent.accepted": {
     "source": "bf82d1aeb9",
     "text": "Ids aceptados por `onBeforeDrop` (todos los ids arrastrados, salvo que se devolviera un subconjunto)."
+  },
+  "DnDEndEvent.rejected": {
+    "source": "641da3ee5b",
+    "text": "Los demás ids arrastrados: `onBeforeDrop` los dejó fuera y vuelven a su sitio. Vacío cuando los aceptó todos."
   },
   "DnDEndEvent.droppedOutside": {
     "source": "43906c7a55",
@@ -115,6 +195,22 @@
     "source": "056be141e8",
     "text": "Lo que decide `onBeforeDrop`:\n- `'accept'` (o `true`, o nada): el drop se completa;\n- `'reject'` (o `false`): no hay drop, los ítems vuelven a su sitio;\n- una lista de ids: solo se aceptan esos ítems, los demás vuelven a su sitio;\n- `'continue'`: no hay drop, y el arrastre continúa. Con un puntero, el ítem lo vuelve a seguir (sin botón pulsado) y la siguiente liberación lo suelta, basta un clic; al tocar, se vuelve a agarrar; el teclado lo mueve como antes. Escape lo cancela. El drop vuelve a consultar `onBeforeDrop`."
   },
+  "AcceptContext": {
+    "source": "04c6b6dfb5",
+    "text": "Con qué se llama a una regla `accept` que es una función."
+  },
+  "AcceptContext.active": {
+    "source": "ab2a0979dd",
+    "text": "El arrastre."
+  },
+  "AcceptContext.items": {
+    "source": "1724543673",
+    "text": "Todos los ítems arrastrados."
+  },
+  "AcceptContext.types": {
+    "source": "e1c94af5ab",
+    "text": "Los tipos de todos los ítems arrastrados, juntos."
+  },
   "AcceptRule": {
     "source": "b40b673608",
     "text": "`'*'` u omitida acepta todo. Los ítems sin tipo encajan con cualquier regla de tipo cadena (equivalente a `groups: []` de la v2)."
@@ -123,9 +219,37 @@
     "source": "2aa08aef31",
     "text": "`'all'`: todos los ítems arrastrados deben coincidir; `'some'`: al menos uno (los demás se pueden rechazar en `onBeforeDrop`)."
   },
+  "KeyboardMoveContext": {
+    "source": "168a0c5add",
+    "text": "Con qué se llama a `getKeyboardCoordinates` para una tecla de flecha."
+  },
+  "KeyboardMoveContext.active": {
+    "source": "ab2a0979dd",
+    "text": "El arrastre."
+  },
+  "KeyboardMoveContext.pointer": {
+    "source": "efc9d40d64",
+    "text": "Dónde está ahora el arrastre, en coordenadas del viewport."
+  },
   "KeyboardMoveContext.direction": {
     "source": "a0b25b3b54",
     "text": "Vector unitario de la flecha pulsada."
+  },
+  "DnDMonitor": {
+    "source": "6f3b744e55",
+    "text": "Hooks para cada arrastre bajo el provider (`useDnDMonitor`)."
+  },
+  "DnDMonitor.onDragStart": {
+    "source": "a0e7bdf431",
+    "text": "Empezó un arrastre, después de su activación."
+  },
+  "DnDMonitor.onDragMove": {
+    "source": "454b2c8c39",
+    "text": "El arrastre se movió (como mucho una vez por fotograma)."
+  },
+  "DnDMonitor.onDragOver": {
+    "source": "290d741d10",
+    "text": "Cambió el destino bajo el arrastre."
   },
   "DnDMonitor.onBeforeDrop": {
     "source": "7c0b37588d",
@@ -134,6 +258,10 @@
   "DnDMonitor.onDragEnd": {
     "source": "117782ceb2",
     "text": "Una notificación una vez terminado el drop: las listas ordenables ya han ejecutado su `onDrop` y lo han escrito."
+  },
+  "DnDMonitor.onDragCancel": {
+    "source": "699c396c4c",
+    "text": "El arrastre se canceló o su drop se rechazó: los ítems vuelven a su sitio."
   },
   "DnDMonitor.onDragResume": {
     "source": "8e5af01ef3",
@@ -147,12 +275,76 @@
     "source": "72d709477a",
     "text": "Arrastres con teclado: la siguiente posición del puntero para una flecha (por ejemplo, el siguiente hueco ordenable)."
   },
+  "DnDSelection": {
+    "source": "37feaeeee3",
+    "text": "Los elementos arrastrables seleccionados, por id: arrastrar uno de ellos los lleva todos (multi-drag). Guardada por id, una selección sobrevive a los desmontajes (listas virtuales)."
+  },
+  "DnDSelection.ids": {
+    "source": "92b2721491",
+    "text": "Los ids seleccionados, reactivos."
+  },
+  "DnDSelection.has": {
+    "source": "aeefc055d7",
+    "text": "Si `id` está seleccionado."
+  },
+  "DnDSelection.add": {
+    "source": "c02f8715ab",
+    "text": "Selecciona estos ids."
+  },
+  "DnDSelection.delete": {
+    "source": "e426b1d84b",
+    "text": "Deselecciona estos ids."
+  },
+  "DnDSelection.toggle": {
+    "source": "04f91b4e9f",
+    "text": "Selecciona `id` o lo deselecciona; `force: true` lo selecciona, `false` lo deselecciona."
+  },
+  "DnDSelection.set": {
+    "source": "daf58f421e",
+    "text": "Selecciona estos ids y ningún otro."
+  },
+  "DnDSelection.clear": {
+    "source": "019671079e",
+    "text": "Deselecciona todos los ids."
+  },
   "DnDState": {
     "source": "227f071563",
     "text": "El estado del arrastre termina cuando se decide el drop: `active`, `over` y `pointer` pasan a valer `null` (y los droppables dejan de aceptar) mientras el overlay todavía se anima hasta su sitio. La UI derivada nunca mezcla el arrastre anterior con los datos nuevos. Mientras decide un `onBeforeDrop` asíncrono, el estado se conserva como estaba al soltar, pero la página sale del modo de arrastre: vuelven su propio cursor y la selección de texto (un diálogo de confirmación funciona con normalidad), y el overlay espera donde se soltó.\n\n`status` vale `'dragging'` mientras hay un arrastre en curso; si no, `'dropping'` mientras se decide un drop o un overlay todavía aterriza; si no, `'idle'` (aparte de `'activating'` y `'selecting'`). Un arrastre nuevo no espera a los aterrizajes: empieza enseguida, y ellos terminan a su alrededor."
   },
+  "DnDState.status": {
+    "source": "17deba0e0d",
+    "text": "Lo que está haciendo el provider (consulta `DnDStatus`)."
+  },
+  "DnDState.active": {
+    "source": "956d5f9c19",
+    "text": "El arrastre en curso; `null` si no hay ninguno, y en cuanto se decide su drop."
+  },
+  "DnDState.over": {
+    "source": "3b1f124a9c",
+    "text": "El destino de drop bajo el arrastre; `null` si no está sobre nada."
+  },
+  "DnDState.pointer": {
+    "source": "3bb30d3398",
+    "text": "El puntero en coordenadas del viewport, después de los modificadores; `null` sin arrastre."
+  },
   "DnDState.position": {
     "source": "4795780b8f",
     "text": "Dónde está la esquina superior izquierda de la caja arrastrada dentro de `over`, en vivo: `DnDEvent.position` en cada movimiento. `null` si no hay nada debajo. Un componente de overlay lo lee para mostrar dónde aterrizaría (una hora en un calendario)."
+  },
+  "DnDState.activation": {
+    "source": "ca2201da85",
+    "text": "`progress`: cuánto ha avanzado una pulsación hacia su condición de activación, de 0 a 1, mientras `status` es `'activating'`: p. ej., un anillo que se llena durante una pulsación larga."
+  },
+  "DnDState.isAutoScrolling": {
+    "source": "e5cea65cdf",
+    "text": "El desplazamiento automático está moviendo un contenedor."
+  },
+  "DnDState.selection": {
+    "source": "d265527064",
+    "text": "Los elementos arrastrables seleccionados (consulta `DnDSelection`)."
+  },
+  "DnDState.cancel": {
+    "source": "3ea64398be",
+    "text": "Cancela el arrastre (vuelve a su sitio) o la activación pendiente."
   }
 }

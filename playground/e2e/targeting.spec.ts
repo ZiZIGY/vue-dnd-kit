@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { center, dragTo, trackErrors, waitForIdle, type Point } from './helpers';
+import { center, dragTo, frames, trackErrors, waitForIdle, type Point } from './helpers';
 
 /** Presses on `from` and moves past the activation distance. */
 const grab = async (page: Page, from: Locator): Promise<Point> => {
@@ -122,18 +122,23 @@ test.describe('free drop targets', () => {
     await grab(page, inTray(page, 'r1'));
     const red = await box(zone(page, 'red'));
     const x = red.x + red.width / 2;
-    // Deep inside first: the board, left on the way in, must not be blocked any more.
+    // Deep inside first, so the board, left on the way in, is forgotten (10px on) and can't
+    // block the way out. The drag loop takes the pointer once per frame: without a frame
+    // deep inside (a slow or irregular one), the board would count as left 5px into the red
+    // zone, and the header 9px from there would stay blocked.
     await page.mouse.move(x, red.y + red.height / 2, { steps: 10 });
+    await frames(page);
     await page.mouse.move(x, red.y + 5, { steps: 3 });
+    await frames(page);
     await expect(over(page)).toHaveText('red:accepted');
 
     // Out of the red zone into the board's header.
     await page.mouse.move(x, red.y - 4);
     await expect(over(page)).toHaveText('outer:accepted');
 
-    // Jitter back 7px: still the board.
+    // Jitter back 7px: still the board, once a frame has taken the move.
     await page.mouse.move(x, red.y + 3);
-    await page.waitForTimeout(50);
+    await frames(page);
     await expect(over(page)).toHaveText('outer:accepted');
 
     // 14px away from where the red zone was left: it wins again.

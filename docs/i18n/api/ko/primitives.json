@@ -1,4 +1,8 @@
 {
+  "Key": {
+    "source": "0e20a2c263",
+    "text": "id 또는 key: draggable, 드롭 대상, 리스트, 리스트 항목의 것."
+  },
   "MaybeReadonlyRefOrGetter": {
     "source": "856e8d0c75",
     "text": "라이브러리가 읽기만 하는 값, getter, 또는 모든 종류의 ref(쓰기 가능, shallow, computed, readonly — 예: `useTemplateRef`의 반환값). Vue의 `MaybeRefOrGetter`와 달리, `string | number`가 필요한 곳에 `Ref<string>`도 받습니다."
@@ -7,9 +11,85 @@
     "source": "e1366b62a5",
     "text": "값 또는 모든 종류의 ref. 함수 자체가 하나의 값인 옵션(오버레이 컴포넌트, accept 규칙, 커스텀 애니메이션)에 쓰이며, 그래서 getter와 구별할 수 없습니다. 컴포넌트는 `shallowRef`(또는 computed)에 담으세요. Vue가 컴포넌트를 반응형으로 만들면 안 됩니다."
   },
+  "MaybeElement": {
+    "source": "1b8960adcb",
+    "text": "요소: HTML 또는 SVG 요소, 또는 컴포넌트 인스턴스(그 루트 요소 `$el`). 템플릿 ref가 주는 것과 같습니다. 아직 없을 때(마운트 전)는 `null` 또는 `undefined`입니다."
+  },
+  "MaybeElementRef": {
+    "source": "603f215a38",
+    "text": "컴포저블이 다루는 요소(`makeDraggable(target)`): 요소 자체, 템플릿 ref(`useTemplateRef`), 또는 getter. 바뀌어도 됩니다(`v-if`). 라이브러리가 따라갑니다."
+  },
+  "Coordinates": {
+    "source": "2f8f5c3336",
+    "text": "점 또는 오프셋(px): 뷰포트 왼쪽 위 모서리로부터의 위치, 또는 드래그가 시작된 곳으로부터의 오프셋(`delta`, `transform`)."
+  },
+  "Coordinates.x": {
+    "source": "b43f5ddec4",
+    "text": "가로 방향. 오른쪽으로 갈수록 커집니다."
+  },
+  "Coordinates.y": {
+    "source": "8f097fc225",
+    "text": "세로 방향. 아래로 갈수록 커집니다."
+  },
+  "Size": {
+    "source": "255c399f55",
+    "text": "너비와 높이(px)."
+  },
+  "Size.width": {
+    "source": "f4f2b634d9",
+    "text": "너비(px)."
+  },
+  "Size.height": {
+    "source": "6e660db892",
+    "text": "높이(px)."
+  },
+  "Rect": {
+    "source": "62078f7f5c",
+    "text": "뷰포트 좌표의 박스(px). `getBoundingClientRect()`가 주는 것과 같습니다."
+  },
+  "Rect.top": {
+    "source": "4e05fbd563",
+    "text": "위쪽 가장자리. 뷰포트 위쪽에서부터 잽니다."
+  },
+  "Rect.left": {
+    "source": "3d40777368",
+    "text": "왼쪽 가장자리. 뷰포트 왼쪽에서부터 잽니다."
+  },
+  "Rect.width": {
+    "source": "d31ce8afdd",
+    "text": "너비."
+  },
+  "Rect.height": {
+    "source": "db48d67b0f",
+    "text": "높이."
+  },
+  "Rect.right": {
+    "source": "7158323919",
+    "text": "오른쪽 가장자리. 뷰포트 왼쪽에서부터 잽니다: `left + width`."
+  },
+  "Rect.bottom": {
+    "source": "44b04207ae",
+    "text": "아래쪽 가장자리. 뷰포트 위쪽에서부터 잽니다: `top + height`."
+  },
+  "MaybePromise": {
+    "source": "f3d05df331",
+    "text": "값, 또는 그 값의 promise: 비동기일 수 있는 훅이 반환하는 것(`onBeforeDrop`)."
+  },
+  "DnDStatus": {
+    "source": "d5d49a4ce6",
+    "text": "프로바이더가 하고 있는 일:\n- `'idle'`: 아무것도 하지 않습니다.\n- `'activating'`: 누르기가 활성화 조건(거리, 길게 누르기)을 기다립니다.\n- `'dragging'`: 드래그가 진행 중입니다.\n- `'dropping'`: 드롭을 결정하는 중이거나(비동기 `onBeforeDrop`), 오버레이가 아직 안착하는 중입니다.\n- `'selecting'`: 선택 영역이 사각형을 그리고 있습니다."
+  },
   "SensorType": {
     "source": "ddccc05a96",
     "text": "어떤 센서가 조종하든 드래그가 움직이는 방식(`SensorActivation.type`): `'pointer'`는 지점을 따라가고, `'keyboard'`는 항목 단위로 움직입니다."
+  },
+  "PointerKind": {
+    "source": "5db385a430",
+    "text": "누른 포인터의 종류(`PointerEvent.pointerType`): 활성화는 종류별로 설정합니다."
+  },
+  "ActivationConstraint": {
+    "source": "e5b4786b75",
+    "text": "누르기가 드래그가 되기 전에 충족해야 하는 조건: `distance`만큼 움직이거나 `delay` 동안 누르고 있기 중 먼저 오는 쪽. 아무것도 설정하지 않으면 드래그가 바로 시작됩니다."
   },
   "ActivationConstraint.distance": {
     "source": "70ede97eca",
@@ -24,7 +104,7 @@
     "text": "`delay`와 함께: 활성화를 중단시키는 이동 거리(px). 페이지가 스크롤될 수 있도록 합니다."
   },
   "ActivationOptions": {
-    "source": "75a2dcce93",
-    "text": "포인터 종류별 설정. 기본값: 마우스/펜 `{ distance: 4 }`(핸들에서는 즉시), 터치 `{ delay: 200, tolerance: 5 }`."
+    "source": "a41c6198e1",
+    "text": "포인터 종류별 설정. 기본값: 마우스 `{ distance: 4 }`(핸들에서는 즉시), 펜 `{ distance: 4 }`, 터치 `{ delay: 200, tolerance: 5 }`."
   }
 }

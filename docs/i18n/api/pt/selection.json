@@ -7,13 +7,21 @@
     "source": "c7f915cabf",
     "text": "Teclas (`KeyboardEvent.key` ou `.code`) que precisam estar pressionadas para que um clique desenhe um retângulo: todas elas, ou `'some'` delas."
   },
-  "SelectionAreaOptions": {
-    "source": "395589bdaa",
-    "text": "Opções de `makeSelectionArea`. `modifier`, `strategy`, `accept` e `disabled` aceitam um valor, um ref ou um getter (`accept`: um valor ou um ref, uma função é uma regra) e são lidos quando um clique inicia um retângulo; ligar `disabled` também cancela um que esteja em andamento."
+  "SelectionModifier.keys": {
+    "source": "d97d7241ad",
+    "text": "As teclas, como `KeyboardEvent.key` (`'Shift'`) ou `.code` (`'KeyA'`). Nenhuma: qualquer clique desenha."
   },
-  "SelectionAreaOptions.selection": {
-    "source": "294f767d3b",
-    "text": "Por padrão, a seleção do provider."
+  "SelectionModifier.method": {
+    "source": "a46efd8e2a",
+    "text": "`'every'`: todas as `keys` precisam estar pressionadas; `'some'`: uma delas basta."
+  },
+  "SelectionAreaOptions": {
+    "source": "951e39f4a0",
+    "text": "Opções de `makeSelectionArea`. O retângulo seleciona na seleção do provider, a mesma que o multi-drag e `selected` leem (`useDnD().selection`). `modifier`, `strategy`, `accept` e `disabled` aceitam um valor, um ref ou um getter (`accept`: um valor ou um ref, uma função é uma regra) e são lidos quando um clique inicia um retângulo; ligar `disabled` também cancela um que esteja em andamento."
+  },
+  "SelectionAreaOptions.modifier": {
+    "source": "65c8a221ac",
+    "text": "Teclas que precisam estar pressionadas para um clique desenhar um retângulo. Padrão: nenhuma, qualquer clique no espaço vazio desenha."
   },
   "SelectionAreaOptions.strategy": {
     "source": "0367d14627",
@@ -22,6 +30,22 @@
   "SelectionAreaOptions.accept": {
     "source": "6293487b0c",
     "text": "Quais draggables o retângulo seleciona; o mesmo comparador dos alvos de drop."
+  },
+  "SelectionAreaOptions.disabled": {
+    "source": "ac33d3517f",
+    "text": "`true`: os cliques não desenham nenhum retângulo."
+  },
+  "SelectionAreaOptions.onSelected": {
+    "source": "1ca0d338e8",
+    "text": "O retângulo terminou: recebe todos os ids selecionados agora."
+  },
+  "SelectionAreaReturn": {
+    "source": "f6f48602c4",
+    "text": "O que `makeSelectionArea` retorna."
+  },
+  "SelectionAreaReturn.isSelecting": {
+    "source": "f38c578911",
+    "text": "Um retângulo está sendo desenhado: renderize-o nesse momento."
   },
   "SelectionAreaReturn.style": {
     "source": "e4525127b1",

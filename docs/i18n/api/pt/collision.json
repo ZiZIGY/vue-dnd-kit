@@ -1,11 +1,39 @@
 {
+  "CollisionCandidate": {
+    "source": "32a74e6d93",
+    "text": "Um alvo de drop que uma detecção de colisão pode escolher: habilitado, na página e não totalmente recortado."
+  },
+  "CollisionCandidate.id": {
+    "source": "f9a233dcfd",
+    "text": "Id do alvo de drop."
+  },
   "CollisionCandidate.rect": {
     "source": "6367b9d53a",
     "text": "Parte visível do alvo: recortada pelos contêineres de rolagem dele e pela viewport."
   },
+  "CollisionCandidate.priority": {
+    "source": "c0a3e16a72",
+    "text": "A `priority` do alvo (padrão 0): o maior vence quando alvos se sobrepõem sem aninhamento. Itens ordenáveis vencem os contêineres."
+  },
   "CollisionCandidate.depth": {
     "source": "87728867d4",
     "text": "Nível de aninhamento entre os alvos de drop: 0 no topo, alvos mais profundos têm valores maiores."
+  },
+  "CollisionArgs": {
+    "source": "703334f32a",
+    "text": "O que uma detecção de colisão recebe, a cada movimento do arraste."
+  },
+  "CollisionArgs.pointer": {
+    "source": "49759bca51",
+    "text": "Ponteiro em coordenadas da viewport, depois dos modificadores."
+  },
+  "CollisionArgs.overlayRect": {
+    "source": "38ddd4b88b",
+    "text": "Retângulo da caixa arrastada (o overlay, ou o próprio elemento com `overlay: false`) onde o arraste a colocou."
+  },
+  "CollisionArgs.candidates": {
+    "source": "e999e2b499",
+    "text": "Todos os alvos de drop para onde o arraste poderia ir, quer a regra `accept` deles aceite o arraste ou não."
   },
   "CollisionArgs.hits": {
     "source": "78fd5d5eeb",
@@ -15,9 +43,17 @@
     "source": "1248ad0f81",
     "text": "Retorna os ids dos candidatos, o melhor primeiro."
   },
+  "ModifierArgs": {
+    "source": "abd362ec1a",
+    "text": "O que um modificador recebe, a cada movimento do arraste."
+  },
   "ModifierArgs.transform": {
     "source": "559160a1f5",
     "text": "Deslocamento desde o início do arraste, como modificado pelos modificadores anteriores."
+  },
+  "ModifierArgs.active": {
+    "source": "ab2a0979dd",
+    "text": "O arraste."
   },
   "ModifierArgs.activeRect": {
     "source": "c410ca6675",
@@ -38,5 +74,37 @@
   "ModifierArgs.containerShift": {
     "source": "f4f9413e80",
     "text": "Quanto o conteúdo onde o arraste começou se moveu na tela desde o início: o contêiner se moveu (a página ou um contêiner em volta dele rolou, o layout mudou) e o conteúdo dele rolou dentro dele. As travas de eixo prendem o outro eixo ali, para que o arraste fique na sua linha ou coluna desse conteúdo."
+  },
+  "ModifierArgs.windowRect": {
+    "source": "4d3a00846c",
+    "text": "Retângulo da janela (a viewport)."
+  },
+  "ModifierArgs.over": {
+    "source": "9f1ad2338d",
+    "text": "O alvo de drop sob o arraste, como encontrado por último; `null` sobre nada."
+  },
+  "Modifier": {
+    "source": "c32d9e8b62",
+    "text": "Muda para onde o item arrastado vai: recebe o deslocamento do arraste (`transform`) e retorna um novo."
+  },
+  "SnapToGridOptions": {
+    "source": "a9d64c01db",
+    "text": "Opções de `snapToGrid`."
+  },
+  "SnapToGridOptions.x": {
+    "source": "c5a80a7c74",
+    "text": "A largura da célula em px. Sem ela (ou 0), o arraste se move livremente no eixo x."
+  },
+  "SnapToGridOptions.y": {
+    "source": "39512fba18",
+    "text": "A altura da célula em px. Sem ela (ou 0), o arraste se move livremente no eixo y: `{ y: 15 }` encaixa só o horário de um evento de calendário."
+  },
+  "SnapToGridOptions.origin": {
+    "source": "51c773a778",
+    "text": "`'container'` (padrão): o canto superior esquerdo do overlay pousa nas linhas de uma grade traçada a partir do canto superior esquerdo do contêiner (`containerRect`: a lista ordenável ou o elemento pai). `'delta'`: o deslocamento do arraste é arredondado, mantendo fora da grade o ponto onde o item começou."
+  },
+  "SnapToGridOptions.smooth": {
+    "source": "9952acec7d",
+    "text": "Desliza o overlay entre as posições encaixadas (padrão 80ms). A colisão continua usando a posição encaixada na hora."
   }
 }

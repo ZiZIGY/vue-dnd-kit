@@ -18,7 +18,7 @@ const { items } = makeSortableList(list, {
   items: () => props.field.options,
   axis: 'y',
   modifiers: [restrictToParent],
-  animate: true,
+  animateChanges: true,
   onDrop: (event) => {
     event.preventDefault();
     setOptions(event.result.get('options')!);

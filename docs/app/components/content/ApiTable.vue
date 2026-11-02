@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { api, translations } from '#api';
+  import { api } from '#api';
 
   /**
    * The members of an interface (or the definition of a type) of the library, read from its
@@ -7,45 +7,13 @@
    * In another language, the descriptions translated for it, or the English.
    */
   const props = defineProps<{ name: string }>();
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
 
   const entry = computed(() => api[props.name]);
   if (!entry.value && import.meta.dev) console.warn(`[docs] No type named "${props.name}" in the library's types.`);
 
-  const words = (await translations[locale.value]?.())?.default ?? {};
   /** A description in the page's language: `key` is `Name` or `Name.member`. */
-  const text = (key: string, english: string) => words[key] ?? english;
-
-  const escape = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  /** Inline marks of the JSDoc: `code`, **bold**. */
-  const inline = (text: string) =>
-    escape(text)
-      .replace(/`([^`]+)`/g, '<code>$1</code>')
-      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-
-  /** JSDoc as HTML: paragraphs, and `- ` lines as a list. */
-  const describe = (text: string) => {
-    const blocks: string[] = [];
-    let paragraph: string[] = [];
-    let list: string[] = [];
-    const flush = () => {
-      if (paragraph.length) blocks.push(`<p>${inline(paragraph.join(' '))}</p>`);
-      if (list.length) blocks.push(`<ul>${list.map((item) => `<li>${inline(item)}</li>`).join('')}</ul>`);
-      paragraph = [];
-      list = [];
-    };
-    for (const raw of text.split('\n')) {
-      const line = raw.trim();
-      if (!line) flush();
-      else if (line.startsWith('- ')) {
-        if (paragraph.length) flush();
-        list.push(line.slice(2));
-      } else if (list.length) list[list.length - 1] += ` ${line}`;
-      else paragraph.push(line);
-    }
-    flush();
-    return blocks.join('');
-  };
+  const text = await useApiText();
 
   const anchor = (member: string) => `${props.name}-${member}`.toLowerCase();
 </script>
@@ -55,10 +23,10 @@
     v-if="entry"
     class="not-prose my-6"
   >
-    <div
+    <ApiText
       v-if="entry.description"
-      class="api-text mb-4 text-[15px] leading-relaxed text-muted"
-      v-html="describe(text(name, entry.description))"
+      class="mb-4 text-[15px] leading-relaxed text-muted"
+      :text="text(name, entry.description)"
     />
     <pre
       v-if="entry.kind === 'type'"
@@ -101,43 +69,13 @@
               >{{ member.reactive === 'getter' ? t('api.reactive') : t('api.reactiveRef') }}</span
             >
           </div>
-          <div
+          <ApiText
             v-if="member.description || member.deprecated"
-            class="api-text mt-2 text-[14px] leading-relaxed text-muted"
-            v-html="describe([member.deprecated, member.description && text(`${name}.${member.name}`, member.description)].filter(Boolean).join('\n\n'))"
+            class="mt-2 text-[14px] leading-relaxed text-muted"
+            :text="[member.deprecated, member.description && text(`${name}.${member.name}`, member.description)].filter(Boolean).join('\n\n')"
           />
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-  .api-text :deep(code) {
-    padding: 0.05em 0.35em;
-    border-radius: var(--ui-radius);
-    background: var(--ui-bg-elevated);
-    font-family: var(--font-mono);
-    font-size: 0.9em;
-    color: var(--ui-text-highlighted);
-  }
-
-  .api-text :deep(p + p),
-  .api-text :deep(p + ul),
-  .api-text :deep(ul + p) {
-    margin-top: 0.5rem;
-  }
-
-  .api-text :deep(ul) {
-    padding-left: 1.1rem;
-    list-style: disc;
-  }
-
-  .api-text :deep(li + li) {
-    margin-top: 0.25rem;
-  }
-
-  .api-text :deep(strong) {
-    color: var(--ui-text-highlighted);
-  }
-</style>

@@ -26,7 +26,7 @@ const { items, indicator } = makeSortableList(page, {
   // The whole canvas takes the drop: let go beside or below the page, the line says where.
   dropzone: scroller,
   // The toolbar's buttons, undo and redo move sections without a drag: they slide too.
-  animate: true,
+  animateChanges: true,
   // A new section, or one moved, is selected.
   onDrop: (event) => builder.select(event.items[0]!.id),
 });

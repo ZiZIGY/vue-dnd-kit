@@ -36,7 +36,7 @@ const { items } = makeSortableList(list, {
   // A row is as wide as the list: its box is centered on the pointer, and the overlay hangs a chip off it.
   modifiers: () => (grid.value ? [] : [snapCenterToCursor]),
   // Changes no drag made slide and fade too: a new sort, a new folder, files sent to the Trash.
-  animate: true,
+  animateChanges: true,
   onDrop: (event) => {
     // Into a folder, `dropInto` has saved it for Undo; a drop where it was changes nothing.
     if (event.to.index === -1 || !event.result.size) return;

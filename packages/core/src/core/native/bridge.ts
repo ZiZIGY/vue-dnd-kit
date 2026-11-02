@@ -107,6 +107,8 @@ export function useNativeDrags(manager: DnDManager): void {
     if (event.pointerType !== 'mouse' || event.button !== 0 || !(event.target instanceof Element)) return;
     const found = manager.findDraggable(event.target);
     if (!found?.entry.getNative?.() || found.entry.isDisabled() || !canStartFrom(found.entry, found.element, event.target, 'pointer')) return;
+    // `canDrag` is asked at the press, as the pointer sensor does.
+    if (found.entry.canDrag && !found.entry.canDrag(event)) return;
     // The user's own attribute stays as it is.
     if (found.element.hasAttribute('draggable')) return;
     found.element.setAttribute('draggable', 'true');

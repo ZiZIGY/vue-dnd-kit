@@ -12,6 +12,7 @@ import {
   type Ref,
 } from 'vue';
 import type {
+  ActivationOptions,
   DropAnimation,
   Key,
   MaybeElementRef,
@@ -27,6 +28,7 @@ import { createDroppable } from '../core/makeDroppable';
 import { createId, toElement } from '../utils/dom';
 import { read } from '../utils/read';
 import { useSortableGroup, type SortableGroup } from './group';
+import { putAllows } from './accept';
 import type { ListEntry } from './entry';
 import { flatLayout } from './layout';
 import { changedRun } from './draft';
@@ -45,6 +47,8 @@ export interface SortableContext {
   getModifiers?: () => Modifier[] | undefined;
   /** The list's `axis`, used when the item has none. */
   getAxis?: () => 'x' | 'y' | undefined;
+  /** The list's `activation`, used when the item has none. */
+  getActivation?: () => ActivationOptions | undefined;
 }
 
 /** What the lists (and trees) of a component give the items it renders: several are told apart by the DOM. */
@@ -90,6 +94,7 @@ export const provideSortableContext = (
   dropAnimation: MaybeReadonlyRef<DropAnimation | undefined>,
   getModifiers?: () => Modifier[] | undefined,
   getAxis?: () => 'x' | 'y' | undefined,
+  getActivation?: () => ActivationOptions | undefined,
 ): void => {
   const context: SortableContext = {
     group,
@@ -99,6 +104,7 @@ export const provideSortableContext = (
     getDropAnimation: () => unref(dropAnimation),
     getModifiers,
     getAxis,
+    getActivation,
   };
   // Several lists in one component: its items find theirs by the DOM (`contextOf`).
   const instance = getCurrentInstance();
@@ -146,22 +152,34 @@ export const withHidden = <T>(
   return [...first, ...next.flatMap((key) => [lookup(key), ...(after.get(key) ?? [])])];
 };
 
+/** Bundlers replace it: development builds keep the warnings, production drops them. */
+declare const process: { env: { NODE_ENV?: string } };
+
 let warnedClone = false;
 
 /** `group.pull` of a list or tree: `'clone'` needs a `clone` option, without one the items stay (with a warning). */
-export const pullOf = (group: SortableGroupOptions | undefined, canClone: boolean): boolean | 'clone' => {
+export const pullOf = (group: Pick<SortableGroupOptions, 'pull'> | undefined, canClone: boolean): boolean | 'clone' => {
   const pull = group?.pull ?? true;
   if (pull === 'clone' && !canClone) {
-    if (!warnedClone) console.warn('[vue-dnd-kit] group.pull: \'clone\' needs a `clone` option; items stay in the list.');
+    if (process.env.NODE_ENV !== 'production' && !warnedClone) {
+      console.warn('[vue-dnd-kit] group.pull: \'clone\' needs a `clone` option; items stay in the list.');
+    }
     warnedClone = true;
     return false;
   }
   return pull;
 };
 
+/** `external` of a list or tree makes its items with `createItem`: without one it takes nothing, and development builds say so. */
+export const checkExternal = (options: { external?: unknown; createItem?: unknown }, kind: 'list' | 'tree') => {
+  if (process.env.NODE_ENV !== 'production' && read(options.external) && !options.createItem) {
+    console.warn(`[vue-dnd-kit] A sortable ${kind} with \`external\` needs \`createItem\` to make items of what comes from outside the page; without one it takes nothing.`);
+  }
+};
+
 /**
- * Makes a container a sortable list. Render the returned `items` (the draft order);
- * the result is written back to `options.items` on drop, after `onDrop`, unless
+ * Makes a container a sortable list. Render the returned `items` (the draft order), not
+ * your array: the drop is written back to `options.items`, after `onDrop`, unless
  * `event.preventDefault()` leaves `event.result` to you.
  */
 export function makeSortableList<T>(
@@ -172,6 +190,7 @@ export function makeSortableList<T>(
   const id = options.id ?? createId('sortable');
   const groupOptions = typeof options.group === 'string' ? { name: options.group } : options.group;
   const group = useSortableGroup(manager, groupOptions?.name ?? `sortable:${id}`);
+  checkExternal(options, 'list');
   const getKey = (options.getKey ?? defaultGetKey) as (item: T) => Key;
   const source = () => read<readonly T[]>(options.items) as T[];
   // `filter`: the list shows, and sorts, only these.
@@ -196,15 +215,12 @@ export function makeSortableList<T>(
     strategy: () => read(options.strategy) ?? 'vertical',
     placeholder: () => read(options.placeholder) ?? 'item',
     animation: () => unref(options.animation) ?? manager.props.animation,
-    animate: () => read(options.animate) ?? manager.props.animate,
+    animate: () => read(options.animateChanges) ?? manager.props.animateChanges,
     animateSize: () => read(options.animateSize) ?? true,
     isDisabled: () => !!read(options.disabled),
     canSort: () => read(options.sort) !== false,
     pull: () => pullOf(groupOptions, !!options.clone),
-    canPut: (context) => {
-      const put = groupOptions?.put ?? true;
-      return typeof put === 'function' ? put(context) : put;
-    },
+    canPut: (context) => putAllows(groupOptions?.put as SortableGroupOptions['put'], context, manager),
     dropOutside: () =>
       read(options.dropOutside) ?? (read(options.placeholder) === 'indicator' ? 'cancel' : 'placeholder'),
     behavior: () => read(options.behavior) ?? 'sort',
@@ -246,10 +262,11 @@ export function makeSortableList<T>(
     {
       id,
       label: options.label,
+      data: options.data,
       disabled: () => !!read(options.disabled) || group.isInert(entry),
       // As a target: what the overlay shows over it, and how it lands in it.
-      overlay: options.overOverlay,
-      dropAnimation: options.overDropAnimation,
+      overOverlay: options.overOverlay,
+      overDropAnimation: options.overDropAnimation,
       // Drags from outside the page it takes (with `createItem`).
       external: options.external,
     },
@@ -264,6 +281,7 @@ export function makeSortableList<T>(
     options.dropAnimation,
     () => read(options.modifiers),
     () => read(options.axis),
+    () => read(options.activation),
   );
 
   // A new draft usually differs from the previous one in a short run (a reorder): only

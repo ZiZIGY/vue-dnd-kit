@@ -3,9 +3,21 @@
     "source": "957ec8f6ce",
     "text": "可排序列表或树（其可见行）中的一个位置：`index` 从 0 开始计数，总数为 `length`。"
   },
+  "AnnouncedPosition.list": {
+    "source": "31b274663e",
+    "text": "列表或树的 id。"
+  },
   "AnnouncedPosition.label": {
     "source": "702bfecdc2",
     "text": "列表的 `label`，即人们对它的称呼。"
+  },
+  "AnnouncedPosition.index": {
+    "source": "2155e11380",
+    "text": "位置，从 0 开始：内置文本播报的是 `index + 1`。"
+  },
+  "AnnouncedPosition.length": {
+    "source": "97c61b39e8",
+    "text": "列表共有多少个位置。"
   },
   "AnnouncementContext": {
     "source": "884af39ecf",
@@ -28,8 +40,24 @@
     "text": "这次拖拽是复制（`group.pull: 'clone'`、复制键）。"
   },
   "Announcements": {
-    "source": "08ba8bd127",
-    "text": "给屏幕阅读器的文本。返回 `undefined` 使用内置文本，返回 `''` 则不播报。`context` 包含可排序列表的内置文本所播报的位置。"
+    "source": "b5a69fbd7f",
+    "text": "给屏幕阅读器的文本，按事件区分。返回 `undefined` 使用内置文本，返回 `''` 则不播报。`context` 包含可排序列表的内置文本所播报的位置。\n\n文本由 provider 的实时区域（live region）播报（移动要等拖拽停留 500 ms 之后）；`undefined` 把该事件交给下一个来源（集成提供的文本，例如可排序列表的位置，然后是默认文本）。拿起时找到的目标不会播报移动：此时还没有任何东西移动。"
+  },
+  "Announcements.onDragStart": {
+    "source": "cb7361dadf",
+    "text": "拖拽开始了。"
+  },
+  "Announcements.onDragOver": {
+    "source": "e7155df562",
+    "text": "拖拽移到了另一个目标上方，或列表中的另一个位置（停留 500 ms 之后）。"
+  },
+  "Announcements.onDragEnd": {
+    "source": "56ab53c578",
+    "text": "放置已生效，或拖拽在所有目标之外结束。"
+  },
+  "Announcements.onDragCancel": {
+    "source": "e76ef54e23",
+    "text": "拖拽被取消，或者它的放置被拒绝。"
   },
   "Announcements.onDragResume": {
     "source": "d4806359e7",
@@ -39,9 +67,21 @@
     "source": "35562b8590",
     "text": "某个集成（可排序列表）的文本，以及它为 provider 自身的文本所知道的上下文。"
   },
+  "KeyboardOptions": {
+    "source": "bb782ceb9e",
+    "text": "键盘拖拽（provider 的 `keyboard`）：它们的按键，以及自由拖拽的步长。"
+  },
+  "KeyboardOptions.keys": {
+    "source": "c36afa9f52",
+    "text": "用于拿起（`start`）、放下和取消的按键，以 `KeyboardEvent.code`（`'Space'`、`'KeyW'`）或 `.key`（`'Enter'`、`'w'`）表示。默认：Space 和 Enter 拿起和放下，Escape 取消。方向键始终用于移动。"
+  },
   "KeyboardOptions.step": {
     "source": "66a729c31a",
     "text": "自由（非可排序）拖拽中每按一次方向键移动的像素数。默认 25。"
+  },
+  "AutoScrollOptions": {
+    "source": "c15af10035",
+    "text": "拖拽靠近容器边缘时容器如何滚动（provider 的 `autoScroll`）。"
   },
   "AutoScrollOptions.threshold": {
     "source": "1b2cd0615c",
@@ -50,6 +90,10 @@
   "AutoScrollOptions.maxSpeed": {
     "source": "4ebcb33d64",
     "text": "最大速度，单位为每 16ms 帧的像素数。"
+  },
+  "AutoScrollOptions.acceleration": {
+    "source": "c2b02de232",
+    "text": "指针位于容器边缘时的速度，单位为每帧 px：在边缘区域内更慢，越过边缘更快，最高到 `maxSpeed`。默认 10。"
   },
   "HapticPattern": {
     "source": "1fb9df65e6",
@@ -75,17 +119,41 @@
     "source": "54d244b821",
     "text": "放置被拒绝（被目标或 `onBeforeDrop`）、项飞回原处时。默认 `false`。"
   },
+  "DnDProviderProps": {
+    "source": "e1d670147b",
+    "text": "`DnDProvider` 的 props。大多数在 provider 需要时读取：修改其中一个，下一次拖拽就会使用它。"
+  },
+  "DnDProviderProps.collision": {
+    "source": "629dec725a",
+    "text": "如何选择拖拽下方的目标。默认 `pointerFirst`；也可以用另一个内置的（`closestCorners`）或你自己的。"
+  },
+  "DnDProviderProps.modifiers": {
+    "source": "71e9e53a44",
+    "text": "用于每次拖拽的修饰器，最先应用：拖拽区域、可拖拽元素和列表的修饰器在其后。"
+  },
   "DnDProviderProps.animation": {
     "source": "699c35a63c",
     "text": "可排序列表的默认 FLIP 动画。"
   },
   "DnDProviderProps.dropAnimation": {
-    "source": "f99201968c",
-    "text": "浮层在放置时如何落位、在取消时如何飞回原处，在没有更近的设置时使用：放置目标的 `dropAnimation` 最先，然后是被拖拽项自己的（或它所在列表的），最后才是这个。"
+    "source": "60c09d4b6d",
+    "text": "浮层在放置时如何落位、在取消时如何飞回原处，在没有更近的设置时使用：放置目标的 `overDropAnimation` 最先，然后是被拖拽项自己的（或它所在列表的），最后才是这个。"
   },
-  "DnDProviderProps.animate": {
-    "source": "e7b8ee12ca",
-    "text": "可排序列表和树的默认 `animate`：为非拖拽引起的项的变化添加动画。默认关闭。"
+  "DnDProviderProps.animateChanges": {
+    "source": "37255f7e71",
+    "text": "可排序列表和树的默认 `animateChanges`：为非拖拽引起的项的变化添加动画。默认关闭。"
+  },
+  "DnDProviderProps.autoScroll": {
+    "source": "b84b62fce5",
+    "text": "拖拽靠近容器和页面边缘时滚动它们。默认 `true`；选项用于调整，`false` 关闭。列表、树和拖拽区域可以覆盖它。"
+  },
+  "DnDProviderProps.activation": {
+    "source": "afc7892642",
+    "text": "按下在变成拖拽之前必须满足的条件，按指针类型设置（默认值见 `ActivationOptions`）。拖拽区域、列表、树、项和可拖拽元素可以覆盖它。"
+  },
+  "DnDProviderProps.keyboard": {
+    "source": "9f75dfd23a",
+    "text": "键盘拖拽：它们的按键和步长。`false` 关闭键盘拖拽；Escape 仍然可以取消任何拖拽。"
   },
   "DnDProviderProps.sensors": {
     "source": "180c7efcc3",
@@ -99,6 +167,10 @@
     "source": "c45bff39ad",
     "text": "把移动变成复制的按键（KeyboardEvent.key）。默认为 `'Alt'`；`null` 表示禁用。"
   },
+  "DnDProviderProps.overlayTo": {
+    "source": "274db53619",
+    "text": "浮层渲染到哪里：选择器或元素。默认 `'body'`。模态 `<dialog>` 位于页面其余部分之上：在其中拖拽时，浮层需要渲染到它里面。"
+  },
   "DnDProviderProps.overlayFit": {
     "source": "2cebf1b9ab",
     "text": "拖拽时浮层的尺寸。`'slot'`（默认）：它跟随项将落入的位置，所以经过另一个列表时它会采用那个列表中项的尺寸，放置时也不需要调整尺寸。它围绕指针调整尺寸，指针始终位于盒子中相同的比例位置。`'source'`：保持被拖拽元素的尺寸。默认浮层的内容会按新尺寸重新布局；它永远不会被缩放。"
@@ -108,8 +180,8 @@
     "text": "多项拖拽：拿起时有多少个被拖拽项获得克隆，即抓起的项以及按放置顺序与它相邻的其他项。默认 5；`'all'` 克隆每一个已渲染的项。默认浮层显示这些克隆，并为其余的项计数（`+N`）；在你自己的布局中，`DragPreview` 为没有克隆的项渲染它的插槽。每个克隆都会飞：取消时飞回它的项，放置时飞到它的位置，放置进某个区域时依次飞入该区域。克隆是一起生成的，每次快照过程只为全部克隆做一次布局，但每个克隆都要读取它的样式：在慢速手机上留意很长的项。"
   },
   "DnDProviderProps.overlayTransition": {
-    "source": "6852def127",
-    "text": "拖拽过程中浮层从一个组件换成另一个组件的方式（放置目标的 `overlay` 接管，或 `overlay` ref 被切换）：`true`（默认）在 150 ms 内交叉淡入淡出，`false` 立即替换，对象则是包裹内容根元素的 Vue `<Transition>` 的 props（`name`、`mode`，以及用于 GSAP 或 motion 的 JS 钩子）。没有 `mode: 'out-in'` 时两者会同时显示：给离开的那个设置 `position: absolute`（`.<name>-leave-active`），让它们在盒子里叠在一起。"
+    "source": "4182e55d7d",
+    "text": "拖拽过程中浮层从一个组件换成另一个组件的方式（放置目标的 `overOverlay` 接管，或 `overlay` ref 被切换）：`true`（默认）在 150 ms 内交叉淡入淡出，`false` 立即替换，对象则是包裹内容根元素的 Vue `<Transition>` 的 props（`name`、`mode`，以及用于 GSAP 或 motion 的 JS 钩子）。没有 `mode: 'out-in'` 时两者会同时显示：给离开的那个设置 `position: absolute`（`.<name>-leave-active`），让它们在盒子里叠在一起。"
   },
   "DnDProviderProps.overlayClass": {
     "source": "fe858c5071",
@@ -119,9 +191,13 @@
     "source": "0729e8985f",
     "text": "为部分事件提供自己的文本（参见 `Announcements`）；`false` 让实时区域保持静默。"
   },
+  "DnDProviderProps.screenReaderInstructions": {
+    "source": "e835bc26b0",
+    "text": "如何用键盘拖拽，屏幕阅读器会为每个可拖拽元素读出（它的 `aria-describedby`）。默认：关于 Space、Enter、方向键和 Escape 的英文说明。"
+  },
   "DnDProviderProps.defaultStyles": {
-    "source": "b635d7cd38",
-    "text": "注入零优先级的默认样式（占位的透明度、拖拽期间禁止选中文本）。"
+    "source": "9cecc4e9bf",
+    "text": "注入默认外观：零优先级、分层的 CSS，让占位元素和多项拖拽留在原处的项变淡（`opacity: 0.4`）。默认 `true`；`false` 把外观交给你。拖拽所需的样式无论如何都会注入：拖拽期间禁止选中文本和滚动锚定（虚拟列表依赖于此）、拖拽光标（`--dnd-cursor`），以及 iOS 上长按时不弹出链接菜单。"
   },
   "DnDContext": {
     "source": "224db9f60d",
@@ -130,6 +206,10 @@
   "OverlaySlotProps": {
     "source": "38a21c4b6d",
     "text": "浮层显示的内容：provider 的 `#overlay` 插槽和浮层组件（可拖拽元素、可排序项、列表和树的 `overlay` 选项）的 props。"
+  },
+  "OverlaySlotProps.active": {
+    "source": "ab2a0979dd",
+    "text": "这次拖拽。"
   },
   "OverlaySlotProps.items": {
     "source": "10d477a1e7",
@@ -142,6 +222,14 @@
   "OverlaySlotProps.accepted": {
     "source": "f7641f18e1",
     "text": "`over` 是否接收被拖拽的项；下方没有目标时为 `false`。"
+  },
+  "OverlaySlotProps.status": {
+    "source": "14a833949b",
+    "text": "`'dragging'`，然后在浮层落位（或飞回原处）时为 `'dropping'`。"
+  },
+  "OverlaySlotProps.mode": {
+    "source": "d0692a357f",
+    "text": "此刻放置会做什么（见 `DnDEvent.mode`）：例如复制时显示一个加号。"
   },
   "OverlaySlotProps.to": {
     "source": "a7cc5a79db",

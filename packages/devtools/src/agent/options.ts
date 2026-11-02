@@ -60,7 +60,7 @@ const PROVIDER: Record<string, Spec> = {
   modifiers: MODIFIER_NAMES,
   animation: ANIMATION,
   dropAnimation: ANIMATION,
-  animate: ANIMATE,
+  animateChanges: ANIMATE,
   activation: ACTIVATION,
   keyboard: { choices: [false], input: 'json', template: { step: 25 } },
   haptics: { choices: [true, false], input: 'json', template: { start: true, enter: false, drop: false, refuse: false } },
@@ -78,7 +78,7 @@ const LIST: Record<string, Spec> = {
   dropOutside: DROP_OUTSIDE,
   acceptMode: ACCEPT_MODE,
   animation: ANIMATION,
-  animate: ANIMATE,
+  animateChanges: ANIMATE,
   autoScroll: AUTO_SCROLL,
   modifiers: MODIFIER_NAMES,
   axis: AXIS,
@@ -93,7 +93,7 @@ const TREE: Record<string, Spec> = {
   dropOutside: DROP_OUTSIDE,
   acceptMode: ACCEPT_MODE,
   animation: ANIMATION,
-  animate: ANIMATE,
+  animateChanges: ANIMATE,
   autoScroll: AUTO_SCROLL,
   modifiers: MODIFIER_NAMES,
   axis: AXIS,
@@ -101,7 +101,7 @@ const TREE: Record<string, Spec> = {
 
 const DRAGGABLE: Record<string, Spec> = {
   disabled: BOOLEAN,
-  keyboard: { choices: ['pixels', 'droppables'], fallback: 'pixels' },
+  keyboardMode: { choices: ['pixels', 'droppables'], fallback: 'pixels' },
   activation: ACTIVATION,
 };
 

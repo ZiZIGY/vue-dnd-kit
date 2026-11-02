@@ -27,6 +27,10 @@
     "source": "238dd09834",
     "text": "`true`: 영역 안에서, 그리고 그 안의 영역에서도 드래그가 시작되지 않습니다(가장 가까운 영역의 값을 쓰는 다른 옵션과 다릅니다). 영역의 draggable은 `aria-disabled`를 알립니다."
   },
+  "DragAreaReturn": {
+    "source": "48fc4346c4",
+    "text": "`makeDragArea`가 반환하는 것."
+  },
   "DragAreaReturn.isDragging": {
     "source": "5e8f41c6fd",
     "text": "이 영역에서 시작한 드래그가 진행 중입니다(드롭이 결정될 때까지)."

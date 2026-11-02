@@ -7,13 +7,21 @@
     "source": "c7f915cabf",
     "text": "Les touches (`KeyboardEvent.key` ou `.code`) à maintenir pour qu'un appui trace un rectangle : toutes, ou seulement certaines (`'some'`)."
   },
-  "SelectionAreaOptions": {
-    "source": "395589bdaa",
-    "text": "Options de `makeSelectionArea`. `modifier`, `strategy`, `accept` et `disabled` acceptent une valeur, une ref ou un getter (`accept` : une valeur ou une ref, une fonction est une règle) et sont lues quand un appui lance un rectangle ; activer `disabled` annule aussi un rectangle en cours."
+  "SelectionModifier.keys": {
+    "source": "d97d7241ad",
+    "text": "Les touches, sous forme de `KeyboardEvent.key` (`'Shift'`) ou de `.code` (`'KeyA'`). Aucune : tout appui dessine."
   },
-  "SelectionAreaOptions.selection": {
-    "source": "294f767d3b",
-    "text": "Par défaut, la sélection du provider."
+  "SelectionModifier.method": {
+    "source": "a46efd8e2a",
+    "text": "`'every'` : toutes les `keys` doivent être maintenues ; `'some'` : l'une d'elles suffit."
+  },
+  "SelectionAreaOptions": {
+    "source": "951e39f4a0",
+    "text": "Options de `makeSelectionArea`. Le rectangle sélectionne dans la sélection du provider, celle que lisent le multi-drag et `selected` (`useDnD().selection`). `modifier`, `strategy`, `accept` et `disabled` acceptent une valeur, une ref ou un getter (`accept` : une valeur ou une ref, une fonction est une règle) et sont lues quand un appui lance un rectangle ; activer `disabled` annule aussi un rectangle en cours."
+  },
+  "SelectionAreaOptions.modifier": {
+    "source": "65c8a221ac",
+    "text": "Les touches à maintenir pour qu'un appui dessine un rectangle. Par défaut : aucune, tout appui sur l'espace vide dessine."
   },
   "SelectionAreaOptions.strategy": {
     "source": "0367d14627",
@@ -22,6 +30,22 @@
   "SelectionAreaOptions.accept": {
     "source": "6293487b0c",
     "text": "Les éléments déplaçables que le rectangle sélectionne ; le même mécanisme de correspondance que pour les cibles de dépôt."
+  },
+  "SelectionAreaOptions.disabled": {
+    "source": "ac33d3517f",
+    "text": "`true` : les appuis ne dessinent aucun rectangle."
+  },
+  "SelectionAreaOptions.onSelected": {
+    "source": "1ca0d338e8",
+    "text": "Le rectangle est terminé : reçoit tous les ids sélectionnés à présent."
+  },
+  "SelectionAreaReturn": {
+    "source": "f6f48602c4",
+    "text": "Ce que renvoie `makeSelectionArea`."
+  },
+  "SelectionAreaReturn.isSelecting": {
+    "source": "f38c578911",
+    "text": "Un rectangle est en train d'être dessiné : rendez-le à ce moment-là."
   },
   "SelectionAreaReturn.style": {
     "source": "e4525127b1",

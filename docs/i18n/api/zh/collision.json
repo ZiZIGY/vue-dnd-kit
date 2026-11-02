@@ -1,11 +1,39 @@
 {
+  "CollisionCandidate": {
+    "source": "32a74e6d93",
+    "text": "碰撞检测可以选中的放置目标：已启用、在页面上且没有被完全裁剪。"
+  },
+  "CollisionCandidate.id": {
+    "source": "f9a233dcfd",
+    "text": "放置目标的 id。"
+  },
   "CollisionCandidate.rect": {
     "source": "6367b9d53a",
     "text": "目标的可见部分：经过其滚动容器和视口裁剪。"
   },
+  "CollisionCandidate.priority": {
+    "source": "c0a3e16a72",
+    "text": "目标的 `priority`（默认 0）：目标重叠但没有嵌套时，值高的胜出。可排序项胜过容器。"
+  },
   "CollisionCandidate.depth": {
     "source": "87728867d4",
     "text": "在放置目标之间的嵌套层级：顶层为 0，越深的目标值越大。"
+  },
+  "CollisionArgs": {
+    "source": "703334f32a",
+    "text": "碰撞检测在拖拽每次移动时收到的参数。"
+  },
+  "CollisionArgs.pointer": {
+    "source": "49759bca51",
+    "text": "视口坐标中的指针位置，已应用修饰器。"
+  },
+  "CollisionArgs.overlayRect": {
+    "source": "38ddd4b88b",
+    "text": "被拖拽的盒子（浮层，或在 `overlay: false` 时元素本身）被拖到的位置上的矩形。"
+  },
+  "CollisionArgs.candidates": {
+    "source": "e999e2b499",
+    "text": "拖拽可能去往的每个放置目标，无论它的 `accept` 规则是否接受这次拖拽。"
   },
   "CollisionArgs.hits": {
     "source": "78fd5d5eeb",
@@ -15,9 +43,17 @@
     "source": "1248ad0f81",
     "text": "返回候选 id，最佳的在前。"
   },
+  "ModifierArgs": {
+    "source": "abd362ec1a",
+    "text": "修饰器在拖拽每次移动时收到的参数。"
+  },
   "ModifierArgs.transform": {
     "source": "559160a1f5",
     "text": "相对拖拽起点的偏移量，已经过前面的修饰器处理。"
+  },
+  "ModifierArgs.active": {
+    "source": "ab2a0979dd",
+    "text": "这次拖拽。"
   },
   "ModifierArgs.activeRect": {
     "source": "c410ca6675",
@@ -38,5 +74,37 @@
   "ModifierArgs.containerShift": {
     "source": "f4f9413e80",
     "text": "拖拽开始时所在的内容自开始以来在屏幕上移动了多远：容器本身移动了（页面或它外层的容器滚动了、布局发生了偏移），以及它的内容在容器内滚动了。轴锁定把另一个轴保持在这个偏移上，所以拖拽会停留在该内容中它所在的那一行或那一列。"
+  },
+  "ModifierArgs.windowRect": {
+    "source": "4d3a00846c",
+    "text": "窗口（视口）的矩形。"
+  },
+  "ModifierArgs.over": {
+    "source": "9f1ad2338d",
+    "text": "拖拽下方的放置目标，以最近一次找到的为准；不在任何目标上方时为 `null`。"
+  },
+  "Modifier": {
+    "source": "c32d9e8b62",
+    "text": "改变被拖拽项去往的位置：接收拖拽的偏移量（`transform`）并返回新的偏移量。"
+  },
+  "SnapToGridOptions": {
+    "source": "a9d64c01db",
+    "text": "`snapToGrid` 的选项。"
+  },
+  "SnapToGridOptions.x": {
+    "source": "c5a80a7c74",
+    "text": "单元格宽度，单位 px。不设置（或为 0）时，拖拽沿 x 轴自由移动。"
+  },
+  "SnapToGridOptions.y": {
+    "source": "39512fba18",
+    "text": "单元格高度，单位 px。不设置（或为 0）时，拖拽沿 y 轴自由移动：`{ y: 15 }` 只吸附日历事件的时间。"
+  },
+  "SnapToGridOptions.origin": {
+    "source": "51c773a778",
+    "text": "`'container'`（默认）：浮层的左上角落在从容器左上角开始绘制的网格线上（`containerRect`：可排序列表或父元素）。`'delta'`：对拖拽偏移量取整，项开始时与网格的错位会保留下来。"
+  },
+  "SnapToGridOptions.smooth": {
+    "source": "9952acec7d",
+    "text": "让浮层在吸附位置之间滑动（默认 80ms）。碰撞检测仍然立即使用吸附后的位置。"
   }
 }

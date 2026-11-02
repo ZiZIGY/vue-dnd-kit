@@ -16,11 +16,11 @@ import { fileURLToPath } from 'node:url';
 import Slugger from 'github-slugger';
 import { DEFAULT_LOCALE, LOCALES } from '../i18n/locales.ts';
 import { sourceHash, sourceOf } from './source.ts';
-import { apiTexts, readTypes, type ApiTranslation } from './types-reader.ts';
+import { apiTexts, readApi, type ApiTranslation } from './types-reader.ts';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const content = join(root, 'content');
-const typesDir = join(root, '../packages/core/src/types');
+const srcDir = join(root, '../packages/core/src');
 const apiDir = (code: string) => join(root, 'i18n/api', code);
 
 const read = (path: string) => readFileSync(path, 'utf8');
@@ -35,11 +35,12 @@ const posix = (path: string) => path.replaceAll('\\', '/');
 
 type State = 'done' | 'outdated' | 'missing';
 
-/** The English pages and navigation files, relative to `content/en`. */
+/** The English pages and navigation files, relative to `content/en`. The changelog stays in English. */
 const sourceFiles = () =>
   walk(join(content, DEFAULT_LOCALE))
     .filter((path) => /\.(md|yml)$/.test(path))
     .map((path) => posix(relative(join(content, DEFAULT_LOCALE), path)))
+    .filter((file) => !file.startsWith('docs/5.changelog/'))
     .sort();
 
 const pageState = (code: string, file: string): { state: State; source: string } => {
@@ -49,17 +50,18 @@ const pageState = (code: string, file: string): { state: State; source: string }
   return { state: sourceOf(read(path), extname(file)) === source ? 'done' : 'outdated', source };
 };
 
-/* --- API texts: i18n/api/<code>/<types file>.json, `"Name.member": { source, text }`. */
+/* --- API texts: i18n/api/<code>/<types file>.json, `"Name.member": { source, text }`, and
+   i18n/api/<code>/exports.json, the descriptions of the functions and components. */
 
-const readApi = (code: string): Record<string, ApiTranslation> => {
+const readTranslations = (code: string): Record<string, ApiTranslation> => {
   const dir = apiDir(code);
   if (!existsSync(dir)) return {};
   return Object.assign({}, ...readdirSync(dir).filter((name) => name.endsWith('.json')).map((name) => JSON.parse(read(join(dir, name)))));
 };
 
 const apiState = (code: string) => {
-  const done = readApi(code);
-  return apiTexts(readTypes(typesDir)).map((entry) => {
+  const done = readTranslations(code);
+  return apiTexts(readApi(srcDir)).map((entry) => {
     const source = sourceHash(entry.text);
     const translation = done[entry.key];
     const state: State = !translation?.text ? 'missing' : translation.source === source ? 'done' : 'outdated';

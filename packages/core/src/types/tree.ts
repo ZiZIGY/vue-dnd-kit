@@ -1,7 +1,15 @@
 /** `makeSortableTree`. */
 
 import type { Component, ComputedRef } from 'vue';
-import type { Key, MaybeElementRef, MaybePromise, MaybeReadonlyRef, MaybeReadonlyRefOrGetter, Size } from './primitives';
+import type {
+  ActivationOptions,
+  Key,
+  MaybeElementRef,
+  MaybePromise,
+  MaybeReadonlyRef,
+  MaybeReadonlyRefOrGetter,
+  Size,
+} from './primitives';
 import type { AcceptMode, Active, BeforeDropResult } from './drag';
 import type { AutoAnimation, DropAnimation, LayoutAnimation } from './animation';
 import type { ExternalAccept } from './native';
@@ -18,21 +26,36 @@ import type {
 
 // ─── Tree ──────────────────────────────────────────────────────────────────────
 
+/**
+ * How a tree drag chooses its depth: `'offset'`, by how far it moves sideways
+ * (`indentation` per level); `'hover'`, by hovering the middle of a row, which takes it as a
+ * child; `'both'`.
+ */
 export type TreeNesting = 'offset' | 'hover' | 'both';
 
+/** A visible node of a tree, as the tree's `items` list it: render them in order, indented by `depth`. */
 export interface FlatNode<T> {
+  /** The node's key (`getKey`). */
   key: Key;
+  /** Your node. */
   item: T;
+  /** Its depth: roots are 0. The dragged node has its projected depth. */
   depth: number;
+  /** Key of its parent; `null` for a root. */
   parentKey: Key | null;
   /** Index among siblings. */
   index: number;
+  /** It has children, shown or not. */
   hasChildren: boolean;
+  /** Its children are hidden (its key is in `collapsed`). */
   collapsed: boolean;
 }
 
+/** Where the dragged node would land in a tree. */
 export interface TreeProjection {
+  /** The depth it would get (roots are 0). */
   depth: number;
+  /** The node it would go under; `null` at the root. */
   parentKey: Key | null;
 }
 
@@ -47,7 +70,9 @@ export interface TreeProjection {
  * `createItem` made.
  */
 export interface SortableTreeDropEvent<T = unknown> extends SortableDropEvent<T> {
+  /** Where the node leading the drag was: its tree, its index among its siblings, its parent. */
   from: { list: Key | null; index: number; parentKey: Key | null };
+  /** Where the first dropped node lands: its tree, its index among its new siblings, its new parent. */
   to: { list: Key; index: number; parentKey: Key | null };
 }
 
@@ -77,6 +102,7 @@ export interface SortableTreeOptions<T> {
   items: SortableItems<T>;
   /** Default: `node.id`. Also keys `makeSortableItem({ item })`, copies and created nodes. */
   getKey?: (node: T) => Key;
+  /** The children of a node. Default: `node.children`. */
   getChildren?: (node: T) => T[] | undefined;
   /** How the default write gives a node its new children. Default: `node.children = children`. */
   setChildren?: (node: T, children: T[]) => void;
@@ -92,6 +118,10 @@ export interface SortableTreeOptions<T> {
   id?: Key;
   /** What people call the tree: screen reader texts say it instead of its id. */
   label?: MaybeReadonlyRefOrGetter<string | undefined>;
+  /** Anything to tell about the tree as a drop target: events carry it as `over.data` while a drag is over it. */
+  data?: MaybeReadonlyRefOrGetter<unknown>;
+  /** How a press on this tree's rows starts a drag, instead of the provider's `activation` (a row's own wins). */
+  activation?: MaybeReadonlyRefOrGetter<ActivationOptions | undefined>;
   /** Overlay component for this tree's rows (a row's own `overlay` wins). A ref switched mid-drag swaps it at once. */
   overlay?: MaybeReadonlyRef<Component | undefined>;
   /**
@@ -116,7 +146,7 @@ export interface SortableTreeOptions<T> {
    */
   axis?: MaybeReadonlyRefOrGetter<'x' | 'y' | undefined>;
   /** Lists and trees with the same group name exchange items. Default: a group of its own. Read once. */
-  group?: string | SortableGroupOptions;
+  group?: string | SortableGroupOptions<T>;
   /** Multi-drag of items of several types: `'all'` (default) or `'some'` must be accepted (`group.put`). */
   acceptMode?: MaybeReadonlyRefOrGetter<AcceptMode | undefined>;
   /** Pixels of horizontal offset per depth level. Default 24. */
@@ -170,13 +200,14 @@ export interface SortableTreeOptions<T> {
    * As in `SortableListOptions`, for the visible rows: nodes added, removed or moved, and
    * the rows a node shows or hides as it expands or collapses (`collapsed`).
    */
-  animate?: MaybeReadonlyRefOrGetter<AutoAnimation | undefined>;
+  animateChanges?: MaybeReadonlyRefOrGetter<AutoAnimation | undefined>;
   /** The tree's own size follows its rows, as a list's does (`animateSize`). Default `true`. */
   animateSize?: MaybeReadonlyRefOrGetter<boolean | undefined>;
   /** Overrides the provider's `autoScroll` for this tree's scroll container. Read when the drag starts. */
   autoScroll?: MaybeReadonlyRefOrGetter<boolean | AutoScrollOptions | undefined>;
   /** As in `SortableListOptions`: the element that takes drops for the tree, default the tree's own. */
   dropzone?: MaybeElementRef;
+  /** `true`: its rows can't be dragged, and it takes no items. */
   disabled?: MaybeReadonlyRefOrGetter<boolean>;
   /** As in `SortableListOptions`. */
   onBeforeDrop?: (
@@ -186,7 +217,9 @@ export interface SortableTreeOptions<T> {
   onDrop?: (event: SortableTreeDropEvent<T>) => void;
 }
 
+/** What `makeSortableTree` returns. */
 export interface SortableTreeReturn<T> {
+  /** The tree's id: the `id` option, or the one made for it. */
   id: Key;
   /** Visible nodes in draft order; the active node carries its projected depth. */
   items: ComputedRef<FlatNode<T>[]>;
@@ -194,6 +227,7 @@ export interface SortableTreeReturn<T> {
   projected: ComputedRef<TreeProjection | null>;
   /** Indicator mode: where the drop goes, with its `depth` and `parentKey`; `null` when not here. */
   indicator: ComputedRef<SortableIndicator | null>;
+  /** A drag is over the tree. */
   isOver: ComputedRef<boolean>;
   /** Something is being dragged and this tree takes it. */
   isAccepting: ComputedRef<boolean>;
@@ -207,5 +241,6 @@ export interface SortableTreeReturn<T> {
   activeIndex: ComputedRef<number>;
   /** Size of the dragged row at drag start. */
   activeSize: ComputedRef<Size | null>;
+  /** Animates layout changes the library didn't cause (e.g. a virtualizer re-measure). */
   captureLayout(): void;
 }

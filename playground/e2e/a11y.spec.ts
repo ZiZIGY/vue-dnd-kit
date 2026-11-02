@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { center, dragTo, trackErrors, waitForIdle } from './helpers';
+import { center, trackErrors, waitForIdle, type Point } from './helpers';
 
 const DEFAULT_INSTRUCTIONS =
   'To pick up a draggable item, press space or enter. While dragging, use the arrow keys to move the item. Press space or enter again to drop the item in its new position, or press escape to cancel.';
@@ -207,36 +207,54 @@ test.describe('announcements', () => {
     await waitForIdle(page);
     await expect(live).toHaveText('');
   });
+});
 
+test.describe('announcement timing', () => {
   test('over announcements are debounced by 500ms: only the settled target is spoken', async ({ page }) => {
+    // The page's clock (timers, frames, `performance.now`) runs only when the test lets it:
+    // one frame per pointer step, and the debounce counted in the page's own time, however
+    // loaded the machine is. Installed before the page loads.
+    const FRAME = 16;
+    const start = new Date('2026-01-01T00:00:00Z').getTime();
+    await page.clock.install({ time: start });
+    await page.goto('/demo/#a11y');
     const errors = trackErrors(page);
     const plain = fixture(page, 'plain');
+    const zoneA = page.getByTestId('zone-a');
+    const zoneB = page.getByTestId('zone-b');
     const live = await liveRegionOf(page, plain);
-    await live.evaluate((element) => {
-      const log: Array<{ text: string; at: number }> = [];
-      (window as unknown as { __announcements: typeof log }).__announcements = log;
-      new MutationObserver(() => log.push({ text: element.textContent ?? '', at: performance.now() })).observe(
-        element,
-        { childList: true, characterData: true, subtree: true },
-      );
-    });
+    const [from, a, b] = await Promise.all([center(plain), center(zoneA), center(zoneB)]);
+    // An hour on (surely ahead of the running clock), then it stands still.
+    await page.clock.pauseAt(start + 3_600_000);
 
-    await dragTo(page, plain, await center(page.getByTestId('zone-a')), { release: false });
-    await page.mouse.move(...(Object.values(await center(page.getByTestId('zone-b'))) as [number, number]), {
-      steps: 4,
-    });
-    const settledAt = await page.evaluate(() => performance.now());
+    const step = async (to: Point) => {
+      await page.mouse.move(to.x, to.y);
+      await page.clock.runFor(FRAME);
+    };
+    const toward = (at: Point, to: Point, t: number): Point => ({ x: at.x + (to.x - at.x) * t, y: at.y + (to.y - at.y) * t });
+    const isOver = (zone: Locator) => zone.evaluate((element) => element.classList.contains('over'));
+
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    const picked = { x: from.x, y: from.y + 8 };
+    await step(toward(from, picked, 0.5));
+    await step(picked);
+    await expect(live).toHaveText('Picked up draggable item plain.');
+    // Over zone-a, then on to zone-b, a frame per step and none more once it is the target:
+    // zone-a (and the gap) stayed the target for 8 frames at most, far short of the delay.
+    for (let i = 1; i <= 10; i++) await step(toward(picked, a, i / 10));
+    await expect(zoneA).toHaveClass(/over/);
+    for (let i = 1; i <= 8 && !(await isOver(zoneB)); i++) await step(toward(a, b, i / 8));
+    await expect(zoneB).toHaveClass(/over/);
+
+    // zone-b became the target in the last frame: nothing is spoken for 500ms (no text for
+    // zone-a or the gap either, which would have replaced the pickup text), then zone-b is.
+    await page.clock.runFor(500 - 2 * FRAME);
+    await expect(live).toHaveText('Picked up draggable item plain.');
+    await page.clock.runFor(3 * FRAME);
     await expect(live).toHaveText('Draggable item plain was moved over droppable area zone-b.');
 
-    const log = await page.evaluate(
-      () => (window as unknown as { __announcements: Array<{ text: string; at: number }> }).__announcements,
-    );
-    expect(log.map((entry) => entry.text)).toEqual([
-      'Picked up draggable item plain.',
-      'Draggable item plain was moved over droppable area zone-b.',
-    ]);
-    expect(log[1]!.at - settledAt).toBeGreaterThan(400);
-
+    await page.clock.resume();
     await page.mouse.up();
     await expect(live).toHaveText('Draggable item plain was dropped over droppable area zone-b.');
     await waitForIdle(page);

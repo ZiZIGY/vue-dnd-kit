@@ -1,4 +1,28 @@
 {
+  "AnimationOptions": {
+    "source": "b09e1a9518",
+    "text": "애니메이션의 타이밍. 생략한 부분은 그 애니메이션의 기본값을 유지합니다."
+  },
+  "AnimationOptions.duration": {
+    "source": "d0c1a0e2ba",
+    "text": "ms 단위. 기본값은 레이아웃 이동 200, 드롭 250입니다. `0`이면 애니메이션이 꺼집니다."
+  },
+  "AnimationOptions.easing": {
+    "source": "203b67cb4a",
+    "text": "CSS 이징(`'ease-out'`, `cubic-bezier(…)`)."
+  },
+  "LayoutAnimationContext": {
+    "source": "4024b00eb0",
+    "text": "레이아웃 애니메이션 함수가 받는 것. 새 자리로 이동하는 항목 하나에 대한 정보입니다."
+  },
+  "LayoutAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "항목의 key."
+  },
+  "LayoutAnimationContext.element": {
+    "source": "a268435146",
+    "text": "항목의 요소. 이미 새 자리에 있습니다."
+  },
   "LayoutAnimationContext.from": {
     "source": "c5845d8793",
     "text": "변경 전의 시각적 사각형(진행 중인 애니메이션이 항목을 보여 주던 위치)."
@@ -7,9 +31,13 @@
     "source": "17f753cbe6",
     "text": "변경 후의 레이아웃 사각형."
   },
+  "LayoutAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "옵션이 정한 타이밍. 기본값이 채워져 있습니다."
+  },
   "LayoutAnimationContext.reason": {
-    "source": "eceea904fa",
-    "text": "항목을 움직인 원인: 드래그(`'drag'`: 정렬, 드롭, 취소), 또는 드래그가 아닌 데이터 변경(`'change'`, 리스트의 `animate`가 켜진 경우)."
+    "source": "fea2ee2ea2",
+    "text": "항목을 움직인 원인: 드래그(`'drag'`: 정렬, 드롭, 취소), 또는 드래그가 아닌 데이터 변경(`'change'`, 리스트의 `animateChanges`가 켜진 경우)."
   },
   "LayoutAnimationContext.signal": {
     "source": "c8aa938f56",
@@ -23,9 +51,17 @@
     "source": "233b130a9c",
     "text": "항목이 새 자리로 움직이는 방식: `true`(기본 타이밍), 옵션, `false`(즉시 이동), 또는 항목 하나를 `from`에서 `to`로 애니메이션하고 그 `Animation`, 끝날 때 처리되는 Promise, 또는 아무것도 반환하지 않는 함수."
   },
+  "DropAnimationContext": {
+    "source": "ed32f90e37",
+    "text": "드롭 애니메이션 함수가 받는 것: 오버레이, 그 현재 위치, 안착할 위치."
+  },
   "DropAnimationContext.overlay": {
     "source": "e272382994",
     "text": "오버레이 박스. 활성 항목의 자리에 안착합니다. 멀티 드래그에서는 그 안에 실린 다른 항목의 클론(기본 오버레이의 클론, 커스텀 오버레이의 `DragPreview`)이 각자의 자리에 스스로 안착합니다(이것이 커스텀 함수이면 기본 타이밍으로)."
+  },
+  "DropAnimationContext.from": {
+    "source": "c2595bada3",
+    "text": "드래그가 끝날 때 오버레이가 있는 위치."
   },
   "DropAnimationContext.to": {
     "source": "d0780ba408",
@@ -35,17 +71,37 @@
     "source": "cecafada99",
     "text": "정렬 가능한 리스트가 아닌 영역에 드롭한 뒤 항목이 표시되지 않는 경우(예: 다른 항목(폴더)이나 휴지통 영역 안으로 드롭한 경우)의 그 영역의 보이는 사각형. 기본 애니메이션은 제자리에서 사라지는 대신, 오버레이가 이 사각형 안으로 줄어들며 사라지게 합니다."
   },
+  "DropAnimationContext.reason": {
+    "source": "275d894e30",
+    "text": "`'drop'`: 오버레이가 드롭이 항목을 놓은 곳에 안착합니다. `'cancel'`: 항목이 있던 곳으로 돌아갑니다."
+  },
+  "DropAnimationContext.active": {
+    "source": "7c6ffaf118",
+    "text": "끝난 드래그."
+  },
   "DropAnimationContext.over": {
     "source": "54c7b98b67",
     "text": "드롭이 안착하는 대상(리스트, 영역). 취소할 때는 `null`."
+  },
+  "DropAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "옵션이 정한 타이밍. 기본값이 채워져 있습니다."
   },
   "DropAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "`prefers-reduced-motion: reduce`가 설정되어 있습니다. 이때 라이브러리 자체 애니메이션은 실행되지 않지만, 직접 만든 함수는 항상 실행되며 이 값으로 결정합니다(건너뛰거나, 페이드만 남기거나)."
   },
+  "DropAnimation": {
+    "source": "4e7ab98e07",
+    "text": "드롭할 때 오버레이가 안착하고 취소할 때 원래 자리로 돌아가는 방식: `true`(기본 타이밍), 옵션, `false`(날아가지 않음: 놓은 곳에서 끝납니다), 또는 `overlay`를 `from`에서 `to`로 애니메이션하고 그 `Animation`이나 끝날 때 처리되는 promise를 반환하거나 아무것도 반환하지 않는 함수."
+  },
   "EnterAnimationContext": {
-    "source": "bef530cbfe",
-    "text": "`animate`가 켜진 리스트에 나타난 항목: 추가되었거나 다시 표시된 항목(필터, 펼친 트리 노드)."
+    "source": "e45e8bafb3",
+    "text": "`animateChanges`가 켜진 리스트에 나타난 항목: 추가되었거나 다시 표시된 항목(필터, 펼친 트리 노드)."
+  },
+  "EnterAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "항목의 key."
   },
   "EnterAnimationContext.element": {
     "source": "120613b512",
@@ -55,13 +111,21 @@
     "source": "fd058782f5",
     "text": "항목이 나타난 위치(레이아웃 사각형)."
   },
+  "EnterAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "옵션이 정한 타이밍. 기본값이 채워져 있습니다."
+  },
   "EnterAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
     "text": "`prefers-reduced-motion: reduce`가 설정되어 있습니다. 이때 라이브러리 자체 애니메이션은 실행되지 않지만, 직접 만든 함수는 항상 실행되며 이 값으로 결정합니다(건너뛰거나, 페이드만 남기거나)."
   },
   "LeaveAnimationContext": {
-    "source": "b67e70e13a",
-    "text": "`animate`가 켜진 리스트에서 사라진 항목: 제거되었거나 숨겨진 항목(필터, 접은 트리 노드)."
+    "source": "5d6e9c20a9",
+    "text": "`animateChanges`가 켜진 리스트에서 사라진 항목: 제거되었거나 숨겨진 항목(필터, 접은 트리 노드)."
+  },
+  "LeaveAnimationContext.key": {
+    "source": "a08ad92d67",
+    "text": "항목의 key."
   },
   "LeaveAnimationContext.element": {
     "source": "a4f7390241",
@@ -70,6 +134,10 @@
   "LeaveAnimationContext.from": {
     "source": "645084e2fd",
     "text": "항목이 있던 위치."
+  },
+  "LeaveAnimationContext.options": {
+    "source": "328e8f156d",
+    "text": "옵션이 정한 타이밍. 기본값이 채워져 있습니다."
   },
   "LeaveAnimationContext.reducedMotion": {
     "source": "d4c9ed8529",
@@ -84,8 +152,8 @@
     "text": "`true`, 옵션, `false`(항목이 그냥 사라집니다), 또는 항목 자리에 남은 복사본이 사라지는 애니메이션을 하는 함수. 그 `Animation`이나 Promise를 반환하면 끝날 때 복사본이 제거됩니다(함수가 아무것도 반환하지 않으면 즉시 제거됩니다)."
   },
   "AutoAnimationOptions": {
-    "source": "0130acd24e",
-    "text": "부분별로 나눈 `animate`: 모든 부분에 적용할 `duration`과 `easing`, 그리고 변경 종류별로 `true`, 옵션(공통 옵션 위에 덮어씀), `false`, 또는 직접 만든 함수."
+    "source": "39ddcaee1b",
+    "text": "부분별로 나눈 `animateChanges`: 모든 부분에 적용할 `duration`과 `easing`, 그리고 변경 종류별로 `true`, 옵션(공통 옵션 위에 덮어씀), `false`, 또는 직접 만든 함수."
   },
   "AutoAnimationOptions.move": {
     "source": "684eb0594d",

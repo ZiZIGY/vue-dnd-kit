@@ -1,26 +1,22 @@
 <script setup lang="ts">
   import { ref, useTemplateRef } from 'vue';
-  import { makeSelectionArea, type Key } from '@vue-dnd-kit/core';
+  import { makeSelectionArea, useDnD, type Key } from '@vue-dnd-kit/core';
   import AreaPanel from './AreaPanel.vue';
   import PlainCard from './PlainCard.vue';
 
   const ids = ['n1', 'n2', 'n3', 'n4'];
-  // Its own selection Ref instead of the provider's.
-  const selection = ref(new Set<Key>());
+  // The area writes the provider's selection, as every area does.
+  const { selection } = useDnD();
   const lastSelected = ref<Key[] | null>(null);
 
   // A component ref on purpose: the area resolves it to the root element.
   const panel = useTemplateRef<InstanceType<typeof AreaPanel>>('panel');
   const { isSelecting, style } = makeSelectionArea(panel, {
-    selection,
     strategy: 'select',
     onSelected: (selected) => (lastSelected.value = selected),
   });
 
-  const toggle = (id: Key) => {
-    if (selection.value.has(id)) selection.value.delete(id);
-    else selection.value.add(id);
-  };
+  const toggle = (id: Key) => selection.toggle(id);
 </script>
 
 <template>

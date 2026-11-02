@@ -58,6 +58,10 @@ const LiveRegion = /* @__PURE__ */ defineComponent({
   },
 });
 
+/**
+ * Owns the drags of everything rendered inside it: input, the overlay, the selection,
+ * auto-scroll and the screen reader announcements (see `DnDProviderProps`).
+ */
 export const DnDProvider = /* @__PURE__ */ defineComponent({
   name: 'DnDProvider',
   props: {
@@ -65,7 +69,7 @@ export const DnDProvider = /* @__PURE__ */ defineComponent({
     modifiers: Array as PropType<Modifier[]>,
     animation: { type: [Boolean, Object, Function] as PropType<LayoutAnimation>, default: undefined },
     dropAnimation: { type: [Boolean, Object, Function] as PropType<DropAnimation>, default: undefined },
-    animate: { type: [Boolean, Object] as PropType<AutoAnimation>, default: undefined },
+    animateChanges: { type: [Boolean, Object] as PropType<AutoAnimation>, default: undefined },
     autoScroll: { type: [Boolean, Object] as PropType<boolean | AutoScrollOptions>, default: true },
     activation: Object as PropType<ActivationOptions>,
     keyboard: { type: [Boolean, Object] as PropType<KeyboardOptions | false>, default: undefined },
@@ -87,6 +91,7 @@ export const DnDProvider = /* @__PURE__ */ defineComponent({
     dragOver: (_event: DnDEvent) => true,
     dragEnd: (_event: DnDEndEvent) => true,
     dragCancel: (_event: DnDEvent) => true,
+    dragResume: (_event: DnDEvent) => true,
     dragSettle: (_event: DnDEvent | DnDEndEvent) => true,
   },
   slots: Object as SlotsType<{
@@ -110,6 +115,7 @@ export const DnDProvider = /* @__PURE__ */ defineComponent({
       onDragOver: (event) => emit('dragOver', event),
       onDragEnd: (event) => emit('dragEnd', event),
       onDragCancel: (event) => emit('dragCancel', event),
+      onDragResume: (event) => emit('dragResume', event),
       onDragSettle: (event) => emit('dragSettle', event),
     });
 
@@ -126,7 +132,7 @@ export const DnDProvider = /* @__PURE__ */ defineComponent({
     const mounted = shallowRef(false);
     onMounted(() => {
       mounted.value = true;
-      if (props.defaultStyles) injectDefaultStyles();
+      injectDefaultStyles(props.defaultStyles);
     });
     onScopeDispose(manager.destroy);
 

@@ -8,7 +8,8 @@
     "generate": "nuxt generate",
     "preview": "node tools/preview.ts",
     "postinstall": "nuxt prepare",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "api:check": "node tools/api-check.ts"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.147",

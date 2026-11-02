@@ -27,6 +27,10 @@
     "source": "238dd09834",
     "text": "`true`: Kein Drag beginnt im Bereich, auch nicht in den Bereichen darin (anders als bei den anderen Optionen, die vom nächstgelegenen Bereich kommen). Seine ziehbaren Elemente melden `aria-disabled`."
   },
+  "DragAreaReturn": {
+    "source": "48fc4346c4",
+    "text": "Was `makeDragArea` zurückgibt."
+  },
   "DragAreaReturn.isDragging": {
     "source": "5e8f41c6fd",
     "text": "Ein Drag, der in diesem Bereich begonnen hat, läuft (bis über seinen Drop entschieden ist)."

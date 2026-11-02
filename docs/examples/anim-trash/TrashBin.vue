@@ -17,9 +17,9 @@ const { isOver } = makeDroppable(el, {
   // What the overlay reads as `over.data`: the bin, to aim the photo at its mouth.
   data: () => ({ bin: bin.value }),
   // Over the bin, the photo is crumpled up; dropped, it falls in (see Crumple.vue).
-  overlay: Crumple,
+  overOverlay: Crumple,
   // The box stays where it was let go: its content does the landing.
-  dropAnimation: false,
+  overDropAnimation: false,
   onDrop: (event) => {
     falling.value++;
     emit('drop', event);

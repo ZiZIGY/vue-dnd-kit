@@ -1,11 +1,39 @@
 {
+  "CollisionCandidate": {
+    "source": "32a74e6d93",
+    "text": "Un destino de drop que una detección de colisiones puede elegir: activado, en la página y no recortado del todo."
+  },
+  "CollisionCandidate.id": {
+    "source": "f9a233dcfd",
+    "text": "Id del destino de drop."
+  },
   "CollisionCandidate.rect": {
     "source": "6367b9d53a",
     "text": "Parte visible del destino: recortada por sus contenedores desplazables y por el viewport."
   },
+  "CollisionCandidate.priority": {
+    "source": "c0a3e16a72",
+    "text": "La `priority` del destino (por defecto 0): gana la más alta cuando los destinos se solapan sin anidarse. Los ítems ordenables ganan a los contenedores."
+  },
   "CollisionCandidate.depth": {
     "source": "87728867d4",
     "text": "Nivel de anidamiento entre los destinos de drop: 0 en el nivel superior; los destinos más profundos tienen valores más altos."
+  },
+  "CollisionArgs": {
+    "source": "703334f32a",
+    "text": "Lo que recibe una detección de colisiones en cada movimiento del arrastre."
+  },
+  "CollisionArgs.pointer": {
+    "source": "49759bca51",
+    "text": "El puntero en coordenadas del viewport, después de los modificadores."
+  },
+  "CollisionArgs.overlayRect": {
+    "source": "38ddd4b88b",
+    "text": "Rectángulo de la caja arrastrada (el overlay, o el propio elemento con `overlay: false`) donde la ha llevado el arrastre."
+  },
+  "CollisionArgs.candidates": {
+    "source": "e999e2b499",
+    "text": "Todos los destinos de drop a los que podría ir el arrastre, tanto si su regla `accept` acepta el arrastre como si no."
   },
   "CollisionArgs.hits": {
     "source": "78fd5d5eeb",
@@ -15,9 +43,17 @@
     "source": "1248ad0f81",
     "text": "Devuelve los ids de los candidatos, el mejor primero."
   },
+  "ModifierArgs": {
+    "source": "abd362ec1a",
+    "text": "Lo que recibe un modificador en cada movimiento del arrastre."
+  },
   "ModifierArgs.transform": {
     "source": "559160a1f5",
     "text": "Desplazamiento desde el inicio del arrastre, tal como lo modificaron los modificadores anteriores."
+  },
+  "ModifierArgs.active": {
+    "source": "ab2a0979dd",
+    "text": "El arrastre."
   },
   "ModifierArgs.activeRect": {
     "source": "c410ca6675",
@@ -38,5 +74,37 @@
   "ModifierArgs.containerShift": {
     "source": "f4f9413e80",
     "text": "Cuánto se ha movido en pantalla, desde el inicio, el contenido donde empezó el arrastre: el contenedor se movió (la página o un contenedor a su alrededor se desplazó, la maquetación cambió) y su contenido se desplazó dentro de él. Los bloqueos de eje mantienen ahí el otro eje, así que el arrastre se queda en su fila o columna de ese contenido."
+  },
+  "ModifierArgs.windowRect": {
+    "source": "4d3a00846c",
+    "text": "Rectángulo de la ventana (el viewport)."
+  },
+  "ModifierArgs.over": {
+    "source": "9f1ad2338d",
+    "text": "El destino de drop bajo el arrastre, según se encontró por última vez; `null` si no está sobre nada."
+  },
+  "Modifier": {
+    "source": "c32d9e8b62",
+    "text": "Cambia adónde va el ítem arrastrado: recibe el desplazamiento del arrastre (`transform`) y devuelve uno nuevo."
+  },
+  "SnapToGridOptions": {
+    "source": "a9d64c01db",
+    "text": "Opciones de `snapToGrid`."
+  },
+  "SnapToGridOptions.x": {
+    "source": "c5a80a7c74",
+    "text": "El ancho de la celda en px. Sin él (o con 0), el arrastre se mueve libremente en x."
+  },
+  "SnapToGridOptions.y": {
+    "source": "39512fba18",
+    "text": "El alto de la celda en px. Sin él (o con 0), el arrastre se mueve libremente en y: `{ y: 15 }` ajusta solo la hora de un evento de calendario."
+  },
+  "SnapToGridOptions.origin": {
+    "source": "51c773a778",
+    "text": "`'container'` (por defecto): la esquina superior izquierda del overlay cae en líneas de cuadrícula trazadas desde la esquina superior izquierda del contenedor (`containerRect`: la lista ordenable o el elemento padre). `'delta'`: se redondea el desplazamiento del arrastre, conservando la posición de partida del ítem fuera de la cuadrícula."
+  },
+  "SnapToGridOptions.smooth": {
+    "source": "9952acec7d",
+    "text": "Desliza el overlay entre las posiciones ajustadas (por defecto 80 ms). La detección de colisiones sigue usando al instante la posición ajustada."
   }
 }

@@ -34,7 +34,7 @@ const { isOver } = makeDroppable(body, {
   data: () => props.frame,
   accept: 'layer',
   disabled: () => !!active.value?.items.some((item) => item.type.includes('frame')),
-  dropAnimation: false,
+  overDropAnimation: false,
   onDrop: useLayerDrop(() => props.frame),
 });
 // Lit while layers from elsewhere are over it: the drop will move them in.

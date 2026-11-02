@@ -1,11 +1,39 @@
 {
+  "CollisionCandidate": {
+    "source": "32a74e6d93",
+    "text": "Ein Drop-Ziel, das eine Kollisionserkennung auswählen kann: aktiviert, auf der Seite und nicht vollständig abgeschnitten."
+  },
+  "CollisionCandidate.id": {
+    "source": "f9a233dcfd",
+    "text": "ID des Drop-Ziels."
+  },
   "CollisionCandidate.rect": {
     "source": "6367b9d53a",
     "text": "Sichtbarer Teil des Ziels: beschnitten durch seine Scroll-Container und den Viewport."
   },
+  "CollisionCandidate.priority": {
+    "source": "c0a3e16a72",
+    "text": "Die `priority` des Ziels (Standard 0): Der höhere Wert gewinnt, wenn sich Ziele ohne Verschachtelung überlappen. Sortierbare Elemente schlagen Container."
+  },
   "CollisionCandidate.depth": {
     "source": "87728867d4",
     "text": "Verschachtelungsebene unter den Drop-Zielen: 0 ganz oben, tiefere Ziele haben höhere Werte."
+  },
+  "CollisionArgs": {
+    "source": "703334f32a",
+    "text": "Was eine Kollisionserkennung bei jeder Bewegung des Drags erhält."
+  },
+  "CollisionArgs.pointer": {
+    "source": "49759bca51",
+    "text": "Zeiger in Viewport-Koordinaten, nach den Modifiern."
+  },
+  "CollisionArgs.overlayRect": {
+    "source": "38ddd4b88b",
+    "text": "Rechteck der gezogenen Box (das Overlay oder das Element selbst bei `overlay: false`) dort, wohin der Drag sie bewegt hat."
+  },
+  "CollisionArgs.candidates": {
+    "source": "e999e2b499",
+    "text": "Jedes Drop-Ziel, zu dem der Drag gehen könnte, ob seine `accept`-Regel den Drag annimmt oder nicht."
   },
   "CollisionArgs.hits": {
     "source": "78fd5d5eeb",
@@ -15,9 +43,17 @@
     "source": "1248ad0f81",
     "text": "Gibt die IDs der Kandidaten zurück, den besten zuerst."
   },
+  "ModifierArgs": {
+    "source": "abd362ec1a",
+    "text": "Was ein Modifier bei jeder Bewegung des Drags erhält."
+  },
   "ModifierArgs.transform": {
     "source": "559160a1f5",
     "text": "Versatz seit dem Start des Drags, wie ihn die vorherigen Modifier verändert haben."
+  },
+  "ModifierArgs.active": {
+    "source": "ab2a0979dd",
+    "text": "Der Drag."
   },
   "ModifierArgs.activeRect": {
     "source": "c410ca6675",
@@ -38,5 +74,37 @@
   "ModifierArgs.containerShift": {
     "source": "f4f9413e80",
     "text": "Wie weit sich der Inhalt, in dem der Drag gestartet ist, seit dem Start auf dem Bildschirm bewegt hat: Der Container hat sich bewegt (die Seite oder ein Container um ihn herum wurde gescrollt, das Layout hat sich verschoben), und sein Inhalt wurde in ihm gescrollt. Achsensperren halten die andere Achse dort, sodass der Drag in seiner Zeile oder Spalte dieses Inhalts bleibt."
+  },
+  "ModifierArgs.windowRect": {
+    "source": "4d3a00846c",
+    "text": "Rechteck des Fensters (der Viewport)."
+  },
+  "ModifierArgs.over": {
+    "source": "9f1ad2338d",
+    "text": "Das Drop-Ziel unter dem Drag, wie zuletzt gefunden; `null` über nichts."
+  },
+  "Modifier": {
+    "source": "c32d9e8b62",
+    "text": "Ändert, wohin das gezogene Element geht: nimmt den Versatz des Drags (`transform`) und gibt einen neuen zurück."
+  },
+  "SnapToGridOptions": {
+    "source": "a9d64c01db",
+    "text": "Optionen von `snapToGrid`."
+  },
+  "SnapToGridOptions.x": {
+    "source": "c5a80a7c74",
+    "text": "Die Breite der Zelle in px. Ohne sie (oder bei 0) bewegt sich der Drag frei entlang x."
+  },
+  "SnapToGridOptions.y": {
+    "source": "39512fba18",
+    "text": "Die Höhe der Zelle in px. Ohne sie (oder bei 0) bewegt sich der Drag frei entlang y: `{ y: 15 }` rastet nur die Uhrzeit eines Kalendertermins ein."
+  },
+  "SnapToGridOptions.origin": {
+    "source": "51c773a778",
+    "text": "`'container'` (Standard): Die obere linke Ecke des Overlays landet auf Rasterlinien, die von der oberen linken Ecke des Containers aus gezogen werden (`containerRect`: die sortierbare Liste oder das Elternelement). `'delta'`: Der Versatz des Drags wird gerundet, sodass die Startposition des Elements außerhalb des Rasters erhalten bleibt."
+  },
+  "SnapToGridOptions.smooth": {
+    "source": "9952acec7d",
+    "text": "Lässt das Overlay zwischen eingerasteten Positionen gleiten (Standard 80 ms). Die Kollisionserkennung nutzt trotzdem sofort die eingerastete Position."
   }
 }

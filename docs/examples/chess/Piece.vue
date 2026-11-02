@@ -25,7 +25,7 @@ const { isDragging } = makeDraggable(el, {
   // The piece's centre follows the pointer, as in chess apps.
   modifiers: [snapCenterToCursor],
   // Arrow keys jump between the squares that accept the piece: its legal moves.
-  keyboard: 'droppables',
+  keyboardMode: 'droppables',
   // A touch drags at once (no long press): pieces don't scroll the page (`touch-action`).
   activation: { touch: { distance: 3 } },
 });

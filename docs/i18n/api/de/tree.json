@@ -1,11 +1,63 @@
 {
+  "TreeNesting": {
+    "source": "9af740feca",
+    "text": "Wie ein Drag im Baum seine Tiefe wählt: `'offset'`, danach, wie weit er sich seitlich bewegt (`indentation` pro Ebene); `'hover'`, durch Hovern über der Mitte einer Zeile, die ihn als Kind aufnimmt; `'both'`."
+  },
+  "FlatNode": {
+    "source": "23666e81ba",
+    "text": "Ein sichtbarer Knoten eines Baums, wie `items` des Baums sie auflistet: Rendere sie der Reihe nach, eingerückt nach `depth`."
+  },
+  "FlatNode.key": {
+    "source": "96ba306f48",
+    "text": "Der Schlüssel des Knotens (`getKey`)."
+  },
+  "FlatNode.item": {
+    "source": "b4ce340716",
+    "text": "Dein Knoten."
+  },
+  "FlatNode.depth": {
+    "source": "0c7c31948d",
+    "text": "Seine Tiefe: Wurzeln haben 0. Der gezogene Knoten hat seine projizierte Tiefe."
+  },
+  "FlatNode.parentKey": {
+    "source": "8c7e128431",
+    "text": "Schlüssel seines Elternknotens; `null` bei einer Wurzel."
+  },
   "FlatNode.index": {
     "source": "b24454e95d",
     "text": "Index unter den Geschwistern."
   },
+  "FlatNode.hasChildren": {
+    "source": "b824e0490e",
+    "text": "Er hat Kinder, angezeigt oder nicht."
+  },
+  "FlatNode.collapsed": {
+    "source": "bd45c73799",
+    "text": "Seine Kinder sind ausgeblendet (sein Schlüssel ist in `collapsed`)."
+  },
+  "TreeProjection": {
+    "source": "7161034972",
+    "text": "Wo der gezogene Knoten in einem Baum landen würde."
+  },
+  "TreeProjection.depth": {
+    "source": "2e69aed9a0",
+    "text": "Die Tiefe, die er bekäme (Wurzeln haben 0)."
+  },
+  "TreeProjection.parentKey": {
+    "source": "b142da09fd",
+    "text": "Der Knoten, unter den er käme; `null` auf der Wurzelebene."
+  },
   "SortableTreeDropEvent": {
     "source": "eb47878c8b",
     "text": "Drop-Event eines Baums. `index` ist die Position unter den Geschwistern unter `parentKey` (`from`: vor der Verschiebung; `to`: danach, wobei der Knoten bereits von seinem alten Platz entfernt ist). `from.parentKey` ist `null` für Wurzelknoten und für Elemente aus einer anderen Liste. Ein Multi-Drag verschiebt `keys` (jeden mit seinem Teilbaum) nebeneinander: `from` ist, wo der Knoten war, der den Drag anführt (der gegriffene oder der ausgewählte Knoten, in dem er mitfährt), `to`, wo der erste von ihnen landet. Eine Kopie (`mode: 'copy'`) lässt die Knoten, wo sie sind, und fügt `items` ein, ihre Kopien; ein einfaches ziehbares Element (`mode: 'insert'`) den Knoten, den `createItem` erstellt hat."
+  },
+  "SortableTreeDropEvent.from": {
+    "source": "9d2938f9b8",
+    "text": "Wo der Knoten war, der den Drag anführt: sein Baum, sein Index unter seinen Geschwistern, sein Elternknoten."
+  },
+  "SortableTreeDropEvent.to": {
+    "source": "423e0db1d1",
+    "text": "Wo der erste abgelegte Knoten landet: sein Baum, sein Index unter seinen neuen Geschwistern, sein neuer Elternknoten."
   },
   "SortableTreeOptions": {
     "source": "a99d0dc21f",
@@ -18,6 +70,10 @@
   "SortableTreeOptions.getKey": {
     "source": "8bd06a8146",
     "text": "Standard: `node.id`. Liefert auch die Schlüssel für `makeSortableItem({ item })`, Kopien und erstellte Knoten."
+  },
+  "SortableTreeOptions.getChildren": {
+    "source": "16d2b0d885",
+    "text": "Die Kinder eines Knotens. Standard: `node.children`."
   },
   "SortableTreeOptions.setChildren": {
     "source": "ebc9ed1493",
@@ -34,6 +90,14 @@
   "SortableTreeOptions.label": {
     "source": "86c099a68f",
     "text": "Der lesbare Name des Baums: Screenreader-Texte nennen ihn statt seiner ID."
+  },
+  "SortableTreeOptions.data": {
+    "source": "06a846f752",
+    "text": "Alles, was es über den Baum als Drop-Ziel zu sagen gibt: Events tragen es als `over.data`, solange ein Drag über ihm ist."
+  },
+  "SortableTreeOptions.activation": {
+    "source": "bb472ecc80",
+    "text": "Wie ein Druck auf die Zeilen dieses Baums einen Drag startet, statt `activation` des Providers (die eigene einer Zeile gewinnt)."
   },
   "SortableTreeOptions.overlay": {
     "source": "cf37f2819a",
@@ -111,7 +175,7 @@
     "source": "5d1e2c66c2",
     "text": "FLIP-Animation dieses Baums; Standard: `animation` des Providers. Ein Wert oder ein Ref (eine Funktion ist eine eigene Animation)."
   },
-  "SortableTreeOptions.animate": {
+  "SortableTreeOptions.animateChanges": {
     "source": "9004d33175",
     "text": "Wie bei `SortableListOptions`, für die sichtbaren Zeilen: hinzugefügte, entfernte oder verschobene Knoten und die Zeilen, die ein Knoten beim Auf- oder Zuklappen zeigt oder verbirgt (`collapsed`)."
   },
@@ -127,6 +191,10 @@
     "source": "26c5e98e4b",
     "text": "Wie bei `SortableListOptions`: das Element, das Drops für den Baum annimmt, standardmäßig das Element des Baums selbst."
   },
+  "SortableTreeOptions.disabled": {
+    "source": "e015689412",
+    "text": "`true`: Seine Zeilen können nicht gezogen werden, und er nimmt keine Elemente an."
+  },
   "SortableTreeOptions.onBeforeDrop": {
     "source": "94fc28e843",
     "text": "Wie bei `SortableListOptions`."
@@ -134,6 +202,14 @@
   "SortableTreeOptions.onDrop": {
     "source": "cac25ac658",
     "text": "Wie bei `SortableListOptions`: vor dem Schreiben, das `event.preventDefault()` überspringt."
+  },
+  "SortableTreeReturn": {
+    "source": "63d4a830bd",
+    "text": "Was `makeSortableTree` zurückgibt."
+  },
+  "SortableTreeReturn.id": {
+    "source": "78f5948858",
+    "text": "Die ID des Baums: die Option `id` oder die dafür erzeugte."
   },
   "SortableTreeReturn.items": {
     "source": "7c78a356e7",
@@ -146,6 +222,10 @@
   "SortableTreeReturn.indicator": {
     "source": "3f5878f4c5",
     "text": "Indikator-Modus: wohin der Drop geht, mit seiner `depth` und seinem `parentKey`; `null`, wenn nicht hier."
+  },
+  "SortableTreeReturn.isOver": {
+    "source": "862facdce0",
+    "text": "Ein Drag ist über dem Baum."
   },
   "SortableTreeReturn.isAccepting": {
     "source": "ae54d9827e",
@@ -162,5 +242,9 @@
   "SortableTreeReturn.activeSize": {
     "source": "8337786343",
     "text": "Größe der gezogenen Zeile beim Start des Drags."
+  },
+  "SortableTreeReturn.captureLayout": {
+    "source": "4d1e38426d",
+    "text": "Animiert Layoutänderungen, die nicht die Bibliothek verursacht hat (z. B. ein erneutes Messen durch einen Virtualizer)."
   }
 }

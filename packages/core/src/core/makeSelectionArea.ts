@@ -8,7 +8,7 @@
  * the area, which needs a non-static `position` (e.g. `relative`).
  */
 
-import { computed, isReactive, onScopeDispose, shallowRef, unref, watch } from 'vue';
+import { computed, onScopeDispose, shallowRef, unref, watch } from 'vue';
 import { defaultWindow, useEventListener } from '@vueuse/core';
 import type {
   AcceptRule,
@@ -26,6 +26,7 @@ import type {
 import type { DnDManager, DraggableEntry } from './manager';
 import { useManager } from './context';
 import { matchesRule } from './accept';
+import { matches } from './sensors/keyboard';
 import { createRect, getLayoutRect, intersects, offsetRect } from '../animation/layout';
 import { isInsideInteractive, parentOf, toElement } from '../utils/dom';
 import { read } from '../utils/read';
@@ -184,9 +185,6 @@ const syncSet = (target: Set<Key>, next: ReadonlySet<Key>) => {
   for (const id of next) if (!target.has(id)) target.add(id);
 };
 
-const sameSet = (a: ReadonlySet<Key>, b: ReadonlySet<Key>) =>
-  a.size === b.size && [...a].every((id) => b.has(id));
-
 /** Movement (px) below which a press counts as a click, not a band. */
 const CLICK_TOLERANCE = 3;
 
@@ -224,17 +222,9 @@ export function makeSelectionArea(
   const pressed = new Set<string>();
   let band: Band | null = null;
 
-  const readSelection = (): ReadonlySet<Key> => options.selection?.value ?? manager.selection;
+  const readSelection = (): ReadonlySet<Key> => manager.selection;
 
-  const writeSelection = (next: ReadonlySet<Key>) => {
-    const selection = options.selection;
-    if (!selection) return syncSet(manager.selection, next);
-    const current = selection.value;
-    if (sameSet(current, next)) return;
-    // Mutate a reactive Set in place (per-id updates); a shallowRef needs a new Set.
-    if (isReactive(current)) syncSet(current, next);
-    else selection.value = new Set(next);
-  };
+  const writeSelection = (next: ReadonlySet<Key>) => syncSet(manager.selection, next);
 
   const accepts = (rule: AcceptRule | undefined, entry: DraggableEntry, element: HTMLElement, itemRect: Rect): boolean => {
     if (rule == null || rule === '*') return true;
@@ -346,7 +336,7 @@ export function makeSelectionArea(
 
   const onKeyDown = (event: KeyboardEvent) => {
     const keyboard = manager.props.keyboard || undefined;
-    if (!(keyboard?.keys?.cancel ?? ['Escape']).includes(event.code)) return;
+    if (!matches(keyboard?.keys?.cancel ?? ['Escape'], event)) return;
     event.preventDefault();
     cancel();
   };

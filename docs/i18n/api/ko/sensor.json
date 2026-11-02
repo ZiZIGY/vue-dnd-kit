@@ -36,8 +36,8 @@
     "text": "입력 이벤트. draggable의 `canDrag`에 전달됩니다. 이벤트가 없으면(게임패드, 프로그래밍 방식 드래그) `canDrag`를 호출하지 않습니다. `pointerType`이 `'touch'`이면 터치 드래그(`haptics`)가 됩니다."
   },
   "SensorActivation.activation": {
-    "source": "39a1a2728a",
-    "text": "드래그가 시작되기 전에 기다리는 조건(그때까지 `useDnD().status`는 진행률과 함께 `'activating'`입니다). 포인터 종류를 넘기면 draggable의 `activation` 옵션, 그다음 프로바이더의 설정, 그다음 기본값(마우스와 펜은 4px, 핸들에서는 즉시. 터치는 허용 범위 5px의 200ms 길게 누르기)을 읽습니다. 조건 객체는 그대로 사용합니다. 기본값: 없음, 드래그가 바로 시작됩니다."
+    "source": "b57a130781",
+    "text": "드래그가 시작되기 전에 기다리는 조건(그때까지 `useDnD().status`는 진행률과 함께 `'activating'`입니다). 포인터 종류를 넘기면 draggable의 `activation` 옵션, 그다음 프로바이더의 설정, 그다음 기본값(마우스는 4px, 핸들에서는 즉시. 펜은 4px. 터치는 허용 범위 5px의 200ms 길게 누르기)을 읽습니다. 조건 객체는 그대로 사용합니다. 기본값: 없음, 드래그가 바로 시작됩니다."
   },
   "SensorActivation.onStart": {
     "source": "e74975e61a",
@@ -55,6 +55,10 @@
     "source": "cede55f00c",
     "text": "- `'pending'`: 활성화 조건을 기다리는 중.\n- `'dragging'`: 시작부터 드롭이 결정되거나 드래그가 취소될 때까지.\n- `'ended'`: 활성화가 중단되었거나, 드래그가 센서 또는 다른 무언가(Escape, 숨겨진 탭, `useDnD().cancel()`, 프로바이더 언마운트)에 의해 드롭되거나 취소되었습니다."
   },
+  "SensorStepOptions": {
+    "source": "068f67f8ef",
+    "text": "`SensorDrag.step()`의 옵션."
+  },
   "SensorStepOptions.event": {
     "source": "a9cd22b651",
     "text": "키 누르기 이벤트. 모니터의 `getKeyboardCoordinates`에 전달됩니다. 기본값: 해당 화살표 키의 keydown."
@@ -70,6 +74,14 @@
   "SensorDrag.id": {
     "source": "407eb1b511",
     "text": "드래그 중인 항목의 id."
+  },
+  "SensorDrag.type": {
+    "source": "76da00f024",
+    "text": "드래그가 움직이는 방식. `activate()`가 요청한 대로입니다(`SensorActivation.type`)."
+  },
+  "SensorDrag.state": {
+    "source": "09adafb8ab",
+    "text": "드래그의 단계: 활성화를 기다리는 중, 드래그 중, 또는 끝남."
   },
   "SensorDrag.started": {
     "source": "0bc4410fb6",
@@ -126,5 +138,9 @@
   "Sensor.name": {
     "source": "f3f1afa08b",
     "text": "디버깅용."
+  },
+  "Sensor.setup": {
+    "source": "4633ff96ac",
+    "text": "입력을 듣기 시작합니다. 프로바이더마다 한 번입니다. 드래그하려 할 때 `context.activate()`를 호출하세요. 정리 함수를 반환할 수 있으며, 센서가 멈출 때 실행됩니다."
   }
 }

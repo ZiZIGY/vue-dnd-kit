@@ -29,6 +29,8 @@
   }
 
   const page = computed(() => data.value!.page);
+  /** The changelog is written in English only: no language notice. */
+  const englishOnly = computed(() => sourcePath.value.startsWith('/docs/changelog'));
   /** What the language notice says: not translated, translated but older than the English, or translated. */
   const notice = computed(() => {
     if (data.value!.fallback) return t('docs.notTranslated');
@@ -110,7 +112,7 @@
           </div>
 
           <div
-            v-if="locale !== 'en'"
+            v-if="locale !== 'en' && !englishOnly"
             class="mt-6 flex items-start gap-3 rounded-(--ui-radius) border-s-2 border-(--ui-primary) bg-elevated/60 px-4 py-3 text-sm text-muted"
           >
             <UIcon

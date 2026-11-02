@@ -7,6 +7,14 @@
     "source": "5ac7937354",
     "text": "Su tipo MIME (`image/png`); `''` cuando el navegador no lo sabe."
   },
+  "ExternalFile.name": {
+    "source": "85e29b464a",
+    "text": "Su nombre con la extensión (`notes.md`), al soltar."
+  },
+  "ExternalFile.size": {
+    "source": "cf1f4b7920",
+    "text": "Su tamaño en bytes, al soltar."
+  },
   "ExternalAccept": {
     "source": "f9ed0b389d",
     "text": "Lo que un destino de drop, una lista o un árbol acepta de los arrastres que vienen de fuera de la página: archivos desde el escritorio, un enlace o texto desde otra app o pestaña (`external`)."
@@ -32,8 +40,8 @@
     "text": "Otros tipos MIME que acepta, exactamente como los ofrecen otras apps."
   },
   "ExternalData": {
-    "source": "52e1ec34b0",
-    "text": "Un arrastre desde fuera de la página (`Active.external`, `DnDEvent.external`). Mientras se mantiene, el navegador dice lo que lleva, no los datos: los archivos, enlaces y texto llegan al soltar (`dropped`)."
+    "source": "44976c0766",
+    "text": "Un arrastre desde fuera de la página (`Active.external`, `DnDEvent.external`). Mientras se mantiene, el navegador dice lo que lleva, no los datos: los archivos, enlaces y texto llegan al soltar (`ready`)."
   },
   "ExternalData.types": {
     "source": "840a3fb6e3",
@@ -63,7 +71,7 @@
     "source": "044c2022ec",
     "text": "Al soltar: los datos de cualquier tipo que ofrezca (`''` antes, y para un tipo que no ofrece)."
   },
-  "ExternalData.dropped": {
+  "ExternalData.ready": {
     "source": "11a898fda6",
     "text": "Se soltó: los datos de arriba ya están."
   },
@@ -76,8 +84,8 @@
     "text": "Un elemento arrastrable o un ítem ordenable que un ratón puede arrastrar fuera de la página (`native`): al escritorio, a otra app, a otra pestaña, a otra ventana de la app."
   },
   "NativeDragOptions.data": {
-    "source": "5cec79d1b0",
-    "text": "Lo que reciben otras apps y páginas: tipo MIME → texto, p. ej. `{ 'text/plain': title, 'text/uri-list': url }`. Se lee cuando empieza el arrastre. Los ítems ordenables también se llevan a sí mismos, para las listas de su grupo en otra ventana de la app."
+    "source": "8268ca9868",
+    "text": "Lo que reciben otras apps y páginas: texto por tipo MIME, como `{ 'text/plain': title, 'text/uri-list': url }`. Se lee cuando empieza el arrastre. Los ítems ordenables también se llevan a sí mismos, para las listas de su grupo en otra ventana de la app."
   },
   "NativeDragOptions.effect": {
     "source": "67e99c2b14",

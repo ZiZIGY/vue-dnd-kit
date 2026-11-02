@@ -8,7 +8,7 @@
   const card = (n: number) => ({ id: `${props.lib}-${n}`, n, hue: (n * 47) % 360 });
   let next = 6;
   const cards = ref([1, 2, 3, 4, 5].map(card));
-  // `animate` comes from the provider: both libraries' lists share the same options here.
+  // `animateChanges` comes from the provider: both libraries' lists share the same options here.
   const { items } = makeSortableList(useTemplateRef<HTMLElement>('list'), { id: props.lib, items: cards });
 
   // Changes no drag makes.

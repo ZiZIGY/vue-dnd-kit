@@ -30,7 +30,7 @@ const { items, isOver, isAccepting } = makeSortableList(list, {
   // Alt-drag copies a field.
   clone: cloneField,
   // Fields added, removed or brought back by Undo slide into place.
-  animate: true,
+  animateChanges: true,
   onDrop: form.drop,
 });
 

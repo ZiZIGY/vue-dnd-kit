@@ -34,7 +34,6 @@ export {
   restrictToFirstScrollableAncestor,
   snapToGrid,
   snapCenterToCursor,
-  type SnapToGridOptions,
 } from './core/modifiers';
 
 // Public types, listed one by one: a type added to `types/` is internal until it is
@@ -112,6 +111,7 @@ export type {
   CollisionCandidate,
   Modifier,
   ModifierArgs,
+  SnapToGridOptions,
 
   // Provider, context and overlay
   DnDProviderProps,

@@ -1,4 +1,8 @@
 {
+  "Key": {
+    "source": "0e20a2c263",
+    "text": "id 或 key：可拖拽元素、放置目标、列表或列表项的。"
+  },
   "MaybeReadonlyRefOrGetter": {
     "source": "856e8d0c75",
     "text": "值、getter 或任何 ref（可写、浅层、computed、只读——例如来自 `useTemplateRef` 的），库只会读取它。与 Vue 的 `MaybeRefOrGetter` 不同，在需要 `string | number` 的地方它接受 `Ref<string>`。"
@@ -7,9 +11,85 @@
     "source": "e1366b62a5",
     "text": "值或任何 ref，用于函数本身就是一种值的选项（浮层组件、accept 规则、自定义动画），因此无法区分 getter。把组件放在 `shallowRef`（或 computed）中：Vue 不能把它们变成响应式的。"
   },
+  "MaybeElement": {
+    "source": "1b8960adcb",
+    "text": "元素：HTML 或 SVG 元素，或组件实例（它的根元素 `$el`），就像模板引用给出的那样。还没有元素（尚未挂载）时为 `null` 或 `undefined`。"
+  },
+  "MaybeElementRef": {
+    "source": "603f215a38",
+    "text": "组合式函数作用的元素（`makeDraggable(target)`）：元素本身、模板引用（`useTemplateRef`）或 getter。它可以变化（`v-if`）：本库会跟随它。"
+  },
+  "Coordinates": {
+    "source": "2f8f5c3336",
+    "text": "一个点或一个偏移量，单位 px：从视口左上角算起的位置，或从拖拽开始处算起的偏移量（`delta`、`transform`）。"
+  },
+  "Coordinates.x": {
+    "source": "b43f5ddec4",
+    "text": "水平方向，向右增大。"
+  },
+  "Coordinates.y": {
+    "source": "8f097fc225",
+    "text": "垂直方向，向下增大。"
+  },
+  "Size": {
+    "source": "255c399f55",
+    "text": "宽度和高度，单位 px。"
+  },
+  "Size.width": {
+    "source": "f4f2b634d9",
+    "text": "宽度，单位 px。"
+  },
+  "Size.height": {
+    "source": "6e660db892",
+    "text": "高度，单位 px。"
+  },
+  "Rect": {
+    "source": "62078f7f5c",
+    "text": "一个盒子，单位 px，使用视口坐标，与 `getBoundingClientRect()` 给出的一致。"
+  },
+  "Rect.top": {
+    "source": "4e05fbd563",
+    "text": "上边缘，从视口顶部算起。"
+  },
+  "Rect.left": {
+    "source": "3d40777368",
+    "text": "左边缘，从视口左侧算起。"
+  },
+  "Rect.width": {
+    "source": "d31ce8afdd",
+    "text": "宽度。"
+  },
+  "Rect.height": {
+    "source": "db48d67b0f",
+    "text": "高度。"
+  },
+  "Rect.right": {
+    "source": "7158323919",
+    "text": "右边缘，从视口左侧算起：`left + width`。"
+  },
+  "Rect.bottom": {
+    "source": "44b04207ae",
+    "text": "下边缘，从视口顶部算起：`top + height`。"
+  },
+  "MaybePromise": {
+    "source": "f3d05df331",
+    "text": "一个值，或该值的 promise：可能是异步的钩子所返回的（`onBeforeDrop`）。"
+  },
+  "DnDStatus": {
+    "source": "d5d49a4ce6",
+    "text": "provider 当前在做什么：\n- `'idle'`：什么都没做；\n- `'activating'`：按下正在等待满足激活约束（一段距离、一次长按）；\n- `'dragging'`：拖拽进行中；\n- `'dropping'`：放置正在确定中（异步的 `onBeforeDrop`），或浮层仍在落位；\n- `'selecting'`：选择区域正在画选框。"
+  },
   "SensorType": {
     "source": "ddccc05a96",
     "text": "拖拽如何移动，无论由哪个传感器驱动（`SensorActivation.type`）：`'pointer'` 跟随坐标点，`'keyboard'` 按项移动。"
+  },
+  "PointerKind": {
+    "source": "5db385a430",
+    "text": "按下的指针类型（`PointerEvent.pointerType`）：激活按类型设置。"
+  },
+  "ActivationConstraint": {
+    "source": "e5b4786b75",
+    "text": "按下在变成拖拽之前必须满足的条件：移动 `distance`，或按住 `delay`，以先满足者为准。都不设置：拖拽立即开始。"
   },
   "ActivationConstraint.distance": {
     "source": "70ede97eca",
@@ -24,7 +104,7 @@
     "text": "与 `delay` 一起使用：会中止激活的移动距离（px），这样页面可以滚动。"
   },
   "ActivationOptions": {
-    "source": "75a2dcce93",
-    "text": "按指针类型设置。默认值：鼠标/触控笔为 `{ distance: 4 }`（在手柄上立即开始），触摸为 `{ delay: 200, tolerance: 5 }`。"
+    "source": "a41c6198e1",
+    "text": "按指针类型设置。默认值：鼠标为 `{ distance: 4 }`（在手柄上立即开始），触控笔为 `{ distance: 4 }`，触摸为 `{ delay: 200, tolerance: 5 }`。"
   }
 }

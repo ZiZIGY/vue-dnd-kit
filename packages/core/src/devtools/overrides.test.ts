@@ -168,7 +168,7 @@ describe('overrides', () => {
 
     const chip = { kind: 'draggable', id: 'chip' } as const;
     expect(provider.overrides.set(chip, 'disabled', true)).toBe(true);
-    expect(provider.overrides.set(chip, 'keyboard', 'droppables')).toBe(true);
+    expect(provider.overrides.set(chip, 'keyboardMode', 'droppables')).toBe(true);
     expect(manager.getDraggable('chip')!.isDisabled()).toBe(true);
     expect(provider.overrides.read(chip, 'disabled')).toEqual({ value: true, code: false, overridden: true });
     // A sortable item: over what it takes from its list.

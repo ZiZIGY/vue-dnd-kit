@@ -6,7 +6,7 @@
   import { motionAnimations } from './motion';
   import { counted, emptyCounts, type HookCounts } from './counts';
 
-  /** Off: the lists' data changes don't animate (`animate: false`); drags still do. */
+  /** Off: the lists' data changes don't animate (`animateChanges: false`); drags still do. */
   const changes = shallowRef(true);
 
   const libs = [
@@ -25,7 +25,7 @@
     <p class="hint">
       Recipes, not dependencies: the same list animated by GSAP and by motion through the library's hooks. The
       provider gets <code>animation</code> (items moving while dragging), <code>dropAnimation</code> (the overlay
-      landing) and <code>animate</code> (data changes: moves, items entering and leaving). See
+      landing) and <code>animateChanges</code> (data changes: moves, items entering and leaving). See
       <code>gsap.ts</code> and <code>motion.ts</code> next to this demo.
     </p>
     <label>
@@ -34,7 +34,7 @@
         type="checkbox"
         data-testid="animate-changes"
       />
-      Animate data changes (<code>animate</code>)
+      Animate data changes (<code>animateChanges</code>)
     </label>
     <div class="board libs">
       <div
@@ -44,7 +44,7 @@
         <h3>{{ lib.title }}</h3>
         <DnDProvider
           v-bind="lib.hooks"
-          :animate="changes ? lib.hooks.animate : false"
+          :animate-changes="changes ? lib.hooks.animateChanges : false"
         >
           <LibList :lib="lib.name" />
         </DnDProvider>

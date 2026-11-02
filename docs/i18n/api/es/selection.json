@@ -7,13 +7,21 @@
     "source": "c7f915cabf",
     "text": "Teclas (`KeyboardEvent.key` o `.code`) que hay que mantener para que una pulsación dibuje un rectángulo: todas ellas, o solo alguna (`'some'`)."
   },
-  "SelectionAreaOptions": {
-    "source": "395589bdaa",
-    "text": "Opciones de `makeSelectionArea`. `modifier`, `strategy`, `accept` y `disabled` aceptan un valor, una ref o un getter (`accept`: un valor o una ref, una función es una regla) y se leen cuando una pulsación inicia un rectángulo; activar `disabled` también cancela uno en curso."
+  "SelectionModifier.keys": {
+    "source": "d97d7241ad",
+    "text": "Las teclas, como `KeyboardEvent.key` (`'Shift'`) o `.code` (`'KeyA'`). Ninguna: cualquier pulsación dibuja."
   },
-  "SelectionAreaOptions.selection": {
-    "source": "294f767d3b",
-    "text": "Por defecto, la selección del provider."
+  "SelectionModifier.method": {
+    "source": "a46efd8e2a",
+    "text": "`'every'`: hay que mantener todas las `keys`; `'some'`: basta con una de ellas."
+  },
+  "SelectionAreaOptions": {
+    "source": "951e39f4a0",
+    "text": "Opciones de `makeSelectionArea`. El rectángulo selecciona en la selección del provider, la que leen el multi-drag y `selected` (`useDnD().selection`). `modifier`, `strategy`, `accept` y `disabled` aceptan un valor, una ref o un getter (`accept`: un valor o una ref, una función es una regla) y se leen cuando una pulsación inicia un rectángulo; activar `disabled` también cancela uno en curso."
+  },
+  "SelectionAreaOptions.modifier": {
+    "source": "65c8a221ac",
+    "text": "Teclas que hay que mantener para que una pulsación dibuje un rectángulo. Por defecto: ninguna, cualquier pulsación en el espacio vacío dibuja."
   },
   "SelectionAreaOptions.strategy": {
     "source": "0367d14627",
@@ -22,6 +30,22 @@
   "SelectionAreaOptions.accept": {
     "source": "6293487b0c",
     "text": "Qué elementos arrastrables selecciona el rectángulo; el mismo criterio de coincidencia que los destinos de drop."
+  },
+  "SelectionAreaOptions.disabled": {
+    "source": "ac33d3517f",
+    "text": "`true`: las pulsaciones no dibujan ningún rectángulo."
+  },
+  "SelectionAreaOptions.onSelected": {
+    "source": "1ca0d338e8",
+    "text": "El rectángulo terminó: recibe todos los ids seleccionados ahora."
+  },
+  "SelectionAreaReturn": {
+    "source": "f6f48602c4",
+    "text": "Lo que devuelve `makeSelectionArea`."
+  },
+  "SelectionAreaReturn.isSelecting": {
+    "source": "f38c578911",
+    "text": "Se está dibujando un rectángulo: renderízalo entonces."
   },
   "SelectionAreaReturn.style": {
     "source": "e4525127b1",

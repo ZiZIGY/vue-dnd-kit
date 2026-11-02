@@ -114,6 +114,8 @@ describe('public exports', () => {
       Public.DnDState,
       Public.DnDSelection,
       Public.Announcements,
+      Public.AnnouncementContext,
+      Public.AnnouncedPosition,
       // Accept rules
       Public.AcceptContext,
       Public.AcceptRule,
@@ -177,6 +179,8 @@ describe('public exports', () => {
       Public.SelectionAreaReturn,
       Public.SelectionStrategy,
       Public.SelectionModifier,
+      Public.DragAreaOptions,
+      Public.DragAreaReturn,
     ];
     accepts<Exported | undefined>(undefined);
     // @ts-expect-error The manager is internal: `useDnDContext()` gives an opaque `DnDContext`.
@@ -203,21 +207,29 @@ describe('public option types', () => {
     expect(true).toBe(true);
   });
 
-  it('sortable items take `canDrag` and `attributes` as draggables do, but no `keyboard`', () => {
+  it('sortable items take `canDrag` and `attributes` as draggables do, but no `keyboardMode`', () => {
     accepts<SortableItemOptions>({ id: 'a', canDrag: (event) => event.shiftKey, attributes: ref(false) });
     assertType<Equal<SortableItemOptions['canDrag'], DraggableOptions['canDrag']>>();
     assertType<Equal<SortableItemOptions['attributes'], DraggableOptions['attributes']>>();
     // @ts-expect-error The keyboard moves sortable items by slots.
-    accepts<SortableItemOptions>({ id: 'a', keyboard: 'pixels' });
+    accepts<SortableItemOptions>({ id: 'a', keyboardMode: 'pixels' });
     expect(true).toBe(true);
   });
 
-  it('`animate`: a value, a ref or a getter; per kind `true`, options, `false` or a function', () => {
-    type Animate = SortableListOptions<{ id: string }>['animate'];
+  it('`group.put`: a boolean, type rules, or a function of the items as the list holds them', () => {
+    type Task = { id: string; done: boolean };
+    accepts<SortableListOptions<Task>['group']>({ name: 'tasks', put: 'task' });
+    accepts<SortableListOptions<Task>['group']>({ name: 'tasks', put: ['task', 'bug'] });
+    accepts<SortableListOptions<Task>['group']>({ name: 'tasks', put: ({ items }) => items.every((task) => !task.done) });
+    expect(true).toBe(true);
+  });
+
+  it('`animateChanges`: a value, a ref or a getter; per kind `true`, options, `false` or a function', () => {
+    type Animate = SortableListOptions<{ id: string }>['animateChanges'];
     accepts<Animate>(true);
     accepts<Animate>(ref<AutoAnimation>({ duration: 300 }));
     accepts<Animate>(() => false);
-    accepts<SortableTreeOptions<{ id: string }>['animate']>(computed(() => true));
+    accepts<SortableTreeOptions<{ id: string }>['animateChanges']>(computed(() => true));
     accepts<AutoAnimation>({
       easing: 'ease-out',
       move: ({ element, from, to, signal }) => {
@@ -227,7 +239,7 @@ describe('public option types', () => {
       enter: { duration: 150 },
       leave: ({ element }) => new Promise<void>((resolve) => element.animate({ opacity: [1, 0] }, 150).addEventListener('finish', () => resolve())),
     });
-    // @ts-expect-error A function stands for one kind of change, never for `animate` as a whole.
+    // @ts-expect-error A function stands for one kind of change, never for `animateChanges` as a whole.
     accepts<AutoAnimation>(() => undefined);
     expect(true).toBe(true);
   });

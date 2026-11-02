@@ -14,9 +14,9 @@ const active = computed(() => tabs.value.find((tab) => tab.id === activeId.value
 const address = computed(() => (active.value ? `${active.value.title.toLowerCase().replace(/\W+/g, '')}.example` : ''));
 
 const strip = useTemplateRef<HTMLElement>('strip');
-// One row: `strategy: 'horizontal'`, and the tabs stay on it (`axis: 'x'`). `animate`
+// One row: `strategy: 'horizontal'`, and the tabs stay on it (`axis: 'x'`). `animateChanges`
 // slides the others when a button opens or closes a tab, which no drag did.
-const { items } = makeSortableList(strip, { items: tabs, strategy: 'horizontal', axis: 'x', animate: true });
+const { items } = makeSortableList(strip, { items: tabs, strategy: 'horizontal', axis: 'x', animateChanges: true });
 
 let next = 5;
 const open = () => {

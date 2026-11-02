@@ -11,9 +11,9 @@ const books = ref([
 ]);
 
 const list = useTemplateRef<HTMLElement>('list');
-// `animate`: moves made by the buttons (no drag) slide too, and stay still for users
+// `animateChanges`: moves made by the buttons (no drag) slide too, and stay still for users
 // who ask for reduced motion.
-const { items } = makeSortableList(list, { id: 'reading', items: books, animate: true });
+const { items } = makeSortableList(list, { id: 'reading', items: books, animateChanges: true });
 
 // Buttons change the data, not a drag: the provider says nothing, so this region does.
 const message = ref('');

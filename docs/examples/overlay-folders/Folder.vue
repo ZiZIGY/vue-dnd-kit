@@ -37,8 +37,8 @@ const { isOver } = makeDroppable(el, {
   data: () => props.folder,
   // The folder that is open takes nothing: the messages are already in it.
   disabled: () => props.open,
-  overlay: MovePill,
-  dropAnimation: intoFolder,
+  overOverlay: MovePill,
+  overDropAnimation: intoFolder,
   onDrop: (event) => emit('move', event.active.ids),
 });
 </script>
