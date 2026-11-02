@@ -233,7 +233,14 @@
     "label": "Erreur 404",
     "title": "Page introuvable",
     "description": "La page que vous cherchez n'existe pas ou a été déplacée.",
-    "home": "Retour à l'accueil",
-    "docs": "Ouvrir la documentation"
+    "home": "Accueil",
+    "hint": "La page s'est effondrée. Remettez les chiffres à leur place",
+    "done": "Assemblé ! La page reste introuvable, mais au moins c'est joli",
+    "again": "Disperser à nouveau",
+    "lost": "Page perdue",
+    "drag": "Faites-la glisser là où elle doit aller, ou cliquez simplement sur une destination",
+    "release": "Relâchez pour ouvrir",
+    "opening": "Ouverture…",
+    "log": "Journal des événements"
   }
 }

@@ -233,7 +233,14 @@
     "label": "Erro 404",
     "title": "Página não encontrada",
     "description": "A página que você procura não existe ou foi movida.",
-    "home": "Voltar ao início",
-    "docs": "Abrir a documentação"
+    "home": "Início",
+    "hint": "A página desmoronou. Coloque os dígitos de volta no lugar",
+    "done": "Montado! A página continua sumida, mas pelo menos ficou bonito",
+    "again": "Espalhar de novo",
+    "lost": "Página perdida",
+    "drag": "Arraste-a para onde ela deve ir, ou apenas clique em um destino",
+    "release": "Solte para abrir",
+    "opening": "Abrindo…",
+    "log": "Registro de eventos"
   }
 }

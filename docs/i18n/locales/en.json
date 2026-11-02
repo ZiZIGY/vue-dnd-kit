@@ -233,7 +233,14 @@
     "label": "Error 404",
     "title": "Page not found",
     "description": "The page you're looking for doesn't exist or has moved.",
-    "home": "Back home",
-    "docs": "Open the docs"
+    "home": "Home",
+    "hint": "The page fell apart. Put the digits back in place",
+    "done": "Assembled! The page is still missing, but at least it looks good",
+    "again": "Scatter again",
+    "lost": "Lost page",
+    "drag": "Drag it where it belongs, or just click a place",
+    "release": "Release to open",
+    "opening": "Opening…",
+    "log": "Event log"
   }
 }

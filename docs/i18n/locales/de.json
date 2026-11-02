@@ -233,7 +233,14 @@
     "label": "Fehler 404",
     "title": "Seite nicht gefunden",
     "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
-    "home": "Zur Startseite",
-    "docs": "Dokumentation öffnen"
+    "home": "Startseite",
+    "hint": "Die Seite ist zerfallen. Setz die Ziffern wieder an ihren Platz",
+    "done": "Zusammengesetzt! Die Seite fehlt immer noch, aber immerhin sieht es gut aus",
+    "again": "Wieder verstreuen",
+    "lost": "Verlorene Seite",
+    "drag": "Zieh sie dorthin, wo sie hingehört, oder klick einfach auf ein Ziel",
+    "release": "Loslassen zum Öffnen",
+    "opening": "Wird geöffnet…",
+    "log": "Ereignisprotokoll"
   }
 }
