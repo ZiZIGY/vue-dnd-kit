@@ -1,5 +1,44 @@
 # Changelog
 
+## v2.4.7 <span style="font-size:0.6em;font-weight:400;color:var(--vp-c-text-3);margin-left:0.5rem">2026-07-14</span>
+
+### Bug fix — disabling `useDraggable` on a dual-role element also blocked it as a drop zone
+
+**Symptom.** When the same DOM element was registered with both `useDraggable` and `useDroppable`, setting `disabled: true` on `useDraggable` also prevented the element from acting as a drop target — even though `useDroppable` was not disabled.
+
+```ts
+useDraggable(el, { disabled: true });
+useDroppable(el, { disabled: false }); // still couldn't be dropped onto
+```
+
+**Root cause.** The collision sensor's `filterNotDisabled` helper branched on the node's _presence_ in `draggableMap` first and returned early — so for a node registered as both roles, only the draggable's `disabled` state was ever checked. That single boolean result was then reused to gate both "is a valid drag source" and "is a valid drop zone" for the same node in `runCursorPhase` and the AABB fallback.
+
+**Fix.** Split the shared filter into role-specific checks — `filterValidDraggableTarget` (checks only the draggable's own `disabled` state) and `filterValidDroppableTarget` (checks only the droppable's own `disabled` state) — and updated all collision-detection call sites to apply the matching filter per role. Disabling one role on a dual-registered element no longer affects the other.
+
+---
+
+## v2.4.6 <span style="font-size:0.6em;font-weight:400;color:var(--vp-c-text-3);margin-left:0.5rem">2026-05-08</span>
+
+### Bug fix — `makeAutoScroll` scrolled containers that weren't the current drop target
+
+**Symptom.** During a drag, any container using `makeAutoScroll` would scroll whenever the pointer neared its edge — even if the drag overlay was actually hovering a different droppable and this container wasn't a valid drop target for the current drag.
+
+**Root cause.** The controller only watched `provider.state.value` and ran autoscroll for the whole duration of `'dragging'`, without checking whether the container itself was the currently hovered droppable.
+
+**Fix.** Added an `isHovered` check (`provider.hovered.droppable.has(container)`) alongside the drag state, so the controller now runs only while the container is both being dragged over and actually hovered as a drop target.
+
+By [@PopsDylan](https://github.com/PopsDylan) in [#43](https://github.com/ZiZIGY/vue-dnd-kit/pull/43)
+
+---
+
+### Docs & examples — touch device fixes, capitalization, read-mode extension
+
+Batch of documentation and example fixes: corrected touch-device behavior across most `/examples` components, fixed installation command capitalization, extended read mode, and misc theme/style cleanup.
+
+By [@qcp](https://github.com/qcp) in [#40](https://github.com/ZiZIGY/vue-dnd-kit/pull/40)
+
+---
+
 ## v2.4.5 <span style="font-size:0.6em;font-weight:400;color:var(--vp-c-text-3);margin-left:0.5rem">2026-04-18</span>
 
 ### Bug fix — horizontal cursor drift caused items to teleport to list start or end
