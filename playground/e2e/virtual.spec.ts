@@ -131,7 +131,7 @@ test.describe('TanStack Virtual list (10k rows)', () => {
     check();
   });
 
-  test('overscan rows outside the visible area are not sorting targets', async ({ page }) => {
+  test('past the visible area, the row at its edge is the target, never a clipped overscan row', async ({ page }) => {
     // The pointer ends just above the list: that is the auto-scroll edge zone, and
     // scrolling would bring the overscan rows into view. This test is about clipping.
     await page.goto('/demo/?noautoscroll#virtual-tanstack');
@@ -142,20 +142,20 @@ test.describe('TanStack Virtual list (10k rows)', () => {
     await scrollElement(scroller, 100 * ROW);
     // Up while far to the right, then left to just above the scroller, never crossing
     // a visible row. There the overlay overlaps the list (so the list is hovered) and
-    // the pointer is in the band of a mounted overscan row that is clipped away.
+    // the pointer is in the band of a mounted overscan row that is clipped away: the
+    // slot goes before the first row that shows (r100), not into the overscan.
     const box = (await scroller.boundingBox())!;
     const far = box.x + 2 * box.width + 40;
     await page.mouse.move(far, box.y - 12, { steps: 4 });
     await page.mouse.move(box.x + box.width / 2, box.y - 12, { steps: 10 });
     await nextFrames(page);
-    await expect(page.locator('[data-testid="tanstack-scroller"] [data-index="2"] [data-id]')).toHaveAttribute(
+    await expect(page.locator('[data-testid="tanstack-scroller"] [data-index="99"] [data-id]')).toHaveAttribute(
       'data-id',
       'r2',
     );
     await page.mouse.up();
     await waitForIdle(page);
-    await expect(page.getByTestId('tanstack-order')).toHaveText(HEAD_10('r'));
-    await expect(page.getByTestId('tanstack-drop')).toHaveText('');
+    await expect(page.getByTestId('tanstack-drop')).toHaveText('r2@99:r99,r2,r100');
     check();
   });
 

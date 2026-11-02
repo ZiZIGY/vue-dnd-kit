@@ -10,7 +10,7 @@ import { keysOf, type GroupContext } from './context';
 import type { ListEntry } from './entry';
 import { collect } from './block';
 import { keepSlotHome } from './slot';
-import { atLead } from './landing';
+import { atLead, inView } from './landing';
 import { bandsAt } from './combine';
 import { canSwap, isSwapping } from './accept';
 import { hitItem } from './projection';
@@ -57,7 +57,7 @@ export const updateIndicator = (g: GroupContext, target: ListEntry, event: DnDEv
     if (hit) showIndicator(g, swapMark(g, target, hit.key));
     return;
   }
-  const result = target.layout.indicate(atLead(g, current, event), {
+  const result = target.layout.indicate(inView(g, target, atLead(g, current, event)), {
     keys: keysOf(target),
     items,
     activeKey: current.slot,

@@ -178,3 +178,24 @@ export const atLead = (g: GroupContext, current: Session, event: DnDEvent): DnDE
   if (offset === NO_OFFSET) return event;
   return { ...event, pointer: { x: event.pointer.x + offset.x, y: event.pointer.y + offset.y } };
 };
+
+/**
+ * `event` with the pointer brought into the part of `target` that shows, along its axis
+ * (lists and trees; grids keep it). A pointer past the edge of a scrolled list points at
+ * the item at that edge: auto-scroll brings the items past it one by one, and the slot goes
+ * along. Beyond the edge the items are out of sight (a virtual list mounts a few there, or
+ * none). At the real end of a list its last item is at the edge, so the slot still goes
+ * after it. Keyboard drags put the pointer on the slot they go to: theirs stays.
+ */
+export const inView = (g: GroupContext, target: ListEntry, event: DnDEvent): DnDEvent => {
+  const strategy = target.strategy();
+  if (strategy === 'grid' || event.active.sensor === 'keyboard') return event;
+  const element = target.getElement();
+  const view = element?.isConnected ? g.manager.measureVisible(element) : null;
+  if (!view) return event;
+  const [axis, start, end] = strategy === 'horizontal' ? (['x', 'left', 'right'] as const) : (['y', 'top', 'bottom'] as const);
+  if (view[end] - view[start] < 2) return event;
+  const point = event.pointer[axis];
+  const held = Math.min(Math.max(point, view[start] + 1), view[end] - 1);
+  return held === point ? event : { ...event, pointer: { ...event.pointer, [axis]: held } };
+};

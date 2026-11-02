@@ -11,7 +11,7 @@ import { blocksKey } from '../stability';
 import { isSwapping, partitionMoved } from '../accept';
 import { collect, viewOf } from '../block';
 import { moveActive, returnToOrigin } from '../slot';
-import { atLead } from '../landing';
+import { atLead, inView } from '../landing';
 import { bandsAt } from '../combine';
 import { asItself, itself, movingDragMode, type SortableMode } from './mode';
 import { swap } from './swap';
@@ -58,7 +58,7 @@ export const sortOver = (
   const items = collect(g, target);
   const activeIndex = sameList ? keys.indexOf(current.slot) : -1;
   const strategy = target.strategy();
-  const projection = target.layout.project(atLead(g, current, heldBack(g, event, strategy)), {
+  const projection = target.layout.project(inView(g, target, atLead(g, current, heldBack(g, event, strategy))), {
     keys,
     items,
     activeKey: current.slot,
