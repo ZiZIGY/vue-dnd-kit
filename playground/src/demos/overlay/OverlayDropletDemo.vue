@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { onMounted, onUnmounted, reactive, ref, shallowRef, type Component } from 'vue';
-  import { DnDProvider } from '@vue-dnd-kit/core';
+  import { DnDProvider, pointerFirst, type CollisionDetection } from '@vue-dnd-kit/core';
   import SeedList from './SeedList.vue';
   import WaterZone from './WaterZone.vue';
   import BedTree from './BedTree.vue';
@@ -26,10 +26,17 @@
   const seedsOptions = { overlay: seedOverlay };
   // The garden as a target: whatever comes in grows a sprout (`overOverlay`).
   const gardenOptions = { overOverlay: SproutOverlay };
+
+  // The water takes a seed only under the pointer: the droplet forms there, much smaller
+  // than the seed's box, which would reach the water from far off. The rest as by default.
+  const collision: CollisionDetection = (args) => {
+    const found = pointerFirst(args);
+    return args.hits.includes('water') ? found : found.filter((id) => id !== 'water');
+  };
 </script>
 
 <template>
-  <DnDProvider>
+  <DnDProvider :collision="collision">
     <p class="lead">
       Targets shape the overlay. Over the water a seed turns into a droplet and splashes when dropped; over the
       garden it grows a sprout around itself and says which place it would take; in the beds it names the bed it
