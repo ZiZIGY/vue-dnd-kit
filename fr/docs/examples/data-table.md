@@ -41,7 +41,7 @@ Nuxt UI's `**UTable**` renders the table, its rows and its virtualizer: only the
 
 ## What to look at
 
-- **`**TaskTable.vue**`**: the sortable list is the table's `**<tbody>**`, found through the `**tableRef**` that `**UTable**` exposes. The table gets the list's draft as its `**data**`, so the rows move while you drag, and `**get-row-id**` keys them by task, as the list does. `**axis: 'y'**` keeps the drag in its column.
+- **`**TaskTable.vue**`**: the sortable list is the table's `**<tbody>**`, found through the `**tableRef**` that `**UTable**` exposes. The table gets the list's draft as its `**data**`, so the rows move while you drag, and `**get-row-id**` keys them by task, as the list does. `**axis: 'y'**` keeps the drag in its column, and `**restrictToFirstScrollableAncestor**` inside the table: its scroller is the first scrollable element around the rows. Expand the demo: the table fills the screen.
 - **`**RowGrip.vue**`**: `**UTable**` renders the rows, so no component of yours is a row. The grip in the first cell (the `**#grip-cell**` slot) makes the row around it the item, and is its handle.
 - ****The search**** is the list's `**filter**`: the table shows the matching tasks, and a drop writes the whole array back, the hidden tasks where they were.
 - **`**tasks.ts**`**: 2,000 tasks in a `**shallowRef**`: the library never looks inside them.
@@ -92,12 +92,12 @@ TaskTable.vue
   :data="items"
   :watch-options="{ deep: false }"
   :virtualize="{ estimateSize: 45, overscan: 8, onChange: () => captureLayout() }"
-  class="h-[26rem]"
+  class="min-h-0 flex-1"
 />
 ```
 
 - `**estimateSize**` is a first guess: the virtualizer measures each row as it renders. A measurement moves the rows below it, and `**onChange**` calls the list's `**captureLayout()**`, so the library animates that move during a drag instead of letting it jump.
-- The table is the scroller: near its top or bottom edge a drag scrolls it, and new rows render as they come into view.
+- The table is the scroller, and the row in hand stays inside it: near its top or bottom edge a drag scrolls it, and new rows render as they come into view.
 - The draft is a new array after every move, so the table needn't watch inside it ( `**deep: false**`).
 - Scroll far from the row you hold, and it leaves the rendered range and unmounts. The drag goes on: the overlay still shows it, and it lands where the draft puts it. A virtual list of your own can keep it mounted with `**rangeExtractor**` (see [**Virtual lists**](https://zizigy.github.io/vue-dnd-kit/fr/docs/guides/virtual-lists#tanstack-virtual)). A table lays its rows out between spacer rows, where a row rendered far from the others would push them aside, so this one lets it go.
 
@@ -113,6 +113,7 @@ const { items, captureLayout } = makeSortableList(() => table.value?.tableRef?.t
     return !text || `${task.id} ${task.title} ${task.assignee}`.toLowerCase().includes(text);
   },
   axis: 'y',
+  modifiers: [restrictToFirstScrollableAncestor],
   label: 'Tasks',
 });
 ```
