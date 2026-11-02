@@ -30,8 +30,19 @@ const importsOf = (files: ExampleFile[]) => {
 const usesNuxtUI = (files: ExampleFile[], imports: Set<string>) =>
   imports.has('@nuxt/ui') || files.some((file) => file.name.endsWith('.vue') && /<U[A-Z]\w*[\s/>]/.test(file.code));
 
+/**
+ * The page around the example, as the docs' frame expanded to the full screen: `#app` is a
+ * flex column as tall as the window, so a whole app (`flex: 1` on its root) fills it, a small
+ * demo stands in its middle, and a long one scrolls.
+ */
+const SHELL_CSS = [
+  'html, body { height: 100%; margin: 0; }',
+  'body { font-family: system-ui, sans-serif; }',
+  '#app { box-sizing: border-box; display: flex; flex-direction: column; justify-content: safe center; height: 100%; padding: 2rem; overflow: auto; }',
+].join('\n      ');
+
 const INDEX_HTML = (app: string) =>
-  `<!doctype html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n    <title>Vue DnD Kit</title>\n    <style>body { font-family: system-ui, sans-serif; margin: 2rem; }</style>\n  </head>\n  <body>\n    ${app}\n    <script type="module" src="/src/main.ts"></script>\n  </body>\n</html>\n`;
+  `<!doctype html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n    <title>Vue DnD Kit</title>\n    <style>\n      ${SHELL_CSS}\n    </style>\n  </head>\n  <body>\n    ${app}\n    <script type="module" src="/src/main.ts"></script>\n  </body>\n</html>\n`;
 
 /** A plain Vite + Vue project. */
 const plain = () => ({
@@ -53,8 +64,7 @@ const withNuxtUI = () => ({
       "import './main.css';\nimport { createApp } from 'vue';\nimport ui from '@nuxt/ui/vue-plugin';\nimport Root from './Root.vue';\n\ncreateApp(Root).use(ui).mount('#app');\n",
     'src/main.css': '@import "tailwindcss";\n@import "@nuxt/ui";\n',
     'src/Root.vue': "<script setup lang=\"ts\">\nimport App from './App.vue';\n</script>\n\n<template>\n  <UApp>\n    <App />\n  </UApp>\n</template>\n",
-    // Tailwind resets the body's margin: the room around the example is the app's.
-    'index.html': INDEX_HTML('<div id="app" class="isolate p-8"></div>'),
+    'index.html': INDEX_HTML('<div id="app" class="isolate"></div>'),
     'vite.config.ts':
       "import { defineConfig } from 'vite';\nimport vue from '@vitejs/plugin-vue';\nimport ui from '@nuxt/ui/vite';\n\nexport default defineConfig({ plugins: [vue(), ui({ router: false })] });\n",
   },
