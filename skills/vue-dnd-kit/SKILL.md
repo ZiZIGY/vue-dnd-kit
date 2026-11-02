@@ -29,7 +29,7 @@ npm i -D @vue-dnd-kit/devtools     # optional: a DevTools tab (Vue DevTools / Nu
 - **`<DnDProvider>`** owns one drag at a time, the overlay, the selection, sensors, auto-scroll and the live region. Every composable must run in a component **rendered inside** a provider. Calling one in the same component whose template contains the provider throws `No <DnDProvider> found above this component`.
 - **Composables take a template ref and options**: `makeX(elementRef, options)`. Options are reactive: a value, a ref or a getter (`() => props.item.id`).
 - **Sortable lists are data-driven.** `makeSortableList` returns a draft `items` that reorders live while dragging. Render the draft, not your array. On drop the library writes the new array into your ref, or hands it to you (`event.result`) when the source is read-only.
-- **Every list or tree gets its own component.** A list provides a context that its items inject, so two lists created in one component would share it.
+- **A row joins the list whose element holds it.** One component may make several lists or trees (a fixed Todo and Done side by side, a list inside a list): each item registers with the innermost list around its element. A list per component (`<Column>`) is still the usual shape.
 - **Keys come from the data.** Items are keyed by `getKey(item)` (default `item.id`), never by index or automatic ids.
 
 ## Quick start: a sortable list
@@ -117,16 +117,18 @@ mount on the client.
 | Swap two items instead of shifting | `behavior: 'swap'` | [sortable](references/sortable.md) |
 | Insertion line instead of moving items | `placeholder: 'indicator'` + `indicator` | [sortable](references/sortable.md) |
 | Store, server or immutable state (controlled) | read-only `items` + `e.preventDefault()` + `e.result` | [sortable](references/sortable.md) |
+| Search or tag filter over a sortable list | `filter` (hidden items keep their places) | [sortable](references/sortable.md) |
 | File tree / nested outline | `makeSortableTree` (flat rendering by depth) | [tree](references/tree.md) |
 | Free drag, drop zones, drop into a folder item; leave it where dropped | `makeDraggable` + `makeDroppable`, `event.position` | [draggable-droppable](references/draggable-droppable.md) |
+| Files, links or text from other apps; items dragged out of the page or to another window | `external`, `native`, `createItem` | [draggable-droppable](references/draggable-droppable.md#files-and-other-apps-native-drag-and-drop) |
 | Lock drags to one axis; snap, restrict to a container | `axis: 'x' \| 'y'`, `modifiers` | [draggable-droppable](references/draggable-droppable.md#modifiers) |
 | Rules for a part of the page (a board, a canvas, a feed) under one app-wide provider | `makeDragArea` | [draggable-droppable](references/draggable-droppable.md#drag-areas-makedragarea) |
 | Provider options, global events, `useDnD`, monitors | `DnDProvider`, `useDnD`, `useDnDMonitor` | [provider](references/provider.md) |
 | Drag several items; rubber-band selection | `selected`, `multiple`, `makeSelectionArea` | [multi-drag](references/multi-drag.md) |
-| Custom drag preview, preview size; a see-through dragged row | `overlay`, `#overlay` slot, `DragPreview`, `overlayFit`, `[data-dnd-overlay]` CSS | [overlay](references/overlay.md) |
-| Tune or replace animations (GSAP, motion) | `animation`, `dropAnimation`, `animate` | [animations](references/animations.md) |
+| Custom drag preview, preview size; a see-through dragged row; a target that changes the preview | `overlay`, `#overlay` slot, `DragPreview`, `overlayFit`, `overOverlay`, `[data-dnd-overlay]` CSS | [overlay](references/overlay.md) |
+| Tune or replace animations (GSAP, motion) | `animation`, `dropAnimation`, `animateChanges` | [animations](references/animations.md) |
 | 10k+ rows (TanStack Virtual, VueUse) | `activeIndex`, `captureLayout`, keys by id | [virtualization](references/virtualization.md) |
-| Keyboard, screen readers, "Move up" buttons | `announcements`, `keyboard`, `useDnDActions` | [accessibility](references/accessibility.md) |
+| Keyboard, screen readers, "Move up" buttons | `label`, `announcements`, `keyboard`, `useDnDActions` | [accessibility](references/accessibility.md) |
 | Custom input (gamepad, joystick), scripted drags | `defineSensor`, `useSensor`, `@vue-dnd-kit/actions` | [sensors-actions](references/sensors-actions.md) |
 | Styling drag states, CSS hooks | `data-dnd-*` attributes, returned refs | [styling](references/styling.md) |
 | Inspect drags in Vue DevTools | `@vue-dnd-kit/devtools` | [devtools](references/devtools.md) |
@@ -161,4 +163,4 @@ import {
 7. **Hold component options in `shallowRef`** (or pass the component directly): `overlay: shallowRef(MyOverlay)`. Never put a component in a deep `ref`.
 8. **Overlay components fill a box** that resizes to the target slot. Give the root `width: 100%; height: 100%`.
 9. **Use `shallowRef` for big arrays** (thousands of rows). The library never deep-traverses your data.
-10. **Let the library animate sortable items.** Don't wrap them in `<TransitionGroup>`, because the library already animates moves (FLIP on `translate`). For data changes that no drag made, turn on the list's `animate` option.
+10. **Let the library animate sortable items.** Don't wrap them in `<TransitionGroup>`, because the library already animates moves (FLIP on `translate`). For data changes that no drag made, turn on the list's `animateChanges` option.

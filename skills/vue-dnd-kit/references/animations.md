@@ -6,21 +6,24 @@ Three independent options. Each accepts `true` (default timing), `false` (off),
 | Option | Where | Default | Animates |
 | --- | --- | --- | --- |
 | `animation` | provider, list, tree | on, 200 ms | Items sliding to their new places while sorting, on drop and on cancel (FLIP on the CSS `translate` property, through the Web Animations API). |
-| `dropAnimation` | provider, draggable, item, list; drop targets (`makeDroppable`, a list's or tree's `overDropAnimation`) | on, 250 ms | The overlay landing on its slot. With no visible slot, it fades out, or shrinks into the zone it was dropped on. Per drop: the target's, else the item's (its list's), else the provider's; `false` counts. The drop also waits (2 s at most) for finite CSS animations inside the overlay that run when it starts (a splash on `status: 'dropping'`). |
-| `animate` | provider, list, tree | **off** | Changes of your data that no drag made: items added, removed, moved (sort, shuffle, a move between lists) or filtered, and tree rows shown or hidden by expanding and collapsing. |
+| `dropAnimation` | provider, draggable, item, list, tree; as `overDropAnimation` on drop targets (`makeDroppable`, lists, trees) | on, 250 ms | The overlay landing on its slot. With no visible slot, it fades out, or shrinks into the zone it was dropped on. Per drop: the target's, else the item's (its list's), else the provider's; `false` counts. The drop also waits (2 s at most) for finite CSS animations inside the overlay that run when it starts (a splash on `status: 'dropping'`). |
+| `animateChanges` | provider, list, tree | **off** | Changes of your data that no drag made: items added, removed, moved (sort, shuffle, a move between lists) or filtered, and tree rows shown or hidden by expanding and collapsing. |
+
+Lists also animate their own size (`animateSize`, on by default) when items come in or
+leave, with `animation`'s timing; `false` lets the list jump.
 
 ```vue
-<DnDProvider :animation="{ duration: 180, easing: 'cubic-bezier(.2,.8,.2,1)' }" :drop-animation="{ duration: 300 }" animate>
+<DnDProvider :animation="{ duration: 180, easing: 'cubic-bezier(.2,.8,.2,1)' }" :drop-animation="{ duration: 300 }" animate-changes>
 ```
 
 ```ts
 makeSortableList(listRef, {
   items,
-  animate: { duration: 250, enter: true, leave: { duration: 150 }, move: true },
+  animateChanges: { duration: 250, enter: true, leave: { duration: 150 }, move: true },
 });
 ```
 
-`animate` with parts: `{ duration, easing, move, enter, leave }`. Each part is `true`,
+`animateChanges` with parts: `{ duration, easing, move, enter, leave }`. Each part is `true`,
 options, `false` or a function. The default `enter` fades in place. The default `leave`
 fades a copy of the item out where it was, shrinking a little. Only items near the
 visible area animate.
@@ -37,13 +40,13 @@ Each function gets a context and returns an `Animation`, a promise that settles 
 ends, or nothing.
 
 ```ts
-// Layout (animation, animate.move)
+// Layout (animation, animateChanges.move)
 ({ key, element, from, to, options, reason: 'drag' | 'change', signal, reducedMotion }) => Animation | Promise | void
-// Drop (dropAnimation)
+// Drop (dropAnimation, overDropAnimation)
 ({ overlay, from, to /* null: no visible slot */, into /* zone rect or null */, reason: 'drop' | 'cancel', active, over /* the target, null on cancel */, options, reducedMotion }) => …
-// Enter (animate.enter): element is in place
+// Enter (animateChanges.enter): element is in place
 ({ key, element, to, options, reducedMotion }) => …
-// Leave (animate.leave): element is a copy left where the item was; removed when you finish
+// Leave (animateChanges.leave): element is a copy left where the item was; removed when you finish
 ({ key, element, from, options, reducedMotion }) => …
 ```
 
@@ -82,7 +85,7 @@ const enter = ({ element, reducedMotion }: EnterAnimationContext) =>
 const leave = ({ element, reducedMotion }: LeaveAnimationContext) =>
   gsap.to(element, reducedMotion ? { opacity: 0, duration: 0.2 } : { opacity: 0, scale: 0.85, duration: 0.25 }).then();
 
-export const gsapAnimations = { animation: move, dropAnimation: drop, animate: { move, enter, leave } };
+export const gsapAnimations = { animation: move, dropAnimation: drop, animateChanges: { move, enter, leave } };
 // <DnDProvider v-bind="gsapAnimations">
 ```
 
@@ -116,5 +119,5 @@ does nothing while no drag is running. See [virtualization](virtualization.md).
 
 ## Don't
 
-- Don't wrap sortable items in `<TransitionGroup>`: moves would be animated twice. Use `animate`.
+- Don't wrap sortable items in `<TransitionGroup>`: moves would be animated twice. Use `animateChanges`.
 - Don't animate `height`, `margin` or `padding` of rows inside a virtual list (ResizeObserver loops).

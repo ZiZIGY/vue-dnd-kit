@@ -16,14 +16,17 @@ const { isDragging, selected, transform } = makeDraggable(el, {
   id: () => props.file.id,         // default: useId() (new for every instance)
   data: () => props.file,          // anything; read back as active.data / items[i].data
   type: () => props.file.kind,     // matched by drop targets' `accept`
+  label: () => props.file.id,      // what screen readers call it
   handle: '.grip',                 // selector or element ref; only it starts the drag
   disabled: () => false,
   activation: { touch: { delay: 300 } },
   canDrag: (event) => !(event instanceof KeyboardEvent) || event.altKey,
   overlay: true,                   // true | false | a component (OverlayProps)
+  dropAnimation: true,             // how its overlay lands (a target's `overDropAnimation` wins)
   modifiers: [],                   // applied after the provider's
   axis: 'y',                       // lock to one axis: 'x' | 'y' (after the modifiers)
-  keyboard: 'pixels',              // 'pixels' (step px) | 'droppables' (jump between accepting targets)
+  keyboardMode: 'pixels',          // 'pixels' (step px) | 'droppables' (jump between accepting targets)
+  native: false,                   // true | { data, effect }: a mouse drag is the browser's own, and can leave the page
   attributes: true,                // role/tabindex/aria-*; never overrides your own
 });
 </script>
@@ -53,15 +56,20 @@ const zone = useTemplateRef<HTMLElement>('zone');
 const { isOver, isAccepting, placement } = makeDroppable(zone, {
   id: 'trash',
   data: { role: 'trash' },
+  label: 'Trash',                    // what screen readers call it
   accept: ['image', 'doc'],          // '*' | 'type' | string[] | ({ active, items, types }) => boolean
   acceptMode: 'all',                 // multi-drag: 'all' items must match, or 'some'
   priority: 0,                       // higher wins when targets overlap without nesting
   disabled: false,
+  overOverlay: TrashPreview,         // the overlay while the drag is over it and it accepts (see overlay.md)
+  overDropAnimation: false,          // how the overlay lands on it; wins over the item's and the provider's
+  external: { files: 'image/*' },    // takes files, links, text from outside the page (below)
   onDragEnter(e) {},
   onDragLeave(e) {},
   onBeforeDrop(e) { return 'accept'; }, // 'reject' (or false): items fly back; Key[]: a subset; 'continue': the drag goes on; may be async
   onDrop(e) {
-    // e.active.ids, e.active.items[i].data, e.over, e.source?.remove()
+    // a DnDEndEvent: e.active.ids, e.active.items[i].data, e.over, e.source?.remove(),
+    // e.accepted / e.rejected (the ids onBeforeDrop took / left out), e.external (outside data)
   },
 });
 ```
@@ -127,6 +135,36 @@ const { isOver } = makeDroppable(el, {
 
 If the item is no longer shown after such a drop, the overlay shrinks into the target
 instead of flying back.
+
+## Files and other apps (native drag and drop)
+
+The browser's own drag (files from the desktop, a link from another tab, text from another
+app) runs as a drag of the provider: targets light up, lists make room, events and
+announcements are the usual ones. Targets take it with `external`; those without it ignore it.
+
+```ts
+const { isOver, isAccepting } = makeDroppable(el, {
+  external: { files: 'image/*', multiple: false },   // also: links: true, text: true, types: ['…']
+  onDrop: (e) => show(e.external!.files[0]!),
+});
+```
+
+- `files` reads like `<input accept>` (`'image/*, .md'`), `true` takes any file, a function
+  decides file by file. Folders never.
+- The data comes **at the drop only**. While held, `active.external` has `types` and
+  `fileTypes`, and `ready: false`; at the drop `ready: true` with `files`, `urls`, `text`,
+  `html`, `getData(type)`.
+- **Lists and trees** take `external` too. Their `createItem` is asked twice: while the drag
+  is held (`active.external.ready === false`: return a placeholder row, e.g. "2 images
+  incoming") and at the drop (return the real item, or an array of items).
+- **Out of the page:** `native: true` (or `{ data: () => ({ 'text/plain': …, 'text/uri-list': … }), effect }`)
+  on `makeDraggable` / `makeSortableItem` makes a mouse drag the browser's own, so it can
+  leave the page. A drop elsewhere ends with `e.droppedOutside` (`'move'` takes the items out
+  of their list). Touch and keyboard drags stay the library's.
+- **Between windows:** items with `native` reach the lists of their `group` in another window
+  of the app (as JSON). Ctrl / Option copies instead of moving.
+- No overlay for native drags: the browser draws the dragged image. Offer an
+  `<input type="file">` next to a file zone for users without a mouse.
 
 ## Collision detection
 

@@ -151,6 +151,7 @@ npx skills add ZiZIGY/vue-dnd-kit
 
 Issues and pull requests are welcome.
 For larger changes, please open an issue first to discuss the approach.
+[CONTRIBUTING.md](./CONTRIBUTING.md) explains the repository, the commands and how releases work.
 
 ---
 

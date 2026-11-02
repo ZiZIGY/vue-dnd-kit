@@ -73,21 +73,29 @@ const { isDragging, isPlaceholder, selected, index } = makeSortableItem(el, { it
 | `items` | — | **Required.** A writable ref (the library writes drops), or a getter, computed or readonly ref (you write them: see *Controlled lists*). |
 | `getKey` | `item.id` (the item itself for primitives) | Must be unique within the group. |
 | `id` | `useId()` | Read once. Shows up as `from.list` and `to.list` and as `result` keys. |
-| `group` | own group | `'name'` or `{ name, pull: true \| false \| 'clone', put: true \| false \| (ctx) => boolean }`. Read once. |
+| `label` | — | What screen readers call the list (`position 2 of 5 in Garden`) instead of its id. |
+| `data` | — | Anything about the list as a drop target: events carry it as `over.data`. |
+| `group` | own group | `'name'` or `{ name, pull: true \| false \| 'clone', put }`. `put`: `true`, `false`, a type or types the items must have (like a drop target's `accept`, with `acceptMode`), or `(ctx) => boolean`. Read once. |
+| `filter` | — | `(item) => boolean`: shows only matching items (a search); a drag sorts among them, the hidden ones keep their places in the source. `e.to.index` and `activeIndex` count the shown items. |
 | `strategy` | `'vertical'` | `'vertical' \| 'horizontal' \| 'grid'` (grids and wrapping rows). |
 | `behavior` | `'sort'` | `'swap'`: the dragged item exchanges places with the hovered one. |
 | `placeholder` | `'item'` | `'indicator'`: the list doesn't move, and you draw a line from `indicator`. |
 | `multiple` | `'group'` | Multi-drag mode: `'group' \| 'gaps' \| 'stack'` (see [multi-drag](multi-drag.md)). |
 | `sort` | `true` | `false`: no reordering inside this list (palettes). |
 | `clone` | — | `(item) => copy` with a **new key**. Required for copying (`pull: 'clone'`, or Alt). |
-| `createItem` | — | `(active) => item \| undefined`. Takes plain `makeDraggable` drags in. |
+| `createItem` | — | `(active) => item \| item[] \| undefined`. Takes plain `makeDraggable` drags in, and drags from outside the page. |
+| `external` | — | Takes files, links, text from outside the page (needs `createItem`; see [draggable-droppable](draggable-droppable.md#files-and-other-apps-native-drag-and-drop)). |
 | `dropOutside` | `'placeholder'` (`'cancel'` with the indicator) | Drop outside every target: keep the placeholder's position, `'cancel'`, or `'remove'` the items. |
 | `acceptMode` | `'all'` | Multi-drag of mixed types: `'all'` or `'some'` must pass `group.put`. |
 | `overlay` | — | Overlay component for this list's items (see [overlay](overlay.md)). |
+| `overOverlay` | — | What the overlay shows while a drag this list accepts is over it, from any list. |
+| `dropAnimation` / `overDropAnimation` | provider's | How the overlay lands: for drags of this list's items / for drops into this list (wins). |
+| `activation` | provider's | How a press on the items starts a drag (an item's own wins). |
 | `axis` | — | `'y'` / `'x'`: lock drags of the items to one axis (after `modifiers`; an item's own `axis` wins). |
 | `modifiers` | — | Movement modifiers, e.g. `[restrictToWindowEdges]`. |
 | `animation` | provider's | FLIP while sorting. |
-| `animate` | provider's (`false`) | Animate data changes that no drag made. |
+| `animateChanges` | provider's (`false`) | Animate data changes that no drag made. |
+| `animateSize` | `true` | The list's own size follows its items smoothly; `false` lets it jump. |
 | `autoScroll` | provider's | Per list. |
 | `dropzone` | the list element | Element that takes drops for the list: e.g. the whole kanban column around a short `<ul>` (below the last card: at the end). |
 | `disabled` | `false` | No drags from, or drops into, this list. |
@@ -99,8 +107,12 @@ Returns `{ id, items, isOver, isAccepting, indicator, activeKey, activeIndex, ac
 ## makeSortableItem options
 
 Pass `id` (a getter) or `item` (a getter, keyed with the list's `getKey`). Also:
-`handle`, `disabled`, `type`, `data`, `overlay`, `modifiers`, `axis`, `activation`,
-`canDrag`, `attributes` (as on `makeDraggable`). There is no `keyboard` option: arrow keys move by slots.
+`handle`, `disabled`, `type`, `data`, `label`, `overlay`, `dropAnimation`, `modifiers`,
+`axis`, `activation`, `native`, `canDrag`, `attributes` (as on `makeDraggable`). There is no
+`keyboardMode` option: arrow keys move by slots.
+
+The row joins the list whose element holds it: one component may make several lists (two
+columns, a list inside a list), and each row registers with the innermost one around it.
 
 Returns:
 - `isDragging`: this item is part of the drag (true for every dragged item in a multi-drag).
@@ -208,7 +220,9 @@ makeSortableList(listRef, {
 });
 ```
 
-`group.put` can be a function: `put: ({ keys, items, types, from, to }) => items.length <= 3`.
+`group.put` takes types, as a drop target's `accept`: `put: 'image'` or `put: ['image', 'video']`
+(with `acceptMode: 'some'`, a mixed multi-drag lets the matching items in and sends the others
+back). Or a function: `put: ({ keys, items, types, from, to }) => items.length <= 3`.
 
 ## Swap
 

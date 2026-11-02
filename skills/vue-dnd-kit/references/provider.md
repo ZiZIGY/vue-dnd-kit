@@ -15,7 +15,7 @@ provider owns an element.
   :modifiers="[restrictToWindowEdges]"
   :animation="{ duration: 200, easing: 'ease' }"
   :drop-animation="true"
-  :animate="false"
+  :animate-changes="false"
   :auto-scroll="{ threshold: 0.2, maxSpeed: 20 }"
   :activation="{ touch: { delay: 300, tolerance: 8 } }"
   :keyboard="{ step: 25, keys: { start: ['Space', 'Enter'], drop: ['Space', 'Enter'], cancel: ['Escape'] } }"
@@ -31,6 +31,8 @@ provider owns an element.
   @drag-over="onOver"
   @drag-end="onEnd"
   @drag-cancel="onCancel"
+  @drag-resume="onResume"
+  @drag-settle="onSettle"
 >
   <App />
   <template #overlay="{ active, items, over, accepted, status, mode }">
@@ -45,7 +47,7 @@ provider owns an element.
 | `modifiers` | `[]` | Global movement modifiers (see [draggable-droppable](draggable-droppable.md#modifiers)). |
 | `animation` | `true` | FLIP of sortable items while sorting: `true`, `false`, `{ duration, easing }` or a function. |
 | `dropAnimation` | `true` | How the overlay lands. Same shapes. |
-| `animate` | `false` | Default for lists and trees: animate data changes that no drag made. See [animations](animations.md). |
+| `animateChanges` | `false` | Default for lists and trees: animate data changes that no drag made. See [animations](animations.md). |
 | `autoScroll` | `true` | Scroll containers and the window near their edges. `{ threshold, maxSpeed, acceleration }`. |
 | `activation` | mouse `{ distance: 4 }` (immediate on a handle), pen `{ distance: 4 }`, touch `{ delay: 200, tolerance: 5 }` | Per pointer kind: `{ mouse, touch, pen }`. |
 | `keyboard` | Space/Enter start and drop, Escape cancels, `step: 25` | `false` turns keyboard drags off. Escape still cancels any drag. |
@@ -54,13 +56,16 @@ provider owns an element.
 | `copyModifier` | `'Alt'` | Held during a drag between lists, it turns the move into a copy (lists need `clone`). `null` disables it. |
 | `overlayTo` | `'body'` | Teleport target of the overlay. |
 | `overlayFit` | `'slot'` | `'slot'`: the overlay takes the size of the slot it will land in. `'source'`: it keeps the dragged element's size. |
+| `overlayTransition` | a crossfade | How the overlay changes from one component to another mid-drag (a target's `overOverlay`): `false`, or `<Transition>` props. |
+| `overlayClass` | — | Classes for the overlay's content element (`[data-dnd-overlay-content]`): animate it as a whole, a lift on pickup, a settle on landing. |
+| `overlayPreviews` | `5` | Multi-drag: how many dragged items get a clone at pickup, or `'all'`. |
 | `announcements` | built-in texts | `Partial<Announcements>` to override events (`undefined` = default, `''` = silent). Each gets `(event, context)`: `context.position` is the sortable position the built-in text speaks (`{ list, index (from 0), length }`), plus `count`, `copy`, a swap's `partner` — for texts in another language. `false` silences the live region. |
 | `screenReaderInstructions` | built-in | Text linked to every draggable through `aria-describedby`. |
-| `defaultStyles` | `true` | Injects zero-specificity CSS (placeholder opacity, no text selection, grabbing cursor). |
+| `defaultStyles` | `true` | The looks (dimmed placeholders), as zero-specificity CSS. `false` drops only them: the behaviour styles (no text selection or scroll anchoring while dragging, the drag cursor, no iOS link callout) are always injected. |
 
-Events: `dragStart`, `dragMove`, `dragOver`, `dragEnd` (`DnDEndEvent`: `dropped`, `accepted`),
-and `dragCancel`. `dragEnd` fires after sortable lists have run `onDrop` and written the
-drop.
+Events: `dragStart`, `dragMove`, `dragOver`, `dragEnd` (`DnDEndEvent`: `dropped`, `accepted`,
+`rejected`), `dragCancel`, `dragResume` and `dragSettle`. `dragEnd` fires after sortable
+lists have run `onDrop` and written the drop.
 
 The overlay and the live region are teleported and render on the client only, so the
 provider is SSR-safe (Nuxt). Default ids come from `useId()` and are stable between server
@@ -99,7 +104,7 @@ useDnDMonitor({
   onDragMove(e) {},
   onDragOver(e) {},                      // the target changed
   onBeforeDrop(e) { return 'accept'; },  // 'reject' / false; Key[]: a subset; 'continue': keep dragging; may be async
-  onDragEnd(e) {},                       // after the write: e.dropped, e.accepted, e.position
+  onDragEnd(e) {},                       // after the write: e.dropped, e.accepted, e.rejected, e.position
   onDragCancel(e) {},
   onDragResume(e) {},                    // onBeforeDrop answered 'continue': the drag goes on
   onDragSettle(e) {},                    // its overlay has landed: the onDragEnd / onDragCancel event

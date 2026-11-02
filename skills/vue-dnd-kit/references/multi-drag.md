@@ -47,7 +47,9 @@ const { isSelecting, style } = makeSelectionArea(areaRef, {
 </template>
 ```
 
-A press on empty space in the area draws the band. A press on a draggable drags it.
+The band always selects into the provider's selection (`useDnD().selection`); there is no
+option to point it elsewhere. A press on empty space in the area draws the band. A press on
+a draggable drags it.
 The band stays anchored to the content when the area or the page scrolls.
 `useDnD().status` is `'selecting'` while the band is drawn.
 

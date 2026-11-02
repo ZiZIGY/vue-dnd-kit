@@ -21,7 +21,7 @@ start. `attributes: false` turns all of this off (live: what the library set is 
 | Key | Action |
 | --- | --- |
 | Space / Enter | Pick up the focused item; drop it. |
-| Arrows | Move: by slots in lists, by rows and depth in trees, by `keyboard.step` px (Shift: faster) in free drags, or between accepting targets with `makeDraggable({ keyboard: 'droppables' })`. Arrows toward another list of the group move the item there. |
+| Arrows | Move: by slots in lists, by rows and depth in trees, by `keyboard.step` px (Shift: faster) in free drags, or between accepting targets with `makeDraggable({ keyboardMode: 'droppables' })`. Arrows toward another list of the group move the item there. |
 | Escape | Cancel any drag (pointer drags too). |
 
 Rebind keys with `<DnDProvider :keyboard="{ keys: { start: ['KeyD'], drop: ['Enter'], cancel: ['Escape'] } }">`
@@ -33,7 +33,9 @@ returns to the item after the drop, even when its row was re-rendered elsewhere.
 
 A live region in the provider speaks every pickup, move, drop and cancel. Sortable lists
 announce positions ("position 3 of 5 in list todo"). Moves are spoken once the drag has
-rested for 500 ms. The texts use ids, so give items meaningful ids or override the texts:
+rested for 500 ms. The texts say each thing's `label` (items, draggables, lists, trees,
+drop targets: `label: () => props.task.title`), else its id. Give labels, or override the
+texts:
 
 ```ts
 const announcements: Partial<Announcements> = {

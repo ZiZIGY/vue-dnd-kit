@@ -5,31 +5,36 @@ refs and from a few `data-dnd-*` attributes.
 
 ## Default styles
 
-With `defaultStyles` (on by default), zero-specificity CSS (`:where()`) is injected once
-per document, first in `<head>`, so any rule of yours overrides it. The opacities sit in
-the cascade layer `vue-dnd-kit`, declared before any other, so layered CSS (Tailwind v4
-utilities like `data-[dnd-placeholder]:opacity-100`, UI kits) overrides them too:
+Zero-specificity CSS (`:where()`) is injected once per document, first in `<head>`, so any
+rule of yours overrides it. Two parts:
 
 ```css
+/* The looks (`defaultStyles`, on by default), in the cascade layer `vue-dnd-kit`, declared
+   before any other, so layered CSS (Tailwind v4 utilities like
+   `data-[dnd-placeholder]:opacity-100`, UI kits) overrides them too. */
 @layer vue-dnd-kit {
   :where([data-dnd-placeholder]) { opacity: 0.4; }               /* the slot a dragged item lands in */
   :where([data-dnd-dragging]:not(html)) { opacity: 0.4; }        /* multi-drag 'gaps': left behind */
 }
+/* The behaviour: always injected. No text selection and no scroll anchoring while dragging
+   (virtual lists rely on it), the drag cursor, no iOS link callout on a long press. */
 :where(html[data-dnd-dragging], html[data-dnd-dragging] *) { user-select: none !important; overflow-anchor: none !important; }
-:where(html[data-dnd-dragging="pointer"], html[data-dnd-dragging="pointer"] *) { cursor: grabbing !important; }
+:where(html[data-dnd-dragging="pointer"], html[data-dnd-dragging="pointer"] *) { cursor: var(--dnd-cursor, grabbing) !important; -webkit-touch-callout: none !important; }
 ```
 
-`:default-styles="false"` turns them off.
+`:default-styles="false"` drops only the looks. `--dnd-cursor` is the grabbed element's own
+cursor (a `cursor: move` on a row stays during its drag), else `grabbing`.
 
 ## Attributes
 
 | Attribute | On | When |
 | --- | --- | --- |
-| `data-dnd-placeholder` | sortable item | It is the slot a dragged item will land in (`isPlaceholder`). |
+| `data-dnd-placeholder` | sortable item | It is the slot a dragged item will land in (`isPlaceholder`). `="into"` while the drop goes into a drop target inside an item (a folder row). |
 | `data-dnd-dragging` | sortable item | Dragged but left in place (multi-drag `'gaps'`). |
 | `data-dnd-dragging="pointer" \| "keyboard"` | `<html>` | For the whole drag. |
-| `data-dnd-overlay="dragging" \| "dropping"` | overlay box | Always (`position: fixed`, `pointer-events: none`): `dropping` while it lands or an async `onBeforeDrop` waits. The clone inside keeps the element's classes: style it with `[data-dnd-overlay] .row`. |
-| `data-dnd-leaving` | leave copies of `animate` | While an item that left fades out. |
+| `data-dnd-overlay="dragging" \| "dropping"` | overlay box | Always (`position: fixed`, `pointer-events: none`): `dropping` while it lands or an async `onBeforeDrop` waits. The clone inside keeps the element's classes: style it with `[data-dnd-overlay] .row` (a descendant selector: the clone sits in `[data-dnd-overlay-content]`, not right under the box). |
+| `data-dnd-overlay-content` | inside the overlay box | What the overlay shows; the provider's `overlayClass` goes on it. |
+| `data-dnd-leaving` | leave copies of `animateChanges` | While an item that left fades out. |
 | `data-dnd-no-clone` | **you** set it | Leaves that element out of the overlay clone. |
 
 ## Returned state
@@ -70,5 +75,5 @@ drag runs).
 
 ## Cursor
 
-`cursor: grab` on draggable items is yours to add. While dragging, the grabbing cursor is
-set for the whole document.
+`cursor: grab` on draggable items is yours to add. While dragging, the grabbed element's
+cursor (or `grabbing` when it has none of its own) is set for the whole document.

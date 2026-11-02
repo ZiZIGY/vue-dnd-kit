@@ -3,7 +3,7 @@
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | `[vue-dnd-kit] No <DnDProvider> found above this component.` | The composable runs in the component whose **template** renders `<DnDProvider>` (inject only sees ancestors). | Move the composable into a child component, or wrap higher up (layout, `App.vue`). |
-| Rows of one list behave as if they belong to another | Two `makeSortableList` / `makeSortableTree` calls in one component: the items inject the last one. Development builds warn. | One list or tree per component (e.g. `<Column>` per column). |
+| Rows of one list behave as if they belong to another | Several lists or trees in one component, and a row isn't rendered inside its list's element: a row joins the innermost list whose element holds it. | Render each list's rows inside that list's element, or give each list its own component (`<Column>`). |
 | Nothing moves while dragging; the list jumps only on drop | The template renders your source array. | Render the returned `items` (the draft). |
 | Wrong rows animate, input state jumps between rows | `:key="index"`. | `:key="item.id"` (the same key as `getKey`). |
 | Drop does nothing, and a console warning says so | `items` is read-only (getter, `computed`, `readonly`, a `toRef` of props). | Pass a writable ref, or call `e.preventDefault()` and apply `e.result`. |
@@ -26,7 +26,8 @@
 | `onDrop` sees the old order | By design: it runs before the write. | Read `e.result`, or use the provider's `@drag-end` / `useDnDMonitor({ onDragEnd })`. |
 | UI shows the dragged item twice right after drop | Your UI derives from `useDnD().active`. | `active` is `null` as soon as the drop is decided. Check `status === 'dropping'` if you need the landing phase. |
 | An "after the animation" effect (a lid shutting) waits for the next drag to end | It watches `status` turning `'idle'`, but the next drag started during the landing. | Use `useDnDMonitor({ onDragSettle })`: it fires per drag, when its overlay is home. |
-| Moves double-animate | `<TransitionGroup>` around sortable items. | Remove it; use `animate` on the list. |
+| Moves double-animate | `<TransitionGroup>` around sortable items. | Remove it; use `animateChanges` on the list. |
+| `defaultStyles: false`, yet the drag cursor stays and text can't be selected while dragging | By design: it drops only the looks (dimmed placeholders). What drags rely on stays: no text selection or scroll anchoring while dragging, the drag cursor, no iOS link callout. | Override with your own CSS of higher specificity (the injected rules use `:where()`). |
 | An action fires when a drag ends on the item | A handler on `pointerup` / `mouseup`. The built-in pointer sensor swallows the `click` after a drag, but not those events. | Use `@click` for item actions. |
 
 ## Debugging

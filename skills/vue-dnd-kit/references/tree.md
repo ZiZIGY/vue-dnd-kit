@@ -91,7 +91,8 @@ hide them in the clone with `[data-dnd-overlay] .guide { display: none }`.
 | `placeholder: 'indicator'` | The tree stays still. Draw a line from `indicator` (`side`, `depth`, `parentKey`). `side: 'inside'` means into that row. |
 
 All `makeSortableList` options also apply (`group`, `clone`, `createItem`, `dropzone`,
-`dropOutside`, `modifiers`, `animation`, `animate`, `onBeforeDrop`, `onDrop`, …). Lists
+`dropOutside`, `modifiers`, `animation`, `animateChanges`, `label`, `data`, `activation`,
+`overOverlay`, `overDropAnimation`, `external`, `onBeforeDrop`, `onDrop`, …). Lists
 and trees in the same `group` exchange nodes: a node moved into a list keeps its subtree.
 
 Returns `{ id, items, projected, indicator, isOver, isAccepting, activeKey, activeIndex, activeSize, captureLayout }`.

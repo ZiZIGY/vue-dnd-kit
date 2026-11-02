@@ -8,7 +8,7 @@ the item's final slot (`dropAnimation`) and disappears.
 
 The first match wins:
 
-1. The drop target's `overlay` (`makeDroppable`; a list's or tree's `overOverlay`), while the drag is over it and it accepts the drag. What would show otherwise is its default slot (`<slot />`).
+1. The drop target's `overOverlay` (`makeDroppable`, lists, trees), while the drag is over it and it accepts the drag. What would show otherwise is its default slot (`<slot />`).
 2. The item's own `overlay` component (`makeSortableItem` / `makeDraggable` option).
 3. Its list's or tree's `overlay` component.
 4. The provider's `#overlay` slot. If it renders nothing (`v-if`), the next option applies.
@@ -87,13 +87,13 @@ A drop target that shapes the overlay (the docs' mail, Done column and trash dem
 ```ts
 // Over a folder the overlay renders MovePill ("Move 2 messages to Archive"); it gets the
 // drag's own overlay as its default slot, and leaves it out to replace it.
-makeDroppable(folderRef, { id: 'archive', data: folder, overlay: MovePill });
-// Lists and trees as targets: `overOverlay`, `overDropAnimation` (their `overlay` is their items').
+makeDroppable(folderRef, { id: 'archive', data: folder, overOverlay: MovePill });
+// Lists and trees take the same options (a list's `overlay` is for its own items).
 // DoneOverlay renders <slot /> (the task card) and ticks it off.
 makeSortableList(doneRef, { items, group: 'tasks', overlay: TaskOverlay, overOverlay: DoneOverlay });
-// Dropped, the box stays put (`dropAnimation: false`) and the drop waits for Crumple's own
+// Dropped, the box stays put (`overDropAnimation: false`) and the drop waits for Crumple's own
 // CSS animation on `status: 'dropping'` (thrown into the bin, 2 s at most).
-makeDroppable(trashRef, { id: 'trash', overlay: Crumple, dropAnimation: false, onDrop: (e) => e.source?.remove() });
+makeDroppable(trashRef, { id: 'trash', overOverlay: Crumple, overDropAnimation: false, onDrop: (e) => e.source?.remove() });
 ```
 
 Functions are functional components: `overlay: (props) => h(Card, { ...props, compact: true })`.
@@ -112,12 +112,21 @@ A fixed size on your component's root keeps that size inside the box.
 
 The box is `[data-dnd-overlay]` (`position: fixed`, `pointer-events: none`). Its value
 says what it does: `dragging`, then `dropping` while it lands (or waits for an async
-`onBeforeDrop`). Add a lifted look on your component or with CSS, and drop it as it lands:
+`onBeforeDrop`). What it shows sits in a content element,
+`[data-dnd-overlay] > [data-dnd-overlay-content]`, and the default clone in a box inside
+that, so select clones with a descendant selector (`[data-dnd-overlay] .card`), never a
+child one (`> .card`). Add a lifted look on your component or with CSS, and drop it as it
+lands:
 
 ```css
-[data-dnd-overlay='dragging'] > * { box-shadow: 0 12px 24px -8px rgb(0 0 0 / 0.35); border-radius: 8px; }
+[data-dnd-overlay='dragging'] [data-dnd-overlay-content] { box-shadow: 0 12px 24px -8px rgb(0 0 0 / 0.35); border-radius: 8px; }
 [data-dnd-overlay] .row { background: white; } /* the clone of a row the list paints */
 ```
+
+To animate the content as a whole (a lift on pickup, a settle on landing), give it classes
+with the provider's `overlayClass` and a CSS transition from `@starting-style`. The drop
+waits for finite CSS animations in the overlay that start with `status: 'dropping'`
+(2 s at most).
 
 ## Over another Vue app or a shadow root
 
