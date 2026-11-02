@@ -41,25 +41,22 @@ and screen reader announcements.
 
 ## Upgrade
 
-While v3 is in beta, it is published under the npm tag `next`. `latest` stays on v2 until
-3.0.0, so an install without the tag still gets v2.
-
 <code-group>
 
 ```bash [npm]
-npm i @vue-dnd-kit/core@next
+npm i @vue-dnd-kit/core@^3
 ```
 
 ```bash [yarn]
-yarn add @vue-dnd-kit/core@next
+yarn add @vue-dnd-kit/core@^3
 ```
 
 ```bash [pnpm]
-pnpm add @vue-dnd-kit/core@next
+pnpm add @vue-dnd-kit/core@^3
 ```
 
 ```bash [bun]
-bun add @vue-dnd-kit/core@next
+bun add @vue-dnd-kit/core@^3
 ```
 
 </code-group>
@@ -72,19 +69,11 @@ bun add @vue-dnd-kit/core@next
     </th>
     
     <th>
-      v2 (<code>
-        latest
-      </code>
-      
-      )
+      v2
     </th>
     
     <th>
-      v3 (<code>
-        next
-      </code>
-      
-      )
+      v3
     </th>
   </tr>
 </thead>
@@ -102,7 +91,7 @@ bun add @vue-dnd-kit/core@next
     </td>
     
     <td>
-      3.0.0-beta
+      3.x
     </td>
   </tr>
   
@@ -118,7 +107,7 @@ bun add @vue-dnd-kit/core@next
     </td>
     
     <td>
-      3.0.0-beta
+      3.x
     </td>
   </tr>
   
@@ -134,7 +123,7 @@ bun add @vue-dnd-kit/core@next
     </td>
     
     <td>
-      1.0.0-beta, optional
+      1.x, optional
     </td>
   </tr>
   
@@ -150,13 +139,14 @@ bun add @vue-dnd-kit/core@next
     </td>
     
     <td>
-      3.0.0-beta, optional
+      3.x, optional
     </td>
   </tr>
 </tbody>
 </table>
 
-- Pin the exact beta version in `package.json`: betas can still change.
+- An app that has `"@vue-dnd-kit/core": "^2…"` in its `package.json` stays on v2 until the
+range says `^3`.
 - Vue **3.5** or newer. v2 had no dependencies; v3 has one, `@vueuse/core` (14 or 15).
 - Browsers: Chrome and Edge 104+, Safari 15.4+, Firefox 104+.
 - v2 and v3 share a package name, so an app moves to v3 in one go. There is no
@@ -4262,7 +4252,7 @@ and the [events API](https://zizigy.github.io/docs/api/events).
 ### Nuxt
 
 ```bash
-npm i @vue-dnd-kit/nuxt@next @vue-dnd-kit/core@next
+npm i @vue-dnd-kit/nuxt@^3 @vue-dnd-kit/core@^3
 ```
 
 <table>
@@ -4281,7 +4271,7 @@ npm i @vue-dnd-kit/nuxt@next @vue-dnd-kit/core@next
         @vue-dnd-kit/nuxt
       </code>
       
-       3.0.0-beta)
+       3.x)
     </th>
   </tr>
 </thead>
@@ -4911,7 +4901,7 @@ and the others fly back.
 
 ## Pitfalls when upgrading
 
-- **Install with @next.** Without the tag, npm installs v2.
+- **Install v3 with its range.** `^3` in `package.json`: an `npm update` keeps `^2` on v2.
 - **Render the draft.** A list renders the `items` that `makeSortableList` returns, not your
 array. Rendering your array, nothing moves until the drop.
 - **Don't sort twice.** Delete the `suggestSort` code from lists: a list writes each drop into

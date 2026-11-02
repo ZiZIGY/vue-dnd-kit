@@ -6,10 +6,6 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/docs/changelog/v3-0-0-beta-
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```bash
-npm i @vue-dnd-kit/core@next
-```
-
 v3 is a rewrite. One package, `@vue-dnd-kit/core`, does drag and drop, sortable lists and
 trees; `@vue-dnd-kit/actions` scripts drags from code, `@vue-dnd-kit/devtools` adds a tab to
 the Vue DevTools, and `@vue-dnd-kit/nuxt` sets it up in Nuxt.

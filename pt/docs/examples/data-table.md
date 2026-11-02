@@ -15,7 +15,7 @@ Documentação/Visão geral
 
 A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips.
 
-[Editar esta página](https://github.com/ZiZIGY/vue-dnd-kit/edit/v3/docs/content/en/4.examples/09.data-table.md)
+[Editar esta página](https://github.com/ZiZIGY/vue-dnd-kit/edit/master/docs/content/en/4.examples/09.data-table.md)
 
 Esta página ainda não foi traduzida. Você está lendo o original em inglês.
 

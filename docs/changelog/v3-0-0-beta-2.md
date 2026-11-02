@@ -7,7 +7,7 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/docs/changelog/v3-0-0-beta-
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
 ```bash
-npm i @vue-dnd-kit/core@next
+npm i @vue-dnd-kit/core@3.0.0-beta.2
 ```
 
 ## Files and other apps

@@ -15,7 +15,7 @@ meta:
 
 Move a v2 app to v3 — what changed and why, the upgrade, a map from every v2 API to its v3 replacement, before-and-after code for the common cases, and the pitfalls.
 
-[编辑此页](https://github.com/ZiZIGY/vue-dnd-kit/edit/v3/docs/content/en/1.getting-started/4.migrating-from-v2.md)
+[编辑此页](https://github.com/ZiZIGY/vue-dnd-kit/edit/master/docs/content/en/1.getting-started/4.migrating-from-v2.md)
 
 本页尚未翻译。你正在阅读英文原文。
 
@@ -36,20 +36,18 @@ v3 is a rewrite of v2. The model stays: one provider, and composables you call o
 
 ## Upgrade
 
-While v3 is in beta, it is published under the npm tag `**next**`. `**latest**` stays on v2 until 3.0.0, so an install without the tag still gets v2.
-
 ```
-npm i @vue-dnd-kit/core@next
+npm i @vue-dnd-kit/core@^3
 ```
 
-| **Package** | **v2 (**`**latest**`**)** | **v3 (**`**next**`**)** |
+| **Package** | **v2** | **v3** |
 | --- | --- | --- |
-| `**@vue-dnd-kit/core**` | 2.4.x | 3.0.0-beta |
-| `**@vue-dnd-kit/nuxt**` | 1.x | 3.0.0-beta |
-| `**@vue-dnd-kit/actions**` | — | 1.0.0-beta, optional |
-| `**@vue-dnd-kit/devtools**` | — | 3.0.0-beta, optional |
+| `**@vue-dnd-kit/core**` | 2.4.x | 3.x |
+| `**@vue-dnd-kit/nuxt**` | 1.x | 3.x |
+| `**@vue-dnd-kit/actions**` | — | 1.x, optional |
+| `**@vue-dnd-kit/devtools**` | — | 3.x, optional |
 
-- Pin the exact beta version in `**package.json**`: betas can still change.
+- An app that has `**"@vue-dnd-kit/core": "^2…"**` in its `**package.json**` stays on v2 until the range says `**^3**`.
 - Vue ****3.5**** or newer. v2 had no dependencies; v3 has one, `**@vueuse/core**` (14 or 15).
 - Browsers: Chrome and Edge 104+, Safari 15.4+, Firefox 104+.
 - v2 and v3 share a package name, so an app moves to v3 in one go. There is no compatibility layer. The v2 docs stay available from the version menu at the top of the page.
@@ -327,10 +325,10 @@ Monitors answer first, then the target. Then the target's `**onDrop**` runs, a l
 ### Nuxt
 
 ```
-npm i @vue-dnd-kit/nuxt@next @vue-dnd-kit/core@next
+npm i @vue-dnd-kit/nuxt@^3 @vue-dnd-kit/core@^3
 ```
 
-| **v2 (**`**@vue-dnd-kit/nuxt**`** 1.x)** | **v3 (**`**@vue-dnd-kit/nuxt**`** 3.0.0-beta)** |
+| **v2 (**`**@vue-dnd-kit/nuxt**`** 1.x)** | **v3 (**`**@vue-dnd-kit/nuxt**`** 3.x)** |
 | --- | --- |
 | Auto-imports `**makeDraggable**`, `**makeDroppable**`, `**makeSelectionArea**`, `**makeConstraintArea**`, `**makeAutoScroll**`, `**useDnDProvider**` | Auto-imports `**makeDraggable**`, `**makeDroppable**`, `**makeSortableList**`, `**makeSortableItem**`, `**makeSortableTree**`, `**makeSelectionArea**`, `**makeDragArea**`, `**useDnD**`, `**useDnDMonitor**`. |
 | No types auto-imported | The main types are (`**DnDEvent**`, `**SortableDropEvent**`, `**OverlayProps**`…). Generic ones (`**Key**`, `**Active**`, `**Over**`) are imported by hand. |
@@ -815,7 +813,7 @@ Lists do this without code: with `**acceptMode: 'some'**`, the items their `**gr
 
 ## Pitfalls when upgrading
 
-- ****Install with **`**@next**`**.**** Without the tag, npm installs v2.
+- ****Install v3 with its range.**** `**^3**` in `**package.json**`: an `**npm update**` keeps `**^2**` on v2.
 - ****Render the draft.**** A list renders the `**items**` that `**makeSortableList**` returns, not your array. Rendering your array, nothing moves until the drop.
 - ****Don't sort twice.**** Delete the `**suggestSort**` code from lists: a list writes each drop into a writable `**items**` ref after its `**onDrop**`. To apply it yourself, call `**e.preventDefault()**` and use `**e.result**`.
 - **`**false**`** refuses the drop.**** In v2, an `**onDrop**` that resolved `**false**` kept the drag going. In v3, return `**'continue'**` from `**onBeforeDrop**`. A promise returned from `**onDrop**` is ignored.

@@ -15,7 +15,7 @@ meta:
 
 A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips.
 
-[编辑此页](https://github.com/ZiZIGY/vue-dnd-kit/edit/v3/docs/content/en/4.examples/09.data-table.md)
+[编辑此页](https://github.com/ZiZIGY/vue-dnd-kit/edit/master/docs/content/en/4.examples/09.data-table.md)
 
 本页尚未翻译。你正在阅读英文原文。
 

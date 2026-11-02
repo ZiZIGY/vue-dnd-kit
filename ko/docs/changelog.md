@@ -15,19 +15,23 @@ meta:
 
 What each release brings, with live demos of what is new, and what to change when you upgrade.
 
-[이 페이지 편집](https://github.com/ZiZIGY/vue-dnd-kit/edit/v3/docs/content/en/5.changelog/0.index.md)
+[이 페이지 편집](https://github.com/ZiZIGY/vue-dnd-kit/edit/master/docs/content/en/5.changelog/0.index.md)
 
 Every release has a page here: what is new, with the demos that show it; what to change when you upgrade; and every change. The same notes go to its [**GitHub release**](https://github.com/ZiZIGY/vue-dnd-kit/releases), and each package keeps its list of commits in its `**CHANGELOG.md**`.
 
-v3 is in beta, under the npm tag `**next**`:
-
 ```
-npm i @vue-dnd-kit/core@next
+npm i @vue-dnd-kit/core
 ```
 
-Until the release candidate, an API may still change from one beta to the next: the page of each release says what to change. Coming from v2, see [**migrating from v2**](https://zizigy.github.io/vue-dnd-kit/ko/docs/getting-started/migrating-from-v2).
+v3 follows semantic versioning: a minor or patch release changes no API you use, and what changes is said on its page. Coming from v2, see [**migrating from v2**](https://zizigy.github.io/vue-dnd-kit/ko/docs/getting-started/migrating-from-v2).
 
 ## Releases
+
+[3.0.0](https://zizigy.github.io/vue-dnd-kit/ko/docs/changelog/v3-0-0)
+
+**3.0.0**
+
+v3 is stable: drag and drop, sortable lists and trees, multi-drag, files from other apps, the keyboard and screen readers, in one package.
 
 [3.0.0-beta.2](https://zizigy.github.io/vue-dnd-kit/ko/docs/changelog/v3-0-0-beta-2)
 

@@ -15,10 +15,10 @@ Documentation/Changelog
 
 Files and other apps, drop targets that shape the overlay, drags that don't wait for landings, an overlay that lifts and settles, and filtered lists.
 
-[Modifier cette page](https://github.com/ZiZIGY/vue-dnd-kit/edit/v3/docs/content/en/5.changelog/998.v3-0-0-beta-2.md)
+[Modifier cette page](https://github.com/ZiZIGY/vue-dnd-kit/edit/master/docs/content/en/5.changelog/998.v3-0-0-beta-2.md)
 
 ```
-npm i @vue-dnd-kit/core@next
+npm i @vue-dnd-kit/core@3.0.0-beta.2
 ```
 
 ## Files and other apps

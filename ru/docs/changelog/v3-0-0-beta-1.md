@@ -15,11 +15,7 @@ meta:
 
 The first beta of v3, released on October 30, 2026. A rewrite with sortable lists and trees built in.
 
-[Редактировать страницу](https://github.com/ZiZIGY/vue-dnd-kit/edit/v3/docs/content/en/5.changelog/999.v3-0-0-beta-1.md)
-
-```
-npm i @vue-dnd-kit/core@next
-```
+[Редактировать страницу](https://github.com/ZiZIGY/vue-dnd-kit/edit/master/docs/content/en/5.changelog/999.v3-0-0-beta-1.md)
 
 v3 is a rewrite. One package, `**@vue-dnd-kit/core**`, does drag and drop, sortable lists and trees; `**@vue-dnd-kit/actions**` scripts drags from code, `**@vue-dnd-kit/devtools**` adds a tab to the Vue DevTools, and `**@vue-dnd-kit/nuxt**` sets it up in Nuxt.
 
