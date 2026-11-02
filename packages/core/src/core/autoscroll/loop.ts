@@ -45,7 +45,8 @@ interface Target {
 
 interface Session {
   last: number;
-  intent: ScrollIntent | null;
+  /** Where the pointer has been since the drag started: the directions it may scroll. */
+  intent: ScrollIntent;
   styles: WeakMap<Element, ScrollStyle>;
   /** Per-list options, keyed by the list's scroll container. */
   overrides: Map<Element, boolean | AutoScrollOptions>;
@@ -136,7 +137,6 @@ export function useAutoScroll(manager: DnDManager): void {
     current.last = now;
 
     const pointer = manager.getRawPointer();
-    current.intent ??= createScrollIntent(pointer);
     const intent = updateScrollIntent(current.intent, pointer);
     const provider = manager.props.autoScroll;
 
@@ -201,7 +201,9 @@ export function useAutoScroll(manager: DnDManager): void {
     if (provider === false && !entries.some((entry) => entry.options !== false)) return;
     const current: Session = {
       last: 0,
-      intent: null,
+      // From where the drag starts, not from the first frame: a pointer that is already at
+      // the edge by then (a late frame, coalesced input) has moved toward it all the same.
+      intent: createScrollIntent(manager.getRawPointer()),
       styles: new WeakMap(),
       overrides: new Map(),
       remainders: new Map(),

@@ -293,6 +293,30 @@ describe('makeSortableList options are read when needed', () => {
     autoScroll.value = true;
     expect(await scrolls()).toBe(true);
   });
+
+  it('auto-scroll counts the way from where the drag started, also when its first frame comes late', async () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
+    const container = mountPair();
+    await nextTick();
+    const list = container.querySelector<HTMLElement>('[data-list="a"]')!;
+    list.style.overflowY = 'auto';
+    Object.defineProperties(list, {
+      clientWidth: { value: 200 },
+      clientHeight: { value: 2 * ROW },
+      scrollHeight: { value: 3 * ROW },
+    });
+    const scrollBy = vi.fn();
+    list.scrollBy = scrollBy;
+    await pickUp('a1');
+    // At the bottom edge before auto-scroll's first frame ran (a slow machine, coalesced input).
+    manager.move({ x: 100, y: 2 * ROW - 4 });
+    vi.advanceTimersByTime(16);
+    vi.advanceTimersByTime(16);
+    expect(scrollBy).toHaveBeenCalled();
+    manager.cancel();
+    vi.advanceTimersByTime(16);
+    await vi.waitFor(() => expect(manager.status.value).toBe('idle'));
+  });
 });
 
 describe('makeSortableItem options', () => {
