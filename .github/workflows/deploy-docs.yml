@@ -1,12 +1,12 @@
 name: Deploy Documentation
 
-# zizigy.github.io/vue-dnd-kit: the v3 docs (the Nuxt app in docs/ of the v3 branch), with
-# the old VitePress site of v1 and v2 (docs/ of master) under /legacy/. Its old addresses
+# zizigy.github.io/vue-dnd-kit: the v3 docs (the Nuxt app in docs/ of master), with the old
+# VitePress site of v1 and v2 (docs/ of the v2 branch) under /legacy/. Its old addresses
 # (/v1/…, /v2/…) redirect there, so links and search results keep working.
 
 on:
   push:
-    branches: [v3]
+    branches: [master]
     paths:
       - 'docs/**'
       - 'packages/core/src/**'
@@ -55,10 +55,10 @@ jobs:
       - name: Generate the v3 docs
         run: yarn --cwd docs generate
 
-      # v1 and v2: the VitePress site as it is on master, built under /legacy/.
+      # v1 and v2: the VitePress site as it is on the v2 branch, built under /legacy/.
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: v2
           path: legacy-site
 
       - name: Build the v1 and v2 docs

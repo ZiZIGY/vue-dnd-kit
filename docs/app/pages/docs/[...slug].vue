@@ -62,7 +62,7 @@
 
   const editLink = computed(
     () =>
-      `https://github.com/ZiZIGY/vue-dnd-kit/edit/v3/docs/content/${data.value?.fallback ? 'en' : locale.value}/${page.value.stem.split('/').slice(1).join('/')}.${page.value.extension}`,
+      `https://github.com/ZiZIGY/vue-dnd-kit/edit/master/docs/content/${data.value?.fallback ? 'en' : locale.value}/${page.value.stem.split('/').slice(1).join('/')}.${page.value.extension}`,
   );
 </script>
 

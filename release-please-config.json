@@ -4,9 +4,6 @@
   "release-type": "node",
   "include-component-in-tag": true,
   "pull-request-title-pattern": "chore${scope}: release${component} to ${version}",
-  "prerelease": true,
-  "versioning": "prerelease",
-  "prerelease-type": "beta",
   "packages": {
     "packages/core": { "component": "core" },
     "packages/actions": { "component": "actions" },
