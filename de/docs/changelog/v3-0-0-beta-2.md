@@ -356,6 +356,7 @@ A calendar, a file manager, a form builder, a design canvas, a page builder.
 - Landing overlays no longer jump when drags follow each other quickly, with the default drop animation, GSAP or motion, nor for a frame when the next drag reorders their list.
 - A `**native**` mouse drag asks `**canDrag**`; the selection area's cancel key matches `**key**` as well as `**code**`.
 - A pointer past the edge of a scrolled list points at the item at that edge: while auto-scroll brings items past it, the slot goes along, and a drop out there lands where the slot is. It used to stay where the pointer last was over an item (virtual lists).
+- Auto-scroll measures the way toward an edge from where the drag started: a pointer that is at the edge by its first frame (a busy machine, coalesced input) scrolls too.
 - Multi-drag items without a clone show as the drop starts and fade in; a `**'group'**` block over a plain target outside the lists comes apart; a drop lands with the overlay its target showed when let go.
 - On a cancel, the other dragged items stay placeholders until their clones are home.
 - Keyboard pickups during a landing; an end announced as `**''**` silences the pending move text; a provider unmounting while `**onBeforeDrop**` decides cancels the drag.
