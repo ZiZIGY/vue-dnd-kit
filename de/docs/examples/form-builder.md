@@ -244,9 +244,10 @@ Blatt darüber. Container Queries (`@lg:`) erledigen den Rest.
 
 <note>
 
-Der StackBlitz-Button öffnet die Dateien in einem einfachen Vite-Projekt, das kein Nuxt UI hat. Um
-dieses Beispiel auszuführen, kopiere den Ordner in eine Nuxt-App mit dem Modul `@nuxt/ui` und
-`zod` und rendere `index.vue` auf einer Seite.
+Der StackBlitz-Button öffnet die Dateien in einem Vite-Projekt, das für Nuxt UI eingerichtet ist,
+so wie dessen Doku es für Vue beschreibt: das Plugin `@nuxt/ui/vite`, Tailwind CSS und `UApp` um
+das Beispiel. In einer Nuxt-App mit dem Modul `@nuxt/ui` kopiere den Ordner und rendere
+`index.vue` auf einer Seite; das Formular braucht außerdem `zod`.
 
 </note>
 

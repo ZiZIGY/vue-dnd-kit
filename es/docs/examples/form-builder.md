@@ -241,9 +241,10 @@ hoja encima de él. Las container queries (`@lg:`) hacen el resto.
 
 <note>
 
-El botón de StackBlitz abre los archivos en un proyecto de Vite simple, que no tiene Nuxt UI. Para
-ejecutar este ejemplo, copia la carpeta en una app de Nuxt con el módulo `@nuxt/ui` y `zod`, y
-renderiza `index.vue` en una página.
+El botón de StackBlitz abre los archivos en un proyecto de Vite preparado para Nuxt UI, tal como
+lo describe su documentación para Vue: el plugin `@nuxt/ui/vite`, Tailwind CSS y `UApp` alrededor
+del ejemplo. En una app de Nuxt con el módulo `@nuxt/ui`, copia la carpeta y renderiza
+`index.vue` en una página; el formulario necesita además `zod`.
 
 </note>
 

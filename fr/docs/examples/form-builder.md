@@ -244,9 +244,10 @@ panneau par-dessus. Les container queries (`@lg:`) font le reste.
 
 <note>
 
-Le bouton StackBlitz ouvre les fichiers dans un projet Vite simple, qui n'a pas Nuxt UI. Pour faire
-tourner cet exemple, copiez le dossier dans une application Nuxt avec le module `@nuxt/ui` et
-`zod`, et rendez `index.vue` dans une page.
+Le bouton StackBlitz ouvre les fichiers dans un projet Vite configuré pour Nuxt UI, comme sa
+documentation le décrit pour Vue : le plugin `@nuxt/ui/vite`, Tailwind CSS et `UApp` autour de
+l'exemple. Dans une application Nuxt avec le module `@nuxt/ui`, copiez le dossier et rendez
+`index.vue` dans une page ; le formulaire a aussi besoin de `zod`.
 
 </note>
 

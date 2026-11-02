@@ -167,7 +167,7 @@ const state = computed(() => {
 
 <note>
 
-StackBlitz ボタンは、Nuxt UI のない素の Vite プロジェクトでファイルを開きます。このサンプルを動かすには、フォルダーを `@nuxt/ui` モジュールと `zod` を入れた Nuxt アプリにコピーし、ページで `index.vue` を描画してください。
+StackBlitz ボタンは、Nuxt UI のドキュメントが Vue 向けに説明しているとおりに Nuxt UI を設定した Vite プロジェクト（`@nuxt/ui/vite` プラグイン、Tailwind CSS、サンプルを囲む `UApp`）でファイルを開きます。`@nuxt/ui` モジュールを入れた Nuxt アプリでは、フォルダーをコピーしてページで `index.vue` を描画してください。フォームには `zod` も必要です。
 
 </note>
 

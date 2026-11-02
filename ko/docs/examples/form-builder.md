@@ -230,8 +230,9 @@ Nuxt UI의 시맨틱 색상(`bg-default`, `ring-primary`, `text-error`)이므로
 
 <note>
 
-StackBlitz 버튼은 Nuxt UI가 없는 일반 Vite 프로젝트에서 파일을 엽니다. 이 예제를 실행하려면 폴더를
-`@nuxt/ui` 모듈과 `zod`가 있는 Nuxt 앱에 복사하고, 페이지에서 `index.vue`를 렌더링하세요.
+StackBlitz 버튼은 Nuxt UI 문서가 Vue용으로 설명하는 대로 Nuxt UI를 설정한 Vite 프로젝트에서 파일을
+엽니다. `@nuxt/ui/vite` 플러그인, Tailwind CSS, 예제를 감싸는 `UApp`이 들어 있습니다. `@nuxt/ui` 모듈이
+있는 Nuxt 앱에서는 폴더를 복사하고 페이지에서 `index.vue`를 렌더링하세요. 폼에는 `zod`도 필요합니다.
 
 </note>
 

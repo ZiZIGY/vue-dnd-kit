@@ -167,7 +167,7 @@ const state = computed(() => {
 
 <note>
 
-StackBlitz 按钮会在一个普通的 Vite 项目中打开这些文件，其中没有 Nuxt UI。要运行这个示例，把文件夹复制到一个带有 `@nuxt/ui` 模块和 `zod` 的 Nuxt 应用中，并在某个页面上渲染 `index.vue`。
+StackBlitz 按钮会在一个按 Nuxt UI 文档中 Vue 用法配置好的 Vite 项目里打开这些文件：`@nuxt/ui/vite` 插件、Tailwind CSS，以及包裹示例的 `UApp`。在带有 `@nuxt/ui` 模块的 Nuxt 应用中，复制文件夹并在某个页面上渲染 `index.vue` 即可；表单还需要 `zod`。
 
 </note>
 

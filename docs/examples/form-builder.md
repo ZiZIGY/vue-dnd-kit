@@ -235,9 +235,9 @@ becomes a strip of chips above the form and the settings a sheet over it. Contai
 
 <note>
 
-The StackBlitz button opens the files in a plain Vite project, which has no Nuxt UI. To run this
-example, copy the folder into a Nuxt app with the `@nuxt/ui` module and `zod`, and render
-`index.vue` on a page.
+The StackBlitz button opens the files in a Vite project set up for Nuxt UI, as its docs do it for
+Vue: the `@nuxt/ui/vite` plugin, Tailwind CSS, and `UApp` around the example. In a Nuxt app with
+the `@nuxt/ui` module, copy the folder and render `index.vue` on a page; the form needs `zod` too.
 
 </note>
 

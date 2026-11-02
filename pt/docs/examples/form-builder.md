@@ -239,9 +239,10 @@ uma faixa de chips acima do formulário e as configurações uma folha sobre ele
 
 <note>
 
-O botão do StackBlitz abre os arquivos em um projeto Vite simples, que não tem Nuxt UI. Para rodar
-este exemplo, copie a pasta para um app Nuxt com o módulo `@nuxt/ui` e `zod`, e renderize
-`index.vue` em uma página.
+O botão do StackBlitz abre os arquivos em um projeto Vite configurado para o Nuxt UI, como a
+documentação dele descreve para Vue: o plugin `@nuxt/ui/vite`, o Tailwind CSS e o `UApp` em volta
+do exemplo. Em um app Nuxt com o módulo `@nuxt/ui`, copie a pasta e renderize `index.vue` em uma
+página; o formulário precisa também do `zod`.
 
 </note>
 
