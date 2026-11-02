@@ -31,7 +31,7 @@ test.describe('targets shape the overlay (overlay-droplet)', () => {
         const box = document.querySelector('[data-dnd-overlay]');
         if (!box) return;
         const rect = box.getBoundingClientRect();
-        frames.push({ at: performance.now() - start, left: rect.left, top: rect.top, splash: !!box.querySelector('.ring') });
+        frames.push({ at: performance.now() - start, left: rect.left, top: rect.top, splash: !!box.querySelector('[data-splash]') });
         requestAnimationFrame(tick);
       };
       requestAnimationFrame(tick);
