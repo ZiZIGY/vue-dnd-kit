@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.0](https://github.com/ZiZIGY/vue-dnd-kit/compare/core-v3.0.0-beta.2...core-v3.0.0) (2026-11-02)
+
+
+### Miscellaneous Chores
+
+* the stable release of core, devtools and nuxt ([40cf38a](https://github.com/ZiZIGY/vue-dnd-kit/commit/40cf38aa6a348d5a6472ef0d6f901c59992b822d))
+
 ## [3.0.0-beta.2](https://github.com/ZiZIGY/vue-dnd-kit/compare/core-v3.0.0-beta.1...core-v3.0.0-beta.2) (2026-11-02)
 
 
