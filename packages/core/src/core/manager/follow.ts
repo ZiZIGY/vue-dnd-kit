@@ -51,8 +51,17 @@ export function createFollow(getBox: () => HTMLElement | null) {
    */
   const measure = () => {
     const shifts = layoutShifts(anchor!);
+    // Where the animations that ended or were replaced since last frame left the anchor. A
+    // new one that still shows just that hasn't moved it yet: a library may stop the old
+    // animation a frame before the new one writes its first frame (motion).
+    let left = { x: 0, y: 0 };
+    for (const [animation, offset] of last) {
+      if (!shifts.some((entry) => entry.animation === animation)) left = { x: left.x + offset.x, y: left.y + offset.y };
+    }
+    const leftover = (offset: Coordinates) =>
+      (left.x || left.y) && Math.abs(offset.x - left.x) <= 1 && Math.abs(offset.y - left.y) <= 1;
     for (const { animation, offset } of shifts) {
-      if (shares.has(animation) || offset.x || offset.y) continue;
+      if (shares.has(animation) || ((offset.x || offset.y) && !leftover(offset))) continue;
       const frames = (unstarted.get(animation) ?? 0) + 1;
       unstarted.set(animation, frames);
       // A library under load may take a few frames. One that never moves it (a hook
