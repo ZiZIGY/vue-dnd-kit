@@ -66,6 +66,12 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/examples"
 그 자리에서 하는 편집.
 
 </card>
+
+<card icon="i-lucide-table-2" title="데이터 테이블" to="/docs/examples/data-table">
+
+작업 2,000개를 담은 Nuxt UI 테이블: 가상화되고, 검색할 수 있고, 행의 그립으로 정렬합니다.
+
+</card>
 </card-group>
 
 ## Sitemap

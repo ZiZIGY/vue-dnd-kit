@@ -158,7 +158,15 @@ const { items } = makeSortableList(list, {
         false
       </code>
       
-      : 아무것도 들어오지 않습니다. 함수: 드래그마다 직접 정합니다.
+      : 아무것도 들어오지 않습니다. 타입 하나 또는 여러 개(<code>
+        'image'
+      </code>
+      
+      , <code>
+        ['image', 'video']
+      </code>
+      
+      ): 그 타입의 항목이 들어옵니다. 함수: 드래그마다 직접 정합니다.
     </td>
   </tr>
 </tbody>
@@ -172,13 +180,16 @@ group: { name: 'files', pull: true, put: false }
 group: { name: 'files', pull: 'clone', put: false }, sort: false
 
 // Images: takes images only.
-group: { name: 'files', put: ({ types }) => types.every((type) => type === 'image') }
+group: { name: 'files', put: 'image' }
 ```
 
+타입은 드래그 중인 항목의 `type` 옵션(`makeSortableItem(el, { item, type })`)이며, 타입이 없는
+항목은 그룹 이름으로 칩니다. `put`에 타입을 쓰면 드래그 중인 모든 항목이 그중 하나를 가져야
+합니다(`acceptMode: 'some'`이면 가진 항목만 들어옵니다).
+
 `put` 함수는 `{ keys, items, types, from, to }`를 받습니다. 드래그 중인 key와 항목, 그 타입,
-출발한 리스트(일반 draggable이면 `null`), 그리고 이 리스트입니다. `types`는 드래그 중인 항목의
-`type` 옵션(`makeSortableItem(el, { item, type })`)이며, 타입이 없는 항목은 그룹 이름으로 칩니다.
-리스트 안에서의 이동은 항상 허용됩니다. Inbox도 자기 파일의 순서는 바꿀 수 있습니다.
+출발한 리스트(일반 draggable이면 `null`), 그리고 이 리스트입니다. 리스트 안에서의 이동은 항상
+허용됩니다. Inbox도 자기 파일의 순서는 바꿀 수 있습니다.
 
 드래그를 거부하는 리스트 위에서는 자리가 드래그를 시작한 곳으로 돌아가므로, 리스트는 드롭했을 때
 일어날 일, 즉 아무 일도 없음을 보여 줍니다. 그곳에 드롭하면 취소되고 항목은 원래 자리로
@@ -213,6 +224,31 @@ const shortlist = reactive({
 타입이 다른 여러 선택 항목을 드래그할 때 `acceptMode`는 그중 `'all'`(기본값)이 `put`을 통과해야
 하는지, `'some'`만 통과하면 되는지 정합니다. `'some'`이면 통과한 항목은 안착하고 나머지는 원래
 자리로 돌아갑니다. [멀티 드래그](https://zizigy.github.io/docs/guides/multi-drag#taking-only-some)를 참고하세요.
+
+### 리스트마다 그룹 하나
+
+리스트는 그룹 하나에만 속합니다. `group`은 이름 하나만 받고, 여러 개는 받지 않습니다. 같은 그룹의
+리스트는 각 드래그(각자의 초안, 드래그 중인 것, 어느 리스트가 받는지)를 함께 쓰므로, 항목이
+그룹 사이를 오가는 일은 없습니다. 항목이 특정 방향으로만 흘러야 한다면 리스트를 한 그룹에 넣고,
+드래그가 출발한 리스트인 `from`으로 `put`이 정하게 하세요.
+
+```ts [index.vue]
+// Review takes tasks from both teams. A team takes tasks back from Review,
+// never from the other team.
+const fromReview = ({ from }: SortablePutContext) => from === 'review';
+
+makeSortableList(review, { id: 'review', items: reviewTasks, group: 'tasks' });
+makeSortableList(frontend, { id: 'frontend', items: frontendTasks, group: { name: 'tasks', put: fromReview } });
+makeSortableList(backend, { id: 'backend', items: backendTasks, group: { name: 'tasks', put: fromReview } });
+```
+
+<note>
+
+SortableJS에서 오셨다면: 그쪽의 `put: ['a', 'b']`는 리스트가 항목을 받아 올 그룹의 이름입니다.
+여기서 `put`의 배열은 리스트가 받는 항목의 **타입**입니다. 다른 리스트에서 항목을 받으려면 그
+리스트들을 한 그룹에 넣고, 위처럼 `from`으로 정하세요.
+
+</note>
 
 ## 복사: 팔레트와 Alt 키
 

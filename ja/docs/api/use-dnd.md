@@ -14,9 +14,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/api/use-dnd"
 
 ## useDnD
 
-```ts
-function useDnD(): DnDState;
-```
+<api-signature name="useDnD">
+
+
+
+</api-signature>
 
 ```ts
 const { status, active, over, selection, cancel } = useDnD();
@@ -41,9 +43,11 @@ const dragging = computed(() => status.value === 'dragging');
 
 ## useDnDMonitor
 
-```ts
-function useDnDMonitor(monitor: DnDMonitor): void;
-```
+<api-signature name="useDnDMonitor">
+
+
+
+</api-signature>
 
 ```ts
 useDnDMonitor({
@@ -52,7 +56,7 @@ useDnDMonitor({
 });
 ```
 
-コンポーネントが生きている間、プロバイダーの下のすべてのドラッグのイベントを受け取ります。ドロップ（`onBeforeDrop`）については、ターゲットより先にあなたのモニターに問い合わせます。ペイロードは[イベントのページ](https://zizigy.github.io/docs/api/events)にあります。
+ドロップ（`onBeforeDrop`）については、ターゲットより先にあなたのモニターに問い合わせます。ペイロードは[イベントのページ](https://zizigy.github.io/docs/api/events)にあります。
 
 <api-table name="DnDMonitor">
 
@@ -68,10 +72,17 @@ useDnDMonitor({
 
 ## useDnDContext と provideDnDContext
 
-```ts
-function useDnDContext(): DnDContext;
-function provideDnDContext(app: App, context: DnDContext): void;
-```
+<api-signature name="useDnDContext">
+
+
+
+</api-signature>
+
+<api-signature name="provideDnDContext">
+
+
+
+</api-signature>
 
 ```ts
 // In a component under the provider:

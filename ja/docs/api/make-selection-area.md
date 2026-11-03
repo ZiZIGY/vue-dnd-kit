@@ -6,12 +6,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/api/make-selection-
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeSelectionArea(
-  target: MaybeElementRef,
-  options?: SelectionAreaOptions,
-): SelectionAreaReturn;
-```
+<api-signature name="makeSelectionArea">
+
+
+
+</api-signature>
 
 ```vue
 <script setup lang="ts">
@@ -27,7 +26,7 @@ const { isSelecting, style } = makeSelectionArea(area);
 </template>
 ```
 
-エリアの空いている場所を押すと選択枠が始まります。選択枠は自分で描画してください。[マルチドラッグと選択](https://zizigy.github.io/docs/guides/multi-drag)を参照してください。
+エリアの空いている場所を押すと選択枠が始まります。[マルチドラッグと選択](https://zizigy.github.io/docs/guides/multi-drag)を参照してください。
 
 <example height="27rem" hint="空いている場所に枠を描いてから、選択した図形をドラッグしてみましょう" name="api-selection-area">
 

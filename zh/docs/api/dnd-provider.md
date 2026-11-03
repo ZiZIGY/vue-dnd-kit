@@ -6,6 +6,12 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/api/dnd-provider"
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
+<api-signature name="DnDProvider">
+
+
+
+</api-signature>
+
 ```vue [App.vue]
 <script setup lang="ts">
 import { DnDProvider } from '@vue-dnd-kit/core';
@@ -162,6 +168,32 @@ import { DnDProvider } from '@vue-dnd-kit/core';
   <tr>
     <td>
       <code>
+        drag-resume
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DnDEvent
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+       返回了 <code>
+        'continue'
+      </code>
+      
+      ：没有发生放置，拖拽继续进行。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
         drag-settle
       </code>
     </td>
@@ -191,7 +223,7 @@ import { DnDProvider } from '@vue-dnd-kit/core';
 </tbody>
 </table>
 
-同样的事件，再加上 `onBeforeDrop` 和 `onDragResume`，可以通过 [`useDnDMonitor`](https://zizigy.github.io/docs/api/use-dnd) 在 provider 之下的任何地方使用。它们的载荷见[事件页面](https://zizigy.github.io/docs/api/events)。
+同样的事件，再加上 `onBeforeDrop`，可以通过 [`useDnDMonitor`](https://zizigy.github.io/docs/api/use-dnd) 在 provider 之下的任何地方使用。它们的载荷见[事件页面](https://zizigy.github.io/docs/api/events)。
 
 ## `#overlay` 插槽
 
@@ -227,9 +259,27 @@ import { DnDProvider } from '@vue-dnd-kit/core';
 
 </api-table>
 
+<api-table name="HapticPattern">
+
+
+
+</api-table>
+
 ## 播报
 
 <api-table name="Announcements">
+
+
+
+</api-table>
+
+<api-table name="AnnouncementContext">
+
+
+
+</api-table>
+
+<api-table name="AnnouncedPosition">
 
 
 

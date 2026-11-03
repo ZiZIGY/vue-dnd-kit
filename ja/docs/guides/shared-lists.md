@@ -149,7 +149,15 @@ const { items } = makeSortableList(list, {
         false
       </code>
       
-      ：何も入れません。関数：ドラッグごとにあなたが決めます。
+      ：何も入れません。型または型の配列（<code>
+        'image'
+      </code>
+      
+      、<code>
+        ['image', 'video']
+      </code>
+      
+      ）：その型のアイテムが入れます。関数：ドラッグごとにあなたが決めます。
     </td>
   </tr>
 </tbody>
@@ -163,10 +171,12 @@ group: { name: 'files', pull: true, put: false }
 group: { name: 'files', pull: 'clone', put: false }, sort: false
 
 // Images: takes images only.
-group: { name: 'files', put: ({ types }) => types.every((type) => type === 'image') }
+group: { name: 'files', put: 'image' }
 ```
 
-`put` 関数は `{ keys, items, types, from, to }` を受け取ります：ドラッグ中のキーとアイテム、それらの型、移動元のリスト（通常のドラッグ可能な要素では `null`）、そしてこのリストです。`types` はドラッグ中のアイテムの `type` オプション（`makeSortableItem(el, { item, type })`）で、指定のないアイテムはグループ名として扱われます。リスト内での移動は常に許可されます：Inbox は自分のファイルを並べ替えられます。
+型はドラッグ中のアイテムの `type` オプション（`makeSortableItem(el, { item, type })`）で、指定のないアイテムはグループ名として扱われます。`put` に型を書くと、ドラッグ中のすべてのアイテムがそのいずれかを持っている必要があります（`acceptMode: 'some'` では、持っているアイテムが入ります）。
+
+`put` 関数は `{ keys, items, types, from, to }` を受け取ります：ドラッグ中のキーとアイテム、それらの型、移動元のリスト（通常のドラッグ可能な要素では `null`）、そしてこのリストです。リスト内での移動は常に許可されます：Inbox は自分のファイルを並べ替えられます。
 
 ドラッグを拒否するリストの上では、枠はドラッグが始まった場所に戻るので、リストはドロップの結果、つまり何も起きないことを示します。そこでのドロップはキャンセルされ、アイテムは元の位置に戻ります。そのようなドラッグの間、リストの `isAccepting` は `false` で、その上では `isOver` は `true` のままです。デモの各リストはこれで何を表示するかを判断しています。
 
@@ -192,6 +202,26 @@ const shortlist = reactive({
 ドラッグから問い合わせがあると、自分のアイテムを読み取ります。いっぱいにすると次のファイルを拒否し、その理由をヘッダーに表示します。
 
 型の異なる複数の選択中アイテムをドラッグする場合、`acceptMode` は `'all'`（デフォルト）か `'some'` のどちらが `put` を通る必要があるかを指定します。`'some'` では、通ったものが着地し、それ以外は元の位置に戻ります。[マルチドラッグ](https://zizigy.github.io/docs/guides/multi-drag#taking-only-some)を参照してください。
+
+### リストごとに 1 つのグループ
+
+リストが属するグループは 1 つだけです：`group` は名前を 1 つだけ受け取り、複数は受け取りません。同じグループのリストは各ドラッグ（それぞれのドラフト、ドラッグ中のもの、どのリストがそれを受け入れるか）を共有するため、アイテムがグループ間を移動することはありません。アイテムを特定の方向にだけ流したい場合は、リストを 1 つのグループに入れ、ドラッグの移動元リストである `from` で `put` に判断させます：
+
+```ts [index.vue]
+// Review takes tasks from both teams. A team takes tasks back from Review,
+// never from the other team.
+const fromReview = ({ from }: SortablePutContext) => from === 'review';
+
+makeSortableList(review, { id: 'review', items: reviewTasks, group: 'tasks' });
+makeSortableList(frontend, { id: 'frontend', items: frontendTasks, group: { name: 'tasks', put: fromReview } });
+makeSortableList(backend, { id: 'backend', items: backendTasks, group: { name: 'tasks', put: fromReview } });
+```
+
+<note>
+
+SortableJS から来た方へ：あちらでは `put: ['a', 'b']` は、リストがアイテムを受け取るグループの名前を並べたものです。こちらでは `put` の配列は、リストが受け入れるアイテムの**型**を並べたものです。他のリストからアイテムを受け取るには、それらを同じグループにし、上のように `from` で判断します。
+
+</note>
 
 ## コピー：パレットと Alt キー
 

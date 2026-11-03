@@ -6,6 +6,12 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/es/docs/api/dnd-provider"
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
+<api-signature name="DnDProvider">
+
+
+
+</api-signature>
+
 ```vue [App.vue]
 <script setup lang="ts">
 import { DnDProvider } from '@vue-dnd-kit/core';
@@ -167,6 +173,32 @@ La [guía del overlay](https://zizigy.github.io/docs/guides/overlay#where-it-ren
   <tr>
     <td>
       <code>
+        drag-resume
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DnDEvent
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+       ha respondido <code>
+        'continue'
+      </code>
+      
+      : no hubo drop, y el arrastre sigue.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
         drag-settle
       </code>
     </td>
@@ -196,7 +228,7 @@ La [guía del overlay](https://zizigy.github.io/docs/guides/overlay#where-it-ren
 </tbody>
 </table>
 
-Los mismos eventos, más `onBeforeDrop` y `onDragResume`, están disponibles en cualquier lugar bajo
+Los mismos eventos, más `onBeforeDrop`, están disponibles en cualquier lugar bajo
 el provider con [`useDnDMonitor`](https://zizigy.github.io/docs/api/use-dnd). Sus payloads están en
 [la página de eventos](https://zizigy.github.io/docs/api/events).
 
@@ -235,9 +267,27 @@ Renderiza lo que sigue al puntero, para cada arrastre que no tiene un componente
 
 </api-table>
 
+<api-table name="HapticPattern">
+
+
+
+</api-table>
+
 ## Anuncios
 
 <api-table name="Announcements">
+
+
+
+</api-table>
+
+<api-table name="AnnouncementContext">
+
+
+
+</api-table>
+
+<api-table name="AnnouncedPosition">
 
 
 

@@ -70,6 +70,13 @@ Abschnitte, die über der Seite zum echten Ding werden, Elemente zwischen Spalte
 Ebenenbaum auf denselben Daten, Bearbeiten direkt im Text.
 
 </card>
+
+<card icon="i-lucide-table-2" title="Datentabelle" to="/docs/examples/data-table">
+
+Eine Nuxt-UI-Tabelle mit 2.000 Aufgaben: virtualisiert, durchsuchbar, sortiert an den Griffen ihrer
+Zeilen.
+
+</card>
 </card-group>
 
 ## Sitemap

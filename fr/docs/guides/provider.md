@@ -553,8 +553,8 @@ aucune. Le provider lit ses props au moment où il en a besoin : les démos ci-
 </table>
 
 La liste complète, avec toutes les formes, se trouve dans l'[API de DnDProvider](https://zizigy.github.io/docs/api/dnd-provider).
-Le provider émet aussi `drag-start`, `drag-move`, `drag-over`, `drag-end`, `drag-cancel` et `drag-settle`, les
-mêmes événements que ceux qu'entend `useDnDMonitor`.
+Le provider émet aussi `drag-start`, `drag-move`, `drag-over`, `drag-end`, `drag-cancel`,
+`drag-resume` et `drag-settle`, les mêmes événements que ceux qu'entend `useDnDMonitor`.
 
 ## Lire le glissement : `useDnD()`
 

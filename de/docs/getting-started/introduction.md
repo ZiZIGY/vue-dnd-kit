@@ -213,7 +213,7 @@ ein Gamepad oder einen Sprachbefehl, oder verschiebe Elemente per Code mit
 
 Kommst du von v2? Die API hat sich geändert: Aus `useDnDProvider` wurde `useDnD`, aus
 `makeConstraintArea` und `makeAutoScroll` wurde `makeDragArea`. Sortierbare Listen sind jetzt
-eingebaut.
+eingebaut. Siehe [Migration von v2](https://zizigy.github.io/docs/getting-started/migrating-from-v2).
 
 </tip>
 

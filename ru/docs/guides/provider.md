@@ -553,8 +553,8 @@ import { DnDProvider } from '@vue-dnd-kit/core';
 </table>
 
 Полный список со всеми формами — в [API DnDProvider](https://zizigy.github.io/docs/api/dnd-provider). Провайдер также
-эмитит `drag-start`, `drag-move`, `drag-over`, `drag-end`, `drag-cancel` и `drag-settle` — те же события,
-что слышит `useDnDMonitor`.
+эмитит `drag-start`, `drag-move`, `drag-over`, `drag-end`, `drag-cancel`, `drag-resume` и
+`drag-settle` — те же события, что слышит `useDnDMonitor`.
 
 ## Читайте драг: `useDnD()`
 

@@ -6,6 +6,12 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/fr/docs/api/dnd-provider"
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
+<api-signature name="DnDProvider">
+
+
+
+</api-signature>
+
 ```vue [App.vue]
 <script setup lang="ts">
 import { DnDProvider } from '@vue-dnd-kit/core';
@@ -168,6 +174,32 @@ quand c'est nécessaire.
   <tr>
     <td>
       <code>
+        drag-resume
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DnDEvent
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+       a répondu <code>
+        'continue'
+      </code>
+      
+       : il n'y a pas eu de dépôt, et le glissement continue.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
         drag-settle
       </code>
     </td>
@@ -197,7 +229,7 @@ quand c'est nécessaire.
 </tbody>
 </table>
 
-Les mêmes événements, plus `onBeforeDrop` et `onDragResume`, sont disponibles n'importe où sous le
+Les mêmes événements, plus `onBeforeDrop`, sont disponibles n'importe où sous le
 provider avec [`useDnDMonitor`](https://zizigy.github.io/docs/api/use-dnd). Leurs payloads sont décrits sur
 [la page des événements](https://zizigy.github.io/docs/api/events).
 
@@ -237,9 +269,27 @@ le clone.
 
 </api-table>
 
+<api-table name="HapticPattern">
+
+
+
+</api-table>
+
 ## Annonces
 
 <api-table name="Announcements">
+
+
+
+</api-table>
+
+<api-table name="AnnouncementContext">
+
+
+
+</api-table>
+
+<api-table name="AnnouncedPosition">
 
 
 

@@ -6,6 +6,12 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ru/docs/api/dnd-provider"
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
+<api-signature name="DnDProvider">
+
+
+
+</api-signature>
+
 ```vue [App.vue]
 <script setup lang="ts">
 import { DnDProvider } from '@vue-dnd-kit/core';
@@ -168,6 +174,32 @@ import { DnDProvider } from '@vue-dnd-kit/core';
   <tr>
     <td>
       <code>
+        drag-resume
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DnDEvent
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+       ответил <code>
+        'continue'
+      </code>
+      
+      : броска не было, и драг продолжается.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
         drag-settle
       </code>
     </td>
@@ -197,7 +229,7 @@ import { DnDProvider } from '@vue-dnd-kit/core';
 </tbody>
 </table>
 
-Те же события, а также `onBeforeDrop` и `onDragResume`, доступны в любом месте под провайдером
+Те же события, а также `onBeforeDrop`, доступны в любом месте под провайдером
 через [`useDnDMonitor`](https://zizigy.github.io/docs/api/use-dnd). Их данные описаны на
 [странице событий](https://zizigy.github.io/docs/api/events).
 
@@ -237,9 +269,27 @@ import { DnDProvider } from '@vue-dnd-kit/core';
 
 </api-table>
 
+<api-table name="HapticPattern">
+
+
+
+</api-table>
+
 ## Объявления
 
 <api-table name="Announcements">
+
+
+
+</api-table>
+
+<api-table name="AnnouncementContext">
+
+
+
+</api-table>
+
+<api-table name="AnnouncedPosition">
 
 
 

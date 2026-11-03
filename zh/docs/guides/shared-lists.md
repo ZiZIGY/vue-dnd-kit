@@ -149,7 +149,15 @@ const { items } = makeSortableList(list, {
         false
       </code>
       
-      ：什么都不能进入。函数：由你按每次拖拽决定。
+      ：什么都不能进入。一个或多个类型（<code>
+        'image'
+      </code>
+      
+      、<code>
+        ['image', 'video']
+      </code>
+      
+      ）：这些类型的项可以进入。函数：由你按每次拖拽决定。
     </td>
   </tr>
 </tbody>
@@ -163,10 +171,12 @@ group: { name: 'files', pull: true, put: false }
 group: { name: 'files', pull: 'clone', put: false }, sort: false
 
 // Images: takes images only.
-group: { name: 'files', put: ({ types }) => types.every((type) => type === 'image') }
+group: { name: 'files', put: 'image' }
 ```
 
-`put` 函数会收到 `{ keys, items, types, from, to }`：被拖拽的 key 和项、它们的类型、它们来自的列表（普通可拖拽元素为 `null`）以及本列表。`types` 是被拖拽项的 `type` 选项（`makeSortableItem(el, { item, type })`）；没有该选项的项按分组名计。列表内部的移动总是允许的：Inbox 仍可以对自己的文件排序。
+类型是被拖拽项的 `type` 选项（`makeSortableItem(el, { item, type })`）；没有该选项的项按分组名计。`put` 中写类型时，每个被拖拽项都必须具有其中之一（使用 `acceptMode: 'some'` 时，具有的项可以进入）。
+
+`put` 函数会收到 `{ keys, items, types, from, to }`：被拖拽的 key 和项、它们的类型、它们来自的列表（普通可拖拽元素为 `null`）以及本列表。列表内部的移动总是允许的：Inbox 仍可以对自己的文件排序。
 
 在拒绝该拖拽的列表上方，空位会回到拖拽开始的地方，这样各列表显示的就是放置会产生的结果：什么都没有。在那里放置会被取消，项飞回原处。在这样的拖拽中，列表的 `isAccepting` 为 `false`，而在它上方时 `isOver` 仍为 `true`：演示中的每个列表就是这样知道该说什么的。
 
@@ -192,6 +202,26 @@ const shortlist = reactive({
 拖拽询问时，它会读取自己的项。把它装满，它就会拒绝下一个文件，并在标题中显示原因。
 
 拖拽多个不同类型的选中项时，`acceptMode` 规定是 `'all'`（默认）还是 `'some'` 必须通过 `put`。使用 `'some'` 时，通过的项落位，其余的飞回原处。见[多项拖拽](https://zizigy.github.io/docs/guides/multi-drag#taking-only-some)。
+
+### 每个列表一个分组
+
+一个列表只属于一个分组：`group` 只接受一个名称，不能是多个。同一分组的列表共享每次拖拽（它们的草稿、被拖拽的内容、哪些列表接受它），因此项永远不会在分组之间移动。如果项只应朝某些方向流动，请把这些列表放进同一个分组，并让 `put` 根据 `from`（拖拽来自的列表）来决定：
+
+```ts [index.vue]
+// Review takes tasks from both teams. A team takes tasks back from Review,
+// never from the other team.
+const fromReview = ({ from }: SortablePutContext) => from === 'review';
+
+makeSortableList(review, { id: 'review', items: reviewTasks, group: 'tasks' });
+makeSortableList(frontend, { id: 'frontend', items: frontendTasks, group: { name: 'tasks', put: fromReview } });
+makeSortableList(backend, { id: 'backend', items: backendTasks, group: { name: 'tasks', put: fromReview } });
+```
+
+<note>
+
+如果你来自 SortableJS：在那里，`put: ['a', 'b']` 列出的是列表可以从中接收项的分组名。而在这里，`put` 中的数组列出的是列表接收的项的**类型**。要从其他列表接收项，请让它们使用同一个分组，并像上面那样根据 `from` 来决定。
+
+</note>
 
 ## 复制：面板和 Alt 键
 

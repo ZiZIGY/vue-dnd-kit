@@ -6,20 +6,19 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/de/docs/api/make-drag-area"
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeDragArea(
-  target: MaybeElementRef,
-  options?: DragAreaOptions,
-): DragAreaReturn;
-```
+<api-signature name="makeDragArea">
+
+
+
+</api-signature>
 
 ```ts
 const board = useTemplateRef<HTMLElement>('board');
 makeDragArea(board, { restrictToArea: true, modifiers: [snapToGrid(24)] });
 ```
 
-Bei verschachtelten Bereichen gewinnt der nächstgelegene, außer bei `disabled`, das innere
-Bereiche erben. Siehe [Achsen, Grenzen und Raster](https://zizigy.github.io/docs/guides/constraints).
+Innere Bereiche erben `disabled`; jede andere Regel kommt vom nächstgelegenen Bereich. Siehe
+[Achsen, Grenzen und Raster](https://zizigy.github.io/docs/guides/constraints).
 
 Die Chips im Bereich folgen seinen Regeln; der Chip außerhalb lässt sich frei ziehen.
 

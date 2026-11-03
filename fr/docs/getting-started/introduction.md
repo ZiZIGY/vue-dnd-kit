@@ -217,7 +217,7 @@ pour une manette ou une commande vocale, ou déplacez des items depuis le code a
 
 Vous venez de la v2 ? L'API a changé : `useDnDProvider` est devenu `useDnD`, et
 `makeConstraintArea` et `makeAutoScroll` sont devenus `makeDragArea`. Les listes triables sont
-désormais intégrées.
+désormais intégrées. Voir [migrer depuis la v2](https://zizigy.github.io/docs/getting-started/migrating-from-v2).
 
 </tip>
 

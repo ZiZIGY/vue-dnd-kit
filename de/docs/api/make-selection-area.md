@@ -6,12 +6,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/de/docs/api/make-selection-
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeSelectionArea(
-  target: MaybeElementRef,
-  options?: SelectionAreaOptions,
-): SelectionAreaReturn;
-```
+<api-signature name="makeSelectionArea">
+
+
+
+</api-signature>
 
 ```vue
 <script setup lang="ts">
@@ -27,8 +26,8 @@ const { isSelecting, style } = makeSelectionArea(area);
 </template>
 ```
 
-Ein Druck auf eine leere Stelle des Bereichs startet den Rahmen; den Rahmen renderst du selbst.
-Siehe [Multi-Drag und Auswahl](https://zizigy.github.io/docs/guides/multi-drag).
+Ein Druck auf eine leere Stelle des Bereichs startet den Rahmen. Siehe
+[Multi-Drag und Auswahl](https://zizigy.github.io/docs/guides/multi-drag).
 
 <example height="27rem" hint="Ziehe einen Rahmen auf der freien Fläche auf, dann ziehe eine ausgewählte Form" name="api-selection-area">
 

@@ -6,19 +6,18 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-sortable-t
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeSortableTree<T>(
-  target: MaybeElementRef,
-  options: SortableTreeOptions<T>,
-): SortableTreeReturn<T>;
-```
+<api-signature name="makeSortableTree">
+
+
+
+</api-signature>
 
 ```ts
 const root = useTemplateRef<HTMLElement>('root');
 const { items } = makeSortableTree(root, { items: files, indentation: 20, collapsed });
 ```
 
-渲染 `items`（带有 `depth` 的扁平节点）；每一行都以 `id: () => node.key` 调用 [`makeSortableItem`](https://zizigy.github.io/docs/api/make-sortable-item)。参见[树](https://zizigy.github.io/docs/guides/trees)。
+每一行都以 `id: () => node.key` 调用 [`makeSortableItem`](https://zizigy.github.io/docs/api/make-sortable-item)。参见[树](https://zizigy.github.io/docs/guides/trees)。
 
 <example height="26rem" hint="切换一个选项，然后横向拖动一行" name="api-tree-options">
 

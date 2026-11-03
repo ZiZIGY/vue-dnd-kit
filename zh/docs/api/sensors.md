@@ -10,77 +10,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/api/sensors"
 import { defineSensor, useSensor, pointerSensor, keyboardSensor } from '@vue-dnd-kit/core';
 ```
 
-<table>
-<thead>
-  <tr>
-    <th>
-      导出
-    </th>
-    
-    <th>
-      含义
-    </th>
-  </tr>
-</thead>
+<api-signature names="pointerSensor, keyboardSensor, defineSensor, useSensor">
 
-<tbody>
-  <tr>
-    <td>
-      <code>
-        pointerSensor
-      </code>
-    </td>
-    
-    <td>
-      鼠标、触摸和触控笔，通过 Pointer Events 实现。默认包含在 <code>
-        sensors
-      </code>
-      
-       中。
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        keyboardSensor
-      </code>
-    </td>
-    
-    <td>
-      Space/Enter 拿起和放下，方向键移动，Escape 取消。默认包含在 <code>
-        sensors
-      </code>
-      
-       中。
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        defineSensor(sensor)
-      </code>
-    </td>
-    
-    <td>
-      为传感器对象提供类型。
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        useSensor(sensor)
-      </code>
-    </td>
-    
-    <td>
-      在 provider 之下的组件中运行传感器，持续到组件销毁。
-    </td>
-  </tr>
-</tbody>
-</table>
+
+
+</api-signature>
 
 传感器只说“从这里拖拽这个项”，然后说明它移动到了哪里、是放下了还是被取消了；其余的由 provider 检查（什么可以被拖拽、激活、同一时间只有一次拖拽）。参见[传感器与程序化拖拽](https://zizigy.github.io/docs/guides/sensors)。
 

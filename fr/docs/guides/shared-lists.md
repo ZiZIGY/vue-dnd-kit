@@ -164,7 +164,15 @@ entrer :
         false
       </code>
       
-       : rien n'entre. Une fonction : vous décidez pour chaque glissement.
+       : rien n'entre. Un type ou plusieurs (<code>
+        'image'
+      </code>
+      
+      , <code>
+        ['image', 'video']
+      </code>
+      
+      ) : les items de ces types entrent. Une fonction : vous décidez pour chaque glissement.
     </td>
   </tr>
 </tbody>
@@ -178,14 +186,17 @@ group: { name: 'files', pull: true, put: false }
 group: { name: 'files', pull: 'clone', put: false }, sort: false
 
 // Images: takes images only.
-group: { name: 'files', put: ({ types }) => types.every((type) => type === 'image') }
+group: { name: 'files', put: 'image' }
 ```
+
+Les types sont les options `type` des items glissés (`makeSortableItem(el, { item, type })`) ;
+les items qui n'en ont pas comptent comme le nom du groupe. Avec des types dans `put`, chaque
+item glissé doit avoir l'un d'eux (avec `acceptMode: 'some'`, ceux qui en ont un entrent).
 
 Une fonction `put` reçoit `{ keys, items, types, from, to }` : les clés et les items glissés,
 leurs types, la liste d'où ils viennent (`null` pour les éléments déplaçables simples) et cette
-liste. `types` sont les options `type` des items glissés (`makeSortableItem(el, { item, type })`) ;
-les items qui n'en ont pas comptent comme le nom du groupe. Les déplacements à l'intérieur d'une
-liste sont toujours autorisés : l'Inbox trie toujours ses propres fichiers.
+liste. Les déplacements à l'intérieur d'une liste sont toujours autorisés : l'Inbox trie
+toujours ses propres fichiers.
 
 Au-dessus d'une liste qui refuse le glissement, l'emplacement revient là où le glissement a
 commencé : les listes montrent ainsi ce que ferait un dépôt, c'est-à-dire rien. Un dépôt à cet
@@ -223,6 +234,33 @@ Quand plusieurs items sélectionnés de types différents sont glissés, `accept
 `'all'` (par défaut) ou `'some'` d'entre eux doivent passer `put`. Avec `'some'`, ceux qui
 passent atterrissent et les autres reviennent à leur place. Voir le
 [multi-drag](https://zizigy.github.io/docs/guides/multi-drag#taking-only-some).
+
+### Un groupe par liste
+
+Une liste appartient à un seul groupe : `group` prend un nom, jamais plusieurs. Les listes d'un
+groupe partagent chaque glissement (leurs brouillons, ce qui est glissé, lesquelles l'acceptent),
+donc les items ne passent jamais d'un groupe à l'autre. Quand les items ne doivent aller que dans
+certains sens, mettez les listes dans un même groupe et laissez `put` décider selon `from`, la
+liste d'où vient le glissement :
+
+```ts [index.vue]
+// Review takes tasks from both teams. A team takes tasks back from Review,
+// never from the other team.
+const fromReview = ({ from }: SortablePutContext) => from === 'review';
+
+makeSortableList(review, { id: 'review', items: reviewTasks, group: 'tasks' });
+makeSortableList(frontend, { id: 'frontend', items: frontendTasks, group: { name: 'tasks', put: fromReview } });
+makeSortableList(backend, { id: 'backend', items: backendTasks, group: { name: 'tasks', put: fromReview } });
+```
+
+<note>
+
+Si vous venez de SortableJS : là-bas, `put: ['a', 'b']` nomme les groupes dont une liste prend
+des items. Ici, un tableau dans `put` énumère les **types** des items qu'une liste accepte. Pour
+prendre des items d'autres listes, mettez-les dans un même groupe et décidez selon `from`, comme
+ci-dessus.
+
+</note>
 
 ## Copier : palettes et touche Alt
 

@@ -180,7 +180,7 @@ const { items } = makeSortableList(listRef, { items: toRef(props.day, 'stops'), 
 
 <tip>
 
-从 v2 迁移过来？API 有变化：`useDnDProvider` 变成了 `useDnD`，`makeConstraintArea` 和 `makeAutoScroll` 合并成了 `makeDragArea`。可排序列表现在是内置的。
+从 v2 迁移过来？API 有变化：`useDnDProvider` 变成了 `useDnD`，`makeConstraintArea` 和 `makeAutoScroll` 合并成了 `makeDragArea`。可排序列表现在是内置的。参见[从 v2 迁移](https://zizigy.github.io/docs/getting-started/migrating-from-v2)。
 
 </tip>
 

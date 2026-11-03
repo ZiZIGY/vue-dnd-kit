@@ -10,77 +10,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/de/docs/api/sensors"
 import { defineSensor, useSensor, pointerSensor, keyboardSensor } from '@vue-dnd-kit/core';
 ```
 
-<table>
-<thead>
-  <tr>
-    <th>
-      Export
-    </th>
-    
-    <th>
-      Was es ist
-    </th>
-  </tr>
-</thead>
+<api-signature names="pointerSensor, keyboardSensor, defineSensor, useSensor">
 
-<tbody>
-  <tr>
-    <td>
-      <code>
-        pointerSensor
-      </code>
-    </td>
-    
-    <td>
-      Maus, Touch und Stift über Pointer Events. Standardmäßig in <code>
-        sensors
-      </code>
-      
-      .
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        keyboardSensor
-      </code>
-    </td>
-    
-    <td>
-      Space/Enter nehmen auf und legen ab, die Pfeiltasten bewegen, Escape bricht ab. Standardmäßig in <code>
-        sensors
-      </code>
-      
-      .
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        defineSensor(sensor)
-      </code>
-    </td>
-    
-    <td>
-      Typisiert ein Sensor-Objekt.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        useSensor(sensor)
-      </code>
-    </td>
-    
-    <td>
-      Führt einen Sensor in einer Komponente unterhalb des Providers aus, solange sie lebt.
-    </td>
-  </tr>
-</tbody>
-</table>
+
+
+</api-signature>
 
 Ein Sensor sagt nur „ziehe dieses Element von hier“, dann, wohin es sich bewegt hat und dass es
 abgelegt oder abgebrochen wurde; den Rest prüft der Provider (was gezogen werden darf,

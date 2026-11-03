@@ -554,7 +554,7 @@ Der Provider liest seine Props dann, wenn er sie braucht: Die Demos unten schalt
 
 Die vollständige Liste mit allen Formen steht in der [DnDProvider-API](https://zizigy.github.io/docs/api/dnd-provider).
 Der Provider emittiert außerdem `drag-start`, `drag-move`, `drag-over`, `drag-end`,
-`drag-cancel` und `drag-settle`, dieselben Events, die `useDnDMonitor` hört.
+`drag-cancel`, `drag-resume` und `drag-settle`, dieselben Events, die `useDnDMonitor` hört.
 
 ## Den Drag lesen: `useDnD()`
 

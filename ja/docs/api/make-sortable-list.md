@@ -6,19 +6,18 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/api/make-sortable-l
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeSortableList<T>(
-  target: MaybeElementRef,
-  options: SortableListOptions<T>,
-): SortableListReturn<T>;
-```
+<api-signature name="makeSortableList">
+
+
+
+</api-signature>
 
 ```ts
 const list = useTemplateRef<HTMLElement>('list');
 const { items } = makeSortableList(list, { items: tasks, group: 'board' });
 ```
 
-あなたの配列ではなく、返された `items`（ドラフト）を描画してください。その行は [`makeSortableItem`](https://zizigy.github.io/docs/api/make-sortable-item) を呼び出します。[並べ替え可能なリスト](https://zizigy.github.io/docs/guides/sortable-lists)と[アイテムを共有するリスト](https://zizigy.github.io/docs/guides/shared-lists)を参照してください。
+リストの行は [`makeSortableItem`](https://zizigy.github.io/docs/api/make-sortable-item) を呼び出します。[並べ替え可能なリスト](https://zizigy.github.io/docs/guides/sortable-lists)と[アイテムを共有するリスト](https://zizigy.github.io/docs/guides/shared-lists)を参照してください。
 
 <example height="34rem" hint="オプションを切り替えてから、タイルをドラッグしてください" name="sortable-options">
 
@@ -77,6 +76,12 @@ const { items } = makeSortableList(list, { items: tasks, group: 'board' });
 </api-table>
 
 ## 値
+
+<api-table name="SortableItems">
+
+
+
+</api-table>
 
 <api-table name="SortableStrategy">
 

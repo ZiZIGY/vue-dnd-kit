@@ -211,7 +211,8 @@ comando de voz, ou mova itens pelo código com `@vue-dnd-kit/actions`.
 <tip>
 
 Vindo da v2? A API mudou: `useDnDProvider` virou `useDnD`, e `makeConstraintArea` e
-`makeAutoScroll` viraram `makeDragArea`. Listas ordenáveis agora vêm embutidas.
+`makeAutoScroll` viraram `makeDragArea`. Listas ordenáveis agora vêm embutidas. Veja
+[migrando da v2](https://zizigy.github.io/docs/getting-started/migrating-from-v2).
 
 </tip>
 

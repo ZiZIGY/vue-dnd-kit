@@ -1,58 +1,31 @@
 ---
-title: "Data table · Vue DnD Kit"
-description: "A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips."
+title: "数据表格"
+description: "一个包含 2,000 个任务的 Nuxt UI 表格，虚拟化、可搜索，通过抓手拖动行来排序。"
 canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/data-table"
-meta:
-  "og:description": "A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips."
-  "og:title": "Data table · Vue DnD Kit"
 ---
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-文档/概览
+<example height="34rem" hint="通过抓手拖动一个任务；先搜索再拖动：隐藏的任务保持原位" name="ui-table" title="数据表格">
 
-# Data table
 
-A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips.
 
-[编辑此页](https://github.com/ZiZIGY/vue-dnd-kit/edit/master/docs/content/en/4.examples/09.data-table.md)
+</example>
 
-本页尚未翻译。你正在阅读英文原文。
+Nuxt UI 的 `UTable` 渲染表格、它的行和它的虚拟化器：只有屏幕上的行在 DOM 中。Vue DnD Kit 负责给它们排序。表格就是这个 UI 库原样提供的表格，带着它的插槽和 `ui` 类；没有任何部分被重写。
 
-Live Drag a task by its grip; search, then drag: the hidden tasks keep their places X ---- · Y ----
+## 看点
 
-正在加载演示…
+- **TaskTable.vue**：可排序列表是表格的 `<tbody>`，通过 `UTable` 暴露的 `tableRef` 找到。表格把列表的草稿作为它的 `data`，所以拖拽时行会移动，`get-row-id` 按任务给行设置 key，与列表一致。`axis: 'y'` 让拖拽留在它的列中，`restrictToFirstScrollableAncestor` 让它留在表格内部：表格的滚动容器是行外面第一个可滚动的元素。展开演示：表格会占满整个屏幕。
+- **RowGrip.vue**：行由 `UTable` 渲染，所以没有一个行是你自己的组件。第一个单元格中的抓手（`#grip-cell` 插槽）把它外面的行变成项，它本身就是这一项的手柄。
+- **搜索**就是列表的 `filter`：表格显示匹配的任务，放置时把整个数组写回，隐藏的任务留在原处。
+- **tasks.ts**：放在 `shallowRef` 中的 2,000 个任务：库从不查看它们的内部。
 
-```
-<script setup lang="ts">
-import { DnDProvider } from '@vue-dnd-kit/core';
-import TaskTable from './TaskTable.vue';
-</script>
+## 由表格渲染的行
 
-<template>
-  <!-- The row in hand: a table row can't have a shadow, so its overlay content has it. -->
-  <DnDProvider overlay-class="overflow-hidden rounded-md bg-default shadow-xl ring ring-accented">
-    <TaskTable />
-  </DnDProvider>
-</template>
-```
+抓手调用 `makeSortableItem` 时传入一个返回行的 getter：也就是它外面的 `<tr>`（在它渲染出来之后）。作为手柄，抓手获得焦点和 ARIA 属性，行的其余部分仍可自由用于点击和选择文本。
 
-Nuxt UI's `**UTable**` renders the table, its rows and its virtualizer: only the rows on screen are in the DOM. Vue DnD Kit sorts them. The table is the library's as it comes, with its slots and its `**ui**` classes; nothing of it is rewritten.
-
-## What to look at
-
-- **`**TaskTable.vue**`**: the sortable list is the table's `**<tbody>**`, found through the `**tableRef**` that `**UTable**` exposes. The table gets the list's draft as its `**data**`, so the rows move while you drag, and `**get-row-id**` keys them by task, as the list does. `**axis: 'y'**` keeps the drag in its column, and `**restrictToFirstScrollableAncestor**` inside the table: its scroller is the first scrollable element around the rows. Expand the demo: the table fills the screen.
-- **`**RowGrip.vue**`**: `**UTable**` renders the rows, so no component of yours is a row. The grip in the first cell (the `**#grip-cell**` slot) makes the row around it the item, and is its handle.
-- ****The search**** is the list's `**filter**`: the table shows the matching tasks, and a drop writes the whole array back, the hidden tasks where they were.
-- **`**tasks.ts**`**: 2,000 tasks in a `**shallowRef**`: the library never looks inside them.
-
-## A row the table renders
-
-The grip calls `**makeSortableItem**` with a getter for the row: the `**<tr>**` around it, once it is rendered. As the handle, the grip takes the focus and the ARIA attributes, and the rest of the row stays free for clicks and text selection.
-
-RowGrip.vue
-
-```
+```ts [RowGrip.vue]
 const grip = useTemplateRef<HTMLElement>('grip');
 makeSortableItem(() => grip.value?.closest('tr') ?? null, {
   id: () => props.task.id,
@@ -61,9 +34,7 @@ makeSortableItem(() => grip.value?.closest('tr') ?? null, {
 });
 ```
 
-TaskTable.vue
-
-```
+```vue [TaskTable.vue]
 <UTable ref="table" :data="items" :get-row-id="(task: Task) => task.id" …>
   <template #grip-cell="{ row }">
     <RowGrip :task="row.original" />
@@ -71,23 +42,19 @@ TaskTable.vue
 </UTable>
 ```
 
-The overlay is the library's copy of the row, in a table of its own with the cells' widths. A table row draws no shadow, so the provider's `**overlay-class**` gives the overlay's content one, with the table's background and a ring. The row's `**ui**` classes tint its place while it travels (`**data-[dnd-placeholder]:bg-primary/5**`).
+浮层是库对这一行的复制，放在一个单独的表格里，单元格宽度保持不变。表格行不绘制阴影，所以由 provider 的 `overlay-class` 给浮层的内容加上阴影，以及表格的背景和一圈边框（ring）。行移动期间，行的 `ui` 类给它的位置着色（`data-[dnd-placeholder]:bg-primary/5`）。
 
-index.vue
-
-```
+```vue [index.vue]
 <DnDProvider overlay-class="overflow-hidden rounded-md bg-default shadow-xl ring ring-accented">
   <TaskTable />
 </DnDProvider>
 ```
 
-## Virtualized rows
+## 虚拟化的行
 
-`**virtualize**` gives the table TanStack Virtual: the rows on screen and 8 more around them (`**overscan**`) are rendered, between two spacer rows.
+`virtualize` 给表格加上 TanStack Virtual：渲染屏幕上的行以及它们周围另外 8 行（`overscan`），位于两个间隔行之间。
 
-TaskTable.vue
-
-```
+```vue [TaskTable.vue]
 <UTable
   :data="items"
   :watch-options="{ deep: false }"
@@ -96,16 +63,14 @@ TaskTable.vue
 />
 ```
 
-- `**estimateSize**` is a first guess: the virtualizer measures each row as it renders. A measurement moves the rows below it, and `**onChange**` calls the list's `**captureLayout()**`, so the library animates that move during a drag instead of letting it jump.
-- The table is the scroller, and the row in hand stays inside it: near its top or bottom edge a drag scrolls it, and new rows render as they come into view.
-- The draft is a new array after every move, so the table needn't watch inside it ( `**deep: false**`).
-- Scroll far from the row you hold, and it leaves the rendered range and unmounts. The drag goes on: the overlay still shows it, and it lands where the draft puts it. A virtual list of your own can keep it mounted with `**rangeExtractor**` (see [**Virtual lists**](https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/virtual-lists#tanstack-virtual)). A table lays its rows out between spacer rows, where a row rendered far from the others would push them aside, so this one lets it go.
+- `estimateSize` 是初始估计：虚拟化器会在每一行渲染时测量它。一次测量会移动它下面的行，`onChange` 调用列表的 `captureLayout()`，这样在拖拽期间库会为这次移动添加动画，而不是让它跳过去。
+- 表格就是滚动容器，手中的行留在它内部：靠近它的上边缘或下边缘时，拖拽会让它滚动，新的行在进入视口时渲染。
+- 每次移动后草稿都是一个新数组，所以表格不需要监听它的内部（`deep: false`）。
+- 滚动到离你拿着的行很远的地方，它就会离开渲染范围并被卸载。拖拽继续进行：浮层仍然显示它，它会落到草稿给它安排的位置。你自己的虚拟列表可以用 `rangeExtractor` 让它保持挂载（参见[虚拟列表](https://zizigy.github.io/docs/guides/virtual-lists#tanstack-virtual)）。表格把行布置在间隔行之间，在那里一个远离其他行渲染的行会把它们挤开，所以这个表格让它卸载。
 
-## Search, then drag
+## 先搜索，再拖动
 
-TaskTable.vue
-
-```
+```ts [TaskTable.vue]
 const { items, captureLayout } = makeSortableList(() => table.value?.tableRef?.tBodies[0] ?? null, {
   items: tasks,
   filter: (task) => {
@@ -118,27 +83,43 @@ const { items, captureLayout } = makeSortableList(() => table.value?.tableRef?.t
 });
 ```
 
-Search "Mia", move one of her tasks above another, then clear the search: her tasks are in the new order, and every other task is where it was. The drop's `**e.to.index**` counts the rows shown; `**e.result**` holds the whole array.
+搜索“Mia”，把她的一个任务移到另一个任务上方，然后清空搜索：她的任务按新的顺序排列，其他每个任务都还在原处。放置事件的 `e.to.index` 按显示出来的行计数；`e.result` 包含整个数组。
 
-****Other UI libraries.**** Nuxt UI renders plain elements and passes your classes and attributes on, as the Reka UI primitives it is built on do: a ref, a slot and a class are all it takes. In other libraries a table renders its rows too, and the same recipe works:
+<tip>
 
-- ****The row.**** A slot that renders the whole row (Vuetify's `**#item**`, Quasar's `**#body**`) gives you its element: make it the item. Where you only get cells (a PrimeVue `**Column**`'s `**#body**`, an Element Plus column's default slot, Naive UI's `**render**`), put a grip in one and make its `**closest('tr')**` the item, as here.
-- ****The list.**** The `**<tbody>**` inside the table's root element: a template ref on the table gives you the component, and its `**$el**` the element.
-- ****The keys and the data.**** Key the rows by your id ( `**item-value**`, `**row-key**`, `**dataKey**`) and give the table the list's draft as its data.
-- ****Its own ordering off.**** Leave out the table's own row reordering and its column sorting: the order is the list's.
-- ****Virtual tables**** place their rows between spacers or in absolute boxes: both work, and a drag survives its row unmounting.
+**其他 UI 库**。Nuxt UI 渲染普通元素，并把你的类和属性传递下去，它所基于的 Reka UI 原语也是如此：只需要一个 ref、一个插槽和一个类。在其他库中，表格同样自己渲染行，同样的方法也适用：
 
-The StackBlitz button opens the files in a Vite project set up for Nuxt UI, as its docs do it for Vue: the `**@nuxt/ui/vite**` plugin, Tailwind CSS, and `**UApp**` around the example. In a Nuxt app with the `**@nuxt/ui**` module, copy the folder and render `**index.vue**` on a page.
+- **行**。渲染整行的插槽（Vuetify 的 `#item`、Quasar 的 `#body`）会给你行的元素：把它作为项。如果只能拿到单元格（PrimeVue `Column` 的 `#body`、Element Plus 列的默认插槽、Naive UI 的 `render`），就在其中一个单元格里放一个抓手，把它的 `closest('tr')` 作为项，就像这里一样。
+- **列表**。表格根元素内部的 `<tbody>`：表格上的模板引用给你组件，它的 `$el` 给你元素。
+- **key 和数据**。按你的 id 给行设置 key（`item-value`、`row-key`、`dataKey`），并把列表的草稿作为表格的数据。
+- **关闭它自己的排序**。不要启用表格自带的行重新排序和列排序：顺序由列表决定。
+- **虚拟表格**把行放在间隔元素之间，或放在绝对定位的盒子里：两种都可以，而且拖拽在它的行被卸载后依然继续。
 
-## Keyboard and screen readers
+</tip>
 
-Tab to a task's grip and press `Space` to pick the row up. `ArrowUp` and `ArrowDown` move it, `Space` drops it, `Escape` puts it back. The rows have a `**label**`, and the list too: screen readers hear "Fix the login form dropped at position 3 of 2000 in Tasks.", not keys.
+<note>
 
-Read more: [**Virtual lists**](https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/virtual-lists) · [**Show some of the items**](https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/sortable-lists#show-some-of-the-items) · [**Styling: Tailwind and UI kits**](https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/styling#tailwind-css) · [**Accessibility**](https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/accessibility)
+StackBlitz 按钮会在一个按 Nuxt UI 文档中 Vue 用法配置好的 Vite 项目里打开这些文件：`@nuxt/ui/vite` 插件、Tailwind CSS，以及包裹示例的 `UApp`。在带有 `@nuxt/ui` 模块的 Nuxt 应用中，复制文件夹并在某个页面上渲染 `index.vue` 即可。
 
-```json
-{"@context":"https://schema.org","@graph":[{"@id":"https://zizigy.github.io/vue-dnd-kit/zh#website","@type":"WebSite","description":"Drag and drop for Vue 3: sortable lists, kanban boards, trees, multi-drag, animations and accessibility out of the box.","inLanguage":"zh-CN","name":"Vue DnD Kit","url":"https://zizigy.github.io/vue-dnd-kit/zh","translationOfWork":{"@id":"https://zizigy.github.io/vue-dnd-kit#website"}},{"@id":"https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/data-table#webpage","@type":"WebPage","description":"A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips.","name":"Data table","url":"https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/data-table","isPartOf":{"@id":"https://zizigy.github.io/vue-dnd-kit/zh#website"},"potentialAction":[{"@type":"ReadAction","target":["https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/data-table"]}]}]}
-```
+</note>
+
+## 键盘和屏幕阅读器
+
+用 Tab 移到一个任务的抓手上，按 <kbd value="Space">
+
+
+
+</kbd>
+
+ 拿起这一行。:kbd{value="ArrowUp"} 和 <kbd value="ArrowDown">
+
+
+
+</kbd>
+
+ 移动它，:kbd{value="Space"} 放下它，:kbd{value="Escape"} 把它放回原处。行有 `label`，列表也有：屏幕阅读器听到的是“Fix the login form dropped at position 3 of 2000 in Tasks.”，而不是 key。
+
+延伸阅读：[虚拟列表](https://zizigy.github.io/docs/guides/virtual-lists) · [只显示部分项](https://zizigy.github.io/docs/guides/sortable-lists#show-some-of-the-items) · [样式：Tailwind 和 UI 库](https://zizigy.github.io/docs/guides/styling#tailwind-css) · [无障碍](https://zizigy.github.io/docs/guides/accessibility)
 
 ## Sitemap
 

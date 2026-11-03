@@ -14,9 +14,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/api/use-dnd"
 
 ## useDnD
 
-```ts
-function useDnD(): DnDState;
-```
+<api-signature name="useDnD">
+
+
+
+</api-signature>
 
 ```ts
 const { status, active, over, selection, cancel } = useDnD();
@@ -41,9 +43,11 @@ provider 拖拽的响应式状态。一旦放置结果确定，`active` 和 `ove
 
 ## useDnDMonitor
 
-```ts
-function useDnDMonitor(monitor: DnDMonitor): void;
-```
+<api-signature name="useDnDMonitor">
+
+
+
+</api-signature>
 
 ```ts
 useDnDMonitor({
@@ -52,7 +56,7 @@ useDnDMonitor({
 });
 ```
 
-在组件存活期间，接收 provider 之下每一次拖拽的事件。关于一次放置（`onBeforeDrop`），会先询问你的监听器，再询问目标。载荷见[事件页面](https://zizigy.github.io/docs/api/events)。
+关于一次放置（`onBeforeDrop`），会先询问你的监听器，再询问目标。载荷见[事件页面](https://zizigy.github.io/docs/api/events)。
 
 <api-table name="DnDMonitor">
 
@@ -68,10 +72,17 @@ useDnDMonitor({
 
 ## useDnDContext 与 provideDnDContext
 
-```ts
-function useDnDContext(): DnDContext;
-function provideDnDContext(app: App, context: DnDContext): void;
-```
+<api-signature name="useDnDContext">
+
+
+
+</api-signature>
+
+<api-signature name="provideDnDContext">
+
+
+
+</api-signature>
 
 ```ts
 // In a component under the provider:

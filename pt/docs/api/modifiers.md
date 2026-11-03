@@ -26,153 +26,17 @@ Um modificador recebe o deslocamento do arraste e retorna um novo. Eles rodam em
 depois os limites da área (`restrictToArea`), e a trava de `axis` por último. Veja
 [Eixos, limites e grades](https://zizigy.github.io/docs/guides/constraints).
 
-<table>
-<thead>
-  <tr>
-    <th>
-      Modificador
-    </th>
-    
-    <th>
-      O que faz
-    </th>
-  </tr>
-</thead>
+<api-signature names="restrictToVerticalAxis, restrictToHorizontalAxis, restrictToWindowEdges, restrictToParent, restrictToElement, restrictToFirstScrollableAncestor, snapToGrid, snapCenterToCursor">
 
-<tbody>
-  <tr>
-    <td>
-      <code>
-        restrictToVerticalAxis
-      </code>
-    </td>
-    
-    <td>
-      Move só na vertical. A opção <code>
-        axis: 'y'
-      </code>
-      
-       faz o mesmo, por último. Na horizontal, acompanha o conteúdo onde começou (<code>
-        containerShift
-      </code>
-      
-      ), não importa como a página role.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        restrictToHorizontalAxis
-      </code>
-    </td>
-    
-    <td>
-      Move só na horizontal (<code>
-        axis: 'x'
-      </code>
-      
-      ) e, na vertical, acompanha o conteúdo onde começou.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        restrictToWindowEdges
-      </code>
-    </td>
-    
-    <td>
-      Mantém o overlay dentro da janela.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        restrictToParent
-      </code>
-    </td>
-    
-    <td>
-      Mantém o overlay dentro do contêiner onde o arraste começou: a lista ordenável, ou o elemento pai de um draggable simples.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        restrictToElement(element)
-      </code>
-    </td>
-    
-    <td>
-      Mantém o overlay dentro de um elemento (um ref, um getter ou o elemento).
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        restrictToFirstScrollableAncestor
-      </code>
-    </td>
-    
-    <td>
-      Mantém o overlay dentro do primeiro ancestral rolável do elemento arrastado.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        snapToGrid(size | options)
-      </code>
-    </td>
-    
-    <td>
-      Encaixa em uma grade: <code>
-        { x, y, origin: 'container' | 'delta', smooth }
-      </code>
-      
-      . Deixe <code>
-        x
-      </code>
-      
-       ou <code>
-        y
-      </code>
-      
-       de fora para encaixar só um eixo. <code>
-        'container'
-      </code>
-      
-       (padrão) coloca o canto superior esquerdo da caixa nas linhas de uma grade que parte do canto superior esquerdo do contêiner; <code>
-        'delta'
-      </code>
-      
-       arredonda o deslocamento, mantendo o alinhamento próprio do item. <code>
-        smooth
-      </code>
-      
-       faz o overlay deslizar entre as células.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        snapCenterToCursor
-      </code>
-    </td>
-    
-    <td>
-      Centraliza o overlay sob o ponteiro em vez de manter o deslocamento de onde ele foi pego.
-    </td>
-  </tr>
-</tbody>
-</table>
+
+
+</api-signature>
+
+<api-table name="SnapToGridOptions">
+
+
+
+</api-table>
 
 <api-table name="Modifier">
 
@@ -198,81 +62,11 @@ import { closestCorners } from '@vue-dnd-kit/core';
 
 O `collision` do provider escolhe o alvo; o melhor candidato vem primeiro.
 
-<table>
-<thead>
-  <tr>
-    <th>
-      Função
-    </th>
-    
-    <th>
-      O que escolhe
-    </th>
-  </tr>
-</thead>
+<api-signature names="pointerFirst, pointerWithin, rectIntersection, closestCenter, closestCorners">
 
-<tbody>
-  <tr>
-    <td>
-      <code>
-        pointerFirst
-      </code>
-    </td>
-    
-    <td>
-      Padrão: o que está sob o ponteiro, senão o que o overlay sobrepõe.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        pointerWithin
-      </code>
-    </td>
-    
-    <td>
-      Alvos sob o ponteiro, testando o que está embaixo dele (respeitando z-order, overlays e shadow roots).
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        rectIntersection
-      </code>
-    </td>
-    
-    <td>
-      Alvos que se sobrepõem ao overlay: maior prioridade, depois aninhamento mais profundo, depois interseção sobre união.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        closestCenter
-      </code>
-    </td>
-    
-    <td>
-      Todos os alvos, pela distância entre os centros.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        closestCorners
-      </code>
-    </td>
-    
-    <td>
-      Todos os alvos, pela soma das distâncias entre os cantos (alvos empilhados, como colunas de kanban).
-    </td>
-  </tr>
-</tbody>
-</table>
+
+
+</api-signature>
 
 <api-table name="CollisionDetection">
 

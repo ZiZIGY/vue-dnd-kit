@@ -6,19 +6,18 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/api/make-sortable-t
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeSortableTree<T>(
-  target: MaybeElementRef,
-  options: SortableTreeOptions<T>,
-): SortableTreeReturn<T>;
-```
+<api-signature name="makeSortableTree">
+
+
+
+</api-signature>
 
 ```ts
 const root = useTemplateRef<HTMLElement>('root');
 const { items } = makeSortableTree(root, { items: files, indentation: 20, collapsed });
 ```
 
-`items`（`depth` を持つフラットなノード）を描画してください。各行は `id: () => node.key` を指定して [`makeSortableItem`](https://zizigy.github.io/docs/api/make-sortable-item) を呼び出します。[ツリー](https://zizigy.github.io/docs/guides/trees)を参照してください。
+各行は `id: () => node.key` を指定して [`makeSortableItem`](https://zizigy.github.io/docs/api/make-sortable-item) を呼び出します。[ツリー](https://zizigy.github.io/docs/guides/trees)を参照してください。
 
 <example height="26rem" hint="オプションを切り替えてから、行を横にドラッグしてみましょう" name="api-tree-options">
 

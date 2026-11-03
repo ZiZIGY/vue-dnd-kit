@@ -6,6 +6,12 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/api/dnd-provider"
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
+<api-signature name="DnDProvider">
+
+
+
+</api-signature>
+
 ```vue [App.vue]
 <script setup lang="ts">
 import { DnDProvider } from '@vue-dnd-kit/core';
@@ -167,6 +173,32 @@ import { DnDProvider } from '@vue-dnd-kit/core';
   <tr>
     <td>
       <code>
+        drag-resume
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DnDEvent
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+      이 <code>
+        'continue'
+      </code>
+      
+      로 답했습니다. 드롭은 없었고 드래그가 계속됩니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
         drag-settle
       </code>
     </td>
@@ -196,7 +228,7 @@ import { DnDProvider } from '@vue-dnd-kit/core';
 </tbody>
 </table>
 
-같은 이벤트와 함께 `onBeforeDrop`, `onDragResume`도 [`useDnDMonitor`](https://zizigy.github.io/docs/api/use-dnd)로
+같은 이벤트와 함께 `onBeforeDrop`도 [`useDnDMonitor`](https://zizigy.github.io/docs/api/use-dnd)로
 프로바이더 아래 어디서든 받을 수 있습니다. 페이로드는 [이벤트 페이지](https://zizigy.github.io/docs/api/events)에 있습니다.
 
 ## `#overlay` 슬롯
@@ -234,9 +266,27 @@ import { DnDProvider } from '@vue-dnd-kit/core';
 
 </api-table>
 
+<api-table name="HapticPattern">
+
+
+
+</api-table>
+
 ## 안내 문구
 
 <api-table name="Announcements">
+
+
+
+</api-table>
+
+<api-table name="AnnouncementContext">
+
+
+
+</api-table>
+
+<api-table name="AnnouncedPosition">
 
 
 

@@ -553,7 +553,8 @@ import { DnDProvider } from '@vue-dnd-kit/core';
 </table>
 
 모든 형태가 담긴 전체 목록은 [DnDProvider API](https://zizigy.github.io/docs/api/dnd-provider)에 있습니다. 프로바이더는
-`drag-start`, `drag-move`, `drag-over`, `drag-end`, `drag-cancel`, `drag-settle` 이벤트도 내보냅니다.
+`drag-start`, `drag-move`, `drag-over`, `drag-end`, `drag-cancel`, `drag-resume`, `drag-settle` 이벤트도
+내보냅니다.
 `useDnDMonitor`가 듣는 것과 같은 이벤트입니다.
 
 ## 드래그 읽기: `useDnD()`

@@ -6,19 +6,18 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-sortable-l
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeSortableList<T>(
-  target: MaybeElementRef,
-  options: SortableListOptions<T>,
-): SortableListReturn<T>;
-```
+<api-signature name="makeSortableList">
+
+
+
+</api-signature>
 
 ```ts
 const list = useTemplateRef<HTMLElement>('list');
 const { items } = makeSortableList(list, { items: tasks, group: 'board' });
 ```
 
-渲染返回的 `items`（草稿），而不是你的数组。它的行调用 [`makeSortableItem`](https://zizigy.github.io/docs/api/make-sortable-item)。参见[可排序列表](https://zizigy.github.io/docs/guides/sortable-lists)和[共享项的列表](https://zizigy.github.io/docs/guides/shared-lists)。
+列表的行调用 [`makeSortableItem`](https://zizigy.github.io/docs/api/make-sortable-item)。参见[可排序列表](https://zizigy.github.io/docs/guides/sortable-lists)和[共享项的列表](https://zizigy.github.io/docs/guides/shared-lists)。
 
 <example height="34rem" hint="切换选项，然后拖动一个图块" name="sortable-options">
 
@@ -77,6 +76,12 @@ const { items } = makeSortableList(list, { items: tasks, group: 'board' });
 </api-table>
 
 ## 取值
+
+<api-table name="SortableItems">
+
+
+
+</api-table>
 
 <api-table name="SortableStrategy">
 

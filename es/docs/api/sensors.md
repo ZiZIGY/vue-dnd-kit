@@ -10,77 +10,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/es/docs/api/sensors"
 import { defineSensor, useSensor, pointerSensor, keyboardSensor } from '@vue-dnd-kit/core';
 ```
 
-<table>
-<thead>
-  <tr>
-    <th>
-      Export
-    </th>
-    
-    <th>
-      Qué es
-    </th>
-  </tr>
-</thead>
+<api-signature names="pointerSensor, keyboardSensor, defineSensor, useSensor">
 
-<tbody>
-  <tr>
-    <td>
-      <code>
-        pointerSensor
-      </code>
-    </td>
-    
-    <td>
-      Ratón, táctil y lápiz mediante Pointer Events. Está en <code>
-        sensors
-      </code>
-      
-       por defecto.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        keyboardSensor
-      </code>
-    </td>
-    
-    <td>
-      Space/Enter agarran y sueltan, las flechas mueven, Escape cancela. Está en <code>
-        sensors
-      </code>
-      
-       por defecto.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        defineSensor(sensor)
-      </code>
-    </td>
-    
-    <td>
-      Tipa un objeto sensor.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        useSensor(sensor)
-      </code>
-    </td>
-    
-    <td>
-      Ejecuta un sensor en un componente bajo el provider, mientras ese componente viva.
-    </td>
-  </tr>
-</tbody>
-</table>
+
+
+</api-signature>
 
 Un sensor solo dice «arrastra este ítem desde aquí», luego adónde se ha movido y que se ha soltado o
 se ha cancelado; el provider comprueba el resto (qué se puede arrastrar, la activación, un arrastre

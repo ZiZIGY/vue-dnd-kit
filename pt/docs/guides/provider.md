@@ -553,8 +553,8 @@ lê as props quando precisa delas: as demos abaixo trocam `collision`, `activati
 </table>
 
 A lista completa, com todas as formas, está na [API do DnDProvider](https://zizigy.github.io/docs/api/dnd-provider). O
-provider também emite `drag-start`, `drag-move`, `drag-over`, `drag-end`, `drag-cancel` e `drag-settle`, os
-mesmos eventos que o `useDnDMonitor` ouve.
+provider também emite `drag-start`, `drag-move`, `drag-over`, `drag-end`, `drag-cancel`,
+`drag-resume` e `drag-settle`, os mesmos eventos que o `useDnDMonitor` ouve.
 
 ## Ler o arraste: `useDnD()`
 

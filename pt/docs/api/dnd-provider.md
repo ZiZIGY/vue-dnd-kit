@@ -6,6 +6,12 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/pt/docs/api/dnd-provider"
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
+<api-signature name="DnDProvider">
+
+
+
+</api-signature>
+
 ```vue [App.vue]
 <script setup lang="ts">
 import { DnDProvider } from '@vue-dnd-kit/core';
@@ -167,6 +173,32 @@ necessário.
   <tr>
     <td>
       <code>
+        drag-resume
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DnDEvent
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+       respondeu <code>
+        'continue'
+      </code>
+      
+      : não houve drop, e o arraste continua.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
         drag-settle
       </code>
     </td>
@@ -196,7 +228,7 @@ necessário.
 </tbody>
 </table>
 
-Os mesmos eventos, mais `onBeforeDrop` e `onDragResume`, estão disponíveis em qualquer lugar sob o
+Os mesmos eventos, mais `onBeforeDrop`, estão disponíveis em qualquer lugar sob o
 provider com [`useDnDMonitor`](https://zizigy.github.io/docs/api/use-dnd). Os payloads deles estão na
 [página de eventos](https://zizigy.github.io/docs/api/events).
 
@@ -235,9 +267,27 @@ Renderiza o que segue o ponteiro, para todo arraste que não tem um componente d
 
 </api-table>
 
+<api-table name="HapticPattern">
+
+
+
+</api-table>
+
 ## Anúncios
 
 <api-table name="Announcements">
+
+
+
+</api-table>
+
+<api-table name="AnnouncementContext">
+
+
+
+</api-table>
+
+<api-table name="AnnouncedPosition">
 
 
 

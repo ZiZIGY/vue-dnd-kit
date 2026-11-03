@@ -180,7 +180,7 @@ const { items } = makeSortableList(listRef, { items: toRef(props.day, 'stops'), 
 
 <tip>
 
-v2 から移行しますか？API が変わりました。`useDnDProvider` は `useDnD` に、`makeConstraintArea` と `makeAutoScroll` は `makeDragArea` になりました。並べ替え可能なリストは組み込みになりました。
+v2 から移行しますか？API が変わりました。`useDnDProvider` は `useDnD` に、`makeConstraintArea` と `makeAutoScroll` は `makeDragArea` になりました。並べ替え可能なリストは組み込みになりました。[v2 からの移行](https://zizigy.github.io/docs/getting-started/migrating-from-v2)を参照してください。
 
 </tip>
 

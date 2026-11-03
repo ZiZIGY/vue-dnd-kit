@@ -6,20 +6,18 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/api/make-sortable-l
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeSortableList<T>(
-  target: MaybeElementRef,
-  options: SortableListOptions<T>,
-): SortableListReturn<T>;
-```
+<api-signature name="makeSortableList">
+
+
+
+</api-signature>
 
 ```ts
 const list = useTemplateRef<HTMLElement>('list');
 const { items } = makeSortableList(list, { items: tasks, group: 'board' });
 ```
 
-원본 배열이 아니라 반환된 `items`(초안)를 렌더링하세요. 각 행은
-[`makeSortableItem`](https://zizigy.github.io/docs/api/make-sortable-item)을 호출합니다. [정렬 가능한 리스트](https://zizigy.github.io/docs/guides/sortable-lists)와
+리스트의 각 행은 [`makeSortableItem`](https://zizigy.github.io/docs/api/make-sortable-item)을 호출합니다. [정렬 가능한 리스트](https://zizigy.github.io/docs/guides/sortable-lists)와
 [항목을 공유하는 리스트](https://zizigy.github.io/docs/guides/shared-lists)를 참고하세요.
 
 <example height="34rem" hint="옵션을 바꾼 뒤 타일을 드래그하세요" name="sortable-options">
@@ -79,6 +77,12 @@ const { items } = makeSortableList(list, { items: tasks, group: 'board' });
 </api-table>
 
 ## 값
+
+<api-table name="SortableItems">
+
+
+
+</api-table>
 
 <api-table name="SortableStrategy">
 

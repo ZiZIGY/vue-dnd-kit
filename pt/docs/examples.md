@@ -68,6 +68,12 @@ Seções que viram a coisa real sobre a página, elementos entre colunas, uma á
 sobre os mesmos dados, edição inline.
 
 </card>
+
+<card icon="i-lucide-table-2" title="Tabela de dados" to="/docs/examples/data-table">
+
+Uma tabela do Nuxt UI com 2.000 tarefas: virtualizada, pesquisável, ordenada pelas alças das linhas.
+
+</card>
 </card-group>
 
 ## Sitemap

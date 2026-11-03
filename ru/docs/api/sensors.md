@@ -10,77 +10,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ru/docs/api/sensors"
 import { defineSensor, useSensor, pointerSensor, keyboardSensor } from '@vue-dnd-kit/core';
 ```
 
-<table>
-<thead>
-  <tr>
-    <th>
-      Экспорт
-    </th>
-    
-    <th>
-      Что это
-    </th>
-  </tr>
-</thead>
+<api-signature names="pointerSensor, keyboardSensor, defineSensor, useSensor">
 
-<tbody>
-  <tr>
-    <td>
-      <code>
-        pointerSensor
-      </code>
-    </td>
-    
-    <td>
-      Мышь, касание и перо через Pointer Events. По умолчанию есть в <code>
-        sensors
-      </code>
-      
-      .
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        keyboardSensor
-      </code>
-    </td>
-    
-    <td>
-      Space/Enter берут и бросают, стрелки двигают, Escape отменяет. По умолчанию есть в <code>
-        sensors
-      </code>
-      
-      .
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        defineSensor(sensor)
-      </code>
-    </td>
-    
-    <td>
-      Типизирует объект сенсора.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        useSensor(sensor)
-      </code>
-    </td>
-    
-    <td>
-      Запускает сенсор в компоненте под провайдером, пока тот живёт.
-    </td>
-  </tr>
-</tbody>
-</table>
+
+
+</api-signature>
 
 Сенсор лишь говорит «тащи этот элемент отсюда», затем — куда он сдвинулся и что его бросили или
 отменили; остальное проверяет провайдер (что можно перетаскивать, активацию, один драг за раз).

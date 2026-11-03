@@ -14,9 +14,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ru/docs/api/use-dnd"
 
 ## useDnD
 
-```ts
-function useDnD(): DnDState;
-```
+<api-signature name="useDnD">
+
+
+
+</api-signature>
 
 ```ts
 const { status, active, over, selection, cancel } = useDnD();
@@ -42,9 +44,11 @@ const dragging = computed(() => status.value === 'dragging');
 
 ## useDnDMonitor
 
-```ts
-function useDnDMonitor(monitor: DnDMonitor): void;
-```
+<api-signature name="useDnDMonitor">
+
+
+
+</api-signature>
 
 ```ts
 useDnDMonitor({
@@ -53,8 +57,8 @@ useDnDMonitor({
 });
 ```
 
-События каждого драга под провайдером, пока живёт компонент. Ваши мониторы спрашиваются о
-броске (`onBeforeDrop`) раньше цели. Данные событий — на [странице событий](https://zizigy.github.io/docs/api/events).
+Ваши мониторы спрашиваются о броске (`onBeforeDrop`) раньше цели. Данные событий — на
+[странице событий](https://zizigy.github.io/docs/api/events).
 
 <api-table name="DnDMonitor">
 
@@ -70,10 +74,17 @@ useDnDMonitor({
 
 ## useDnDContext и provideDnDContext
 
-```ts
-function useDnDContext(): DnDContext;
-function provideDnDContext(app: App, context: DnDContext): void;
-```
+<api-signature name="useDnDContext">
+
+
+
+</api-signature>
+
+<api-signature name="provideDnDContext">
+
+
+
+</api-signature>
 
 ```ts
 // In a component under the provider:

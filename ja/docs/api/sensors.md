@@ -10,77 +10,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/api/sensors"
 import { defineSensor, useSensor, pointerSensor, keyboardSensor } from '@vue-dnd-kit/core';
 ```
 
-<table>
-<thead>
-  <tr>
-    <th>
-      エクスポート
-    </th>
-    
-    <th>
-      内容
-    </th>
-  </tr>
-</thead>
+<api-signature names="pointerSensor, keyboardSensor, defineSensor, useSensor">
 
-<tbody>
-  <tr>
-    <td>
-      <code>
-        pointerSensor
-      </code>
-    </td>
-    
-    <td>
-      Pointer Events を通じたマウス、タッチ、ペン。デフォルトで <code>
-        sensors
-      </code>
-      
-       に含まれます。
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        keyboardSensor
-      </code>
-    </td>
-    
-    <td>
-      Space/Enter で持ち上げとドロップ、矢印キーで移動、Escape でキャンセル。デフォルトで <code>
-        sensors
-      </code>
-      
-       に含まれます。
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        defineSensor(sensor)
-      </code>
-    </td>
-    
-    <td>
-      センサーオブジェクトに型を付けます。
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        useSensor(sensor)
-      </code>
-    </td>
-    
-    <td>
-      プロバイダーの下のコンポーネントで、そのコンポーネントが生きている間センサーを実行します。
-    </td>
-  </tr>
-</tbody>
-</table>
+
+
+</api-signature>
 
 センサーが伝えるのは「このアイテムをここからドラッグする」ということと、その後どこへ動いたか、ドロップしたかキャンセルされたかだけです。それ以外（何をドラッグできるか、アクティベーション、ドラッグは一度に 1 つ）はプロバイダーがチェックします。[センサーとプログラムによるドラッグ](https://zizigy.github.io/docs/guides/sensors)を参照してください。
 

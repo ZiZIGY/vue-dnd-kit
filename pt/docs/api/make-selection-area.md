@@ -6,12 +6,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/pt/docs/api/make-selection-
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeSelectionArea(
-  target: MaybeElementRef,
-  options?: SelectionAreaOptions,
-): SelectionAreaReturn;
-```
+<api-signature name="makeSelectionArea">
+
+
+
+</api-signature>
 
 ```vue
 <script setup lang="ts">
@@ -27,7 +26,7 @@ const { isSelecting, style } = makeSelectionArea(area);
 </template>
 ```
 
-Pressionar o espaço vazio da área inicia o retângulo; você mesmo renderiza o retângulo. Veja
+Pressionar o espaço vazio da área inicia o retângulo. Veja
 [Multi-drag e seleção](https://zizigy.github.io/docs/guides/multi-drag).
 
 <example height="27rem" hint="Desenhe um retângulo no espaço vazio, depois arraste uma forma selecionada" name="api-selection-area">

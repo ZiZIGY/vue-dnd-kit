@@ -14,6 +14,12 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/api/drag-preview"
 
 ## DragPreview
 
+<api-signature name="DragPreview">
+
+
+
+</api-signature>
+
 ```vue [StackOverlay.vue]
 <script setup lang="ts">
 import { DragPreview, type DragItem } from '@vue-dnd-kit/core';
@@ -46,7 +52,17 @@ defineProps<{ items: DragItem[] }>();
 
 </api-table>
 
-`OverlayProps` は同じ型で、`defineProps<OverlayProps>()` 用です。
+<api-table name="OverlayProps">
+
+
+
+</api-table>
+
+<api-table name="DropDestination">
+
+
+
+</api-table>
 
 ## Sitemap
 

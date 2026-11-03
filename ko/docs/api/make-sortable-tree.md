@@ -6,20 +6,18 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/api/make-sortable-t
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeSortableTree<T>(
-  target: MaybeElementRef,
-  options: SortableTreeOptions<T>,
-): SortableTreeReturn<T>;
-```
+<api-signature name="makeSortableTree">
+
+
+
+</api-signature>
 
 ```ts
 const root = useTemplateRef<HTMLElement>('root');
 const { items } = makeSortableTree(root, { items: files, indentation: 20, collapsed });
 ```
 
-`items`(`depth`가 있는 평평한 노드)를 렌더링하세요. 각 행은 `id: () => node.key`로
-[`makeSortableItem`](https://zizigy.github.io/docs/api/make-sortable-item)을 호출합니다. [트리](https://zizigy.github.io/docs/guides/trees)를 참고하세요.
+각 행은 `id: () => node.key`로 [`makeSortableItem`](https://zizigy.github.io/docs/api/make-sortable-item)을 호출합니다. [트리](https://zizigy.github.io/docs/guides/trees)를 참고하세요.
 
 <example height="26rem" hint="옵션을 바꾼 뒤 행을 옆으로 드래그하세요" name="api-tree-options">
 

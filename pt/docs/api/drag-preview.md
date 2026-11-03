@@ -14,6 +14,12 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/pt/docs/api/drag-preview"
 
 ## DragPreview
 
+<api-signature name="DragPreview">
+
+
+
+</api-signature>
+
 ```vue [StackOverlay.vue]
 <script setup lang="ts">
 import { DragPreview, type DragItem } from '@vue-dnd-kit/core';
@@ -51,7 +57,17 @@ O que um componente de overlay (a opção `overlay` de draggables, itens ordená
 
 </api-table>
 
-`OverlayProps` é o mesmo tipo, para `defineProps<OverlayProps>()`.
+<api-table name="OverlayProps">
+
+
+
+</api-table>
+
+<api-table name="DropDestination">
+
+
+
+</api-table>
 
 ## Sitemap
 

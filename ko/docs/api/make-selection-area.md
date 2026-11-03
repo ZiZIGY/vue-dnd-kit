@@ -6,12 +6,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/api/make-selection-
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeSelectionArea(
-  target: MaybeElementRef,
-  options?: SelectionAreaOptions,
-): SelectionAreaReturn;
-```
+<api-signature name="makeSelectionArea">
+
+
+
+</api-signature>
 
 ```vue
 <script setup lang="ts">
@@ -27,8 +26,7 @@ const { isSelecting, style } = makeSelectionArea(area);
 </template>
 ```
 
-영역의 빈 공간을 누르면 사각형이 시작됩니다. 사각형은 직접 렌더링하세요.
-[멀티 드래그와 선택](https://zizigy.github.io/docs/guides/multi-drag)을 참고하세요.
+영역의 빈 공간을 누르면 사각형이 시작됩니다. [멀티 드래그와 선택](https://zizigy.github.io/docs/guides/multi-drag)을 참고하세요.
 
 <example height="27rem" hint="빈 공간에 사각형을 그린 뒤 선택된 도형을 드래그하세요" name="api-selection-area">
 

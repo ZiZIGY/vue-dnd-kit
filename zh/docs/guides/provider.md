@@ -546,7 +546,7 @@ import { DnDProvider } from '@vue-dnd-kit/core';
 </tbody>
 </table>
 
-包含所有类型结构的完整列表见 [DnDProvider API](https://zizigy.github.io/docs/api/dnd-provider)。provider 还会触发 `drag-start`、`drag-move`、`drag-over`、`drag-end`、`drag-cancel` 和 `drag-settle`，与 `useDnDMonitor` 收到的事件相同。
+包含所有类型结构的完整列表见 [DnDProvider API](https://zizigy.github.io/docs/api/dnd-provider)。provider 还会触发 `drag-start`、`drag-move`、`drag-over`、`drag-end`、`drag-cancel`、`drag-resume` 和 `drag-settle`，与 `useDnDMonitor` 收到的事件相同。
 
 ## 读取拖拽：`useDnD()`
 

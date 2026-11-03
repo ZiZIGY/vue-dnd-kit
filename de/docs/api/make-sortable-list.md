@@ -6,21 +6,19 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/de/docs/api/make-sortable-l
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeSortableList<T>(
-  target: MaybeElementRef,
-  options: SortableListOptions<T>,
-): SortableListReturn<T>;
-```
+<api-signature name="makeSortableList">
+
+
+
+</api-signature>
 
 ```ts
 const list = useTemplateRef<HTMLElement>('list');
 const { items } = makeSortableList(list, { items: tasks, group: 'board' });
 ```
 
-Rendere die zurückgegebenen `items` (den Entwurf), nicht dein Array. Die Zeilen rufen
-[`makeSortableItem`](https://zizigy.github.io/docs/api/make-sortable-item) auf. Siehe [Sortierbare Listen](https://zizigy.github.io/docs/guides/sortable-lists)
-und [Listen mit gemeinsamen Elementen](https://zizigy.github.io/docs/guides/shared-lists).
+Ihre Zeilen rufen [`makeSortableItem`](https://zizigy.github.io/docs/api/make-sortable-item) auf. Siehe
+[Sortierbare Listen](https://zizigy.github.io/docs/guides/sortable-lists) und [Listen mit gemeinsamen Elementen](https://zizigy.github.io/docs/guides/shared-lists).
 
 <example height="34rem" hint="Schalte die Optionen um, dann ziehe eine Kachel" name="sortable-options">
 
@@ -79,6 +77,12 @@ Was `indicator` im Modus `placeholder: 'indicator'` enthält.
 </api-table>
 
 ## Werte
+
+<api-table name="SortableItems">
+
+
+
+</api-table>
 
 <api-table name="SortableStrategy">
 

@@ -159,7 +159,15 @@ Sem um `dropzone`, uma lista vazia ainda precisa de um tamanho para receber drop
         false
       </code>
       
-      : nada entra. Uma função: você decide a cada arraste.
+      : nada entra. Um tipo ou tipos (<code>
+        'image'
+      </code>
+      
+      , <code>
+        ['image', 'video']
+      </code>
+      
+      ): entram os itens desses tipos. Uma função: você decide a cada arraste.
     </td>
   </tr>
 </tbody>
@@ -173,14 +181,16 @@ group: { name: 'files', pull: true, put: false }
 group: { name: 'files', pull: 'clone', put: false }, sort: false
 
 // Images: takes images only.
-group: { name: 'files', put: ({ types }) => types.every((type) => type === 'image') }
+group: { name: 'files', put: 'image' }
 ```
 
+Os tipos são as opções `type` dos itens arrastados (`makeSortableItem(el, { item, type })`);
+itens sem tipo contam como o nome do grupo. Com tipos no `put`, cada item arrastado precisa ter
+um deles (com `acceptMode: 'some'`, entram os que têm).
+
 Uma função `put` recebe `{ keys, items, types, from, to }`: as keys e os itens arrastados, os
-tipos deles, a lista de onde vêm (`null` para draggables simples) e esta lista. `types` são as
-opções `type` dos itens arrastados (`makeSortableItem(el, { item, type })`); itens sem tipo
-contam como o nome do grupo. Movimentos dentro de uma lista são sempre permitidos: a Inbox ainda
-ordena os próprios arquivos.
+tipos deles, a lista de onde vêm (`null` para draggables simples) e esta lista. Movimentos
+dentro de uma lista são sempre permitidos: a Inbox ainda ordena os próprios arquivos.
 
 Sobre uma lista que recusa o arraste, a posição volta para onde o arraste começou, então as
 listas mostram o que um drop faria: nada. Um drop ali é cancelado e o item volta ao lugar. O
@@ -215,6 +225,32 @@ com o motivo no cabeçalho.
 Quando vários itens selecionados de tipos diferentes são arrastados, `acceptMode` diz se
 `'all'` (padrão) ou `'some'` deles precisam passar no `put`. Com `'some'`, os que passam pousam e
 os outros voltam ao lugar. Veja [multi-drag](https://zizigy.github.io/docs/guides/multi-drag#taking-only-some).
+
+### Um grupo por lista
+
+Uma lista pertence a um único grupo: `group` recebe um nome só, nunca vários. As listas de um
+grupo compartilham cada arraste (seus rascunhos, o que está sendo arrastado, quais delas o
+aceitam), então os itens nunca passam de um grupo para outro. Quando os itens devem ir só em
+alguns sentidos, coloque as listas em um grupo e deixe o `put` decidir pelo `from`, a lista de
+onde o arraste vem:
+
+```ts [index.vue]
+// Review takes tasks from both teams. A team takes tasks back from Review,
+// never from the other team.
+const fromReview = ({ from }: SortablePutContext) => from === 'review';
+
+makeSortableList(review, { id: 'review', items: reviewTasks, group: 'tasks' });
+makeSortableList(frontend, { id: 'frontend', items: frontendTasks, group: { name: 'tasks', put: fromReview } });
+makeSortableList(backend, { id: 'backend', items: backendTasks, group: { name: 'tasks', put: fromReview } });
+```
+
+<note>
+
+Vindo do SortableJS: lá, `put: ['a', 'b']` nomeia os grupos dos quais uma lista recebe itens.
+Aqui, um array no `put` lista os **tipos** dos itens que uma lista aceita. Para receber itens
+de outras listas, coloque-as em um grupo e decida pelo `from`, como acima.
+
+</note>
 
 ## Copiar: paletas e a tecla Alt
 

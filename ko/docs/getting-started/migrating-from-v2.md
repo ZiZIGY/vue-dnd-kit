@@ -1,353 +1,4478 @@
 ---
-title: "Migrating from v2 · Vue DnD Kit"
-description: "Move a v2 app to v3 — what changed and why, the upgrade, a map from every v2 API to its v3 replacement, before-and-after code for the common cases, and the pitfalls."
+title: "v2에서 마이그레이션"
+description: "v2 앱을 v3로 옮깁니다. 무엇이 왜 바뀌었는지, 업그레이드 방법, 모든 v2 API와 그 v3 대체 항목의 대응표, 흔한 경우의 전후 코드, 그리고 주의할 점."
 canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/getting-started/migrating-from-v2"
-meta:
-  "og:description": "Move a v2 app to v3 — what changed and why, the upgrade, a map from every v2 API to its v3 replacement, before-and-after code for the common cases, and the pitfalls."
-  "og:title": "Migrating from v2 · Vue DnD Kit"
 ---
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-문서/시작하기
+v3는 v2를 새로 작성한 것입니다. 모델은 그대로입니다. 프로바이더 하나와, 직접 만든 요소에 호출하는
+컴포저블입니다. 하지만 대부분의 이름과 옵션이 바뀌었고, 정렬은 라이브러리 안으로 들어왔으며, 리스트마다
+작성하던 드롭 핸들러는 사라집니다. 이 페이지는 v2의 각 부분을 v3에 대응시킨 뒤, 흔한 경우를 전후로
+보여 줍니다.
 
-# Migrating from v2
+## 바뀐 점
 
-Move a v2 app to v3 — what changed and why, the upgrade, a map from every v2 API to its v3 replacement, before-and-after code for the common cases, and the pitfalls.
+- **정렬이 기본으로 들어 있습니다.** v2에서 리스트는 드롭 영역이었고, 그 행은 `[index, items]`
+페이로드를 가진 draggable이었으며, `onDrop`에서 `e.helpers.suggestSort()`로 정렬했습니다. v3에서는
+`makeSortableList`와 `makeSortableItem`이 이를 처리합니다. 리스트는 원본 배열의 **초안**을
+렌더링하고, 초안은 드래그하는 동안 순서가 바뀌며, 드롭하면 새 배열이 ref에 기록됩니다. v2의 드롭
+핸들러는 대부분 옮기는 것이 아니라 삭제합니다.
+- **알아서 움직입니다.** 행은 새 자리로 미끄러지고(FLIP), 오버레이는 드롭하면 자기 자리에 안착하며
+취소하면 원래 자리로 돌아갑니다. `<TransitionGroup>`은 필요 없습니다.
+- **여전히 패키지 하나입니다.** `@vue-dnd-kit/core`에 리스트, 트리, 멀티 드래그, 모디파이어, 센서,
+충돌 감지 함수가 들어 있습니다. Nuxt 모듈은 그대로이며, `@vue-dnd-kit/actions`(프로그래밍 방식
+드래그)와 `@vue-dnd-kit/devtools`는 새로 생긴 선택 패키지입니다.
+- **진짜 오버레이.** `body`로 텔레포트되고, 안착할 자리의 크기에 맞춘 깊은 클론을 보여 줍니다.
+오버레이 컴포넌트는 프로바이더 내부를 읽는 대신 드래그를 props로 받습니다.
+- **요소가 아니라 id.** 선택, 이벤트, 드래그 상태는 데이터의 id를 key로 씁니다. 읽어야 할 DOM 요소
+맵은 없습니다.
+- **타입과 accept 규칙**이 일반 draggable과 드롭 대상의 `groups`를 대신합니다. 리스트는 `group`
+이름으로 항목을 주고받습니다.
+- **드롭 전에 결정합니다.** `onBeforeDrop`이 받을지, 거부할지, 드래그를 계속할지, 항목 일부만 받을지
+정합니다. `onDrop`은 적용만 합니다.
+- **센서.** 포인터와 키보드 입력은 센서입니다. 활성화는 포인터 종류별로 정하고, 터치 드래그는 길게
+누르기로 시작하므로 손가락 아래에서도 리스트가 계속 스크롤됩니다.
+- **영역.** `makeDragArea`가 `makeConstraintArea`와 `makeAutoScroll`을 대신하며, 자동 스크롤은 코드
+없이 모든 스크롤 컨테이너에서 동작합니다.
+- **접근성이 기본으로 켜져 있습니다.** ARIA 속성, 드롭 후 돌아오는 포커스, 스크린 리더 안내 문구.
 
-[이 페이지 편집](https://github.com/ZiZIGY/vue-dnd-kit/edit/master/docs/content/en/1.getting-started/4.migrating-from-v2.md)
+## 업그레이드
 
-이 페이지는 아직 번역되지 않았습니다. 영어 원문을 보고 있습니다.
+<code-group>
 
-v3 is a rewrite of v2. The model stays: one provider, and composables you call on your own elements. But most names and options changed, sorting moved into the library, and the drop handler you wrote for each list goes away. This page maps each part of v2 to v3, then shows the common cases before and after.
-
-## What changed
-
-- ****Sorting is built in.**** In v2 a list was a drop zone, its rows were draggables with an `**[index, items]**` payload, and you sorted in `**onDrop**` with `**e.helpers.suggestSort()**`. In v3, `**makeSortableList**` and `**makeSortableItem**` do it: the list renders a ****draft**** of your array that reorders while you drag, and the drop writes the new array into your ref. Most v2 drop handlers are deleted, not ported.
-- ****Things move by themselves.**** Rows slide to their new places (FLIP), the overlay lands on its slot on drop and flies back on cancel. `**<TransitionGroup>**` goes away.
-- ****Still one package.**** `**@vue-dnd-kit/core**` holds lists, trees, multi-drag, modifiers, sensors and the collision functions. The Nuxt module stays; `**@vue-dnd-kit/actions**` (programmatic drags) and `**@vue-dnd-kit/devtools**` are new and optional.
-- ****A real overlay.**** It is teleported to `**body**` and shows a deep clone, sized to the slot it will land in. Overlay components get the drag as props instead of reading the provider's internals.
-- ****Ids, not elements.**** The selection, the events and the drag state are keyed by ids from your data. There are no maps of DOM elements to read.
-- ****Types and accept rules**** replace `**groups**` for plain draggables and targets. Lists trade items by `**group**` name.
-- ****Decisions before the drop.**** `**onBeforeDrop**` accepts, refuses, keeps the drag going or takes some of the items. `**onDrop**` only applies.
-- ****Sensors.**** Pointer and keyboard input are sensors. Activation is set per pointer kind, and touch drags start with a long press, so lists keep scrolling under a finger.
-- ****Areas.**** `**makeDragArea**` replaces `**makeConstraintArea**` and `**makeAutoScroll**`, and auto-scroll works in every scroll container without code.
-- ****Accessibility is on by default****: ARIA attributes, focus that comes back after the drop, and screen reader announcements.
-
-## Upgrade
-
-```
+```bash [npm]
 npm i @vue-dnd-kit/core@^3
 ```
 
-| **Package** | **v2** | **v3** |
-| --- | --- | --- |
-| `**@vue-dnd-kit/core**` | 2.4.x | 3.x |
-| `**@vue-dnd-kit/nuxt**` | 1.x | 3.x |
-| `**@vue-dnd-kit/actions**` | — | 1.x, optional |
-| `**@vue-dnd-kit/devtools**` | — | 3.x, optional |
+```bash [yarn]
+yarn add @vue-dnd-kit/core@^3
+```
 
-- An app that has `**"@vue-dnd-kit/core": "^2…"**` in its `**package.json**` stays on v2 until the range says `**^3**`.
-- Vue ****3.5**** or newer. v2 had no dependencies; v3 has one, `**@vueuse/core**` (14 or 15).
-- Browsers: Chrome and Edge 104+, Safari 15.4+, Firefox 104+.
-- v2 and v3 share a package name, so an app moves to v3 in one go. There is no compatibility layer. The v2 docs stay available from the version menu at the top of the page.
+```bash [pnpm]
+pnpm add @vue-dnd-kit/core@^3
+```
 
-A good order of work:
+```bash [bun]
+bun add @vue-dnd-kit/core@^3
+```
 
-1. Upgrade the packages and rename the provider's props ([**below**](#the-provider)).
-2. Turn each sortable list into `**makeSortableList**` and `**makeSortableItem**`, and delete its drop handler.
-3. Port the plain draggables and drop zones.
-4. Port custom previews to overlay components or the provider's `**#overlay**` slot.
-5. Replace `**makeConstraintArea**` and `**makeAutoScroll**` with `**makeDragArea**`, or with nothing.
-6. Delete the v2 workarounds: `**tabindex**` and `**aria-grabbed**` on draggables, `**touch-action: none**` on whole items, `**<TransitionGroup>**` around rows, `**markRaw**` around preview components.
+</code-group>
 
-## Old to new
+<table>
+<thead>
+  <tr>
+    <th>
+      패키지
+    </th>
+    
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-****No equivalent**** in a table means v3 has nothing of that name; the cell says what to use instead.
+<tbody>
+  <tr>
+    <td>
+      <code>
+        @vue-dnd-kit/core
+      </code>
+    </td>
+    
+    <td>
+      2.4.x
+    </td>
+    
+    <td>
+      3.x
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        @vue-dnd-kit/nuxt
+      </code>
+    </td>
+    
+    <td>
+      1.x
+    </td>
+    
+    <td>
+      3.x
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        @vue-dnd-kit/actions
+      </code>
+    </td>
+    
+    <td>
+      —
+    </td>
+    
+    <td>
+      1.x, 선택
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        @vue-dnd-kit/devtools
+      </code>
+    </td>
+    
+    <td>
+      —
+    </td>
+    
+    <td>
+      3.x, 선택
+    </td>
+  </tr>
+</tbody>
+</table>
 
-### At a glance
+- `package.json`에 `"@vue-dnd-kit/core": "^2…"`가 있는 앱은 범위가 `^3`이 될 때까지 v2에
+머뭅니다.
+- Vue **3.5** 이상. v2에는 의존성이 없었고, v3에는 `@vueuse/core`(14 또는 15) 하나가 있습니다.
+- 브라우저: Chrome과 Edge 104+, Safari 15.4+, Firefox 104+.
+- v2와 v3는 패키지 이름이 같으므로, 앱은 한 번에 v3로 옮겨 갑니다. 호환 레이어는 없습니다. v2
+문서는 페이지 위쪽의 버전 메뉴에서 계속 볼 수 있습니다.
 
-| **v2** | **v3** |
-| --- | --- |
-| `**DnDProvider**` | `**DnDProvider**`, with new props and an `**#overlay**` slot. |
-| `**makeDraggable**` | `**makeDraggable**` for free dragging; `**makeSortableItem**` for the rows of a list. |
-| `**makeDroppable**` | `**makeDroppable**` for plain drop targets; `**makeSortableList**` or `**makeSortableTree**` for lists and trees. |
-| `**makeSelectionArea**` | `**makeSelectionArea**`. |
-| `**makeConstraintArea**` | `**makeDragArea**`. |
-| `**makeAutoScroll**` | Nothing: auto-scroll is automatic. `**makeDragArea**` or a list's `**autoScroll**` tunes it. |
-| `**useDnDProvider**` | `**useDnD**` for the state, `**useDnDMonitor**` for the events. |
-| `**injectionKey**` | `**useDnDContext()**` and `**provideDnDContext(app, context)**`. |
-| `**DragPreview**` | `**DragPreview**`: now the clone of one dragged item, for overlays of your own. |
-| `**makeSnappedOverlayPosition**`, `**<DragPreview :grid>**` | The `**snapToGrid**` modifier. |
-| `**e.helpers.suggestSort**`, `**suggestSwap**`, `**suggestCopy**`, `**suggestRemove**` | Built into lists: see [**sorting**](#sorting). |
+권장하는 작업 순서:
 
-### The provider
+1. 패키지를 업그레이드하고 프로바이더의 props 이름을 바꾸세요([아래](#the-provider)).
+2. 정렬 가능한 리스트를 각각 `makeSortableList`와 `makeSortableItem`으로 바꾸고, 그 드롭 핸들러를
+삭제하세요.
+3. 일반 draggable과 드롭 영역을 옮기세요.
+4. 커스텀 미리보기를 오버레이 컴포넌트나 프로바이더의 `#overlay` 슬롯으로 옮기세요.
+5. `makeConstraintArea`와 `makeAutoScroll`을 `makeDragArea`로 바꾸거나, 아무것도 쓰지 마세요.
+6. v2를 위한 우회책을 삭제하세요. draggable의 `tabindex`와 `aria-grabbed`, 항목 전체의
+`touch-action: none`, 행을 감싼 `<TransitionGroup>`, 미리보기 컴포넌트를 감싼 `markRaw`.
 
-| **v2** | **v3** |
-| --- | --- |
-| `**autoScrollViewport**`, off unless set | `**autoScroll**`: ****on by default****, for the window and every scroll container. `**{ threshold, maxSpeed, acceleration }**`, or `**false**`. |
-| `**previewTo**`, by default rendered inside the provider | `**overlayTo**`: a selector or an element, `**'body'**` by default. |
-| `**#preview="{ preview }"**` slot | `**#overlay**` slot, with the drag as props: `**items**`, `**active**`, `**over**`, `**accepted**`, `**status**`, `**mode**`, `**to**`. See [**the overlay**](#the-overlay). |
-| `**keyboard.keys.forDrag**`, `**forDrop**`, `**forCancel**` (set on `**useDnDProvider()**`) | `**:keyboard="{ keys: { start, drop, cancel } }"**`. |
-| `**keyboard.step**` | `**:keyboard="{ step }"**`: 25 px by default, for free drags. |
-| `**keyboard.keys.forMove**`, `**forMoveFaster**`, `**keyboard.moveFaster**` | ****No equivalent.**** The arrows move; `Shift` makes the steps of a free drag four times bigger. |
-| `**collision.throttle**` | ****No equivalent.**** `**collision**` picks how the target is found: `**pointerFirst**` (default), `**pointerWithin**`, `**rectIntersection**`, `**closestCenter**`, `**closestCorners**` or a function of yours. |
-| One provider per page, never nested | Nesting works: the closest provider owns an item. One provider for the app is still the goal. |
+## 이전과 이후
 
-New props with no v2 counterpart: `**activation**`, `**modifiers**`, `**sensors**`, `**animation**`, `**dropAnimation**`, `**animateChanges**`, `**haptics**`, `**copyModifier**`, `**overlayFit**`, `**overlayClass**`, `**overlayTransition**`, `**overlayPreviews**`, `**announcements**`, `**screenReaderInstructions**` and `**defaultStyles**`. The provider also emits `**drag-start**`, `**drag-move**`, `**drag-over**`, `**drag-end**`, `**drag-cancel**` and `**drag-settle**`. All of them are in [**the provider guide**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/provider).
+표의 **대응 없음**은 v3에 그런 이름이 없다는 뜻입니다. 대신 무엇을 쓸지는 셀에 적혀 있습니다.
 
-### Reading the state: `**useDnD**`
+### 한눈에 보기
 
-| `**useDnDProvider()**` | **v3** |
-| --- | --- |
-| `**state**`: `**'dragging'**`, `**'activating'**`, `**'selecting'**`, `**'pending'**` or `**null**` | `**useDnD().status**`: `**'idle'**`, `**'activating'**`, `**'dragging'**`, `**'dropping'**` or `**'selecting'**`. `**'pending'**` (an async drop) is `**'dropping'**`; `**null**` is `**'idle'**`. |
-| `**pointer.value.current**` | `**useDnD().pointer**`, after modifiers. Every event also has `**delta**`, the offset from the start. |
-| `**entities.draggingMap**` | `**useDnD().active**`: `**id**`, `**ids**`, `**items**`, `**data**`, `**type**`, `**element**`, `**rect**`. |
-| `**entities.selectedSet**` (elements) | `**useDnD().selection**` (ids): `**has**`, `**add**`, `**delete**`, `**toggle**`, `**set**`, `**clear**`, `**ids**`. |
-| `**hovered.droppable**`, `**hovered.draggable**` | `**useDnD().over**`: `**id**`, `**data**`, `**element**`, `**rect**`, `**accepted**`. |
-| `**delay.progress**`, `**distanceProgress**` | `**useDnD().activation.progress**`, from `**0**` to `**1**`. |
-| `**preview.position**`, `**preview.size**`, `**preview.render**`, `**preview.to**` | ****No equivalent.**** The library places and sizes the overlay. Use `**overlayTo**`, the `**#overlay**` slot or overlay components. |
-| `**entities.draggableMap**`, `**droppableMap**`, the `**visible…Set**`s, `**scrollPosition**` | ****No equivalent.**** |
-| — | New: `**useDnD().cancel()**`, `**position**`, `**isAutoScrolling**`. |
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-The events moved to `**useDnDMonitor**`: see [**events and drop decisions**](#events-and-drop-decisions). Full shapes in the [**useDnD API**](https://zizigy.github.io/vue-dnd-kit/ko/docs/api/use-dnd).
+<tbody>
+  <tr>
+    <td>
+      <code>
+        DnDProvider
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DnDProvider
+      </code>
+      
+      . 새 props와 <code>
+        #overlay
+      </code>
+      
+       슬롯이 있습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeDraggable
+      </code>
+    </td>
+    
+    <td>
+      자유로운 드래그에는 <code>
+        makeDraggable
+      </code>
+      
+      , 리스트의 행에는 <code>
+        makeSortableItem
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeDroppable
+      </code>
+    </td>
+    
+    <td>
+      일반 드롭 대상에는 <code>
+        makeDroppable
+      </code>
+      
+      , 리스트와 트리에는 <code>
+        makeSortableList
+      </code>
+      
+       또는 <code>
+        makeSortableTree
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeSelectionArea
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeSelectionArea
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeConstraintArea
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDragArea
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeAutoScroll
+      </code>
+    </td>
+    
+    <td>
+      필요 없음: 자동 스크롤은 자동입니다. <code>
+        makeDragArea
+      </code>
+      
+      나 리스트의 <code>
+        autoScroll
+      </code>
+      
+      로 조정합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        useDnDProvider
+      </code>
+    </td>
+    
+    <td>
+      상태는 <code>
+        useDnD
+      </code>
+      
+      , 이벤트는 <code>
+        useDnDMonitor
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        injectionKey
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        useDnDContext()
+      </code>
+      
+      와 <code>
+        provideDnDContext(app, context)
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        DragPreview
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DragPreview
+      </code>
+      
+      : 이제 드래그 중인 항목 하나의 클론이며, 직접 만드는 오버레이에 씁니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeSnappedOverlayPosition
+      </code>
+      
+      , <code>
+        <DragPreview :grid>
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        snapToGrid
+      </code>
+      
+       모디파이어.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.helpers.suggestSort
+      </code>
+      
+      , <code>
+        suggestSwap
+      </code>
+      
+      , <code>
+        suggestCopy
+      </code>
+      
+      , <code>
+        suggestRemove
+      </code>
+    </td>
+    
+    <td>
+      리스트에 기본으로 들어 있습니다. <a href="#sorting">
+        정렬
+      </a>
+      
+      을 참고하세요.
+    </td>
+  </tr>
+</tbody>
+</table>
 
-### `**makeDraggable**`
+### 프로바이더
 
-| **v2** | **v3** |
-| --- | --- |
-| `**makeDraggable(ref, options, payload)**` | `**makeDraggable(ref, options)**`: no third argument. The rows of a list use `**makeSortableItem(ref, { item })**`. |
-| `**id**`, needed in virtual lists | `**id**`: pass it from your data, as a getter. The default comes from `**useId()**` and is new for every component instance. |
-| `**data: () => card**` | `**data**`: a value, a ref or a getter. Read back as `**active.data**` and `**active.items[i].data**`. |
-| `**groups: ['dev']**` | `**type: 'dev'**`, matched by the targets' `**accept**`. See [**groups**](#groups). |
-| `**dragHandle: '.handle'**` | `**handle**`: a selector or an element ref. |
-| `**disabled**` | `**disabled**`. |
-| `**modifier: { keys, method }**` | `**canDrag: (event) => event.altKey**`: a gate for each press. |
-| `**activation: { distance, delay }**` | `**activation**` per pointer kind: `**{ mouse: { distance }, touch: { delay, tolerance }, pen }**`. With `**distance**` and `**delay**` both, the drag starts at whichever comes first. |
-| `**activation.distance: { x, y, condition }**` | ****No equivalent.**** One `**distance**` per pointer kind. |
-| `**render: markRaw(Preview)**` | `**overlay: Preview**`: the component gets the drag as props. See [**the overlay**](#the-overlay). |
-| `**placementMargins**` | ****No equivalent.**** A drop target on a sortable item counts in its middle (25 to 75%); trees nest with `**nesting: 'hover'**`. See [**drop into a sortable item**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/drag-and-drop#drop-into-a-sortable-item). |
-| `**events.onSelfDragStart**`, `**onSelfDragMove**`, `**onSelfDragEnd**`, `**onSelfDragCancel**` | ****No equivalent**** on the draggable: `**useDnDMonitor**`, or `**watch(isDragging)**`. See [**events**](#events-and-drop-decisions). |
-| `**events.onHover**`, `**onLeave**`, and its `**onDragStart**`… for drags over it | A `**makeDroppable**` on the same element: `**onDragEnter**`, `**onDragLeave**`. |
-| Returns `**isDragging**`, `**selected**` | The same. |
-| Returns `**isDragOver**` | Sortable items return `**indicator**` (with `**placeholder: 'indicator'**`) and `**isPlaceholder**`; targets return `**placement**`. |
-| Returns `**isAllowed**` | ****No equivalent**** on draggables. Targets return `**isAccepting**`. |
-| — | New: `**label**`, `**axis**`, `**modifiers**`, `**keyboardMode**`, `**overlay: false**` with the returned `**transform**`, `**dropAnimation**`, `**attributes**`, `**native**`. |
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-### `**makeDroppable**`
+<tbody>
+  <tr>
+    <td>
+      <code>
+        autoScrollViewport
+      </code>
+      
+      , 설정하지 않으면 꺼짐
+    </td>
+    
+    <td>
+      <code>
+        autoScroll
+      </code>
+      
+      : <strong>
+        기본으로 켜짐
+      </strong>
+      
+      , 창과 모든 스크롤 컨테이너에 적용됩니다. <code>
+        { threshold, maxSpeed, acceleration }
+      </code>
+      
+       또는 <code>
+        false
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        previewTo
+      </code>
+      
+      , 기본으로 프로바이더 안에 렌더링
+    </td>
+    
+    <td>
+      <code>
+        overlayTo
+      </code>
+      
+      : 선택자나 요소, 기본값은 <code>
+        'body'
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        #preview="{ preview }"
+      </code>
+      
+       슬롯
+    </td>
+    
+    <td>
+      드래그를 props로 받는 <code>
+        #overlay
+      </code>
+      
+       슬롯: <code>
+        items
+      </code>
+      
+      , <code>
+        active
+      </code>
+      
+      , <code>
+        over
+      </code>
+      
+      , <code>
+        accepted
+      </code>
+      
+      , <code>
+        status
+      </code>
+      
+      , <code>
+        mode
+      </code>
+      
+      , <code>
+        to
+      </code>
+      
+      . <a href="#the-overlay">
+        오버레이
+      </a>
+      
+      를 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        keyboard.keys.forDrag
+      </code>
+      
+      , <code>
+        forDrop
+      </code>
+      
+      , <code>
+        forCancel
+      </code>
+      
+      (<code>
+        useDnDProvider()
+      </code>
+      
+      에서 설정)
+    </td>
+    
+    <td>
+      <code>
+        :keyboard="{ keys: { start, drop, cancel } }"
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        keyboard.step
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        :keyboard="{ step }"
+      </code>
+      
+      : 기본값 25 px, 자유로운 드래그용.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        keyboard.keys.forMove
+      </code>
+      
+      , <code>
+        forMoveFaster
+      </code>
+      
+      , <code>
+        keyboard.moveFaster
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        대응 없음.
+      </strong>
+      
+       화살표 키로 움직이고, <kbd value="Shift">
+        
+      </kbd>
+      
+      를 누르면 자유로운 드래그의 이동 단위가 네 배가 됩니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        collision.throttle
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        대응 없음.
+      </strong>
+      
+       <code>
+        collision
+      </code>
+      
+      이 대상을 찾는 방법을 고릅니다. <code>
+        pointerFirst
+      </code>
+      
+      (기본값), <code>
+        pointerWithin
+      </code>
+      
+      , <code>
+        rectIntersection
+      </code>
+      
+      , <code>
+        closestCenter
+      </code>
+      
+      , <code>
+        closestCorners
+      </code>
+      
+      , 또는 직접 만든 함수.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      페이지마다 프로바이더 하나, 중첩 불가
+    </td>
+    
+    <td>
+      중첩할 수 있습니다. 항목은 가장 가까운 프로바이더가 관리합니다. 앱 전체에 프로바이더 하나가 여전히 목표입니다.
+    </td>
+  </tr>
+</tbody>
+</table>
 
-| **v2** | **v3** |
-| --- | --- |
-| `**makeDroppable(ref, options, () => items)**` | `**makeDroppable(ref, options)**`. A zone that holds a list is a `**makeSortableList**`. |
-| `**groups**` | `**accept**`: `**'*'**`, a type, a list of types, or a function. |
-| `**groupMatch: 'every'**`, `**'some'**` | `**acceptMode: 'all'**`, `**'some'**`. |
-| `**events.onEnter**`, `**events.onLeave**` | `**onDragEnter**`, `**onDragLeave**`: options of their own, no `**events**` object. |
-| `**events.onDrop**`, which could return `**false**` or a promise | `**onBeforeDrop**` decides, `**onDrop**` applies. See [**drop decisions**](#events-and-drop-decisions). |
-| `**events.onValidate**` | `**onBeforeDrop**`, returning the ids to keep. |
-| `**data**` | `**data**`, read back as `**over.data**`. |
-| `**disabled**` | `**disabled**`. |
-| Returns `**isAllowed**` | `**isAccepting**`. |
-| Returns `**isDragOver**`: `**{ top, right, bottom, left, center }**` | `**isOver**` (a boolean), and `**placement**`: `**{ top, right, bottom, left }**`, the halves the pointer is in. There is no `**center**`. |
-| — | New: `**id**`, `**label**`, `**priority**`, `**overOverlay**`, `**overDropAnimation**`, `**external**` (files from the computer). |
+v2에 대응하는 것이 없는 새 props: `activation`, `modifiers`, `sensors`, `animation`,
+`dropAnimation`, `animateChanges`, `haptics`, `copyModifier`, `overlayFit`, `overlayClass`,
+`overlayTransition`, `overlayPreviews`, `announcements`, `screenReaderInstructions`,
+`defaultStyles`. 프로바이더는 `drag-start`, `drag-move`, `drag-over`, `drag-end`, `drag-cancel`,
+`drag-resume`, `drag-settle`도 내보냅니다. 모두 [프로바이더 가이드](https://zizigy.github.io/docs/guides/provider)에 있습니다.
 
-### The drop event
+### 상태 읽기: `useDnD`
 
-| **v2 **`**IDragEvent**` | **v3** |
-| --- | --- |
-| `**e.draggedItems**` | `**e.active.items**`: `**{ id, item, data, label, type }**` each, the grabbed one first. Lists get `**e.items**` and `**e.keys**`. |
-| `**e.draggedItems[0].data**` | `**e.active.data**`. |
-| `**e.draggedItems[i].index**`, `**.items**` | Lists: `**e.from**`, `**{ list, index }**`. |
-| `**e.dropZone**`: `**items**`, `**placement**`, `**data**` | `**e.over**`: `**id**`, `**data**`, `**element**`, `**rect**`, `**accepted**`. Lists: `**e.to**`, `**{ list, index }**`. |
-| `**e.hoveredDraggable**` | ****No equivalent****: lists work out `**e.to.index**` themselves. |
-| `**e.helpers.suggestSort()**` | Lists write the drop; `**e.result**` holds the new array of every list it changes. |
-| `**e.helpers.suggestSwap()**` | `**behavior: 'swap'**` on the list; `**e.partner**` is the item it traded with. |
-| `**e.helpers.suggestCopy()**` | `**group: { name, pull: 'clone' }**` or the copy key (`Alt`), with the list's `**clone**`; `**e.mode**` is `**'copy'**`. |
-| `**e.helpers.suggestRemove()**` | `**e.source.remove()**` in a drop target, or the list's `**dropOutside: 'remove'**`. |
-| `**result.sameList**` | `**e.sameList**`. |
-| `**e.helpers.insertAt**`, `**removeAt**`, `**removeIndexes**`, `**swapAt**`, `**getInsertSide**`, `**isAtZoneStart**`, `**isAtZoneEnd**` | ****No equivalent.**** Lists don't need them; for a plain target, change your data as you like. |
-| `**e.provider**` | `**useDnD()**`. |
-| — | New: `**e.pointer**`, `**e.delta**`, `**e.position**` (where to put an item dropped on a board), `**e.mode**`. |
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        useDnDProvider()
+      </code>
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-### Sorting
+<tbody>
+  <tr>
+    <td>
+      <code>
+        state
+      </code>
+      
+      : <code>
+        'dragging'
+      </code>
+      
+      , <code>
+        'activating'
+      </code>
+      
+      , <code>
+        'selecting'
+      </code>
+      
+      , <code>
+        'pending'
+      </code>
+      
+       또는 <code>
+        null
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        useDnD().status
+      </code>
+      
+      : <code>
+        'idle'
+      </code>
+      
+      , <code>
+        'activating'
+      </code>
+      
+      , <code>
+        'dragging'
+      </code>
+      
+      , <code>
+        'dropping'
+      </code>
+      
+       또는 <code>
+        'selecting'
+      </code>
+      
+      . <code>
+        'pending'
+      </code>
+      
+      (비동기 드롭)은 <code>
+        'dropping'
+      </code>
+      
+      이고, <code>
+        null
+      </code>
+      
+      은 <code>
+        'idle'
+      </code>
+      
+      입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        pointer.value.current
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        useDnD().pointer
+      </code>
+      
+      , 모디파이어를 적용한 값. 모든 이벤트에는 시작점으로부터의 오프셋인 <code>
+        delta
+      </code>
+      
+      도 있습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        entities.draggingMap
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        useDnD().active
+      </code>
+      
+      : <code>
+        id
+      </code>
+      
+      , <code>
+        ids
+      </code>
+      
+      , <code>
+        items
+      </code>
+      
+      , <code>
+        data
+      </code>
+      
+      , <code>
+        type
+      </code>
+      
+      , <code>
+        element
+      </code>
+      
+      , <code>
+        rect
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        entities.selectedSet
+      </code>
+      
+      (요소)
+    </td>
+    
+    <td>
+      <code>
+        useDnD().selection
+      </code>
+      
+      (id): <code>
+        has
+      </code>
+      
+      , <code>
+        add
+      </code>
+      
+      , <code>
+        delete
+      </code>
+      
+      , <code>
+        toggle
+      </code>
+      
+      , <code>
+        set
+      </code>
+      
+      , <code>
+        clear
+      </code>
+      
+      , <code>
+        ids
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        hovered.droppable
+      </code>
+      
+      , <code>
+        hovered.draggable
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        useDnD().over
+      </code>
+      
+      : <code>
+        id
+      </code>
+      
+      , <code>
+        data
+      </code>
+      
+      , <code>
+        element
+      </code>
+      
+      , <code>
+        rect
+      </code>
+      
+      , <code>
+        accepted
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        delay.progress
+      </code>
+      
+      , <code>
+        distanceProgress
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        useDnD().activation.progress
+      </code>
+      
+      , <code>
+        0
+      </code>
+      
+      부터 <code>
+        1
+      </code>
+      
+      까지.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        preview.position
+      </code>
+      
+      , <code>
+        preview.size
+      </code>
+      
+      , <code>
+        preview.render
+      </code>
+      
+      , <code>
+        preview.to
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        대응 없음.
+      </strong>
+      
+       오버레이의 위치와 크기는 라이브러리가 정합니다. <code>
+        overlayTo
+      </code>
+      
+      , <code>
+        #overlay
+      </code>
+      
+       슬롯, 또는 오버레이 컴포넌트를 쓰세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        entities.draggableMap
+      </code>
+      
+      , <code>
+        droppableMap
+      </code>
+      
+      , <code>
+        visible…Set
+      </code>
+      
+      들, <code>
+        scrollPosition
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        대응 없음.
+      </strong>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      —
+    </td>
+    
+    <td>
+      새로 추가: <code>
+        useDnD().cancel()
+      </code>
+      
+      , <code>
+        position
+      </code>
+      
+      , <code>
+        isAutoScrolling
+      </code>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
 
-| **v2** | **v3** |
-| --- | --- |
-| A `**makeDroppable**` list with `**() => items**` | `**makeSortableList(listRef, { items })**`. |
-| A `**makeDraggable**` row with `**() => [index, items]**` | `**makeSortableItem(el, { item: () => props.task })**`. |
-| Render your array | Render the returned `**items**`: the draft that reorders while you drag. |
-| `**suggestSort('vertical')**`, `**suggestSort('horizontal')**` | `**strategy: 'vertical'**` (default), `**'horizontal'**` or `**'grid'**`. |
-| Identity checks to find the source and target arrays, then assigning `**sourceItems**` and `**targetItems**` | Nothing: the drop writes every list it changes. |
-| `**<TransitionGroup>**` | Built in. `**animateChanges: true**` animates changes no drag made (adding, removing, shuffling). |
-| An insertion line from `**isDragOver.top**`, `**.bottom**` | `**placeholder: 'indicator'**` and the item's `**indicator.side**`. See [**an insertion line**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/sortable-lists#an-insertion-line). |
-| `**suggestSwap()**` | `**behavior: 'swap'**`. |
-| A copy-only palette (`**suggestCopy()**` and a `**copyOnly**` flag) | `**group: { name, pull: 'clone', put: false }**`, `**sort: false**` and `**clone**`. |
-| A trash zone with `**suggestRemove()**` | `**makeDroppable(trash, { onDrop: (e) => e.source?.remove() })**`, or `**dropOutside: 'remove'**`. |
-| Pinia or immutable data: assign the result yourself | `**items**` as a getter, then `**e.preventDefault()**` in `**onDrop**` and apply `**e.result**`. See [**controlled lists**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/shared-lists#controlled-lists). |
-| A recursive tree: a droppable per folder and `**applyToTree**` | `**makeSortableTree**`: one container, rows rendered flat with their depth. See [**trees**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/trees). |
-| Nested groups with `**v-model**` (a droppable per group) | A list inside a list, all in one `**group**`, each with `**items: defineModel()**`. |
-| Virtual lists: `**id**` on every draggable | Feed the draft to the virtualizer, `**id: () => props.item.id**` on the rows. See [**virtual lists**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/virtual-lists). |
+이벤트는 `useDnDMonitor`로 옮겨 갔습니다. [이벤트와 드롭 결정](#events-and-drop-decisions)을
+참고하세요. 전체 구조는 [useDnD API](https://zizigy.github.io/docs/api/use-dnd)에 있습니다.
 
-The code before and after is [**below**](#a-sortable-list). Everything about lists is in [**sortable lists**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/sortable-lists) and [**lists that share items**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/shared-lists).
+### `makeDraggable`
 
-### Groups
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-v2 had one `**groups**` option for everything. v3 splits it in two:
+<tbody>
+  <tr>
+    <td>
+      <code>
+        makeDraggable(ref, options, payload)
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDraggable(ref, options)
+      </code>
+      
+      : 세 번째 인자는 없습니다. 리스트의 행은 <code>
+        makeSortableItem(ref, { item })
+      </code>
+      
+      을 씁니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        id
+      </code>
+      
+      , 가상 리스트에서 필요
+    </td>
+    
+    <td>
+      <code>
+        id
+      </code>
+      
+      : 데이터에서 getter로 넘기세요. 기본값은 <code>
+        useId()
+      </code>
+      
+      에서 오며 컴포넌트 인스턴스마다 새로 만들어집니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        data: () => card
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        data
+      </code>
+      
+      : 값, ref, 또는 getter. <code>
+        active.data
+      </code>
+      
+      와 <code>
+        active.items[i].data
+      </code>
+      
+      로 다시 읽습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        groups: ['dev']
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        type: 'dev'
+      </code>
+      
+      , 대상의 <code>
+        accept
+      </code>
+      
+      와 비교됩니다. <a href="#groups">
+        그룹
+      </a>
+      
+      을 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        dragHandle: '.handle'
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        handle
+      </code>
+      
+      : 선택자나 요소 ref.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        disabled
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        modifier: { keys, method }
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        canDrag: (event) => event.altKey
+      </code>
+      
+      : 누를 때마다 확인하는 조건.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activation: { distance, delay }
+      </code>
+    </td>
+    
+    <td>
+      포인터 종류별 <code>
+        activation
+      </code>
+      
+      : <code>
+        { mouse: { distance }, touch: { delay, tolerance }, pen }
+      </code>
+      
+      . <code>
+        distance
+      </code>
+      
+      와 <code>
+        delay
+      </code>
+      
+      를 둘 다 주면 먼저 충족되는 쪽에서 드래그가 시작됩니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activation.distance: { x, y, condition }
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        대응 없음.
+      </strong>
+      
+       포인터 종류마다 <code>
+        distance
+      </code>
+      
+       하나.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        render: markRaw(Preview)
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        overlay: Preview
+      </code>
+      
+      : 컴포넌트가 드래그를 props로 받습니다. <a href="#the-overlay">
+        오버레이
+      </a>
+      
+      를 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        placementMargins
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        대응 없음.
+      </strong>
+      
+       정렬 가능한 항목 위의 드롭 대상은 그 가운데(25~75%)에서 판정됩니다. 트리는 <code>
+        nesting: 'hover'
+      </code>
+      
+      로 중첩합니다. <a href="/docs/guides/drag-and-drop#drop-into-a-sortable-item">
+        정렬 가능한 항목 안으로 드롭
+      </a>
+      
+      을 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        events.onSelfDragStart
+      </code>
+      
+      , <code>
+        onSelfDragMove
+      </code>
+      
+      , <code>
+        onSelfDragEnd
+      </code>
+      
+      , <code>
+        onSelfDragCancel
+      </code>
+    </td>
+    
+    <td>
+      draggable에는 <strong>
+        대응 없음
+      </strong>
+      
+      : <code>
+        useDnDMonitor
+      </code>
+      
+      나 <code>
+        watch(isDragging)
+      </code>
+      
+      을 쓰세요. <a href="#events-and-drop-decisions">
+        이벤트
+      </a>
+      
+      를 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        events.onHover
+      </code>
+      
+      , <code>
+        onLeave
+      </code>
+      
+      , 그리고 그 위를 지나는 드래그에 대한 <code>
+        onDragStart
+      </code>
+      
+      …
+    </td>
+    
+    <td>
+      같은 요소에 <code>
+        makeDroppable
+      </code>
+      
+      : <code>
+        onDragEnter
+      </code>
+      
+      , <code>
+        onDragLeave
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isDragging
+      </code>
+      
+      , <code>
+        selected
+      </code>
+      
+       반환
+    </td>
+    
+    <td>
+      같습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isDragOver
+      </code>
+      
+       반환
+    </td>
+    
+    <td>
+      정렬 가능한 항목은 <code>
+        indicator
+      </code>
+      
+      (<code>
+        placeholder: 'indicator'
+      </code>
+      
+      일 때)와 <code>
+        isPlaceholder
+      </code>
+      
+      를 반환하고, 드롭 대상은 <code>
+        placement
+      </code>
+      
+      를 반환합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isAllowed
+      </code>
+      
+       반환
+    </td>
+    
+    <td>
+      draggable에는 <strong>
+        대응 없음
+      </strong>
+      
+      . 드롭 대상은 <code>
+        isAccepting
+      </code>
+      
+      을 반환합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      —
+    </td>
+    
+    <td>
+      새로 추가: <code>
+        label
+      </code>
+      
+      , <code>
+        axis
+      </code>
+      
+      , <code>
+        modifiers
+      </code>
+      
+      , <code>
+        keyboardMode
+      </code>
+      
+      , 반환된 <code>
+        transform
+      </code>
+      
+      과 함께 쓰는 <code>
+        overlay: false
+      </code>
+      
+      , <code>
+        dropAnimation
+      </code>
+      
+      , <code>
+        attributes
+      </code>
+      
+      , <code>
+        native
+      </code>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
 
-| **v2** | **v3** |
-| --- | --- |
-| `**makeDraggable(el, { groups: ['dev'] })**` | `**makeDraggable(el, { type: 'dev' })**`. |
-| `**makeDroppable(el, { groups: ['dev'] })**` | `**makeDroppable(el, { accept: 'dev' })**`. |
-| `**groups: ['dev', 'ops']**` on a zone | `**accept: ['dev', 'ops']**`, or a function: `**({ active, items, types }) => boolean**`. |
-| `**groups: []**`, or none | `**type**` or `**accept**` left out. The v2 rules hold: an untyped draggable fits any rule, and a target without `**accept**` takes everything. |
-| `**groupMatch: 'every'**`, `**'some'**` | `**acceptMode: 'all'**`, `**'some'**`. |
-| `**groups**` on a list zone and its rows | `**group: 'board'**` on `**makeSortableList**`. `**group: { name, pull, put }**` says what may leave and enter. |
-| `**groups**` on `**makeSelectionArea**` | `**accept**`. |
+### `makeDroppable`
 
-A list without `**group**` is a group of its own and trades with no other list. In v2, a zone without groups took everything. See [**which drags a target takes**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/drag-and-drop#which-drags-a-target-takes).
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-### The overlay
+<tbody>
+  <tr>
+    <td>
+      <code>
+        makeDroppable(ref, options, () => items)
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDroppable(ref, options)
+      </code>
+      
+      . 리스트를 담은 영역은 <code>
+        makeSortableList
+      </code>
+      
+      입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        groups
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        accept
+      </code>
+      
+      : <code>
+        '*'
+      </code>
+      
+      , 타입 하나, 타입 목록, 또는 함수.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        groupMatch: 'every'
+      </code>
+      
+      , <code>
+        'some'
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        acceptMode: 'all'
+      </code>
+      
+      , <code>
+        'some'
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        events.onEnter
+      </code>
+      
+      , <code>
+        events.onLeave
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onDragEnter
+      </code>
+      
+      , <code>
+        onDragLeave
+      </code>
+      
+      : 각각 독립된 옵션이며 <code>
+        events
+      </code>
+      
+       객체는 없습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        false
+      </code>
+      
+      나 Promise를 반환할 수 있던 <code>
+        events.onDrop
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+      이 결정하고 <code>
+        onDrop
+      </code>
+      
+      이 적용합니다. <a href="#events-and-drop-decisions">
+        드롭 결정
+      </a>
+      
+      을 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        events.onValidate
+      </code>
+    </td>
+    
+    <td>
+      남길 id를 반환하는 <code>
+        onBeforeDrop
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        data
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        data
+      </code>
+      
+      , <code>
+        over.data
+      </code>
+      
+      로 다시 읽습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        disabled
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isAllowed
+      </code>
+      
+       반환
+    </td>
+    
+    <td>
+      <code>
+        isAccepting
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isDragOver
+      </code>
+      
+       반환: <code>
+        { top, right, bottom, left, center }
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        isOver
+      </code>
+      
+      (불리언)와 <code>
+        placement
+      </code>
+      
+      : <code>
+        { top, right, bottom, left }
+      </code>
+      
+      , 포인터가 있는 쪽 절반. <code>
+        center
+      </code>
+      
+      는 없습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      —
+    </td>
+    
+    <td>
+      새로 추가: <code>
+        id
+      </code>
+      
+      , <code>
+        label
+      </code>
+      
+      , <code>
+        priority
+      </code>
+      
+      , <code>
+        overOverlay
+      </code>
+      
+      , <code>
+        overDropAnimation
+      </code>
+      
+      , <code>
+        external
+      </code>
+      
+      (컴퓨터의 파일).
+    </td>
+  </tr>
+</tbody>
+</table>
 
-| **v2** | **v3** |
-| --- | --- |
-| A preview rendered in the provider, teleported with `**previewTo**` | Always teleported, to `**body**` or to `**overlayTo**`. |
-| A clone: the same tag, its `**innerHTML**` and its size | A deep clone: form values, `**<canvas>**` pixels, inherited styles and table cells come along. Mark what stays behind with `**data-dnd-no-clone**`. |
-| `**render: markRaw(Preview)**`, which reads `**useDnDProvider().entities**` | `**overlay: Preview**`, which gets `**items**`, `**active**`, `**over**`, `**accepted**`, `**status**`, `**mode**` and `**to**` as props. No `**markRaw**`; use a `**shallowRef**` to switch it. |
-| The `**#preview**` slot, positioned from `**preview.position**` | The `**#overlay**` slot: the library places and sizes the box. Rendering nothing falls back to the clone. |
-| `**useDnDProvider().preview.render.value = …**` | The `**#overlay**` slot, or a `**shallowRef**` passed as `**overlay**`. |
-| A new look over a zone, from `**onEnter**` and `**onLeave**` | `**overOverlay**` on `**makeDroppable**` or a list, or read `**over**` in the overlay component. See [**targets that change the overlay**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/overlay#targets-that-change-the-overlay). |
-| `**<DragPreview v-slot="{ draggingMap }">**` | The overlay props' `**items**`; `**<DragPreview :id="item.id" />**` renders one clone. |
-| `**<DragPreview :grid>**`, `**makeSnappedOverlayPosition**` | The `**snapToGrid**` modifier. It snaps where targets are found and the drop's `**position**` too, not only the picture. |
-| `**<Transition>**` or motion's `**AnimatePresence**` around `**DragPreview**` | `**overlay-class**` with `**@starting-style**` for the pickup, `**dropAnimation**` for the landing, `**overlayTransition**` between components. See [**lift, tilt, settle**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/animations#the-overlay-lift-tilt-settle). |
-| `**.dnd-kit-preview**` | `**[data-dnd-overlay]**` (`**"dragging"**`, `**"dropping"**`) on the box, `**[data-dnd-overlay-content]**` inside it. |
-| `**preview.size**`, kept up to date by hand | The box takes the size of the slot it will land in (`**overlayFit**`). |
-| The preview disappears on drop | It lands on its slot, or flies back on cancel. |
+### 드롭 이벤트
 
-More in [**the overlay guide**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/overlay).
+<table>
+<thead>
+  <tr>
+    <th>
+      v2 <code>
+        IDragEvent
+      </code>
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-### Selection and multi-drag
+<tbody>
+  <tr>
+    <td>
+      <code>
+        e.draggedItems
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        e.active.items
+      </code>
+      
+      : 각각 <code>
+        { id, item, data, label, type }
+      </code>
+      
+      이며, 집은 항목이 맨 앞입니다. 리스트는 <code>
+        e.items
+      </code>
+      
+      와 <code>
+        e.keys
+      </code>
+      
+      도 받습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.draggedItems[0].data
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        e.active.data
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.draggedItems[i].index
+      </code>
+      
+      , <code>
+        .items
+      </code>
+    </td>
+    
+    <td>
+      리스트: <code>
+        e.from
+      </code>
+      
+      , <code>
+        { list, index }
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.dropZone
+      </code>
+      
+      : <code>
+        items
+      </code>
+      
+      , <code>
+        placement
+      </code>
+      
+      , <code>
+        data
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        e.over
+      </code>
+      
+      : <code>
+        id
+      </code>
+      
+      , <code>
+        data
+      </code>
+      
+      , <code>
+        element
+      </code>
+      
+      , <code>
+        rect
+      </code>
+      
+      , <code>
+        accepted
+      </code>
+      
+      . 리스트: <code>
+        e.to
+      </code>
+      
+      , <code>
+        { list, index }
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.hoveredDraggable
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        대응 없음
+      </strong>
+      
+      : 리스트가 <code>
+        e.to.index
+      </code>
+      
+      를 직접 계산합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.helpers.suggestSort()
+      </code>
+    </td>
+    
+    <td>
+      리스트가 드롭을 기록합니다. <code>
+        e.result
+      </code>
+      
+      에는 드롭이 바꾸는 모든 리스트의 새 배열이 들어 있습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.helpers.suggestSwap()
+      </code>
+    </td>
+    
+    <td>
+      리스트에 <code>
+        behavior: 'swap'
+      </code>
+      
+      . <code>
+        e.partner
+      </code>
+      
+      는 자리를 맞바꾼 항목입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.helpers.suggestCopy()
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        group: { name, pull: 'clone' }
+      </code>
+      
+       또는 복사 키(<kbd value="Alt">
+        
+      </kbd>
+      
+      )와 리스트의 <code>
+        clone
+      </code>
+      
+      . <code>
+        e.mode
+      </code>
+      
+      는 <code>
+        'copy'
+      </code>
+      
+      입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.helpers.suggestRemove()
+      </code>
+    </td>
+    
+    <td>
+      드롭 대상에서 <code>
+        e.source.remove()
+      </code>
+      
+      , 또는 리스트의 <code>
+        dropOutside: 'remove'
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        result.sameList
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        e.sameList
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.helpers.insertAt
+      </code>
+      
+      , <code>
+        removeAt
+      </code>
+      
+      , <code>
+        removeIndexes
+      </code>
+      
+      , <code>
+        swapAt
+      </code>
+      
+      , <code>
+        getInsertSide
+      </code>
+      
+      , <code>
+        isAtZoneStart
+      </code>
+      
+      , <code>
+        isAtZoneEnd
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        대응 없음.
+      </strong>
+      
+       리스트에는 필요 없고, 일반 드롭 대상에서는 데이터를 원하는 대로 바꾸세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.provider
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        useDnD()
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      —
+    </td>
+    
+    <td>
+      새로 추가: <code>
+        e.pointer
+      </code>
+      
+      , <code>
+        e.delta
+      </code>
+      
+      , <code>
+        e.position
+      </code>
+      
+      (보드에 드롭한 항목을 놓을 위치), <code>
+        e.mode
+      </code>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
 
-| **v2** | **v3** |
-| --- | --- |
-| `**selected**`, returned by `**makeDraggable**` | `**selected**`, returned by `**makeDraggable**` and `**makeSortableItem**`. |
-| `**entities.selectedSet**`, a set of elements | `**useDnD().selection**`, keyed by id. |
-| `**makeSelectionArea**`: Ctrl (`**ControlLeft**`) held by default | No key by default: a press on the area's empty space draws the band. `**modifier: { keys: ['Control'], method: 'every' }**` brings Ctrl back. |
-| `**modifier.keys**` as `**KeyboardEvent.code**` | `**KeyboardEvent.key**` (`**'Control'**`, `**'Shift'**`) or `**.code**` (`**'ControlLeft'**`). |
-| `**strategy: 'toggle'**`, `**'select'**` | The same. |
-| `**groups**` | `**accept**`. |
-| `**events.onSelected(elements)**` | `**onSelected(ids)**`. |
-| `**disabled**` | The same. |
-| `**suggestSort()**` moving the selection as a batch | Lists move it. `**multiple: 'group'**` (default), `**'gaps'**` or `**'stack'**` says what the other items do on the way. |
-| `**onValidate**` for mixed selections | `**acceptMode: 'some'**` and `**onBeforeDrop**` returning ids. See [**taking only some**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/multi-drag#taking-only-some). |
+### 정렬
 
-More in [**multi-drag and selection**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/multi-drag).
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-### Axes, bounds and snapping
+<tbody>
+  <tr>
+    <td>
+      <code>
+        () => items
+      </code>
+      
+      를 넘긴 <code>
+        makeDroppable
+      </code>
+      
+       리스트
+    </td>
+    
+    <td>
+      <code>
+        makeSortableList(listRef, { items })
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        () => [index, items]
+      </code>
+      
+      를 넘긴 <code>
+        makeDraggable
+      </code>
+      
+       행
+    </td>
+    
+    <td>
+      <code>
+        makeSortableItem(el, { item: () => props.task })
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      원본 배열을 렌더링
+    </td>
+    
+    <td>
+      반환된 <code>
+        items
+      </code>
+      
+      를 렌더링: 드래그하는 동안 순서가 바뀌는 초안입니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        suggestSort('vertical')
+      </code>
+      
+      , <code>
+        suggestSort('horizontal')
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        strategy: 'vertical'
+      </code>
+      
+      (기본값), <code>
+        'horizontal'
+      </code>
+      
+       또는 <code>
+        'grid'
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      참조 비교로 출발 배열과 도착 배열을 찾은 뒤 <code>
+        sourceItems
+      </code>
+      
+      와 <code>
+        targetItems
+      </code>
+      
+      를 대입
+    </td>
+    
+    <td>
+      필요 없음: 드롭이 바뀌는 모든 리스트에 기록합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        <TransitionGroup>
+      </code>
+    </td>
+    
+    <td>
+      기본으로 들어 있습니다. <code>
+        animateChanges: true
+      </code>
+      
+      는 드래그가 아닌 변경(추가, 삭제, 섞기)을 애니메이션합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isDragOver.top
+      </code>
+      
+      , <code>
+        .bottom
+      </code>
+      
+      으로 그리는 삽입선
+    </td>
+    
+    <td>
+      <code>
+        placeholder: 'indicator'
+      </code>
+      
+      와 항목의 <code>
+        indicator.side
+      </code>
+      
+      . <a href="/docs/guides/sortable-lists#an-insertion-line">
+        삽입선
+      </a>
+      
+      을 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        suggestSwap()
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        behavior: 'swap'
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      복사 전용 팔레트(<code>
+        suggestCopy()
+      </code>
+      
+      와 <code>
+        copyOnly
+      </code>
+      
+       플래그)
+    </td>
+    
+    <td>
+      <code>
+        group: { name, pull: 'clone', put: false }
+      </code>
+      
+      , <code>
+        sort: false
+      </code>
+      
+      , <code>
+        clone
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        suggestRemove()
+      </code>
+      
+      를 쓰는 휴지통 영역
+    </td>
+    
+    <td>
+      <code>
+        makeDroppable(trash, { onDrop: (e) => e.source?.remove() })
+      </code>
+      
+      , 또는 <code>
+        dropOutside: 'remove'
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      Pinia나 불변 데이터: 결과를 직접 대입
+    </td>
+    
+    <td>
+      <code>
+        items
+      </code>
+      
+      를 getter로 두고, <code>
+        onDrop
+      </code>
+      
+      에서 <code>
+        e.preventDefault()
+      </code>
+      
+      를 호출한 뒤 <code>
+        e.result
+      </code>
+      
+      를 적용합니다. <a href="/docs/guides/shared-lists#controlled-lists">
+        제어 리스트
+      </a>
+      
+      를 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      재귀 트리: 폴더마다 droppable 하나와 <code>
+        applyToTree
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeSortableTree
+      </code>
+      
+      : 컨테이너 하나, 행은 깊이와 함께 평평하게 렌더링됩니다. <a href="/docs/guides/trees">
+        트리
+      </a>
+      
+      를 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        v-model
+      </code>
+      
+      을 쓰는 중첩 그룹(그룹마다 droppable 하나)
+    </td>
+    
+    <td>
+      리스트 안의 리스트. 모두 같은 <code>
+        group
+      </code>
+      
+      에 두고, 각각 <code>
+        items: defineModel()
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      가상 리스트: 모든 draggable에 <code>
+        id
+      </code>
+    </td>
+    
+    <td>
+      초안을 가상화 도구에 넘기고, 행에 <code>
+        id: () => props.item.id
+      </code>
+      
+      . <a href="/docs/guides/virtual-lists">
+        가상 리스트
+      </a>
+      
+      를 참고하세요.
+    </td>
+  </tr>
+</tbody>
+</table>
 
-| **v2** | **v3** |
-| --- | --- |
-| `**makeConstraintArea(el, { axis: 'x' })**` | `**makeDragArea(el, { axis: 'x' })**`, for the drags that start inside it. `**axis**` also works on a draggable, a list, a tree or an item. |
-| `**axis: 'both'**` | `**axis**` left out. |
-| `**restrictToArea: true**` | `**makeDragArea(el, { restrictToArea: true })**`, or the modifiers `**restrictToParent**` and `**restrictToElement(el)**`. |
-| A provider per region, to keep rules apart | One provider and a `**makeDragArea**` per region. Its items can still move anywhere. |
-| `**<DragPreview :grid="20">**`, `**makeSnappedOverlayPosition**` | `**snapToGrid(20)**` or `**snapToGrid({ x, y, origin, smooth })**`, in `**modifiers**` on the provider, an area, a list or a draggable. |
-| — | New: `**restrictToWindowEdges**`, `**restrictToFirstScrollableAncestor**`, `**snapCenterToCursor**`, and modifiers of your own. |
+전후 코드는 [아래](#a-sortable-list)에 있습니다. 리스트에 관한 모든 것은
+[정렬 가능한 리스트](https://zizigy.github.io/docs/guides/sortable-lists)와 [항목을 공유하는 리스트](https://zizigy.github.io/docs/guides/shared-lists)에
+있습니다.
 
-More in [**axes, bounds and grids**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/constraints).
+### 그룹
 
-### Auto-scroll
+v2에는 모든 것에 쓰는 `groups` 옵션 하나가 있었습니다. v3는 이를 둘로 나눕니다.
 
-| **v2** | **v3** |
-| --- | --- |
-| `**<DnDProvider :autoScrollViewport="true">**`, off by default | On by default, for the window and every scroll container. `**:auto-scroll="false"**` turns it off. |
-| `**makeAutoScroll(el, { threshold, speed })**` | Nothing: any `**overflow: auto**` or `**scroll**` element scrolls. To tune one: `**makeDragArea(el, { autoScroll: { … } })**` or the list's `**autoScroll**`. |
-| `**threshold**` in px, or per side | `**threshold**`: a fraction of the container's size (`**0.2**`), between 24 and 96 px. ****No equivalent**** for per-side thresholds. |
-| `**speed**`, a multiplier | `**maxSpeed**` (25 px per frame) and `**acceleration**` (10). |
-| `**disabled: true**` | `**autoScroll: false**`. |
-| `**isScrolling**` | `**isAutoScrolling**`, from `**makeDragArea**` or `**useDnD()**`. |
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-### Keyboard and accessibility
+<tbody>
+  <tr>
+    <td>
+      <code>
+        makeDraggable(el, { groups: ['dev'] })
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDraggable(el, { type: 'dev' })
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeDroppable(el, { groups: ['dev'] })
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDroppable(el, { accept: 'dev' })
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      영역의 <code>
+        groups: ['dev', 'ops']
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        accept: ['dev', 'ops']
+      </code>
+      
+      , 또는 함수: <code>
+        ({ active, items, types }) => boolean
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        groups: []
+      </code>
+      
+      , 또는 지정 안 함
+    </td>
+    
+    <td>
+      <code>
+        type
+      </code>
+      
+      이나 <code>
+        accept
+      </code>
+      
+      를 생략합니다. v2의 규칙은 그대로입니다. 타입이 없는 draggable은 어떤 규칙에도 맞고, <code>
+        accept
+      </code>
+      
+      가 없는 대상은 모든 것을 받습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        groupMatch: 'every'
+      </code>
+      
+      , <code>
+        'some'
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        acceptMode: 'all'
+      </code>
+      
+      , <code>
+        'some'
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      리스트 영역과 그 행의 <code>
+        groups
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeSortableList
+      </code>
+      
+      의 <code>
+        group: 'board'
+      </code>
+      
+      . <code>
+        group: { name, pull, put }
+      </code>
+      
+      은 무엇이 나가고 들어올 수 있는지 정합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeSelectionArea
+      </code>
+      
+      의 <code>
+        groups
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        accept
+      </code>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
 
-| **v2** | **v3** |
-| --- | --- |
-| `**tabindex="0"**` on every draggable | Set for you, with `**role**`, `**aria-roledescription**`, `**aria-describedby**`, `**aria-disabled**` and `**aria-pressed**`. Your own attributes win. |
-| `**:aria-grabbed="isDragging"**` by hand | Remove it: `**aria-pressed**` follows the drag. |
-| Keys set on `**useDnDProvider().keyboard.keys**` | The provider's `**keyboard**` prop. Bindings match `**event.code**` or `**event.key**`. |
-| Arrows move the preview by `**keyboard.step**` | Free drags: `**keyboard.step**` px. Lists: by slots, and into the next list of the group. `**keyboardMode: 'droppables'**` jumps between targets. |
-| Rebinding the arrows (`**forMove**`, `**forMoveFaster**`) | ****No equivalent.**** |
-| No announcements | A live region speaks every pickup, move, drop and cancel. `**label**` names things; `**announcements**` and `**screenReaderInstructions**` reword them. |
+`group`이 없는 리스트는 그 자체로 하나의 그룹이며 다른 어떤 리스트와도 항목을 주고받지 않습니다. v2에서는
+groups가 없는 영역이 모든 것을 받았습니다.
+[대상이 받는 드래그](https://zizigy.github.io/docs/guides/drag-and-drop#which-drags-a-target-takes)를 참고하세요.
 
-More in [**accessibility**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/accessibility).
+### 오버레이
 
-### Events and drop decisions
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-| **v2** | **v3** |
-| --- | --- |
-| Draggable `**events.onSelfDragStart**` | `**useDnDMonitor({ onDragStart })**`, checking `**active.ids**`. For a class, `**isDragging**` is enough. |
-| `**onSelfDragMove**` | The monitor's `**onDragMove**`. |
-| `**onSelfDragEnd**`, dropped or cancelled | The monitor's `**onDragEnd**` (a drop) and `**onDragCancel**`. `**onDragSettle**` hears both, once the overlay has landed. |
-| `**onSelfDragCancel**` | The monitor's `**onDragCancel**`. |
-| Draggable `**onHover**`, `**onLeave**`, and its `**onDragStart**`… for drags over it | `**makeDroppable**` on the element: `**onDragEnter**`, `**onDragLeave**`. Rows of a list need nothing. |
-| Droppable `**events.onEnter**`, `**onLeave**` | `**onDragEnter**`, `**onDragLeave**`. |
-| Droppable `**events.onDrop**` | `**onBeforeDrop**` decides, then `**onDrop**` applies. `**onDrop**` is synchronous, and what it returns is ignored. |
-| Droppable `**events.onValidate**` | `**onBeforeDrop**`, with `**acceptMode: 'some'**`. |
-| — | New: the provider's `**@drag-start**` … `**@drag-settle**`, and the monitor's `**onDragOver**`, `**onBeforeDrop**` and `**onDragResume**`. |
+<tbody>
+  <tr>
+    <td>
+      프로바이더 안에 렌더링되고 <code>
+        previewTo
+      </code>
+      
+      로 텔레포트되는 미리보기
+    </td>
+    
+    <td>
+      항상 텔레포트됩니다. <code>
+        body
+      </code>
+      
+       또는 <code>
+        overlayTo
+      </code>
+      
+      로.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      클론: 같은 태그, 그 <code>
+        innerHTML
+      </code>
+      
+      , 그 크기
+    </td>
+    
+    <td>
+      깊은 클론: 폼 값, <code>
+        <canvas>
+      </code>
+      
+       픽셀, 상속된 스타일, 테이블 셀도 함께 옵니다. 남겨 둘 것은 <code>
+        data-dnd-no-clone
+      </code>
+      
+      으로 표시하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        useDnDProvider().entities
+      </code>
+      
+      를 읽는 <code>
+        render: markRaw(Preview)
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        items
+      </code>
+      
+      , <code>
+        active
+      </code>
+      
+      , <code>
+        over
+      </code>
+      
+      , <code>
+        accepted
+      </code>
+      
+      , <code>
+        status
+      </code>
+      
+      , <code>
+        mode
+      </code>
+      
+      , <code>
+        to
+      </code>
+      
+      를 props로 받는 <code>
+        overlay: Preview
+      </code>
+      
+      . <code>
+        markRaw
+      </code>
+      
+      는 필요 없으며, 바꿔 끼우려면 <code>
+        shallowRef
+      </code>
+      
+      를 쓰세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        preview.position
+      </code>
+      
+      으로 위치를 정하는 <code>
+        #preview
+      </code>
+      
+       슬롯
+    </td>
+    
+    <td>
+      <code>
+        #overlay
+      </code>
+      
+       슬롯: 박스의 위치와 크기는 라이브러리가 정합니다. 아무것도 렌더링하지 않으면 클론을 씁니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        useDnDProvider().preview.render.value = …
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        #overlay
+      </code>
+      
+       슬롯, 또는 <code>
+        overlay
+      </code>
+      
+      로 넘긴 <code>
+        shallowRef
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onEnter
+      </code>
+      
+      와 <code>
+        onLeave
+      </code>
+      
+      로 바꾸는, 영역 위에서의 새 모습
+    </td>
+    
+    <td>
+      <code>
+        makeDroppable
+      </code>
+      
+      이나 리스트의 <code>
+        overOverlay
+      </code>
+      
+      , 또는 오버레이 컴포넌트에서 <code>
+        over
+      </code>
+      
+      를 읽으세요. <a href="/docs/guides/overlay#targets-that-change-the-overlay">
+        오버레이를 바꾸는 대상
+      </a>
+      
+      을 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        <DragPreview v-slot="{ draggingMap }">
+      </code>
+    </td>
+    
+    <td>
+      오버레이 props의 <code>
+        items
+      </code>
+      
+      . <code>
+        <DragPreview :id="item.id" />
+      </code>
+      
+      는 클론 하나를 렌더링합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        <DragPreview :grid>
+      </code>
+      
+      , <code>
+        makeSnappedOverlayPosition
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        snapToGrid
+      </code>
+      
+       모디파이어. 그림만이 아니라 대상을 찾는 위치와 드롭의 <code>
+        position
+      </code>
+      
+      도 스냅합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        DragPreview
+      </code>
+      
+      를 감싼 <code>
+        <Transition>
+      </code>
+      
+      이나 motion의 <code>
+        AnimatePresence
+      </code>
+    </td>
+    
+    <td>
+      집을 때는 <code>
+        @starting-style
+      </code>
+      
+      을 쓴 <code>
+        overlay-class
+      </code>
+      
+      , 안착에는 <code>
+        dropAnimation
+      </code>
+      
+      , 컴포넌트 사이에는 <code>
+        overlayTransition
+      </code>
+      
+      . <a href="/docs/guides/animations#the-overlay-lift-tilt-settle">
+        들어 올리고, 기울이고, 내려놓기
+      </a>
+      
+      를 참고하세요.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        .dnd-kit-preview
+      </code>
+    </td>
+    
+    <td>
+      박스의 <code>
+        [data-dnd-overlay]
+      </code>
+      
+      (<code>
+        "dragging"
+      </code>
+      
+      , <code>
+        "dropping"
+      </code>
+      
+      ), 그 안의 <code>
+        [data-dnd-overlay-content]
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      직접 갱신하던 <code>
+        preview.size
+      </code>
+    </td>
+    
+    <td>
+      박스가 안착할 자리의 크기를 따릅니다(<code>
+        overlayFit
+      </code>
+      
+      ).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      드롭하면 미리보기가 사라짐
+    </td>
+    
+    <td>
+      자기 자리에 안착하거나, 취소하면 원래 자리로 돌아갑니다.
+    </td>
+  </tr>
+</tbody>
+</table>
 
-A v2 `**onDrop**` could return a value, or a promise of one, to decide the drop. In v3 that is the job of `**onBeforeDrop**`, on lists, trees, drop targets and monitors:
+자세한 내용은 [오버레이 가이드](https://zizigy.github.io/docs/guides/overlay)에 있습니다.
 
-| **v2 **`**onDrop**`** returns** | **v3 **`**onBeforeDrop**`** returns** |
-| --- | --- |
-| Nothing, or `**true**`: the drop goes through | `**'accept'**`, `**true**` or nothing. |
-| `**false**`: this drop is declined, the drag stays active | `**'continue'**`. **`**false**`** now refuses the drop.**** |
-| A rejected promise, or a throw: the drag is cancelled | `**'reject'**` or `**false**`. A throw rejects too. |
-| A promise; meanwhile `**state**` is `**'pending'**` | A promise; meanwhile `**status**` is `**'dropping'**` and the overlay waits with `**data-dnd-overlay="dropping"**`. |
-| `**onValidate**` returns `**IDragItem[]**` | An array of ids: only those drop, the others fly back. |
+### 선택과 멀티 드래그
 
-Monitors answer first, then the target. Then the target's `**onDrop**` runs, a list writes its new arrays, and `**onDragEnd**` follows. More in [**deciding a drop**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/drop-decisions) and the [**events API**](https://zizigy.github.io/vue-dnd-kit/ko/docs/api/events).
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-### Types
+<tbody>
+  <tr>
+    <td>
+      <code>
+        makeDraggable
+      </code>
+      
+      이 반환하는 <code>
+        selected
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDraggable
+      </code>
+      
+      과 <code>
+        makeSortableItem
+      </code>
+      
+      이 반환하는 <code>
+        selected
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        entities.selectedSet
+      </code>
+      
+      , 요소의 집합
+    </td>
+    
+    <td>
+      <code>
+        useDnD().selection
+      </code>
+      
+      , id가 key.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeSelectionArea
+      </code>
+      
+      : 기본으로 Ctrl(<code>
+        ControlLeft
+      </code>
+      
+      )을 누른 채
+    </td>
+    
+    <td>
+      기본으로 키가 필요 없습니다. 영역의 빈 공간을 누르면 사각형을 그립니다. <code>
+        modifier: { keys: ['Control'], method: 'every' }
+      </code>
+      
+      로 Ctrl을 되살릴 수 있습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        KeyboardEvent.code
+      </code>
+      
+      로 쓰는 <code>
+        modifier.keys
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        KeyboardEvent.key
+      </code>
+      
+      (<code>
+        'Control'
+      </code>
+      
+      , <code>
+        'Shift'
+      </code>
+      
+      ) 또는 <code>
+        .code
+      </code>
+      
+      (<code>
+        'ControlLeft'
+      </code>
+      
+      ).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        strategy: 'toggle'
+      </code>
+      
+      , <code>
+        'select'
+      </code>
+    </td>
+    
+    <td>
+      같습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        groups
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        accept
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        events.onSelected(elements)
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onSelected(ids)
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      같습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      선택을 한꺼번에 옮기는 <code>
+        suggestSort()
+      </code>
+    </td>
+    
+    <td>
+      리스트가 옮깁니다. <code>
+        multiple: 'group'
+      </code>
+      
+      (기본값), <code>
+        'gaps'
+      </code>
+      
+       또는 <code>
+        'stack'
+      </code>
+      
+      이 다른 항목이 도중에 어떻게 할지 정합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      섞인 선택을 위한 <code>
+        onValidate
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        acceptMode: 'some'
+      </code>
+      
+      과 id를 반환하는 <code>
+        onBeforeDrop
+      </code>
+      
+      . <a href="/docs/guides/multi-drag#taking-only-some">
+        일부만 받기
+      </a>
+      
+      를 참고하세요.
+    </td>
+  </tr>
+</tbody>
+</table>
 
-| **v2** | **v3** |
-| --- | --- |
-| `**IDragEvent**` | `**DnDEvent**` (targets, monitors), `**SortableDropEvent**` (lists), `**DnDEndEvent**` (`**onDragEnd**`). |
-| `**IDragItem**` | `**DragItem**`. |
-| `**IDropZoneContext**` | `**Over**`. |
-| `**IHoveredDraggableContext**` | ****No equivalent.**** |
-| `**ISuggestSortResult**`, `**ISuggestSwapResult**`, `**ISuggestCopyResult**`, `**ISuggestRemoveResult**` | `**SortableDropEvent**`: `**result**`, `**to**`, `**mode**`, `**partner**`. |
-| `**IDropValidateEvent**` | `**DnDEvent**`, in `**onBeforeDrop**`. |
-| `**IPlacement**` | `**Placement**`, without `**center**`. |
-| `**ICoordinates**` | `**Coordinates**`. |
-| `**IDragActivationOptions**` | `**ActivationOptions**`. |
-| `**IAutoScrollOptions**` | `**AutoScrollOptions**`. |
-| `**TDnDState**` | `**DnDStatus**`. |
-| `**IDnDProviderExternal**` | `**DnDState**`, what `**useDnD()**` returns. |
-| `**IDraggableEvents**`, `**IDroppableEvents**` | Callbacks in `**DraggableOptions**`, `**DroppableOptions**`, and `**DnDMonitor**`. |
+자세한 내용은 [멀티 드래그와 선택](https://zizigy.github.io/docs/guides/multi-drag)에 있습니다.
+
+### 축, 경계, 스냅
+
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        makeConstraintArea(el, { axis: 'x' })
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDragArea(el, { axis: 'x' })
+      </code>
+      
+      , 그 안에서 시작하는 드래그에 적용됩니다. <code>
+        axis
+      </code>
+      
+      는 draggable, 리스트, 트리, 항목에도 쓸 수 있습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        axis: 'both'
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        axis
+      </code>
+      
+      를 생략합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        restrictToArea: true
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDragArea(el, { restrictToArea: true })
+      </code>
+      
+      , 또는 모디파이어 <code>
+        restrictToParent
+      </code>
+      
+      와 <code>
+        restrictToElement(el)
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      규칙을 나누기 위한 구역별 프로바이더
+    </td>
+    
+    <td>
+      프로바이더 하나와 구역마다 <code>
+        makeDragArea
+      </code>
+      
+      . 그 항목은 여전히 어디로든 움직일 수 있습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        <DragPreview :grid="20">
+      </code>
+      
+      , <code>
+        makeSnappedOverlayPosition
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        snapToGrid(20)
+      </code>
+      
+       또는 <code>
+        snapToGrid({ x, y, origin, smooth })
+      </code>
+      
+      를 프로바이더, 영역, 리스트, draggable의 <code>
+        modifiers
+      </code>
+      
+      에.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      —
+    </td>
+    
+    <td>
+      새로 추가: <code>
+        restrictToWindowEdges
+      </code>
+      
+      , <code>
+        restrictToFirstScrollableAncestor
+      </code>
+      
+      , <code>
+        snapCenterToCursor
+      </code>
+      
+      , 그리고 직접 만든 모디파이어.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+자세한 내용은 [축, 경계, 그리드](https://zizigy.github.io/docs/guides/constraints)에 있습니다.
+
+### 자동 스크롤
+
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        <DnDProvider :autoScrollViewport="true">
+      </code>
+      
+      , 기본으로 꺼짐
+    </td>
+    
+    <td>
+      기본으로 켜짐, 창과 모든 스크롤 컨테이너에 적용됩니다. <code>
+        :auto-scroll="false"
+      </code>
+      
+      로 끕니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeAutoScroll(el, { threshold, speed })
+      </code>
+    </td>
+    
+    <td>
+      필요 없음: <code>
+        overflow: auto
+      </code>
+      
+      나 <code>
+        scroll
+      </code>
+      
+      인 요소는 모두 스크롤됩니다. 하나를 조정하려면 <code>
+        makeDragArea(el, { autoScroll: { … } })
+      </code>
+      
+       또는 리스트의 <code>
+        autoScroll
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      px 단위, 또는 변마다 정하는 <code>
+        threshold
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        threshold
+      </code>
+      
+      : 컨테이너 크기에 대한 비율(<code>
+        0.2
+      </code>
+      
+      ), 24~96 px 사이. 변마다 정하는 임계값은 <strong>
+        대응 없음
+      </strong>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      배수인 <code>
+        speed
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        maxSpeed
+      </code>
+      
+      (프레임당 25 px)와 <code>
+        acceleration
+      </code>
+      
+      (10).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled: true
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        autoScroll: false
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isScrolling
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDragArea
+      </code>
+      
+      나 <code>
+        useDnD()
+      </code>
+      
+      의 <code>
+        isAutoScrolling
+      </code>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
+
+### 키보드와 접근성
+
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      모든 draggable의 <code>
+        tabindex="0"
+      </code>
+    </td>
+    
+    <td>
+      자동으로 설정되며 <code>
+        role
+      </code>
+      
+      , <code>
+        aria-roledescription
+      </code>
+      
+      , <code>
+        aria-describedby
+      </code>
+      
+      , <code>
+        aria-disabled
+      </code>
+      
+      , <code>
+        aria-pressed
+      </code>
+      
+      도 붙습니다. 직접 지정한 속성이 우선합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      직접 쓴 <code>
+        :aria-grabbed="isDragging"
+      </code>
+    </td>
+    
+    <td>
+      지우세요. <code>
+        aria-pressed
+      </code>
+      
+      가 드래그를 따라갑니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        useDnDProvider().keyboard.keys
+      </code>
+      
+      에 지정한 키
+    </td>
+    
+    <td>
+      프로바이더의 <code>
+        keyboard
+      </code>
+      
+       prop. 바인딩은 <code>
+        event.code
+      </code>
+      
+      나 <code>
+        event.key
+      </code>
+      
+      와 비교됩니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      화살표 키가 미리보기를 <code>
+        keyboard.step
+      </code>
+      
+      만큼 이동
+    </td>
+    
+    <td>
+      자유로운 드래그: <code>
+        keyboard.step
+      </code>
+      
+       px씩. 리스트: 자리 단위로, 그리고 그룹의 다음 리스트로. <code>
+        keyboardMode: 'droppables'
+      </code>
+      
+      는 대상 사이를 건너뜁니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      화살표 키 다시 지정(<code>
+        forMove
+      </code>
+      
+      , <code>
+        forMoveFaster
+      </code>
+      
+      )
+    </td>
+    
+    <td>
+      <strong>
+        대응 없음.
+      </strong>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      안내 문구 없음
+    </td>
+    
+    <td>
+      라이브 리전이 집기, 이동, 드롭, 취소를 모두 안내합니다. <code>
+        label
+      </code>
+      
+      이 이름을 붙이고, <code>
+        announcements
+      </code>
+      
+      와 <code>
+        screenReaderInstructions
+      </code>
+      
+      가 문구를 바꿉니다.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+자세한 내용은 [접근성](https://zizigy.github.io/docs/guides/accessibility)에 있습니다.
+
+### 이벤트와 드롭 결정
+
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      draggable의 <code>
+        events.onSelfDragStart
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        useDnDMonitor({ onDragStart })
+      </code>
+      
+      에서 <code>
+        active.ids
+      </code>
+      
+      를 확인합니다. 클래스만 바꾼다면 <code>
+        isDragging
+      </code>
+      
+      으로 충분합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onSelfDragMove
+      </code>
+    </td>
+    
+    <td>
+      모니터의 <code>
+        onDragMove
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onSelfDragEnd
+      </code>
+      
+      , 드롭이든 취소든
+    </td>
+    
+    <td>
+      모니터의 <code>
+        onDragEnd
+      </code>
+      
+      (드롭)와 <code>
+        onDragCancel
+      </code>
+      
+      . <code>
+        onDragSettle
+      </code>
+      
+      은 오버레이가 안착한 뒤 둘 다 받습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onSelfDragCancel
+      </code>
+    </td>
+    
+    <td>
+      모니터의 <code>
+        onDragCancel
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      draggable의 <code>
+        onHover
+      </code>
+      
+      , <code>
+        onLeave
+      </code>
+      
+      , 그리고 그 위를 지나는 드래그에 대한 <code>
+        onDragStart
+      </code>
+      
+      …
+    </td>
+    
+    <td>
+      그 요소에 <code>
+        makeDroppable
+      </code>
+      
+      : <code>
+        onDragEnter
+      </code>
+      
+      , <code>
+        onDragLeave
+      </code>
+      
+      . 리스트의 행에는 아무것도 필요 없습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      droppable의 <code>
+        events.onEnter
+      </code>
+      
+      , <code>
+        onLeave
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onDragEnter
+      </code>
+      
+      , <code>
+        onDragLeave
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      droppable의 <code>
+        events.onDrop
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+      이 결정하고, 그다음 <code>
+        onDrop
+      </code>
+      
+      이 적용합니다. <code>
+        onDrop
+      </code>
+      
+      은 동기이며, 반환값은 무시됩니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      droppable의 <code>
+        events.onValidate
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        acceptMode: 'some'
+      </code>
+      
+      과 함께 쓰는 <code>
+        onBeforeDrop
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      —
+    </td>
+    
+    <td>
+      새로 추가: 프로바이더의 <code>
+        @drag-start
+      </code>
+      
+       … <code>
+        @drag-settle
+      </code>
+      
+      , 그리고 모니터의 <code>
+        onDragOver
+      </code>
+      
+      , <code>
+        onBeforeDrop
+      </code>
+      
+      , <code>
+        onDragResume
+      </code>
+      
+      .
+    </td>
+  </tr>
+</tbody>
+</table>
+
+v2의 `onDrop`은 값이나 값의 Promise를 반환해 드롭을 결정할 수 있었습니다. v3에서는 그것이 리스트,
+트리, 드롭 대상, 모니터에 있는 `onBeforeDrop`의 일입니다.
+
+<table>
+<thead>
+  <tr>
+    <th>
+      v2 <code>
+        onDrop
+      </code>
+      
+      의 반환값
+    </th>
+    
+    <th>
+      v3 <code>
+        onBeforeDrop
+      </code>
+      
+      의 반환값
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      아무것도 없음, 또는 <code>
+        true
+      </code>
+      
+      : 드롭이 진행됨
+    </td>
+    
+    <td>
+      <code>
+        'accept'
+      </code>
+      
+      , <code>
+        true
+      </code>
+      
+      , 또는 아무것도 없음.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        false
+      </code>
+      
+      : 이 드롭은 거절되고 드래그는 계속됨
+    </td>
+    
+    <td>
+      <code>
+        'continue'
+      </code>
+      
+      . <strong>
+        이제 <code>
+          false
+        </code>
+        
+        는 드롭을 거부합니다.
+      </strong>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      거부된 Promise나 예외: 드래그가 취소됨
+    </td>
+    
+    <td>
+      <code>
+        'reject'
+      </code>
+      
+       또는 <code>
+        false
+      </code>
+      
+      . 예외도 거부합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      Promise. 그동안 <code>
+        state
+      </code>
+      
+      는 <code>
+        'pending'
+      </code>
+    </td>
+    
+    <td>
+      Promise. 그동안 <code>
+        status
+      </code>
+      
+      는 <code>
+        'dropping'
+      </code>
+      
+      이고, 오버레이는 <code>
+        data-dnd-overlay="dropping"
+      </code>
+      
+       상태로 기다립니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onValidate
+      </code>
+      
+      가 <code>
+        IDragItem[]
+      </code>
+      
+      을 반환
+    </td>
+    
+    <td>
+      id 배열: 그 항목만 드롭되고 나머지는 원래 자리로 돌아갑니다.
+    </td>
+  </tr>
+</tbody>
+</table>
+
+먼저 모니터가 답하고, 그다음 대상이 답합니다. 그 뒤 대상의 `onDrop`이 실행되고, 리스트가 새 배열을
+기록하며, `onDragEnd`가 이어집니다. 자세한 내용은 [드롭 결정하기](https://zizigy.github.io/docs/guides/drop-decisions)와
+[이벤트 API](https://zizigy.github.io/docs/api/events)에 있습니다.
+
+### 타입
+
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        IDragEvent
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DnDEvent
+      </code>
+      
+      (드롭 대상, 모니터), <code>
+        SortableDropEvent
+      </code>
+      
+      (리스트), <code>
+        DnDEndEvent
+      </code>
+      
+      (<code>
+        onDragEnd
+      </code>
+      
+      ).
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IDragItem
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DragItem
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IDropZoneContext
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        Over
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IHoveredDraggableContext
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        대응 없음.
+      </strong>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        ISuggestSortResult
+      </code>
+      
+      , <code>
+        ISuggestSwapResult
+      </code>
+      
+      , <code>
+        ISuggestCopyResult
+      </code>
+      
+      , <code>
+        ISuggestRemoveResult
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        SortableDropEvent
+      </code>
+      
+      : <code>
+        result
+      </code>
+      
+      , <code>
+        to
+      </code>
+      
+      , <code>
+        mode
+      </code>
+      
+      , <code>
+        partner
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IDropValidateEvent
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+       안의 <code>
+        DnDEvent
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IPlacement
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        center
+      </code>
+      
+      가 없는 <code>
+        Placement
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        ICoordinates
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        Coordinates
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IDragActivationOptions
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        ActivationOptions
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IAutoScrollOptions
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        AutoScrollOptions
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        TDnDState
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DnDStatus
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IDnDProviderExternal
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DnDState
+      </code>
+      
+      , <code>
+        useDnD()
+      </code>
+      
+      가 반환하는 것.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IDraggableEvents
+      </code>
+      
+      , <code>
+        IDroppableEvents
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DraggableOptions
+      </code>
+      
+      , <code>
+        DroppableOptions
+      </code>
+      
+      , <code>
+        DnDMonitor
+      </code>
+      
+      의 콜백.
+    </td>
+  </tr>
+</tbody>
+</table>
 
 ### Nuxt
 
-```
+```bash
 npm i @vue-dnd-kit/nuxt@^3 @vue-dnd-kit/core@^3
 ```
 
-| **v2 (**`**@vue-dnd-kit/nuxt**`** 1.x)** | **v3 (**`**@vue-dnd-kit/nuxt**`** 3.x)** |
-| --- | --- |
-| Auto-imports `**makeDraggable**`, `**makeDroppable**`, `**makeSelectionArea**`, `**makeConstraintArea**`, `**makeAutoScroll**`, `**useDnDProvider**` | Auto-imports `**makeDraggable**`, `**makeDroppable**`, `**makeSortableList**`, `**makeSortableItem**`, `**makeSortableTree**`, `**makeSelectionArea**`, `**makeDragArea**`, `**useDnD**`, `**useDnDMonitor**`. |
-| No types auto-imported | The main types are (`**DnDEvent**`, `**SortableDropEvent**`, `**OverlayProps**`…). Generic ones (`**Key**`, `**Active**`, `**Over**`) are imported by hand. |
-| — | Modifiers, collision functions and sensors on request: `**vueDndKit: { autoImports: { modifiers: true, collision: true, sensors: true } }**`. |
-| `**DnDProvider**` and `**DragPreview**` global | The same, with a `**prefix**` option. |
-| `**<DragPreview />**` in the layout, inside the provider | Remove it: the provider renders the overlay. `**DragPreview**` takes an `**id**` and belongs inside overlay components. |
-| Peer `**@vue-dnd-kit/core**` 2 | Peer `**@vue-dnd-kit/core**` 3; Nuxt 4. |
+<table>
+<thead>
+  <tr>
+    <th>
+      v2 (<code>
+        @vue-dnd-kit/nuxt
+      </code>
+      
+       1.x)
+    </th>
+    
+    <th>
+      v3 (<code>
+        @vue-dnd-kit/nuxt
+      </code>
+      
+       3.x)
+    </th>
+  </tr>
+</thead>
 
-`**modules: ['@vue-dnd-kit/nuxt']**` in `**nuxt.config.ts**` stays as it was. See [**installation**](https://zizigy.github.io/vue-dnd-kit/ko/docs/getting-started/installation#nuxt).
+<tbody>
+  <tr>
+    <td>
+      <code>
+        makeDraggable
+      </code>
+      
+      , <code>
+        makeDroppable
+      </code>
+      
+      , <code>
+        makeSelectionArea
+      </code>
+      
+      , <code>
+        makeConstraintArea
+      </code>
+      
+      , <code>
+        makeAutoScroll
+      </code>
+      
+      , <code>
+        useDnDProvider
+      </code>
+      
+       자동 임포트
+    </td>
+    
+    <td>
+      <code>
+        makeDraggable
+      </code>
+      
+      , <code>
+        makeDroppable
+      </code>
+      
+      , <code>
+        makeSortableList
+      </code>
+      
+      , <code>
+        makeSortableItem
+      </code>
+      
+      , <code>
+        makeSortableTree
+      </code>
+      
+      , <code>
+        makeSelectionArea
+      </code>
+      
+      , <code>
+        makeDragArea
+      </code>
+      
+      , <code>
+        useDnD
+      </code>
+      
+      , <code>
+        useDnDMonitor
+      </code>
+      
+       자동 임포트.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      타입은 자동 임포트되지 않음
+    </td>
+    
+    <td>
+      주요 타입은 자동 임포트됩니다(<code>
+        DnDEvent
+      </code>
+      
+      , <code>
+        SortableDropEvent
+      </code>
+      
+      , <code>
+        OverlayProps
+      </code>
+      
+      …). 범용 타입(<code>
+        Key
+      </code>
+      
+      , <code>
+        Active
+      </code>
+      
+      , <code>
+        Over
+      </code>
+      
+      )은 직접 임포트합니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      —
+    </td>
+    
+    <td>
+      모디파이어, 충돌 감지 함수, 센서는 요청할 때만: <code>
+        vueDndKit: { autoImports: { modifiers: true, collision: true, sensors: true } }
+      </code>
+      
+      .
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        DnDProvider
+      </code>
+      
+      와 <code>
+        DragPreview
+      </code>
+      
+      가 전역
+    </td>
+    
+    <td>
+      같으며, <code>
+        prefix
+      </code>
+      
+       옵션이 있습니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      레이아웃의 프로바이더 안에 둔 <code>
+        <DragPreview />
+      </code>
+    </td>
+    
+    <td>
+      지우세요. 오버레이는 프로바이더가 렌더링합니다. <code>
+        DragPreview
+      </code>
+      
+      는 <code>
+        id
+      </code>
+      
+      를 받으며 오버레이 컴포넌트 안에서 씁니다.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      peer 의존성 <code>
+        @vue-dnd-kit/core
+      </code>
+      
+       2
+    </td>
+    
+    <td>
+      peer 의존성 <code>
+        @vue-dnd-kit/core
+      </code>
+      
+       3, Nuxt 4.
+    </td>
+  </tr>
+</tbody>
+</table>
 
-## Before and after
+`nuxt.config.ts`의 `modules: ['@vue-dnd-kit/nuxt']`는 그대로입니다.
+[설치](https://zizigy.github.io/docs/getting-started/installation#nuxt)를 참고하세요.
 
-### A draggable and a drop zone
+## 전과 후
 
-****v2****
+### draggable과 드롭 영역
 
-Card.vue
+**v2**
 
-```
+```vue [Card.vue]
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeDraggable } from '@vue-dnd-kit/core';
@@ -370,9 +4495,7 @@ const { isDragging } = makeDraggable(el, {
 </template>
 ```
 
-Zone.vue
-
-```
+```vue [Zone.vue]
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeDroppable } from '@vue-dnd-kit/core';
@@ -393,11 +4516,9 @@ const { isDragOver, isAllowed } = makeDroppable(el, {
 </template>
 ```
 
-****v3****
+**v3**
 
-Card.vue
-
-```
+```vue [Card.vue]
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeDraggable } from '@vue-dnd-kit/core';
@@ -421,9 +4542,7 @@ const { isDragging } = makeDraggable(el, {
 </template>
 ```
 
-Zone.vue
-
-```
+```vue [Zone.vue]
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeDroppable } from '@vue-dnd-kit/core';
@@ -442,17 +4561,18 @@ const { isOver, isAccepting } = makeDroppable(el, {
 </template>
 ```
 
-- The card gets `**tabindex**`, `**role**` and the `**aria-***` attributes by itself. A `**<button>**` handle is focusable, and keyboard drags start from it.
-- `**groups**` became `**type**` on the draggable and `**accept**` on the target. The callbacks left the `**events**` object.
-- `**isOver**` without `**isAccepting**` is a target that refuses the drag: a drop there flies back.
+- 카드는 `tabindex`, `role`, `aria-*` 속성을 스스로 받습니다. `<button>` 핸들은 포커스를 받을 수
+있고, 키보드 드래그는 거기서 시작합니다.
+- `groups`는 draggable에서는 `type`, 대상에서는 `accept`가 되었습니다. 콜백은 `events` 객체에서
+나왔습니다.
+- `isAccepting` 없이 `isOver`만 참이면 드래그를 거부하는 대상입니다. 거기에 드롭하면 원래 자리로
+돌아갑니다.
 
-### A sortable list
+### 정렬 가능한 리스트
 
-****v2****
+**v2**
 
-TaskList.vue
-
-```
+```vue [TaskList.vue]
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeDroppable, type IDragEvent } from '@vue-dnd-kit/core';
@@ -484,9 +4604,7 @@ makeDroppable(
 </template>
 ```
 
-TaskItem.vue
-
-```
+```vue [TaskItem.vue]
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeDraggable } from '@vue-dnd-kit/core';
@@ -502,11 +4620,9 @@ const { isDragging } = makeDraggable(el, { id: props.task.id }, () => [props.ind
 </template>
 ```
 
-****v3****
+**v3**
 
-TaskList.vue
-
-```
+```vue [TaskList.vue]
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeSortableList } from '@vue-dnd-kit/core';
@@ -525,9 +4641,7 @@ const { items } = makeSortableList(el, { items: tasks });
 </template>
 ```
 
-TaskItem.vue
-
-```
+```vue [TaskItem.vue]
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeSortableItem } from '@vue-dnd-kit/core';
@@ -543,17 +4657,17 @@ const { isPlaceholder } = makeSortableItem(el, { item: () => props.task });
 </template>
 ```
 
-- Render `**items**`, the draft: it reorders while you drag. `**tasks**` gets the new order on drop, and `**defineModel**` emits `**update:modelValue**`.
-- No index, no payload, no `**onDrop**`, no `**<TransitionGroup>**`: the rows slide by themselves.
-- The dragged row stays in the list as the slot it will land in. Style it with `**isPlaceholder**` or `**[data-dnd-placeholder]**` instead of hiding it.
+- 초안인 `items`를 렌더링하세요. 드래그하는 동안 순서가 바뀝니다. 드롭하면 `tasks`가 새 순서를 받고,
+`defineModel`이 `update:modelValue`를 내보냅니다.
+- 인덱스도, 페이로드도, `onDrop`도, `<TransitionGroup>`도 없습니다. 행은 알아서 미끄러집니다.
+- 드래그 중인 행은 안착할 자리로서 리스트에 남습니다. 숨기지 말고 `isPlaceholder`나
+`[data-dnd-placeholder]`로 스타일을 지정하세요.
 
-### Lists that share items
+### 항목을 공유하는 리스트
 
-****v2****
+**v2**
 
-Board.vue
-
-```
+```ts [Board.vue]
 // Each column's makeDroppable calls this from its onDrop, with its array as the payload.
 function applySort(e: IDragEvent) {
   const r = e.helpers.suggestSort('vertical');
@@ -572,11 +4686,9 @@ function applySort(e: IDragEvent) {
 }
 ```
 
-****v3****
+**v3**
 
-Column.vue
-
-```
+```vue [Column.vue]
 <script setup lang="ts">
 import { toRef, useTemplateRef } from 'vue';
 import { makeSortableList } from '@vue-dnd-kit/core';
@@ -599,9 +4711,7 @@ const { items } = makeSortableList(el, {
 </template>
 ```
 
-Board.vue
-
-```
+```vue [Board.vue]
 <script setup lang="ts">
 import { reactive } from 'vue';
 import Column from './Column.vue';
@@ -617,11 +4727,11 @@ const columns = reactive([
 </template>
 ```
 
-The drop writes both arrays, the one the task left and the one it entered. `**TaskItem.vue**` is the one from the sortable list above. A palette that hands out copies was `**suggestCopy()**` and a `**copyOnly**` flag; now it is a list:
+드롭은 두 배열 모두에 기록합니다. 작업이 떠난 배열과 들어간 배열입니다. `TaskItem.vue`는 위의 정렬
+가능한 리스트에 있는 것과 같습니다. 복사본을 나눠 주는 팔레트는 `suggestCopy()`와 `copyOnly` 플래그로
+만들었지만, 이제는 리스트입니다.
 
-Palette.vue
-
-```
+```ts [Palette.vue]
 makeSortableList(el, {
   items: blocks,
   group: { name: 'board', pull: 'clone', put: false },  // copies go out, nothing comes in
@@ -630,24 +4740,22 @@ makeSortableList(el, {
 });
 ```
 
-For a Pinia store or other state you don't write directly, pass `**items**` as a getter, call `**e.preventDefault()**` in `**onDrop**` and apply `**e.result**`: see [**controlled lists**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/shared-lists#controlled-lists).
+Pinia 스토어나 직접 기록하지 않는 다른 상태라면 `items`를 getter로 넘기고, `onDrop`에서
+`e.preventDefault()`를 호출한 뒤 `e.result`를 적용하세요.
+[제어 리스트](https://zizigy.github.io/docs/guides/shared-lists#controlled-lists)를 참고하세요.
 
-### A custom overlay
+### 커스텀 오버레이
 
-****v2****
+**v2**
 
-TaskItem.vue
-
-```
+```ts [TaskItem.vue]
 makeDraggable(el, {
   render: markRaw(TaskOverlay),
   data: () => props.task,
 });
 ```
 
-TaskOverlay.vue
-
-```
+```vue [TaskOverlay.vue]
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useDnDProvider } from '@vue-dnd-kit/core';
@@ -664,11 +4772,9 @@ const task = computed(() => {
 </template>
 ```
 
-****v3****
+**v3**
 
-TaskItem.vue
-
-```
+```ts [TaskItem.vue]
 makeDraggable(el, {
   id: () => props.task.id,
   overlay: TaskOverlay,
@@ -676,9 +4782,7 @@ makeDraggable(el, {
 });
 ```
 
-TaskOverlay.vue
-
-```
+```vue [TaskOverlay.vue]
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { DragItem, Over } from '@vue-dnd-kit/core';
@@ -700,16 +4804,16 @@ const task = computed(() => props.items[0]!.data as Task);
 </style>
 ```
 
-- The component gets the drag as props: `**items**` (every dragged item, the grabbed one first), `**over**`, `**accepted**`, `**status**`, `**mode**` and `**to**`. Declare only the ones you read. For a list's rows, the list item is `**items[0].item**`.
-- Pass it as it is. Switch it with a `**shallowRef**`, never a deep `**ref**`.
+- 컴포넌트는 드래그를 props로 받습니다. `items`(드래그 중인 모든 항목, 집은 항목이 맨 앞), `over`,
+`accepted`, `status`, `mode`, `to`. 읽는 것만 선언하세요. 리스트의 행이라면 리스트 항목은
+`items[0].item`입니다.
+- 그대로 넘기세요. 바꿔 끼울 때는 `shallowRef`를 쓰고, 깊은 `ref`는 절대 쓰지 마세요.
 
-The provider's slot changes the same way, and your component no longer positions itself:
+프로바이더의 슬롯도 같은 식으로 바뀌며, 컴포넌트가 더 이상 스스로 위치를 정하지 않습니다.
 
-****v2****
+**v2**
 
-App.vue
-
-```
+```vue [App.vue]
 <DnDProvider>
   <RouterView />
   <template #preview>
@@ -718,11 +4822,9 @@ App.vue
 </DnDProvider>
 ```
 
-****v3****
+**v3**
 
-App.vue
-
-```
+```vue [App.vue]
 <DnDProvider>
   <RouterView />
   <template #overlay="{ items, over, accepted }">
@@ -731,15 +4833,15 @@ App.vue
 </DnDProvider>
 ```
 
-A pop-in that wrapped `**DragPreview**` in a `**<Transition>**` becomes `**overlay-class**` with `**@starting-style**`: see [**lift, tilt, settle**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/animations#the-overlay-lift-tilt-settle).
+`DragPreview`를 `<Transition>`으로 감싸던 팝인 효과는 `@starting-style`을 쓴 `overlay-class`가
+됩니다. [들어 올리고, 기울이고, 내려놓기](https://zizigy.github.io/docs/guides/animations#the-overlay-lift-tilt-settle)를
+참고하세요.
 
-### A drop you confirm
+### 확인을 받는 드롭
 
-****v2****
+**v2**
 
-Zone.vue
-
-```
+```ts [Zone.vue]
 makeDroppable(el, {
   events: {
     onDrop: (e) =>
@@ -752,22 +4854,19 @@ makeDroppable(el, {
 });
 ```
 
-****v3****
+**v3**
 
-Zone.vue
-
-```
+```ts [Zone.vue]
 makeDroppable(el, {
   onBeforeDrop: () => (window.confirm('Drop here?') ? 'accept' : 'continue'),
   onDrop: (e) => place(e.active.items),
 });
 ```
 
-A list asks the same way, and a promise lets you open a dialog of your own. The overlay waits where it was let go until the promise settles:
+리스트도 같은 방식으로 묻고, Promise를 쓰면 직접 만든 다이얼로그를 열 수 있습니다. Promise가 끝날
+때까지 오버레이는 놓은 자리에서 기다립니다.
 
-Column.vue
-
-```
+```ts [Column.vue]
 makeSortableList(el, {
   items: toRef(props.column, 'tasks'),
   group: 'board',
@@ -776,13 +4875,11 @@ makeSortableList(el, {
 });
 ```
 
-A zone that took only the matching part of a mixed selection (`**groupMatch: 'some'**`):
+섞인 선택에서 맞는 부분만 받던 영역(`groupMatch: 'some'`):
 
-****v2****
+**v2**
 
-Zone.vue
-
-```
+```ts [Zone.vue]
 makeDroppable(el, {
   groups: ['frontend'],
   groupMatch: 'some',
@@ -792,11 +4889,9 @@ makeDroppable(el, {
 });
 ```
 
-****v3****
+**v3**
 
-Zone.vue
-
-```
+```ts [Zone.vue]
 import type { DragItem } from '@vue-dnd-kit/core';
 
 const fits = (item: DragItem) => item.type.length === 0 || item.type.includes('frontend');
@@ -809,28 +4904,43 @@ makeDroppable(el, {
 });
 ```
 
-Lists do this without code: with `**acceptMode: 'some'**`, the items their `**group.put**` takes land, and the others fly back.
+리스트는 코드 없이 이렇게 합니다. `acceptMode: 'some'`이면 `group.put`이 받는 항목은 안착하고,
+나머지는 원래 자리로 돌아갑니다.
 
-## Pitfalls when upgrading
+## 업그레이드할 때 주의할 점
 
-- ****Install v3 with its range.**** `**^3**` in `**package.json**`: an `**npm update**` keeps `**^2**` on v2.
-- ****Render the draft.**** A list renders the `**items**` that `**makeSortableList**` returns, not your array. Rendering your array, nothing moves until the drop.
-- ****Don't sort twice.**** Delete the `**suggestSort**` code from lists: a list writes each drop into a writable `**items**` ref after its `**onDrop**`. To apply it yourself, call `**e.preventDefault()**` and use `**e.result**`.
-- **`**false**`** refuses the drop.**** In v2, an `**onDrop**` that resolved `**false**` kept the drag going. In v3, return `**'continue'**` from `**onBeforeDrop**`. A promise returned from `**onDrop**` is ignored.
-- ****Lists share only within a **`**group**`**.**** A list without one trades with no other list.
-- ****Key rows by id.**** `**:key="index"**` animates the wrong rows. Pass ids from your data too: a default id is new for every component instance.
-- ****No **`**<TransitionGroup>**`**, no **`**transition**`** on **`**transform**`**.**** The library moves the rows itself, and moves would animate twice.
-- ****Undo the touch workaround.**** `**touch-action: none**` on a whole item keeps the page from scrolling under a finger; v3 starts touch drags with a long press instead. Keep it on a handle that should drag at once, with `**activation: { touch: { distance: 4 } }**`.
-- ****Remove stale attributes.**** The library sets `**tabindex**`, `**role**` and the `**aria-***` it needs and never overrides yours, so a leftover `**role**` or `**aria-grabbed**` stays as you left it.
-- ****Restyle the overlay.**** `**.dnd-kit-preview**` is gone: style what is inside `**[data-dnd-overlay='dragging']**`, never the box's `**transform**`. Give the root of an overlay component `**width: 100%; height: 100%**`, and take `**<DragPreview />**` out of your layouts.
-- ****Auto-scroll is on.**** Pass `**:auto-scroll="false"**` where v2 never scrolled.
-- ****A band needs no key.**** `**makeSelectionArea**` draws from a plain press on its empty space. Add a `**modifier**` to keep v2's Ctrl.
-- ****One provider, areas inside.**** Items can't cross providers. A page that used a provider per region to keep their rules apart needs one provider and a `**makeDragArea**` per region.
-- ****Two arguments.**** `**makeDraggable**` and `**makeDroppable**` take a ref and an options object, no payload.
-
-```json
-{"@context":"https://schema.org","@graph":[{"@id":"https://zizigy.github.io/vue-dnd-kit/ko#website","@type":"WebSite","description":"Drag and drop for Vue 3: sortable lists, kanban boards, trees, multi-drag, animations and accessibility out of the box.","inLanguage":"ko-KR","name":"Vue DnD Kit","url":"https://zizigy.github.io/vue-dnd-kit/ko","translationOfWork":{"@id":"https://zizigy.github.io/vue-dnd-kit#website"}},{"@id":"https://zizigy.github.io/vue-dnd-kit/ko/docs/getting-started/migrating-from-v2#webpage","@type":"WebPage","description":"Move a v2 app to v3 — what changed and why, the upgrade, a map from every v2 API to its v3 replacement, before-and-after code for the common cases, and the pitfalls.","name":"Migrating from v2","url":"https://zizigy.github.io/vue-dnd-kit/ko/docs/getting-started/migrating-from-v2","isPartOf":{"@id":"https://zizigy.github.io/vue-dnd-kit/ko#website"},"potentialAction":[{"@type":"ReadAction","target":["https://zizigy.github.io/vue-dnd-kit/ko/docs/getting-started/migrating-from-v2"]}]}]}
-```
+- **범위를 지정해 v3를 설치하세요.** `package.json`에 `^3`. `npm update`는 `^2`를 v2에 그대로
+둡니다.
+- **초안을 렌더링하세요.** 리스트는 원본 배열이 아니라 `makeSortableList`가 반환하는 `items`를
+렌더링합니다. 원본 배열을 렌더링하면 드롭할 때까지 아무것도 움직이지 않습니다.
+- **두 번 정렬하지 마세요.** 리스트에서 `suggestSort` 코드를 지우세요. 리스트는 `onDrop` 뒤에 각
+드롭을 쓰기 가능한 `items` ref에 기록합니다. 직접 적용하려면 `e.preventDefault()`를 호출하고
+`e.result`를 쓰세요.
+- **false는 드롭을 거부합니다.** v2에서는 `false`로 resolve된 `onDrop`이 드래그를 계속했습니다.
+v3에서는 `onBeforeDrop`에서 `'continue'`를 반환하세요. `onDrop`에서 반환한 Promise는 무시됩니다.
+- **리스트는 같은 group 안에서만 공유합니다.** `group`이 없는 리스트는 다른 어떤 리스트와도
+주고받지 않습니다.
+- **행의 key는 id로 하세요.** `:key="index"`는 엉뚱한 행을 애니메이션합니다. id도 데이터에서
+넘기세요. 기본 id는 컴포넌트 인스턴스마다 새로 만들어집니다.
+- **<TransitionGroup>도, transform에 대한 transition도 쓰지 마세요.** 라이브러리가 행을 직접
+움직이므로 움직임이 두 번 애니메이션됩니다.
+- **터치 우회책을 되돌리세요.** 항목 전체에 건 `touch-action: none`은 손가락 아래에서 페이지가
+스크롤되지 않게 막습니다. v3는 대신 길게 누르기로 터치 드래그를 시작합니다. 바로 드래그해야 하는
+핸들에는 `activation: { touch: { distance: 4 } }`와 함께 남겨 두세요.
+- **오래된 속성을 지우세요.** 라이브러리는 `tabindex`, `role`, 필요한 `aria-*`를 설정하고 직접
+지정한 속성은 절대 덮어쓰지 않으므로, 남아 있는 `role`이나 `aria-grabbed`는 남겨 둔 그대로
+유지됩니다.
+- **오버레이 스타일을 다시 지정하세요.** `.dnd-kit-preview`는 없어졌습니다.
+`[data-dnd-overlay='dragging']` 안에 있는 것에 스타일을 지정하고, 박스의 `transform`은 절대
+건드리지 마세요. 오버레이 컴포넌트의 루트에 `width: 100%; height: 100%`를 주고, 레이아웃에서
+`<DragPreview />`를 빼세요.
+- **자동 스크롤은 켜져 있습니다.** v2에서 스크롤되지 않던 곳에는 `:auto-scroll="false"`를 넘기세요.
+- **선택 사각형에는 키가 필요 없습니다.** `makeSelectionArea`는 빈 공간을 그냥 누르기만 해도 그립니다.
+v2의 Ctrl을 유지하려면 `modifier`를 추가하세요.
+- **프로바이더는 하나, 영역은 그 안에.** 항목은 프로바이더를 넘나들 수 없습니다. 규칙을 나누려고
+구역마다 프로바이더를 쓰던 페이지에는 프로바이더 하나와 구역마다 `makeDragArea`가 필요합니다.
+- **인자는 두 개입니다.** `makeDraggable`과 `makeDroppable`은 ref와 옵션 객체를 받으며, 페이로드는
+없습니다.
 
 ## Sitemap
 

@@ -6,12 +6,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/api/make-droppable"
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeDroppable<TData = unknown>(
-  target: MaybeElementRef,
-  options?: DroppableOptions<TData>,
-): DroppableReturn;
-```
+<api-signature name="makeDroppable">
+
+
+
+</api-signature>
 
 ```ts
 const zone = useTemplateRef<HTMLElement>('zone');

@@ -1,58 +1,41 @@
 ---
-title: "Data table · Vue DnD Kit"
-description: "A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips."
+title: "데이터 테이블"
+description: "작업 2,000개를 담은 Nuxt UI 테이블. 가상화되고 검색할 수 있으며, 행을 그립으로 드래그해 정렬합니다."
 canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/data-table"
-meta:
-  "og:description": "A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips."
-  "og:title": "Data table · Vue DnD Kit"
 ---
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-문서/개요
+<example height="34rem" hint="작업을 그립으로 드래그하세요. 검색한 뒤 드래그해도 숨겨진 작업은 제자리를 지킵니다" name="ui-table" title="데이터 테이블">
 
-# Data table
 
-A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips.
 
-[이 페이지 편집](https://github.com/ZiZIGY/vue-dnd-kit/edit/master/docs/content/en/4.examples/09.data-table.md)
+</example>
 
-이 페이지는 아직 번역되지 않았습니다. 영어 원문을 보고 있습니다.
+Nuxt UI의 `UTable`이 테이블과 그 행, 그 가상화 도구를 렌더링합니다. DOM에는 화면에 보이는 행만
+있습니다. 정렬은 Vue DnD Kit이 맡습니다. 테이블은 라이브러리가 제공하는 그대로이며, 슬롯과 `ui`
+클래스도 그대로입니다. 다시 작성한 부분은 없습니다.
 
-Live Drag a task by its grip; search, then drag: the hidden tasks keep their places X ---- · Y ----
+## 살펴볼 점
 
-데모 불러오는 중…
+- **TaskTable.vue**: 정렬 가능한 리스트는 테이블의 `<tbody>`이며, `UTable`이 노출하는 `tableRef`로
+찾습니다. 테이블은 리스트의 초안을 `data`로 받으므로 드래그하는 동안 행이 움직이고,
+`get-row-id`는 리스트와 마찬가지로 작업별로 행의 key를 정합니다. `axis: 'y'`는 드래그를 그
+컬럼 안에, `restrictToFirstScrollableAncestor`는 테이블 안에 둡니다. 테이블의 스크롤 요소가 행을
+감싼 첫 번째 스크롤 가능한 요소이기 때문입니다. 데모를 펼치면 테이블이 화면을 가득 채웁니다.
+- **RowGrip.vue**: 행은 `UTable`이 렌더링하므로, 직접 만든 컴포넌트 중 행인 것은 없습니다. 첫
+번째 셀의 그립(`#grip-cell` 슬롯)이 자신을 감싼 행을 항목으로 만들고, 그 핸들이 됩니다.
+- **검색**은 리스트의 `filter`입니다. 테이블은 일치하는 작업을 보여 주고, 드롭하면 배열 전체가
+기록되며 숨겨진 작업은 원래 있던 자리에 남습니다.
+- **tasks.ts**: `shallowRef`에 담긴 작업 2,000개. 라이브러리는 그 안을 들여다보지 않습니다.
 
-```
-<script setup lang="ts">
-import { DnDProvider } from '@vue-dnd-kit/core';
-import TaskTable from './TaskTable.vue';
-</script>
+## 테이블이 렌더링하는 행
 
-<template>
-  <!-- The row in hand: a table row can't have a shadow, so its overlay content has it. -->
-  <DnDProvider overlay-class="overflow-hidden rounded-md bg-default shadow-xl ring ring-accented">
-    <TaskTable />
-  </DnDProvider>
-</template>
-```
+그립은 행을 반환하는 getter로 `makeSortableItem`을 호출합니다. 렌더링된 뒤의, 그립을 감싼
+`<tr>`입니다. 핸들이므로 포커스와 ARIA 속성은 그립이 받고, 행의 나머지 부분은 클릭과 텍스트
+선택에 자유롭게 쓸 수 있습니다.
 
-Nuxt UI's `**UTable**` renders the table, its rows and its virtualizer: only the rows on screen are in the DOM. Vue DnD Kit sorts them. The table is the library's as it comes, with its slots and its `**ui**` classes; nothing of it is rewritten.
-
-## What to look at
-
-- **`**TaskTable.vue**`**: the sortable list is the table's `**<tbody>**`, found through the `**tableRef**` that `**UTable**` exposes. The table gets the list's draft as its `**data**`, so the rows move while you drag, and `**get-row-id**` keys them by task, as the list does. `**axis: 'y'**` keeps the drag in its column, and `**restrictToFirstScrollableAncestor**` inside the table: its scroller is the first scrollable element around the rows. Expand the demo: the table fills the screen.
-- **`**RowGrip.vue**`**: `**UTable**` renders the rows, so no component of yours is a row. The grip in the first cell (the `**#grip-cell**` slot) makes the row around it the item, and is its handle.
-- ****The search**** is the list's `**filter**`: the table shows the matching tasks, and a drop writes the whole array back, the hidden tasks where they were.
-- **`**tasks.ts**`**: 2,000 tasks in a `**shallowRef**`: the library never looks inside them.
-
-## A row the table renders
-
-The grip calls `**makeSortableItem**` with a getter for the row: the `**<tr>**` around it, once it is rendered. As the handle, the grip takes the focus and the ARIA attributes, and the rest of the row stays free for clicks and text selection.
-
-RowGrip.vue
-
-```
+```ts [RowGrip.vue]
 const grip = useTemplateRef<HTMLElement>('grip');
 makeSortableItem(() => grip.value?.closest('tr') ?? null, {
   id: () => props.task.id,
@@ -61,9 +44,7 @@ makeSortableItem(() => grip.value?.closest('tr') ?? null, {
 });
 ```
 
-TaskTable.vue
-
-```
+```vue [TaskTable.vue]
 <UTable ref="table" :data="items" :get-row-id="(task: Task) => task.id" …>
   <template #grip-cell="{ row }">
     <RowGrip :task="row.original" />
@@ -71,23 +52,23 @@ TaskTable.vue
 </UTable>
 ```
 
-The overlay is the library's copy of the row, in a table of its own with the cells' widths. A table row draws no shadow, so the provider's `**overlay-class**` gives the overlay's content one, with the table's background and a ring. The row's `**ui**` classes tint its place while it travels (`**data-[dnd-placeholder]:bg-primary/5**`).
+오버레이는 라이브러리가 만든 행의 복사본으로, 셀 너비를 유지한 별도의 테이블 안에 있습니다.
+테이블 행은 그림자를 그리지 않으므로, 프로바이더의 `overlay-class`가 오버레이의 내용에 그림자를
+주고, 테이블의 배경과 링도 더합니다. 행이 옮겨지는 동안에는 행의 `ui` 클래스가 그 자리에 색을
+입힙니다(`data-[dnd-placeholder]:bg-primary/5`).
 
-index.vue
-
-```
+```vue [index.vue]
 <DnDProvider overlay-class="overflow-hidden rounded-md bg-default shadow-xl ring ring-accented">
   <TaskTable />
 </DnDProvider>
 ```
 
-## Virtualized rows
+## 가상화된 행
 
-`**virtualize**` gives the table TanStack Virtual: the rows on screen and 8 more around them (`**overscan**`) are rendered, between two spacer rows.
+`virtualize`는 테이블에 TanStack Virtual을 붙입니다. 화면에 보이는 행과 그 주변의 8개 행
+(`overscan`)이 두 스페이서 행 사이에 렌더링됩니다.
 
-TaskTable.vue
-
-```
+```vue [TaskTable.vue]
 <UTable
   :data="items"
   :watch-options="{ deep: false }"
@@ -96,16 +77,22 @@ TaskTable.vue
 />
 ```
 
-- `**estimateSize**` is a first guess: the virtualizer measures each row as it renders. A measurement moves the rows below it, and `**onChange**` calls the list's `**captureLayout()**`, so the library animates that move during a drag instead of letting it jump.
-- The table is the scroller, and the row in hand stays inside it: near its top or bottom edge a drag scrolls it, and new rows render as they come into view.
-- The draft is a new array after every move, so the table needn't watch inside it ( `**deep: false**`).
-- Scroll far from the row you hold, and it leaves the rendered range and unmounts. The drag goes on: the overlay still shows it, and it lands where the draft puts it. A virtual list of your own can keep it mounted with `**rangeExtractor**` (see [**Virtual lists**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/virtual-lists#tanstack-virtual)). A table lays its rows out between spacer rows, where a row rendered far from the others would push them aside, so this one lets it go.
+- `estimateSize`는 첫 추정값입니다. 가상화 도구는 각 행이 렌더링될 때 그 행을 측정합니다. 측정하면
+그 아래 행들이 움직이고, `onChange`가 리스트의 `captureLayout()`을 호출하므로 드래그 중에는
+라이브러리가 그 움직임을 튀게 두지 않고 애니메이션합니다.
+- 테이블이 스크롤 요소이며, 손에 든 행은 그 안에 머뭅니다. 위나 아래 가장자리 근처에서는 드래그가
+테이블을 스크롤하고, 새 행은 화면에 들어올 때 렌더링됩니다.
+- 초안은 이동할 때마다 새 배열이 되므로, 테이블이 그 안을 감시할 필요가 없습니다(`deep: false`).
+- 들고 있는 행에서 멀리 스크롤하면, 그 행은 렌더링 범위를 벗어나 언마운트됩니다. 드래그는
+계속됩니다. 오버레이가 여전히 그 행을 보여 주고, 행은 초안이 정한 자리에 안착합니다. 직접 만든
+가상 리스트라면 `rangeExtractor`로 그 행을 마운트된 채로 둘 수 있습니다
+([가상 리스트](https://zizigy.github.io/docs/guides/virtual-lists#tanstack-virtual) 참고). 테이블은 행을 스페이서 행
+사이에 배치하는데, 그곳에서는 다른 행에서 멀리 떨어져 렌더링된 행이 다른 행들을 밀어내므로 이
+테이블은 그 행을 놓아 줍니다.
 
-## Search, then drag
+## 검색한 다음 드래그
 
-TaskTable.vue
-
-```
+```ts [TaskTable.vue]
 const { items, captureLayout } = makeSortableList(() => table.value?.tableRef?.tBodies[0] ?? null, {
   items: tasks,
   filter: (task) => {
@@ -118,27 +105,80 @@ const { items, captureLayout } = makeSortableList(() => table.value?.tableRef?.t
 });
 ```
 
-Search "Mia", move one of her tasks above another, then clear the search: her tasks are in the new order, and every other task is where it was. The drop's `**e.to.index**` counts the rows shown; `**e.result**` holds the whole array.
+"Mia"를 검색하고 Mia의 작업 하나를 다른 작업 위로 옮긴 뒤 검색을 지워 보세요. Mia의 작업은 새
+순서로 놓이고, 다른 작업은 모두 원래 자리에 있습니다. 드롭의 `e.to.index`는 보이는 행을 기준으로 셉니다.
+`e.result`에는 배열 전체가 들어 있습니다.
 
-****Other UI libraries.**** Nuxt UI renders plain elements and passes your classes and attributes on, as the Reka UI primitives it is built on do: a ref, a slot and a class are all it takes. In other libraries a table renders its rows too, and the same recipe works:
+<tip>
 
-- ****The row.**** A slot that renders the whole row (Vuetify's `**#item**`, Quasar's `**#body**`) gives you its element: make it the item. Where you only get cells (a PrimeVue `**Column**`'s `**#body**`, an Element Plus column's default slot, Naive UI's `**render**`), put a grip in one and make its `**closest('tr')**` the item, as here.
-- ****The list.**** The `**<tbody>**` inside the table's root element: a template ref on the table gives you the component, and its `**$el**` the element.
-- ****The keys and the data.**** Key the rows by your id ( `**item-value**`, `**row-key**`, `**dataKey**`) and give the table the list's draft as its data.
-- ****Its own ordering off.**** Leave out the table's own row reordering and its column sorting: the order is the list's.
-- ****Virtual tables**** place their rows between spacers or in absolute boxes: both work, and a drag survives its row unmounting.
+**다른 UI 라이브러리.** Nuxt UI는 일반 요소를 렌더링하고, 기반이 되는 Reka UI 프리미티브처럼
+클래스와 속성을 그대로 전달합니다. 필요한 것은 ref, 슬롯, 클래스뿐입니다. 다른 라이브러리에서도
+테이블이 행을 직접 렌더링하며, 같은 방법이 통합니다.
 
-The StackBlitz button opens the files in a Vite project set up for Nuxt UI, as its docs do it for Vue: the `**@nuxt/ui/vite**` plugin, Tailwind CSS, and `**UApp**` around the example. In a Nuxt app with the `**@nuxt/ui**` module, copy the folder and render `**index.vue**` on a page.
+- **행.** 행 전체를 렌더링하는 슬롯(Vuetify의 `#item`, Quasar의 `#body`)은 행의 요소를 줍니다.
+그것을 항목으로 만드세요. 셀만 받을 수 있다면(PrimeVue `Column`의 `#body`, Element Plus 컬럼의
+기본 슬롯, Naive UI의 `render`) 그중 한 셀에 그립을 두고, 여기서처럼 그 `closest('tr')`을 항목으로
+만드세요.
+- **리스트.** 테이블 루트 요소 안의 `<tbody>`입니다. 테이블에 단 템플릿 ref는 컴포넌트를 주고, 그
+`$el`은 요소를 줍니다.
+- **key와 데이터.** 행의 key를 직접 정한 id로 하고(`item-value`, `row-key`, `dataKey`), 리스트의
+초안을 테이블의 데이터로 넘기세요.
+- **테이블 자체의 순서 변경은 끄기.** 테이블 자체의 행 순서 변경과 컬럼 정렬은 쓰지 마세요. 순서는
+리스트가 정합니다.
+- **가상 테이블**은 행을 스페이서 사이나 절대 위치 박스에 배치합니다. 둘 다 동작하며, 드래그는 그
+행이 언마운트되어도 이어집니다.
 
-## Keyboard and screen readers
+</tip>
 
-Tab to a task's grip and press `Space` to pick the row up. `ArrowUp` and `ArrowDown` move it, `Space` drops it, `Escape` puts it back. The rows have a `**label**`, and the list too: screen readers hear "Fix the login form dropped at position 3 of 2000 in Tasks.", not keys.
+<note>
 
-Read more: [**Virtual lists**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/virtual-lists) · [**Show some of the items**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/sortable-lists#show-some-of-the-items) · [**Styling: Tailwind and UI kits**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/styling#tailwind-css) · [**Accessibility**](https://zizigy.github.io/vue-dnd-kit/ko/docs/guides/accessibility)
+StackBlitz 버튼은 Nuxt UI 문서가 Vue용으로 설명하는 대로 Nuxt UI를 설정한 Vite 프로젝트에서 파일을
+엽니다. `@nuxt/ui/vite` 플러그인, Tailwind CSS, 예제를 감싸는 `UApp`이 들어 있습니다. `@nuxt/ui` 모듈이
+있는 Nuxt 앱에서는 폴더를 복사하고 페이지에서 `index.vue`를 렌더링하세요.
 
-```json
-{"@context":"https://schema.org","@graph":[{"@id":"https://zizigy.github.io/vue-dnd-kit/ko#website","@type":"WebSite","description":"Drag and drop for Vue 3: sortable lists, kanban boards, trees, multi-drag, animations and accessibility out of the box.","inLanguage":"ko-KR","name":"Vue DnD Kit","url":"https://zizigy.github.io/vue-dnd-kit/ko","translationOfWork":{"@id":"https://zizigy.github.io/vue-dnd-kit#website"}},{"@id":"https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/data-table#webpage","@type":"WebPage","description":"A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips.","name":"Data table","url":"https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/data-table","isPartOf":{"@id":"https://zizigy.github.io/vue-dnd-kit/ko#website"},"potentialAction":[{"@type":"ReadAction","target":["https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/data-table"]}]}]}
-```
+</note>
+
+## 키보드와 스크린 리더
+
+Tab으로 작업의 그립에 가서 <kbd value="Space">
+
+
+
+</kbd>
+
+를 눌러 행을 집으세요. <kbd value="ArrowUp">
+
+
+
+</kbd>
+
+과
+<kbd value="ArrowDown">
+
+
+
+</kbd>
+
+은 행을 옮기고, <kbd value="Space">
+
+
+
+</kbd>
+
+는 드롭하고, <kbd value="Escape">
+
+
+
+</kbd>
+
+는
+되돌립니다. 행에는 `label`이 있고 리스트에도 있습니다. 스크린 리더는 key가 아니라 "Fix the login
+form dropped at position 3 of 2000 in Tasks."를 듣습니다.
+
+더 읽어 보기: [가상 리스트](https://zizigy.github.io/docs/guides/virtual-lists) ·
+[항목 일부만 보여 주기](https://zizigy.github.io/docs/guides/sortable-lists#show-some-of-the-items) ·
+[스타일링: Tailwind와 UI 키트](https://zizigy.github.io/docs/guides/styling#tailwind-css) ·
+[접근성](https://zizigy.github.io/docs/guides/accessibility)
 
 ## Sitemap
 

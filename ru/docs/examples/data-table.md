@@ -1,58 +1,43 @@
 ---
-title: "Data table · Vue DnD Kit"
-description: "A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips."
+title: "Таблица данных"
+description: "Таблица Nuxt UI на 2 000 задач, виртуализированная и с поиском, которая сортируется перетаскиванием строк за их ручки."
 canonical_url: "https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/data-table"
-meta:
-  "og:description": "A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips."
-  "og:title": "Data table · Vue DnD Kit"
 ---
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-Документация/Обзор
+<example height="34rem" hint="Перетащите задачу за ручку; найдите что-нибудь, затем перетащите: скрытые задачи остаются на своих местах" name="ui-table" title="Таблица данных">
 
-# Data table
 
-A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips.
 
-[Редактировать страницу](https://github.com/ZiZIGY/vue-dnd-kit/edit/master/docs/content/en/4.examples/09.data-table.md)
+</example>
 
-Эта страница ещё не переведена. Вы читаете английский оригинал.
+`UTable` из Nuxt UI рендерит таблицу, её строки и её виртуализатор: в DOM есть только строки,
+которые на экране. Vue DnD Kit их сортирует. Таблица — такая, какой её даёт библиотека, со своими
+слотами и классами `ui`; ничего в ней не переписано.
 
-Live Drag a task by its grip; search, then drag: the hidden tasks keep their places X ---- · Y ----
+## На что обратить внимание
 
-Загружаем демо…
+- **TaskTable.vue**: сортируемый список — это `<tbody>` таблицы, найденный через `tableRef`,
+который открывает `UTable`. Таблица получает черновик списка как свои `data`, поэтому строки
+двигаются, пока вы тащите, а `get-row-id` задаёт им ключи по задаче, как и список. `axis: 'y'`
+держит драг в своей колонке, а `restrictToFirstScrollableAncestor` — внутри таблицы: её
+скролл-контейнер — первый прокручиваемый элемент вокруг строк. Разверните демо: таблица займёт
+весь экран.
+- **RowGrip.vue**: строки рендерит `UTable`, поэтому ни один ваш компонент не является строкой.
+Ручка в первой ячейке (слот `#grip-cell`) делает строку вокруг себя элементом списка и сама
+служит её `handle`.
+- **Поиск** — это `filter` списка: таблица показывает подходящие задачи, а бросок записывает
+обратно весь массив, скрытые задачи — там, где они были.
+- **tasks.ts**: 2 000 задач в `shallowRef`: библиотека никогда не заглядывает внутрь них.
 
-```
-<script setup lang="ts">
-import { DnDProvider } from '@vue-dnd-kit/core';
-import TaskTable from './TaskTable.vue';
-</script>
+## Строка, которую рендерит таблица
 
-<template>
-  <!-- The row in hand: a table row can't have a shadow, so its overlay content has it. -->
-  <DnDProvider overlay-class="overflow-hidden rounded-md bg-default shadow-xl ring ring-accented">
-    <TaskTable />
-  </DnDProvider>
-</template>
-```
+Ручка вызывает `makeSortableItem` с геттером строки: `<tr>` вокруг неё, как только тот
+отрендерен. Как ручка, она получает фокус и ARIA-атрибуты, а остальная строка остаётся свободной
+для кликов и выделения текста.
 
-Nuxt UI's `**UTable**` renders the table, its rows and its virtualizer: only the rows on screen are in the DOM. Vue DnD Kit sorts them. The table is the library's as it comes, with its slots and its `**ui**` classes; nothing of it is rewritten.
-
-## What to look at
-
-- **`**TaskTable.vue**`**: the sortable list is the table's `**<tbody>**`, found through the `**tableRef**` that `**UTable**` exposes. The table gets the list's draft as its `**data**`, so the rows move while you drag, and `**get-row-id**` keys them by task, as the list does. `**axis: 'y'**` keeps the drag in its column, and `**restrictToFirstScrollableAncestor**` inside the table: its scroller is the first scrollable element around the rows. Expand the demo: the table fills the screen.
-- **`**RowGrip.vue**`**: `**UTable**` renders the rows, so no component of yours is a row. The grip in the first cell (the `**#grip-cell**` slot) makes the row around it the item, and is its handle.
-- ****The search**** is the list's `**filter**`: the table shows the matching tasks, and a drop writes the whole array back, the hidden tasks where they were.
-- **`**tasks.ts**`**: 2,000 tasks in a `**shallowRef**`: the library never looks inside them.
-
-## A row the table renders
-
-The grip calls `**makeSortableItem**` with a getter for the row: the `**<tr>**` around it, once it is rendered. As the handle, the grip takes the focus and the ARIA attributes, and the rest of the row stays free for clicks and text selection.
-
-RowGrip.vue
-
-```
+```ts [RowGrip.vue]
 const grip = useTemplateRef<HTMLElement>('grip');
 makeSortableItem(() => grip.value?.closest('tr') ?? null, {
   id: () => props.task.id,
@@ -61,9 +46,7 @@ makeSortableItem(() => grip.value?.closest('tr') ?? null, {
 });
 ```
 
-TaskTable.vue
-
-```
+```vue [TaskTable.vue]
 <UTable ref="table" :data="items" :get-row-id="(task: Task) => task.id" …>
   <template #grip-cell="{ row }">
     <RowGrip :task="row.original" />
@@ -71,23 +54,23 @@ TaskTable.vue
 </UTable>
 ```
 
-The overlay is the library's copy of the row, in a table of its own with the cells' widths. A table row draws no shadow, so the provider's `**overlay-class**` gives the overlay's content one, with the table's background and a ring. The row's `**ui**` classes tint its place while it travels (`**data-[dnd-placeholder]:bg-primary/5**`).
+Оверлей — это копия строки, сделанная библиотекой, в собственной таблице с ширинами ячеек.
+Строка таблицы не рисует тень, поэтому тень содержимому оверлея даёт `overlay-class` провайдера,
+вместе с фоном таблицы и обводкой. Классы `ui` строки подкрашивают её место, пока она в пути
+(`data-[dnd-placeholder]:bg-primary/5`).
 
-index.vue
-
-```
+```vue [index.vue]
 <DnDProvider overlay-class="overflow-hidden rounded-md bg-default shadow-xl ring ring-accented">
   <TaskTable />
 </DnDProvider>
 ```
 
-## Virtualized rows
+## Виртуализированные строки
 
-`**virtualize**` gives the table TanStack Virtual: the rows on screen and 8 more around them (`**overscan**`) are rendered, between two spacer rows.
+`virtualize` даёт таблице TanStack Virtual: рендерятся строки на экране и ещё 8 вокруг них
+(`overscan`), между двумя строками-распорками.
 
-TaskTable.vue
-
-```
+```vue [TaskTable.vue]
 <UTable
   :data="items"
   :watch-options="{ deep: false }"
@@ -96,16 +79,23 @@ TaskTable.vue
 />
 ```
 
-- `**estimateSize**` is a first guess: the virtualizer measures each row as it renders. A measurement moves the rows below it, and `**onChange**` calls the list's `**captureLayout()**`, so the library animates that move during a drag instead of letting it jump.
-- The table is the scroller, and the row in hand stays inside it: near its top or bottom edge a drag scrolls it, and new rows render as they come into view.
-- The draft is a new array after every move, so the table needn't watch inside it ( `**deep: false**`).
-- Scroll far from the row you hold, and it leaves the rendered range and unmounts. The drag goes on: the overlay still shows it, and it lands where the draft puts it. A virtual list of your own can keep it mounted with `**rangeExtractor**` (see [**Virtual lists**](https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/virtual-lists#tanstack-virtual)). A table lays its rows out between spacer rows, where a row rendered far from the others would push them aside, so this one lets it go.
+- `estimateSize` — первая прикидка: виртуализатор измеряет каждую строку, когда она рендерится.
+Измерение сдвигает строки ниже неё, и `onChange` вызывает `captureLayout()` списка, чтобы во
+время драга библиотека анимировала этот сдвиг, а не давала ему прыгнуть.
+- Таблица — это скролл-контейнер, и строка в руке остаётся внутри неё: у её верхнего или нижнего
+края драг прокручивает её, а новые строки рендерятся, когда появляются в поле зрения.
+- После каждого перемещения черновик — новый массив, поэтому таблице не нужно следить за тем, что
+у него внутри (`deep: false`).
+- Прокрутите далеко от строки, которую держите, и она уйдёт из отрендеренного диапазона и
+размонтируется. Драг продолжается: оверлей всё ещё её показывает, и она приземлится туда, куда
+её ставит черновик. Ваш собственный виртуальный список может держать её смонтированной через
+`rangeExtractor` (см. [виртуальные списки](https://zizigy.github.io/docs/guides/virtual-lists#tanstack-virtual)).
+Таблица раскладывает строки между строками-распорками, где строка, отрендеренная далеко от
+остальных, раздвинула бы их, поэтому эта её отпускает.
 
-## Search, then drag
+## Найти, затем перетащить
 
-TaskTable.vue
-
-```
+```ts [TaskTable.vue]
 const { items, captureLayout } = makeSortableList(() => table.value?.tableRef?.tBodies[0] ?? null, {
   items: tasks,
   filter: (task) => {
@@ -118,27 +108,80 @@ const { items, captureLayout } = makeSortableList(() => table.value?.tableRef?.t
 });
 ```
 
-Search "Mia", move one of her tasks above another, then clear the search: her tasks are in the new order, and every other task is where it was. The drop's `**e.to.index**` counts the rows shown; `**e.result**` holds the whole array.
+Найдите «Mia», переместите одну из её задач выше другой, затем очистите поиск: её задачи стоят в
+новом порядке, а все остальные задачи — там, где были. `e.to.index` броска считает показанные
+строки; `e.result` содержит весь массив.
 
-****Other UI libraries.**** Nuxt UI renders plain elements and passes your classes and attributes on, as the Reka UI primitives it is built on do: a ref, a slot and a class are all it takes. In other libraries a table renders its rows too, and the same recipe works:
+<tip>
 
-- ****The row.**** A slot that renders the whole row (Vuetify's `**#item**`, Quasar's `**#body**`) gives you its element: make it the item. Where you only get cells (a PrimeVue `**Column**`'s `**#body**`, an Element Plus column's default slot, Naive UI's `**render**`), put a grip in one and make its `**closest('tr')**` the item, as here.
-- ****The list.**** The `**<tbody>**` inside the table's root element: a template ref on the table gives you the component, and its `**$el**` the element.
-- ****The keys and the data.**** Key the rows by your id ( `**item-value**`, `**row-key**`, `**dataKey**`) and give the table the list's draft as its data.
-- ****Its own ordering off.**** Leave out the table's own row reordering and its column sorting: the order is the list's.
-- ****Virtual tables**** place their rows between spacers or in absolute boxes: both work, and a drag survives its row unmounting.
+**Другие UI-библиотеки.** Nuxt UI рендерит обычные элементы и передаёт ваши классы и атрибуты
+дальше, как и примитивы Reka UI, на которых он построен: нужны лишь ref, слот и класс. В других
+библиотеках таблица тоже сама рендерит свои строки, и работает тот же рецепт:
 
-The StackBlitz button opens the files in a Vite project set up for Nuxt UI, as its docs do it for Vue: the `**@nuxt/ui/vite**` plugin, Tailwind CSS, and `**UApp**` around the example. In a Nuxt app with the `**@nuxt/ui**` module, copy the folder and render `**index.vue**` on a page.
+- **Строка.** Слот, который рендерит строку целиком (`#item` у Vuetify, `#body` у Quasar), даёт
+вам её элемент: сделайте его элементом списка. Где вы получаете только ячейки (`#body` у
+`Column` в PrimeVue, слот по умолчанию колонки Element Plus, `render` в Naive UI), поставьте в
+одну из них ручку и сделайте элементом списка её `closest('tr')`, как здесь.
+- **Список.** `<tbody>` внутри корневого элемента таблицы: template ref на таблице даёт вам
+компонент, а его `$el` — элемент.
+- **Ключи и данные.** Задайте строкам ключи по вашему id (`item-value`, `row-key`, `dataKey`) и
+передайте таблице черновик списка как её данные.
+- **Её собственный порядок — выключен.** Не включайте у таблицы ни собственную перестановку
+строк, ни сортировку по колонкам: порядок задаёт список.
+- **Виртуальные таблицы** размещают строки между распорками или в абсолютно позиционированных
+блоках: работает и то и другое, а драг переживает размонтирование своей строки.
 
-## Keyboard and screen readers
+</tip>
 
-Tab to a task's grip and press `Space` to pick the row up. `ArrowUp` and `ArrowDown` move it, `Space` drops it, `Escape` puts it back. The rows have a `**label**`, and the list too: screen readers hear "Fix the login form dropped at position 3 of 2000 in Tasks.", not keys.
+<note>
 
-Read more: [**Virtual lists**](https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/virtual-lists) · [**Show some of the items**](https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/sortable-lists#show-some-of-the-items) · [**Styling: Tailwind and UI kits**](https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/styling#tailwind-css) · [**Accessibility**](https://zizigy.github.io/vue-dnd-kit/ru/docs/guides/accessibility)
+Кнопка StackBlitz открывает файлы в Vite-проекте, настроенном под Nuxt UI так, как это описано в
+его документации для Vue: плагин `@nuxt/ui/vite`, Tailwind CSS и `UApp` вокруг примера. В
+приложении Nuxt с модулем `@nuxt/ui` скопируйте папку и отрендерите `index.vue` на странице.
 
-```json
-{"@context":"https://schema.org","@graph":[{"@id":"https://zizigy.github.io/vue-dnd-kit/ru#website","@type":"WebSite","description":"Drag and drop for Vue 3: sortable lists, kanban boards, trees, multi-drag, animations and accessibility out of the box.","inLanguage":"ru-RU","name":"Vue DnD Kit","url":"https://zizigy.github.io/vue-dnd-kit/ru","translationOfWork":{"@id":"https://zizigy.github.io/vue-dnd-kit#website"}},{"@id":"https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/data-table#webpage","@type":"WebPage","description":"A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips.","name":"Data table","url":"https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/data-table","isPartOf":{"@id":"https://zizigy.github.io/vue-dnd-kit/ru#website"},"potentialAction":[{"@type":"ReadAction","target":["https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/data-table"]}]}]}
-```
+</note>
+
+## Клавиатура и скринридеры
+
+Перейдите табом к ручке задачи и нажмите <kbd value="Space">
+
+
+
+</kbd>
+
+, чтобы взять строку.
+<kbd value="ArrowUp">
+
+
+
+</kbd>
+
+ и <kbd value="ArrowDown">
+
+
+
+</kbd>
+
+ двигают её, <kbd value="Space">
+
+
+
+</kbd>
+
+ бросает,
+<kbd value="Escape">
+
+
+
+</kbd>
+
+ возвращает на место. У строк есть `label`, и у списка тоже: скринридеры
+слышат «Fix the login form dropped at position 3 of 2000 in Tasks.», а не ключи.
+
+Подробнее: [виртуальные списки](https://zizigy.github.io/docs/guides/virtual-lists) ·
+[показать часть элементов](https://zizigy.github.io/docs/guides/sortable-lists#show-some-of-the-items) ·
+[стилизация: Tailwind и UI-киты](https://zizigy.github.io/docs/guides/styling#tailwind-css) ·
+[доступность](https://zizigy.github.io/docs/guides/accessibility)
 
 ## Sitemap
 

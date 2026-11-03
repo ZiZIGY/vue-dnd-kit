@@ -1,353 +1,4449 @@
 ---
-title: "Migrating from v2 · Vue DnD Kit"
-description: "Move a v2 app to v3 — what changed and why, the upgrade, a map from every v2 API to its v3 replacement, before-and-after code for the common cases, and the pitfalls."
+title: "v2 からの移行"
+description: "v2 のアプリを v3 へ移行します。何がなぜ変わったか、アップグレードの手順、v2 のすべての API と v3 での置き換え先の対応表、よくあるケースの移行前後のコード、そして注意点。"
 canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/getting-started/migrating-from-v2"
-meta:
-  "og:description": "Move a v2 app to v3 — what changed and why, the upgrade, a map from every v2 API to its v3 replacement, before-and-after code for the common cases, and the pitfalls."
-  "og:title": "Migrating from v2 · Vue DnD Kit"
 ---
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-ドキュメント/はじめに
+v3 は v2 を書き直したものです。モデルは同じです：1 つのプロバイダーと、自分の要素に対して呼び出すコンポーザブル。ただし、ほとんどの名前とオプションが変わり、並べ替えはライブラリの中に移り、リストごとに書いていたドロップハンドラーは不要になります。このページでは、v2 の各部分を v3 に対応付け、よくあるケースを移行前と移行後で示します。
 
-# Migrating from v2
+## 変更点
 
-Move a v2 app to v3 — what changed and why, the upgrade, a map from every v2 API to its v3 replacement, before-and-after code for the common cases, and the pitfalls.
+- **並べ替えは組み込み**です。v2 ではリストはドロップゾーンで、その行は `[index, items]` のペイロードを持つドラッグ可能な要素であり、`onDrop` の中で `e.helpers.suggestSort()` を使って並べ替えていました。v3 では `makeSortableList` と `makeSortableItem` がそれを行います：リストは配列の**ドラフト**を描画し、それがドラッグ中に並べ替わり、ドロップすると新しい配列が ref に書き込まれます。v2 のドロップハンドラーのほとんどは、移植するのではなく削除します。
+- **ものは自分で動きます**。行は新しい位置へスライドし（FLIP）、オーバーレイはドロップで自分の位置に着地し、キャンセルで元の位置に戻ります。`<TransitionGroup>` は不要になります。
+- **パッケージは今も 1 つ**です。`@vue-dnd-kit/core` にリスト、ツリー、マルチドラッグ、モディファイア、センサー、衝突判定の関数が入っています。Nuxt モジュールは引き続きあり、`@vue-dnd-kit/actions`（プログラムによるドラッグ）と `@vue-dnd-kit/devtools` は新しいオプションのパッケージです。
+- **本物のオーバーレイ**です。`body` にテレポートされ、着地する位置と同じサイズのディープクローンを表示します。オーバーレイコンポーネントは、プロバイダーの内部を読む代わりに、ドラッグを props として受け取ります。
+- **要素ではなく id**です。選択、イベント、ドラッグの状態は、データの id をキーにしています。読むべき DOM 要素のマップはありません。
+- **型と accept ルール**が、通常のドラッグ可能な要素とドロップターゲットの `groups` に代わります。リストは `group` の名前でアイテムをやり取りします。
+- **判断はドロップの前に**行います。`onBeforeDrop` が受け入れる、拒否する、ドラッグを続ける、またはアイテムの一部だけを受け取るかを決めます。`onDrop` は適用するだけです。
+- **センサー**。ポインターとキーボードの入力はセンサーです。アクティベーションはポインターの種類ごとに設定し、タッチのドラッグは長押しで始まるので、指の下でもリストはスクロールし続けます。
+- **エリア**。`makeDragArea` が `makeConstraintArea` と `makeAutoScroll` に代わり、自動スクロールはコードなしですべてのスクロールコンテナーで動きます。
+- **アクセシビリティはデフォルトでオン**です：ARIA 属性、ドロップ後に戻ってくるフォーカス、スクリーンリーダーへの読み上げ。
 
-[このページを編集](https://github.com/ZiZIGY/vue-dnd-kit/edit/master/docs/content/en/1.getting-started/4.migrating-from-v2.md)
+## アップグレード
 
-このページはまだ翻訳されていません。英語の原文を表示しています。
+<code-group>
 
-v3 is a rewrite of v2. The model stays: one provider, and composables you call on your own elements. But most names and options changed, sorting moved into the library, and the drop handler you wrote for each list goes away. This page maps each part of v2 to v3, then shows the common cases before and after.
-
-## What changed
-
-- ****Sorting is built in.**** In v2 a list was a drop zone, its rows were draggables with an `**[index, items]**` payload, and you sorted in `**onDrop**` with `**e.helpers.suggestSort()**`. In v3, `**makeSortableList**` and `**makeSortableItem**` do it: the list renders a ****draft**** of your array that reorders while you drag, and the drop writes the new array into your ref. Most v2 drop handlers are deleted, not ported.
-- ****Things move by themselves.**** Rows slide to their new places (FLIP), the overlay lands on its slot on drop and flies back on cancel. `**<TransitionGroup>**` goes away.
-- ****Still one package.**** `**@vue-dnd-kit/core**` holds lists, trees, multi-drag, modifiers, sensors and the collision functions. The Nuxt module stays; `**@vue-dnd-kit/actions**` (programmatic drags) and `**@vue-dnd-kit/devtools**` are new and optional.
-- ****A real overlay.**** It is teleported to `**body**` and shows a deep clone, sized to the slot it will land in. Overlay components get the drag as props instead of reading the provider's internals.
-- ****Ids, not elements.**** The selection, the events and the drag state are keyed by ids from your data. There are no maps of DOM elements to read.
-- ****Types and accept rules**** replace `**groups**` for plain draggables and targets. Lists trade items by `**group**` name.
-- ****Decisions before the drop.**** `**onBeforeDrop**` accepts, refuses, keeps the drag going or takes some of the items. `**onDrop**` only applies.
-- ****Sensors.**** Pointer and keyboard input are sensors. Activation is set per pointer kind, and touch drags start with a long press, so lists keep scrolling under a finger.
-- ****Areas.**** `**makeDragArea**` replaces `**makeConstraintArea**` and `**makeAutoScroll**`, and auto-scroll works in every scroll container without code.
-- ****Accessibility is on by default****: ARIA attributes, focus that comes back after the drop, and screen reader announcements.
-
-## Upgrade
-
-```
+```bash [npm]
 npm i @vue-dnd-kit/core@^3
 ```
 
-| **Package** | **v2** | **v3** |
-| --- | --- | --- |
-| `**@vue-dnd-kit/core**` | 2.4.x | 3.x |
-| `**@vue-dnd-kit/nuxt**` | 1.x | 3.x |
-| `**@vue-dnd-kit/actions**` | — | 1.x, optional |
-| `**@vue-dnd-kit/devtools**` | — | 3.x, optional |
+```bash [yarn]
+yarn add @vue-dnd-kit/core@^3
+```
 
-- An app that has `**"@vue-dnd-kit/core": "^2…"**` in its `**package.json**` stays on v2 until the range says `**^3**`.
-- Vue ****3.5**** or newer. v2 had no dependencies; v3 has one, `**@vueuse/core**` (14 or 15).
-- Browsers: Chrome and Edge 104+, Safari 15.4+, Firefox 104+.
-- v2 and v3 share a package name, so an app moves to v3 in one go. There is no compatibility layer. The v2 docs stay available from the version menu at the top of the page.
+```bash [pnpm]
+pnpm add @vue-dnd-kit/core@^3
+```
 
-A good order of work:
+```bash [bun]
+bun add @vue-dnd-kit/core@^3
+```
 
-1. Upgrade the packages and rename the provider's props ([**below**](#the-provider)).
-2. Turn each sortable list into `**makeSortableList**` and `**makeSortableItem**`, and delete its drop handler.
-3. Port the plain draggables and drop zones.
-4. Port custom previews to overlay components or the provider's `**#overlay**` slot.
-5. Replace `**makeConstraintArea**` and `**makeAutoScroll**` with `**makeDragArea**`, or with nothing.
-6. Delete the v2 workarounds: `**tabindex**` and `**aria-grabbed**` on draggables, `**touch-action: none**` on whole items, `**<TransitionGroup>**` around rows, `**markRaw**` around preview components.
+</code-group>
 
-## Old to new
+<table>
+<thead>
+  <tr>
+    <th>
+      パッケージ
+    </th>
+    
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-****No equivalent**** in a table means v3 has nothing of that name; the cell says what to use instead.
+<tbody>
+  <tr>
+    <td>
+      <code>
+        @vue-dnd-kit/core
+      </code>
+    </td>
+    
+    <td>
+      2.4.x
+    </td>
+    
+    <td>
+      3.x
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        @vue-dnd-kit/nuxt
+      </code>
+    </td>
+    
+    <td>
+      1.x
+    </td>
+    
+    <td>
+      3.x
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        @vue-dnd-kit/actions
+      </code>
+    </td>
+    
+    <td>
+      —
+    </td>
+    
+    <td>
+      1.x、オプション
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        @vue-dnd-kit/devtools
+      </code>
+    </td>
+    
+    <td>
+      —
+    </td>
+    
+    <td>
+      3.x、オプション
+    </td>
+  </tr>
+</tbody>
+</table>
 
-### At a glance
+- `package.json` に `"@vue-dnd-kit/core": "^2…"` と書かれたアプリは、範囲を `^3` にするまで v2 のままです。
+- Vue **3.5** 以降。v2 には依存関係がありませんでしたが、v3 には `@vueuse/core`（14 または 15）が 1 つあります。
+- ブラウザー：Chrome と Edge 104+、Safari 15.4+、Firefox 104+。
+- v2 と v3 は同じパッケージ名なので、アプリは一度に v3 へ移行します。互換レイヤーはありません。v2 のドキュメントは、ページ上部のバージョンメニューから引き続き見られます。
 
-| **v2** | **v3** |
-| --- | --- |
-| `**DnDProvider**` | `**DnDProvider**`, with new props and an `**#overlay**` slot. |
-| `**makeDraggable**` | `**makeDraggable**` for free dragging; `**makeSortableItem**` for the rows of a list. |
-| `**makeDroppable**` | `**makeDroppable**` for plain drop targets; `**makeSortableList**` or `**makeSortableTree**` for lists and trees. |
-| `**makeSelectionArea**` | `**makeSelectionArea**`. |
-| `**makeConstraintArea**` | `**makeDragArea**`. |
-| `**makeAutoScroll**` | Nothing: auto-scroll is automatic. `**makeDragArea**` or a list's `**autoScroll**` tunes it. |
-| `**useDnDProvider**` | `**useDnD**` for the state, `**useDnDMonitor**` for the events. |
-| `**injectionKey**` | `**useDnDContext()**` and `**provideDnDContext(app, context)**`. |
-| `**DragPreview**` | `**DragPreview**`: now the clone of one dragged item, for overlays of your own. |
-| `**makeSnappedOverlayPosition**`, `**<DragPreview :grid>**` | The `**snapToGrid**` modifier. |
-| `**e.helpers.suggestSort**`, `**suggestSwap**`, `**suggestCopy**`, `**suggestRemove**` | Built into lists: see [**sorting**](#sorting). |
+おすすめの作業順：
 
-### The provider
+1. パッケージをアップグレードし、プロバイダーの props の名前を変えます（[後述](#the-provider)）。
+2. 並べ替え可能なリストをそれぞれ `makeSortableList` と `makeSortableItem` に変え、そのドロップハンドラーを削除します。
+3. 通常のドラッグ可能な要素とドロップゾーンを移植します。
+4. カスタムプレビューを、オーバーレイコンポーネントかプロバイダーの `#overlay` スロットに移植します。
+5. `makeConstraintArea` と `makeAutoScroll` を `makeDragArea` に置き換えるか、何も使わないようにします。
+6. v2 のための回避策を削除します：ドラッグ可能な要素の `tabindex` と `aria-grabbed`、アイテム全体の `touch-action: none`、行を囲む `<TransitionGroup>`、プレビューコンポーネントを囲む `markRaw`。
 
-| **v2** | **v3** |
-| --- | --- |
-| `**autoScrollViewport**`, off unless set | `**autoScroll**`: ****on by default****, for the window and every scroll container. `**{ threshold, maxSpeed, acceleration }**`, or `**false**`. |
-| `**previewTo**`, by default rendered inside the provider | `**overlayTo**`: a selector or an element, `**'body'**` by default. |
-| `**#preview="{ preview }"**` slot | `**#overlay**` slot, with the drag as props: `**items**`, `**active**`, `**over**`, `**accepted**`, `**status**`, `**mode**`, `**to**`. See [**the overlay**](#the-overlay). |
-| `**keyboard.keys.forDrag**`, `**forDrop**`, `**forCancel**` (set on `**useDnDProvider()**`) | `**:keyboard="{ keys: { start, drop, cancel } }"**`. |
-| `**keyboard.step**` | `**:keyboard="{ step }"**`: 25 px by default, for free drags. |
-| `**keyboard.keys.forMove**`, `**forMoveFaster**`, `**keyboard.moveFaster**` | ****No equivalent.**** The arrows move; `Shift` makes the steps of a free drag four times bigger. |
-| `**collision.throttle**` | ****No equivalent.**** `**collision**` picks how the target is found: `**pointerFirst**` (default), `**pointerWithin**`, `**rectIntersection**`, `**closestCenter**`, `**closestCorners**` or a function of yours. |
-| One provider per page, never nested | Nesting works: the closest provider owns an item. One provider for the app is still the goal. |
+## 新旧の対応
 
-New props with no v2 counterpart: `**activation**`, `**modifiers**`, `**sensors**`, `**animation**`, `**dropAnimation**`, `**animateChanges**`, `**haptics**`, `**copyModifier**`, `**overlayFit**`, `**overlayClass**`, `**overlayTransition**`, `**overlayPreviews**`, `**announcements**`, `**screenReaderInstructions**` and `**defaultStyles**`. The provider also emits `**drag-start**`, `**drag-move**`, `**drag-over**`, `**drag-end**`, `**drag-cancel**` and `**drag-settle**`. All of them are in [**the provider guide**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/provider).
+表の中の**対応なし**は、v3 にその名前のものがないことを意味します。代わりに何を使うかはセルに書いてあります。
 
-### Reading the state: `**useDnD**`
+### ひと目で
 
-| `**useDnDProvider()**` | **v3** |
-| --- | --- |
-| `**state**`: `**'dragging'**`, `**'activating'**`, `**'selecting'**`, `**'pending'**` or `**null**` | `**useDnD().status**`: `**'idle'**`, `**'activating'**`, `**'dragging'**`, `**'dropping'**` or `**'selecting'**`. `**'pending'**` (an async drop) is `**'dropping'**`; `**null**` is `**'idle'**`. |
-| `**pointer.value.current**` | `**useDnD().pointer**`, after modifiers. Every event also has `**delta**`, the offset from the start. |
-| `**entities.draggingMap**` | `**useDnD().active**`: `**id**`, `**ids**`, `**items**`, `**data**`, `**type**`, `**element**`, `**rect**`. |
-| `**entities.selectedSet**` (elements) | `**useDnD().selection**` (ids): `**has**`, `**add**`, `**delete**`, `**toggle**`, `**set**`, `**clear**`, `**ids**`. |
-| `**hovered.droppable**`, `**hovered.draggable**` | `**useDnD().over**`: `**id**`, `**data**`, `**element**`, `**rect**`, `**accepted**`. |
-| `**delay.progress**`, `**distanceProgress**` | `**useDnD().activation.progress**`, from `**0**` to `**1**`. |
-| `**preview.position**`, `**preview.size**`, `**preview.render**`, `**preview.to**` | ****No equivalent.**** The library places and sizes the overlay. Use `**overlayTo**`, the `**#overlay**` slot or overlay components. |
-| `**entities.draggableMap**`, `**droppableMap**`, the `**visible…Set**`s, `**scrollPosition**` | ****No equivalent.**** |
-| — | New: `**useDnD().cancel()**`, `**position**`, `**isAutoScrolling**`. |
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-The events moved to `**useDnDMonitor**`: see [**events and drop decisions**](#events-and-drop-decisions). Full shapes in the [**useDnD API**](https://zizigy.github.io/vue-dnd-kit/ja/docs/api/use-dnd).
+<tbody>
+  <tr>
+    <td>
+      <code>
+        DnDProvider
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DnDProvider
+      </code>
+      
+      。新しい props と <code>
+        #overlay
+      </code>
+      
+       スロットがあります。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeDraggable
+      </code>
+    </td>
+    
+    <td>
+      自由なドラッグには <code>
+        makeDraggable
+      </code>
+      
+      、リストの行には <code>
+        makeSortableItem
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeDroppable
+      </code>
+    </td>
+    
+    <td>
+      通常のドロップターゲットには <code>
+        makeDroppable
+      </code>
+      
+      、リストとツリーには <code>
+        makeSortableList
+      </code>
+      
+       または <code>
+        makeSortableTree
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeSelectionArea
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeSelectionArea
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeConstraintArea
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDragArea
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeAutoScroll
+      </code>
+    </td>
+    
+    <td>
+      不要：自動スクロールは自動です。<code>
+        makeDragArea
+      </code>
+      
+       かリストの <code>
+        autoScroll
+      </code>
+      
+       で調整します。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        useDnDProvider
+      </code>
+    </td>
+    
+    <td>
+      状態には <code>
+        useDnD
+      </code>
+      
+      、イベントには <code>
+        useDnDMonitor
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        injectionKey
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        useDnDContext()
+      </code>
+      
+       と <code>
+        provideDnDContext(app, context)
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        DragPreview
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DragPreview
+      </code>
+      
+      ：今はドラッグ中のアイテム 1 つのクローンで、自作のオーバーレイ用です。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeSnappedOverlayPosition
+      </code>
+      
+      、<code>
+        <DragPreview :grid>
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        snapToGrid
+      </code>
+      
+       モディファイア。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.helpers.suggestSort
+      </code>
+      
+      、<code>
+        suggestSwap
+      </code>
+      
+      、<code>
+        suggestCopy
+      </code>
+      
+      、<code>
+        suggestRemove
+      </code>
+    </td>
+    
+    <td>
+      リストに組み込み：<a href="#sorting">
+        並べ替え
+      </a>
+      
+      を参照。
+    </td>
+  </tr>
+</tbody>
+</table>
 
-### `**makeDraggable**`
+### プロバイダー
 
-| **v2** | **v3** |
-| --- | --- |
-| `**makeDraggable(ref, options, payload)**` | `**makeDraggable(ref, options)**`: no third argument. The rows of a list use `**makeSortableItem(ref, { item })**`. |
-| `**id**`, needed in virtual lists | `**id**`: pass it from your data, as a getter. The default comes from `**useId()**` and is new for every component instance. |
-| `**data: () => card**` | `**data**`: a value, a ref or a getter. Read back as `**active.data**` and `**active.items[i].data**`. |
-| `**groups: ['dev']**` | `**type: 'dev'**`, matched by the targets' `**accept**`. See [**groups**](#groups). |
-| `**dragHandle: '.handle'**` | `**handle**`: a selector or an element ref. |
-| `**disabled**` | `**disabled**`. |
-| `**modifier: { keys, method }**` | `**canDrag: (event) => event.altKey**`: a gate for each press. |
-| `**activation: { distance, delay }**` | `**activation**` per pointer kind: `**{ mouse: { distance }, touch: { delay, tolerance }, pen }**`. With `**distance**` and `**delay**` both, the drag starts at whichever comes first. |
-| `**activation.distance: { x, y, condition }**` | ****No equivalent.**** One `**distance**` per pointer kind. |
-| `**render: markRaw(Preview)**` | `**overlay: Preview**`: the component gets the drag as props. See [**the overlay**](#the-overlay). |
-| `**placementMargins**` | ****No equivalent.**** A drop target on a sortable item counts in its middle (25 to 75%); trees nest with `**nesting: 'hover'**`. See [**drop into a sortable item**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/drag-and-drop#drop-into-a-sortable-item). |
-| `**events.onSelfDragStart**`, `**onSelfDragMove**`, `**onSelfDragEnd**`, `**onSelfDragCancel**` | ****No equivalent**** on the draggable: `**useDnDMonitor**`, or `**watch(isDragging)**`. See [**events**](#events-and-drop-decisions). |
-| `**events.onHover**`, `**onLeave**`, and its `**onDragStart**`… for drags over it | A `**makeDroppable**` on the same element: `**onDragEnter**`, `**onDragLeave**`. |
-| Returns `**isDragging**`, `**selected**` | The same. |
-| Returns `**isDragOver**` | Sortable items return `**indicator**` (with `**placeholder: 'indicator'**`) and `**isPlaceholder**`; targets return `**placement**`. |
-| Returns `**isAllowed**` | ****No equivalent**** on draggables. Targets return `**isAccepting**`. |
-| — | New: `**label**`, `**axis**`, `**modifiers**`, `**keyboardMode**`, `**overlay: false**` with the returned `**transform**`, `**dropAnimation**`, `**attributes**`, `**native**`. |
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-### `**makeDroppable**`
+<tbody>
+  <tr>
+    <td>
+      <code>
+        autoScrollViewport
+      </code>
+      
+      、設定しなければオフ
+    </td>
+    
+    <td>
+      <code>
+        autoScroll
+      </code>
+      
+      ：<strong>
+        デフォルトでオン
+      </strong>
+      
+      。ウィンドウとすべてのスクロールコンテナーが対象です。<code>
+        { threshold, maxSpeed, acceleration }
+      </code>
+      
+       または <code>
+        false
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        previewTo
+      </code>
+      
+      、デフォルトではプロバイダーの中に描画
+    </td>
+    
+    <td>
+      <code>
+        overlayTo
+      </code>
+      
+      ：セレクターまたは要素。デフォルトは <code>
+        'body'
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        #preview="{ preview }"
+      </code>
+      
+       スロット
+    </td>
+    
+    <td>
+      ドラッグを props として受け取る <code>
+        #overlay
+      </code>
+      
+       スロット：<code>
+        items
+      </code>
+      
+      、<code>
+        active
+      </code>
+      
+      、<code>
+        over
+      </code>
+      
+      、<code>
+        accepted
+      </code>
+      
+      、<code>
+        status
+      </code>
+      
+      、<code>
+        mode
+      </code>
+      
+      、<code>
+        to
+      </code>
+      
+      。<a href="#the-overlay">
+        オーバーレイ
+      </a>
+      
+      を参照。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        keyboard.keys.forDrag
+      </code>
+      
+      、<code>
+        forDrop
+      </code>
+      
+      、<code>
+        forCancel
+      </code>
+      
+      （<code>
+        useDnDProvider()
+      </code>
+      
+       で設定）
+    </td>
+    
+    <td>
+      <code>
+        :keyboard="{ keys: { start, drop, cancel } }"
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        keyboard.step
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        :keyboard="{ step }"
+      </code>
+      
+      ：デフォルトは 25 px で、自由なドラッグ用です。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        keyboard.keys.forMove
+      </code>
+      
+      、<code>
+        forMoveFaster
+      </code>
+      
+      、<code>
+        keyboard.moveFaster
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        対応なし
+      </strong>
+      
+      。矢印キーで動かします。:kbd{value="Shift"} で自由なドラッグのステップが 4 倍になります。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        collision.throttle
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        対応なし
+      </strong>
+      
+      。<code>
+        collision
+      </code>
+      
+       でターゲットの見つけ方を選びます：<code>
+        pointerFirst
+      </code>
+      
+      （デフォルト）、<code>
+        pointerWithin
+      </code>
+      
+      、<code>
+        rectIntersection
+      </code>
+      
+      、<code>
+        closestCenter
+      </code>
+      
+      、<code>
+        closestCorners
+      </code>
+      
+      、または自作の関数。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      ページに 1 つのプロバイダー、ネストは不可
+    </td>
+    
+    <td>
+      ネストできます：アイテムは最も近いプロバイダーのものです。アプリ全体で 1 つのプロバイダーが今も目標です。
+    </td>
+  </tr>
+</tbody>
+</table>
 
-| **v2** | **v3** |
-| --- | --- |
-| `**makeDroppable(ref, options, () => items)**` | `**makeDroppable(ref, options)**`. A zone that holds a list is a `**makeSortableList**`. |
-| `**groups**` | `**accept**`: `**'*'**`, a type, a list of types, or a function. |
-| `**groupMatch: 'every'**`, `**'some'**` | `**acceptMode: 'all'**`, `**'some'**`. |
-| `**events.onEnter**`, `**events.onLeave**` | `**onDragEnter**`, `**onDragLeave**`: options of their own, no `**events**` object. |
-| `**events.onDrop**`, which could return `**false**` or a promise | `**onBeforeDrop**` decides, `**onDrop**` applies. See [**drop decisions**](#events-and-drop-decisions). |
-| `**events.onValidate**` | `**onBeforeDrop**`, returning the ids to keep. |
-| `**data**` | `**data**`, read back as `**over.data**`. |
-| `**disabled**` | `**disabled**`. |
-| Returns `**isAllowed**` | `**isAccepting**`. |
-| Returns `**isDragOver**`: `**{ top, right, bottom, left, center }**` | `**isOver**` (a boolean), and `**placement**`: `**{ top, right, bottom, left }**`, the halves the pointer is in. There is no `**center**`. |
-| — | New: `**id**`, `**label**`, `**priority**`, `**overOverlay**`, `**overDropAnimation**`, `**external**` (files from the computer). |
+v2 に対応するものがない新しい props：`activation`、`modifiers`、`sensors`、`animation`、`dropAnimation`、`animateChanges`、`haptics`、`copyModifier`、`overlayFit`、`overlayClass`、`overlayTransition`、`overlayPreviews`、`announcements`、`screenReaderInstructions`、`defaultStyles`。プロバイダーは `drag-start`、`drag-move`、`drag-over`、`drag-end`、`drag-cancel`、`drag-resume`、`drag-settle` も発行します。すべて[プロバイダーのガイド](https://zizigy.github.io/docs/guides/provider)にあります。
 
-### The drop event
+### 状態を読む：`useDnD`
 
-| **v2 **`**IDragEvent**` | **v3** |
-| --- | --- |
-| `**e.draggedItems**` | `**e.active.items**`: `**{ id, item, data, label, type }**` each, the grabbed one first. Lists get `**e.items**` and `**e.keys**`. |
-| `**e.draggedItems[0].data**` | `**e.active.data**`. |
-| `**e.draggedItems[i].index**`, `**.items**` | Lists: `**e.from**`, `**{ list, index }**`. |
-| `**e.dropZone**`: `**items**`, `**placement**`, `**data**` | `**e.over**`: `**id**`, `**data**`, `**element**`, `**rect**`, `**accepted**`. Lists: `**e.to**`, `**{ list, index }**`. |
-| `**e.hoveredDraggable**` | ****No equivalent****: lists work out `**e.to.index**` themselves. |
-| `**e.helpers.suggestSort()**` | Lists write the drop; `**e.result**` holds the new array of every list it changes. |
-| `**e.helpers.suggestSwap()**` | `**behavior: 'swap'**` on the list; `**e.partner**` is the item it traded with. |
-| `**e.helpers.suggestCopy()**` | `**group: { name, pull: 'clone' }**` or the copy key (`Alt`), with the list's `**clone**`; `**e.mode**` is `**'copy'**`. |
-| `**e.helpers.suggestRemove()**` | `**e.source.remove()**` in a drop target, or the list's `**dropOutside: 'remove'**`. |
-| `**result.sameList**` | `**e.sameList**`. |
-| `**e.helpers.insertAt**`, `**removeAt**`, `**removeIndexes**`, `**swapAt**`, `**getInsertSide**`, `**isAtZoneStart**`, `**isAtZoneEnd**` | ****No equivalent.**** Lists don't need them; for a plain target, change your data as you like. |
-| `**e.provider**` | `**useDnD()**`. |
-| — | New: `**e.pointer**`, `**e.delta**`, `**e.position**` (where to put an item dropped on a board), `**e.mode**`. |
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        useDnDProvider()
+      </code>
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-### Sorting
+<tbody>
+  <tr>
+    <td>
+      <code>
+        state
+      </code>
+      
+      ：<code>
+        'dragging'
+      </code>
+      
+      、<code>
+        'activating'
+      </code>
+      
+      、<code>
+        'selecting'
+      </code>
+      
+      、<code>
+        'pending'
+      </code>
+      
+       または <code>
+        null
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        useDnD().status
+      </code>
+      
+      ：<code>
+        'idle'
+      </code>
+      
+      、<code>
+        'activating'
+      </code>
+      
+      、<code>
+        'dragging'
+      </code>
+      
+      、<code>
+        'dropping'
+      </code>
+      
+       または <code>
+        'selecting'
+      </code>
+      
+      。<code>
+        'pending'
+      </code>
+      
+      （非同期のドロップ）は <code>
+        'dropping'
+      </code>
+      
+       に、<code>
+        null
+      </code>
+      
+       は <code>
+        'idle'
+      </code>
+      
+       になります。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        pointer.value.current
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        useDnD().pointer
+      </code>
+      
+      、モディファイア適用後の値。どのイベントにも、開始位置からのオフセットである <code>
+        delta
+      </code>
+      
+       があります。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        entities.draggingMap
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        useDnD().active
+      </code>
+      
+      ：<code>
+        id
+      </code>
+      
+      、<code>
+        ids
+      </code>
+      
+      、<code>
+        items
+      </code>
+      
+      、<code>
+        data
+      </code>
+      
+      、<code>
+        type
+      </code>
+      
+      、<code>
+        element
+      </code>
+      
+      、<code>
+        rect
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        entities.selectedSet
+      </code>
+      
+      （要素）
+    </td>
+    
+    <td>
+      <code>
+        useDnD().selection
+      </code>
+      
+      （id）：<code>
+        has
+      </code>
+      
+      、<code>
+        add
+      </code>
+      
+      、<code>
+        delete
+      </code>
+      
+      、<code>
+        toggle
+      </code>
+      
+      、<code>
+        set
+      </code>
+      
+      、<code>
+        clear
+      </code>
+      
+      、<code>
+        ids
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        hovered.droppable
+      </code>
+      
+      、<code>
+        hovered.draggable
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        useDnD().over
+      </code>
+      
+      ：<code>
+        id
+      </code>
+      
+      、<code>
+        data
+      </code>
+      
+      、<code>
+        element
+      </code>
+      
+      、<code>
+        rect
+      </code>
+      
+      、<code>
+        accepted
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        delay.progress
+      </code>
+      
+      、<code>
+        distanceProgress
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        useDnD().activation.progress
+      </code>
+      
+      、<code>
+        0
+      </code>
+      
+       から <code>
+        1
+      </code>
+      
+       まで。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        preview.position
+      </code>
+      
+      、<code>
+        preview.size
+      </code>
+      
+      、<code>
+        preview.render
+      </code>
+      
+      、<code>
+        preview.to
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        対応なし
+      </strong>
+      
+      。オーバーレイの配置とサイズはライブラリが決めます。<code>
+        overlayTo
+      </code>
+      
+      、<code>
+        #overlay
+      </code>
+      
+       スロット、またはオーバーレイコンポーネントを使います。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        entities.draggableMap
+      </code>
+      
+      、<code>
+        droppableMap
+      </code>
+      
+      、<code>
+        visible…Set
+      </code>
+      
+       の各セット、<code>
+        scrollPosition
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        対応なし
+      </strong>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      —
+    </td>
+    
+    <td>
+      新規：<code>
+        useDnD().cancel()
+      </code>
+      
+      、<code>
+        position
+      </code>
+      
+      、<code>
+        isAutoScrolling
+      </code>
+      
+      。
+    </td>
+  </tr>
+</tbody>
+</table>
 
-| **v2** | **v3** |
-| --- | --- |
-| A `**makeDroppable**` list with `**() => items**` | `**makeSortableList(listRef, { items })**`. |
-| A `**makeDraggable**` row with `**() => [index, items]**` | `**makeSortableItem(el, { item: () => props.task })**`. |
-| Render your array | Render the returned `**items**`: the draft that reorders while you drag. |
-| `**suggestSort('vertical')**`, `**suggestSort('horizontal')**` | `**strategy: 'vertical'**` (default), `**'horizontal'**` or `**'grid'**`. |
-| Identity checks to find the source and target arrays, then assigning `**sourceItems**` and `**targetItems**` | Nothing: the drop writes every list it changes. |
-| `**<TransitionGroup>**` | Built in. `**animateChanges: true**` animates changes no drag made (adding, removing, shuffling). |
-| An insertion line from `**isDragOver.top**`, `**.bottom**` | `**placeholder: 'indicator'**` and the item's `**indicator.side**`. See [**an insertion line**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/sortable-lists#an-insertion-line). |
-| `**suggestSwap()**` | `**behavior: 'swap'**`. |
-| A copy-only palette (`**suggestCopy()**` and a `**copyOnly**` flag) | `**group: { name, pull: 'clone', put: false }**`, `**sort: false**` and `**clone**`. |
-| A trash zone with `**suggestRemove()**` | `**makeDroppable(trash, { onDrop: (e) => e.source?.remove() })**`, or `**dropOutside: 'remove'**`. |
-| Pinia or immutable data: assign the result yourself | `**items**` as a getter, then `**e.preventDefault()**` in `**onDrop**` and apply `**e.result**`. See [**controlled lists**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/shared-lists#controlled-lists). |
-| A recursive tree: a droppable per folder and `**applyToTree**` | `**makeSortableTree**`: one container, rows rendered flat with their depth. See [**trees**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/trees). |
-| Nested groups with `**v-model**` (a droppable per group) | A list inside a list, all in one `**group**`, each with `**items: defineModel()**`. |
-| Virtual lists: `**id**` on every draggable | Feed the draft to the virtualizer, `**id: () => props.item.id**` on the rows. See [**virtual lists**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/virtual-lists). |
+イベントは `useDnDMonitor` に移りました：[イベントとドロップの判断](#events-and-drop-decisions)を参照。完全な型は [useDnD の API](https://zizigy.github.io/docs/api/use-dnd) にあります。
 
-The code before and after is [**below**](#a-sortable-list). Everything about lists is in [**sortable lists**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/sortable-lists) and [**lists that share items**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/shared-lists).
+### `makeDraggable`
 
-### Groups
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-v2 had one `**groups**` option for everything. v3 splits it in two:
+<tbody>
+  <tr>
+    <td>
+      <code>
+        makeDraggable(ref, options, payload)
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDraggable(ref, options)
+      </code>
+      
+      ：第 3 引数はありません。リストの行は <code>
+        makeSortableItem(ref, { item })
+      </code>
+      
+       を使います。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        id
+      </code>
+      
+      、仮想リストで必要
+    </td>
+    
+    <td>
+      <code>
+        id
+      </code>
+      
+      ：データから、ゲッターとして渡します。デフォルトは <code>
+        useId()
+      </code>
+      
+       から作られ、コンポーネントのインスタンスごとに新しくなります。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        data: () => card
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        data
+      </code>
+      
+      ：値、ref、またはゲッター。<code>
+        active.data
+      </code>
+      
+       と <code>
+        active.items[i].data
+      </code>
+      
+       で読み戻します。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        groups: ['dev']
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        type: 'dev'
+      </code>
+      
+      。ターゲットの <code>
+        accept
+      </code>
+      
+       と照合されます。<a href="#groups">
+        グループ
+      </a>
+      
+      を参照。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        dragHandle: '.handle'
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        handle
+      </code>
+      
+      ：セレクターまたは要素の ref。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        disabled
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        modifier: { keys, method }
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        canDrag: (event) => event.altKey
+      </code>
+      
+      ：押すたびに通るゲートです。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activation: { distance, delay }
+      </code>
+    </td>
+    
+    <td>
+      ポインターの種類ごとの <code>
+        activation
+      </code>
+      
+      ：<code>
+        { mouse: { distance }, touch: { delay, tolerance }, pen }
+      </code>
+      
+      。<code>
+        distance
+      </code>
+      
+       と <code>
+        delay
+      </code>
+      
+       の両方があると、先に満たされた方でドラッグが始まります。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        activation.distance: { x, y, condition }
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        対応なし
+      </strong>
+      
+      。ポインターの種類ごとに <code>
+        distance
+      </code>
+      
+       は 1 つです。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        render: markRaw(Preview)
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        overlay: Preview
+      </code>
+      
+      ：コンポーネントはドラッグを props として受け取ります。<a href="#the-overlay">
+        オーバーレイ
+      </a>
+      
+      を参照。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        placementMargins
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        対応なし
+      </strong>
+      
+      。並べ替え可能なアイテム上のドロップターゲットは、その中央（25〜75%）で判定されます。ツリーは <code>
+        nesting: 'hover'
+      </code>
+      
+       でネストします。<a href="/docs/guides/drag-and-drop#drop-into-a-sortable-item">
+        並べ替え可能なアイテムへのドロップ
+      </a>
+      
+      を参照。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        events.onSelfDragStart
+      </code>
+      
+      、<code>
+        onSelfDragMove
+      </code>
+      
+      、<code>
+        onSelfDragEnd
+      </code>
+      
+      、<code>
+        onSelfDragCancel
+      </code>
+    </td>
+    
+    <td>
+      ドラッグ可能な要素には<strong>
+        対応なし
+      </strong>
+      
+      ：<code>
+        useDnDMonitor
+      </code>
+      
+       か <code>
+        watch(isDragging)
+      </code>
+      
+       を使います。<a href="#events-and-drop-decisions">
+        イベント
+      </a>
+      
+      を参照。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        events.onHover
+      </code>
+      
+      、<code>
+        onLeave
+      </code>
+      
+      、そしてその上を通るドラッグの <code>
+        onDragStart
+      </code>
+      
+      …
+    </td>
+    
+    <td>
+      同じ要素に <code>
+        makeDroppable
+      </code>
+      
+      ：<code>
+        onDragEnter
+      </code>
+      
+      、<code>
+        onDragLeave
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isDragging
+      </code>
+      
+      、<code>
+        selected
+      </code>
+      
+       を返す
+    </td>
+    
+    <td>
+      同じです。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isDragOver
+      </code>
+      
+       を返す
+    </td>
+    
+    <td>
+      並べ替え可能なアイテムは <code>
+        indicator
+      </code>
+      
+      （<code>
+        placeholder: 'indicator'
+      </code>
+      
+       のとき）と <code>
+        isPlaceholder
+      </code>
+      
+       を返し、ドロップターゲットは <code>
+        placement
+      </code>
+      
+       を返します。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isAllowed
+      </code>
+      
+       を返す
+    </td>
+    
+    <td>
+      ドラッグ可能な要素には<strong>
+        対応なし
+      </strong>
+      
+      。ドロップターゲットは <code>
+        isAccepting
+      </code>
+      
+       を返します。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      —
+    </td>
+    
+    <td>
+      新規：<code>
+        label
+      </code>
+      
+      、<code>
+        axis
+      </code>
+      
+      、<code>
+        modifiers
+      </code>
+      
+      、<code>
+        keyboardMode
+      </code>
+      
+      、返される <code>
+        transform
+      </code>
+      
+       と組み合わせる <code>
+        overlay: false
+      </code>
+      
+      、<code>
+        dropAnimation
+      </code>
+      
+      、<code>
+        attributes
+      </code>
+      
+      、<code>
+        native
+      </code>
+      
+      。
+    </td>
+  </tr>
+</tbody>
+</table>
 
-| **v2** | **v3** |
-| --- | --- |
-| `**makeDraggable(el, { groups: ['dev'] })**` | `**makeDraggable(el, { type: 'dev' })**`. |
-| `**makeDroppable(el, { groups: ['dev'] })**` | `**makeDroppable(el, { accept: 'dev' })**`. |
-| `**groups: ['dev', 'ops']**` on a zone | `**accept: ['dev', 'ops']**`, or a function: `**({ active, items, types }) => boolean**`. |
-| `**groups: []**`, or none | `**type**` or `**accept**` left out. The v2 rules hold: an untyped draggable fits any rule, and a target without `**accept**` takes everything. |
-| `**groupMatch: 'every'**`, `**'some'**` | `**acceptMode: 'all'**`, `**'some'**`. |
-| `**groups**` on a list zone and its rows | `**group: 'board'**` on `**makeSortableList**`. `**group: { name, pull, put }**` says what may leave and enter. |
-| `**groups**` on `**makeSelectionArea**` | `**accept**`. |
+### `makeDroppable`
 
-A list without `**group**` is a group of its own and trades with no other list. In v2, a zone without groups took everything. See [**which drags a target takes**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/drag-and-drop#which-drags-a-target-takes).
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-### The overlay
+<tbody>
+  <tr>
+    <td>
+      <code>
+        makeDroppable(ref, options, () => items)
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDroppable(ref, options)
+      </code>
+      
+      。リストを持つゾーンは <code>
+        makeSortableList
+      </code>
+      
+       です。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        groups
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        accept
+      </code>
+      
+      ：<code>
+        '*'
+      </code>
+      
+      、型、型のリスト、または関数。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        groupMatch: 'every'
+      </code>
+      
+      、<code>
+        'some'
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        acceptMode: 'all'
+      </code>
+      
+      、<code>
+        'some'
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        events.onEnter
+      </code>
+      
+      、<code>
+        events.onLeave
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onDragEnter
+      </code>
+      
+      、<code>
+        onDragLeave
+      </code>
+      
+      ：それぞれ独立したオプションで、<code>
+        events
+      </code>
+      
+       オブジェクトはありません。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        events.onDrop
+      </code>
+      
+      。<code>
+        false
+      </code>
+      
+       や Promise を返せた
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+       が判断し、<code>
+        onDrop
+      </code>
+      
+       が適用します。<a href="#events-and-drop-decisions">
+        ドロップの判断
+      </a>
+      
+      を参照。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        events.onValidate
+      </code>
+    </td>
+    
+    <td>
+      残す id を返す <code>
+        onBeforeDrop
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        data
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        data
+      </code>
+      
+      。<code>
+        over.data
+      </code>
+      
+       で読み戻します。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        disabled
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isAllowed
+      </code>
+      
+       を返す
+    </td>
+    
+    <td>
+      <code>
+        isAccepting
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isDragOver
+      </code>
+      
+       を返す：<code>
+        { top, right, bottom, left, center }
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        isOver
+      </code>
+      
+      （真偽値）と <code>
+        placement
+      </code>
+      
+      ：<code>
+        { top, right, bottom, left }
+      </code>
+      
+      、ポインターがある側の半分。<code>
+        center
+      </code>
+      
+       はありません。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      —
+    </td>
+    
+    <td>
+      新規：<code>
+        id
+      </code>
+      
+      、<code>
+        label
+      </code>
+      
+      、<code>
+        priority
+      </code>
+      
+      、<code>
+        overOverlay
+      </code>
+      
+      、<code>
+        overDropAnimation
+      </code>
+      
+      、<code>
+        external
+      </code>
+      
+      （コンピューターからのファイル）。
+    </td>
+  </tr>
+</tbody>
+</table>
 
-| **v2** | **v3** |
-| --- | --- |
-| A preview rendered in the provider, teleported with `**previewTo**` | Always teleported, to `**body**` or to `**overlayTo**`. |
-| A clone: the same tag, its `**innerHTML**` and its size | A deep clone: form values, `**<canvas>**` pixels, inherited styles and table cells come along. Mark what stays behind with `**data-dnd-no-clone**`. |
-| `**render: markRaw(Preview)**`, which reads `**useDnDProvider().entities**` | `**overlay: Preview**`, which gets `**items**`, `**active**`, `**over**`, `**accepted**`, `**status**`, `**mode**` and `**to**` as props. No `**markRaw**`; use a `**shallowRef**` to switch it. |
-| The `**#preview**` slot, positioned from `**preview.position**` | The `**#overlay**` slot: the library places and sizes the box. Rendering nothing falls back to the clone. |
-| `**useDnDProvider().preview.render.value = …**` | The `**#overlay**` slot, or a `**shallowRef**` passed as `**overlay**`. |
-| A new look over a zone, from `**onEnter**` and `**onLeave**` | `**overOverlay**` on `**makeDroppable**` or a list, or read `**over**` in the overlay component. See [**targets that change the overlay**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/overlay#targets-that-change-the-overlay). |
-| `**<DragPreview v-slot="{ draggingMap }">**` | The overlay props' `**items**`; `**<DragPreview :id="item.id" />**` renders one clone. |
-| `**<DragPreview :grid>**`, `**makeSnappedOverlayPosition**` | The `**snapToGrid**` modifier. It snaps where targets are found and the drop's `**position**` too, not only the picture. |
-| `**<Transition>**` or motion's `**AnimatePresence**` around `**DragPreview**` | `**overlay-class**` with `**@starting-style**` for the pickup, `**dropAnimation**` for the landing, `**overlayTransition**` between components. See [**lift, tilt, settle**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/animations#the-overlay-lift-tilt-settle). |
-| `**.dnd-kit-preview**` | `**[data-dnd-overlay]**` (`**"dragging"**`, `**"dropping"**`) on the box, `**[data-dnd-overlay-content]**` inside it. |
-| `**preview.size**`, kept up to date by hand | The box takes the size of the slot it will land in (`**overlayFit**`). |
-| The preview disappears on drop | It lands on its slot, or flies back on cancel. |
+### ドロップイベント
 
-More in [**the overlay guide**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/overlay).
+<table>
+<thead>
+  <tr>
+    <th>
+      v2 <code>
+        IDragEvent
+      </code>
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-### Selection and multi-drag
+<tbody>
+  <tr>
+    <td>
+      <code>
+        e.draggedItems
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        e.active.items
+      </code>
+      
+      ：それぞれ <code>
+        { id, item, data, label, type }
+      </code>
+      
+       で、掴んだアイテムが先頭です。リストは <code>
+        e.items
+      </code>
+      
+       と <code>
+        e.keys
+      </code>
+      
+       も受け取ります。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.draggedItems[0].data
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        e.active.data
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.draggedItems[i].index
+      </code>
+      
+      、<code>
+        .items
+      </code>
+    </td>
+    
+    <td>
+      リスト：<code>
+        e.from
+      </code>
+      
+      、<code>
+        { list, index }
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.dropZone
+      </code>
+      
+      ：<code>
+        items
+      </code>
+      
+      、<code>
+        placement
+      </code>
+      
+      、<code>
+        data
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        e.over
+      </code>
+      
+      ：<code>
+        id
+      </code>
+      
+      、<code>
+        data
+      </code>
+      
+      、<code>
+        element
+      </code>
+      
+      、<code>
+        rect
+      </code>
+      
+      、<code>
+        accepted
+      </code>
+      
+      。リスト：<code>
+        e.to
+      </code>
+      
+      、<code>
+        { list, index }
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.hoveredDraggable
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        対応なし
+      </strong>
+      
+      ：リストは <code>
+        e.to.index
+      </code>
+      
+       を自分で求めます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.helpers.suggestSort()
+      </code>
+    </td>
+    
+    <td>
+      リストがドロップを書き込みます。<code>
+        e.result
+      </code>
+      
+       には、そのドロップで変わったすべてのリストの新しい配列が入ります。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.helpers.suggestSwap()
+      </code>
+    </td>
+    
+    <td>
+      リストに <code>
+        behavior: 'swap'
+      </code>
+      
+      。<code>
+        e.partner
+      </code>
+      
+       は入れ替えた相手のアイテムです。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.helpers.suggestCopy()
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        group: { name, pull: 'clone' }
+      </code>
+      
+       またはコピーキー（:kbd{value="Alt"}）と、リストの <code>
+        clone
+      </code>
+      
+      。<code>
+        e.mode
+      </code>
+      
+       は <code>
+        'copy'
+      </code>
+      
+       です。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.helpers.suggestRemove()
+      </code>
+    </td>
+    
+    <td>
+      ドロップターゲットでの <code>
+        e.source.remove()
+      </code>
+      
+      、またはリストの <code>
+        dropOutside: 'remove'
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        result.sameList
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        e.sameList
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.helpers.insertAt
+      </code>
+      
+      、<code>
+        removeAt
+      </code>
+      
+      、<code>
+        removeIndexes
+      </code>
+      
+      、<code>
+        swapAt
+      </code>
+      
+      、<code>
+        getInsertSide
+      </code>
+      
+      、<code>
+        isAtZoneStart
+      </code>
+      
+      、<code>
+        isAtZoneEnd
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        対応なし
+      </strong>
+      
+      。リストには不要です。通常のドロップターゲットでは、データを好きなように変更してください。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        e.provider
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        useDnD()
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      —
+    </td>
+    
+    <td>
+      新規：<code>
+        e.pointer
+      </code>
+      
+      、<code>
+        e.delta
+      </code>
+      
+      、<code>
+        e.position
+      </code>
+      
+      （ボードにドロップしたアイテムをどこに置くか）、<code>
+        e.mode
+      </code>
+      
+      。
+    </td>
+  </tr>
+</tbody>
+</table>
 
-| **v2** | **v3** |
-| --- | --- |
-| `**selected**`, returned by `**makeDraggable**` | `**selected**`, returned by `**makeDraggable**` and `**makeSortableItem**`. |
-| `**entities.selectedSet**`, a set of elements | `**useDnD().selection**`, keyed by id. |
-| `**makeSelectionArea**`: Ctrl (`**ControlLeft**`) held by default | No key by default: a press on the area's empty space draws the band. `**modifier: { keys: ['Control'], method: 'every' }**` brings Ctrl back. |
-| `**modifier.keys**` as `**KeyboardEvent.code**` | `**KeyboardEvent.key**` (`**'Control'**`, `**'Shift'**`) or `**.code**` (`**'ControlLeft'**`). |
-| `**strategy: 'toggle'**`, `**'select'**` | The same. |
-| `**groups**` | `**accept**`. |
-| `**events.onSelected(elements)**` | `**onSelected(ids)**`. |
-| `**disabled**` | The same. |
-| `**suggestSort()**` moving the selection as a batch | Lists move it. `**multiple: 'group'**` (default), `**'gaps'**` or `**'stack'**` says what the other items do on the way. |
-| `**onValidate**` for mixed selections | `**acceptMode: 'some'**` and `**onBeforeDrop**` returning ids. See [**taking only some**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/multi-drag#taking-only-some). |
+### 並べ替え
 
-More in [**multi-drag and selection**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/multi-drag).
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-### Axes, bounds and snapping
+<tbody>
+  <tr>
+    <td>
+      <code>
+        () => items
+      </code>
+      
+       を渡した <code>
+        makeDroppable
+      </code>
+      
+       のリスト
+    </td>
+    
+    <td>
+      <code>
+        makeSortableList(listRef, { items })
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        () => [index, items]
+      </code>
+      
+       を渡した <code>
+        makeDraggable
+      </code>
+      
+       の行
+    </td>
+    
+    <td>
+      <code>
+        makeSortableItem(el, { item: () => props.task })
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      自分の配列を描画
+    </td>
+    
+    <td>
+      返された <code>
+        items
+      </code>
+      
+       を描画：ドラッグ中に並べ替わるドラフトです。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        suggestSort('vertical')
+      </code>
+      
+      、<code>
+        suggestSort('horizontal')
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        strategy: 'vertical'
+      </code>
+      
+      （デフォルト）、<code>
+        'horizontal'
+      </code>
+      
+      、または <code>
+        'grid'
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      参照の比較で元の配列と先の配列を見つけ、<code>
+        sourceItems
+      </code>
+      
+       と <code>
+        targetItems
+      </code>
+      
+       を代入
+    </td>
+    
+    <td>
+      不要：ドロップが、変わったすべてのリストに書き込みます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        <TransitionGroup>
+      </code>
+    </td>
+    
+    <td>
+      組み込み。<code>
+        animateChanges: true
+      </code>
+      
+       で、ドラッグ以外による変化（追加、削除、シャッフル）をアニメーションします。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isDragOver.top
+      </code>
+      
+      、<code>
+        .bottom
+      </code>
+      
+       による挿入ライン
+    </td>
+    
+    <td>
+      <code>
+        placeholder: 'indicator'
+      </code>
+      
+       とアイテムの <code>
+        indicator.side
+      </code>
+      
+      。<a href="/docs/guides/sortable-lists#an-insertion-line">
+        挿入ライン
+      </a>
+      
+      を参照。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        suggestSwap()
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        behavior: 'swap'
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      コピー専用のパレット（<code>
+        suggestCopy()
+      </code>
+      
+       と <code>
+        copyOnly
+      </code>
+      
+       フラグ）
+    </td>
+    
+    <td>
+      <code>
+        group: { name, pull: 'clone', put: false }
+      </code>
+      
+      、<code>
+        sort: false
+      </code>
+      
+      、<code>
+        clone
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        suggestRemove()
+      </code>
+      
+       を使うゴミ箱ゾーン
+    </td>
+    
+    <td>
+      <code>
+        makeDroppable(trash, { onDrop: (e) => e.source?.remove() })
+      </code>
+      
+      、または <code>
+        dropOutside: 'remove'
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      Pinia やイミュータブルなデータ：結果を自分で代入
+    </td>
+    
+    <td>
+      <code>
+        items
+      </code>
+      
+       をゲッターにして、<code>
+        onDrop
+      </code>
+      
+       で <code>
+        e.preventDefault()
+      </code>
+      
+       を呼び、<code>
+        e.result
+      </code>
+      
+       を適用します。<a href="/docs/guides/shared-lists#controlled-lists">
+        制御されたリスト
+      </a>
+      
+      を参照。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      再帰的なツリー：フォルダーごとの droppable と <code>
+        applyToTree
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeSortableTree
+      </code>
+      
+      ：コンテナーは 1 つで、行は深さとともにフラットに描画されます。<a href="/docs/guides/trees">
+        ツリー
+      </a>
+      
+      を参照。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        v-model
+      </code>
+      
+       を使ったネストしたグループ（グループごとに droppable）
+    </td>
+    
+    <td>
+      リストの中のリスト。すべて同じ <code>
+        group
+      </code>
+      
+       で、それぞれ <code>
+        items: defineModel()
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      仮想リスト：すべてのドラッグ可能な要素に <code>
+        id
+      </code>
+    </td>
+    
+    <td>
+      ドラフトを仮想化ライブラリに渡し、行に <code>
+        id: () => props.item.id
+      </code>
+      
+      。<a href="/docs/guides/virtual-lists">
+        仮想リスト
+      </a>
+      
+      を参照。
+    </td>
+  </tr>
+</tbody>
+</table>
 
-| **v2** | **v3** |
-| --- | --- |
-| `**makeConstraintArea(el, { axis: 'x' })**` | `**makeDragArea(el, { axis: 'x' })**`, for the drags that start inside it. `**axis**` also works on a draggable, a list, a tree or an item. |
-| `**axis: 'both'**` | `**axis**` left out. |
-| `**restrictToArea: true**` | `**makeDragArea(el, { restrictToArea: true })**`, or the modifiers `**restrictToParent**` and `**restrictToElement(el)**`. |
-| A provider per region, to keep rules apart | One provider and a `**makeDragArea**` per region. Its items can still move anywhere. |
-| `**<DragPreview :grid="20">**`, `**makeSnappedOverlayPosition**` | `**snapToGrid(20)**` or `**snapToGrid({ x, y, origin, smooth })**`, in `**modifiers**` on the provider, an area, a list or a draggable. |
-| — | New: `**restrictToWindowEdges**`, `**restrictToFirstScrollableAncestor**`, `**snapCenterToCursor**`, and modifiers of your own. |
+移行前後のコードは[後述](#a-sortable-list)します。リストのすべては[並べ替え可能なリスト](https://zizigy.github.io/docs/guides/sortable-lists)と[アイテムを共有するリスト](https://zizigy.github.io/docs/guides/shared-lists)にあります。
 
-More in [**axes, bounds and grids**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/constraints).
+### グループ
 
-### Auto-scroll
+v2 にはすべてに使う `groups` オプションが 1 つありました。v3 はそれを 2 つに分けます：
 
-| **v2** | **v3** |
-| --- | --- |
-| `**<DnDProvider :autoScrollViewport="true">**`, off by default | On by default, for the window and every scroll container. `**:auto-scroll="false"**` turns it off. |
-| `**makeAutoScroll(el, { threshold, speed })**` | Nothing: any `**overflow: auto**` or `**scroll**` element scrolls. To tune one: `**makeDragArea(el, { autoScroll: { … } })**` or the list's `**autoScroll**`. |
-| `**threshold**` in px, or per side | `**threshold**`: a fraction of the container's size (`**0.2**`), between 24 and 96 px. ****No equivalent**** for per-side thresholds. |
-| `**speed**`, a multiplier | `**maxSpeed**` (25 px per frame) and `**acceleration**` (10). |
-| `**disabled: true**` | `**autoScroll: false**`. |
-| `**isScrolling**` | `**isAutoScrolling**`, from `**makeDragArea**` or `**useDnD()**`. |
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-### Keyboard and accessibility
+<tbody>
+  <tr>
+    <td>
+      <code>
+        makeDraggable(el, { groups: ['dev'] })
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDraggable(el, { type: 'dev' })
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeDroppable(el, { groups: ['dev'] })
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDroppable(el, { accept: 'dev' })
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      ゾーンの <code>
+        groups: ['dev', 'ops']
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        accept: ['dev', 'ops']
+      </code>
+      
+      、または関数：<code>
+        ({ active, items, types }) => boolean
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        groups: []
+      </code>
+      
+      、または指定なし
+    </td>
+    
+    <td>
+      <code>
+        type
+      </code>
+      
+       や <code>
+        accept
+      </code>
+      
+       を省きます。v2 のルールはそのままです：型のないドラッグ可能な要素はどのルールにも合い、<code>
+        accept
+      </code>
+      
+       のないターゲットはすべてを受け入れます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        groupMatch: 'every'
+      </code>
+      
+      、<code>
+        'some'
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        acceptMode: 'all'
+      </code>
+      
+      、<code>
+        'some'
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      リストのゾーンとその行の <code>
+        groups
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeSortableList
+      </code>
+      
+       の <code>
+        group: 'board'
+      </code>
+      
+      。<code>
+        group: { name, pull, put }
+      </code>
+      
+       で、何が出ていけて何が入れるかを指定します。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeSelectionArea
+      </code>
+      
+       の <code>
+        groups
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        accept
+      </code>
+      
+      。
+    </td>
+  </tr>
+</tbody>
+</table>
 
-| **v2** | **v3** |
-| --- | --- |
-| `**tabindex="0"**` on every draggable | Set for you, with `**role**`, `**aria-roledescription**`, `**aria-describedby**`, `**aria-disabled**` and `**aria-pressed**`. Your own attributes win. |
-| `**:aria-grabbed="isDragging"**` by hand | Remove it: `**aria-pressed**` follows the drag. |
-| Keys set on `**useDnDProvider().keyboard.keys**` | The provider's `**keyboard**` prop. Bindings match `**event.code**` or `**event.key**`. |
-| Arrows move the preview by `**keyboard.step**` | Free drags: `**keyboard.step**` px. Lists: by slots, and into the next list of the group. `**keyboardMode: 'droppables'**` jumps between targets. |
-| Rebinding the arrows (`**forMove**`, `**forMoveFaster**`) | ****No equivalent.**** |
-| No announcements | A live region speaks every pickup, move, drop and cancel. `**label**` names things; `**announcements**` and `**screenReaderInstructions**` reword them. |
+`group` のないリストはそれだけで 1 つのグループになり、ほかのどのリストともアイテムをやり取りしません。v2 では、groups のないゾーンはすべてを受け入れていました。[ターゲットが受け入れるドラッグ](https://zizigy.github.io/docs/guides/drag-and-drop#which-drags-a-target-takes)を参照してください。
 
-More in [**accessibility**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/accessibility).
+### オーバーレイ
 
-### Events and drop decisions
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-| **v2** | **v3** |
-| --- | --- |
-| Draggable `**events.onSelfDragStart**` | `**useDnDMonitor({ onDragStart })**`, checking `**active.ids**`. For a class, `**isDragging**` is enough. |
-| `**onSelfDragMove**` | The monitor's `**onDragMove**`. |
-| `**onSelfDragEnd**`, dropped or cancelled | The monitor's `**onDragEnd**` (a drop) and `**onDragCancel**`. `**onDragSettle**` hears both, once the overlay has landed. |
-| `**onSelfDragCancel**` | The monitor's `**onDragCancel**`. |
-| Draggable `**onHover**`, `**onLeave**`, and its `**onDragStart**`… for drags over it | `**makeDroppable**` on the element: `**onDragEnter**`, `**onDragLeave**`. Rows of a list need nothing. |
-| Droppable `**events.onEnter**`, `**onLeave**` | `**onDragEnter**`, `**onDragLeave**`. |
-| Droppable `**events.onDrop**` | `**onBeforeDrop**` decides, then `**onDrop**` applies. `**onDrop**` is synchronous, and what it returns is ignored. |
-| Droppable `**events.onValidate**` | `**onBeforeDrop**`, with `**acceptMode: 'some'**`. |
-| — | New: the provider's `**@drag-start**` … `**@drag-settle**`, and the monitor's `**onDragOver**`, `**onBeforeDrop**` and `**onDragResume**`. |
+<tbody>
+  <tr>
+    <td>
+      プロバイダーの中に描画され、<code>
+        previewTo
+      </code>
+      
+       でテレポートされるプレビュー
+    </td>
+    
+    <td>
+      常にテレポートされます。行き先は <code>
+        body
+      </code>
+      
+       か <code>
+        overlayTo
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      クローン：同じタグ、その <code>
+        innerHTML
+      </code>
+      
+      、そのサイズ
+    </td>
+    
+    <td>
+      ディープクローン：フォームの値、<code>
+        <canvas>
+      </code>
+      
+       のピクセル、継承されたスタイル、表のセルも一緒に来ます。残すものには <code>
+        data-dnd-no-clone
+      </code>
+      
+       を付けます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        render: markRaw(Preview)
+      </code>
+      
+      。<code>
+        useDnDProvider().entities
+      </code>
+      
+       を読む
+    </td>
+    
+    <td>
+      <code>
+        overlay: Preview
+      </code>
+      
+      。<code>
+        items
+      </code>
+      
+      、<code>
+        active
+      </code>
+      
+      、<code>
+        over
+      </code>
+      
+      、<code>
+        accepted
+      </code>
+      
+      、<code>
+        status
+      </code>
+      
+      、<code>
+        mode
+      </code>
+      
+      、<code>
+        to
+      </code>
+      
+       を props として受け取ります。<code>
+        markRaw
+      </code>
+      
+       は不要で、切り替えるには <code>
+        shallowRef
+      </code>
+      
+       を使います。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        preview.position
+      </code>
+      
+       で位置を決める <code>
+        #preview
+      </code>
+      
+       スロット
+    </td>
+    
+    <td>
+      <code>
+        #overlay
+      </code>
+      
+       スロット：ボックスの配置とサイズはライブラリが決めます。何も描画しなければクローンにフォールバックします。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        useDnDProvider().preview.render.value = …
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        #overlay
+      </code>
+      
+       スロット、または <code>
+        overlay
+      </code>
+      
+       として渡す <code>
+        shallowRef
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onEnter
+      </code>
+      
+       と <code>
+        onLeave
+      </code>
+      
+       による、ゾーンの上での見た目の変更
+    </td>
+    
+    <td>
+      <code>
+        makeDroppable
+      </code>
+      
+       やリストの <code>
+        overOverlay
+      </code>
+      
+      、またはオーバーレイコンポーネントで <code>
+        over
+      </code>
+      
+       を読みます。<a href="/docs/guides/overlay#targets-that-change-the-overlay">
+        オーバーレイを変えるターゲット
+      </a>
+      
+      を参照。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        <DragPreview v-slot="{ draggingMap }">
+      </code>
+    </td>
+    
+    <td>
+      オーバーレイの props の <code>
+        items
+      </code>
+      
+      。<code>
+        <DragPreview :id="item.id" />
+      </code>
+      
+       はクローンを 1 つ描画します。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        <DragPreview :grid>
+      </code>
+      
+      、<code>
+        makeSnappedOverlayPosition
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        snapToGrid
+      </code>
+      
+       モディファイア。見た目だけでなく、ターゲットを探す位置とドロップの <code>
+        position
+      </code>
+      
+       もスナップします。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        DragPreview
+      </code>
+      
+       を囲む <code>
+        <Transition>
+      </code>
+      
+       や motion の <code>
+        AnimatePresence
+      </code>
+    </td>
+    
+    <td>
+      持ち上げには <code>
+        @starting-style
+      </code>
+      
+       付きの <code>
+        overlay-class
+      </code>
+      
+      、着地には <code>
+        dropAnimation
+      </code>
+      
+      、コンポーネント間には <code>
+        overlayTransition
+      </code>
+      
+      。<a href="/docs/guides/animations#the-overlay-lift-tilt-settle">
+        持ち上げ、傾け、落ち着かせる
+      </a>
+      
+      を参照。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        .dnd-kit-preview
+      </code>
+    </td>
+    
+    <td>
+      ボックスの <code>
+        [data-dnd-overlay]
+      </code>
+      
+      （<code>
+        "dragging"
+      </code>
+      
+      、<code>
+        "dropping"
+      </code>
+      
+      ）と、その中の <code>
+        [data-dnd-overlay-content]
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      手作業で更新する <code>
+        preview.size
+      </code>
+    </td>
+    
+    <td>
+      ボックスは着地する位置のサイズになります（<code>
+        overlayFit
+      </code>
+      
+      ）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      ドロップでプレビューが消える
+    </td>
+    
+    <td>
+      自分の位置に着地するか、キャンセルで元の位置に戻ります。
+    </td>
+  </tr>
+</tbody>
+</table>
 
-A v2 `**onDrop**` could return a value, or a promise of one, to decide the drop. In v3 that is the job of `**onBeforeDrop**`, on lists, trees, drop targets and monitors:
+詳しくは[オーバーレイのガイド](https://zizigy.github.io/docs/guides/overlay)にあります。
 
-| **v2 **`**onDrop**`** returns** | **v3 **`**onBeforeDrop**`** returns** |
-| --- | --- |
-| Nothing, or `**true**`: the drop goes through | `**'accept'**`, `**true**` or nothing. |
-| `**false**`: this drop is declined, the drag stays active | `**'continue'**`. **`**false**`** now refuses the drop.**** |
-| A rejected promise, or a throw: the drag is cancelled | `**'reject'**` or `**false**`. A throw rejects too. |
-| A promise; meanwhile `**state**` is `**'pending'**` | A promise; meanwhile `**status**` is `**'dropping'**` and the overlay waits with `**data-dnd-overlay="dropping"**`. |
-| `**onValidate**` returns `**IDragItem[]**` | An array of ids: only those drop, the others fly back. |
+### 選択とマルチドラッグ
 
-Monitors answer first, then the target. Then the target's `**onDrop**` runs, a list writes its new arrays, and `**onDragEnd**` follows. More in [**deciding a drop**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/drop-decisions) and the [**events API**](https://zizigy.github.io/vue-dnd-kit/ja/docs/api/events).
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
 
-### Types
+<tbody>
+  <tr>
+    <td>
+      <code>
+        makeDraggable
+      </code>
+      
+       が返す <code>
+        selected
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDraggable
+      </code>
+      
+       と <code>
+        makeSortableItem
+      </code>
+      
+       が返す <code>
+        selected
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        entities.selectedSet
+      </code>
+      
+      、要素のセット
+    </td>
+    
+    <td>
+      <code>
+        useDnD().selection
+      </code>
+      
+      、id がキー。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeSelectionArea
+      </code>
+      
+      ：デフォルトで Ctrl（<code>
+        ControlLeft
+      </code>
+      
+      ）を押したまま
+    </td>
+    
+    <td>
+      デフォルトではキー不要：エリアの空いている場所を押すと選択枠を描きます。<code>
+        modifier: { keys: ['Control'], method: 'every' }
+      </code>
+      
+       で Ctrl に戻せます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        KeyboardEvent.code
+      </code>
+      
+       としての <code>
+        modifier.keys
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        KeyboardEvent.key
+      </code>
+      
+      （<code>
+        'Control'
+      </code>
+      
+      、<code>
+        'Shift'
+      </code>
+      
+      ）または <code>
+        .code
+      </code>
+      
+      （<code>
+        'ControlLeft'
+      </code>
+      
+      ）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        strategy: 'toggle'
+      </code>
+      
+      、<code>
+        'select'
+      </code>
+    </td>
+    
+    <td>
+      同じです。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        groups
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        accept
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        events.onSelected(elements)
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onSelected(ids)
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled
+      </code>
+    </td>
+    
+    <td>
+      同じです。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      選択をまとめて動かす <code>
+        suggestSort()
+      </code>
+    </td>
+    
+    <td>
+      リストが動かします。<code>
+        multiple: 'group'
+      </code>
+      
+      （デフォルト）、<code>
+        'gaps'
+      </code>
+      
+      、<code>
+        'stack'
+      </code>
+      
+       で、ほかのアイテムが途中でどうするかを決めます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      混在した選択のための <code>
+        onValidate
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        acceptMode: 'some'
+      </code>
+      
+       と、id を返す <code>
+        onBeforeDrop
+      </code>
+      
+      。<a href="/docs/guides/multi-drag#taking-only-some">
+        一部だけを受け入れる
+      </a>
+      
+      を参照。
+    </td>
+  </tr>
+</tbody>
+</table>
 
-| **v2** | **v3** |
-| --- | --- |
-| `**IDragEvent**` | `**DnDEvent**` (targets, monitors), `**SortableDropEvent**` (lists), `**DnDEndEvent**` (`**onDragEnd**`). |
-| `**IDragItem**` | `**DragItem**`. |
-| `**IDropZoneContext**` | `**Over**`. |
-| `**IHoveredDraggableContext**` | ****No equivalent.**** |
-| `**ISuggestSortResult**`, `**ISuggestSwapResult**`, `**ISuggestCopyResult**`, `**ISuggestRemoveResult**` | `**SortableDropEvent**`: `**result**`, `**to**`, `**mode**`, `**partner**`. |
-| `**IDropValidateEvent**` | `**DnDEvent**`, in `**onBeforeDrop**`. |
-| `**IPlacement**` | `**Placement**`, without `**center**`. |
-| `**ICoordinates**` | `**Coordinates**`. |
-| `**IDragActivationOptions**` | `**ActivationOptions**`. |
-| `**IAutoScrollOptions**` | `**AutoScrollOptions**`. |
-| `**TDnDState**` | `**DnDStatus**`. |
-| `**IDnDProviderExternal**` | `**DnDState**`, what `**useDnD()**` returns. |
-| `**IDraggableEvents**`, `**IDroppableEvents**` | Callbacks in `**DraggableOptions**`, `**DroppableOptions**`, and `**DnDMonitor**`. |
+詳しくは[マルチドラッグと選択](https://zizigy.github.io/docs/guides/multi-drag)にあります。
+
+### 軸、境界、スナップ
+
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        makeConstraintArea(el, { axis: 'x' })
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDragArea(el, { axis: 'x' })
+      </code>
+      
+      。その中で始まるドラッグに効きます。<code>
+        axis
+      </code>
+      
+       はドラッグ可能な要素、リスト、ツリー、アイテムにも使えます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        axis: 'both'
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        axis
+      </code>
+      
+       を省きます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        restrictToArea: true
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        makeDragArea(el, { restrictToArea: true })
+      </code>
+      
+      、またはモディファイアの <code>
+        restrictToParent
+      </code>
+      
+       と <code>
+        restrictToElement(el)
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      ルールを分けるための、領域ごとのプロバイダー
+    </td>
+    
+    <td>
+      プロバイダーは 1 つで、領域ごとに <code>
+        makeDragArea
+      </code>
+      
+      。そのアイテムはどこへでも動けます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        <DragPreview :grid="20">
+      </code>
+      
+      、<code>
+        makeSnappedOverlayPosition
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        snapToGrid(20)
+      </code>
+      
+       または <code>
+        snapToGrid({ x, y, origin, smooth })
+      </code>
+      
+       を、プロバイダー、エリア、リスト、ドラッグ可能な要素の <code>
+        modifiers
+      </code>
+      
+       に入れます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      —
+    </td>
+    
+    <td>
+      新規：<code>
+        restrictToWindowEdges
+      </code>
+      
+      、<code>
+        restrictToFirstScrollableAncestor
+      </code>
+      
+      、<code>
+        snapCenterToCursor
+      </code>
+      
+      、そして自作のモディファイア。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+詳しくは[軸、境界、グリッド](https://zizigy.github.io/docs/guides/constraints)にあります。
+
+### 自動スクロール
+
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        <DnDProvider :autoScrollViewport="true">
+      </code>
+      
+      、デフォルトでオフ
+    </td>
+    
+    <td>
+      デフォルトでオン。ウィンドウとすべてのスクロールコンテナーが対象です。<code>
+        :auto-scroll="false"
+      </code>
+      
+       でオフにします。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        makeAutoScroll(el, { threshold, speed })
+      </code>
+    </td>
+    
+    <td>
+      不要：<code>
+        overflow: auto
+      </code>
+      
+       や <code>
+        scroll
+      </code>
+      
+       の要素はどれもスクロールします。個別に調整するには <code>
+        makeDragArea(el, { autoScroll: { … } })
+      </code>
+      
+       またはリストの <code>
+        autoScroll
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      px 単位、または辺ごとの <code>
+        threshold
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        threshold
+      </code>
+      
+      ：コンテナーのサイズに対する割合（<code>
+        0.2
+      </code>
+      
+      ）で、24〜96 px の範囲。辺ごとのしきい値は<strong>
+        対応なし
+      </strong>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      倍率の <code>
+        speed
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        maxSpeed
+      </code>
+      
+      （1 フレームあたり 25 px）と <code>
+        acceleration
+      </code>
+      
+      （10）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        disabled: true
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        autoScroll: false
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isScrolling
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        isAutoScrolling
+      </code>
+      
+      。<code>
+        makeDragArea
+      </code>
+      
+       または <code>
+        useDnD()
+      </code>
+      
+       から。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+### キーボードとアクセシビリティ
+
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      すべてのドラッグ可能な要素に <code>
+        tabindex="0"
+      </code>
+    </td>
+    
+    <td>
+      自動で設定され、<code>
+        role
+      </code>
+      
+      、<code>
+        aria-roledescription
+      </code>
+      
+      、<code>
+        aria-describedby
+      </code>
+      
+      、<code>
+        aria-disabled
+      </code>
+      
+      、<code>
+        aria-pressed
+      </code>
+      
+       も付きます。自分で付けた属性が優先されます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      手書きの <code>
+        :aria-grabbed="isDragging"
+      </code>
+    </td>
+    
+    <td>
+      削除します：<code>
+        aria-pressed
+      </code>
+      
+       がドラッグに追従します。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        useDnDProvider().keyboard.keys
+      </code>
+      
+       で設定したキー
+    </td>
+    
+    <td>
+      プロバイダーの <code>
+        keyboard
+      </code>
+      
+       prop。割り当ては <code>
+        event.code
+      </code>
+      
+       または <code>
+        event.key
+      </code>
+      
+       と照合されます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      矢印キーでプレビューを <code>
+        keyboard.step
+      </code>
+      
+       ずつ動かす
+    </td>
+    
+    <td>
+      自由なドラッグ：<code>
+        keyboard.step
+      </code>
+      
+       px ずつ。リスト：位置ごとに、そしてグループの次のリストへ。<code>
+        keyboardMode: 'droppables'
+      </code>
+      
+       はターゲット間をジャンプします。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      矢印キーの再割り当て（<code>
+        forMove
+      </code>
+      
+      、<code>
+        forMoveFaster
+      </code>
+      
+      ）
+    </td>
+    
+    <td>
+      <strong>
+        対応なし
+      </strong>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      読み上げなし
+    </td>
+    
+    <td>
+      ライブリージョンが、持ち上げ、移動、ドロップ、キャンセルのたびに読み上げます。<code>
+        label
+      </code>
+      
+       が名前を付け、<code>
+        announcements
+      </code>
+      
+       と <code>
+        screenReaderInstructions
+      </code>
+      
+       が言い回しを変えます。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+詳しくは[アクセシビリティ](https://zizigy.github.io/docs/guides/accessibility)にあります。
+
+### イベントとドロップの判断
+
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      ドラッグ可能な要素の <code>
+        events.onSelfDragStart
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        useDnDMonitor({ onDragStart })
+      </code>
+      
+       で <code>
+        active.ids
+      </code>
+      
+       を確認します。クラスを付けるだけなら <code>
+        isDragging
+      </code>
+      
+       で十分です。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onSelfDragMove
+      </code>
+    </td>
+    
+    <td>
+      モニターの <code>
+        onDragMove
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onSelfDragEnd
+      </code>
+      
+      、ドロップでもキャンセルでも
+    </td>
+    
+    <td>
+      モニターの <code>
+        onDragEnd
+      </code>
+      
+      （ドロップ）と <code>
+        onDragCancel
+      </code>
+      
+      。<code>
+        onDragSettle
+      </code>
+      
+       はオーバーレイが着地した後に両方を受け取ります。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onSelfDragCancel
+      </code>
+    </td>
+    
+    <td>
+      モニターの <code>
+        onDragCancel
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      ドラッグ可能な要素の <code>
+        onHover
+      </code>
+      
+      、<code>
+        onLeave
+      </code>
+      
+      、そしてその上を通るドラッグの <code>
+        onDragStart
+      </code>
+      
+      …
+    </td>
+    
+    <td>
+      その要素に <code>
+        makeDroppable
+      </code>
+      
+      ：<code>
+        onDragEnter
+      </code>
+      
+      、<code>
+        onDragLeave
+      </code>
+      
+      。リストの行には何も要りません。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      droppable の <code>
+        events.onEnter
+      </code>
+      
+      、<code>
+        onLeave
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onDragEnter
+      </code>
+      
+      、<code>
+        onDragLeave
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      droppable の <code>
+        events.onDrop
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+       が判断し、次に <code>
+        onDrop
+      </code>
+      
+       が適用します。<code>
+        onDrop
+      </code>
+      
+       は同期で、戻り値は無視されます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      droppable の <code>
+        events.onValidate
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        acceptMode: 'some'
+      </code>
+      
+       と組み合わせた <code>
+        onBeforeDrop
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      —
+    </td>
+    
+    <td>
+      新規：プロバイダーの <code>
+        @drag-start
+      </code>
+      
+       … <code>
+        @drag-settle
+      </code>
+      
+      、そしてモニターの <code>
+        onDragOver
+      </code>
+      
+      、<code>
+        onBeforeDrop
+      </code>
+      
+      、<code>
+        onDragResume
+      </code>
+      
+      。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+v2 の `onDrop` は、値やその Promise を返してドロップを決められました。v3 ではそれは `onBeforeDrop` の役目で、リスト、ツリー、ドロップターゲット、モニターにあります：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      v2 の <code>
+        onDrop
+      </code>
+      
+       の戻り値
+    </th>
+    
+    <th>
+      v3 の <code>
+        onBeforeDrop
+      </code>
+      
+       の戻り値
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      何も返さない、または <code>
+        true
+      </code>
+      
+      ：ドロップが成立する
+    </td>
+    
+    <td>
+      <code>
+        'accept'
+      </code>
+      
+      、<code>
+        true
+      </code>
+      
+      、または何も返さない。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        false
+      </code>
+      
+      ：このドロップは見送られ、ドラッグは続く
+    </td>
+    
+    <td>
+      <code>
+        'continue'
+      </code>
+      
+      。<strong>
+        今は <code>
+          false
+        </code>
+        
+         でドロップが拒否されます
+      </strong>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      reject された Promise や例外：ドラッグがキャンセルされる
+    </td>
+    
+    <td>
+      <code>
+        'reject'
+      </code>
+      
+       または <code>
+        false
+      </code>
+      
+      。例外も拒否になります。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      Promise。その間 <code>
+        state
+      </code>
+      
+       は <code>
+        'pending'
+      </code>
+    </td>
+    
+    <td>
+      Promise。その間 <code>
+        status
+      </code>
+      
+       は <code>
+        'dropping'
+      </code>
+      
+       で、オーバーレイは <code>
+        data-dnd-overlay="dropping"
+      </code>
+      
+       の状態で待ちます。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onValidate
+      </code>
+      
+       が <code>
+        IDragItem[]
+      </code>
+      
+       を返す
+    </td>
+    
+    <td>
+      id の配列：それらだけがドロップされ、ほかは元の位置に戻ります。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+まずモニターが答え、次にターゲットが答えます。そのあとターゲットの `onDrop` が実行され、リストが新しい配列を書き込み、`onDragEnd` が続きます。詳しくは[ドロップの判断](https://zizigy.github.io/docs/guides/drop-decisions)と[イベントの API](https://zizigy.github.io/docs/api/events) にあります。
+
+### 型
+
+<table>
+<thead>
+  <tr>
+    <th>
+      v2
+    </th>
+    
+    <th>
+      v3
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        IDragEvent
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DnDEvent
+      </code>
+      
+      （ドロップターゲット、モニター）、<code>
+        SortableDropEvent
+      </code>
+      
+      （リスト）、<code>
+        DnDEndEvent
+      </code>
+      
+      （<code>
+        onDragEnd
+      </code>
+      
+      ）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IDragItem
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DragItem
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IDropZoneContext
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        Over
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IHoveredDraggableContext
+      </code>
+    </td>
+    
+    <td>
+      <strong>
+        対応なし
+      </strong>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        ISuggestSortResult
+      </code>
+      
+      、<code>
+        ISuggestSwapResult
+      </code>
+      
+      、<code>
+        ISuggestCopyResult
+      </code>
+      
+      、<code>
+        ISuggestRemoveResult
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        SortableDropEvent
+      </code>
+      
+      ：<code>
+        result
+      </code>
+      
+      、<code>
+        to
+      </code>
+      
+      、<code>
+        mode
+      </code>
+      
+      、<code>
+        partner
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IDropValidateEvent
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+       の中の <code>
+        DnDEvent
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IPlacement
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        center
+      </code>
+      
+       のない <code>
+        Placement
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        ICoordinates
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        Coordinates
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IDragActivationOptions
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        ActivationOptions
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IAutoScrollOptions
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        AutoScrollOptions
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        TDnDState
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DnDStatus
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IDnDProviderExternal
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DnDState
+      </code>
+      
+      。<code>
+        useDnD()
+      </code>
+      
+       が返すものです。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        IDraggableEvents
+      </code>
+      
+      、<code>
+        IDroppableEvents
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DraggableOptions
+      </code>
+      
+      、<code>
+        DroppableOptions
+      </code>
+      
+      、<code>
+        DnDMonitor
+      </code>
+      
+       の中のコールバック。
+    </td>
+  </tr>
+</tbody>
+</table>
 
 ### Nuxt
 
-```
+```bash
 npm i @vue-dnd-kit/nuxt@^3 @vue-dnd-kit/core@^3
 ```
 
-| **v2 (**`**@vue-dnd-kit/nuxt**`** 1.x)** | **v3 (**`**@vue-dnd-kit/nuxt**`** 3.x)** |
-| --- | --- |
-| Auto-imports `**makeDraggable**`, `**makeDroppable**`, `**makeSelectionArea**`, `**makeConstraintArea**`, `**makeAutoScroll**`, `**useDnDProvider**` | Auto-imports `**makeDraggable**`, `**makeDroppable**`, `**makeSortableList**`, `**makeSortableItem**`, `**makeSortableTree**`, `**makeSelectionArea**`, `**makeDragArea**`, `**useDnD**`, `**useDnDMonitor**`. |
-| No types auto-imported | The main types are (`**DnDEvent**`, `**SortableDropEvent**`, `**OverlayProps**`…). Generic ones (`**Key**`, `**Active**`, `**Over**`) are imported by hand. |
-| — | Modifiers, collision functions and sensors on request: `**vueDndKit: { autoImports: { modifiers: true, collision: true, sensors: true } }**`. |
-| `**DnDProvider**` and `**DragPreview**` global | The same, with a `**prefix**` option. |
-| `**<DragPreview />**` in the layout, inside the provider | Remove it: the provider renders the overlay. `**DragPreview**` takes an `**id**` and belongs inside overlay components. |
-| Peer `**@vue-dnd-kit/core**` 2 | Peer `**@vue-dnd-kit/core**` 3; Nuxt 4. |
+<table>
+<thead>
+  <tr>
+    <th>
+      v2（<code>
+        @vue-dnd-kit/nuxt
+      </code>
+      
+       1.x）
+    </th>
+    
+    <th>
+      v3（<code>
+        @vue-dnd-kit/nuxt
+      </code>
+      
+       3.x）
+    </th>
+  </tr>
+</thead>
 
-`**modules: ['@vue-dnd-kit/nuxt']**` in `**nuxt.config.ts**` stays as it was. See [**installation**](https://zizigy.github.io/vue-dnd-kit/ja/docs/getting-started/installation#nuxt).
+<tbody>
+  <tr>
+    <td>
+      <code>
+        makeDraggable
+      </code>
+      
+      、<code>
+        makeDroppable
+      </code>
+      
+      、<code>
+        makeSelectionArea
+      </code>
+      
+      、<code>
+        makeConstraintArea
+      </code>
+      
+      、<code>
+        makeAutoScroll
+      </code>
+      
+      、<code>
+        useDnDProvider
+      </code>
+      
+       を自動インポート
+    </td>
+    
+    <td>
+      <code>
+        makeDraggable
+      </code>
+      
+      、<code>
+        makeDroppable
+      </code>
+      
+      、<code>
+        makeSortableList
+      </code>
+      
+      、<code>
+        makeSortableItem
+      </code>
+      
+      、<code>
+        makeSortableTree
+      </code>
+      
+      、<code>
+        makeSelectionArea
+      </code>
+      
+      、<code>
+        makeDragArea
+      </code>
+      
+      、<code>
+        useDnD
+      </code>
+      
+      、<code>
+        useDnDMonitor
+      </code>
+      
+       を自動インポート。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      型は自動インポートされない
+    </td>
+    
+    <td>
+      主な型は自動インポートされます（<code>
+        DnDEvent
+      </code>
+      
+      、<code>
+        SortableDropEvent
+      </code>
+      
+      、<code>
+        OverlayProps
+      </code>
+      
+      …）。汎用的な型（<code>
+        Key
+      </code>
+      
+      、<code>
+        Active
+      </code>
+      
+      、<code>
+        Over
+      </code>
+      
+      ）は手動でインポートします。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      —
+    </td>
+    
+    <td>
+      モディファイア、衝突判定の関数、センサーは必要に応じて：<code>
+        vueDndKit: { autoImports: { modifiers: true, collision: true, sensors: true } }
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        DnDProvider
+      </code>
+      
+       と <code>
+        DragPreview
+      </code>
+      
+       がグローバル
+    </td>
+    
+    <td>
+      同じです。<code>
+        prefix
+      </code>
+      
+       オプションがあります。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      レイアウトの、プロバイダーの中の <code>
+        <DragPreview />
+      </code>
+    </td>
+    
+    <td>
+      削除します：オーバーレイはプロバイダーが描画します。<code>
+        DragPreview
+      </code>
+      
+       は <code>
+        id
+      </code>
+      
+       を受け取り、オーバーレイコンポーネントの中で使います。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      peer 依存 <code>
+        @vue-dnd-kit/core
+      </code>
+      
+       2
+    </td>
+    
+    <td>
+      peer 依存 <code>
+        @vue-dnd-kit/core
+      </code>
+      
+       3、Nuxt 4。
+    </td>
+  </tr>
+</tbody>
+</table>
 
-## Before and after
+`nuxt.config.ts` の `modules: ['@vue-dnd-kit/nuxt']` はそのままです。[インストール](https://zizigy.github.io/docs/getting-started/installation#nuxt)を参照してください。
 
-### A draggable and a drop zone
+## 移行前と移行後
 
-****v2****
+### ドラッグ可能な要素とドロップゾーン
 
-Card.vue
+**v2**
 
-```
+```vue [Card.vue]
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeDraggable } from '@vue-dnd-kit/core';
@@ -370,9 +4466,7 @@ const { isDragging } = makeDraggable(el, {
 </template>
 ```
 
-Zone.vue
-
-```
+```vue [Zone.vue]
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeDroppable } from '@vue-dnd-kit/core';
@@ -393,11 +4487,9 @@ const { isDragOver, isAllowed } = makeDroppable(el, {
 </template>
 ```
 
-****v3****
+**v3**
 
-Card.vue
-
-```
+```vue [Card.vue]
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeDraggable } from '@vue-dnd-kit/core';
@@ -421,9 +4513,7 @@ const { isDragging } = makeDraggable(el, {
 </template>
 ```
 
-Zone.vue
-
-```
+```vue [Zone.vue]
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeDroppable } from '@vue-dnd-kit/core';
@@ -442,17 +4532,15 @@ const { isOver, isAccepting } = makeDroppable(el, {
 </template>
 ```
 
-- The card gets `**tabindex**`, `**role**` and the `**aria-***` attributes by itself. A `**<button>**` handle is focusable, and keyboard drags start from it.
-- `**groups**` became `**type**` on the draggable and `**accept**` on the target. The callbacks left the `**events**` object.
-- `**isOver**` without `**isAccepting**` is a target that refuses the drag: a drop there flies back.
+- カードは `tabindex`、`role`、`aria-*` 属性を自動で受け取ります。`<button>` のハンドルはフォーカスでき、キーボードドラッグはそこから始まります。
+- `groups` は、ドラッグ可能な要素では `type` に、ターゲットでは `accept` になりました。コールバックは `events` オブジェクトから外に出ました。
+- `isAccepting` のない `isOver` は、そのドラッグを拒否するターゲットです：そこにドロップすると元の位置に戻ります。
 
-### A sortable list
+### 並べ替え可能なリスト
 
-****v2****
+**v2**
 
-TaskList.vue
-
-```
+```vue [TaskList.vue]
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeDroppable, type IDragEvent } from '@vue-dnd-kit/core';
@@ -484,9 +4572,7 @@ makeDroppable(
 </template>
 ```
 
-TaskItem.vue
-
-```
+```vue [TaskItem.vue]
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeDraggable } from '@vue-dnd-kit/core';
@@ -502,11 +4588,9 @@ const { isDragging } = makeDraggable(el, { id: props.task.id }, () => [props.ind
 </template>
 ```
 
-****v3****
+**v3**
 
-TaskList.vue
-
-```
+```vue [TaskList.vue]
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeSortableList } from '@vue-dnd-kit/core';
@@ -525,9 +4609,7 @@ const { items } = makeSortableList(el, { items: tasks });
 </template>
 ```
 
-TaskItem.vue
-
-```
+```vue [TaskItem.vue]
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
 import { makeSortableItem } from '@vue-dnd-kit/core';
@@ -543,17 +4625,15 @@ const { isPlaceholder } = makeSortableItem(el, { item: () => props.task });
 </template>
 ```
 
-- Render `**items**`, the draft: it reorders while you drag. `**tasks**` gets the new order on drop, and `**defineModel**` emits `**update:modelValue**`.
-- No index, no payload, no `**onDrop**`, no `**<TransitionGroup>**`: the rows slide by themselves.
-- The dragged row stays in the list as the slot it will land in. Style it with `**isPlaceholder**` or `**[data-dnd-placeholder]**` instead of hiding it.
+- ドラフトである `items` を描画します：ドラッグ中に並べ替わります。ドロップすると `tasks` が新しい順序を受け取り、`defineModel` が `update:modelValue` を発行します。
+- インデックスも、ペイロードも、`onDrop` も、`<TransitionGroup>` も要りません：行は自分でスライドします。
+- ドラッグ中の行は、着地する位置としてリストの中に残ります。隠すのではなく、`isPlaceholder` か `[data-dnd-placeholder]` でスタイルを付けてください。
 
-### Lists that share items
+### アイテムを共有するリスト
 
-****v2****
+**v2**
 
-Board.vue
-
-```
+```ts [Board.vue]
 // Each column's makeDroppable calls this from its onDrop, with its array as the payload.
 function applySort(e: IDragEvent) {
   const r = e.helpers.suggestSort('vertical');
@@ -572,11 +4652,9 @@ function applySort(e: IDragEvent) {
 }
 ```
 
-****v3****
+**v3**
 
-Column.vue
-
-```
+```vue [Column.vue]
 <script setup lang="ts">
 import { toRef, useTemplateRef } from 'vue';
 import { makeSortableList } from '@vue-dnd-kit/core';
@@ -599,9 +4677,7 @@ const { items } = makeSortableList(el, {
 </template>
 ```
 
-Board.vue
-
-```
+```vue [Board.vue]
 <script setup lang="ts">
 import { reactive } from 'vue';
 import Column from './Column.vue';
@@ -617,11 +4693,9 @@ const columns = reactive([
 </template>
 ```
 
-The drop writes both arrays, the one the task left and the one it entered. `**TaskItem.vue**` is the one from the sortable list above. A palette that hands out copies was `**suggestCopy()**` and a `**copyOnly**` flag; now it is a list:
+ドロップは両方の配列に書き込みます：タスクが出ていった配列と、入った配列です。`TaskItem.vue` は上の並べ替え可能なリストのものと同じです。コピーを配るパレットは `suggestCopy()` と `copyOnly` フラグで作っていましたが、今はリストです：
 
-Palette.vue
-
-```
+```ts [Palette.vue]
 makeSortableList(el, {
   items: blocks,
   group: { name: 'board', pull: 'clone', put: false },  // copies go out, nothing comes in
@@ -630,24 +4704,20 @@ makeSortableList(el, {
 });
 ```
 
-For a Pinia store or other state you don't write directly, pass `**items**` as a getter, call `**e.preventDefault()**` in `**onDrop**` and apply `**e.result**`: see [**controlled lists**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/shared-lists#controlled-lists).
+Pinia のストアや、直接書き込まないほかの状態では、`items` をゲッターで渡し、`onDrop` で `e.preventDefault()` を呼んで `e.result` を適用します：[制御されたリスト](https://zizigy.github.io/docs/guides/shared-lists#controlled-lists)を参照してください。
 
-### A custom overlay
+### カスタムオーバーレイ
 
-****v2****
+**v2**
 
-TaskItem.vue
-
-```
+```ts [TaskItem.vue]
 makeDraggable(el, {
   render: markRaw(TaskOverlay),
   data: () => props.task,
 });
 ```
 
-TaskOverlay.vue
-
-```
+```vue [TaskOverlay.vue]
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useDnDProvider } from '@vue-dnd-kit/core';
@@ -664,11 +4734,9 @@ const task = computed(() => {
 </template>
 ```
 
-****v3****
+**v3**
 
-TaskItem.vue
-
-```
+```ts [TaskItem.vue]
 makeDraggable(el, {
   id: () => props.task.id,
   overlay: TaskOverlay,
@@ -676,9 +4744,7 @@ makeDraggable(el, {
 });
 ```
 
-TaskOverlay.vue
-
-```
+```vue [TaskOverlay.vue]
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { DragItem, Over } from '@vue-dnd-kit/core';
@@ -700,16 +4766,14 @@ const task = computed(() => props.items[0]!.data as Task);
 </style>
 ```
 
-- The component gets the drag as props: `**items**` (every dragged item, the grabbed one first), `**over**`, `**accepted**`, `**status**`, `**mode**` and `**to**`. Declare only the ones you read. For a list's rows, the list item is `**items[0].item**`.
-- Pass it as it is. Switch it with a `**shallowRef**`, never a deep `**ref**`.
+- コンポーネントはドラッグを props として受け取ります：`items`（ドラッグ中のすべてのアイテム、掴んだものが先頭）、`over`、`accepted`、`status`、`mode`、`to`。読むものだけを宣言してください。リストの行では、リストのアイテムは `items[0].item` です。
+- そのまま渡します。切り替えるには `shallowRef` を使い、深い `ref` は決して使いません。
 
-The provider's slot changes the same way, and your component no longer positions itself:
+プロバイダーのスロットも同じように変わり、コンポーネントが自分で位置を決めることはなくなります：
 
-****v2****
+**v2**
 
-App.vue
-
-```
+```vue [App.vue]
 <DnDProvider>
   <RouterView />
   <template #preview>
@@ -718,11 +4782,9 @@ App.vue
 </DnDProvider>
 ```
 
-****v3****
+**v3**
 
-App.vue
-
-```
+```vue [App.vue]
 <DnDProvider>
   <RouterView />
   <template #overlay="{ items, over, accepted }">
@@ -731,15 +4793,13 @@ App.vue
 </DnDProvider>
 ```
 
-A pop-in that wrapped `**DragPreview**` in a `**<Transition>**` becomes `**overlay-class**` with `**@starting-style**`: see [**lift, tilt, settle**](https://zizigy.github.io/vue-dnd-kit/ja/docs/guides/animations#the-overlay-lift-tilt-settle).
+`DragPreview` を `<Transition>` で囲んでいたポップインは、`@starting-style` 付きの `overlay-class` になります：[持ち上げ、傾け、落ち着かせる](https://zizigy.github.io/docs/guides/animations#the-overlay-lift-tilt-settle)を参照してください。
 
-### A drop you confirm
+### 確認してからのドロップ
 
-****v2****
+**v2**
 
-Zone.vue
-
-```
+```ts [Zone.vue]
 makeDroppable(el, {
   events: {
     onDrop: (e) =>
@@ -752,22 +4812,18 @@ makeDroppable(el, {
 });
 ```
 
-****v3****
+**v3**
 
-Zone.vue
-
-```
+```ts [Zone.vue]
 makeDroppable(el, {
   onBeforeDrop: () => (window.confirm('Drop here?') ? 'accept' : 'continue'),
   onDrop: (e) => place(e.active.items),
 });
 ```
 
-A list asks the same way, and a promise lets you open a dialog of your own. The overlay waits where it was let go until the promise settles:
+リストも同じように尋ね、Promise を使えば自作のダイアログを開けます。Promise が確定するまで、オーバーレイは離した場所で待ちます：
 
-Column.vue
-
-```
+```ts [Column.vue]
 makeSortableList(el, {
   items: toRef(props.column, 'tasks'),
   group: 'board',
@@ -776,13 +4832,11 @@ makeSortableList(el, {
 });
 ```
 
-A zone that took only the matching part of a mixed selection (`**groupMatch: 'some'**`):
+混在した選択のうち、一致する部分だけを受け取っていたゾーン（`groupMatch: 'some'`）：
 
-****v2****
+**v2**
 
-Zone.vue
-
-```
+```ts [Zone.vue]
 makeDroppable(el, {
   groups: ['frontend'],
   groupMatch: 'some',
@@ -792,11 +4846,9 @@ makeDroppable(el, {
 });
 ```
 
-****v3****
+**v3**
 
-Zone.vue
-
-```
+```ts [Zone.vue]
 import type { DragItem } from '@vue-dnd-kit/core';
 
 const fits = (item: DragItem) => item.type.length === 0 || item.type.includes('frontend');
@@ -809,28 +4861,24 @@ makeDroppable(el, {
 });
 ```
 
-Lists do this without code: with `**acceptMode: 'some'**`, the items their `**group.put**` takes land, and the others fly back.
+リストはこれをコードなしで行います：`acceptMode: 'some'` にすると、`group.put` が受け入れるアイテムは着地し、ほかは元の位置に戻ります。
 
-## Pitfalls when upgrading
+## アップグレードの注意点
 
-- ****Install v3 with its range.**** `**^3**` in `**package.json**`: an `**npm update**` keeps `**^2**` on v2.
-- ****Render the draft.**** A list renders the `**items**` that `**makeSortableList**` returns, not your array. Rendering your array, nothing moves until the drop.
-- ****Don't sort twice.**** Delete the `**suggestSort**` code from lists: a list writes each drop into a writable `**items**` ref after its `**onDrop**`. To apply it yourself, call `**e.preventDefault()**` and use `**e.result**`.
-- **`**false**`** refuses the drop.**** In v2, an `**onDrop**` that resolved `**false**` kept the drag going. In v3, return `**'continue'**` from `**onBeforeDrop**`. A promise returned from `**onDrop**` is ignored.
-- ****Lists share only within a **`**group**`**.**** A list without one trades with no other list.
-- ****Key rows by id.**** `**:key="index"**` animates the wrong rows. Pass ids from your data too: a default id is new for every component instance.
-- ****No **`**<TransitionGroup>**`**, no **`**transition**`** on **`**transform**`**.**** The library moves the rows itself, and moves would animate twice.
-- ****Undo the touch workaround.**** `**touch-action: none**` on a whole item keeps the page from scrolling under a finger; v3 starts touch drags with a long press instead. Keep it on a handle that should drag at once, with `**activation: { touch: { distance: 4 } }**`.
-- ****Remove stale attributes.**** The library sets `**tabindex**`, `**role**` and the `**aria-***` it needs and never overrides yours, so a leftover `**role**` or `**aria-grabbed**` stays as you left it.
-- ****Restyle the overlay.**** `**.dnd-kit-preview**` is gone: style what is inside `**[data-dnd-overlay='dragging']**`, never the box's `**transform**`. Give the root of an overlay component `**width: 100%; height: 100%**`, and take `**<DragPreview />**` out of your layouts.
-- ****Auto-scroll is on.**** Pass `**:auto-scroll="false"**` where v2 never scrolled.
-- ****A band needs no key.**** `**makeSelectionArea**` draws from a plain press on its empty space. Add a `**modifier**` to keep v2's Ctrl.
-- ****One provider, areas inside.**** Items can't cross providers. A page that used a provider per region to keep their rules apart needs one provider and a `**makeDragArea**` per region.
-- ****Two arguments.**** `**makeDraggable**` and `**makeDroppable**` take a ref and an options object, no payload.
-
-```json
-{"@context":"https://schema.org","@graph":[{"@id":"https://zizigy.github.io/vue-dnd-kit/ja#website","@type":"WebSite","description":"Drag and drop for Vue 3: sortable lists, kanban boards, trees, multi-drag, animations and accessibility out of the box.","inLanguage":"ja-JP","name":"Vue DnD Kit","url":"https://zizigy.github.io/vue-dnd-kit/ja","translationOfWork":{"@id":"https://zizigy.github.io/vue-dnd-kit#website"}},{"@id":"https://zizigy.github.io/vue-dnd-kit/ja/docs/getting-started/migrating-from-v2#webpage","@type":"WebPage","description":"Move a v2 app to v3 — what changed and why, the upgrade, a map from every v2 API to its v3 replacement, before-and-after code for the common cases, and the pitfalls.","name":"Migrating from v2","url":"https://zizigy.github.io/vue-dnd-kit/ja/docs/getting-started/migrating-from-v2","isPartOf":{"@id":"https://zizigy.github.io/vue-dnd-kit/ja#website"},"potentialAction":[{"@type":"ReadAction","target":["https://zizigy.github.io/vue-dnd-kit/ja/docs/getting-started/migrating-from-v2"]}]}]}
-```
+- **v3 は範囲を指定してインストールします**。`package.json` に `^3`：`npm update` では `^2` は v2 のままです。
+- **ドラフトを描画します**。リストが描画するのは `makeSortableList` が返す `items` で、自分の配列ではありません。自分の配列を描画すると、ドロップするまで何も動きません。
+- **二重に並べ替えません**。リストから `suggestSort` のコードを削除してください：リストは `onDrop` の後に、書き込み可能な `items` の ref に各ドロップを書き込みます。自分で適用するには、`e.preventDefault()` を呼んで `e.result` を使います。
+- **false はドロップを拒否します**。v2 では、`false` で解決した `onDrop` はドラッグを続けました。v3 では `onBeforeDrop` から `'continue'` を返します。`onDrop` から返した Promise は無視されます。
+- **リストが共有するのは同じ group の中だけです**。`group` のないリストは、ほかのどのリストともやり取りしません。
+- **行のキーは id にします**。`:key="index"` では違う行がアニメーションします。id もデータから渡してください：デフォルトの id はコンポーネントのインスタンスごとに新しくなります。
+- **<TransitionGroup> も、transform への transition も使いません**。ライブラリが自分で行を動かすので、動きが二重にアニメーションしてしまいます。
+- **タッチの回避策を元に戻します**。アイテム全体の `touch-action: none` は、指の下でページがスクロールするのを妨げます。v3 は代わりに長押しでタッチのドラッグを始めます。すぐにドラッグしたいハンドルには、`activation: { touch: { distance: 4 } }` と一緒に残してください。
+- **古い属性を削除します**。ライブラリは `tabindex`、`role`、必要な `aria-*` を設定し、自分で付けた属性は決して上書きしません。そのため、残った `role` や `aria-grabbed` は残したままになります。
+- **オーバーレイのスタイルを付け直します**。`.dnd-kit-preview` はなくなりました：`[data-dnd-overlay='dragging']` の中身にスタイルを付け、ボックスの `transform` には決して触れません。オーバーレイコンポーネントのルートには `width: 100%; height: 100%` を指定し、レイアウトから `<DragPreview />` を取り除きます。
+- **自動スクロールはオンです**。v2 でスクロールしなかった場所には `:auto-scroll="false"` を渡します。
+- **選択枠にキーは要りません**。`makeSelectionArea` は、空いている場所を普通に押すだけで描画します。v2 の Ctrl を残すには `modifier` を追加します。
+- **プロバイダーは 1 つ、エリアはその中に**。アイテムはプロバイダーをまたげません。ルールを分けるために領域ごとにプロバイダーを使っていたページでは、プロバイダーを 1 つにし、領域ごとに `makeDragArea` を使います。
+- **引数は 2 つです**。`makeDraggable` と `makeDroppable` は ref とオプションのオブジェクトを受け取り、ペイロードはありません。
 
 ## Sitemap
 

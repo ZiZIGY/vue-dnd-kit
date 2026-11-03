@@ -6,20 +6,19 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/fr/docs/api/make-drag-area"
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeDragArea(
-  target: MaybeElementRef,
-  options?: DragAreaOptions,
-): DragAreaReturn;
-```
+<api-signature name="makeDragArea">
+
+
+
+</api-signature>
 
 ```ts
 const board = useTemplateRef<HTMLElement>('board');
 makeDragArea(board, { restrictToArea: true, modifiers: [snapToGrid(24)] });
 ```
 
-Quand des zones sont imbriquées, la plus proche l'emporte, sauf pour `disabled`, dont héritent les
-zones intérieures. Voir [Axes, limites et grilles](https://zizigy.github.io/docs/guides/constraints).
+Les zones intérieures héritent de `disabled` ; toutes les autres règles viennent de la zone la plus
+proche. Voir [Axes, limites et grilles](https://zizigy.github.io/docs/guides/constraints).
 
 Les pastilles à l'intérieur de la zone suivent ses règles ; celle qui est à l'extérieur glisse
 librement.

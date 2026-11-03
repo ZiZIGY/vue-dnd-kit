@@ -546,7 +546,7 @@ import { DnDProvider } from '@vue-dnd-kit/core';
 </tbody>
 </table>
 
-すべての型を含む完全な一覧は [DnDProvider API](https://zizigy.github.io/docs/api/dnd-provider) にあります。プロバイダーは `drag-start`、`drag-move`、`drag-over`、`drag-end`、`drag-cancel`、`drag-settle` も発行します。`useDnDMonitor` が受け取るのと同じイベントです。
+すべての型を含む完全な一覧は [DnDProvider API](https://zizigy.github.io/docs/api/dnd-provider) にあります。プロバイダーは `drag-start`、`drag-move`、`drag-over`、`drag-end`、`drag-cancel`、`drag-resume`、`drag-settle` も発行します。`useDnDMonitor` が受け取るのと同じイベントです。
 
 ## ドラッグを読み取る：`useDnD()`
 

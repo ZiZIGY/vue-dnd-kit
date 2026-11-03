@@ -6,12 +6,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ru/docs/api/make-selection-
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeSelectionArea(
-  target: MaybeElementRef,
-  options?: SelectionAreaOptions,
-): SelectionAreaReturn;
-```
+<api-signature name="makeSelectionArea">
+
+
+
+</api-signature>
 
 ```vue
 <script setup lang="ts">
@@ -27,7 +26,7 @@ const { isSelecting, style } = makeSelectionArea(area);
 </template>
 ```
 
-Нажатие на пустом месте области начинает рамку; рендерите рамку сами. См.
+Нажатие на пустом месте области начинает рамку. См.
 [мульти-драг и выделение](https://zizigy.github.io/docs/guides/multi-drag).
 
 <example height="27rem" hint="Нарисуйте рамку на пустом месте, затем перетащите выделенную фигуру" name="api-selection-area">

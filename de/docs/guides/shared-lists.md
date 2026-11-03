@@ -164,7 +164,15 @@ hineindarf:
         false
       </code>
       
-      : Nichts kommt hinein. Eine Funktion: Du entscheidest pro Drag.
+      : Nichts kommt hinein. Ein Typ oder mehrere (<code>
+        'image'
+      </code>
+      
+      , <code>
+        ['image', 'video']
+      </code>
+      
+      ): Elemente dieser Typen kommen hinein. Eine Funktion: Du entscheidest pro Drag.
     </td>
   </tr>
 </tbody>
@@ -178,15 +186,17 @@ group: { name: 'files', pull: true, put: false }
 group: { name: 'files', pull: 'clone', put: false }, sort: false
 
 // Images: takes images only.
-group: { name: 'files', put: ({ types }) => types.every((type) => type === 'image') }
+group: { name: 'files', put: 'image' }
 ```
+
+Typen sind die `type`-Optionen der gezogenen Elemente (`makeSortableItem(el, { item, type })`);
+Elemente ohne eine zählen als der Name der Gruppe. Mit Typen in `put` muss jedes gezogene
+Element einen davon haben (mit `acceptMode: 'some'` kommen die hinein, die einen haben).
 
 Eine `put`-Funktion bekommt `{ keys, items, types, from, to }`: die gezogenen Schlüssel und
 Elemente, ihre Typen, die Liste, aus der sie kommen (`null` bei einfachen ziehbaren Elementen),
-und diese Liste. `types` sind die `type`-Optionen der gezogenen Elemente
-(`makeSortableItem(el, { item, type })`); Elemente ohne eine zählen als der Name der Gruppe.
-Verschieben innerhalb einer Liste ist immer erlaubt: Die Inbox sortiert ihre eigenen Dateien
-trotzdem.
+und diese Liste. Verschieben innerhalb einer Liste ist immer erlaubt: Die Inbox sortiert ihre
+eigenen Dateien trotzdem.
 
 Über einer Liste, die den Drag ablehnt, geht der Slot dorthin zurück, wo der Drag gestartet ist,
 damit die Listen zeigen, was ein Drop tun würde: nichts. Ein Drop dort wird abgebrochen, und das
@@ -222,6 +232,33 @@ Wenn mehrere ausgewählte Elemente verschiedener Typen gezogen werden, sagt `acc
 `'all'` (Standard) oder `'some'` von ihnen `put` bestehen müssen. Mit `'some'` landen die, die
 bestehen, und die anderen fliegen zurück. Siehe
 [Multi-Drag und Auswahl](https://zizigy.github.io/docs/guides/multi-drag#taking-only-some).
+
+### Eine Gruppe pro Liste
+
+Eine Liste gehört zu einer Gruppe: `group` nimmt einen Namen, nie mehrere. Die Listen einer
+Gruppe teilen sich jeden Drag (ihre Entwürfe, was gezogen wird, welche von ihnen ihn annehmen),
+deshalb wechseln Elemente nie zwischen Gruppen. Sollen Elemente nur in manche Richtungen
+fließen, steck die Listen in eine Gruppe und lass `put` nach `from` entscheiden, der Liste, aus
+der ein Drag kommt:
+
+```ts [index.vue]
+// Review takes tasks from both teams. A team takes tasks back from Review,
+// never from the other team.
+const fromReview = ({ from }: SortablePutContext) => from === 'review';
+
+makeSortableList(review, { id: 'review', items: reviewTasks, group: 'tasks' });
+makeSortableList(frontend, { id: 'frontend', items: frontendTasks, group: { name: 'tasks', put: fromReview } });
+makeSortableList(backend, { id: 'backend', items: backendTasks, group: { name: 'tasks', put: fromReview } });
+```
+
+<note>
+
+Wenn du von SortableJS kommst: Dort nennt `put: ['a', 'b']` die Gruppen, aus denen eine Liste
+Elemente nimmt. Hier zählt ein Array in `put` die **Typen** der Elemente auf, die eine Liste
+annimmt. Um Elemente aus anderen Listen zu nehmen, gib ihnen eine Gruppe und entscheide nach
+`from`, wie oben.
+
+</note>
 
 ## Kopieren: Paletten und die Alt-Taste
 

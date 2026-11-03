@@ -6,21 +6,19 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ru/docs/api/make-sortable-t
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeSortableTree<T>(
-  target: MaybeElementRef,
-  options: SortableTreeOptions<T>,
-): SortableTreeReturn<T>;
-```
+<api-signature name="makeSortableTree">
+
+
+
+</api-signature>
 
 ```ts
 const root = useTemplateRef<HTMLElement>('root');
 const { items } = makeSortableTree(root, { items: files, indentation: 20, collapsed });
 ```
 
-Рендерите `items` (плоские узлы с `depth`); каждая строка вызывает
-[`makeSortableItem`](https://zizigy.github.io/docs/api/make-sortable-item) с `id: () => node.key`. См.
-[деревья](https://zizigy.github.io/docs/guides/trees).
+Каждая строка вызывает [`makeSortableItem`](https://zizigy.github.io/docs/api/make-sortable-item) с `id: () => node.key`.
+См. [деревья](https://zizigy.github.io/docs/guides/trees).
 
 <example height="26rem" hint="Переключите опцию, затем перетащите строку вбок" name="api-tree-options">
 

@@ -68,6 +68,12 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ru/docs/examples"
 на тех же данных, редактирование на месте.
 
 </card>
+
+<card icon="i-lucide-table-2" title="Таблица данных" to="/docs/examples/data-table">
+
+Таблица Nuxt UI на 2 000 задач: виртуализированная, с поиском, сортируется за ручки строк.
+
+</card>
 </card-group>
 
 ## Sitemap

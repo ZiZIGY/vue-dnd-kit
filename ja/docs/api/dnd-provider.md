@@ -6,6 +6,12 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ja/docs/api/dnd-provider"
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
+<api-signature name="DnDProvider">
+
+
+
+</api-signature>
+
 ```vue [App.vue]
 <script setup lang="ts">
 import { DnDProvider } from '@vue-dnd-kit/core';
@@ -162,6 +168,32 @@ import { DnDProvider } from '@vue-dnd-kit/core';
   <tr>
     <td>
       <code>
+        drag-resume
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DnDEvent
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+       が <code>
+        'continue'
+      </code>
+      
+       を返した：ドロップは起きず、ドラッグが続く。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
         drag-settle
       </code>
     </td>
@@ -191,7 +223,7 @@ import { DnDProvider } from '@vue-dnd-kit/core';
 </tbody>
 </table>
 
-同じイベントに `onBeforeDrop` と `onDragResume` を加えたものが、[`useDnDMonitor`](https://zizigy.github.io/docs/api/use-dnd) を使えばプロバイダーの下のどこでも利用できます。ペイロードは[イベントのページ](https://zizigy.github.io/docs/api/events)にあります。
+同じイベントに `onBeforeDrop` を加えたものが、[`useDnDMonitor`](https://zizigy.github.io/docs/api/use-dnd) を使えばプロバイダーの下のどこでも利用できます。ペイロードは[イベントのページ](https://zizigy.github.io/docs/api/events)にあります。
 
 ## `#overlay` スロット
 
@@ -227,9 +259,27 @@ import { DnDProvider } from '@vue-dnd-kit/core';
 
 </api-table>
 
+<api-table name="HapticPattern">
+
+
+
+</api-table>
+
 ## 読み上げ
 
 <api-table name="Announcements">
+
+
+
+</api-table>
+
+<api-table name="AnnouncementContext">
+
+
+
+</api-table>
+
+<api-table name="AnnouncedPosition">
 
 
 

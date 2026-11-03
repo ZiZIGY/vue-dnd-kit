@@ -6,12 +6,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/es/docs/api/make-draggable"
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeDraggable<TData = unknown>(
-  target: MaybeElementRef,
-  options?: DraggableOptions<TData>,
-): DraggableReturn;
-```
+<api-signature name="makeDraggable">
+
+
+
+</api-signature>
 
 ```ts
 const el = useTemplateRef<HTMLElement>('el');

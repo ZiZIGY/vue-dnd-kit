@@ -60,6 +60,12 @@ Notion 風のブロック。ハンドルで動かし、ネストし、「/」メ
 ページの上で本物の姿に変わるセクション、列の間を移る要素、同じデータを使うレイヤーツリー、その場での編集。
 
 </card>
+
+<card icon="i-lucide-table-2" title="データテーブル" to="/docs/examples/data-table">
+
+2,000 件のタスクを持つ Nuxt UI のテーブル：仮想化され、検索でき、行のグリップで並べ替えます。
+
+</card>
 </card-group>
 
 ## Sitemap

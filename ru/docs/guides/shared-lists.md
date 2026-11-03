@@ -162,7 +162,15 @@ const { items } = makeSortableList(list, {
         false
       </code>
       
-      : ничего не входит. Функция: решаете вы, для каждого драга.
+      : ничего не входит. Тип или типы (<code>
+        'image'
+      </code>
+      
+      , <code>
+        ['image', 'video']
+      </code>
+      
+      ): входят элементы этих типов. Функция: решаете вы, для каждого драга.
     </td>
   </tr>
 </tbody>
@@ -176,14 +184,17 @@ group: { name: 'files', pull: true, put: false }
 group: { name: 'files', pull: 'clone', put: false }, sort: false
 
 // Images: takes images only.
-group: { name: 'files', put: ({ types }) => types.every((type) => type === 'image') }
+group: { name: 'files', put: 'image' }
 ```
+
+Типы — это опции `type` перетаскиваемых элементов (`makeSortableItem(el, { item, type })`);
+элементы без неё считаются именем группы. С типами в `put` каждый перетаскиваемый элемент
+должен иметь один из них (с `acceptMode: 'some'` входят те, у кого он есть).
 
 Функция `put` получает `{ keys, items, types, from, to }`: перетаскиваемые ключи и элементы, их
 типы, список, из которого они пришли (`null` для обычных перетаскиваемых элементов), и этот
-список. `types` — это опции `type` перетаскиваемых элементов
-(`makeSortableItem(el, { item, type })`); элементы без неё считаются именем группы.
-Перемещения внутри списка разрешены всегда: Inbox по-прежнему сортирует собственные файлы.
+список. Перемещения внутри списка разрешены всегда: Inbox по-прежнему сортирует собственные
+файлы.
 
 Над списком, который отклоняет драг, слот возвращается туда, где драг начался, так что
 списки показывают, что сделал бы бросок: ничего. Бросок туда отменяется, и элемент летит
@@ -218,6 +229,33 @@ const shortlist = reactive({
 Когда перетаскиваются несколько выделенных элементов разных типов, `acceptMode` говорит,
 должны ли пройти `put` `'all'` (по умолчанию) или `'some'` из них. С `'some'` прошедшие
 приземляются, а остальные летят обратно. См. [мульти-драг](https://zizigy.github.io/docs/guides/multi-drag#taking-only-some).
+
+### Одна группа на список
+
+Список принадлежит одной группе: `group` принимает одно имя, никогда не несколько. Списки
+группы делят каждый драг (свои черновики, что перетаскивается, какие из них его принимают),
+поэтому элементы никогда не переходят между группами. Когда элементы должны ходить только в
+некоторые стороны, поместите списки в одну группу и пусть `put` решает по `from` — списку,
+из которого пришёл драг:
+
+```ts [index.vue]
+// Review takes tasks from both teams. A team takes tasks back from Review,
+// never from the other team.
+const fromReview = ({ from }: SortablePutContext) => from === 'review';
+
+makeSortableList(review, { id: 'review', items: reviewTasks, group: 'tasks' });
+makeSortableList(frontend, { id: 'frontend', items: frontendTasks, group: { name: 'tasks', put: fromReview } });
+makeSortableList(backend, { id: 'backend', items: backendTasks, group: { name: 'tasks', put: fromReview } });
+```
+
+<note>
+
+Если вы пришли из SortableJS: там `put: ['a', 'b']` называет группы, из которых список
+принимает элементы. Здесь массив в `put` перечисляет **типы** элементов, которые список
+принимает. Чтобы принимать элементы из других списков, дайте им одну группу и решайте по
+`from`, как выше.
+
+</note>
 
 ## Копирование: палитры и клавиша Alt
 

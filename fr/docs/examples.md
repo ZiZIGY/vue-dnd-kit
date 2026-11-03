@@ -70,6 +70,13 @@ Des sections qui deviennent l'élément réel au-dessus de la page, des élémen
 un arbre des calques sur les mêmes données, l'édition sur place.
 
 </card>
+
+<card icon="i-lucide-table-2" title="Tableau de données" to="/docs/examples/data-table">
+
+Un tableau Nuxt UI de 2 000 tâches : virtualisé, avec recherche, trié par les poignées de ses
+lignes.
+
+</card>
 </card-group>
 
 ## Sitemap

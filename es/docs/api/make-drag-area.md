@@ -6,20 +6,19 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/es/docs/api/make-drag-area"
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeDragArea(
-  target: MaybeElementRef,
-  options?: DragAreaOptions,
-): DragAreaReturn;
-```
+<api-signature name="makeDragArea">
+
+
+
+</api-signature>
 
 ```ts
 const board = useTemplateRef<HTMLElement>('board');
 makeDragArea(board, { restrictToArea: true, modifiers: [snapToGrid(24)] });
 ```
 
-Cuando hay áreas anidadas, gana la más cercana, excepto `disabled`, que heredan las áreas
-interiores. Consulta [Ejes, límites y cuadrículas](https://zizigy.github.io/docs/guides/constraints).
+Las áreas interiores heredan `disabled`; todas las demás reglas vienen del área más cercana.
+Consulta [Ejes, límites y cuadrículas](https://zizigy.github.io/docs/guides/constraints).
 
 Las fichas dentro del área siguen sus reglas; la que está fuera se arrastra libremente.
 

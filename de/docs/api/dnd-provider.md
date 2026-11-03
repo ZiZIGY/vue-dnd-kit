@@ -6,6 +6,12 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/de/docs/api/dnd-provider"
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
+<api-signature name="DnDProvider">
+
+
+
+</api-signature>
+
 ```vue [App.vue]
 <script setup lang="ts">
 import { DnDProvider } from '@vue-dnd-kit/core';
@@ -169,6 +175,32 @@ wann das nötig ist.
   <tr>
     <td>
       <code>
+        drag-resume
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        DnDEvent
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        onBeforeDrop
+      </code>
+      
+       hat <code>
+        'continue'
+      </code>
+      
+       geantwortet: Es gab keinen Drop, und der Drag geht weiter.
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
         drag-settle
       </code>
     </td>
@@ -198,7 +230,7 @@ wann das nötig ist.
 </tbody>
 </table>
 
-Dieselben Events, dazu `onBeforeDrop` und `onDragResume`, stehen mit
+Dieselben Events, dazu `onBeforeDrop`, stehen mit
 [`useDnDMonitor`](https://zizigy.github.io/docs/api/use-dnd) überall unterhalb des Providers zur Verfügung. Ihre Payloads
 findest du unter [Events](https://zizigy.github.io/docs/api/events).
 
@@ -237,9 +269,27 @@ Rendert, was dem Zeiger folgt, für jeden Drag ohne eigene Overlay-Komponente (s
 
 </api-table>
 
+<api-table name="HapticPattern">
+
+
+
+</api-table>
+
 ## Ansagen
 
 <api-table name="Announcements">
+
+
+
+</api-table>
+
+<api-table name="AnnouncementContext">
+
+
+
+</api-table>
+
+<api-table name="AnnouncedPosition">
 
 
 

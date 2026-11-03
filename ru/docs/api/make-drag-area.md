@@ -6,20 +6,19 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ru/docs/api/make-drag-area"
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeDragArea(
-  target: MaybeElementRef,
-  options?: DragAreaOptions,
-): DragAreaReturn;
-```
+<api-signature name="makeDragArea">
+
+
+
+</api-signature>
 
 ```ts
 const board = useTemplateRef<HTMLElement>('board');
 makeDragArea(board, { restrictToArea: true, modifiers: [snapToGrid(24)] });
 ```
 
-Когда области вложены, побеждает ближайшая — кроме `disabled`, который внутренние области
-наследуют. См. [оси, границы и сетки](https://zizigy.github.io/docs/guides/constraints).
+Внутренние области наследуют `disabled`; каждое другое правило берётся из ближайшей области. См.
+[оси, границы и сетки](https://zizigy.github.io/docs/guides/constraints).
 
 Чипы внутри области следуют её правилам; тот, что снаружи, перетаскивается свободно.
 

@@ -14,9 +14,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/es/docs/api/use-dnd"
 
 ## useDnD
 
-```ts
-function useDnD(): DnDState;
-```
+<api-signature name="useDnD">
+
+
+
+</api-signature>
 
 ```ts
 const { status, active, over, selection, cancel } = useDnD();
@@ -42,9 +44,11 @@ drop, mientras el overlay todavía aterriza.
 
 ## useDnDMonitor
 
-```ts
-function useDnDMonitor(monitor: DnDMonitor): void;
-```
+<api-signature name="useDnDMonitor">
+
+
+
+</api-signature>
 
 ```ts
 useDnDMonitor({
@@ -53,9 +57,8 @@ useDnDMonitor({
 });
 ```
 
-Los eventos de todos los arrastres bajo el provider, mientras viva el componente. A tus monitores se
-les consulta sobre un drop (`onBeforeDrop`) antes que al destino. Los payloads están en
-[la página de eventos](https://zizigy.github.io/docs/api/events).
+A tus monitores se les consulta sobre un drop (`onBeforeDrop`) antes que al destino. Los payloads
+están en [la página de eventos](https://zizigy.github.io/docs/api/events).
 
 <api-table name="DnDMonitor">
 
@@ -71,10 +74,17 @@ les consulta sobre un drop (`onBeforeDrop`) antes que al destino. Los payloads e
 
 ## useDnDContext y provideDnDContext
 
-```ts
-function useDnDContext(): DnDContext;
-function provideDnDContext(app: App, context: DnDContext): void;
-```
+<api-signature name="useDnDContext">
+
+
+
+</api-signature>
+
+<api-signature name="provideDnDContext">
+
+
+
+</api-signature>
 
 ```ts
 // In a component under the provider:

@@ -26,153 +26,17 @@ l'ordre : les `modifiers` du provider, ceux d'une zone de glissement, ceux prop
 déplaçable (ou ceux de sa liste), puis les limites de la zone (`restrictToArea`), et le verrouillage
 d'`axis` en dernier. Voir [Axes, limites et grilles](https://zizigy.github.io/docs/guides/constraints).
 
-<table>
-<thead>
-  <tr>
-    <th>
-      Modificateur
-    </th>
-    
-    <th>
-      Ce qu'il fait
-    </th>
-  </tr>
-</thead>
+<api-signature names="restrictToVerticalAxis, restrictToHorizontalAxis, restrictToWindowEdges, restrictToParent, restrictToElement, restrictToFirstScrollableAncestor, snapToGrid, snapCenterToCursor">
 
-<tbody>
-  <tr>
-    <td>
-      <code>
-        restrictToVerticalAxis
-      </code>
-    </td>
-    
-    <td>
-      Ne déplace que verticalement. L'option <code>
-        axis: 'y'
-      </code>
-      
-       fait la même chose, en dernier. Horizontalement, il reste avec le contenu dans lequel il a commencé (<code>
-        containerShift
-      </code>
-      
-      ), quel que soit le défilement de la page.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        restrictToHorizontalAxis
-      </code>
-    </td>
-    
-    <td>
-      Ne déplace qu'horizontalement (<code>
-        axis: 'x'
-      </code>
-      
-      ), et verticalement reste avec le contenu dans lequel il a commencé.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        restrictToWindowEdges
-      </code>
-    </td>
-    
-    <td>
-      Garde l'overlay à l'intérieur de la fenêtre.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        restrictToParent
-      </code>
-    </td>
-    
-    <td>
-      Garde l'overlay à l'intérieur du conteneur où le glissement a commencé : la liste triable, ou l'élément parent d'un élément déplaçable simple.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        restrictToElement(element)
-      </code>
-    </td>
-    
-    <td>
-      Garde l'overlay à l'intérieur d'un élément (une ref, un getter ou l'élément).
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        restrictToFirstScrollableAncestor
-      </code>
-    </td>
-    
-    <td>
-      Garde l'overlay à l'intérieur du premier ancêtre défilable de l'élément glissé.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        snapToGrid(size | options)
-      </code>
-    </td>
-    
-    <td>
-      Aligne sur une grille : <code>
-        { x, y, origin: 'container' | 'delta', smooth }
-      </code>
-      
-      . Omettez <code>
-        x
-      </code>
-      
-       ou <code>
-        y
-      </code>
-      
-       pour n'aligner qu'un seul axe. <code>
-        'container'
-      </code>
-      
-       (par défaut) place le coin supérieur gauche de la boîte sur des lignes de grille tracées depuis le coin supérieur gauche du conteneur ; <code>
-        'delta'
-      </code>
-      
-       arrondit le décalage, en gardant l'alignement propre à l'item. <code>
-        smooth
-      </code>
-      
-       fait glisser l'overlay d'une cellule à l'autre.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        snapCenterToCursor
-      </code>
-    </td>
-    
-    <td>
-      Centre l'overlay sous le pointeur au lieu de garder le décalage de la saisie.
-    </td>
-  </tr>
-</tbody>
-</table>
+
+
+</api-signature>
+
+<api-table name="SnapToGridOptions">
+
+
+
+</api-table>
 
 <api-table name="Modifier">
 
@@ -198,81 +62,11 @@ import { closestCorners } from '@vue-dnd-kit/core';
 
 La `collision` du provider choisit la cible ; le meilleur candidat vient en premier.
 
-<table>
-<thead>
-  <tr>
-    <th>
-      Fonction
-    </th>
-    
-    <th>
-      Ce qu'elle choisit
-    </th>
-  </tr>
-</thead>
+<api-signature names="pointerFirst, pointerWithin, rectIntersection, closestCenter, closestCorners">
 
-<tbody>
-  <tr>
-    <td>
-      <code>
-        pointerFirst
-      </code>
-    </td>
-    
-    <td>
-      Par défaut : ce qui est sous le pointeur, sinon ce que l'overlay chevauche.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        pointerWithin
-      </code>
-    </td>
-    
-    <td>
-      Les cibles sous le pointeur, par test de collision (ordre d'empilement, overlays et shadow roots respectés).
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        rectIntersection
-      </code>
-    </td>
-    
-    <td>
-      Les cibles qui chevauchent l'overlay : priorité la plus haute, puis imbrication la plus profonde, puis rapport intersection sur union.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        closestCenter
-      </code>
-    </td>
-    
-    <td>
-      Toutes les cibles, par distance entre les centres.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        closestCorners
-      </code>
-    </td>
-    
-    <td>
-      Toutes les cibles, par somme des distances entre les coins (cibles empilées comme les colonnes d'un kanban).
-    </td>
-  </tr>
-</tbody>
-</table>
+
+
+</api-signature>
 
 <api-table name="CollisionDetection">
 

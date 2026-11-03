@@ -6,12 +6,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/api/make-selection-
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeSelectionArea(
-  target: MaybeElementRef,
-  options?: SelectionAreaOptions,
-): SelectionAreaReturn;
-```
+<api-signature name="makeSelectionArea">
+
+
+
+</api-signature>
 
 ```vue
 <script setup lang="ts">
@@ -27,7 +26,7 @@ const { isSelecting, style } = makeSelectionArea(area);
 </template>
 ```
 
-在区域的空白处按下会开始画选框；选框由你自己渲染。参见[多项拖拽与选择](https://zizigy.github.io/docs/guides/multi-drag)。
+在区域的空白处按下会开始画选框。参见[多项拖拽与选择](https://zizigy.github.io/docs/guides/multi-drag)。
 
 <example height="27rem" hint="在空白处画框，然后拖动一个选中的形状" name="api-selection-area">
 

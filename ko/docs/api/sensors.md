@@ -10,77 +10,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/api/sensors"
 import { defineSensor, useSensor, pointerSensor, keyboardSensor } from '@vue-dnd-kit/core';
 ```
 
-<table>
-<thead>
-  <tr>
-    <th>
-      익스포트
-    </th>
-    
-    <th>
-      설명
-    </th>
-  </tr>
-</thead>
+<api-signature names="pointerSensor, keyboardSensor, defineSensor, useSensor">
 
-<tbody>
-  <tr>
-    <td>
-      <code>
-        pointerSensor
-      </code>
-    </td>
-    
-    <td>
-      Pointer Events를 통한 마우스, 터치, 펜. 기본으로 <code>
-        sensors
-      </code>
-      
-      에 들어 있습니다.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        keyboardSensor
-      </code>
-    </td>
-    
-    <td>
-      Space/Enter로 집고 드롭하고, 화살표 키로 옮기고, Escape로 취소합니다. 기본으로 <code>
-        sensors
-      </code>
-      
-      에 들어 있습니다.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        defineSensor(sensor)
-      </code>
-    </td>
-    
-    <td>
-      센서 객체에 타입을 지정합니다.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        useSensor(sensor)
-      </code>
-    </td>
-    
-    <td>
-      프로바이더 아래 컴포넌트에서, 그 컴포넌트가 살아 있는 동안 센서를 실행합니다.
-    </td>
-  </tr>
-</tbody>
-</table>
+
+
+</api-signature>
 
 센서가 알리는 것은 "이 항목을 여기서부터 드래그"라는 요청, 그다음 어디로 움직였는지, 그리고
 드롭했는지 취소되었는지뿐입니다. 나머지(무엇을 드래그할 수 있는지, 활성화, 한 번에 하나의 드래그)는

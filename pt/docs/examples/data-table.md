@@ -1,58 +1,42 @@
 ---
-title: "Data table · Vue DnD Kit"
-description: "A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips."
+title: "Tabela de dados"
+description: "Uma tabela do Nuxt UI com 2.000 tarefas, virtualizada e pesquisável, ordenada arrastando as linhas pelas alças."
 canonical_url: "https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/data-table"
-meta:
-  "og:description": "A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips."
-  "og:title": "Data table · Vue DnD Kit"
 ---
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-Documentação/Visão geral
+<example height="34rem" hint="Arraste uma tarefa pela alça; pesquise, depois arraste: as tarefas ocultas mantêm os seus lugares" name="ui-table" title="Tabela de dados">
 
-# Data table
 
-A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips.
 
-[Editar esta página](https://github.com/ZiZIGY/vue-dnd-kit/edit/master/docs/content/en/4.examples/09.data-table.md)
+</example>
 
-Esta página ainda não foi traduzida. Você está lendo o original em inglês.
+O `UTable` do Nuxt UI renderiza a tabela, as linhas e o virtualizador dela: só as linhas que estão na
+tela ficam no DOM. O Vue DnD Kit as ordena. A tabela é a da biblioteca do jeito que vem, com os seus
+slots e as suas classes `ui`; nada dela é reescrito.
 
-Live Drag a task by its grip; search, then drag: the hidden tasks keep their places X ---- · Y ----
+## O que observar
 
-Carregando a demo…
+- **TaskTable.vue**: a lista ordenável é o `<tbody>` da tabela, encontrado pelo `tableRef` que o
+`UTable` expõe. A tabela recebe o rascunho da lista como `data`, então as linhas se movem enquanto
+você arrasta, e `get-row-id` dá às linhas a key da tarefa, como a lista faz. `axis: 'y'` mantém o
+arraste na coluna dele, e `restrictToFirstScrollableAncestor`, dentro da tabela: o contêiner de
+rolagem dela é o primeiro elemento rolável em volta das linhas. Expanda a demo: a tabela preenche
+a tela.
+- **RowGrip.vue**: o `UTable` renderiza as linhas, então nenhum componente seu é uma linha. A alça
+na primeira célula (o slot `#grip-cell`) torna a linha em volta dela o item, e é o handle dele.
+- **A busca** é o `filter` da lista: a tabela mostra as tarefas que correspondem, e um drop grava de
+volta o array inteiro, com as tarefas ocultas onde estavam.
+- **tasks.ts**: 2.000 tarefas em um `shallowRef`: a biblioteca nunca olha dentro delas.
 
-```
-<script setup lang="ts">
-import { DnDProvider } from '@vue-dnd-kit/core';
-import TaskTable from './TaskTable.vue';
-</script>
+## Uma linha que a tabela renderiza
 
-<template>
-  <!-- The row in hand: a table row can't have a shadow, so its overlay content has it. -->
-  <DnDProvider overlay-class="overflow-hidden rounded-md bg-default shadow-xl ring ring-accented">
-    <TaskTable />
-  </DnDProvider>
-</template>
-```
+A alça chama `makeSortableItem` com um getter para a linha: o `<tr>` em volta dela, depois de
+renderizado. Como handle, a alça recebe o foco e os atributos ARIA, e o resto da linha fica livre
+para cliques e seleção de texto.
 
-Nuxt UI's `**UTable**` renders the table, its rows and its virtualizer: only the rows on screen are in the DOM. Vue DnD Kit sorts them. The table is the library's as it comes, with its slots and its `**ui**` classes; nothing of it is rewritten.
-
-## What to look at
-
-- **`**TaskTable.vue**`**: the sortable list is the table's `**<tbody>**`, found through the `**tableRef**` that `**UTable**` exposes. The table gets the list's draft as its `**data**`, so the rows move while you drag, and `**get-row-id**` keys them by task, as the list does. `**axis: 'y'**` keeps the drag in its column, and `**restrictToFirstScrollableAncestor**` inside the table: its scroller is the first scrollable element around the rows. Expand the demo: the table fills the screen.
-- **`**RowGrip.vue**`**: `**UTable**` renders the rows, so no component of yours is a row. The grip in the first cell (the `**#grip-cell**` slot) makes the row around it the item, and is its handle.
-- ****The search**** is the list's `**filter**`: the table shows the matching tasks, and a drop writes the whole array back, the hidden tasks where they were.
-- **`**tasks.ts**`**: 2,000 tasks in a `**shallowRef**`: the library never looks inside them.
-
-## A row the table renders
-
-The grip calls `**makeSortableItem**` with a getter for the row: the `**<tr>**` around it, once it is rendered. As the handle, the grip takes the focus and the ARIA attributes, and the rest of the row stays free for clicks and text selection.
-
-RowGrip.vue
-
-```
+```ts [RowGrip.vue]
 const grip = useTemplateRef<HTMLElement>('grip');
 makeSortableItem(() => grip.value?.closest('tr') ?? null, {
   id: () => props.task.id,
@@ -61,9 +45,7 @@ makeSortableItem(() => grip.value?.closest('tr') ?? null, {
 });
 ```
 
-TaskTable.vue
-
-```
+```vue [TaskTable.vue]
 <UTable ref="table" :data="items" :get-row-id="(task: Task) => task.id" …>
   <template #grip-cell="{ row }">
     <RowGrip :task="row.original" />
@@ -71,23 +53,23 @@ TaskTable.vue
 </UTable>
 ```
 
-The overlay is the library's copy of the row, in a table of its own with the cells' widths. A table row draws no shadow, so the provider's `**overlay-class**` gives the overlay's content one, with the table's background and a ring. The row's `**ui**` classes tint its place while it travels (`**data-[dnd-placeholder]:bg-primary/5**`).
+O overlay é a cópia da linha feita pela biblioteca, em uma tabela própria com as larguras das
+células. Uma linha de tabela não desenha sombra, então o `overlay-class` do provider dá uma ao
+conteúdo do overlay, com o fundo da tabela e um anel. As classes `ui` da linha tingem o lugar dela
+enquanto ela viaja (`data-[dnd-placeholder]:bg-primary/5`).
 
-index.vue
-
-```
+```vue [index.vue]
 <DnDProvider overlay-class="overflow-hidden rounded-md bg-default shadow-xl ring ring-accented">
   <TaskTable />
 </DnDProvider>
 ```
 
-## Virtualized rows
+## Linhas virtualizadas
 
-`**virtualize**` gives the table TanStack Virtual: the rows on screen and 8 more around them (`**overscan**`) are rendered, between two spacer rows.
+`virtualize` dá à tabela o TanStack Virtual: as linhas na tela e mais 8 em volta delas (`overscan`)
+são renderizadas, entre duas linhas espaçadoras.
 
-TaskTable.vue
-
-```
+```vue [TaskTable.vue]
 <UTable
   :data="items"
   :watch-options="{ deep: false }"
@@ -96,16 +78,23 @@ TaskTable.vue
 />
 ```
 
-- `**estimateSize**` is a first guess: the virtualizer measures each row as it renders. A measurement moves the rows below it, and `**onChange**` calls the list's `**captureLayout()**`, so the library animates that move during a drag instead of letting it jump.
-- The table is the scroller, and the row in hand stays inside it: near its top or bottom edge a drag scrolls it, and new rows render as they come into view.
-- The draft is a new array after every move, so the table needn't watch inside it ( `**deep: false**`).
-- Scroll far from the row you hold, and it leaves the rendered range and unmounts. The drag goes on: the overlay still shows it, and it lands where the draft puts it. A virtual list of your own can keep it mounted with `**rangeExtractor**` (see [**Virtual lists**](https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/virtual-lists#tanstack-virtual)). A table lays its rows out between spacer rows, where a row rendered far from the others would push them aside, so this one lets it go.
+- `estimateSize` é um primeiro palpite: o virtualizador mede cada linha conforme a renderiza. Uma
+medição move as linhas abaixo dela, e `onChange` chama o `captureLayout()` da lista, então a
+biblioteca anima esse movimento durante um arraste em vez de deixá-lo pular.
+- A tabela é o contêiner de rolagem, e a linha na mão fica dentro dela: perto da borda de cima ou de
+baixo, um arraste a rola, e novas linhas são renderizadas conforme entram na tela.
+- O rascunho é um array novo depois de cada movimento, então a tabela não precisa observar dentro
+dele (`deep: false`).
+- Role para longe da linha que você está segurando, e ela sai do intervalo renderizado e é
+desmontada. O arraste continua: o overlay ainda a mostra, e ela pousa onde o rascunho a coloca. Uma
+lista virtual sua pode mantê-la montada com `rangeExtractor` (veja
+[Listas virtuais](https://zizigy.github.io/docs/guides/virtual-lists#tanstack-virtual)). Uma tabela dispõe as linhas entre
+linhas espaçadoras, onde uma linha renderizada longe das outras as empurraria para o lado, então
+esta a deixa ir.
 
-## Search, then drag
+## Pesquise, depois arraste
 
-TaskTable.vue
-
-```
+```ts [TaskTable.vue]
 const { items, captureLayout } = makeSortableList(() => table.value?.tableRef?.tBodies[0] ?? null, {
   items: tasks,
   filter: (task) => {
@@ -118,27 +107,82 @@ const { items, captureLayout } = makeSortableList(() => table.value?.tableRef?.t
 });
 ```
 
-Search "Mia", move one of her tasks above another, then clear the search: her tasks are in the new order, and every other task is where it was. The drop's `**e.to.index**` counts the rows shown; `**e.result**` holds the whole array.
+Pesquise "Mia", mova uma das tarefas dela para cima de outra e depois limpe a busca: as tarefas dela
+estão na nova ordem, e todas as outras tarefas estão onde estavam. O `e.to.index` do drop conta as
+linhas mostradas; `e.result` contém o array inteiro.
 
-****Other UI libraries.**** Nuxt UI renders plain elements and passes your classes and attributes on, as the Reka UI primitives it is built on do: a ref, a slot and a class are all it takes. In other libraries a table renders its rows too, and the same recipe works:
+<tip>
 
-- ****The row.**** A slot that renders the whole row (Vuetify's `**#item**`, Quasar's `**#body**`) gives you its element: make it the item. Where you only get cells (a PrimeVue `**Column**`'s `**#body**`, an Element Plus column's default slot, Naive UI's `**render**`), put a grip in one and make its `**closest('tr')**` the item, as here.
-- ****The list.**** The `**<tbody>**` inside the table's root element: a template ref on the table gives you the component, and its `**$el**` the element.
-- ****The keys and the data.**** Key the rows by your id ( `**item-value**`, `**row-key**`, `**dataKey**`) and give the table the list's draft as its data.
-- ****Its own ordering off.**** Leave out the table's own row reordering and its column sorting: the order is the list's.
-- ****Virtual tables**** place their rows between spacers or in absolute boxes: both work, and a drag survives its row unmounting.
+**Outras bibliotecas de UI.** O Nuxt UI renderiza elementos simples e repassa as suas classes e
+atributos, como fazem as primitivas do Reka UI sobre as quais ele é construído: um ref, um slot e uma
+classe são tudo o que é preciso. Em outras bibliotecas, uma tabela também renderiza as linhas, e a
+mesma receita funciona:
 
-The StackBlitz button opens the files in a Vite project set up for Nuxt UI, as its docs do it for Vue: the `**@nuxt/ui/vite**` plugin, Tailwind CSS, and `**UApp**` around the example. In a Nuxt app with the `**@nuxt/ui**` module, copy the folder and render `**index.vue**` on a page.
+- **A linha.** Um slot que renderiza a linha inteira (`#item` do Vuetify, `#body` do Quasar) dá a
+você o elemento dela: torne-o o item. Onde você só recebe células (o `#body` de uma `Column` do
+PrimeVue, o slot padrão de uma coluna do Element Plus, o `render` do Naive UI), coloque uma alça
+em uma delas e torne o `closest('tr')` dela o item, como aqui.
+- **A lista.** O `<tbody>` dentro do elemento raiz da tabela: um template ref na tabela dá a você o
+componente, e o `$el` dele, o elemento.
+- **As keys e os dados.** Dê às linhas a key do seu id (`item-value`, `row-key`, `dataKey`) e passe
+para a tabela o rascunho da lista como os dados dela.
+- **Ordenação própria desligada.** Deixe de fora a reordenação de linhas da própria tabela e a
+ordenação por colunas: a ordem é a da lista.
+- **Tabelas virtuais** posicionam as linhas entre espaçadores ou em caixas absolutas: os dois
+funcionam, e um arraste sobrevive à desmontagem da sua linha.
 
-## Keyboard and screen readers
+</tip>
 
-Tab to a task's grip and press `Space` to pick the row up. `ArrowUp` and `ArrowDown` move it, `Space` drops it, `Escape` puts it back. The rows have a `**label**`, and the list too: screen readers hear "Fix the login form dropped at position 3 of 2000 in Tasks.", not keys.
+<note>
 
-Read more: [**Virtual lists**](https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/virtual-lists) · [**Show some of the items**](https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/sortable-lists#show-some-of-the-items) · [**Styling: Tailwind and UI kits**](https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/styling#tailwind-css) · [**Accessibility**](https://zizigy.github.io/vue-dnd-kit/pt/docs/guides/accessibility)
+O botão do StackBlitz abre os arquivos em um projeto Vite configurado para o Nuxt UI, como a
+documentação dele faz para Vue: o plugin `@nuxt/ui/vite`, o Tailwind CSS e `UApp` em volta do
+exemplo. Em um app Nuxt com o módulo `@nuxt/ui`, copie a pasta e renderize `index.vue` em uma
+página.
 
-```json
-{"@context":"https://schema.org","@graph":[{"@id":"https://zizigy.github.io/vue-dnd-kit/pt#website","@type":"WebSite","description":"Drag and drop for Vue 3: sortable lists, kanban boards, trees, multi-drag, animations and accessibility out of the box.","inLanguage":"pt-BR","name":"Vue DnD Kit","url":"https://zizigy.github.io/vue-dnd-kit/pt","translationOfWork":{"@id":"https://zizigy.github.io/vue-dnd-kit#website"}},{"@id":"https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/data-table#webpage","@type":"WebPage","description":"A Nuxt UI table of 2,000 tasks, virtualized and searchable, sorted by dragging its rows by their grips.","name":"Data table","url":"https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/data-table","isPartOf":{"@id":"https://zizigy.github.io/vue-dnd-kit/pt#website"},"potentialAction":[{"@type":"ReadAction","target":["https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/data-table"]}]}]}
-```
+</note>
+
+## Teclado e leitores de tela
+
+Chegue com Tab à alça de uma tarefa e pressione <kbd value="Space">
+
+
+
+</kbd>
+
+ para pegar a linha.
+<kbd value="ArrowUp">
+
+
+
+</kbd>
+
+ e <kbd value="ArrowDown">
+
+
+
+</kbd>
+
+ a movem, <kbd value="Space">
+
+
+
+</kbd>
+
+ a solta e
+<kbd value="Escape">
+
+
+
+</kbd>
+
+ a devolve ao lugar. As linhas têm um `label`, e a lista também: os leitores de
+tela ouvem "Fix the login form dropped at position 3 of 2000 in Tasks.", não keys.
+
+Leia mais: [Listas virtuais](https://zizigy.github.io/docs/guides/virtual-lists) ·
+[Mostrar parte dos itens](https://zizigy.github.io/docs/guides/sortable-lists#show-some-of-the-items) ·
+[Estilização: Tailwind e kits de UI](https://zizigy.github.io/docs/guides/styling#tailwind-css) ·
+[Acessibilidade](https://zizigy.github.io/docs/guides/accessibility)
 
 ## Sitemap
 

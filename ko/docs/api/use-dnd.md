@@ -14,9 +14,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/api/use-dnd"
 
 ## useDnD
 
-```ts
-function useDnD(): DnDState;
-```
+<api-signature name="useDnD">
+
+
+
+</api-signature>
 
 ```ts
 const { status, active, over, selection, cancel } = useDnD();
@@ -42,9 +44,11 @@ const dragging = computed(() => status.value === 'dragging');
 
 ## useDnDMonitor
 
-```ts
-function useDnDMonitor(monitor: DnDMonitor): void;
-```
+<api-signature name="useDnDMonitor">
+
+
+
+</api-signature>
 
 ```ts
 useDnDMonitor({
@@ -53,9 +57,8 @@ useDnDMonitor({
 });
 ```
 
-컴포넌트가 살아 있는 동안 프로바이더 아래 모든 드래그의 이벤트를 받습니다. 드롭에 대해서는
-(`onBeforeDrop`) 대상보다 모니터에 먼저 묻습니다. 페이로드는 [이벤트 페이지](https://zizigy.github.io/docs/api/events)에
-있습니다.
+드롭에 대해서는(`onBeforeDrop`) 대상보다 모니터에 먼저 묻습니다. 페이로드는
+[이벤트 페이지](https://zizigy.github.io/docs/api/events)에 있습니다.
 
 <api-table name="DnDMonitor">
 
@@ -71,10 +74,17 @@ useDnDMonitor({
 
 ## useDnDContext와 provideDnDContext
 
-```ts
-function useDnDContext(): DnDContext;
-function provideDnDContext(app: App, context: DnDContext): void;
-```
+<api-signature name="useDnDContext">
+
+
+
+</api-signature>
+
+<api-signature name="provideDnDContext">
+
+
+
+</api-signature>
 
 ```ts
 // In a component under the provider:

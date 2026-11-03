@@ -60,6 +60,12 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/examples"
 在页面上方变成真实内容的区块、在列之间移动的元素、基于同一份数据的图层树、行内编辑。
 
 </card>
+
+<card icon="i-lucide-table-2" title="数据表格" to="/docs/examples/data-table">
+
+一个包含 2,000 个任务的 Nuxt UI 表格：虚拟化、可搜索，通过行的抓手排序。
+
+</card>
 </card-group>
 
 ## Sitemap

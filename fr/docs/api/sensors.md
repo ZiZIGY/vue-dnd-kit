@@ -10,77 +10,11 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/fr/docs/api/sensors"
 import { defineSensor, useSensor, pointerSensor, keyboardSensor } from '@vue-dnd-kit/core';
 ```
 
-<table>
-<thead>
-  <tr>
-    <th>
-      Export
-    </th>
-    
-    <th>
-      Ce que c'est
-    </th>
-  </tr>
-</thead>
+<api-signature names="pointerSensor, keyboardSensor, defineSensor, useSensor">
 
-<tbody>
-  <tr>
-    <td>
-      <code>
-        pointerSensor
-      </code>
-    </td>
-    
-    <td>
-      Souris, toucher et stylet via les Pointer Events. Présent par défaut dans <code>
-        sensors
-      </code>
-      
-      .
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        keyboardSensor
-      </code>
-    </td>
-    
-    <td>
-      Space/Enter saisissent et déposent, les flèches déplacent, Escape annule. Présent par défaut dans <code>
-        sensors
-      </code>
-      
-      .
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        defineSensor(sensor)
-      </code>
-    </td>
-    
-    <td>
-      Type un objet capteur.
-    </td>
-  </tr>
-  
-  <tr>
-    <td>
-      <code>
-        useSensor(sensor)
-      </code>
-    </td>
-    
-    <td>
-      Fait tourner un capteur dans un composant sous le provider, pendant toute la durée de vie de ce composant.
-    </td>
-  </tr>
-</tbody>
-</table>
+
+
+</api-signature>
 
 Un capteur dit seulement « fais glisser cet item depuis ici », puis où il s'est déplacé et qu'il a
 déposé ou a été annulé ; le provider vérifie le reste (ce qui peut être glissé, l'activation, un

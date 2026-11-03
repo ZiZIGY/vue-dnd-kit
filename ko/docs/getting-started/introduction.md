@@ -210,6 +210,7 @@ Vuetify, 직접 만든 것)의 컴포넌트를 그대로 드래그할 수 있습
 
 v2에서 넘어오셨다면, API가 바뀌었습니다. `useDnDProvider`는 `useDnD`가 되었고, `makeConstraintArea`와
 `makeAutoScroll`은 `makeDragArea`로 합쳐졌습니다. 정렬 가능한 리스트는 이제 기본으로 들어 있습니다.
+[v2에서 마이그레이션](https://zizigy.github.io/docs/getting-started/migrating-from-v2)을 참고하세요.
 
 </tip>
 

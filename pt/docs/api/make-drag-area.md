@@ -6,20 +6,19 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/pt/docs/api/make-drag-area"
 
 > Index of every page on this site: [llms.txt](https://zizigy.github.io/vue-dnd-kit/llms.txt)
 
-```ts
-function makeDragArea(
-  target: MaybeElementRef,
-  options?: DragAreaOptions,
-): DragAreaReturn;
-```
+<api-signature name="makeDragArea">
+
+
+
+</api-signature>
 
 ```ts
 const board = useTemplateRef<HTMLElement>('board');
 makeDragArea(board, { restrictToArea: true, modifiers: [snapToGrid(24)] });
 ```
 
-Quando há áreas aninhadas, vence a mais próxima, exceto `disabled`, que as áreas internas herdam.
-Veja [Eixos, limites e grades](https://zizigy.github.io/docs/guides/constraints).
+As áreas internas herdam `disabled`; todas as outras regras vêm da área mais próxima. Veja
+[Eixos, limites e grades](https://zizigy.github.io/docs/guides/constraints).
 
 Os chips dentro da área seguem as regras dela; o que está fora é arrastado livremente.
 
