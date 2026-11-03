@@ -1,12 +1,14 @@
-# @vue-dnd-kit/core
-
-[![npm version](https://img.shields.io/npm/v/@vue-dnd-kit/core.svg)](https://www.npmjs.com/package/@vue-dnd-kit/core)
-[![License](https://img.shields.io/npm/l/@vue-dnd-kit/core.svg)](https://github.com/ZiZIGY/vue-dnd-kit/blob/master/LICENSE)
-
 <p align="center">
   <a href="https://zizigy.github.io/vue-dnd-kit/">
     <img src="https://raw.githubusercontent.com/ZiZIGY/vue-dnd-kit/master/public/logo.png" width="148" alt="Vue DnD Kit">
   </a>
+</p>
+
+<h1 align="center">@vue-dnd-kit/core</h1>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@vue-dnd-kit/core"><img src="https://img.shields.io/npm/v/@vue-dnd-kit/core.svg" alt="npm version"></a>
+  <a href="https://github.com/ZiZIGY/vue-dnd-kit/blob/master/LICENSE"><img src="https://img.shields.io/npm/l/@vue-dnd-kit/core.svg" alt="License"></a>
 </p>
 
 Drag and drop for Vue 3: sortable lists, kanban boards, trees, multi-drag, files from other
