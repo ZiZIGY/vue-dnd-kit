@@ -44,9 +44,9 @@ const lists = reactive([
   {
     id: 'images',
     title: 'Images',
-    code: "put: ({ types }) => types.every((type) => type === 'image')",
+    code: "put: 'image'",
     refusal: 'images only',
-    group: { name: 'files', put: ({ types }: SortablePutContext) => types.every((type) => type === 'image') },
+    group: { name: 'files', put: 'image' },
     files: [],
   },
   shortlist,
