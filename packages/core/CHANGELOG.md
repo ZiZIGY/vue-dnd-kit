@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.1](https://github.com/ZiZIGY/vue-dnd-kit/compare/core-v3.0.0...core-v3.0.1) (2026-11-03)
+
+
+### Documentation
+
+* **core:** the README opens with the logo, as the repository's does ([d453996](https://github.com/ZiZIGY/vue-dnd-kit/commit/d4539961a3384688265f4353994e69bb940f0dd6))
+
 ## [3.0.0](https://github.com/ZiZIGY/vue-dnd-kit/compare/core-v3.0.0-beta.2...core-v3.0.0) (2026-11-02)
 
 
