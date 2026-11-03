@@ -96,7 +96,7 @@ When the public API changes, update in the same pull request:
 - **Live examples** live in `docs/examples/<name>/` (`index.vue` plus its files) and appear on a
   page with `::example{name="<name>"}`. Each demo appears on exactly one page. Demos stay in
   English, and they don't use the site's own utility classes (`label`, `heading`, `display`,
-  `stage`, `frame`): readers copy them, and "Open in StackBlitz" runs them as a plain Vite
+  `stage`, `frame`, or Tailwind's such as `container`): readers copy them, and "Open in StackBlitz" runs them as a plain Vite
   project. `http://localhost:3000/vue-dnd-kit/preview/<name>` shows one demo alone.
 - Run `yarn api:check` after changing the library's exports or an API page.
 

@@ -66,7 +66,8 @@ second one on a port that is taken.
   from it later.
 - Live examples: `docs/examples/<name>/`, shown with `::example{name="<name>"}`. One page per
   demo. Demos in English, without the site's utility classes (`label`, `heading`, `display`,
-  `stage`, `frame`), runnable as a plain Vite project (the StackBlitz button).
+  `stage`, `frame`, or Tailwind's such as `container`: on the site a `class="container"` gets
+  `width: 100%`), runnable as a plain Vite project (the StackBlitz button).
 
 ## Commits
 

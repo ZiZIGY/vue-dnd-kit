@@ -14,7 +14,7 @@ const weight = computed(() => weightOf(props.node.item));
 <template>
   <!-- Indented by its margin, not its padding: the row itself moves with its depth, so the
        overlay takes the slot's width and lands on its level, and a depth change slides. -->
-  <div ref="el" class="row" :class="{ container: node.item.container }" :style="{ marginInlineStart: `${node.depth * indent}px` }">
+  <div ref="el" class="row" :class="{ holder: node.item.container }" :style="{ marginInlineStart: `${node.depth * indent}px` }">
     <!-- One guide per level: left of the row, in its margin. -->
     <span v-for="level in node.depth" :key="level" class="guide" :style="{ left: `${17 - (node.depth - level + 1) * indent}px` }" />
     <button
@@ -50,7 +50,7 @@ const weight = computed(() => weightOf(props.node.item));
   user-select: none;
 }
 
-.row.container {
+.row.holder {
   font-weight: 600;
 }
 

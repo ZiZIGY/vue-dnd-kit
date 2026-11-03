@@ -5,7 +5,7 @@
 
 <p align="center">
   <a href="https://zizigy.github.io/vue-dnd-kit/">
-    <img src="https://raw.githubusercontent.com/ZiZIGY/vue-dnd-kit/master/public/logo.svg" width="400" alt="Vue DnD Kit">
+    <img src="https://raw.githubusercontent.com/ZiZIGY/vue-dnd-kit/master/public/logo.png" width="148" alt="Vue DnD Kit">
   </a>
 </p>
 
