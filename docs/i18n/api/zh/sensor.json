@@ -131,6 +131,10 @@
     "source": "72e590e04a",
     "text": "取消 provider 的拖拽或等待中的激活，无论是哪个传感器在执行它（Escape、隐藏的标签页）。"
   },
+  "SensorContext.onWindow": {
+    "source": "1699455c7b",
+    "text": "为 provider 工作的每个窗口运行 `setup`：页面的窗口立即运行，provider 的项所在的每个应用的其他窗口（用 `window.open` 打开、由 Teleport 渲染进去的弹出窗口，见 `DnDState.addWindow`）在它加入时运行。在那里监听那个窗口的输入（`useEventListener(view.document, …)`）：窗口关闭或传感器停止时，这些监听会被清理，`setup` 返回的清理函数也会执行。"
+  },
   "Sensor": {
     "source": "e8d26c9d5d",
     "text": "发起拖拽的输入：指针、键盘，或你自己的输入（游戏手柄、屏幕上的摇杆、语音、脚本驱动的拖拽）。`setup` 在每个 provider 中运行一次，只在浏览器中运行，位于一个随 provider 结束的副作用作用域中（或者当传感器离开 `sensors`、或调用 `useSensor` 的组件卸载时结束）。用 `useEventListener` 注册监听器，或者返回一个清理函数；届时仍在进行的拖拽会被取消。\n\n要包装一个传感器，用你自己的上下文运行它的 `setup`。`Object.create(context, { activate: { value: … } })` 会保留实时的 getter（`status`、`drag`、`props`）：展开运算符会把它们冻结。"

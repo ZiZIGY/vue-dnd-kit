@@ -346,5 +346,9 @@
   "DnDState.cancel": {
     "source": "3ea64398be",
     "text": "Annule le glissement (il revient à sa place), ou l'activation en attente."
+  },
+  "DnDState.addWindow": {
+    "source": "113a8ef7e4",
+    "text": "Les glissements fonctionnent aussi dans `view` : une autre fenêtre de l'application qui en affiche une partie (une popup ouverte avec `window.open`, un panneau détaché, une fenêtre Document Picture-in-Picture). Un composant qui y est rendu au montage est trouvé tout seul ; le contenu qu'un teleport y déplace plus tard ne l'est pas, alors indiquez la fenêtre quand vous l'ouvrez. Jusqu'à ce qu'elle se ferme ou que la fonction renvoyée s'exécute, le provider l'écoute, y injecte ses styles, et les glissements qui y commencent y restent (son viewport, ses cibles, l'overlay dans son `<body>`). Les items avec `native` passent aussi d'une fenêtre à l'autre."
   }
 }

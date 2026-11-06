@@ -131,6 +131,10 @@
     "source": "72e590e04a",
     "text": "Cancela o arraste ou a ativação pendente do provider, seja qual for o sensor que os conduz (Escape, uma aba oculta)."
   },
+  "SensorContext.onWindow": {
+    "source": "1699455c7b",
+    "text": "Roda `setup` para cada janela em que o provider trabalha: a da página na hora, e cada outra janela do app em que estão os itens do provider (um popup aberto com `window.open` no qual um teleport renderiza, veja `DnDState.addWindow`) conforme ela entra. Escute ali a entrada dessa janela (`useEventListener(view.document, …)`): isso é limpo quando a janela fecha ou o sensor para, assim como a função de limpeza que `setup` retorna."
+  },
   "Sensor": {
     "source": "e8d26c9d5d",
     "text": "Entrada que inicia arrastes: ponteiro, teclado, ou uma sua (um gamepad, um joystick na tela, voz, arrastes roteirizados). `setup` roda uma vez por provider, só no navegador, dentro de um effect scope que termina com o provider (ou quando o sensor sai de `sensors`, ou quando o componente que chamou `useSensor` é desmontado). Registre os listeners com `useEventListener` ou retorne uma função de limpeza; um arraste que ainda esteja em andamento nesse momento é cancelado.\n\nPara envolver um sensor, rode o `setup` dele com um contexto seu. `Object.create(context, { activate: { value: … } })` mantém os getters ao vivo (`status`, `drag`, `props`): um spread os congelaria."

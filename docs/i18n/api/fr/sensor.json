@@ -131,6 +131,10 @@
     "source": "72e590e04a",
     "text": "Annule le glissement ou l'activation en attente du provider, quel que soit le capteur qui le mène (Escape, un onglet masqué)."
   },
+  "SensorContext.onWindow": {
+    "source": "1699455c7b",
+    "text": "Exécute `setup` pour chaque fenêtre où travaille le provider : celle de la page tout de suite, et chaque autre fenêtre de l'application où se trouvent des items du provider (une popup ouverte avec `window.open` dans laquelle un teleport fait son rendu, voir `DnDState.addWindow`) dès qu'elle s'ajoute. Écoutez-y les entrées de cette fenêtre (`useEventListener(view.document, …)`) : c'est nettoyé quand la fenêtre se ferme ou que le capteur s'arrête, tout comme la fonction de nettoyage que renvoie `setup`."
+  },
   "Sensor": {
     "source": "e8d26c9d5d",
     "text": "Une entrée qui lance des glissements : pointeur, clavier, ou la vôtre (une manette, un joystick à l'écran, la voix, des glissements scriptés). `setup` s'exécute une fois par provider, dans le navigateur uniquement, à l'intérieur d'un effect scope qui se termine avec le provider (ou quand le capteur sort de `sensors`, ou que le composant qui a appelé `useSensor` est démonté). Enregistrez les écouteurs avec `useEventListener` ou renvoyez une fonction de nettoyage ; un glissement encore en cours à ce moment-là est annulé.\n\nPour envelopper un capteur, exécutez son `setup` avec votre propre contexte. `Object.create(context, { activate: { value: … } })` conserve les getters dynamiques (`status`, `drag`, `props`) : une décomposition les figerait."

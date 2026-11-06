@@ -131,6 +131,10 @@
     "source": "72e590e04a",
     "text": "Bricht den Drag oder die wartende Aktivierung des Providers ab, egal welcher Sensor ihn ausführt (Escape, ein verborgener Tab)."
   },
+  "SensorContext.onWindow": {
+    "source": "1699455c7b",
+    "text": "Führt `setup` für jedes Fenster aus, in dem der Provider arbeitet: für das der Seite sofort und für jedes andere Fenster der App, in dem Elemente des Providers sind (ein mit `window.open` geöffnetes Popup, in das ein Teleport rendert, siehe `DnDState.addWindow`), sobald es dazukommt. Höre dort auf die Eingaben dieses Fensters (`useEventListener(view.document, …)`): Das wird aufgeräumt, wenn das Fenster sich schließt oder der Sensor stoppt, ebenso wie die Aufräumfunktion, die `setup` zurückgibt."
+  },
   "Sensor": {
     "source": "e8d26c9d5d",
     "text": "Eingabe, die Drags startet: Zeiger, Tastatur oder deine eigene (ein Gamepad, ein Joystick auf dem Bildschirm, Sprache, per Skript gesteuerte Drags). `setup` läuft einmal pro Provider, nur im Browser, innerhalb eines Effect Scopes, der mit dem Provider endet (oder wenn der Sensor `sensors` verlässt oder die Komponente, die `useSensor` aufgerufen hat, unmountet wird). Registriere Listener mit `useEventListener` oder gib eine Aufräumfunktion zurück; ein Drag, der dann noch läuft, wird abgebrochen.\n\nUm einen Sensor zu umhüllen, führe sein `setup` mit einem eigenen Kontext aus. `Object.create(context, { activate: { value: … } })` behält die Live-Getter (`status`, `drag`, `props`): Ein Spread würde sie einfrieren."

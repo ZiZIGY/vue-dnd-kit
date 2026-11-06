@@ -346,5 +346,9 @@
   "DnDState.cancel": {
     "source": "3ea64398be",
     "text": "Bricht den Drag (er fliegt zurück) oder die ausstehende Aktivierung ab."
+  },
+  "DnDState.addWindow": {
+    "source": "113a8ef7e4",
+    "text": "Drags funktionieren auch in `view`: einem anderen Fenster der App, das einen Teil von ihr zeigt (ein mit `window.open` geöffnetes Popup, ein abgelöstes Panel, ein Document-Picture-in-Picture-Fenster). Eine Komponente, die beim Mounten hineingerendert wird, wird von selbst gefunden; Inhalt, den ein Teleport später dorthin verschiebt, nicht, also nenne das Fenster, wenn du es öffnest. Bis es sich schließt oder die zurückgegebene Funktion läuft, hört der Provider darauf, injiziert dort seine Styles, und Drags, die darin starten, bleiben darin (sein Viewport, seine Ziele, das Overlay in seinem `<body>`). Elemente mit `native` wechseln außerdem zwischen den Fenstern."
   }
 }

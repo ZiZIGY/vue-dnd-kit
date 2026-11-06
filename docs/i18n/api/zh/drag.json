@@ -346,5 +346,9 @@
   "DnDState.cancel": {
     "source": "3ea64398be",
     "text": "取消拖拽（它会飞回原处），或取消等待中的激活。"
+  },
+  "DnDState.addWindow": {
+    "source": "113a8ef7e4",
+    "text": "拖拽在 `view` 中也能工作：应用的另一个窗口，显示应用的一部分（用 `window.open` 打开的弹出窗口、分离出来的面板、Document Picture-in-Picture 窗口）。挂载时就渲染到其中的组件会被自动找到；Teleport 之后才移过去的内容则不会，所以打开窗口时要把它告诉 provider。在窗口关闭或返回的函数被调用之前，provider 会监听它、把样式注入其中，在其中开始的拖拽也会留在其中（它的视口、它的放置目标、它的 `<body>` 中的浮层）。带有 `native` 的项还可以在窗口之间穿梭。"
   }
 }

@@ -346,5 +346,9 @@
   "DnDState.cancel": {
     "source": "3ea64398be",
     "text": "Cancela o arraste (ele volta ao lugar), ou a ativação pendente."
+  },
+  "DnDState.addWindow": {
+    "source": "113a8ef7e4",
+    "text": "Os arrastes também funcionam em `view`: outra janela do app que mostra parte dele (um popup aberto com `window.open`, um painel destacado, uma janela de Document Picture-in-Picture). Um componente renderizado nela ao ser montado é encontrado sozinho; o conteúdo que um teleport move para lá depois não é, então informe a janela ao abri-la. Até ela fechar ou a função retornada rodar, o provider a escuta, injeta os seus estilos nela, e os arrastes que começam nela ficam nela (a viewport dela, os alvos dela, o overlay no `<body>` dela). Itens com `native` também passam de uma janela para outra."
   }
 }
