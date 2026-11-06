@@ -579,6 +579,26 @@ cursor in the stage's coordinates, so it scrolls with the page, and converts it 
       Cancels the provider's drag or pending press.
     </td>
   </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onWindow(setup)
+      </code>
+    </td>
+    
+    <td>
+      Runs <code>
+        setup(view)
+      </code>
+      
+       in the page's window and in every <a href="/docs/guides/provider#other-windows-of-the-app">
+        other window of the app
+      </a>
+      
+       as it joins. Listen to input there; it is cleaned up when that window closes.
+    </td>
+  </tr>
 </tbody>
 </table>
 
