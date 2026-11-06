@@ -589,6 +589,26 @@ Seite scrollt, und rechnet ihn in `point()` um.
       Bricht den Drag oder das wartende Drücken des Providers ab.
     </td>
   </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onWindow(setup)
+      </code>
+    </td>
+    
+    <td>
+      Führt <code>
+        setup(view)
+      </code>
+      
+       im Fenster der Seite aus und in jedem <a href="/docs/guides/provider#other-windows-of-the-app">
+        anderen Fenster der App
+      </a>
+      
+      , sobald es dazukommt. Höre dort auf Eingaben; das wird aufgeräumt, wenn dieses Fenster sich schließt.
+    </td>
+  </tr>
 </tbody>
 </table>
 

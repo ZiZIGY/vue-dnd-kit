@@ -580,6 +580,26 @@ const cancel = () => drag?.cancel();
       프로바이더의 드래그나 대기 중인 누르기를 취소합니다.
     </td>
   </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onWindow(setup)
+      </code>
+    </td>
+    
+    <td>
+      페이지의 창에서 <code>
+        setup(view)
+      </code>
+      
+      를 실행하고, <a href="/docs/guides/provider#other-windows-of-the-app">
+        앱의 다른 창
+      </a>
+      
+      이 합류할 때마다 그 창에서도 실행합니다. 그곳에서 입력을 들으세요. 그 창이 닫히면 정리됩니다.
+    </td>
+  </tr>
 </tbody>
 </table>
 

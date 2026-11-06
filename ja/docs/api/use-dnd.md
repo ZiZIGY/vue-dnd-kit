@@ -25,7 +25,7 @@ const { status, active, over, selection, cancel } = useDnD();
 const dragging = computed(() => status.value === 'dragging');
 ```
 
-プロバイダーのドラッグの、リアクティブな状態です。`active` と `over` は、ドロップが決まった時点で、オーバーレイがまだ着地している間にクリアされます。
+プロバイダーのドラッグの、リアクティブな状態です。`active` と `over` は、ドロップが決まった時点で、オーバーレイがまだ着地している間にクリアされます。`addWindow(popup)` を使うと、プロバイダーはアプリの別のウィンドウでも動作します（[プロバイダーのガイド](https://zizigy.github.io/docs/guides/provider#other-windows-of-the-app)を参照）。
 
 <api-table name="DnDState">
 

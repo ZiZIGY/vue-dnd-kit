@@ -26,7 +26,8 @@ const dragging = computed(() => status.value === 'dragging');
 ```
 
 프로바이더 드래그의 반응형 상태입니다. `active`와 `over`는 드롭이 결정되는 즉시 비워지며, 그동안
-오버레이는 아직 안착하는 중입니다.
+오버레이는 아직 안착하는 중입니다. `addWindow(popup)`을 쓰면 프로바이더가 앱의 다른 창에서도
+동작합니다([프로바이더 가이드](https://zizigy.github.io/docs/guides/provider#other-windows-of-the-app) 참고).
 
 <api-table name="DnDState">
 

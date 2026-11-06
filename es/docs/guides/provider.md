@@ -1597,6 +1597,44 @@ Una app montada en otro sitio, dentro de un shadow root o como una app de Vue ap
 a un provider existente: pasa `useDnDContext()` a `provideDnDContext(app, context)` antes de
 montarla. La prueba de colisión y el overlay funcionan a través de los shadow roots.
 
+## Otras ventanas de la app
+
+Una app puede mostrar parte de sí misma en otra ventana: un popup que abre con `window.open`, un
+panel desacoplado, una ventana de Document Picture-in-Picture. Se renderiza allí con un teleport,
+bajo el mismo provider. Abre la lista de deseos en una ventana y ordénala allí: el overlay está en
+el popup.
+
+<example height="26rem" hint="Abre la lista de deseos en una ventana y luego ordénala allí" name="provider-windows">
+
+
+
+</example>
+
+Indica la ventana cuando la abras:
+
+```ts
+const dnd = useDnD();
+
+function detach() {
+  const popup = window.open('', 'inspector', 'popup,width=420,height=560')!;
+  const release = dnd.addWindow(popup);       // listen there, until it closes
+  popup.addEventListener('pagehide', release);
+  target.value = popup.document.body;         // <Teleport :to="target">…</Teleport>
+}
+```
+
+- Los arrastres funcionan en esa ventana igual que en la página: empiezan allí, ordenan y
+encuentran sus destinos, la desplazan automáticamente y muestran el overlay en su `<body>`. Los
+ejecutan los frames de esa ventana, así que una página oculta detrás del popup no los ralentiza.
+- Un arrastre con puntero o con teclado se queda en la ventana en la que empezó: el navegador envía
+la entrada de una ventana solo a esa ventana. Los ítems con [`native`](https://zizigy.github.io/docs/guides/native) pasan
+de una ventana a otra, llevados por el arrastrar y soltar del propio navegador.
+- Un componente renderizado en la ventana al montarse se encuentra por sí solo. El contenido que un
+teleport mueve allí más tarde (un panel que se desacopla) no: para eso está `addWindow`.
+- El provider inyecta sus estilos en la ventana y la libera cuando se cierra.
+- Un [sensor propio](https://zizigy.github.io/docs/guides/sensors#a-sensor-of-your-own) escucha en todas las ventanas con
+`context.onWindow((view) => useEventListener(view.document, …))`.
+
 ## SSR y Nuxt
 
 El provider es seguro para SSR. Las listas y los ítems se renderizan en el servidor como cualquier

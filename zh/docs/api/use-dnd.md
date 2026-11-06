@@ -25,7 +25,7 @@ const { status, active, over, selection, cancel } = useDnD();
 const dragging = computed(() => status.value === 'dragging');
 ```
 
-provider 拖拽的响应式状态。一旦放置结果确定，`active` 和 `over` 就会被清空，此时浮层仍在落位。
+provider 拖拽的响应式状态。一旦放置结果确定，`active` 和 `over` 就会被清空，此时浮层仍在落位。`addWindow(popup)` 让 provider 在应用的另一个窗口中工作（见 [provider 指南](https://zizigy.github.io/docs/guides/provider#other-windows-of-the-app)）。
 
 <api-table name="DnDState">
 

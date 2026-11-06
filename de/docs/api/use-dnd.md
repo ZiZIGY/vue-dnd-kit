@@ -26,7 +26,9 @@ const dragging = computed(() => status.value === 'dragging');
 ```
 
 Der Zustand des Drags im Provider, reaktiv. `active` und `over` werden geleert, sobald über den
-Drop entschieden ist, während das Overlay noch landet.
+Drop entschieden ist, während das Overlay noch landet. `addWindow(popup)` lässt den Provider in
+einem anderen Fenster der App arbeiten (siehe den Leitfaden
+[Der Provider](https://zizigy.github.io/docs/guides/provider#other-windows-of-the-app)).
 
 <api-table name="DnDState">
 

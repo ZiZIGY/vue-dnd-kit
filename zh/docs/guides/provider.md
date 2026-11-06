@@ -1533,6 +1533,35 @@ makeDragArea(board, { modifiers: [snapToGrid(20)], activation: { touch: { delay:
 
 挂载在别处的应用，无论是在 shadow root 中还是作为独立的 Vue 应用，都可以加入已有的 provider：在挂载之前把 `useDnDContext()` 传给 `provideDnDContext(app, context)`。命中测试和浮层可以跨越 shadow root 工作。
 
+## 应用的其他窗口
+
+应用可以把自己的一部分显示在另一个窗口中：它用 `window.open` 打开的弹出窗口、分离出来的面板、Document Picture-in-Picture 窗口。它通过 Teleport 渲染到那里，仍在同一个 provider 之下。在一个窗口中打开愿望清单，并在那里排序：浮层就在弹出窗口中。
+
+<example height="26rem" hint="在一个窗口中打开愿望清单，然后在那里排序" name="provider-windows">
+
+
+
+</example>
+
+打开窗口时，把这个窗口告诉 provider：
+
+```ts
+const dnd = useDnD();
+
+function detach() {
+  const popup = window.open('', 'inspector', 'popup,width=420,height=560')!;
+  const release = dnd.addWindow(popup);       // listen there, until it closes
+  popup.addEventListener('pagehide', release);
+  target.value = popup.document.body;         // <Teleport :to="target">…</Teleport>
+}
+```
+
+- 拖拽在那个窗口中和在页面上一样工作：在那里开始，排序并命中它的放置目标，让它自动滚动，并在它的 `<body>` 中显示浮层。由那个窗口的帧来运行拖拽，所以藏在弹出窗口后面的页面不会拖慢它们。
+- 指针拖拽或键盘拖拽会留在它开始的窗口中：浏览器只把一个窗口的输入发给那个窗口。带有 [`native`](https://zizigy.github.io/docs/guides/native) 的项可以在窗口之间穿梭，由浏览器自己的拖放来携带。
+- 挂载时就渲染到该窗口中的组件会被自动找到。Teleport 之后才移过去的内容（一个分离出来的面板）则不会：这正是 `addWindow` 的用途。
+- provider 会把它的样式注入到窗口中，并在窗口关闭时放开它。
+- [自定义传感器](https://zizigy.github.io/docs/guides/sensors#a-sensor-of-your-own)用 `context.onWindow((view) => useEventListener(view.document, …))` 在每个窗口中监听。
+
 ## SSR 与 Nuxt
 
 provider 对 SSR 是安全的。列表和项像其他标记一样在服务端渲染。浮层和实时区域是传送出去的，只在客户端挂载，因此永远不会导致激活不匹配。默认 id 来自 Vue 的 `useId()`，在服务端和客户端之间保持一致。

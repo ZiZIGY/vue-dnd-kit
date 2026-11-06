@@ -584,6 +584,26 @@ const cancel = () => drag?.cancel();
       Отменяет драг провайдера или ожидающее нажатие.
     </td>
   </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onWindow(setup)
+      </code>
+    </td>
+    
+    <td>
+      Выполняет <code>
+        setup(view)
+      </code>
+      
+       в окне страницы и в каждом <a href="/docs/guides/provider#other-windows-of-the-app">
+        другом окне приложения
+      </a>
+      
+      , когда оно присоединяется. Слушайте там ввод; всё это очищается, когда окно закрывается.
+    </td>
+  </tr>
 </tbody>
 </table>
 

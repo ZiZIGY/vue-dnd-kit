@@ -66,6 +66,12 @@ Notion 風のブロック。ハンドルで動かし、ネストし、「/」メ
 2,000 件のタスクを持つ Nuxt UI のテーブル：仮想化され、検索でき、行のグリップで並べ替えます。
 
 </card>
+
+<card icon="i-lucide-layout-dashboard" title="ダッシュボード" to="/docs/examples/dashboard">
+
+ヘッダーで動かし、角で 1 セルずつサイズを変えるウィジェット。行の高さは中身に合わせて決まります。
+
+</card>
 </card-group>
 
 ## Sitemap

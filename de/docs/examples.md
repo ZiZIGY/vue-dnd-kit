@@ -77,6 +77,13 @@ Eine Nuxt-UI-Tabelle mit 2.000 Aufgaben: virtualisiert, durchsuchbar, sortiert a
 Zeilen.
 
 </card>
+
+<card icon="i-lucide-layout-dashboard" title="Dashboard" to="/docs/examples/dashboard">
+
+Widgets, die an ihrer Kopfzeile verschoben und an ihrer Ecke in der Größe geändert werden, eine Zelle
+nach der anderen, in Zeilen so hoch wie ihr Inhalt.
+
+</card>
 </card-group>
 
 ## Sitemap

@@ -26,7 +26,8 @@ const dragging = computed(() => status.value === 'dragging');
 ```
 
 L'état réactif du glissement du provider. `active` et `over` sont vidés dès que le dépôt est décidé,
-pendant que l'overlay atterrit encore.
+pendant que l'overlay atterrit encore. `addWindow(popup)` permet au provider de fonctionner dans une
+autre fenêtre de l'application (voir [le guide du provider](https://zizigy.github.io/docs/guides/provider#other-windows-of-the-app)).
 
 <api-table name="DnDState">
 

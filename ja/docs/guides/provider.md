@@ -1533,6 +1533,35 @@ makeDragArea(board, { modifiers: [snapToGrid(20)], activation: { touch: { delay:
 
 別の場所にマウントされたアプリ（shadow root の中や、別の Vue アプリ）も、既存のプロバイダーに参加できます。マウントする前に `useDnDContext()` を `provideDnDContext(app, context)` に渡してください。ヒットテストとオーバーレイは shadow root をまたいで動作します。
 
+## アプリのほかのウィンドウ
+
+アプリは自身の一部を別のウィンドウに表示することがあります：`window.open` で開くポップアップ、切り離したパネル、Document Picture-in-Picture ウィンドウです。そこへはテレポートで描画され、同じプロバイダーの下にあります。ウィッシュリストをウィンドウで開き、そこで並べ替えてみましょう：オーバーレイはポップアップの中に表示されます。
+
+<example height="26rem" hint="ウィッシュリストをウィンドウで開いてから、そこで並べ替えてみましょう" name="provider-windows">
+
+
+
+</example>
+
+ウィンドウを開くときに、そのウィンドウをプロバイダーに伝えます。
+
+```ts
+const dnd = useDnD();
+
+function detach() {
+  const popup = window.open('', 'inspector', 'popup,width=420,height=560')!;
+  const release = dnd.addWindow(popup);       // listen there, until it closes
+  popup.addEventListener('pagehide', release);
+  target.value = popup.document.body;         // <Teleport :to="target">…</Teleport>
+}
+```
+
+- ドラッグはそのウィンドウでもページと同じように動作します：そこで始まり、並べ替え、そのウィンドウのドロップターゲットにヒットし、そのウィンドウを自動スクロールし、その `<body>` にオーバーレイを表示します。ドラッグを動かすのはそのウィンドウのフレームなので、ポップアップの後ろに隠れたページがドラッグを遅くすることはありません。
+- ポインターやキーボードのドラッグは、始まったウィンドウに留まります：ブラウザーはウィンドウの入力をそのウィンドウにしか送らないためです。[`native`](https://zizigy.github.io/docs/guides/native) を持つアイテムは、ブラウザー自身のドラッグ＆ドロップに運ばれてウィンドウ間を移動します。
+- マウント時にウィンドウへ描画されるコンポーネントは自動的に見つかります。後からテレポートがそこへ移すコンテンツ（切り離されるパネル）は見つかりません：そのために `addWindow` があります。
+- プロバイダーはウィンドウに自身のスタイルを注入し、ウィンドウが閉じるとそれを手放します。
+- [独自のセンサー](https://zizigy.github.io/docs/guides/sensors#a-sensor-of-your-own)は、`context.onWindow((view) => useEventListener(view.document, …))` ですべてのウィンドウの入力をリッスンします。
+
 ## SSR と Nuxt
 
 プロバイダーは SSR で安全に使えます。リストとアイテムは、ほかのマークアップと同じようにサーバーで描画されます。オーバーレイとライブリージョンはテレポートされ、クライアントでのみマウントされるため、ハイドレーションミスマッチを起こしません。デフォルトの id は Vue の `useId()` から生成され、サーバーとクライアントで一致します。

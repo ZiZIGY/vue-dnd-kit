@@ -77,6 +77,13 @@ Un tableau Nuxt UI de 2 000 tâches : virtualisé, avec recherche, trié par l
 lignes.
 
 </card>
+
+<card icon="i-lucide-layout-dashboard" title="Tableau de bord" to="/docs/examples/dashboard">
+
+Des widgets déplacés par leur en-tête et redimensionnés par leur coin, une cellule à la fois, dans
+des lignes aussi hautes que leur contenu.
+
+</card>
 </card-group>
 
 ## Sitemap

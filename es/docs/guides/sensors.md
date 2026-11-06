@@ -585,6 +585,26 @@ en `point()`.
       Cancela el arrastre o la pulsación pendiente del provider.
     </td>
   </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onWindow(setup)
+      </code>
+    </td>
+    
+    <td>
+      Ejecuta <code>
+        setup(view)
+      </code>
+      
+       en la ventana de la página y en todas las <a href="/docs/guides/provider#other-windows-of-the-app">
+        demás ventanas de la app
+      </a>
+      
+       a medida que se unen. Escucha allí la entrada; se limpia cuando esa ventana se cierra.
+    </td>
+  </tr>
 </tbody>
 </table>
 

@@ -73,6 +73,13 @@ tree on the same data, inline editing.
 A Nuxt UI table of 2,000 tasks: virtualized, searchable, sorted by its rows' grips.
 
 </card>
+
+<card icon="i-lucide-layout-dashboard" title="Dashboard" to="/docs/examples/dashboard">
+
+Widgets moved by their headers and resized by their corners, a cell at a time, in rows as tall
+as their content.
+
+</card>
 </card-group>
 
 ## Sitemap

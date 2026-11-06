@@ -74,6 +74,13 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ru/docs/examples"
 Таблица Nuxt UI на 2 000 задач: виртуализированная, с поиском, сортируется за ручки строк.
 
 </card>
+
+<card icon="i-lucide-layout-dashboard" title="Дашборд" to="/docs/examples/dashboard">
+
+Виджеты, которые перемещаются за заголовки и меняют размер за углы по ячейке за раз, в строках
+высотой по содержимому.
+
+</card>
 </card-group>
 
 ## Sitemap

@@ -26,7 +26,8 @@ const dragging = computed(() => status.value === 'dragging');
 ```
 
 Состояние драга провайдера, реактивное. `active` и `over` очищаются, как только бросок решён,
-пока оверлей ещё приземляется.
+пока оверлей ещё приземляется. `addWindow(popup)` позволяет провайдеру работать в другом окне
+приложения (см. [руководство по провайдеру](https://zizigy.github.io/docs/guides/provider#other-windows-of-the-app)).
 
 <api-table name="DnDState">
 

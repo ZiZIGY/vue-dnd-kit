@@ -66,6 +66,12 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/zh/docs/examples"
 一个包含 2,000 个任务的 Nuxt UI 表格：虚拟化、可搜索，通过行的抓手排序。
 
 </card>
+
+<card icon="i-lucide-layout-dashboard" title="仪表盘" to="/docs/examples/dashboard">
+
+通过标题移动、拖动角落按格调整大小的小组件，所在的行与其内容一样高。
+
+</card>
 </card-group>
 
 ## Sitemap

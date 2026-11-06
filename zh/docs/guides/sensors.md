@@ -539,6 +539,26 @@ const cancel = () => drag?.cancel();
       取消 provider 的拖拽或等待中的按下。
     </td>
   </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onWindow(setup)
+      </code>
+    </td>
+    
+    <td>
+      在页面的窗口中运行 <code>
+        setup(view)
+      </code>
+      
+      ，并在每个<a href="/docs/guides/provider#other-windows-of-the-app">
+        应用的其他窗口
+      </a>
+      
+      加入时在其中运行。在那里监听输入；那个窗口关闭时，它会被清理。
+    </td>
+  </tr>
 </tbody>
 </table>
 

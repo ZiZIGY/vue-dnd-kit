@@ -381,6 +381,19 @@
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/chess" hreflang="fr-FR" />
     </url>
     <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/docs/examples/dashboard</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/dashboard" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/dashboard" hreflang="en-US" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/dashboard" hreflang="ru-RU" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/dashboard" hreflang="zh-CN" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/dashboard" hreflang="ja-JP" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/dashboard" hreflang="ko-KR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/examples/dashboard" hreflang="es-ES" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/dashboard" hreflang="pt-BR" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/examples/dashboard" hreflang="de-DE" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/dashboard" hreflang="fr-FR" />
+    </url>
+    <url>
         <loc>https://zizigy.github.io/vue-dnd-kit/docs/examples/data-table</loc>
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/data-table" hreflang="x-default" />
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/docs/examples/data-table" hreflang="en-US" />
@@ -886,6 +899,11 @@
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/examples/chess" hreflang="en-US" />
     </url>
     <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/de/docs/examples/dashboard</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/examples/dashboard" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/examples/dashboard" hreflang="en-US" />
+    </url>
+    <url>
         <loc>https://zizigy.github.io/vue-dnd-kit/de/docs/examples/data-table</loc>
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/examples/data-table" hreflang="x-default" />
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/de/docs/examples/data-table" hreflang="en-US" />
@@ -1119,6 +1137,11 @@
         <loc>https://zizigy.github.io/vue-dnd-kit/es/docs/examples/chess</loc>
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/examples/chess" hreflang="x-default" />
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/examples/chess" hreflang="en-US" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/es/docs/examples/dashboard</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/examples/dashboard" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/es/docs/examples/dashboard" hreflang="en-US" />
     </url>
     <url>
         <loc>https://zizigy.github.io/vue-dnd-kit/es/docs/examples/data-table</loc>
@@ -1356,6 +1379,11 @@
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/chess" hreflang="en-US" />
     </url>
     <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/dashboard</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/dashboard" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/dashboard" hreflang="en-US" />
+    </url>
+    <url>
         <loc>https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/data-table</loc>
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/data-table" hreflang="x-default" />
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/fr/docs/examples/data-table" hreflang="en-US" />
@@ -1589,6 +1617,11 @@
         <loc>https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/chess</loc>
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/chess" hreflang="x-default" />
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/chess" hreflang="en-US" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/dashboard</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/dashboard" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/dashboard" hreflang="en-US" />
     </url>
     <url>
         <loc>https://zizigy.github.io/vue-dnd-kit/ja/docs/examples/data-table</loc>
@@ -1826,6 +1859,11 @@
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/chess" hreflang="en-US" />
     </url>
     <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/dashboard</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/dashboard" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/dashboard" hreflang="en-US" />
+    </url>
+    <url>
         <loc>https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/data-table</loc>
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/data-table" hreflang="x-default" />
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ko/docs/examples/data-table" hreflang="en-US" />
@@ -2059,6 +2097,11 @@
         <loc>https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/chess</loc>
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/chess" hreflang="x-default" />
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/chess" hreflang="en-US" />
+    </url>
+    <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/dashboard</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/dashboard" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/dashboard" hreflang="en-US" />
     </url>
     <url>
         <loc>https://zizigy.github.io/vue-dnd-kit/pt/docs/examples/data-table</loc>
@@ -2296,6 +2339,11 @@
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/chess" hreflang="en-US" />
     </url>
     <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/dashboard</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/dashboard" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/dashboard" hreflang="en-US" />
+    </url>
+    <url>
         <loc>https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/data-table</loc>
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/data-table" hreflang="x-default" />
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/ru/docs/examples/data-table" hreflang="en-US" />
@@ -2531,6 +2579,11 @@
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/chess" hreflang="en-US" />
     </url>
     <url>
+        <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/dashboard</loc>
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/dashboard" hreflang="x-default" />
+        <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/dashboard" hreflang="en-US" />
+    </url>
+    <url>
         <loc>https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/data-table</loc>
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/data-table" hreflang="x-default" />
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/examples/data-table" hreflang="en-US" />
@@ -2656,4 +2709,4 @@
         <xhtml:link rel="alternate" href="https://zizigy.github.io/vue-dnd-kit/zh/docs/guides/virtual-lists" hreflang="en-US" />
     </url>
 </urlset>
-<!-- XML Sitemap generated by @nuxtjs/sitemap v9.1.0 at 2026-11-06T00:30:30.802Z -->
+<!-- XML Sitemap generated by @nuxtjs/sitemap v9.1.0 at 2026-11-06T00:40:56.029Z -->

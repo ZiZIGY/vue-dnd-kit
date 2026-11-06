@@ -1598,6 +1598,47 @@ Une application montée ailleurs, dans un shadow root ou comme application Vue s
 rejoindre un provider existant : passez `useDnDContext()` à `provideDnDContext(app, context)`
 avant de la monter. Le test de collision et l'overlay fonctionnent à travers les shadow roots.
 
+## Les autres fenêtres de l'application
+
+Une application peut afficher une partie d'elle-même dans une autre fenêtre : une popup qu'elle
+ouvre avec `window.open`, un panneau détaché, une fenêtre Document Picture-in-Picture. Elle y est
+rendue par un teleport, sous le même provider. Ouvrez la liste de souhaits dans une fenêtre et
+triez-la là-bas : l'overlay est dans la popup.
+
+<example height="26rem" hint="Ouvrez la liste de souhaits dans une fenêtre, puis triez-la là-bas" name="provider-windows">
+
+
+
+</example>
+
+Indiquez la fenêtre quand vous l'ouvrez :
+
+```ts
+const dnd = useDnD();
+
+function detach() {
+  const popup = window.open('', 'inspector', 'popup,width=420,height=560')!;
+  const release = dnd.addWindow(popup);       // listen there, until it closes
+  popup.addEventListener('pagehide', release);
+  target.value = popup.document.body;         // <Teleport :to="target">…</Teleport>
+}
+```
+
+- Les glissements fonctionnent dans cette fenêtre comme sur la page : ils y démarrent, trient et
+touchent ses cibles, la font défiler automatiquement et affichent l'overlay dans son `<body>`.
+Ce sont ses frames qui les font tourner, si bien qu'une page cachée derrière la popup ne les
+ralentit pas.
+- Un glissement au pointeur ou au clavier reste dans la fenêtre où il a commencé : le navigateur
+n'envoie les entrées d'une fenêtre qu'à cette fenêtre. Les items avec
+[`native`](https://zizigy.github.io/docs/guides/native) passent d'une fenêtre à l'autre, portés par le glisser-déposer
+du navigateur lui-même.
+- Un composant rendu dans la fenêtre au moment où il se monte est trouvé tout seul. Le contenu
+qu'un teleport y déplace plus tard (un panneau qui se détache) ne l'est pas : c'est à cela que
+sert `addWindow`.
+- Le provider injecte ses styles dans la fenêtre, et la relâche quand elle se ferme.
+- [Votre propre capteur](https://zizigy.github.io/docs/guides/sensors#a-sensor-of-your-own) écoute dans chaque fenêtre
+avec `context.onWindow((view) => useEventListener(view.document, …))`.
+
 ## SSR et Nuxt
 
 Le provider est compatible SSR. Les listes et les items sont rendus sur le serveur comme

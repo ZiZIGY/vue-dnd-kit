@@ -582,6 +582,26 @@ guarda o cursor nas coordenadas do palco, para que ele role com a página, e o c
       Cancela o arraste ou a pressão pendente do provider.
     </td>
   </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onWindow(setup)
+      </code>
+    </td>
+    
+    <td>
+      Executa <code>
+        setup(view)
+      </code>
+      
+       na janela da página e em cada <a href="/docs/guides/provider#other-windows-of-the-app">
+        outra janela do app
+      </a>
+      
+       conforme ela entra. Escute a entrada ali; isso é limpo quando essa janela fecha.
+    </td>
+  </tr>
 </tbody>
 </table>
 

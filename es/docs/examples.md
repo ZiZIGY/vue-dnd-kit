@@ -75,6 +75,13 @@ capas sobre los mismos datos, edición en línea.
 Una tabla de Nuxt UI con 2000 tareas: virtualizada, con búsqueda, ordenada por las asas de sus filas.
 
 </card>
+
+<card icon="i-lucide-layout-dashboard" title="Panel de control" to="/docs/examples/dashboard">
+
+Widgets que se mueven por su cabecera y se redimensionan por su esquina, de celda en celda, en filas
+tan altas como su contenido.
+
+</card>
 </card-group>
 
 ## Sitemap

@@ -529,6 +529,26 @@ const cancel = () => drag?.cancel();
       プロバイダーのドラッグ、または待機中の押下をキャンセルします。
     </td>
   </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onWindow(setup)
+      </code>
+    </td>
+    
+    <td>
+      ページのウィンドウで <code>
+        setup(view)
+      </code>
+      
+       を実行し、<a href="/docs/guides/provider#other-windows-of-the-app">
+        アプリのほかのウィンドウ
+      </a>
+      
+      が加わるたびに、そのウィンドウでも実行します。そこで入力をリッスンしてください。そのウィンドウが閉じるとクリーンアップされます。
+    </td>
+  </tr>
 </tbody>
 </table>
 

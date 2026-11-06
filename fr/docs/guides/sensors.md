@@ -589,6 +589,26 @@ page, et le convertit dans `point()`.
       Annule le glissement ou l'appui en attente du provider.
     </td>
   </tr>
+  
+  <tr>
+    <td>
+      <code>
+        onWindow(setup)
+      </code>
+    </td>
+    
+    <td>
+      Exécute <code>
+        setup(view)
+      </code>
+      
+       dans la fenêtre de la page et dans chaque <a href="/docs/guides/provider#other-windows-of-the-app">
+        autre fenêtre de l'application
+      </a>
+      
+       dès qu'elle s'ajoute. Écoutez-y les entrées ; c'est nettoyé quand cette fenêtre se ferme.
+    </td>
+  </tr>
 </tbody>
 </table>
 

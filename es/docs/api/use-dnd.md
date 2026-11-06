@@ -26,7 +26,8 @@ const dragging = computed(() => status.value === 'dragging');
 ```
 
 El estado del arrastre del provider, reactivo. `active` y `over` se vacían en cuanto se decide el
-drop, mientras el overlay todavía aterriza.
+drop, mientras el overlay todavía aterriza. `addWindow(popup)` permite que el provider funcione en
+otra ventana de la app (consulta [la guía del provider](https://zizigy.github.io/docs/guides/provider#other-windows-of-the-app)).
 
 <api-table name="DnDState">
 

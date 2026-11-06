@@ -72,6 +72,12 @@ canonical_url: "https://zizigy.github.io/vue-dnd-kit/ko/docs/examples"
 작업 2,000개를 담은 Nuxt UI 테이블: 가상화되고, 검색할 수 있고, 행의 그립으로 정렬합니다.
 
 </card>
+
+<card icon="i-lucide-layout-dashboard" title="대시보드" to="/docs/examples/dashboard">
+
+헤더로 옮기고 모서리로 한 칸씩 크기를 바꾸는 위젯. 행의 높이는 내용에 맞춰집니다.
+
+</card>
 </card-group>
 
 ## Sitemap

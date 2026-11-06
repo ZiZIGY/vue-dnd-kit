@@ -74,6 +74,13 @@ sobre os mesmos dados, edição inline.
 Uma tabela do Nuxt UI com 2.000 tarefas: virtualizada, pesquisável, ordenada pelas alças das linhas.
 
 </card>
+
+<card icon="i-lucide-layout-dashboard" title="Dashboard" to="/docs/examples/dashboard">
+
+Widgets movidos pelo cabeçalho e redimensionados pelo canto, uma célula por vez, em linhas tão altas
+quanto o conteúdo.
+
+</card>
 </card-group>
 
 ## Sitemap
