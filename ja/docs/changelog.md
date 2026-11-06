@@ -27,6 +27,12 @@ v3 follows semantic versioning: a minor or patch release changes no API you use,
 
 ## Releases
 
+[3.1.0](https://zizigy.github.io/vue-dnd-kit/ja/docs/changelog/v3-1-0)
+
+**3.1.0**
+
+Drags in other windows of the app: a popup, a detached panel, a Picture-in-Picture window, under the same provider.
+
 [3.0.0](https://zizigy.github.io/vue-dnd-kit/ja/docs/changelog/v3-0-0)
 
 **3.0.0**

@@ -21,6 +21,13 @@ changes is said on its page. Coming from v2, see [migrating from v2](https://ziz
 ## Releases
 
 <card-group>
+<card icon="i-lucide-tag" title="3.1.0" to="/docs/changelog/v3-1-0">
+
+Drags in other windows of the app: a popup, a detached panel, a Picture-in-Picture window,
+under the same provider.
+
+</card>
+
 <card icon="i-lucide-tag" title="3.0.0" to="/docs/changelog/v3-0-0">
 
 v3 is stable: drag and drop, sortable lists and trees, multi-drag, files from other apps,
