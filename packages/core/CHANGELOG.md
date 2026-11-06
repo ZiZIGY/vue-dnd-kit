@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/ZiZIGY/vue-dnd-kit/compare/core-v3.0.1...core-v3.1.0) (2026-11-06)
+
+
+### Features
+
+* **core:** drags work in other windows of the app (useDnD().addWindow) ([f956c9d](https://github.com/ZiZIGY/vue-dnd-kit/commit/f956c9d77e77a22e4f4efe9ebad1df81833b6770))
+
 ## [3.0.1](https://github.com/ZiZIGY/vue-dnd-kit/compare/core-v3.0.0...core-v3.0.1) (2026-11-03)
 
 
