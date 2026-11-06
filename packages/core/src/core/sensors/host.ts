@@ -15,7 +15,7 @@
  */
 
 import { effectScope, onScopeDispose, watch } from 'vue';
-import { defaultDocument, useEventListener } from '@vueuse/core';
+import { useEventListener } from '@vueuse/core';
 import type { Key, Sensor, SensorActivation, SensorContext, SensorDrag, SensorType } from '../../types';
 import type { DnDManager } from '../manager';
 import { useManager } from '../context';
@@ -163,6 +163,10 @@ function createHost(manager: DnDManager): Host {
         if (process.env.NODE_ENV !== 'production') warnIfDeciding(manager, 'cancel()');
         manager.cancel();
       },
+      // Called in `setup`, it stops with the sensor's scope.
+      onWindow: (setup) => {
+        manager.windows.each(setup);
+      },
     };
     const scope = effectScope(true);
     scope.run(() => {
@@ -196,9 +200,12 @@ const hostOf = (manager: DnDManager): Host => {
 export function useSensors(manager: DnDManager, defaults: readonly Sensor[]): void {
   if (!isClient) return;
   const host = hostOf(manager);
-  // The pointerup of a hidden tab may never come.
-  useEventListener(defaultDocument, 'visibilitychange', () => {
-    if (document.visibilityState === 'hidden') manager.cancel();
+  // The pointerup of a hidden tab may never come: the window the drag runs in.
+  manager.windows.each((view) => {
+    const doc = view.document;
+    useEventListener(doc, 'visibilitychange', () => {
+      if (doc.visibilityState === 'hidden' && manager.getDocument() === doc) manager.cancel();
+    });
   });
   const running = new Map<Sensor, (cancel?: boolean) => void>();
   watch(

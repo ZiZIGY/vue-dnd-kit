@@ -15,6 +15,7 @@ import {
   intersects,
   resolveAnimation,
 } from '../animation/layout';
+import { docOf, viewOf } from '../utils/dom';
 
 /** Clones beyond this count add cost without being noticeable. */
 const MAX_GHOSTS = 12;
@@ -29,8 +30,10 @@ export const collapseIntoOverlay = (
   option: LayoutAnimation | undefined,
 ): void => {
   const resolved = resolveAnimation(option, DEFAULT_LAYOUT_ANIMATION);
-  if (!resolved || resolved.custom || typeof document === 'undefined') return;
-  const viewport = getWindowRect();
+  if (!resolved || resolved.custom || typeof document === 'undefined' || !elements[0]) return;
+  // The ghosts fly in the window the items are in.
+  const doc = docOf(elements[0]);
+  const viewport = getWindowRect(viewOf(doc));
   // All reads (rects, computed styles in clonePreviews) happen before the first append. Each
   // clone gets the styles its source has in the list (`snapshot.ts`): ghosts fly in <body>.
   const shown = elements
@@ -56,7 +59,7 @@ export const collapseIntoOverlay = (
       pointerEvents: 'none',
     });
     ghost.setAttribute('data-dnd-ghost', '');
-    document.body.appendChild(ghost);
+    doc.body.appendChild(ghost);
     const scale = `scale(${overlay.width / rect.width || 1}, ${overlay.height / rect.height || 1})`;
     const animation = ghost.animate(
       [

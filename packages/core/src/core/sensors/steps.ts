@@ -10,6 +10,7 @@ import type { Active, Coordinates, Key, Rect, SensorDirection, SortablePosition 
 import type { DnDManager } from '../manager';
 import { getCenter, getRect, getWindowRect, intersectRect } from '../../animation/layout';
 import { revealElement } from '../autoscroll';
+import { viewOf } from '../../utils/dom';
 
 const DEFAULT_STEP = 25;
 const FAST_STEP_FACTOR = 4;
@@ -64,8 +65,9 @@ export const pickInDirection = (
   return best;
 };
 
-/** Center of the part of `rect` inside the viewport, so the hit test lands on it. */
-const visibleCenter = (rect: Rect): Coordinates => getCenter(intersectRect(rect, getWindowRect()) ?? rect);
+/** Center of the part of `rect` inside the viewport of `view`, so the hit test lands on it. */
+const visibleCenter = (rect: Rect, view: Window): Coordinates =>
+  getCenter(intersectRect(rect, getWindowRect(view)) ?? rect);
 
 /**
  * Next accepting drop target in `direction` from `pointer` (but the one under the drag and
@@ -81,10 +83,12 @@ export const findDroppable = (
   const overId = manager.over.value?.id;
   const candidates: Array<{ id: Key; rect: Rect }> = [];
   const elements = new Map<Key, HTMLElement>();
+  // Targets of the drag's window only: another window's lie in another viewport.
+  const doc = manager.getDocument();
   for (const entry of manager.getDroppables()) {
     if (entry.id === overId || entry.isDisabled() || skip?.(entry.id)) continue;
     const element = entry.getElement();
-    if (!element?.isConnected || manager.isOwned(element, current)) continue;
+    if (!element?.isConnected || element.ownerDocument !== doc || manager.isOwned(element, current)) continue;
     if (!entry.accepts(current)) continue;
     candidates.push({ id: entry.id, rect: getRect(element) });
     elements.set(entry.id, element);
@@ -93,7 +97,7 @@ export const findDroppable = (
   const element = id == null ? undefined : elements.get(id);
   if (id == null || !element) return undefined;
   revealElement(element);
-  return { id, point: visibleCenter(getRect(element)) };
+  return { id, point: visibleCenter(getRect(element), viewOf(element)) };
 };
 
 /** The drag `current` is still the provider's running drag (a step may have awaited a render). */

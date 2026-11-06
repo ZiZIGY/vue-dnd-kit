@@ -9,7 +9,7 @@
  */
 
 import { computed, onScopeDispose, shallowRef, unref, watch } from 'vue';
-import { defaultWindow, useEventListener } from '@vueuse/core';
+import { useEventListener } from '@vueuse/core';
 import type {
   AcceptRule,
   Active,
@@ -28,7 +28,17 @@ import { useManager } from './context';
 import { matchesRule } from './accept';
 import { matches } from './sensors/keyboard';
 import { createRect, getLayoutRect, intersects, offsetRect } from '../animation/layout';
-import { isInsideInteractive, parentOf, toElement } from '../utils/dom';
+import {
+  cancelFrame,
+  docOf,
+  isClient,
+  isElement,
+  isInsideInteractive,
+  parentOf,
+  requestFrame,
+  toElement,
+  viewOf,
+} from '../utils/dom';
 import { read } from '../utils/read';
 
 // ─── Geometry and strategies (pure) ────────────────────────────────────────────
@@ -171,13 +181,13 @@ const isOnScrollbar = (element: HTMLElement, event: PointerEvent): boolean => {
   return x > element.clientWidth || y > element.clientHeight;
 };
 
-const suppressNextClick = () => {
+const suppressNextClick = (view: Window) => {
   const stop = (event: Event) => {
     event.preventDefault();
     event.stopPropagation();
   };
-  window.addEventListener('click', stop, { capture: true, once: true });
-  setTimeout(() => window.removeEventListener('click', stop, { capture: true }), 0);
+  view.addEventListener('click', stop, { capture: true, once: true });
+  setTimeout(() => view.removeEventListener('click', stop, { capture: true }), 0);
 };
 
 const syncSet = (target: Set<Key>, next: ReadonlySet<Key>) => {
@@ -274,29 +284,31 @@ export function makeSelectionArea(
   };
 
   const schedule = () => {
-    if (band && !band.frame) band.frame = requestAnimationFrame(update);
+    if (band && !band.frame) band.frame = requestFrame(viewOf(band.element), update);
   };
 
   /** Ends the band: `commit` keeps the selection and fires `onSelected`, otherwise it is restored. */
   const end = (commit: boolean) => {
     const current = band;
     if (!current) return;
-    if (current.frame) cancelAnimationFrame(current.frame);
+    const view = viewOf(current.element);
+    if (current.frame) cancelFrame(view, current.frame);
     current.frame = 0;
     if (commit) update();
     else writeSelection(current.base);
 
     band = null;
     current.stops.forEach((stop) => stop());
-    if (document.body.hasPointerCapture?.(current.pointerId)) {
-      document.body.releasePointerCapture(current.pointerId);
+    const { body } = view.document;
+    if (body.hasPointerCapture?.(current.pointerId)) {
+      body.releasePointerCapture(current.pointerId);
     }
     selecting.value = false;
     rect.value = null;
     if (manager.status.value === 'selecting') manager.status.value = manager.restStatus();
     if (!commit) return;
 
-    if (current.moved) suppressNextClick();
+    if (current.moved) suppressNextClick(view);
     try {
       options.onSelected?.([...readSelection()]);
     } catch (error) {
@@ -316,7 +328,7 @@ export function makeSelectionArea(
       // Captured once it is a band, not at the press: a press that doesn't move stays a
       // click on what was pressed.
       try {
-        document.body.setPointerCapture(current.pointerId);
+        docOf(current.element).body.setPointerCapture(current.pointerId);
       } catch {
         // The pointer may already be gone; document listeners still work.
       }
@@ -362,17 +374,20 @@ export function makeSelectionArea(
     band = current;
     manager.status.value = 'selecting';
     selecting.value = true;
-    document.getSelection()?.removeAllRanges();
+    // The window the area is in: another window of the app has its own.
+    const view = viewOf(area);
+    const doc = view.document;
+    doc.getSelection()?.removeAllRanges();
     current.stops.push(
-      useEventListener(document, 'pointermove', onPointerMove),
-      useEventListener(document, 'pointerup', onPointerUp),
-      useEventListener(document, 'pointercancel', onPointerCancel),
+      useEventListener(doc, 'pointermove', onPointerMove),
+      useEventListener(doc, 'pointerup', onPointerUp),
+      useEventListener(doc, 'pointercancel', onPointerCancel),
       // Capture catches scrolling of any container, the page included.
-      useEventListener(document, 'scroll', schedule, { capture: true, passive: true }),
-      useEventListener(window, 'resize', schedule, { passive: true }),
-      useEventListener(document, 'keydown', onKeyDown, { capture: true }),
-      useEventListener(document, 'selectstart', preventDefault),
-      useEventListener(document, 'dragstart', preventDefault),
+      useEventListener(doc, 'scroll', schedule, { capture: true, passive: true }),
+      useEventListener(view, 'resize', schedule, { passive: true }),
+      useEventListener(doc, 'keydown', onKeyDown, { capture: true }),
+      useEventListener(doc, 'selectstart', preventDefault),
+      useEventListener(doc, 'dragstart', preventDefault),
     );
     update();
   };
@@ -383,7 +398,7 @@ export function makeSelectionArea(
     if (!area || band || !manager.isAtRest()) return;
     if (!event.isPrimary || event.button !== 0 || read(options.disabled)) return;
     const origin = event.composedPath()[0];
-    if (!(origin instanceof Element)) return;
+    if (!isElement(origin)) return;
     // The innermost area owns the press; items, controls and scrollbars keep theirs.
     if (closestArea(origin, areas) !== area) return;
     const found = manager.findDraggable(origin);
@@ -396,17 +411,19 @@ export function makeSelectionArea(
 
   useEventListener(getElement, 'pointerdown', onPointerDown);
 
-  // Keys that aren't modifier flags (e.g. `'KeyA'`) are tracked while the area lives.
+  // Keys that aren't modifier flags (e.g. `'KeyA'`) are tracked while the area lives, in
+  // the window it is in.
   if ('modifier' in options) {
-    useEventListener(defaultWindow, 'keydown', (event: KeyboardEvent) => {
+    const view = () => (getElement() ? viewOf(getElement()) : isClient ? window : null);
+    useEventListener(view, 'keydown', (event: KeyboardEvent) => {
       pressed.add(event.key);
       pressed.add(event.code);
     });
-    useEventListener(defaultWindow, 'keyup', (event: KeyboardEvent) => {
+    useEventListener(view, 'keyup', (event: KeyboardEvent) => {
       pressed.delete(event.key);
       pressed.delete(event.code);
     });
-    useEventListener(defaultWindow, 'blur', () => pressed.clear());
+    useEventListener(view, 'blur', () => pressed.clear());
   }
 
   // Tracked separately: the template ref may already be cleared when the scope is disposed.
@@ -416,7 +433,11 @@ export function makeSelectionArea(
     (element) => {
       if (registered) areas.delete(registered);
       registered = element;
-      if (element) areas.add(element);
+      if (element) {
+        areas.add(element);
+        // Its window joins the provider's: the band may start there.
+        manager.windows.track(element);
+      }
       if (band && band.element !== element) cancel();
     },
     { immediate: true, flush: 'post' },

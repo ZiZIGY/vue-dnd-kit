@@ -17,7 +17,8 @@ import type { Coordinates, DnDProviderProps, Key } from '../../types';
 import { getRect } from '../../animation/layout';
 import { createMeasurer } from '../measure';
 // In the order the modules build on each other.
-import { createDragState, type ManagerContext } from './state';
+import { createDragState, dragDocument, type ManagerContext } from './state';
+import { createWindows } from './windows';
 import { createRegistry } from './registry';
 import { createEvents } from './events';
 import { createOverlay } from './overlay';
@@ -27,20 +28,26 @@ import { createSession } from './session';
 
 export type { AreaEntry, AutoScrollEntry, DraggableEntry, DroppableEntry, IntegrationMonitor, TargetRule } from './registry';
 export type { Flight, OverlayColumn } from './state';
+export type { WindowSetup, Windows } from './windows';
 export type { PreviewSource } from './overlay';
 
 export type DnDManager = ReturnType<typeof createDnDManager>;
 
 export function createDnDManager(props: DnDProviderProps) {
   const state = createDragState();
-  const { lookups, members } = createRegistry();
+  const windows = createWindows();
+  const { lookups, members } = createRegistry((element) => windows.track(element));
   // The modules are put in right below, before anything can call one (see `ManagerContext`).
   const ctx = {
     props,
     ...state,
     ...lookups,
     ...members,
-    measurer: createMeasurer({ onShadowScroll: () => ctx.loop.scheduleFrame() }),
+    windows,
+    measurer: createMeasurer({
+      onShadowScroll: () => ctx.loop.scheduleFrame(),
+      document: () => dragDocument(state),
+    }),
     origin: { x: 0, y: 0 },
     touch: false,
     raw: { x: 0, y: 0 },
@@ -57,6 +64,10 @@ export function createDnDManager(props: DnDProviderProps) {
   const manager = {
     props,
     ...state,
+    /** The windows it works in (`windows.ts`): sensors and listeners run in each. */
+    windows,
+    /** The document of the running (or last) drag; the page's before any. */
+    getDocument: (): Document => dragDocument(state),
     instructionsId: '',
     // monitors, activationAborts, selectionAborts, getDraggable(s), getDroppable(s), registration
     ...members,

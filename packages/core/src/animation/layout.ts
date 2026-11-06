@@ -126,8 +126,9 @@ export const getCenter = (rect: Rect): Coordinates => ({
 
 export const distance = (a: Coordinates, b: Coordinates): number => Math.hypot(a.x - b.x, a.y - b.y);
 
-export const getWindowRect = (): Rect =>
-  createRect(0, 0, window.innerWidth, window.innerHeight);
+/** The viewport of `view` (a drag in another window of the app is in that window's). */
+export const getWindowRect = (view: Window = window): Rect =>
+  createRect(0, 0, view.innerWidth, view.innerHeight);
 
 /** Where `point` lies in `rect`, as fractions of its size: 0 at the left/top edge, 1 at the right/bottom. */
 export const getFraction = (rect: Rect, point: Coordinates): Coordinates => ({
@@ -230,10 +231,10 @@ const cancelTransformTransitions = (elements: Element[]) => {
   }
   for (const root of roots) {
     for (const animation of root.getAnimations()) {
+      // Not `instanceof CSSTransition`: another window's animations are of its own class.
+      const property = (animation as Partial<CSSTransition>).transitionProperty;
       if (
-        animation instanceof CSSTransition &&
-        (animation.transitionProperty === 'transform' ||
-          animation.transitionProperty === 'translate') &&
+        (property === 'transform' || property === 'translate') &&
         targets.has((animation.effect as KeyframeEffect | null)?.target ?? null)
       ) {
         animation.cancel();

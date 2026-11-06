@@ -12,14 +12,18 @@
  * The browser's events drive it: `dragover` moves it, `drop` drops it, leaving the window
  * cancels a drag from outside (one of the page's own waits outside), `dragend` ends one of
  * the page's own that was dropped elsewhere.
+ *
+ * Every window the provider works in listens (`windows.ts`). The browser carries its drag
+ * from one of them to another: the drag runs in the window it is over (its `dragover`), with
+ * that window's targets, and has left only once it is out of all of them.
  */
 
-import { defaultDocument, defaultWindow, useEventListener } from '@vueuse/core';
+import { useEventListener } from '@vueuse/core';
 import type { Active, DragItem, ExternalData } from '../../types';
 import { createRect } from '../../animation/layout';
 import type { DnDManager, DraggableEntry } from '../manager';
 import { canStartFrom } from '../sensors/activation';
-import { isClient } from '../../utils/dom';
+import { isClient, isElement } from '../../utils/dom';
 import {
   carries,
   externalItems,
@@ -40,8 +44,8 @@ interface BrowserDrag {
   own: boolean;
   /** A drag from outside: what it carries. */
   external?: ExternalData;
-  /** `dragenter` less `dragleave` over the document: 0 once the drag left the window. */
-  depth: number;
+  /** `dragenter` less `dragleave` over each window's document: 0 everywhere once it left them all. */
+  depth: Map<Document, number>;
   /** Dropped on this page: its `dragend` is no news. */
   dropped: boolean;
   /** When the last `dragover` came: mouse events after it mean the drag ended unseen. */
@@ -65,6 +69,9 @@ const pointOf = (event: DragEvent) => ({ x: event.clientX, y: event.clientY });
 /** Another window's items, with ids of this drag: their own keys may be items here too. */
 const remoteItems = (items: RemotePayload['items'], idOf: (index: number) => string): DragItem[] =>
   items.map((item, index) => ({ ...item, id: idOf(index), type: item.type ?? [] }));
+
+/** The drag is over some window of the provider. */
+const inside = (drag: BrowserDrag) => [...drag.depth.values()].some((depth) => depth > 0);
 
 /** Runs the provider's browser drags (see above), in the browser only. */
 export function useNativeDrags(manager: DnDManager): void {
@@ -104,7 +111,7 @@ export function useNativeDrags(manager: DnDManager): void {
   /** A mouse press on a `native` draggable, where its drags start: the browser may drag it. */
   const onPointerDown = (event: PointerEvent) => {
     undoDraggable();
-    if (event.pointerType !== 'mouse' || event.button !== 0 || !(event.target instanceof Element)) return;
+    if (event.pointerType !== 'mouse' || event.button !== 0 || !isElement(event.target)) return;
     const found = manager.findDraggable(event.target);
     if (!found?.entry.getNative?.() || found.entry.isDisabled() || !canStartFrom(found.entry, found.element, event.target, 'pointer')) return;
     // `canDrag` is asked at the press, as the pointer sensor does.
@@ -128,7 +135,7 @@ export function useNativeDrags(manager: DnDManager): void {
     for (const [type, value] of Object.entries(data)) transfer.setData(type, value);
     const group = entry.getGroup?.();
     if (group) writeRemote(transfer, { group, items: active.items.map(({ id, item, data, label, type }) => ({ id, item, data, label, type })) });
-    const drag: BrowserDrag = { manager, own: true, depth: 0, dropped: false, lastOver: performance.now() };
+    const drag: BrowserDrag = { manager, own: true, depth: new Map(), dropped: false, lastOver: performance.now() };
     current = drag;
     // The element may leave the document mid-drag (moved to another list): its `dragend`
     // still comes to it, and doesn't bubble up here then.
@@ -136,7 +143,7 @@ export function useNativeDrags(manager: DnDManager): void {
   };
 
   const onDragStart = (event: DragEvent) => {
-    if (!(event.target instanceof Element) || !event.dataTransfer) return;
+    if (!isElement(event.target) || !event.dataTransfer) return;
     const found = manager.findDraggable(event.target);
     if (!found?.entry.getNative?.() || (!madeDraggable.has(found.element) && found.element.getAttribute('draggable') !== 'true')) return;
     startOwn(event, found.entry);
@@ -158,16 +165,17 @@ export function useNativeDrags(manager: DnDManager): void {
    * (`external`), whose rule then says yes or no as the drag goes over it; for another
    * window's items, a list of their group or a target that takes them.
    */
-  const wanted = (probe: Active) =>
+  const wanted = (probe: Active, doc: Document) =>
     [...manager.getDroppables()].some((entry) => {
-      if (entry.isDisabled()) return false;
+      // The window it came into: another window's targets wait until it gets there.
+      if (entry.isDisabled() || entry.getElement()?.ownerDocument !== doc) return false;
       const { external } = probe;
       if (!external?.group) return !!entry.getExternal?.();
       return entry.sortable ? entry.getGroup?.() === external.group : entry.accepts(probe);
     });
 
-  /** A drag from outside comes in: it starts, for the targets that take it, at a stand-in element. */
-  const startExternal = (event: DragEvent) => {
+  /** A drag from outside comes into `doc`: it starts, for the targets that take it, at a stand-in element. */
+  const startExternal = (event: DragEvent, doc: Document) => {
     const transfer = event.dataTransfer!;
     const remote = readRemoteHint(transfer.types);
     const external = readHeld(transfer, remote?.group);
@@ -177,11 +185,12 @@ export function useNativeDrags(manager: DnDManager): void {
     if (!items.length) return;
     if (!remote) items[0]!.label = externalLabel(external);
     const point = pointOf(event);
-    const standIn = document.createElement('div');
+    // In the window it came into: the drag runs there (`docOf` its element).
+    const standIn = doc.createElement('div');
     standIn.setAttribute('aria-hidden', 'true');
     standIn.setAttribute('data-dnd-external', '');
     standIn.style.cssText = `position:fixed;left:${point.x}px;top:${point.y}px;width:0;height:0;pointer-events:none`;
-    document.body.appendChild(standIn);
+    doc.body.appendChild(standIn);
     const first = items[0]!;
     const probe: Active = {
       id: first.id,
@@ -196,7 +205,7 @@ export function useNativeDrags(manager: DnDManager): void {
       external,
       native: true,
     };
-    if (!wanted(probe)) {
+    if (!wanted(probe, doc)) {
       standIn.remove();
       return;
     }
@@ -217,52 +226,77 @@ export function useNativeDrags(manager: DnDManager): void {
       standIn.remove();
     };
     if (!manager.start(first.id, point, 'pointer', false, { items, external })) return cleanup();
-    current = { manager, own: false, external, depth: 1, dropped: false, lastOver: performance.now(), cleanup, idOf };
+    current = {
+      manager,
+      own: false,
+      external,
+      depth: new Map([[doc, 1]]),
+      dropped: false,
+      lastOver: performance.now(),
+      cleanup,
+      idOf,
+    };
     event.preventDefault();
     transfer.dropEffect = effectOf(current, transfer.effectAllowed);
   };
 
   // ─── Both ──────────────────────────────────────────────────────────────────────
 
-  const onDragEnter = (event: DragEvent) => {
+  /**
+   * The drag is over `doc` now: it runs there. From one window to another, the targets and
+   * the viewport change, and so do the rects measured so far.
+   */
+  const runIn = (doc: Document) => {
+    if (manager.document.value === doc) return;
+    manager.document.value = doc;
+    manager.invalidateMeasurements();
+  };
+
+  const onDragEnter = (event: DragEvent, doc: Document) => {
     const drag = ours();
     if (drag) {
-      drag.depth++;
+      drag.depth.set(doc, (drag.depth.get(doc) ?? 0) + 1);
       event.preventDefault();
       return;
     }
-    if (!current && carries(event.dataTransfer) && manager.isAtRest()) startExternal(event);
+    if (!current && carries(event.dataTransfer) && manager.isAtRest()) startExternal(event, doc);
   };
 
-  const onDragOver = (event: DragEvent) => {
+  const onDragOver = (event: DragEvent, doc: Document) => {
     const drag = ours();
     if (!drag || !event.dataTransfer) return;
     // Cancelled, the event lets a drop come; the effect says whether it is welcome.
     event.preventDefault();
     drag.lastOver = performance.now();
     if (manager.outside.value) manager.outside.value = false;
+    runIn(doc);
     manager.move(pointOf(event));
     event.dataTransfer.dropEffect = effectOf(drag, event.dataTransfer.effectAllowed, event.ctrlKey || event.altKey);
   };
 
-  const onDragLeave = () => {
+  const onDragLeave = (doc: Document) => {
     const drag = ours();
-    if (!drag || --drag.depth > 0) return;
-    drag.depth = 0;
+    if (!drag) return;
+    drag.depth.set(doc, Math.max(0, (drag.depth.get(doc) ?? 0) - 1));
+    // Into another window of the provider: its `dragenter` may come before or after this.
+    if (inside(drag)) return;
     if (drag.own) {
-      // Out of the window: it may come back, or be dropped elsewhere (`dragend`).
+      // Out of the windows: it may come back, or be dropped elsewhere (`dragend`).
       manager.outside.value = true;
       return;
     }
+    // A drag from outside left its window: another one of the provider's may take it up anew.
+    if (manager.document.value !== doc) return;
     end(drag);
     manager.cancel();
   };
 
-  const onDrop = (event: DragEvent) => {
+  const onDrop = (event: DragEvent, doc: Document) => {
     const drag = ours();
     if (!drag || !event.dataTransfer) return;
     event.preventDefault();
     drag.dropped = true;
+    runIn(doc);
     manager.move(pointOf(event));
     manager.flushFrame();
     const { external } = drag;
@@ -298,14 +332,25 @@ export function useNativeDrags(manager: DnDManager): void {
     true,
   );
 
-  useEventListener(defaultDocument, 'pointerdown', onPointerDown, { capture: true });
-  useEventListener(defaultDocument, 'pointerup', undoDraggable, { capture: true });
-  useEventListener(defaultDocument, 'dragstart', onDragStart, { capture: true });
-  useEventListener(defaultDocument, 'dragend', onDragEnd, { capture: true });
-  useEventListener(defaultDocument, 'dragenter', onDragEnter, { capture: true });
-  useEventListener(defaultDocument, 'dragover', onDragOver, { capture: true });
-  useEventListener(defaultDocument, 'dragleave', onDragLeave, { capture: true });
-  useEventListener(defaultDocument, 'drop', onDrop, { capture: true });
-  useEventListener(defaultWindow, 'pointermove', onPointerMove, { capture: true, passive: true });
+  manager.windows.each((view) => {
+    const doc = view.document;
+    useEventListener(doc, 'pointerdown', onPointerDown, { capture: true });
+    useEventListener(doc, 'pointerup', undoDraggable, { capture: true });
+    useEventListener(doc, 'dragstart', onDragStart, { capture: true });
+    useEventListener(doc, 'dragend', onDragEnd, { capture: true });
+    useEventListener(doc, 'dragenter', (event: DragEvent) => onDragEnter(event, doc), { capture: true });
+    useEventListener(doc, 'dragover', (event: DragEvent) => onDragOver(event, doc), { capture: true });
+    useEventListener(doc, 'dragleave', () => onDragLeave(doc), { capture: true });
+    useEventListener(doc, 'drop', (event: DragEvent) => onDrop(event, doc), { capture: true });
+    useEventListener(view, 'pointermove', onPointerMove, { capture: true, passive: true });
+    // The window closes under the drag: as if it left it.
+    return () => {
+      const drag = ours();
+      if (drag?.depth.get(doc)) {
+        drag.depth.set(doc, 1);
+        onDragLeave(doc);
+      }
+    };
+  });
 }
 

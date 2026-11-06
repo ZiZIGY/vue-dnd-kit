@@ -15,6 +15,33 @@ export const createId = (prefix: string): string =>
 export const isClient = typeof window !== 'undefined';
 
 const ELEMENT_NODE = 1;
+const DOCUMENT_FRAGMENT_NODE = 11;
+const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
+
+/**
+ * The document a node is in: another window's for the part of the app it shows (a popup
+ * opened with `window.open` that a teleport renders into). The page's without a node.
+ */
+export const docOf = (node: Node | null | undefined): Document =>
+  (node?.nodeType === 9 ? (node as Document) : node?.ownerDocument) ?? document;
+
+/** The window of a node's document (see `docOf`). */
+export const viewOf = (node: Node | null | undefined): Window => docOf(node).defaultView ?? window;
+
+/**
+ * An element of any window. `instanceof Element` is false for the nodes another window
+ * made (its clones, the elements it parsed): each window has its own classes.
+ */
+export const isElement = (value: unknown): value is Element =>
+  !!value && (value as Partial<Node>).nodeType === ELEMENT_NODE;
+
+/** An HTML element of any window (see `isElement`). */
+export const isHTMLElement = (value: unknown): value is HTMLElement =>
+  isElement(value) && value.namespaceURI === HTML_NAMESPACE;
+
+/** A shadow root of any window (see `isElement`). */
+export const isShadowRoot = (value: unknown): value is ShadowRoot =>
+  !!value && (value as Partial<Node>).nodeType === DOCUMENT_FRAGMENT_NODE && 'host' in (value as object);
 
 /**
  * End anchor of a component's fragment (or teleport) root, through components that
@@ -55,11 +82,12 @@ export const toElement = (target: MaybeElementRef): HTMLElement | null => {
  * host. This is the tree that lays out, clips and scrolls an element, and the one
  * hit-testing walks.
  */
-export const parentOf = (element: Element): Element | null =>
-  element.assignedSlot ??
-  element.parentElement ??
-  ((element.getRootNode() as ShadowRoot).host as Element | undefined) ??
-  null;
+export const parentOf = (element: Element): Element | null => {
+  const parent = element.assignedSlot ?? element.parentElement;
+  if (parent) return parent;
+  const root = element.getRootNode();
+  return isShadowRoot(root) ? root.host : null;
+};
 
 /** `ancestor.contains(node)` across shadow roots and slots. */
 export const containsComposed = (ancestor: Element, node: Element): boolean => {
@@ -76,9 +104,9 @@ export const containsComposed = (ancestor: Element, node: Element): boolean => {
 export const getEventTarget = (event: Event): EventTarget | null =>
   event.composedPath?.()[0] ?? event.target;
 
-/** Topmost element at a point, descending into open shadow roots. */
-export const elementFromPoint = (x: number, y: number): Element | null => {
-  let element = document.elementFromPoint(x, y);
+/** Topmost element at a point of `doc`'s viewport, descending into open shadow roots. */
+export const elementFromPoint = (x: number, y: number, doc: Document = document): Element | null => {
+  let element = doc.elementFromPoint(x, y);
   while (element?.shadowRoot) {
     const inner = element.shadowRoot.elementFromPoint(x, y);
     if (!inner || inner === element) break;
@@ -92,10 +120,11 @@ export const elementFromPoint = (x: number, y: number): Element | null => {
  * point itself (a draggable moved without an overlay). Its parent when nothing else is.
  */
 export const elementBelow = (x: number, y: number, skip: Element): Element | null => {
-  const stack = document.elementsFromPoint?.(x, y) ?? [];
+  const doc = docOf(skip);
+  const stack = doc.elementsFromPoint?.(x, y) ?? [];
   const below = stack.find((element) => !containsComposed(skip, element)) ?? parentOf(skip);
   if (!below?.shadowRoot) return below;
-  const inner = elementFromPoint(x, y);
+  const inner = elementFromPoint(x, y, doc);
   return inner && !containsComposed(skip, inner) ? inner : below;
 };
 
@@ -123,27 +152,40 @@ export const isNativelyFocusable = (element: Element): boolean =>
  * True when nothing has the focus any more: the focused element left the document
  * (re-rendered or unmounted), and the browser moved the focus back to <body>.
  */
-export const isFocusLost = (): boolean => {
-  const focused = document.activeElement;
+export const isFocusLost = (doc: Document = document): boolean => {
+  const focused = doc.activeElement;
   return (
     !focused ||
-    focused === document.body ||
-    focused === document.documentElement ||
+    focused === doc.body ||
+    focused === doc.documentElement ||
     !focused.isConnected
   );
+};
+
+/**
+ * An animation frame of `view`: a drag in another window runs on that window's frames, the
+ * page's may be throttled behind it. The page's own goes through the global functions.
+ */
+export const requestFrame = (view: Window | null | undefined, callback: FrameRequestCallback): number =>
+  view && view !== window ? view.requestAnimationFrame(callback) : requestAnimationFrame(callback);
+
+/** Cancels a frame `requestFrame` asked `view` for. */
+export const cancelFrame = (view: Window | null | undefined, frame: number): void => {
+  if (view && view !== window) view.cancelAnimationFrame(frame);
+  else cancelAnimationFrame(frame);
 };
 
 /** Frames stop in hidden tabs and can stall on a busy compositor: wait at most this long. */
 const FRAME_TIMEOUT = 100;
 
-/** Resolves on the next animation frame, or after `FRAME_TIMEOUT` ms when frames stall. */
-export const nextFrame = (): Promise<void> =>
+/** Resolves on the next animation frame of `view`, or after `FRAME_TIMEOUT` ms when frames stall. */
+export const nextFrame = (view?: Window | null): Promise<void> =>
   new Promise((resolve) => {
     const done = () => {
-      cancelAnimationFrame(frame);
+      cancelFrame(view, frame);
       clearTimeout(timer);
       resolve();
     };
-    const frame = requestAnimationFrame(done);
+    const frame = requestFrame(view, done);
     const timer = setTimeout(done, FRAME_TIMEOUT);
   });

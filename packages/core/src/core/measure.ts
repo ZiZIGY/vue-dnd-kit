@@ -20,7 +20,7 @@ import {
   intersectRect,
   offsetRect,
 } from '../animation/layout';
-import { parentOf } from '../utils/dom';
+import { docOf, isShadowRoot, parentOf, viewOf } from '../utils/dom';
 
 /** FLIP runs within this many sizes of a scroll container's visible area around it. */
 export const NEAR_VIEWPORT = 1;
@@ -45,6 +45,8 @@ interface Chain {
 interface Entry {
   rect: Rect;
   chain: Chain;
+  /** The window whose scroll and viewport apply (another window's for its part of the app). */
+  view: Window;
   /** Scroll offsets at measure time: x and y of each scroller, then of the window. */
   offsets: number[];
   frame: number;
@@ -94,6 +96,8 @@ export interface MeasurerOptions {
    * event isn't composed, so document listeners never see it.
    */
   onShadowScroll?: () => void;
+  /** The document of the drag: its window's resizes reset the session's cache. */
+  document?: () => Document;
 }
 
 export function createMeasurer(options: MeasurerOptions = {}): Measurer {
@@ -110,8 +114,10 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
   const scroll = new Map<Element, Coordinates>();
   const clips = new Map<Element, Rect | null>();
   const nearRegions = new Map<Element, Rect | null>();
-  let windowScroll: Coordinates | null = null;
-  let viewport: Rect | null = null;
+  const windowScroll = new Map<Window, Coordinates>();
+  const viewports = new Map<Window, Rect>();
+  /** The window whose resizes the session listens to. */
+  let resized: Window | null = null;
 
   let observer: ResizeObserver | null = null;
   const sizes = new Map<Element, string>();
@@ -121,7 +127,7 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
 
   const watchShadowRoot = (element: Element) => {
     const root = element.getRootNode();
-    if (!active || !(root instanceof ShadowRoot) || shadowRoots.has(root)) return;
+    if (!active || !isShadowRoot(root) || shadowRoots.has(root)) return;
     shadowRoots.add(root);
     root.addEventListener('scroll', onShadowScroll, { capture: true, passive: true });
   };
@@ -130,8 +136,8 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
     scroll.clear();
     clips.clear();
     nearRegions.clear();
-    windowScroll = null;
-    viewport = null;
+    windowScroll.clear();
+    viewports.clear();
   };
 
   /** Outside a session nothing is cached: every read is fresh. */
@@ -165,8 +171,9 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
     const own = flagsOf(element);
     if (!own.clipX && !own.clipY) return false;
     // `overflow` on <body> applies to the viewport unless <html> sets its own.
-    if (element === document.body) {
-      const root = flagsOf(document.documentElement);
+    const doc = docOf(element);
+    if (element === doc.body) {
+      const root = flagsOf(doc.documentElement);
       return root.clipX || root.clipY;
     }
     return true;
@@ -176,7 +183,7 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
     sticky && !chain.volatile ? { ...chain, volatile: true } : chain;
 
   const chainBelow = (container: Element | null): Chain => {
-    if (!container || container === document.documentElement) return ROOT;
+    if (!container || container === docOf(container).documentElement) return ROOT;
     let chain = chains.get(container);
     if (chain) return chain;
     const own = flagsOf(container);
@@ -209,21 +216,28 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
     return value;
   };
 
-  const windowOffset = (): Coordinates =>
-    (windowScroll ??= { x: window.scrollX, y: window.scrollY });
+  const windowOffset = (view: Window): Coordinates => {
+    let value = windowScroll.get(view);
+    if (!value) {
+      value = { x: view.scrollX, y: view.scrollY };
+      windowScroll.set(view, value);
+    }
+    return value;
+  };
 
   const record = (element: Element): Entry => {
     const chain = chainOf(element);
+    const view = viewOf(element);
     const offsets: number[] = [];
     for (const scroller of chain.scrollers) {
       const { x, y } = scrollOf(scroller);
       offsets.push(x, y);
     }
     if (chain.window) {
-      const { x, y } = windowOffset();
+      const { x, y } = windowOffset(view);
       offsets.push(x, y);
     }
-    const entry: Entry = { rect: getLayoutRect(element), chain, offsets, frame, generation };
+    const entry: Entry = { rect: getLayoutRect(element), chain, view, offsets, frame, generation };
     entries.set(element, entry);
     return entry;
   };
@@ -247,7 +261,7 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
 
   /** Scroll since the entry was measured, into `dx`/`dy`. */
   const measureDelta = (entry: Entry) => {
-    const { chain, offsets } = entry;
+    const { chain, offsets, view } = entry;
     dx = 0;
     dy = 0;
     let index = 0;
@@ -257,7 +271,7 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
       dy += offsets[index++]! - now.y;
     }
     if (chain.window) {
-      const now = windowOffset();
+      const now = windowOffset(view);
       dx += offsets[index++]! - now.x;
       dy += offsets[index]! - now.y;
     }
@@ -269,17 +283,23 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
     return dx || dy ? offsetRect(entry.rect, dx, dy) : entry.rect;
   };
 
-  const viewportRect = (): Rect =>
-    (viewport ??= createRect(0, 0, window.innerWidth, window.innerHeight));
+  const viewportRect = (view: Window): Rect => {
+    let value = viewports.get(view);
+    if (!value) {
+      value = createRect(0, 0, view.innerWidth, view.innerHeight);
+      viewports.set(view, value);
+    }
+    return value;
+  };
 
-  /** Visible area for the content of the chain's nearest scroller. */
-  const clipOf = (chain: Chain): Rect | null => {
+  /** Visible area for the content of the chain's nearest scroller (in `view`). */
+  const clipOf = (chain: Chain, view: Window): Rect | null => {
     const scroller = chain.scrollers[0];
-    if (!scroller) return viewportRect();
+    if (!scroller) return viewportRect(view);
     const cached = clips.get(scroller);
     if (cached !== undefined) return cached;
     const entry = entryOf(scroller);
-    const outer = clipOf(entry.chain);
+    const outer = clipOf(entry.chain, view);
     let result: Rect | null = null;
     if (outer) {
       const border = rectOf(entry);
@@ -315,18 +335,18 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
   const measureVisible = (element: Element): Rect | null => {
     prepare();
     const entry = entryOf(element);
-    const clip = clipOf(entry.chain);
+    const clip = clipOf(entry.chain, entry.view);
     return clip && intersectRect(rectOf(entry), clip);
   };
 
   /** Visible area of the chain's nearest scroller grown by `margin` of its size; per frame. */
-  const nearRegionOf = (chain: Chain, margin: number): Rect | null => {
-    const key = chain.scrollers[0] ?? document.documentElement;
+  const nearRegionOf = (chain: Chain, view: Window, margin: number): Rect | null => {
+    const key = chain.scrollers[0] ?? view.document.documentElement;
     if (margin === NEAR_VIEWPORT) {
       const cached = nearRegions.get(key);
       if (cached !== undefined) return cached;
     }
-    const clip = clipOf(chain);
+    const clip = clipOf(chain, view);
     const region = clip && expandRect(clip, clip.width * margin, clip.height * margin);
     if (margin === NEAR_VIEWPORT) nearRegions.set(key, region);
     return region;
@@ -336,7 +356,7 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
   const isNearViewport = (element: Element, margin = NEAR_VIEWPORT): boolean => {
     prepare();
     const entry = entryOf(element, false);
-    const region = nearRegionOf(entry.chain, margin);
+    const region = nearRegionOf(entry.chain, entry.view, margin);
     if (!region) return false;
     measureDelta(entry);
     const { left, top, right, bottom } = entry.rect;
@@ -388,7 +408,8 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
   };
 
   const end = () => {
-    if (active) window.removeEventListener('resize', onResize);
+    resized?.removeEventListener('resize', onResize);
+    resized = null;
     active = false;
     observer?.disconnect();
     observer = null;
@@ -406,7 +427,8 @@ export function createMeasurer(options: MeasurerOptions = {}): Measurer {
   const begin = () => {
     end();
     active = true;
-    window.addEventListener('resize', onResize, { passive: true });
+    resized = options.document?.().defaultView ?? window;
+    resized.addEventListener('resize', onResize, { passive: true });
   };
 
   const nextFrame = () => {

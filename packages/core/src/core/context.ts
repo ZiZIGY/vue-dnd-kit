@@ -83,6 +83,7 @@ export const useDnD = (): DnDState => {
             manager.cancel();
           }
         : manager.cancel,
+    addWindow: (view) => manager.windows.add(view),
   };
 };
 

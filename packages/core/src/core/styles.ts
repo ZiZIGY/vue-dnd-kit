@@ -33,20 +33,24 @@ const LOOKS = `
 }
 `;
 
-const inject = (id: string, css: string) => {
-  if (document.getElementById(id)) return;
-  const style = document.createElement('style');
+const inject = (doc: Document, id: string, css: string) => {
+  if (doc.getElementById(id) || !doc.head) return;
+  const style = doc.createElement('style');
   style.id = id;
   style.textContent = css;
   // First: the layer is declared before the page's, which makes it the weakest.
-  document.head.prepend(style);
+  doc.head.prepend(style);
 };
 
-/** The behaviour drags need, always; the looks (`looks`: the provider's `defaultStyles`) too. */
-export const injectDefaultStyles = (looks: boolean): void => {
-  if (typeof document === 'undefined') return;
-  inject(BEHAVIOR_ID, BEHAVIOR);
-  if (looks) inject(LOOKS_ID, LOOKS);
+/**
+ * The behaviour drags need, always; the looks (`looks`: the provider's `defaultStyles`) too.
+ * Into `doc`: each window of the app has its own styles.
+ */
+export const injectDefaultStyles = (looks: boolean, doc?: Document): void => {
+  const target = doc ?? (typeof document === 'undefined' ? undefined : document);
+  if (!target) return;
+  inject(target, BEHAVIOR_ID, BEHAVIOR);
+  if (looks) inject(target, LOOKS_ID, LOOKS);
 };
 
 /**
@@ -61,17 +65,24 @@ export const dragCursor = (grabbed: Element): string | null => {
   return !cursor || PRESS_CURSORS.has(cursor) ? null : cursor;
 };
 
-/** Marks the document as dragging (with `cursor`, a pointer drag's: see `dragCursor`); returns the restore function. */
-export const markDocumentDragging = (sensor: 'pointer' | 'keyboard', cursor: string | null = null): (() => void) => {
-  const root = document.documentElement;
+/**
+ * Marks `doc` (the drag's) as dragging (with `cursor`, a pointer drag's: see `dragCursor`);
+ * returns the restore function.
+ */
+export const markDocumentDragging = (
+  sensor: 'pointer' | 'keyboard',
+  cursor: string | null = null,
+  doc: Document = document,
+): (() => void) => {
+  const root = doc.documentElement;
   root.setAttribute('data-dnd-dragging', sensor);
   if (cursor) root.style.setProperty('--dnd-cursor', cursor);
-  document.getSelection()?.removeAllRanges();
+  doc.getSelection()?.removeAllRanges();
   const preventSelection = (event: Event) => event.preventDefault();
-  document.addEventListener('selectstart', preventSelection);
+  doc.addEventListener('selectstart', preventSelection);
   return () => {
     root.removeAttribute('data-dnd-dragging');
     if (cursor && root.style.getPropertyValue('--dnd-cursor') === cursor) root.style.removeProperty('--dnd-cursor');
-    document.removeEventListener('selectstart', preventSelection);
+    doc.removeEventListener('selectstart', preventSelection);
   };
 };

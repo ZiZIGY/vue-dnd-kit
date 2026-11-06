@@ -17,8 +17,19 @@ import {
   resizeAround,
 } from '../../animation/layout';
 import { clonePreview, clonePreviews } from '../clone';
-import type { ManagerContext } from './state';
+import { isHTMLElement, viewOf } from '../../utils/dom';
+import { dragDocument, type ManagerContext } from './state';
 import type { DraggableEntry } from './registry';
+
+/**
+ * The element the overlay renders into for a drag in `doc`: the provider's `overlayTo`
+ * there (a selector, or an element of that document), else that document's `<body>`. A
+ * drag in another window of the app shows its overlay in that window.
+ */
+export const overlayTarget = (to: string | HTMLElement | undefined, doc: Document): HTMLElement | null => {
+  if (typeof to === 'string') return doc.querySelector<HTMLElement>(to) ?? doc.body;
+  return to && to.ownerDocument === doc ? to : doc.body;
+};
 
 /** A clone taken at pickup and the rect of its source then (`DragPreview`). */
 export interface PreviewSource {
@@ -68,10 +79,7 @@ export function createOverlay(ctx: ManagerContext) {
   // ─── Content ─────────────────────────────────────────────────────────────────
 
   /** Where the overlay renders: the clones are laid out there, with its styles. */
-  const overlayContainer = () => {
-    const to = ctx.props.overlayTo;
-    return typeof to === 'string' ? document.querySelector(to) : to;
-  };
+  const overlayContainer = () => overlayTarget(ctx.props.overlayTo, dragDocument(ctx));
 
   /** The rendered element of a dragged item, if it can be cloned. */
   const sourceOf = (id: Key) => {
@@ -153,7 +161,7 @@ export function createOverlay(ctx: ManagerContext) {
         origin: ctx.origin,
         containerRect,
         containerShift,
-        windowRect: getWindowRect(),
+        windowRect: getWindowRect(viewOf(dragDocument(ctx))),
         over: ctx.over.value,
       });
     }
@@ -173,7 +181,7 @@ export function createOverlay(ctx: ManagerContext) {
     const slot = ctx.draggables.get(ctx.landingKey.value ?? current.id)?.getElement();
     if (!slot?.isConnected) return;
     const size =
-      slot instanceof HTMLElement
+      isHTMLElement(slot)
         ? { width: slot.offsetWidth, height: slot.offsetHeight }
         : getLayoutRect(slot);
     const { width: sourceWidth, height: sourceHeight } = current.rect;

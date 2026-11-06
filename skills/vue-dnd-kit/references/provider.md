@@ -74,7 +74,7 @@ and client.
 ## useDnD(): reactive drag state
 
 ```ts
-const { status, active, over, pointer, position, activation, isAutoScrolling, selection, cancel } = useDnD();
+const { status, active, over, pointer, position, activation, isAutoScrolling, selection, cancel, addWindow } = useDnD();
 // position: where the dragged box's top-left is in `over`, live (`DnDEvent.position` on every
 //           move); an overlay component shows where it would land with it
 // status: 'idle' | 'activating' | 'dragging' | 'dropping' | 'selecting'
@@ -130,3 +130,26 @@ app.mount(shadowRoot.querySelector('#mount')!);
 ```
 
 Hit-testing and the overlay work across shadow roots.
+
+## Other windows of the app
+
+Part of the app rendered into another window (a popup from `window.open`, a detached panel,
+a Document Picture-in-Picture window) through a teleport, under the same provider:
+
+```ts
+const dnd = useDnD();
+const popup = window.open('', 'inspector', 'popup,width=420,height=560')!;
+const release = dnd.addWindow(popup);        // the provider listens there until it closes
+popup.addEventListener('pagehide', release);
+target.value = popup.document.body;          // <Teleport :to="target">…</Teleport>
+```
+
+- Drags there run in that window: its viewport, its targets, its auto-scroll, the overlay
+  in its `<body>`, its frames. Styles are injected into it.
+- Pointer and keyboard drags stay in the window they started in. Items with `native`
+  cross between the windows (the browser's drag and drop).
+- Components rendered into the window on mount are found on their own; content a teleport
+  moves there later is not: call `addWindow` when you open it.
+- A custom sensor listens in every window: `context.onWindow((view) => useEventListener(view.document, 'pointerdown', …))`.
+- Code of yours that checks DOM nodes: `instanceof HTMLElement` is `false` for nodes another
+  window made (its clones); test `node.nodeType === 1` instead.

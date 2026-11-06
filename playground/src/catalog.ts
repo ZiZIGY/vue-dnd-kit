@@ -380,6 +380,14 @@ export const DEMOS: readonly DemoEntry[] = [
     docs: 'guides/provider',
     description: 'A list rendered by a second Vue app inside a shadow root, bridged with `provideDnDContext`.',
   },
+  {
+    id: 'windows',
+    title: 'Another window',
+    section: 'platform',
+    file: 'WindowsDemo.vue',
+    docs: 'guides/provider',
+    description: 'A list in a popup of the page, rendered there with a teleport: `useDnD().addWindow`.',
+  },
 
   // Touch
   {

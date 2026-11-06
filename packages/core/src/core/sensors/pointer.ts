@@ -6,8 +6,9 @@
  * context menu, no scrolling under a touch drag, no click after the drop.
  */
 
-import { defaultDocument, defaultWindow, useEventListener } from '@vueuse/core';
+import { useEventListener } from '@vueuse/core';
 import type { Coordinates, PointerKind, SensorDrag } from '../../types';
+import { isElement } from '../../utils/dom';
 import { defineSensor } from './host';
 
 /** How long the click suppressor waits for the click that follows a drop. */
@@ -23,10 +24,10 @@ const pointerKind = (event: PointerEvent): PointerKind =>
   event.pointerType === 'touch' || event.pointerType === 'pen' ? event.pointerType : 'mouse';
 
 /**
- * Swallows the click that follows a drag (with capture on <body> it lands on a
+ * Swallows the click that follows a drag in `view` (with capture on <body> it lands on a
  * common ancestor). Removed by that click, by the next press, or after a moment.
  */
-const suppressNextClick = () => {
+const suppressNextClick = (view: Window) => {
   const stop = (event: Event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -34,11 +35,11 @@ const suppressNextClick = () => {
   };
   const cleanup = () => {
     clearTimeout(timer);
-    window.removeEventListener('click', stop, true);
-    window.removeEventListener('pointerdown', cleanup, true);
+    view.removeEventListener('click', stop, true);
+    view.removeEventListener('pointerdown', cleanup, true);
   };
-  window.addEventListener('click', stop, true);
-  window.addEventListener('pointerdown', cleanup, true);
+  view.addEventListener('click', stop, true);
+  view.addEventListener('pointerdown', cleanup, true);
   const timer = setTimeout(cleanup, CLICK_SUPPRESS_MS);
 };
 
@@ -55,10 +56,11 @@ const isUnselectable = (element: Element): boolean => {
  * Only an inline value the sensor set is ever restored (rfcs/0001-v3.md §13).
  */
 export const makeSelectableForPress = (element: Element): (() => void) => {
-  if (!(element instanceof HTMLElement || element instanceof SVGElement) || !isUnselectable(element)) {
+  // HTML and SVG elements have a `style`; another window's are of its own classes.
+  if (!isElement(element) || !('style' in element) || !isUnselectable(element)) {
     return () => {};
   }
-  const { style } = element;
+  const { style } = element as HTMLElement | SVGElement;
   const saved = USER_SELECT.map(
     (name) => [name, style.getPropertyValue(name), style.getPropertyPriority(name)] as const,
   );
@@ -86,6 +88,8 @@ interface Press {
   moved: boolean;
   /** Undoes `makeSelectableForPress` once the press has been handled. */
   restoreSelectable: () => void;
+  /** The window it was pressed in: the whole drag runs there. */
+  view: Window;
   stops: Array<() => void>;
 }
 
@@ -99,8 +103,9 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
       if (!press) return;
       press.stops.forEach((stop) => stop());
       press.restoreSelectable();
-      if (press.pointerId !== null && document.body.hasPointerCapture?.(press.pointerId)) {
-        document.body.releasePointerCapture(press.pointerId);
+      const { body } = press.view.document;
+      if (press.pointerId !== null && body.hasPointerCapture?.(press.pointerId)) {
+        body.releasePointerCapture(press.pointerId);
       }
       press = null;
     };
@@ -109,13 +114,27 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
      * Capture on <body>, not on the item: the item may be recreated mid-drag. Captured,
      * the click of the press would go to <body>: a press waits until it has moved.
      */
-    const capture = (pointerId: number | null) => {
+    const capture = (pointerId: number | null, view: Window) => {
       if (pointerId === null) return;
       try {
-        document.body.setPointerCapture(pointerId);
+        view.document.body.setPointerCapture(pointerId);
       } catch {
         // The pointer may already be gone; document listeners still work.
       }
+    };
+
+    /** What a press in `view` listens to until it is released. */
+    const listenDuringPress = (view: Window) => {
+      const doc = view.document;
+      return [
+        useEventListener(doc, 'pointermove', onPointerMove),
+        useEventListener(doc, 'pointerup', onPointerUp),
+        useEventListener(doc, 'pointercancel', onPointerCancel),
+        useEventListener(view, 'contextmenu', preventWhileActive),
+        useEventListener(view, 'dragstart', preventWhileActive),
+        // From the press on: the mousedown that follows decides about selecting.
+        useEventListener(doc, 'selectstart', cancelSelection, { capture: true }),
+      ];
     };
 
     /** The pointer of the press; a carried drag (no button held) follows the primary one. */
@@ -129,18 +148,18 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
       const { point } = press;
       if (!press.moved && point && Math.hypot(event.clientX - point.x, event.clientY - point.y) > CLICK_TOLERANCE) {
         press.moved = true;
-        if (press.drag.started) capture(press.pointerId);
+        if (press.drag.started) capture(press.pointerId, press.view);
       }
       press.drag.move({ x: event.clientX, y: event.clientY });
     };
 
     const onPointerUp = (event: PointerEvent) => {
       if (!press || event.pointerId !== press.pointerId) return;
-      const { drag, kind, moved } = press;
+      const { drag, kind, moved, view } = press;
       release();
       // Even when the drag was cancelled meanwhile (Escape): the press was a drag. A mouse
       // press that started at once and didn't move is a click (a touch held still is not).
-      if (drag.started && (moved || kind === 'touch')) suppressNextClick();
+      if (drag.started && (moved || kind === 'touch')) suppressNextClick(view);
       void drag.drop();
     };
 
@@ -169,7 +188,7 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
       event.preventDefault();
       press.restoreSelectable();
       // What the press would have done otherwise: a click drops the selection elsewhere.
-      if (!press.drag.started) document.getSelection()?.removeAllRanges();
+      if (!press.drag.started) press.view.document.getSelection()?.removeAllRanges();
     };
 
     /** A touch drag owns the gesture: the page must not scroll or zoom under it. */
@@ -187,7 +206,7 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
       event.preventDefault();
       event.stopPropagation();
       press.pointerId = event.pointerId;
-      capture(event.pointerId);
+      capture(event.pointerId, press.view);
       press.drag.move({ x: event.clientX, y: event.clientY });
     };
 
@@ -197,6 +216,8 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
      * drops it, so a click does.
      */
     const carry = (drag: SensorDrag) => {
+      // The window the released press was in: the drag goes on there.
+      const view = press?.view ?? window;
       release();
       press = {
         pointerId: null,
@@ -205,22 +226,15 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
         point: null,
         moved: true,
         restoreSelectable: () => {},
-        stops: [
-          useEventListener(window, 'pointerdown', onCarriedDown, { capture: true }),
-          useEventListener(document, 'pointermove', onPointerMove),
-          useEventListener(document, 'pointerup', onPointerUp),
-          useEventListener(document, 'pointercancel', onPointerCancel),
-          useEventListener(window, 'contextmenu', preventWhileActive),
-          useEventListener(window, 'dragstart', preventWhileActive),
-          useEventListener(document, 'selectstart', cancelSelection, { capture: true }),
-        ],
+        view,
+        stops: [useEventListener(view, 'pointerdown', onCarriedDown, { capture: true }), ...listenDuringPress(view)],
       };
     };
 
-    useEventListener(defaultDocument, 'pointerdown', (event: PointerEvent) => {
+    const onPointerDown = (event: PointerEvent, view: Window) => {
       if (press || !event.isPrimary || event.button !== 0) return;
       const target = event.composedPath()[0];
-      if (!(target instanceof Element)) return;
+      if (!isElement(target)) return;
       const kind = pointerKind(event);
       const { pointerId } = event;
       const point = { x: event.clientX, y: event.clientY };
@@ -231,7 +245,7 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
         activation: kind,
         onStart() {
           // A drag that starts at once (`press` isn't set yet) waits for the pointer to move.
-          if (kind === 'touch' || press?.moved) capture(pointerId);
+          if (kind === 'touch' || press?.moved) capture(pointerId, view);
         },
         // An aborted activation (moved past the tolerance, Escape) ends the press. A drag
         // that ended keeps it until the pointerup, whose click it swallows.
@@ -244,15 +258,7 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
       });
       if (!drag) return;
 
-      const stops = [
-        useEventListener(document, 'pointermove', onPointerMove),
-        useEventListener(document, 'pointerup', onPointerUp),
-        useEventListener(document, 'pointercancel', onPointerCancel),
-        useEventListener(window, 'contextmenu', preventWhileActive),
-        useEventListener(window, 'dragstart', preventWhileActive),
-        // From the press on: the mousedown that follows decides about selecting.
-        useEventListener(document, 'selectstart', cancelSelection, { capture: true }),
-      ];
+      const stops = listenDuringPress(view);
       if (kind === 'touch') {
         // Touch events keep targeting the element the finger landed on. When a drag into
         // another list re-creates the item, that element leaves the document and its
@@ -270,18 +276,27 @@ export const pointerSensor = /* @__PURE__ */ defineSensor({
         // WebKit dispatches no `selectstart` for a `user-select: none` node, yet still
         // auto-scrolls: such a node is selectable for the press, so it can be cancelled.
         restoreSelectable: kind === 'touch' ? () => {} : makeSelectableForPress(target),
+        view,
         stops,
       };
-    });
+    };
 
-    // iOS Safari honours preventDefault() on touchmove only when a non-passive
-    // listener exists before the gesture starts. While activating, the page must
-    // still scroll (a quick swipe is a scroll, not a drag).
-    useEventListener(defaultWindow, 'touchmove', preventTouchScroll, { passive: false });
-
-    // The provider cancels the drag of a hidden tab; its pointerup may never come.
-    useEventListener(defaultDocument, 'visibilitychange', () => {
-      if (document.visibilityState === 'hidden') release();
+    // Every window the provider works in: a press there drags there.
+    context.onWindow((view) => {
+      const doc = view.document;
+      useEventListener(doc, 'pointerdown', (event: PointerEvent) => onPointerDown(event, view));
+      // iOS Safari honours preventDefault() on touchmove only when a non-passive
+      // listener exists before the gesture starts. While activating, the page must
+      // still scroll (a quick swipe is a scroll, not a drag).
+      useEventListener(view, 'touchmove', preventTouchScroll, { passive: false });
+      // The provider cancels the drag of a hidden tab; its pointerup may never come.
+      useEventListener(doc, 'visibilitychange', () => {
+        if (doc.visibilityState === 'hidden' && press?.view === view) release();
+      });
+      // The window closes: a press of it is over.
+      return () => {
+        if (press?.view === view) release();
+      };
     });
 
     return release;

@@ -274,4 +274,14 @@ export interface DnDState {
   selection: DnDSelection;
   /** Cancels the drag (it flies back), or the pending activation. */
   cancel(): void;
+  /**
+   * Drags work in `view` too: another window of the app that shows part of it (a popup
+   * opened with `window.open`, a detached panel, a Document Picture-in-Picture window). A
+   * component rendered into it on mount is found on its own; content a teleport moves there
+   * later is not, so name the window when you open it. Until it closes or the returned
+   * function runs, the provider listens to it, injects its styles there, and drags that
+   * start in it stay in it (its viewport, its targets, the overlay in its `<body>`). Items
+   * with `native` also cross between the windows.
+   */
+  addWindow(view: Window): () => void;
 }

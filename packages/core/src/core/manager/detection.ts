@@ -10,7 +10,7 @@ import { containsPoint, unionRect } from '../../animation/layout';
 import { createTargetStabilizer, pointerFirst } from '../collision';
 import { containsComposed, elementBelow, elementFromPoint, parentOf } from '../../utils/dom';
 import type { DroppableEntry } from './registry';
-import type { ManagerContext } from './state';
+import { dragDocument, type ManagerContext } from './state';
 
 export type Detection = ReturnType<typeof createDetection>;
 
@@ -27,7 +27,7 @@ export function createDetection(ctx: ManagerContext) {
    */
   const hitTest = (point: Coordinates, byElement: Map<Element, DroppableEntry>, current: Active): Key[] => {
     const hits: DroppableEntry[] = [];
-    let top = elementFromPoint(point.x, point.y);
+    let top = elementFromPoint(point.x, point.y, dragDocument(ctx));
     // A drag without an overlay moves the element itself under the pointer: look through it.
     if (top && current.element.isConnected && containsComposed(current.element, top)) {
       top = elementBelow(point.x, point.y, current.element);
@@ -90,10 +90,12 @@ export function createDetection(ctx: ManagerContext) {
     const elements = new Map<Key, HTMLElement>();
     // A drag from outside the page is for the targets that take such drags only (`external`).
     const external = !!current.external && !current.external.group;
+    // The point is in the drag's window: another window's targets lie in another viewport.
+    const doc = dragDocument(ctx);
     for (const entry of droppables.values()) {
       if (entry.isDisabled() || (external && !entry.getExternal?.())) continue;
       const element = entry.getElement();
-      if (!element?.isConnected || isOwned(element, current)) continue;
+      if (!element?.isConnected || element.ownerDocument !== doc || isOwned(element, current)) continue;
       all.set(element, entry);
       let hidden = false;
       for (const rule of ctx.targetRules) hidden ||= !rule(entry, element, point, current);

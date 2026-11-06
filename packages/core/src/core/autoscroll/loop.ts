@@ -12,7 +12,7 @@
 import { onScopeDispose, watch } from 'vue';
 import type { AutoScrollOptions, Coordinates } from '../../types';
 import type { DnDManager } from '../manager';
-import { elementFromPoint, parentOf } from '../../utils/dom';
+import { cancelFrame, elementFromPoint, isHTMLElement, parentOf, requestFrame, viewOf } from '../../utils/dom';
 import {
   createScrollIntent,
   getScrollVelocity,
@@ -22,6 +22,7 @@ import {
 } from './math';
 import {
   isPageRoot,
+  isWindow,
   measureElement,
   measureWindow,
   readPageScroll,
@@ -54,6 +55,8 @@ interface Session {
   remainders: Map<Scroller, Coordinates>;
   /** Elements that scrolled last frame: they keep scrolling while the pointer is past their edge. */
   previous: Element[];
+  /** The window the drag runs in: its page scrolls last, its frames run the loop. */
+  view: Window;
   page: PageScroll;
   /** Inline `scroll-snap-type` of the scrollers whose snapping is suspended, restored when the drag ends. */
   snaps: Map<HTMLElement, { value: string; priority: string }>;
@@ -92,9 +95,10 @@ export function useAutoScroll(manager: DnDManager): void {
    * re-snaps to the nearest snap position.
    */
   const suspendSnapping = (current: Session, scroller: Scroller) => {
-    const snaps = scroller === window ? current.page.snap : styleOf(current, scroller as Element).snap;
-    const element = scroller === window ? document.documentElement : scroller;
-    if (!snaps || !(element instanceof HTMLElement) || current.snaps.has(element)) return;
+    const page = isWindow(scroller);
+    const snaps = page ? current.page.snap : styleOf(current, scroller).snap;
+    const element = page ? scroller.document.documentElement : scroller;
+    if (!snaps || !isHTMLElement(element) || current.snaps.has(element)) return;
     const { style } = element;
     current.snaps.set(element, {
       value: style.getPropertyValue('scroll-snap-type'),
@@ -144,7 +148,11 @@ export function useAutoScroll(manager: DnDManager): void {
     // the manager's hit test of the last frame: a hit test brings the page's rendering
     // up to date, which with thousands of items costs more than the rest of the frame.
     const candidates: Element[] = [];
-    addScrollers(current, manager.getPointerElement() ?? elementFromPoint(pointer.x, pointer.y), candidates);
+    addScrollers(
+      current,
+      manager.getPointerElement() ?? elementFromPoint(pointer.x, pointer.y, current.view.document),
+      candidates,
+    );
     const over = manager.over.value?.element;
     if (over?.isConnected) addScrollers(current, over, candidates);
     for (const element of current.previous) {
@@ -166,7 +174,7 @@ export function useAutoScroll(manager: DnDManager): void {
     }
     if (!picked.x || !picked.y) {
       const options = resolveAutoScrollOptions(provider);
-      if (options) consider(window, measureWindow(current.page), options);
+      if (options) consider(current.view, measureWindow(current.page, current.view), options);
     }
 
     // Write pass.
@@ -179,7 +187,7 @@ export function useAutoScroll(manager: DnDManager): void {
       if (y) step(current, y.scroller, 0, y.speed * scale);
     }
     const scrolled = [x?.scroller, y?.scroller].filter(
-      (scroller, index, all): scroller is Element => !!scroller && scroller !== window && all.indexOf(scroller) === index,
+      (scroller, index, all): scroller is Element => !!scroller && !isWindow(scroller) && all.indexOf(scroller) === index,
     );
     const { autoScrollers } = manager;
     if (scrolled.length !== autoScrollers.value.length || scrolled.some((element, i) => element !== autoScrollers.value[i])) {
@@ -187,7 +195,7 @@ export function useAutoScroll(manager: DnDManager): void {
     }
     current.previous = scrolled;
     manager.isAutoScrolling.value = !!(x || y);
-    frame = requestAnimationFrame(tick);
+    frame = requestFrame(current.view, tick);
   };
 
   const start = () => {
@@ -199,6 +207,7 @@ export function useAutoScroll(manager: DnDManager): void {
       if (options !== undefined) entries.push({ element: entry.getElement(), options });
     }
     if (provider === false && !entries.some((entry) => entry.options !== false)) return;
+    const view = viewOf(manager.getDocument());
     const current: Session = {
       last: 0,
       // From where the drag starts, not from the first frame: a pointer that is already at
@@ -208,7 +217,8 @@ export function useAutoScroll(manager: DnDManager): void {
       overrides: new Map(),
       remainders: new Map(),
       previous: [],
-      page: readPageScroll(),
+      view,
+      page: readPageScroll(view.document),
       snaps: new Map(),
     };
     // A list's option applies to its scroll container: the list itself or its closest scrollable ancestor.
@@ -220,11 +230,11 @@ export function useAutoScroll(manager: DnDManager): void {
       }
     }
     session = current;
-    frame = requestAnimationFrame(tick);
+    frame = requestFrame(view, tick);
   };
 
   const stop = () => {
-    if (frame) cancelAnimationFrame(frame);
+    if (frame) cancelFrame(session?.view, frame);
     frame = 0;
     if (session) restoreSnapping(session);
     session = null;

@@ -1,4 +1,4 @@
-import { parentOf } from '../../utils/dom';
+import { docOf, parentOf } from '../../utils/dom';
 
 /**
  * A pointer-like drag captures the pointer on <body> (the item may be recreated mid-drag):
@@ -16,7 +16,7 @@ export const leavePressed = (pressed: Element, item: Element): void => {
     if (node === item) break;
   }
   if (chain.at(-1) !== item) return;
-  const init = { bubbles: true, composed: true, relatedTarget: document.body };
+  const init = { bubbles: true, composed: true, relatedTarget: docOf(item).body };
   const dispatch = (node: Element, type: string, bubbles: boolean) => {
     const Event = type.startsWith('pointer') && typeof PointerEvent === 'function' ? PointerEvent : MouseEvent;
     node.dispatchEvent(new Event(type, { ...init, bubbles }));

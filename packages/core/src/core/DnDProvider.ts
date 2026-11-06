@@ -1,4 +1,5 @@
 import {
+  computed,
   defineComponent,
   h,
   onMounted,
@@ -12,7 +13,7 @@ import {
   type TransitionProps,
   type VNode,
 } from 'vue';
-import { defaultDocument, defaultWindow, useEventListener } from '@vueuse/core';
+import { useEventListener } from '@vueuse/core';
 import type {
   ActivationOptions,
   Announcements,
@@ -31,6 +32,7 @@ import type {
   Sensor,
 } from '../types';
 import { createDnDManager } from './manager';
+import { overlayTarget } from './manager/overlay';
 import { DND_CONTEXT, useManager } from './context';
 import { devtoolsHook } from './devtoolsHook';
 import { useSensors } from './sensors/host';
@@ -123,23 +125,32 @@ export const DnDProvider = /* @__PURE__ */ defineComponent({
     useNativeDrags(manager);
     useAutoScroll(manager);
 
-    const refresh = () => manager.scheduleFrame();
-    useEventListener(defaultDocument, 'scroll', refresh, { capture: true, passive: true });
-    useEventListener(defaultWindow, 'resize', refresh, { passive: true });
-
     // The teleported part renders on the client only: SSR can't place it into <body>
     // (hydration mismatch in Nuxt), and nothing in it is needed before a drag.
     const mounted = shallowRef(false);
     onMounted(() => {
       mounted.value = true;
-      injectDefaultStyles(props.defaultStyles);
+      // Each window the provider works in: its scroll and resizes move the targets under
+      // the drag, and drags there rely on the styles.
+      const refresh = () => manager.scheduleFrame();
+      manager.windows.each((view) => {
+        injectDefaultStyles(props.defaultStyles, view.document);
+        useEventListener(view.document, 'scroll', refresh, { capture: true, passive: true });
+        useEventListener(view, 'resize', refresh, { passive: true });
+      });
     });
     onScopeDispose(manager.destroy);
+
+    // The overlay renders in the window the drag runs in; the page's, `overlayTo`, before any.
+    const overlayTo = computed(() => {
+      const doc = manager.document.value;
+      return doc && doc !== document ? (overlayTarget(props.overlayTo, doc) ?? props.overlayTo) : props.overlayTo;
+    });
 
     return () => [
       slots.default?.(),
       mounted.value
-        ? h(Teleport, { to: props.overlayTo }, [
+        ? h(Teleport, { to: overlayTo.value }, [
             // A visual copy of the dragged item: hidden from assistive tech and focus.
             h(
               DragOverlay,

@@ -5,9 +5,9 @@
  * provider's `keyboard` option.
  */
 
-import { defaultDocument, useEventListener } from '@vueuse/core';
+import { useEventListener } from '@vueuse/core';
 import type { SensorDirection } from '../../types';
-import { getEventTarget } from '../../utils/dom';
+import { getEventTarget, isElement } from '../../utils/dom';
 import { defineSensor } from './host';
 
 const DEFAULT_KEYS = {
@@ -49,8 +49,9 @@ export const keyboardSensor = /* @__PURE__ */ defineSensor({
     const options = () => (context.props.keyboard === false ? null : (context.props.keyboard ?? {}));
     const keys = () => ({ ...DEFAULT_KEYS, ...options()?.keys });
 
-    // Capture phase: runs before any handler on the focused element or its ancestors.
-    useEventListener(defaultDocument, 'keydown', (event: KeyboardEvent) => {
+    // Capture phase: runs before any handler on the focused element or its ancestors. In
+    // every window the provider works in: the keys go to the focused window.
+    const onKeyDown = (event: KeyboardEvent) => {
       const { status } = context;
       const bindings = keys();
 
@@ -83,8 +84,11 @@ export const keyboardSensor = /* @__PURE__ */ defineSensor({
       if (!atRest || !options() || event.repeat) return;
       if (!matches(bindings.start, event)) return;
       const target = getEventTarget(event);
-      if (!(target instanceof Element)) return;
+      if (!isElement(target)) return;
       if (context.activate({ target, type: 'keyboard', event })) consume(event);
-    }, { capture: true });
+    };
+    context.onWindow((view) => {
+      useEventListener(view.document, 'keydown', onKeyDown, { capture: true });
+    });
   },
 });

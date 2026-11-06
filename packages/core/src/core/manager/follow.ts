@@ -12,6 +12,7 @@
 
 import type { Coordinates, Rect } from '../../types';
 import { getRect, layoutShifts, offsetRect } from '../../animation/layout';
+import { cancelFrame, requestFrame, viewOf } from '../../utils/dom';
 
 export type Follow = ReturnType<typeof createFollow>;
 
@@ -103,7 +104,7 @@ export function createFollow(getBox: () => HTMLElement | null) {
     // The box waits where it is: the anchor's slide starts next frame.
     if (!measured) {
       if (shift) place(shift);
-      frame = requestAnimationFrame(step);
+      frame = requestFrame(viewOf(anchor), step);
       return;
     }
     const { settled, pending } = measured;
@@ -112,11 +113,11 @@ export function createFollow(getBox: () => HTMLElement | null) {
     // Written every frame it is moved: a re-render of the box's style clears it.
     const moved = x !== 0 || y !== 0;
     if (moved || shift) place(moved ? { x, y } : null);
-    frame = requestAnimationFrame(step);
+    frame = requestFrame(viewOf(anchor), step);
   };
 
   const halt = () => {
-    if (frame) cancelAnimationFrame(frame);
+    if (frame) cancelFrame(viewOf(anchor), frame);
     frame = 0;
     anchor = start = null;
     shares = new WeakMap();
@@ -134,7 +135,7 @@ export function createFollow(getBox: () => HTMLElement | null) {
       // The layout animations moving it now: the drop animation lands where they end.
       for (const { animation } of layoutShifts(anchor)) shares.set(animation, { x: 0, y: 0 });
       start = measure()!.settled;
-      frame = requestAnimationFrame(step);
+      frame = requestFrame(viewOf(anchor), step);
     },
     /** Stops following and takes the shift off the box: what it was, for its new place. */
     take(): Coordinates | null {

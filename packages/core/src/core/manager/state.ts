@@ -29,6 +29,11 @@ import type { Follow } from './follow';
 import type { FrameLoop } from './frame';
 import type { Overlay, PreviewSource } from './overlay';
 import type { RegistryLookups, RegistryMembers } from './registry';
+import type { Windows } from './windows';
+
+/** The document of the running (or last) drag: the page's before any. */
+export const dragDocument = (state: { document: { value: Document | null } }): Document =>
+  state.document.value ?? document;
 
 /**
  * Multi-drag layout of the default overlay, set by the sortable layer: every dragged id
@@ -125,6 +130,12 @@ export const createDragState = () => ({
   activationProgress: shallowRef(0),
   /** The browser's own drag (`native`) went out of the window: nothing here follows it then. */
   outside: shallowRef(false),
+  /**
+   * The document the drag runs in (see `windows.ts`): its viewport is what coordinates,
+   * hit tests and the overlay are in. It stays after the drag, while its overlay lands;
+   * `null` before the first drag: the page's.
+   */
+  document: shallowRef<Document | null>(null),
   isAutoScrolling: shallowRef(false),
   /** The containers auto-scroll moved in its last frame (the window aside): a new array when they change. */
   autoScrollers: shallowRef<readonly Element[]>([]),
@@ -159,6 +170,7 @@ export type DragState = ReturnType<typeof createDragState>;
 export interface ManagerContext extends DragState, RegistryLookups, RegistryMembers {
   props: DnDProviderProps;
   measurer: Measurer;
+  windows: Windows;
   /** Pointer position at drag start. */
   origin: Coordinates;
   /** The drag was started by touch: it vibrates (`haptics`). */

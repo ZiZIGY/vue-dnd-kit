@@ -31,11 +31,11 @@ import {
   runDropAnimation,
   type OverlayItemLanding,
 } from '../../animation/drop';
-import { isFocusLost, nextFrame } from '../../utils/dom';
+import { docOf, isFocusLost, nextFrame, requestFrame, viewOf } from '../../utils/dom';
 import { dragCursor, markDocumentDragging } from '../styles';
 import { vibrate } from '../haptics';
 import { isFinal, toVerdict, type Verdict } from '../verdict';
-import { NO_LANDINGS, type Flight, type ManagerContext } from './state';
+import { dragDocument, NO_LANDINGS, type Flight, type ManagerContext } from './state';
 import { createFollow } from './follow';
 
 /** Frames a keyboard drag's item has to take the focus back after the drop. */
@@ -125,6 +125,10 @@ export function createSession(ctx: ManagerContext) {
         : [id];
     const items = browser?.items ?? buildItems(ids);
     const modifiers = entry.getModifiers?.() ?? [];
+    // Coordinates, hit tests and the overlay are the window's the item is in.
+    const doc = docOf(element);
+    ctx.document.value = doc;
+    ctx.windows.track(element);
     ctx.droppedOutside = undefined;
     ctx.overlay.pickUp(id, entry, caught?.previews, !!browser);
     ctx.overlayColumn.value = null;
@@ -159,12 +163,12 @@ export function createSession(ctx: ManagerContext) {
     ctx.status.value = 'dragging';
     if (sensor === 'pointer' && !browser) {
       // What the pointer grabbed: the element under it (a handle, a part of it) shows its cursor.
-      const hit = document.elementFromPoint(coordinates.x, coordinates.y);
+      const hit = doc.elementFromPoint(coordinates.x, coordinates.y);
       cursor = dragCursor(hit && element.contains(hit) ? hit : element);
     } else {
       cursor = null;
     }
-    ctx.restoreDocument = markDocumentDragging(sensor, cursor);
+    ctx.restoreDocument = markDocumentDragging(sensor, cursor, doc);
 
     const event = ctx.events.createEvent();
     ctx.events.emit('onDragStart', event);
@@ -191,16 +195,18 @@ export function createSession(ctx: ManagerContext) {
     const attempt = () => {
       const target = ctx.draggables.get(id)?.getFocusTarget();
       if (!target?.isConnected) return false;
-      if (!isFocusLost()) return true;
+      const doc = docOf(target);
+      if (!isFocusLost(doc)) return true;
       target.focus({ preventScroll: true });
       // A target that can't take the focus yet (still hidden as the slot) is tried again.
-      return document.activeElement === target;
+      return doc.activeElement === target;
     };
     void nextTick(() => {
       // Virtualizers may mount the row a frame later; a slot may stay hidden a few frames.
       let frames = 0;
+      const view = viewOf(dragDocument(ctx));
       const retry = () => {
-        if (!attempt() && ++frames < FOCUS_FRAMES) requestAnimationFrame(retry);
+        if (!attempt() && ++frames < FOCUS_FRAMES) requestFrame(view, retry);
       };
       retry();
     });
@@ -377,7 +383,7 @@ export function createSession(ctx: ManagerContext) {
       // Measure the target after the commit has rendered, then once more a frame
       // later: virtualizers may re-measure rows with a ResizeObserver in between.
       await nextTick();
-      await nextFrame();
+      await nextFrame(viewOf(overlay));
       if (flight.done) return;
       const current = flight.active;
       // Copies and created items land on their own row, not on the dragged one.
@@ -444,7 +450,7 @@ export function createSession(ctx: ManagerContext) {
     // The overlay follows the pointer again.
     waiting.stop();
     ctx.status.value = 'dragging';
-    ctx.restoreDocument = markDocumentDragging(event.active.sensor, cursor);
+    ctx.restoreDocument = markDocumentDragging(event.active.sensor, cursor, dragDocument(ctx));
     ctx.events.emit('onDragResume', event);
     ctx.events.announce('onDragResume', event);
     // Where the pointer is now: the user may have moved it during the wait.
@@ -557,6 +563,7 @@ export function createSession(ctx: ManagerContext) {
     ctx.flights.value = [];
     if (current) clear();
     ctx.events.stopAnnouncing();
+    ctx.windows.destroy();
   };
 
   return {

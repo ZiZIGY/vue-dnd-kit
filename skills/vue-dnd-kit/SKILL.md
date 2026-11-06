@@ -124,6 +124,7 @@ mount on the client.
 | Lock drags to one axis; snap, restrict to a container | `axis: 'x' \| 'y'`, `modifiers` | [draggable-droppable](references/draggable-droppable.md#modifiers) |
 | Rules for a part of the page (a board, a canvas, a feed) under one app-wide provider | `makeDragArea` | [draggable-droppable](references/draggable-droppable.md#drag-areas-makedragarea) |
 | Provider options, global events, `useDnD`, monitors | `DnDProvider`, `useDnD`, `useDnDMonitor` | [provider](references/provider.md) |
+| Part of the app in another window (a `window.open` popup, a detached panel, Picture-in-Picture) | `useDnD().addWindow(popup)` | [provider](references/provider.md#other-windows-of-the-app) |
 | Drag several items; rubber-band selection | `selected`, `multiple`, `makeSelectionArea` | [multi-drag](references/multi-drag.md) |
 | Custom drag preview, preview size; a see-through dragged row; a target that changes the preview | `overlay`, `#overlay` slot, `DragPreview`, `overlayFit`, `overOverlay`, `[data-dnd-overlay]` CSS | [overlay](references/overlay.md) |
 | Tune or replace animations (GSAP, motion) | `animation`, `dropAnimation`, `animateChanges` | [animations](references/animations.md) |

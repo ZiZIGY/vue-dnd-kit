@@ -3,6 +3,7 @@
  * before the placeholder re-renders, and detached from page-level side effects.
  */
 
+import { docOf } from '../utils/dom';
 import { snapshotMany } from './snapshot';
 
 let radioGroup = 0;
@@ -13,16 +14,18 @@ const copyFormState = (source: Element, clone: Element) => {
   const suffix = `-dnd-clone-${++radioGroup}`;
   sourceFields.forEach((field, index) => {
     const target = cloneFields[index];
-    if (!target) return;
-    if (field instanceof HTMLInputElement && target instanceof HTMLInputElement) {
-      target.value = field.value;
-      target.checked = field.checked;
+    if (!target || target.tagName !== field.tagName) return;
+    // By tag, not `instanceof`: the fields of another window are of its own classes.
+    if (field.tagName === 'INPUT') {
+      const [from, to] = [field as HTMLInputElement, target as HTMLInputElement];
+      to.value = from.value;
+      to.checked = from.checked;
       // A cloned radio would join (and steal from) the original group.
-      if (field.type === 'radio' && field.name) target.name = field.name + suffix;
-    } else if (field instanceof HTMLTextAreaElement && target instanceof HTMLTextAreaElement) {
-      target.value = field.value;
-    } else if (field instanceof HTMLSelectElement && target instanceof HTMLSelectElement) {
-      target.selectedIndex = field.selectedIndex;
+      if (from.type === 'radio' && from.name) to.name = from.name + suffix;
+    } else if (field.tagName === 'TEXTAREA') {
+      (target as HTMLTextAreaElement).value = (field as HTMLTextAreaElement).value;
+    } else if (field.tagName === 'SELECT') {
+      (target as HTMLSelectElement).selectedIndex = (field as HTMLSelectElement).selectedIndex;
     }
   });
 };
@@ -151,8 +154,9 @@ const prepare = (source: HTMLElement) => {
  */
 export const clonePreviews = (sources: readonly HTMLElement[], { container }: CloneOptions = {}): HTMLElement[] => {
   const jobs = sources.map(prepare);
-  // Laid out as the overlay will show them: the roots' styles above are in place.
-  snapshotMany(jobs, container ?? document.body);
+  // Laid out as the overlay will show them: the roots' styles above are in place. In the
+  // sources' window: another window of the app has its own style sheets.
+  snapshotMany(jobs, container ?? docOf(sources[0]).body);
   return jobs.map(({ clone, mount, positioned }) => {
     removeTransient(clone);
     // No transitions while the snapshot inlined its styles; the page's own run on the

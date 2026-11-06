@@ -5,7 +5,7 @@
 
 import type { Rect } from '../../types';
 import { createRect, getLayoutRect } from '../../animation/layout';
-import { parentOf } from '../../utils/dom';
+import { docOf, parentOf, viewOf } from '../../utils/dom';
 import { getRevealDelta, type Directions } from './math';
 
 export interface ScrollStyle {
@@ -42,8 +42,10 @@ const hasSnapping = (style: CSSStyleDeclaration): boolean =>
   !!style.scrollSnapType && style.scrollSnapType !== 'none';
 
 /** The page itself scrolls through the window, which is always the last candidate. */
-export const isPageRoot = (element: Element): boolean =>
-  element === document.body || element === document.documentElement;
+export const isPageRoot = (element: Element): boolean => {
+  const doc = docOf(element);
+  return element === doc.body || element === doc.documentElement;
+};
 
 /** Room to scroll backward/forward; 1px slack absorbs fractional offsets. */
 const room = (position: number, max: number, reversed: boolean): [boolean, boolean] => {
@@ -81,9 +83,10 @@ export interface PageScroll {
   snap: boolean;
 }
 
-export const readPageScroll = (): PageScroll => {
-  const root = getComputedStyle(document.documentElement);
-  const body = getComputedStyle(document.body);
+/** How the page of `doc` scrolls (another window of the app has its own). */
+export const readPageScroll = (doc: Document = document): PageScroll => {
+  const root = getComputedStyle(doc.documentElement);
+  const body = getComputedStyle(doc.body);
   // `overflow` on <body> applies to the viewport when <html> leaves it visible.
   // A page locked with `hidden` (an open modal) can still be scrolled by script: don't.
   const allowed = (axis: 'overflowX' | 'overflowY') => {
@@ -98,22 +101,25 @@ export const readPageScroll = (): PageScroll => {
   };
 };
 
-export const measureWindow = (page: PageScroll): Measured => {
-  const root = document.scrollingElement ?? document.documentElement;
+export const measureWindow = (page: PageScroll, view: Window = window): Measured => {
+  const doc = view.document;
+  const root = doc.scrollingElement ?? doc.documentElement;
   // The root's client size is the viewport without scrollbars.
-  const { clientWidth: width, clientHeight: height } = document.documentElement;
-  const [left, right] = page.x ? room(window.scrollX, root.scrollWidth - width, page.reverseX) : [false, false];
-  const [up, down] = page.y ? room(window.scrollY, root.scrollHeight - height, false) : [false, false];
+  const { clientWidth: width, clientHeight: height } = doc.documentElement;
+  const [left, right] = page.x ? room(view.scrollX, root.scrollWidth - width, page.reverseX) : [false, false];
+  const [up, down] = page.y ? room(view.scrollY, root.scrollHeight - height, false) : [false, false];
   return { rect: createRect(0, 0, width, height), canScroll: { up, down, left, right } };
 };
 
 export type Scroller = Element | Window;
 
+/** A window, this one or another of the app's (they share no class to test with). */
+export const isWindow = (scroller: Scroller): scroller is Window => !('nodeType' in scroller);
+
 export const scrollBy = (scroller: Scroller, left: number, top: number) => {
   // 'instant' overrides a page-level `scroll-behavior: smooth`, which would lag behind the loop.
   const options: ScrollToOptions = { left, top, behavior: 'instant' };
-  if (scroller === window) window.scrollBy(options);
-  else (scroller as Element).scrollBy(options);
+  scroller.scrollBy(options);
 };
 
 /**
@@ -130,9 +136,10 @@ export const revealElement = (element: Element, margin = 8): void => {
     const delta = getRevealDelta(getLayoutRect(element), measured.rect, margin);
     if (delta.x || delta.y) scrollBy(node, delta.x, delta.y);
   }
-  const page = readPageScroll();
-  const delta = getRevealDelta(getLayoutRect(element), measureWindow(page).rect, margin);
+  const view = viewOf(element);
+  const page = readPageScroll(view.document);
+  const delta = getRevealDelta(getLayoutRect(element), measureWindow(page, view).rect, margin);
   const dx = page.x ? delta.x : 0;
   const dy = page.y ? delta.y : 0;
-  if (dx || dy) scrollBy(window, dx, dy);
+  if (dx || dy) scrollBy(view, dx, dy);
 };

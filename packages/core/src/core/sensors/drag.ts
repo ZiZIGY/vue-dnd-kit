@@ -22,6 +22,7 @@ import type {
 import type { DnDManager } from '../manager';
 import { devtoolsHook } from '../devtoolsHook';
 import { checkActivation } from './activation';
+import { cancelFrame, requestFrame, viewOf } from '../../utils/dom';
 import { leavePressed } from './leave';
 import { DIRECTIONS, arrowEvent, place, step } from './steps';
 
@@ -70,6 +71,8 @@ export function createSensorDrag(setup: DragSetup): DragControl {
   const startedAt = performance.now();
   let timer: ReturnType<typeof setTimeout> | undefined;
   let frame = 0;
+  /** The pressed window's frames run the progress: the page's may be throttled behind it. */
+  const view = setup.pressed ? viewOf(setup.pressed.item) : null;
 
   let queue: Promise<void> = Promise.resolve();
   let queued = 0;
@@ -88,7 +91,7 @@ export function createSensorDrag(setup: DragSetup): DragControl {
 
   const stopTracking = () => {
     clearTimeout(timer);
-    if (frame) cancelAnimationFrame(frame);
+    if (frame) cancelFrame(view, frame);
     frame = 0;
   };
 
@@ -160,9 +163,9 @@ export function createSensorDrag(setup: DragSetup): DragControl {
     timer = setTimeout(evaluate, delay);
     // Progress for the UI (e.g. a long-press ring), once per frame.
     const tick = () => {
-      frame = evaluate() ? requestAnimationFrame(tick) : 0;
+      frame = evaluate() ? requestFrame(view, tick) : 0;
     };
-    frame = requestAnimationFrame(tick);
+    frame = requestFrame(view, tick);
   };
 
   const begin = (): boolean => {

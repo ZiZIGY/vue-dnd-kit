@@ -152,6 +152,14 @@ export interface SensorContext {
   activate(activation: SensorActivation): SensorDrag | null;
   /** Cancels the provider's drag or pending activation, whichever sensor runs it (Escape, a hidden tab). */
   cancel(): void;
+  /**
+   * Runs `setup` for each window the provider works in: the page's at once, and every other
+   * window of the app the provider's items are in (a popup opened with `window.open` that a
+   * teleport renders into, see `DnDState.addWindow`) as it joins. Listen to the input of that
+   * window there (`useEventListener(view.document, …)`): it is cleaned up when the window
+   * closes or the sensor stops, as is the cleanup `setup` returns.
+   */
+  onWindow(setup: (view: Window) => void | (() => void)): void;
 }
 
 /**

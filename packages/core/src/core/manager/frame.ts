@@ -6,8 +6,9 @@
 
 import { nextTick } from 'vue';
 import type { Coordinates } from '../../types';
-import type { ManagerContext } from './state';
+import { dragDocument, type ManagerContext } from './state';
 import { vibrate } from '../haptics';
+import { cancelFrame, requestFrame as requestWindowFrame } from '../../utils/dom';
 
 export type FrameLoop = ReturnType<typeof createFrameLoop>;
 
@@ -77,8 +78,13 @@ export function createFrameLoop(ctx: ManagerContext) {
     });
   };
 
+  /** The window whose frame is pending: the drag's, whose frames go on behind the page. */
+  let view: Window | null = null;
+
   const requestFrame = () => {
-    if (!frame && ctx.status.value === 'dragging') frame = requestAnimationFrame(runFrame);
+    if (frame || ctx.status.value !== 'dragging') return;
+    view = dragDocument(ctx).defaultView;
+    frame = requestWindowFrame(view, runFrame);
   };
 
   return {
@@ -93,12 +99,12 @@ export function createFrameLoop(ctx: ManagerContext) {
     /** Runs a pending frame now. Without one, the target is already up to date. */
     flushFrame() {
       if (!frame) return;
-      cancelAnimationFrame(frame);
+      cancelFrame(view, frame);
       runFrame();
     },
     /** Drops the pending frame. */
     cancel() {
-      if (frame) cancelAnimationFrame(frame);
+      if (frame) cancelFrame(view, frame);
       frame = 0;
     },
     /** A new session (or none): its first detection is the pickup's. */

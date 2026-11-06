@@ -153,7 +153,8 @@ export type Registry = ReturnType<typeof createRegistry>;
 export type RegistryLookups = Registry['lookups'];
 export type RegistryMembers = Registry['members'];
 
-export function createRegistry() {
+/** `onElement`: an element of the provider was seen (its window joins the provider's, `windows.ts`). */
+export function createRegistry(onElement: (element: Element) => void = () => {}) {
   const draggables = new Map<Key, DraggableEntry>();
   const droppables = new Map<Key, DroppableEntry>();
   const draggableIds = new WeakMap<Element, Key>();
@@ -194,6 +195,11 @@ export function createRegistry() {
   const registerDroppable = (entry: DroppableEntry): (() => void) => {
     const previous = droppables.get(entry.id);
     droppables.set(entry.id, entry);
+    // Its element renders with the component that registered it.
+    void nextTick(() => {
+      const element = droppables.get(entry.id) === entry ? entry.getElement() : null;
+      if (element) onElement(element);
+    });
     if (process.env.NODE_ENV !== 'production') {
       live.add(entry);
       if (previous && previous !== entry) checkShared('drop target', droppables, previous, entry);
@@ -207,6 +213,7 @@ export function createRegistry() {
   const bindDraggableElement = (element: Element, id: Key) => {
     draggableIds.set(element, id);
     owners.set(element, owner);
+    onElement(element);
   };
 
   const unbindDraggableElement = (element: Element, id: Key) => {
@@ -234,6 +241,7 @@ export function createRegistry() {
     if (!areas.has(element)) areaCount++;
     areas.set(element, entry);
     areasVersion.value++;
+    onElement(element);
   };
 
   const unbindArea = (element: Element, entry: AreaEntry) => {
