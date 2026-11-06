@@ -3,7 +3,9 @@ name: Release
 # The release bot (release-please). On every push it keeps a release pull request up to date:
 # each package's next version and changelog, from the Conventional Commits that touched it.
 # Merging that pull request tags the packages it bumps, creates their GitHub releases and
-# publishes them to npm, under `latest` (a prerelease version under `next`).
+# publishes them to npm, under `latest` (a prerelease version under `next`). A release
+# pull request that bumps the core also gets a page in the docs' changelog when its version
+# has none: the changes only, until someone writes the real one.
 #
 # Releases come from master. v2 lives on in the v2 branch.
 
@@ -16,6 +18,10 @@ on:
         description: Publish every package's current version that npm doesn't have yet
         type: boolean
         default: false
+      notes:
+        description: Put the changelog page of a released core version into its GitHub release (e.g. 3.1.0)
+        type: string
+        default: ''
 
 permissions:
   contents: write
@@ -38,6 +44,8 @@ jobs:
       core: ${{ steps.release.outputs['packages/core--release_created'] }}
       core-version: ${{ steps.release.outputs['packages/core--version'] }}
       core-tag: ${{ steps.release.outputs['packages/core--tag_name'] }}
+      # The release pull request was opened or updated in this run.
+      prs-created: ${{ steps.release.outputs.prs_created }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -49,11 +57,12 @@ jobs:
   # The core's GitHub release gets the notes of its page in the docs' changelog
   # (docs/content/en/docs/5.changelog/, `version:` in its front matter), with links to the
   # live demos, above the commits release-please listed. A version without a page keeps
-  # the commits only.
+  # the commits only. Run by hand with `notes`, it does so for a version released before its
+  # page was on master.
   notes:
     name: Release notes
     needs: release-please
-    if: needs.release-please.outputs.core == 'true'
+    if: needs.release-please.outputs.core == 'true' || inputs.notes
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -65,8 +74,8 @@ jobs:
       - name: Notes from the changelog page
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ needs.release-please.outputs.core-version }}
-          TAG: ${{ needs.release-please.outputs.core-tag }}
+          VERSION: ${{ inputs.notes || needs.release-please.outputs.core-version }}
+          TAG: ${{ inputs.notes && format('core-v{0}', inputs.notes) || needs.release-please.outputs.core-tag }}
         run: |
           node docs/tools/release-notes.ts "$VERSION" > notes.md
           if [ ! -s notes.md ]; then
@@ -81,6 +90,43 @@ jobs:
           fi
           { cat notes.md; printf '\n---\n\n'; cat commits.md; } > body.md
           gh release edit "$TAG" --notes-file body.md
+
+  # A release pull request that bumps the core gets a page in the docs' changelog when its
+  # version has none (docs/tools/changelog-page.ts): the changes, from CHANGELOG.md, and a
+  # card on the overview. Write the real page on master before merging (highlights, live
+  # demos, upgrade notes): this one then stays out. release-please rebuilds its branch when
+  # master moves, and this job runs again after it.
+  changelog-page:
+    name: Changelog page
+    needs: release-please
+    if: needs.release-please.outputs.prs-created == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release-please--branches--${{ github.ref_name }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: A page for the core's next version
+        run: |
+          # Only when the pull request releases the core.
+          git fetch --depth=1 origin "$GITHUB_REF_NAME"
+          if git diff --quiet FETCH_HEAD -- packages/core/package.json; then
+            echo "The release pull request doesn't release the core"
+            exit 0
+          fi
+          node docs/tools/changelog-page.ts
+          if [ -z "$(git status --porcelain -- docs/content)" ]; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/content
+          git commit -m 'docs(changelog): a page for the release, from its changelog'
+          git push
 
   publish:
     name: Publish ${{ matrix.path }}

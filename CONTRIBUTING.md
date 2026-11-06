@@ -127,15 +127,22 @@ Releases are automated with [release-please](https://github.com/googleapis/relea
 1. On every push to `master`, the bot opens or updates a pull request named
    `chore: release master`: each package's next version and its `CHANGELOG.md`, from the
    commits since its last release.
-2. **Before merging it**, when the core gets a new version, write its page in the docs'
-   changelog: `docs/content/en/docs/5.changelog/`, with `version: <version>` in the front
-   matter. File prefixes count down so the newest comes first (`997.v3-0-0.md`, then `996…`).
-   Highlights with live examples, upgrade notes, and a last section
-   `## All changes {#changes}` (the GitHub release leaves it out: release-please lists the
-   commits there). Add a card for it to `0.index.md`.
-3. Merging the release pull request tags the packages it bumps, creates their GitHub releases
+2. When it bumps the core and the version has no page in the docs' changelog yet, the workflow
+   adds one to the pull request (`docs/tools/changelog-page.ts`): the changes from
+   `CHANGELOG.md` and a card on the overview. That is enough for a small patch.
+3. **Before merging a release worth telling about**, write its real page on `master`:
+   `docs/content/en/docs/5.changelog/`, with `version: <version>` in the front matter (the
+   workflow's page then stays out). File prefixes count down so the newest comes first
+   (`997.v3-0-0.md`, then `996…`). Highlights with live examples, upgrade notes, and a last
+   section `## All changes {#changes}` (the GitHub release leaves it out: release-please lists
+   the commits there). Add a card for it to `0.index.md`. `node docs/tools/changelog-page.ts`
+   writes the start of it.
+4. Merging the release pull request tags the packages it bumps, creates their GitHub releases
    and publishes them to npm with Trusted Publishing (no token; with provenance). The core's
    release notes get its changelog page on top (`docs/tools/release-notes.ts`).
+
+A page written after its version went out reaches the GitHub release when the **Release**
+workflow runs by hand with `notes` set to the version.
 
 If publishing fails, run the **Release** workflow by hand with `publish` checked: it publishes
 every package version npm doesn't have yet. As a last resort, a maintainer can publish from a
